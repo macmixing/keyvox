@@ -190,6 +190,8 @@
 		E93000022FE9000100AA0001 /* SettingsVibesAIInstallCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = E93000122FE9000100AA0001 /* SettingsVibesAIInstallCard.swift */; };
 		F1D100112FEA000100AA0001 /* MacRuntimeFlags.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D100012FEA000100AA0001 /* MacRuntimeFlags.swift */; };
 		F1D100122FEA000100AA0001 /* FirstDictationOnboardingFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D100022FEA000100AA0001 /* FirstDictationOnboardingFlowView.swift */; };
+		F1D100B12FEA000100AA0001 /* FirstDictationPracticeState.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D100B22FEA000100AA0001 /* FirstDictationPracticeState.swift */; };
+		F1D100B32FEA000100AA0001 /* FirstDictationPracticeStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D100B42FEA000100AA0001 /* FirstDictationPracticeStateTests.swift */; };
 		F1D100132FEA000100AA0001 /* FirstDictationOnboardingWindowMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D100032FEA000100AA0001 /* FirstDictationOnboardingWindowMetrics.swift */; };
 		F1D100142FEA000100AA0001 /* FirstDictationIntroView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D100042FEA000100AA0001 /* FirstDictationIntroView.swift */; };
 		F1D100152FEA000100AA0001 /* FirstDictationPracticeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D100052FEA000100AA0001 /* FirstDictationPracticeView.swift */; };
@@ -424,6 +426,8 @@
 		E93000122FE9000100AA0001 /* SettingsVibesAIInstallCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsVibesAIInstallCard.swift; sourceTree = "<group>"; };
 		F1D100012FEA000100AA0001 /* MacRuntimeFlags.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacRuntimeFlags.swift; sourceTree = "<group>"; };
 		F1D100022FEA000100AA0001 /* FirstDictationOnboardingFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstDictationOnboardingFlowView.swift; sourceTree = "<group>"; };
+		F1D100B22FEA000100AA0001 /* FirstDictationPracticeState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstDictationPracticeState.swift; sourceTree = "<group>"; };
+		F1D100B42FEA000100AA0001 /* FirstDictationPracticeStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstDictationPracticeStateTests.swift; sourceTree = "<group>"; };
 		F1D100032FEA000100AA0001 /* FirstDictationOnboardingWindowMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstDictationOnboardingWindowMetrics.swift; sourceTree = "<group>"; };
 		F1D100042FEA000100AA0001 /* FirstDictationIntroView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstDictationIntroView.swift; sourceTree = "<group>"; };
 		F1D100052FEA000100AA0001 /* FirstDictationPracticeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstDictationPracticeView.swift; sourceTree = "<group>"; };
@@ -795,6 +799,7 @@
 		AB1000092F60000100AA0001 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				F1D100B42FEA000100AA0001 /* FirstDictationPracticeStateTests.swift */,
 				AB2000142F60000100AA0001 /* WarningKindTests.swift */,
 			);
 			path = Views;
@@ -940,6 +945,7 @@
 			isa = PBXGroup;
 			children = (
 				F1D100022FEA000100AA0001 /* FirstDictationOnboardingFlowView.swift */,
+				F1D100B22FEA000100AA0001 /* FirstDictationPracticeState.swift */,
 				F1D100032FEA000100AA0001 /* FirstDictationOnboardingWindowMetrics.swift */,
 				F1D100042FEA000100AA0001 /* FirstDictationIntroView.swift */,
 				F1D100052FEA000100AA0001 /* FirstDictationPracticeView.swift */,
@@ -1261,6 +1267,7 @@
 				F1D100112FEA000100AA0001 /* MacRuntimeFlags.swift in Sources */,
 				F1D100192FEA000100AA0001 /* WindowManager+FirstDictationOnboarding.swift in Sources */,
 				F1D100122FEA000100AA0001 /* FirstDictationOnboardingFlowView.swift in Sources */,
+				F1D100B12FEA000100AA0001 /* FirstDictationPracticeState.swift in Sources */,
 				F1D100132FEA000100AA0001 /* FirstDictationOnboardingWindowMetrics.swift in Sources */,
 				F1D100142FEA000100AA0001 /* FirstDictationIntroView.swift in Sources */,
 				F1D100152FEA000100AA0001 /* FirstDictationPracticeView.swift in Sources */,
@@ -1295,6 +1302,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F26000102FF1000100AA0001 /* MacVibesIntroControllerTests.swift in Sources */,
+				F1D100B32FEA000100AA0001 /* FirstDictationPracticeStateTests.swift in Sources */,
 				F30000362FC2000100AA0001 /* AppUpdateApplicationsPrereflightTests.swift in Sources */,
 				F30000322FC2000100AA0001 /* AppUpdateChecksumVerifierTests.swift in Sources */,
 				F30000342FC2000100AA0001 /* AppUpdateLaunchNoticeServiceTests.swift in Sources */,

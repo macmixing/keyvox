@@ -12,12 +12,9 @@ struct FirstDictationOnboardingFlowView: View {
     }
 
     @ObservedObject private var transcriptionManager = AppServiceRegistry.shared.transcriptionManager
+    @StateObject private var practiceState = FirstDictationPracticeState()
     @State private var step: Step = .intro
     @State private var containerSize = FirstDictationOnboardingWindowMetrics.introSize
-    @State private var text = ""
-    @State private var baselineDictationRevision = 0
-    @State private var expectedDictationText = ""
-    @State private var hasReceivedFirstDictation = false
     @FocusState private var isTextFieldFocused: Bool
 
     let onWindowSizeChange: (CGSize, @escaping () -> Void) -> Void
@@ -37,9 +34,9 @@ struct FirstDictationOnboardingFlowView: View {
                 )
             case .practice:
                 FirstDictationPracticeView(
-                    text: $text,
+                    text: $practiceState.text,
                     isTextFieldFocused: $isTextFieldFocused,
-                    hasSucceeded: hasReceivedFirstDictation,
+                    hasSucceeded: practiceState.hasReceivedFirstDictation,
                     onFinish: { onComplete(.completed) }
                 )
                 .frame(
@@ -54,7 +51,8 @@ struct FirstDictationOnboardingFlowView: View {
         .background(MacAppTheme.screenBackground)
         .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
         .onChange(of: transcriptionManager.successfulDictationRevision) { revision in
-            captureExpectedDictationIfNeeded(
+            guard step == .practice else { return }
+            practiceState.captureExpectedDictationIfNeeded(
                 revision: revision,
                 latestTranscription: transcriptionManager.lastTranscription
             )
@@ -62,10 +60,9 @@ struct FirstDictationOnboardingFlowView: View {
     }
 
     private func startPractice() {
-        baselineDictationRevision = transcriptionManager.successfulDictationRevision
-        text = ""
-        expectedDictationText = ""
-        hasReceivedFirstDictation = false
+        practiceState.startPractice(
+            baselineDictationRevision: transcriptionManager.successfulDictationRevision
+        )
         containerSize = FirstDictationOnboardingWindowMetrics.practiceSize
         onWindowSizeChange(FirstDictationOnboardingWindowMetrics.practiceSize) {
             withAnimation(.easeInOut(duration: 0.18)) {
@@ -73,35 +70,5 @@ struct FirstDictationOnboardingFlowView: View {
             }
             isTextFieldFocused = true
         }
-    }
-
-    private func captureExpectedDictationIfNeeded(revision: Int, latestTranscription: String) {
-        guard step == .practice else { return }
-        let trimmed = latestTranscription.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty, revision > baselineDictationRevision else { return }
-
-        expectedDictationText = latestTranscription
-        completePracticeIfNeeded(with: text)
-    }
-
-    private func completePracticeIfNeeded(with currentText: String) {
-        guard step == .practice, hasReceivedFirstDictation == false else { return }
-        let expectedText = normalizedFirstDictationText(expectedDictationText)
-        guard !expectedText.isEmpty else { return }
-        let fieldText = normalizedFirstDictationText(currentText)
-        guard fieldText.range(
-            of: expectedText,
-            options: [.caseInsensitive, .diacriticInsensitive, .widthInsensitive]
-        ) != nil else { return }
-
-        hasReceivedFirstDictation = true
-    }
-
-    private func normalizedFirstDictationText(_ value: String) -> String {
-        value
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-            .components(separatedBy: .whitespacesAndNewlines)
-            .filter { !$0.isEmpty }
-            .joined(separator: " ")
     }
 }
