@@ -26,7 +26,6 @@ private enum SplitJoinScoringConstants {
     static let stylizedAnchoredPhoneticMinimum = 0.60
     static let stylizedAnchoredBlendedMinimum = 0.48
     static let stylizedAnchoredThreshold = 0.44
-    static let stylizedAnchoredTailGuardMinimumSecondTokenLength = 4
     static let stylizedAnchoredTailGuardMinimumSimilarity = 0.55
     static let numericShortTokenTextMinimum = 0.80
     static let numericShortTokenPhoneticMinimum = 0.70
@@ -408,12 +407,9 @@ extension DictionaryMatcher {
         guard candidateToken.hasPrefix(observedPrefix) else { return false }
 
         let observedTail = window[1].normalized
-        guard observedTail.count >= SplitJoinScoringConstants.stylizedAnchoredTailGuardMinimumSecondTokenLength else {
-            return true
-        }
 
-        // Long ordinary words are the riskiest anchored split-join false positives,
-        // so require the unmatched tail to still resemble the brand tail.
+        // Require the unmatched tail to resemble the brand tail so a shared prefix
+        // cannot collapse a phonetically unrelated phrase into the dictionary entry.
         let candidateTail = String(candidateToken.dropFirst(observedPrefix.count))
         guard !candidateTail.isEmpty else { return false }
 

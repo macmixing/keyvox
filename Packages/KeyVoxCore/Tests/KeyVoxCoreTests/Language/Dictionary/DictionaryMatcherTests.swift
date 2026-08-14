@@ -223,6 +223,15 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "I added key value storage.")
     }
 
+    func testDoesNotCollapseShortPhoneticallyUnrelatedTailIntoAnchoredStylizedSplitJoinMatch() {
+        let matcher = makeRuntimeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "LinkTrak")])
+
+        let input = "And link the two."
+
+        XCTAssertEqual(matcher.apply(to: input).text, input)
+    }
+
     func testCorrectsStylizedSingleTokenBrandNearMissWithRuntimeLexicon() {
         let matcher = makeRuntimeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "KeyVox")])
