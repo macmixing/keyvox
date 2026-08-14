@@ -276,6 +276,9 @@ final class PasteAXInspector: PasteAXInspecting {
             let caretIndexLine = lineForIndex(caretLocation, element: element)
             let shouldTreatTrailingNewline = Self.shouldTreatNewlineRangeAtCaret(
                 rangeAfterCaret,
+                rangeText: rangeText,
+                value: value,
+                caretLocation: caretLocation,
                 insertionLine: insertionLine,
                 caretIndexLine: caretIndexLine
             )
@@ -333,6 +336,9 @@ final class PasteAXInspector: PasteAXInspecting {
 
     static func shouldTreatNewlineRangeAtCaret(
         _ rangeAfterCaret: String?,
+        rangeText: String? = nil,
+        value: String? = nil,
+        caretLocation: Int? = nil,
         insertionLine: Int?,
         caretIndexLine: Int?
     ) -> Bool {
@@ -341,7 +347,40 @@ final class PasteAXInspector: PasteAXInspecting {
               let caretIndexLine else {
             return false
         }
+        if let rangeText,
+           let value,
+           let caretLocation,
+           valueConfirmsNewlineFollowsCaret(
+               rangeText: rangeText,
+               value: value,
+               caretLocation: caretLocation
+           ) {
+            return false
+        }
         return insertionLine == caretIndexLine
+    }
+
+    private static func valueConfirmsNewlineFollowsCaret(
+        rangeText: String,
+        value: String,
+        caretLocation: Int
+    ) -> Bool {
+        guard rangeText.isEmpty == false,
+              caretLocation >= 0,
+              caretLocation < value.utf16.count else {
+            return false
+        }
+
+        let valueBeforeCaret = String(
+            decoding: value.utf16.prefix(caretLocation),
+            as: UTF16.self
+        )
+        let valueAfterCaret = String(
+            decoding: value.utf16.dropFirst(caretLocation),
+            as: UTF16.self
+        )
+        return valueBeforeCaret.hasSuffix(rangeText)
+            && valueAfterCaret.first?.unicodeScalars.allSatisfy(CharacterSet.newlines.contains) == true
     }
 
     static func shouldTreatTrailingValueNewlineAsPrecedingCaret(

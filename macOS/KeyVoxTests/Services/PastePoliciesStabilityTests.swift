@@ -72,6 +72,32 @@ final class PastePoliciesStabilityTests: XCTestCase {
         )
     }
 
+    func testValueConfirmedNewlineAfterCaretDoesNotOverridePreviousCharacter() {
+        XCTAssertFalse(
+            PasteAXInspector.shouldTreatNewlineRangeAtCaret(
+                "\n",
+                rangeText: "ab",
+                value: "ab\ncd",
+                caretLocation: 2,
+                insertionLine: 3,
+                caretIndexLine: 3
+            )
+        )
+    }
+
+    func testMismatchedValueKeepsNewlineCaretCorrection() {
+        XCTAssertTrue(
+            PasteAXInspector.shouldTreatNewlineRangeAtCaret(
+                "\n",
+                rangeText: "ab",
+                value: "xy\ncd",
+                caretLocation: 2,
+                insertionLine: 3,
+                caretIndexLine: 3
+            )
+        )
+    }
+
     func testNewlineAtEndOfPreviousLineDoesNotOverridePreviousCharacter() {
         XCTAssertFalse(
             PasteAXInspector.shouldTreatNewlineRangeAtCaret(
