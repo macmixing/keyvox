@@ -2,7 +2,17 @@ import Foundation
 
 #if DEBUG
 enum TranscriptionPostProcessingDebugLogging {
-    @TaskLocal static var isEnabled = true
+    @TaskLocal static var isEnabled = !isRunningUnderTests
+
+    private static var isRunningUnderTests: Bool {
+        let environment = ProcessInfo.processInfo.environment
+        if environment["XCTestConfigurationFilePath"] != nil {
+            return true
+        }
+
+        return NSClassFromString("XCTestCase") != nil
+            || NSClassFromString("XCTest.XCTestCase") != nil
+    }
 }
 #endif
 

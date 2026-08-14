@@ -458,6 +458,7 @@ public final class DictationPipeline {
 
     #if DEBUG
     private func logPipelineStage(_ stage: String, _ value: String) {
+        guard TranscriptionPostProcessingDebugLogging.isEnabled else { return }
         let summary = debugTextSummary(value)
         if rawDebugTextLoggingEnabled {
             print("[KVXPipeline] \(stage) \(summary) text=\(escapedDebugText(value))")

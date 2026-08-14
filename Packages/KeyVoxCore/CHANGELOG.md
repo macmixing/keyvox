@@ -6,7 +6,7 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
-## [1.2.4] - 2026-08-10
+## [1.2.4] - 2026-08-14
 
 Spoken question and exclamation commands now convert reliably after natural clauses while punctuation noun phrases stay intact.
 
@@ -18,6 +18,8 @@ Spoken question and exclamation commands now convert reliably after natural clau
 - Preserved explicit terminal questions that refer to punctuation noun phrases instead of dictating punctuation commands.
 - Ensured continuation text is capitalized when spoken question-mark and exclamation-point commands insert a new sentence boundary.
 - Added focused coverage for the supported clause structures and multi-sentence transcription behavior.
+- Required every anchored stylized split-join tail to retain spelling or phonetic resemblance to the dictionary entry, preventing short unrelated phrases such as `link the` from collapsing into `LinkTrak`.
+- Suppressed transcription post-processing and pipeline debug traces during XCTest runs while preserving normal debug console output in app sessions.
 
 ### Notes
 
