@@ -6,18 +6,20 @@ struct SettingsVibesExamplesSection: View {
     let displayedSelectedVibe: StyleRewriteStyle
     let dictationModel: StyleRewriteDictationModel
     let isSelectionEnabled: Bool
+    let isDownloadRequired: Bool
 
     @State private var isExpanded = false
     @State private var expandedContentHeight: CGFloat = 0
+    @State private var didAttemptUnavailableSelection = false
 
     private static let expansionAnimation = Animation.spring(response: 0.42, dampingFraction: 0.84)
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(alignment: .top, spacing: 12) {
-                Text(displayedSelectedVibe.description)
+                Text(summaryText)
                     .font(.appFont(15, variant: .light))
-                    .foregroundStyle(.white.opacity(0.7))
+                    .foregroundStyle(summaryColor)
                     .frame(maxWidth: .infinity, alignment: .leading)
 
                 Button {
@@ -49,6 +51,11 @@ struct SettingsVibesExamplesSection: View {
                         expandedContentMeasurement
                     }
                 }
+        }
+        .onChange(of: isDownloadRequired) { downloadRequired in
+            if downloadRequired == false {
+                didAttemptUnavailableSelection = false
+            }
         }
     }
 
@@ -93,7 +100,12 @@ struct SettingsVibesExamplesSection: View {
 
     private func exampleRow(_ example: VibeExample) -> some View {
         Button {
-            guard isSelectionEnabled else { return }
+            guard isSelectionEnabled else {
+                if isDownloadRequired {
+                    didAttemptUnavailableSelection = true
+                }
+                return
+            }
             selectedVibe = example.style
         } label: {
             HStack(alignment: .center, spacing: 8) {
@@ -136,6 +148,22 @@ struct SettingsVibesExamplesSection: View {
         }
     }
 
+    private var summaryText: String {
+        guard isDownloadRequired else {
+            return displayedSelectedVibe.description
+        }
+
+        return didAttemptUnavailableSelection
+            ? SettingsVibesExamplesCopy.downloadRequiredSelectionPrompt
+            : SettingsVibesExamplesCopy.unavailableStylesPrompt
+    }
+
+    private var summaryColor: Color {
+        didAttemptUnavailableSelection && isDownloadRequired
+            ? .yellow
+            : .white.opacity(0.7)
+    }
+
     private struct VibeExample: Hashable {
         let style: StyleRewriteStyle
         let text: String
@@ -145,4 +173,6 @@ struct SettingsVibesExamplesSection: View {
 enum SettingsVibesExamplesCopy {
     static let showExamplesAccessibilityLabel = "Show vibe examples"
     static let hideExamplesAccessibilityLabel = "Hide vibe examples"
+    static let unavailableStylesPrompt = "Check out the reversible writing styles available with KeyVox Vibes."
+    static let downloadRequiredSelectionPrompt = "Click Download to install Vibes AI to before selecting a style."
 }

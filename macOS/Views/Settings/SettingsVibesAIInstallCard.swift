@@ -50,8 +50,13 @@ struct SettingsVibesAIInstallCard: View {
             Toggle("", isOn: $triggerKeyInteractionsEnabled)
                 .toggleStyle(.switch)
                 .labelsHidden()
+                .disabled(isTriggerKeyInteractionsAvailable == false)
                 .accessibilityLabel(SettingsVibesAIInstallCardCopy.triggerKeyInteractionsAccessibilityLabel)
         }
+    }
+
+    private var isTriggerKeyInteractionsAvailable: Bool {
+        installState == .ready
     }
 
     @ViewBuilder

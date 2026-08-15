@@ -25,7 +25,8 @@ struct SettingsVibesCard: View {
                         selectedVibe: $selectedVibe,
                         displayedSelectedVibe: matrix.displayedSelectedVibe,
                         dictationModel: dictationModel,
-                        isSelectionEnabled: matrix.showsVibeSelector
+                        isSelectionEnabled: matrix.showsVibeSelector,
+                        isDownloadRequired: matrix.mainCardContent == .downloadRequired
                     )
                 }
             }
