@@ -43,7 +43,8 @@ final class AudioIndicatorDriver {
         static let speakingMeterPollInterval: CFTimeInterval = 1.0 / 60.0
         static let sampleFreshnessWindow: TimeInterval = 0.35
         static let speakingSampleFreshnessWindow: TimeInterval = 0.35
-        static let listeningSmoothingRate: CGFloat = 16
+        static let listeningAttackSmoothingRate: CGFloat = 25
+        static let listeningDecaySmoothingRate: CGFloat = 8
         static let speakingAttackSmoothingRate: CGFloat = 34
         static let speakingDecaySmoothingRate: CGFloat = 18
     }
@@ -104,7 +105,9 @@ final class AudioIndicatorDriver {
                 ? Metrics.speakingAttackSmoothingRate
                 : Metrics.speakingDecaySmoothingRate
         } else {
-            smoothingRate = Metrics.listeningSmoothingRate
+            smoothingRate = targetLevel > displayedLevel
+                ? Metrics.listeningAttackSmoothingRate
+                : Metrics.listeningDecaySmoothingRate
         }
 
         let smoothing = CGFloat(min(delta * Double(smoothingRate), 1))

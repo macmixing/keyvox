@@ -47,7 +47,8 @@ final class AudioIndicatorDriver: ObservableObject {
         static let timerInterval: TimeInterval = AudioIndicatorDriver.animationFrameDuration
         static let meterPollInterval: TimeInterval = 1.0 / 30.0
         static let sampleFreshnessWindow: TimeInterval = 0.35
-        static let smoothingRate: CGFloat = 16
+        static let attackSmoothingRate: CGFloat = 15
+        static let decaySmoothingRate: CGFloat = 5
     }
 
     var sampleProvider: (() -> AudioIndicatorSample?)?
@@ -114,7 +115,10 @@ final class AudioIndicatorDriver: ObservableObject {
 
         refreshSampleIfNeeded(at: timestamp, sample: sample)
 
-        let smoothing = min(delta * Metrics.smoothingRate, 1)
+        let smoothingRate = targetLevel > displayedLevel
+            ? Metrics.attackSmoothingRate
+            : Metrics.decaySmoothingRate
+        let smoothing = min(delta * smoothingRate, 1)
         displayedLevel += (targetLevel - displayedLevel) * smoothing
 
         publishTimelineState(at: timestamp)

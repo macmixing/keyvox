@@ -25,6 +25,8 @@ final class AudioCaptureAccumulator {
     private var lastNonDeadSignalTime: Date = .distantPast
     private var lastVisualActiveSignalTime: Date = .distantPast
     private var lastMeaningfulSpeechTime: Date = .distantPast
+    private var visualMeterPreviousInput: Float = 0
+    private var visualMeterPreviousOutput: Float = 0
     private var currentActiveSignalRunDuration: TimeInterval = 0
     private var maxActiveSignalRunDuration: TimeInterval = 0
     private var hadNonDeadSignal = false
@@ -36,6 +38,8 @@ final class AudioCaptureAccumulator {
             lastNonDeadSignalTime = .distantPast
             lastVisualActiveSignalTime = .distantPast
             lastMeaningfulSpeechTime = .distantPast
+            visualMeterPreviousInput = 0
+            visualMeterPreviousOutput = 0
             currentActiveSignalRunDuration = 0
             maxActiveSignalRunDuration = 0
             hadNonDeadSignal = false
@@ -113,19 +117,35 @@ final class AudioCaptureAccumulator {
             let frames = Array(UnsafeBufferPointer(start: floatData[0], count: frameCount))
             audioData.append(contentsOf: frames)
 
+            let visualMeterHighPassCutoffFrequency: Float = 120
+            let sampleInterval = 1 / Float(outputFormat.sampleRate)
+            let highPassTimeConstant = 1 / (2 * Float.pi * visualMeterHighPassCutoffFrequency)
+            let highPassCoefficient = highPassTimeConstant / (highPassTimeConstant + sampleInterval)
+
             var sumSquares: Float = 0
+            var visualSumSquares: Float = 0
             var peak: Float = 0
+            var previousVisualInput = visualMeterPreviousInput
+            var previousVisualOutput = visualMeterPreviousOutput
             for frame in frames {
                 sumSquares += frame * frame
+
+                let visualFrame = highPassCoefficient * (previousVisualOutput + frame - previousVisualInput)
+                visualSumSquares += visualFrame * visualFrame
+                previousVisualInput = frame
+                previousVisualOutput = visualFrame
+
                 let magnitude = abs(frame)
                 if magnitude > peak {
                     peak = magnitude
                 }
             }
+            visualMeterPreviousInput = previousVisualInput
+            visualMeterPreviousOutput = previousVisualOutput
 
             let rms = sqrt(sumSquares / Float(frameCount))
+            let visualMeterRMS = sqrt(visualSumSquares / Float(frameCount))
             let frameDuration = TimeInterval(Double(convertedBuffer.frameLength) / outputFormat.sampleRate)
-            let level = min(max(sqrt(rms) * 2.5, 0), 1)
 
             let now = Date()
             if peak > deadSignalPeakThreshold {
@@ -143,7 +163,11 @@ final class AudioCaptureAccumulator {
             }
 
             let visualActiveThreshold = activeSignalRMSThreshold * visualActiveSignalThresholdMultiplier
-            if rms > visualActiveThreshold {
+            // Visual meter scaling only. This does not modify captured audio samples.
+            let visualRMS = max(visualMeterRMS - visualActiveThreshold, 0)
+            let level = min(sqrt(visualRMS) * 2.7, 1)
+
+            if visualMeterRMS > visualActiveThreshold {
                 lastVisualActiveSignalTime = now
             }
 

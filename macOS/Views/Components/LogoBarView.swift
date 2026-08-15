@@ -162,7 +162,7 @@ private struct IndicatorLogoView: View {
         if phase == .processing {
             return .processing
         }
-        if phase == .listening && timelineState.signalState == .lowActivity {
+        if phase == .listening {
             return .lowActivity
         }
         return nil
@@ -223,10 +223,16 @@ private struct TimelineIndicatorBarsView: View {
             for index in 0..<5 {
                 let barHeight: CGFloat = switch mode {
                 case .lowActivity:
-                    lowActivityBarHeight(
-                        index: index,
-                        phase: phase,
-                        displayedLevel: displayedLevel
+                    max(
+                        lowActivityBarHeight(
+                            index: index,
+                            phase: phase,
+                            displayedLevel: displayedLevel
+                        ),
+                        listeningAudioBarHeight(
+                            index: index,
+                            displayedLevel: displayedLevel
+                        )
                     )
                 case .processing:
                     processingBarHeight(index: index, phase: phase)
@@ -300,9 +306,7 @@ private struct ReactiveIndicatorSegmentView: View {
     }
 
     private var height: CGFloat {
-        let minHeight: CGFloat = isDevModeOversized ? 18 : 6
         let flatHeight: CGFloat = isDevModeOversized ? 9 : 3
-        let maxHeight: CGFloat = isDevModeOversized ? 170 : 30
 
         guard phase == .listening else {
             return flatHeight
@@ -320,10 +324,19 @@ private struct ReactiveIndicatorSegmentView: View {
             )
         }
 
-        let multipliers: [CGFloat] = [0.4, 0.7, 1.0, 0.7, 0.4]
-        let dynamicHeight = timelineState.displayedLevel * multipliers[index] * maxHeight
-        return max(minHeight, dynamicHeight)
+        return listeningAudioBarHeight(
+            index: index,
+            displayedLevel: timelineState.displayedLevel
+        )
     }
+}
+
+private func listeningAudioBarHeight(index: Int, displayedLevel: CGFloat) -> CGFloat {
+    let minHeight: CGFloat = isDevModeOversized ? 18 : 6
+    let maxHeight: CGFloat = isDevModeOversized ? 170 : 30
+    let multipliers: [CGFloat] = [0.4, 0.7, 1.0, 0.7, 0.4]
+    let dynamicHeight = displayedLevel * multipliers[index] * maxHeight
+    return max(minHeight, dynamicHeight)
 }
 
 private func processingBarHeight(index: Int, phase: Double) -> CGFloat {
