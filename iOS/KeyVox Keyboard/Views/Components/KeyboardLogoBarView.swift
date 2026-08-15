@@ -429,7 +429,6 @@ final class KeyboardLogoBarView: UIControl {
     }
 
     private func barHeight(for index: Int, scale: CGFloat) -> CGFloat {
-        let minHeight: CGFloat = 6 * scale
         let flatHeight: CGFloat = 3 * scale
         let maxHeight: CGFloat = 30 * scale
 
@@ -456,8 +455,7 @@ final class KeyboardLogoBarView: UIControl {
 
         let multipliers: [CGFloat] = [0.4, 0.7, 1.0, 0.7, 0.4]
         let dynamicHeight = timelineState.displayedLevel * multipliers[index] * maxHeight
-        let audioHeight = max(minHeight, dynamicHeight)
-        return max(rippleHeight, audioHeight)
+        return max(rippleHeight, dynamicHeight)
     }
 
     private func pixelAligned(_ rect: CGRect) -> CGRect {

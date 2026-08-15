@@ -229,7 +229,7 @@ private struct TimelineIndicatorBarsView: View {
                             phase: phase,
                             displayedLevel: displayedLevel
                         ),
-                        listeningAudioBarHeight(
+                        listeningAudioDynamicHeight(
                             index: index,
                             displayedLevel: displayedLevel
                         )
@@ -333,10 +333,16 @@ private struct ReactiveIndicatorSegmentView: View {
 
 private func listeningAudioBarHeight(index: Int, displayedLevel: CGFloat) -> CGFloat {
     let minHeight: CGFloat = isDevModeOversized ? 18 : 6
+    return max(
+        minHeight,
+        listeningAudioDynamicHeight(index: index, displayedLevel: displayedLevel)
+    )
+}
+
+private func listeningAudioDynamicHeight(index: Int, displayedLevel: CGFloat) -> CGFloat {
     let maxHeight: CGFloat = isDevModeOversized ? 170 : 30
     let multipliers: [CGFloat] = [0.4, 0.7, 1.0, 0.7, 0.4]
-    let dynamicHeight = displayedLevel * multipliers[index] * maxHeight
-    return max(minHeight, dynamicHeight)
+    return displayedLevel * multipliers[index] * maxHeight
 }
 
 private func processingBarHeight(index: Int, phase: Double) -> CGFloat {
