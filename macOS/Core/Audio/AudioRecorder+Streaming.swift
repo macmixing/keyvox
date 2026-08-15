@@ -57,23 +57,35 @@ extension AudioRecorder: AVCaptureAudioDataOutputSampleBufferDelegate {
             audioData.append(contentsOf: frames)
         }
 
-        // Calculate RMS for UI visualization.
+        let sampleInterval = 1 / Float(outputFormat.sampleRate)
+        let highPassTimeConstant = 1 / (2 * Float.pi * visualMeterHighPassCutoffFrequency)
+        let highPassCoefficient = highPassTimeConstant / (highPassTimeConstant + sampleInterval)
+
+        // Calculate raw capture RMS and a high-passed RMS for UI visualization.
         var sum: Float = 0
+        var visualSum: Float = 0
         var peak: Float = 0
+        var previousVisualInput = visualMeterPreviousInput
+        var previousVisualOutput = visualMeterPreviousOutput
         for frame in frames {
             sum += frame * frame
+
+            let visualFrame = highPassCoefficient * (previousVisualOutput + frame - previousVisualInput)
+            visualSum += visualFrame * visualFrame
+            previousVisualInput = frame
+            previousVisualOutput = visualFrame
+
             let magnitude = abs(frame)
             if magnitude > peak {
                 peak = magnitude
             }
         }
+        visualMeterPreviousInput = previousVisualInput
+        visualMeterPreviousOutput = previousVisualOutput
 
         let rms = sqrt(sum / Float(frames.count))
+        let visualMeterRMS = sqrt(visualSum / Float(frames.count))
         let frameDuration = TimeInterval(Double(convertedBuffer.frameLength) / outputFormat.sampleRate)
-
-        // Visual meter scaling only. This does not modify captured audio samples.
-        // Keep boosted UI response so waveform movement remains readable.
-        let level = min(max(sqrt(rms) * 3.5, 0.0), 1.0)
 
         let now = Date()
         if peak > deadSignalPeakThreshold {
@@ -90,7 +102,12 @@ extension AudioRecorder: AVCaptureAudioDataOutputSampleBufferDelegate {
         }
 
         let visualActiveThreshold = sessionActiveSignalRMSThreshold * visualActiveSignalThresholdMultiplier
-        if rms > visualActiveThreshold {
+        // Visual meter scaling only. This does not modify captured audio samples.
+        // Remove low-level background noise before boosting the remaining signal.
+        let visualRMS = max(visualMeterRMS - visualActiveThreshold, 0)
+        let level = min(sqrt(visualRMS) * 5.5, 1.0)
+
+        if visualMeterRMS > visualActiveThreshold {
             lastVisualActiveSignalTime = now
         }
 

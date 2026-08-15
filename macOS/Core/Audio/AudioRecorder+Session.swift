@@ -67,6 +67,8 @@ extension AudioRecorder {
 
         lastNonDeadSignalTime = Date.distantPast
         lastVisualActiveSignalTime = Date.distantPast
+        visualMeterPreviousInput = 0
+        visualMeterPreviousOutput = 0
         currentActiveSignalRunDuration = 0
         maxActiveSignalRunDuration = 0
         lastCaptureHadNonDeadSignal = false

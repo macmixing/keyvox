@@ -51,10 +51,13 @@ class AudioRecorder: NSObject, ObservableObject {
     var sessionInputVolumeScalar: Float = AudioSilenceGatePolicy.defaultInputVolumeScalar
     var sessionThresholdScale: Float = 1.0
     let deadStateHoldDuration: TimeInterval = 0.35
+    let visualMeterHighPassCutoffFrequency: Float = 120
     let visualActiveStateHoldDuration: TimeInterval = 0.16
     let visualActiveSignalThresholdMultiplier: Float = 1.85
     var lastNonDeadSignalTime: Date = Date.distantPast
     var lastVisualActiveSignalTime: Date = Date.distantPast
+    var visualMeterPreviousInput: Float = 0
+    var visualMeterPreviousOutput: Float = 0
     var currentActiveSignalRunDuration: TimeInterval = 0
     var maxActiveSignalRunDuration: TimeInterval = 0
     var lastCaptureHadNonDeadSignal: Bool = false
