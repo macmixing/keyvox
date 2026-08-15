@@ -443,26 +443,21 @@ final class KeyboardLogoBarView: UIControl {
             return flatHeight
         }
 
-        if timelineState.signalState == .inactive {
-            return flatHeight
-        }
-
-        if timelineState.signalState == .lowActivity {
-            let quietWaveOffset = timelineState.lowActivityPhase + Double(index) * 0.8
-            let quietRipple = (sin(quietWaveOffset) * 0.5) + 0.5
-            let wiggleOffset = (timelineState.lowActivityPhase * 0.9) + Double(index) * 1.35
-            let ambientWiggle = (sin(wiggleOffset) * 0.5) + 0.5
-            let quietLevel = min(max(timelineState.displayedLevel / 0.14, 0), 1)
-            return flatHeight
-                + (1.2 * scale)
-                + (CGFloat(quietLevel) * (0.8 * scale))
-                + (CGFloat(ambientWiggle) * (0.9 * scale))
-                + (CGFloat(quietRipple) * (2.0 * scale))
-        }
+        let quietWaveOffset = timelineState.lowActivityPhase + Double(index) * 0.8
+        let quietRipple = (sin(quietWaveOffset) * 0.5) + 0.5
+        let wiggleOffset = (timelineState.lowActivityPhase * 0.9) + Double(index) * 1.35
+        let ambientWiggle = (sin(wiggleOffset) * 0.5) + 0.5
+        let quietLevel = min(max(timelineState.displayedLevel / 0.14, 0), 1)
+        let rippleHeight = flatHeight
+            + (1.2 * scale)
+            + (CGFloat(quietLevel) * (0.8 * scale))
+            + (CGFloat(ambientWiggle) * (0.9 * scale))
+            + (CGFloat(quietRipple) * (2.0 * scale))
 
         let multipliers: [CGFloat] = [0.4, 0.7, 1.0, 0.7, 0.4]
         let dynamicHeight = timelineState.displayedLevel * multipliers[index] * maxHeight
-        return max(minHeight, dynamicHeight)
+        let audioHeight = max(minHeight, dynamicHeight)
+        return max(rippleHeight, audioHeight)
     }
 
     private func pixelAligned(_ rect: CGRect) -> CGRect {
