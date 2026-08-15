@@ -37,7 +37,8 @@ struct FirstDictationOnboardingFlowView: View {
                     text: $practiceState.text,
                     isTextFieldFocused: $isTextFieldFocused,
                     hasSucceeded: practiceState.hasReceivedFirstDictation,
-                    onFinish: { onComplete(.completed) }
+                    onFinish: { onComplete(.completed) },
+                    onEscape: { onComplete(.skipped) }
                 )
                 .frame(
                     width: FirstDictationOnboardingWindowMetrics.practiceSize.width,

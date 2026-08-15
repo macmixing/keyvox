@@ -6,6 +6,9 @@ struct FirstDictationPracticeView: View {
     @FocusState.Binding var isTextFieldFocused: Bool
     let hasSucceeded: Bool
     let onFinish: () -> Void
+    let onEscape: () -> Void
+
+    @State private var isEscapeVisible = false
 
     private enum Layout {
         static let horizontalPadding: CGFloat = 34
@@ -13,22 +16,18 @@ struct FirstDictationPracticeView: View {
         static let inputBottomPadding: CGFloat = 28
         static let inputHeight: CGFloat = 68
         static let finishButtonReservedHeight: CGFloat = 72
+        static let actionWidth: CGFloat = 118
+        static let escapeDelay: Duration = .seconds(90)
+        static let escapeFadeDuration: TimeInterval = 0.2
     }
 
     var body: some View {
         GeometryReader { geometry in
             MacAppTheme.screenBackground
                 .overlay(alignment: .topTrailing) {
-                    if hasSucceeded {
-                        AppActionButton(
-                            title: "Finish",
-                            style: .primary,
-                            minWidth: 118,
-                            action: onFinish
-                        )
+                    action
                         .padding(.top, 24)
-                          .padding(.trailing, 24)
-                    }
+                        .padding(.trailing, 24)
                 }
                 .overlay(alignment: .top) {
                     centerContent
@@ -48,6 +47,41 @@ struct FirstDictationPracticeView: View {
         }
         .onAppear {
             isTextFieldFocused = true
+        }
+        .task(id: hasSucceeded) {
+            guard hasSucceeded == false else { return }
+
+            do {
+                try await Task.sleep(for: Layout.escapeDelay)
+            } catch {
+                return
+            }
+
+            guard Task.isCancelled == false, hasSucceeded == false else { return }
+            withAnimation(.easeInOut(duration: Layout.escapeFadeDuration)) {
+                isEscapeVisible = true
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var action: some View {
+        if hasSucceeded {
+            AppActionButton(
+                title: "Finish",
+                style: .primary,
+                minWidth: Layout.actionWidth,
+                action: onFinish
+            )
+        } else if isEscapeVisible {
+            Button(action: onEscape) {
+                Image(systemName: "xmark")
+                    .font(.system(size: 15, weight: .medium))
+                    .foregroundColor(.white.opacity(0.5))
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Exit dictation practice")
+            .transition(.opacity)
         }
     }
 
