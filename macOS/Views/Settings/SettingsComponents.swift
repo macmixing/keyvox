@@ -381,7 +381,7 @@ struct TipItem: View {
     let text: String
     
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
             Image(systemName: icon)
                 .font(.appFont(10))
                 .foregroundColor(.yellow)
