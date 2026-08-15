@@ -149,17 +149,17 @@ private extension AppSettingsStore.TriggerBinding {
     var practiceInstructionKeyName: String {
         switch self {
         case .leftOption:
-            return "left Option"
+            return "Left Option"
         case .rightOption:
-            return "right Option"
+            return "Right Option"
         case .leftCommand:
-            return "left Command"
+            return "Left Command"
         case .rightCommand:
-            return "right Command"
+            return "Right Command"
         case .leftControl:
-            return "left Control"
+            return "Left Control"
         case .rightControl:
-            return "right Control"
+            return "Right Control"
         case .function:
             return "Function"
         }
