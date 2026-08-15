@@ -6,6 +6,38 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.3.3] - 2026-08-15
+
+Improves Mac dictation insertion in Electron editors, spoken punctuation, first-dictation onboarding, Vibes guidance, and audio indicator responsiveness.
+
+### Added
+
+- Added a timed exit from first-dictation practice so onboarding can be skipped if a successful practice dictation cannot be completed.
+- Added contextual Vibes guidance that explains when Vibes AI must be downloaded before a writing style can be selected.
+- Added an iPhone app download reference to the More settings help card so companion-app access is easier to discover.
+
+### Changed
+
+- Updated the listening indicator to filter low-frequency background noise, respond quickly to speech, and fall away more smoothly while retaining its quiet-input animation.
+- Updated first-dictation practice to keep its completion state synchronized with the inserted transcription and to display configured trigger-key names more clearly.
+- Updated Vibes settings so trigger-key interactions remain unavailable until Vibes AI is ready, download and installation progress retain the main action-button layout, and wrapped tip icons align with their first line of text.
+- Updated shared spoken punctuation handling through `KeyVoxCore` `1.2.4` so question-mark and exclamation-point commands work after more natural direct, adverbial, particle-led, and adjective-preposition clauses, including later sentences in a transcription.
+
+### Fixed
+
+- Fixed Electron editors misreporting whether a newline belongs before or after the caret, preventing incorrect capitalization and spacing at line boundaries while preserving the confirmed surrounding text context.
+- Fixed empty Electron fields containing invisible formatting characters so the first inserted dictation keeps document-start capitalization.
+- Fixed rapid or repeated fallback pastes so clipboard capture, insertion, verification, and restoration complete as ordered transactions without one dictation overwriting another's clipboard payload.
+- Fixed fallback paste in Electron apps so the insertion payload remains available long enough for Command-V to consume it before the user's original clipboard contents are restored.
+- Fixed first-dictation onboarding so a successful practice transcription reliably reveals the Finish action even when the text field updates before the completion revision arrives.
+- Fixed spoken question-mark and exclamation-point commands so continuation text begins with the correct sentence capitalization.
+- Fixed explicit questions that refer to punctuation noun phrases so wording such as `What's wrong with the question mark?` remains text instead of being converted into a punctuation command.
+- Fixed stylized split-and-join custom-dictionary matching so an unrelated short tail cannot collapse an ordinary phrase such as `link the` into a saved entry such as `LinkTrak`.
+- Fixed debug transcription traces so they remain available during normal app sessions while staying suppressed during automated checks.
+- Fixed the Vibes download action disappearing during download or installation progress.
+
+---
+
 ## [1.3.2] - 2026-08-09
 
 Improves custom-dictionary corrections, text insertion around punctuation and symbols, and dictated time formatting.
