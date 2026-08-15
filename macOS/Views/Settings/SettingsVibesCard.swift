@@ -114,8 +114,13 @@ struct SettingsVibesCard: View {
                 action: repairAction
             )
         case .progress:
-            StatusBadge(title: progressBadgeTitle, backgroundColor: .yellow)
-                .frame(width: 84)
+            AppActionButton(
+                title: progressActionTitle,
+                style: .primary,
+                minWidth: 84,
+                isEnabled: false,
+                action: {}
+            )
         case .change:
             Picker("", selection: $selectedVibe) {
                 ForEach(StyleRewriteStyle.allCases) { style in
@@ -149,12 +154,12 @@ struct SettingsVibesCard: View {
         }
     }
 
-    private var progressBadgeTitle: String {
+    private var progressActionTitle: String {
         switch matrix.mainCardContent {
         case .installing:
-            return SettingsVibesCardCopy.installingBadge
+            return SettingsVibesCardCopy.installingAction
         case .downloading:
-            return SettingsVibesCardCopy.downloadingBadge
+            return SettingsVibesCardCopy.downloadingAction
         case .downloadRequired, .installFailed, .selectedVibe:
             return ""
         }
@@ -198,8 +203,8 @@ enum SettingsVibesCardCopy {
     static let installingStatus = "Installing KeyVox Vibes AI."
     static let installFailedStatus = "Install failed."
     static let readyStatus = "KeyVox Vibes AI is installed and ready."
-    static let downloadingBadge = "Downloading"
-    static let installingBadge = "Installing"
+    static let downloadingAction = "Downloading"
+    static let installingAction = "Installing"
     static let downloadAction = "Download"
     static let repairAction = "Repair"
     static let triggerTip = "Tap the trigger key to apply / undo the current Vibe. Double-tap to cycle Vibes."
