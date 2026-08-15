@@ -105,7 +105,7 @@ extension SettingsTabView {
                     )
                 }
 
-                Text("Get help with KeyVox, read the FAQ, find more information, or contact us.")
+                Text("Get help with KeyVox, download the Mac app, read the FAQ, find more information, or contact us.")
                     .font(.appFont(15, variant: .light))
                     .foregroundStyle(.white.opacity(0.7))
             }

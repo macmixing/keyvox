@@ -94,7 +94,7 @@ extension SettingsView {
                 DeveloperLinkCard(
                     icon: .systemImage("questionmark.circle.fill"),
                     title: "Need Help?",
-                    subtitle: "Get help with KeyVox, read the FAQ, find more information, or contact us.",
+                    subtitle: "Get help with KeyVox, download the iPhone app, read the FAQ, find more information, or contact us.",
                     buttonTitle: "Open",
                     buttonStyle: .primary,
                     isPromoted: false
