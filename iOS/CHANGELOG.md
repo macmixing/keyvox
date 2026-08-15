@@ -6,6 +6,27 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.3.3] - 2026-08-15
+
+Improves keyboard audio feedback, spoken punctuation, custom-dictionary accuracy, and navigation reliability.
+
+### Changed
+
+- Updated the keyboard listening indicator to react more quickly to speech, settle more naturally as input becomes quiet, and retain visible ripple movement between spoken phrases.
+- Updated audio visualization to filter low-frequency background noise before driving the indicator without modifying captured dictation audio.
+- Updated shared spoken punctuation handling through `KeyVoxCore` `1.2.4` so question-mark and exclamation-point commands work after more natural direct, adverbial, particle-led, and adjective-preposition clauses, including later sentences in a transcription.
+- Updated the About settings help card to make the KeyVox Mac app easier to discover.
+
+### Fixed
+
+- Fixed a keyboard crash that could occur when leaving KeyVox for another keyboard while Caps Lock was enabled.
+- Fixed spoken question-mark and exclamation-point commands so continuation text begins with the correct sentence capitalization.
+- Fixed explicit questions that refer to punctuation noun phrases so wording such as `What's wrong with the question mark?` remains text instead of being converted into a punctuation command.
+- Fixed stylized split-and-join custom-dictionary matching so an unrelated short tail cannot collapse an ordinary phrase such as `link the` into a saved entry such as `LinkTrak`.
+- Fixed debug transcription traces so they remain available during normal app sessions while staying suppressed during automated checks.
+
+---
+
 ## [1.3.2] - 2026-08-09
 
 Improves custom-dictionary corrections, keyboard insertion around punctuation and symbols, and dictated time formatting.
