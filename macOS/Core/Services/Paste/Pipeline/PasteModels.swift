@@ -8,6 +8,7 @@ struct PasteAppIdentity {
 
 struct PasteInsertionContext {
     let selectionLength: Int?
+    let selectedText: String?
     let caretLocation: Int?
     let previousCharacter: Character?
     let characterBeforePreviousCharacter: Character?
@@ -17,6 +18,7 @@ struct PasteInsertionContext {
 
     init(
         selectionLength: Int?,
+        selectedText: String? = nil,
         caretLocation: Int?,
         previousCharacter: Character?,
         characterBeforePreviousCharacter: Character? = nil,
@@ -25,6 +27,7 @@ struct PasteInsertionContext {
         isPreviousNonWhitespaceCharacterAtLineStart: Bool = false
     ) {
         self.selectionLength = selectionLength
+        self.selectedText = selectedText
         self.caretLocation = caretLocation
         self.previousCharacter = previousCharacter
         self.characterBeforePreviousCharacter = characterBeforePreviousCharacter

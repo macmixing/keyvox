@@ -33,7 +33,9 @@ final class PasteSpacingCoordinator: PasteSpacingCoordinating {
 
         if let context {
             if let selectionLength = context.selectionLength, selectionLength > 0 {
-                return text
+                guard selectionNeedsBoundaryReevaluation(context.selectedText) else {
+                    return text
+                }
             }
 
             if let caretLocation = context.caretLocation, caretLocation == 0 {
@@ -75,5 +77,11 @@ final class PasteSpacingCoordinator: PasteSpacingCoordinating {
             to: text,
             previousCharacter: previous
         )
+    }
+
+    private func selectionNeedsBoundaryReevaluation(_ selectedText: String?) -> Bool {
+        guard let firstSelectedCharacter = selectedText?.first else { return false }
+        return firstSelectedCharacter.isLetter == false
+            && firstSelectedCharacter.isNumber == false
     }
 }

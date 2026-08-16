@@ -91,6 +91,13 @@ final class PasteAXInspector: PasteAXInspecting {
 
         let caretLocation = selectedRange.map { max(0, $0.location) }
         let selectionLength = selectedRange.map { max(0, $0.length) }
+        let focusedSelectedText: String? = if let selectedRange,
+                                              selectedRange.length > 0 {
+            selectedText(for: focusedElement)
+                ?? stringForRange(selectedRange, element: focusedElement)
+        } else {
+            nil
+        }
 
         var previousCharacter: Character?
         var characterBeforePreviousCharacter: Character?
@@ -127,6 +134,7 @@ final class PasteAXInspector: PasteAXInspecting {
 
         let context = PasteInsertionContext(
             selectionLength: selectionLength,
+            selectedText: focusedSelectedText,
             caretLocation: caretLocation,
             previousCharacter: previousCharacter,
             characterBeforePreviousCharacter: characterBeforePreviousCharacter,
@@ -140,6 +148,8 @@ final class PasteAXInspector: PasteAXInspecting {
             print(
                 "[PasteAXInspector] insertionContext "
                     + "caret=\(caretDescription) "
+                    + "selectionLength=\(selectionLength.map(String.init) ?? "-") "
+                    + "selectedText=\(String(reflecting: focusedSelectedText)) "
                     + "previous=\(String(reflecting: previousCharacter)) "
                     + "beforePrevious=\(String(reflecting: characterBeforePreviousCharacter)) "
                     + "previousNonWhitespace=\(String(reflecting: previousNonWhitespaceCharacter)) "

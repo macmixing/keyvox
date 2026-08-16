@@ -8,7 +8,12 @@ final class PasteSpacingCoordinatorTests: XCTestCase {
 
     func testDoesNotInsertLeadingSpaceWhenReplacingSelection() {
         let inspector = MockPasteAXInspector(
-            focusedContext: PasteInsertionContext(selectionLength: 2, caretLocation: 4, previousCharacter: "x")
+            focusedContext: PasteInsertionContext(
+                selectionLength: 2,
+                selectedText: "hi",
+                caretLocation: 4,
+                previousCharacter: "x"
+            )
         )
         let heuristics = makeRetainedHeuristics(axInspector: inspector, heuristicTTL: 10)
 
@@ -22,6 +27,75 @@ final class PasteSpacingCoordinatorTests: XCTestCase {
         )
 
         XCTAssertEqual(output, "hello")
+    }
+
+    func testInsertsLeadingSpaceWhenReplacingSelectionThatIncludesLeadingWhitespace() {
+        let inspector = MockPasteAXInspector(
+            focusedContext: PasteInsertionContext(
+                selectionLength: 6,
+                selectedText: " hello",
+                caretLocation: 4,
+                previousCharacter: "x"
+            )
+        )
+        let heuristics = makeRetainedHeuristics(axInspector: inspector, heuristicTTL: 10)
+
+        let output = heuristics.applySmartLeadingSeparatorIfNeeded(
+            to: "hello",
+            currentIdentity: identity("com.example.app", 1),
+            lastInsertionAppIdentity: identity("com.example.app", 1),
+            lastInsertionAt: Date(),
+            lastInsertedTrailingCharacter: "x",
+            identityMatcher: identityMatcher
+        )
+
+        XCTAssertEqual(output, " hello")
+    }
+
+    func testInsertsLeadingSpaceWhenSelectionBoundaryContainsPunctuationBeforeWhitespace() {
+        let inspector = MockPasteAXInspector(
+            focusedContext: PasteInsertionContext(
+                selectionLength: 7,
+                selectedText: ". hello",
+                caretLocation: 4,
+                previousCharacter: "x"
+            )
+        )
+        let heuristics = makeRetainedHeuristics(axInspector: inspector, heuristicTTL: 10)
+
+        let output = heuristics.applySmartLeadingSeparatorIfNeeded(
+            to: "hello",
+            currentIdentity: identity("com.example.app", 1),
+            lastInsertionAppIdentity: identity("com.example.app", 1),
+            lastInsertionAt: Date(),
+            lastInsertedTrailingCharacter: "x",
+            identityMatcher: identityMatcher
+        )
+
+        XCTAssertEqual(output, " hello")
+    }
+
+    func testInsertsLeadingSpaceWhenReplacingPunctuationOnlySelection() {
+        let inspector = MockPasteAXInspector(
+            focusedContext: PasteInsertionContext(
+                selectionLength: 1,
+                selectedText: ".",
+                caretLocation: 4,
+                previousCharacter: "x"
+            )
+        )
+        let heuristics = makeRetainedHeuristics(axInspector: inspector, heuristicTTL: 10)
+
+        let output = heuristics.applySmartLeadingSeparatorIfNeeded(
+            to: "hello",
+            currentIdentity: identity("com.example.app", 1),
+            lastInsertionAppIdentity: identity("com.example.app", 1),
+            lastInsertionAt: Date(),
+            lastInsertedTrailingCharacter: "x",
+            identityMatcher: identityMatcher
+        )
+
+        XCTAssertEqual(output, " hello")
     }
 
     func testDoesNotInsertLeadingSpaceWhenCaretAtStart() {
