@@ -50,6 +50,17 @@ final class PasteDecisionMatrixTests: XCTestCase {
                 attempt: .actionSucceeded,
                 didMenuFallbackInsert: true,
                 trustMenuSuccessWithoutAXVerification: false,
+                verificationOutcome: .expectedPayloadObserved,
+                didObservePostMenuLiveValueChange: true
+            ),
+            .confirmedMenuPasteObserved
+        )
+
+        XCTAssertEqual(
+            PasteMenuFallbackCoordinator.completionEvidenceForMenuAttempt(
+                attempt: .actionSucceeded,
+                didMenuFallbackInsert: true,
+                trustMenuSuccessWithoutAXVerification: false,
                 verificationOutcome: .expectedPayloadObserved
             ),
             .expectedPayloadObserved

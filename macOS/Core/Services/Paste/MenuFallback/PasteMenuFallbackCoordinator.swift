@@ -178,6 +178,9 @@ final class PasteMenuFallbackCoordinator {
                 }
             }
 
+            let didObservePostMenuLiveValueChange = usedMenuBarAttempt
+                && menuFallbackExecutor.hasLiveValueChangeSignal(liveValueChangeSessions)
+
             didMenuFallbackInsert = Self.didMenuFallbackInsertForMenuAttempt(
                 attempt: menuAttemptResult,
                 trustMenuSuccessWithoutAXVerification: trustWithoutAXVerification,
@@ -187,7 +190,8 @@ final class PasteMenuFallbackCoordinator {
                 attempt: menuAttemptResult,
                 didMenuFallbackInsert: didMenuFallbackInsert,
                 trustMenuSuccessWithoutAXVerification: trustWithoutAXVerification,
-                verificationOutcome: verificationOutcome
+                verificationOutcome: verificationOutcome,
+                didObservePostMenuLiveValueChange: didObservePostMenuLiveValueChange
             )
         }
 
@@ -231,9 +235,14 @@ final class PasteMenuFallbackCoordinator {
         attempt: PasteMenuFallbackAttemptResult,
         didMenuFallbackInsert: Bool,
         trustMenuSuccessWithoutAXVerification: Bool,
-        verificationOutcome: PasteMenuFallbackVerificationOutcome
+        verificationOutcome: PasteMenuFallbackVerificationOutcome,
+        didObservePostMenuLiveValueChange: Bool = false
     ) -> PasteMenuFallbackCompletionEvidence {
         guard didMenuFallbackInsert else { return .none }
+        if verificationOutcome == .expectedPayloadObserved,
+           didObservePostMenuLiveValueChange {
+            return .confirmedMenuPasteObserved
+        }
         switch attempt {
         case .unavailable:
             return .none

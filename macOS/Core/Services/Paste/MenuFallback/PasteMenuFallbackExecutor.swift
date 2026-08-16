@@ -17,12 +17,19 @@ protocol PasteMenuFallbackExecuting {
     func startLiveValueChangeVerificationSessions(
         processIDs: [pid_t]
     ) -> [PasteAXLiveSessioning]
+    func hasLiveValueChangeSignal(_ sessions: [PasteAXLiveSessioning]) -> Bool
     func verifyInsertionUsingLiveValueChangeSession(
         _ sessions: [PasteAXLiveSessioning]
     ) -> Bool
     func finishLiveValueChangeVerificationSession(
         _ sessions: [PasteAXLiveSessioning]
     )
+}
+
+extension PasteMenuFallbackExecuting {
+    func hasLiveValueChangeSignal(_ sessions: [PasteAXLiveSessioning]) -> Bool {
+        sessions.contains(where: { $0.hasSignal() })
+    }
 }
 
 final class PasteMenuFallbackExecutor: PasteMenuFallbackExecuting {

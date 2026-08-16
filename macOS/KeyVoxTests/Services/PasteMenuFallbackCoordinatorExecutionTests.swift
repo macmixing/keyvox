@@ -67,6 +67,7 @@ final class PasteMenuFallbackCoordinatorExecutionTests: XCTestCase {
         )
 
         XCTAssertTrue(result.didMenuFallbackInsert)
+        XCTAssertEqual(result.completionEvidence, .expectedPayloadObserved)
         XCTAssertEqual(operations, ["clipboard:hello", "keyboard:1"])
         XCTAssertEqual(executor.pasteViaMenuBarCalls, 0)
         XCTAssertEqual(executor.verifyInsertionCalls, 1)
@@ -134,6 +135,30 @@ final class PasteMenuFallbackCoordinatorExecutionTests: XCTestCase {
         XCTAssertTrue(result.didMenuFallbackInsert)
         XCTAssertEqual(executor.verifyInsertionCalls, 1)
         XCTAssertEqual(executor.verifyInsertionWithoutAXCalls, 0)
+    }
+
+    func testActionSucceededConfirmsMenuPasteWhenExactPayloadAndLiveChangeAreObserved() {
+        let coordinator = PasteMenuFallbackCoordinator()
+        let executor = MockPasteMenuFallbackExecutor()
+        executor.pasteResult = .actionSucceeded
+        executor.verificationContext = sampleVerificationContext()
+        executor.verifyInsertionOutcomeResult = .expectedPayloadObserved
+        executor.liveSessions = [MockLiveSession()]
+
+        let result = coordinator.executeMenuFallback(
+            insertionText: "hello",
+            didAccessibilityInsertText: false,
+            targetAppIdentity: identity("com.example.app", 1),
+            menuFallbackExecutor: executor,
+            shouldTrustMenuSuccessWithoutAXVerification: { false },
+            setClipboardStringOnMainThread: { _ in },
+            executeLeadingSpacePasteOnMainThread: { _ in true }
+        )
+
+        XCTAssertTrue(result.didMenuFallbackInsert)
+        XCTAssertEqual(result.completionEvidence, .confirmedMenuPasteObserved)
+        XCTAssertEqual(executor.verifyInsertionCalls, 1)
+        XCTAssertEqual(executor.verifyLiveSessionCalls, 0)
     }
 
     func testActionSucceededFallsBackToLiveSessionVerification() {

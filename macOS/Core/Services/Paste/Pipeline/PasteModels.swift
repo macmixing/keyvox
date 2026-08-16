@@ -57,6 +57,7 @@ enum PasteMenuFallbackAttemptResult {
 enum PasteMenuFallbackCompletionEvidence: Equatable {
     case none
     case noClipboardPayload
+    case confirmedMenuPasteObserved
     case expectedPayloadObserved
     case structuralInsertionObserved
     case trustedWithoutVerification
