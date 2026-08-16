@@ -39,6 +39,46 @@ private enum StandardEvaluationConstants {
 }
 
 extension DictionaryMatcher {
+    private func candidateRelativeTrailingForm(
+        observedNormalized: String,
+        candidate: CompiledEntry
+    ) -> (normalized: String, phonetic: String, replacementSuffix: String, numericSourceTokens: [String?])? {
+        guard candidate.tokens.count == 1,
+              isStylizedSingleTokenEntry(candidate),
+              let candidateToken = candidate.tokens.first,
+              observedNormalized.hasPrefix(candidateToken),
+              observedNormalized != candidateToken else {
+            return nil
+        }
+
+        let trailingExtension = String(observedNormalized.dropFirst(candidateToken.count))
+        guard !trailingExtension.isEmpty,
+              trailingExtension.count < StandardEvaluationConstants.minimumSingleTokenLength,
+              candidateToken.count > trailingExtension.count,
+              !lexicon.isCommonWord(observedNormalized) else {
+            return nil
+        }
+
+        let observedPhonetic = encoder.scoringSignature(for: observedNormalized, lexicon: lexicon)
+        let candidatePhonetic = encoder.scoringSignature(for: candidateToken, lexicon: lexicon)
+        let observedFallback = encoder.fallbackSignature(for: observedNormalized)
+        let candidateFallback = encoder.fallbackSignature(for: candidateToken)
+        let phoneticSimilarity = max(
+            scorer.similarity(lhs: observedPhonetic, rhs: candidatePhonetic),
+            scorer.similarity(lhs: observedFallback, rhs: candidateFallback)
+        )
+        guard phoneticSimilarity >= StandardEvaluationConstants.properNounSimilarityMinimum else {
+            return nil
+        }
+
+        return (
+            normalized: candidateToken,
+            phonetic: candidatePhonetic,
+            replacementSuffix: trailingExtension,
+            numericSourceTokens: [nil]
+        )
+    }
+
     private func hasPluralHomophonePronunciationEvidence(observed: String, candidate: String) -> Bool {
         guard let observedPronunciation = lexicon.pronunciation(for: observed),
               let candidatePronunciation = lexicon.pronunciation(for: candidate) else {
@@ -116,16 +156,44 @@ extension DictionaryMatcher {
             observedNormalized: observedNormalized,
             observedPhonetic: observedPhonetic
         )
+        let hasDirectExactCandidate = candidates.contains { candidate in
+            candidate.matchingNormalizedPhrases.contains(observedNormalized)
+        }
 
         var best: Candidate?
         var bestObservedNormalized: String?
+        var bestUsesCandidateRelativeTrailingForm = false
         var secondBestScore = 0.0
 
         for candidate in candidates {
             var bestForCandidate: Candidate?
             var bestObservedNormalizedForCandidate: String?
+            var bestForCandidateUsesCandidateRelativeTrailingForm = false
+            var candidateObservedForms = observedForms.map { form in
+                (
+                    normalized: form.normalized,
+                    phonetic: form.phonetic,
+                    replacementSuffix: form.replacementSuffix,
+                    numericSourceTokens: form.numericSourceTokens,
+                    isCandidateRelativeTrailingForm: false
+                )
+            }
+            if tokenCount == 1,
+               !hasDirectExactCandidate,
+               let trailingForm = candidateRelativeTrailingForm(
+                   observedNormalized: observedNormalized,
+                   candidate: candidate
+               ) {
+                candidateObservedForms.append((
+                    normalized: trailingForm.normalized,
+                    phonetic: trailingForm.phonetic,
+                    replacementSuffix: trailingForm.replacementSuffix,
+                    numericSourceTokens: trailingForm.numericSourceTokens,
+                    isCandidateRelativeTrailingForm: true
+                ))
+            }
             for candidateText in candidate.matchingNormalizedPhrases {
-                for form in observedForms {
+                for form in candidateObservedForms {
                     guard hasSufficientNumericAlignment(
                         observedNormalized: form.normalized,
                         observedNumericSourceTokens: form.numericSourceTokens,
@@ -203,10 +271,12 @@ extension DictionaryMatcher {
                         if candidateScore.score.final > currentBestForCandidate.score.final {
                             bestForCandidate = candidateScore
                             bestObservedNormalizedForCandidate = form.normalized
+                            bestForCandidateUsesCandidateRelativeTrailingForm = form.isCandidateRelativeTrailingForm
                         }
                     } else {
                         bestForCandidate = candidateScore
                         bestObservedNormalizedForCandidate = form.normalized
+                        bestForCandidateUsesCandidateRelativeTrailingForm = form.isCandidateRelativeTrailingForm
                     }
                 }
             }
@@ -217,12 +287,14 @@ extension DictionaryMatcher {
                     secondBestScore = currentBest.score.final
                     best = bestForCandidate
                     bestObservedNormalized = bestObservedNormalizedForCandidate
+                    bestUsesCandidateRelativeTrailingForm = bestForCandidateUsesCandidateRelativeTrailingForm
                 } else if bestForCandidate.score.final > secondBestScore {
                     secondBestScore = bestForCandidate.score.final
                 }
             } else {
                 best = bestForCandidate
                 bestObservedNormalized = bestObservedNormalizedForCandidate
+                bestUsesCandidateRelativeTrailingForm = bestForCandidateUsesCandidateRelativeTrailingForm
             }
         }
 
@@ -272,7 +344,10 @@ extension DictionaryMatcher {
             let candidateToken = best.entry.tokens[0]
             let candidatePhonetic = encoder.scoringSignature(for: candidateToken, lexicon: lexicon)
             singleTokenCandidatePhonetic = candidatePhonetic
-            let textSimilarity = scorer.similarity(lhs: observedToken.normalized, rhs: candidateToken)
+            let surfaceObservedNormalized = bestUsesCandidateRelativeTrailingForm
+                ? bestObservedNormalized
+                : observedToken.normalized
+            let textSimilarity = scorer.similarity(lhs: surfaceObservedNormalized, rhs: candidateToken)
             let phoneticSimilarity = scorer.similarity(lhs: observedToken.phonetic, rhs: candidatePhonetic)
             let isCommonWord = lexicon.isCommonWord(baseTokenForCommonWordGuard(observedToken.normalized))
             let stylizedSingleTokenEntry = isStylizedSingleTokenEntry(best.entry)
@@ -527,7 +602,19 @@ extension DictionaryMatcher {
         }
 
         var replacementSuffix = best.replacementSuffix
-        if replacementSuffix.isEmpty,
+        if bestUsesCandidateRelativeTrailingForm,
+           let candidateToken = best.entry.tokens.first {
+            let nextToken = end < tokens.count ? tokens[end] : nil
+            if shouldInferPossessiveSuffix(
+                observed: window[0].normalized,
+                observedPhonetic: window[0].phonetic,
+                candidate: candidateToken,
+                nextToken: nextToken,
+                hasCandidateRelativeTrailingEvidence: true
+            ) {
+                replacementSuffix = "'s"
+            }
+        } else if replacementSuffix.isEmpty,
            tokenCount == 1,
            isStylizedSingleTokenEntry(best.entry),
            let candidateToken = best.entry.tokens.first {

@@ -160,9 +160,17 @@ extension DictionaryMatcher {
         observed: String,
         observedPhonetic: String,
         candidate: String,
-        nextToken: Token?
+        nextToken: Token?,
+        hasCandidateRelativeTrailingEvidence: Bool = false
     ) -> Bool {
-        guard nextToken != nil else { return false }
+        guard let nextToken,
+              nextToken.lexicalClass != .verb,
+              nextToken.lexicalClass != .conjunction else {
+            return false
+        }
+        if hasCandidateRelativeTrailingEvidence {
+            return true
+        }
         guard !candidate.hasSuffix("s") else { return false }
         guard observed.hasSuffix("s") || observed.hasSuffix("x") || observed.hasSuffix("z") else { return false }
 

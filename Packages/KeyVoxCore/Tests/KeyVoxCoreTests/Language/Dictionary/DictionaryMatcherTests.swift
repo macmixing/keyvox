@@ -381,6 +381,57 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "AirRack's YouTube channel is big.")
     }
 
+    func testCorrectsCandidateRelativeTrailingPossessiveForm() {
+        let matcher = DictionaryMatcher(
+            lexicon: PronunciationLexicon.shared,
+            encoder: PhoneticEncoder(),
+            scorer: .balanced
+        )
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "KeyVox")])
+
+        let result = matcher.apply(to: "keyvoxes lemonade")
+        XCTAssertEqual(result.text, "KeyVox's lemonade")
+    }
+
+    func testPreservesCandidateRelativeTrailingPluralBeforeVerb() {
+        let matcher = DictionaryMatcher(
+            lexicon: PronunciationLexicon.shared,
+            encoder: PhoneticEncoder(),
+            scorer: .balanced
+        )
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "KeyVox")])
+
+        let result = matcher.apply(to: "keyvoxes are useful")
+        XCTAssertEqual(result.text, "KeyVoxes are useful")
+    }
+
+    func testPreservesCandidateRelativeTrailingPluralBeforeConjunction() {
+        let matcher = DictionaryMatcher(
+            lexicon: PronunciationLexicon.shared,
+            encoder: PhoneticEncoder(),
+            scorer: .balanced
+        )
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "KeyVox")])
+
+        let result = matcher.apply(to: "keyvoxes and similar tools")
+        XCTAssertEqual(result.text, "KeyVoxes and similar tools")
+    }
+
+    func testPrefersDirectExactEntryOverCandidateRelativeTrailingAlternative() {
+        let matcher = DictionaryMatcher(
+            lexicon: PronunciationLexicon.shared,
+            encoder: PhoneticEncoder(),
+            scorer: .balanced
+        )
+        matcher.rebuildIndex(entries: [
+            DictionaryEntry(phrase: "KeyVox"),
+            DictionaryEntry(phrase: "KeyVoxes"),
+        ])
+
+        let result = matcher.apply(to: "keyvoxes lemonade")
+        XCTAssertEqual(result.text, "KeyVoxes lemonade")
+    }
+
     func testCorrectsStylizedSplitJoinPossessiveNearMiss() {
         let matcher = DictionaryMatcher(
             lexicon: PronunciationLexicon.shared,

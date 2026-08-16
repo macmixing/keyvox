@@ -6,6 +6,23 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.2.5] - 2026-08-16
+
+More reliable dictionary matching for stylized entries with plural and possessive endings.
+
+### Includes
+
+- Recovered short trailing forms relative to stylized single-token dictionary entries without relying on entry-specific suffix rules.
+- Inferred possessive replacements only when the following context supports possession, preserving plural forms before verbs and conjunctions.
+- Preferred direct exact dictionary forms over candidate-relative alternatives so an exact entry cannot become ambiguous with its shorter base entry.
+- Added regression coverage for possessive recovery, plural preservation, and exact-entry precedence.
+
+### Notes
+
+- `1.2.5` tracks candidate-relative trailing-form matching refinements in the shared Core engine.
+
+---
+
 ## [1.2.4] - 2026-08-14
 
 Spoken question and exclamation commands now convert reliably after natural clauses while punctuation noun phrases stay intact.
