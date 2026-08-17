@@ -635,8 +635,15 @@ KeyVox/
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/DictionaryMatcher+Tokenizer.swift`
   - Token extraction and range construction helpers used by matcher runtime.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/Evaluation/DictionaryMatcher+StandardEvaluation.swift`
-  - Standard 1-4 token candidate scoring with thresholds, ambiguity, common-word, and short-token guards.
-  - Applies contextual gating for common-word-like replacements to avoid unsupported prose substitutions.
+  - Orchestrates standard 1-4 token evaluation, final ambiguity checks, suffix resolution, and replacement construction.
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/Evaluation/DictionaryMatcher+StandardCandidateScoring.swift`
+  - Selects and scores standard dictionary candidates, including candidate-relative trailing forms and direct-exact preference.
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/Evaluation/DictionaryMatcher+StandardSingleTokenEvaluation.swift`
+  - Applies single-token contextual safety gates and common-word peer-support decisions.
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/Evaluation/DictionaryMatcher+StandardThresholdEvaluation.swift`
+  - Calculates baseline and evidence-adjusted thresholds for standard single- and two-token candidates.
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/Evaluation/StandardEvaluationPolicy.swift`
+  - Owns the shared constants used across standard candidate scoring and safety evaluation.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/Evaluation/DictionaryMatcher+MergedTokenEvaluation.swift`
   - Merged-token recovery path for compact spoken forms that collapse multi-token dictionary entries.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/Evaluation/DictionaryMatcher+ThreeTokenEvaluation.swift`

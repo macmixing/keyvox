@@ -16,6 +16,7 @@ More reliable dictionary matching for stylized entries with plural and possessiv
 - Inferred possessive replacements only when the following context supports possession, preserving plural forms before verbs and conjunctions.
 - Preferred direct exact dictionary forms over candidate-relative alternatives so an exact entry cannot become ambiguous with its shorter base entry.
 - Added regression coverage for possessive recovery, plural preservation, and exact-entry precedence.
+- Separated standard candidate scoring, threshold calculation, single-token safety evaluation, and shared policy from replacement orchestration without changing matcher behavior.
 
 ### Notes
 
