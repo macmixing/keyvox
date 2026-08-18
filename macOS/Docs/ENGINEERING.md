@@ -125,7 +125,8 @@ For the full file-level map, see [`CODEMAP.md`](CODEMAP.md).
   - `MacVibesIntroWindowView` owns shared intro chrome: top close control, centered footer action, scene switching, dynamic size measurement, and the disabled `Try it` state while Vibes AI is not ready.
   - Intro scenes own only scene content; they should not reserve header/footer space or resize the NSWindow directly.
 - The Mac first-dictation practice flow is separate from setup onboarding:
-  - `OnboardingView` remains setup-only for model, microphone, and Accessibility requirements.
+  - `OnboardingView` owns the welcome, language selection, and setup routes in the main onboarding window; `OnboardingSetupScreen` owns model, microphone, and Accessibility requirements.
+  - The selected onboarding language is persisted to `AppSettingsStore.whisperDictationLanguage` before setup begins, and returning from setup preserves the in-progress selection.
   - `WindowManager+FirstDictationOnboarding` owns the optional post-setup first-dictation window and opens Settings after either completion or skip.
   - `AppSettingsStore.hasCompletedFirstDictation` means a real successful dictation happened; `hasSkippedFirstDictation` means the user intentionally skipped the first-dictation step.
   - `FirstDictationOnboardingFlowView` observes `TranscriptionManager.successfulDictationRevision` so repeated identical dictations still count as new events, then verifies the focused practice field contains the latest transcription.

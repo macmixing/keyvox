@@ -128,6 +128,9 @@
 		C11000172FD5000100AA0001 /* DictationModelInstallManifest.swift in Sources */ = {isa = PBXBuildFile; fileRef = C11000072FD5000100AA0001 /* DictationModelInstallManifest.swift */; };
 		C20002012FF2000100AA0001 /* OverlayPresentationMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20001012FF2000100AA0001 /* OverlayPresentationMetrics.swift */; };
 		C20002022FF2000100AA0001 /* OverlayPillState.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20001022FF2000100AA0001 /* OverlayPillState.swift */; };
+		D50000112FF5000100AA0001 /* OnboardingWelcomeScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = D50000012FF5000100AA0001 /* OnboardingWelcomeScreen.swift */; };
+		D50000122FF5000100AA0001 /* OnboardingLanguageScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = D50000022FF5000100AA0001 /* OnboardingLanguageScreen.swift */; };
+		D50000132FF5000100AA0001 /* OnboardingSetupScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = D50000032FF5000100AA0001 /* OnboardingSetupScreen.swift */; };
 		C20002032FF2000100AA0001 /* OverlayPillMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20001032FF2000100AA0001 /* OverlayPillMetrics.swift */; };
 		C20002042FF2000100AA0001 /* OverlayPillCompletionStroke.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20001042FF2000100AA0001 /* OverlayPillCompletionStroke.swift */; };
 		C20002052FF2000100AA0001 /* OverlayPillView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20001052FF2000100AA0001 /* OverlayPillView.swift */; };
@@ -275,6 +278,9 @@
 		8E6D05D12F3C51D6003BD458 /* Kanit-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Kanit-Medium.ttf"; sourceTree = "<group>"; };
 		8E6D05D52F3C51D6003BD458 /* UIComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIComponents.swift; sourceTree = "<group>"; };
 		8E6D05D72F3C51D6003BD458 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		D50000012FF5000100AA0001 /* OnboardingWelcomeScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingWelcomeScreen.swift; sourceTree = "<group>"; };
+		D50000022FF5000100AA0001 /* OnboardingLanguageScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingLanguageScreen.swift; sourceTree = "<group>"; };
+		D50000032FF5000100AA0001 /* OnboardingSetupScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingSetupScreen.swift; sourceTree = "<group>"; };
 		8E6D05D82F3C51D6003BD458 /* RecordingOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingOverlay.swift; sourceTree = "<group>"; };
 		8E6D05DA2F3C51D6003BD458 /* StatusMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusMenuView.swift; sourceTree = "<group>"; };
 		8E70C6EC2F623AFA00E9E555 /* updater.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = updater.sh; sourceTree = "<group>"; };
@@ -608,7 +614,6 @@
 				8F2201072F44010000BB2201 /* ConfirmDeletePromptView.swift */,
 				F20000032FB0000100AA0001 /* LogoBarView.swift */,
 				8E4B08602FD0000100C5DB85 /* MacAppTheme.swift */,
-				BF2000022F70000100AA0001 /* OnboardingMicrophonePickerView.swift */,
 				E90000162FE1000100AA0001 /* SelectedVibeLabel.swift */,
 				8E6D05D52F3C51D6003BD458 /* UIComponents.swift */,
 			);
@@ -624,14 +629,26 @@
 				8E6D05D62F3C51D6003BD458 /* Components */,
 				F30000222FC2000100AA0001 /* Updates */,
 				8EC700212F42000100C70001 /* Warnings */,
-				8E6D05D72F3C51D6003BD458 /* OnboardingView.swift */,
-				BF2000012F70000100AA0001 /* OnboardingMicrophoneStepController.swift */,
+				D50001002FF5000100AA0001 /* Onboarding */,
 				8E6D05D82F3C51D6003BD458 /* RecordingOverlay.swift */,
 				E90000142FE1000100AA0001 /* VibePillOverlay.swift */,
 				8E6D05DA2F3C51D6003BD458 /* StatusMenuView.swift */,
 				8EBB01022F41000200BB1101 /* UpdatePromptOverlay.swift */,
 			);
 			path = Views;
+			sourceTree = "<group>";
+		};
+		D50001002FF5000100AA0001 /* Onboarding */ = {
+			isa = PBXGroup;
+			children = (
+				8E6D05D72F3C51D6003BD458 /* OnboardingView.swift */,
+				D50000012FF5000100AA0001 /* OnboardingWelcomeScreen.swift */,
+				D50000022FF5000100AA0001 /* OnboardingLanguageScreen.swift */,
+				D50000032FF5000100AA0001 /* OnboardingSetupScreen.swift */,
+				BF2000012F70000100AA0001 /* OnboardingMicrophoneStepController.swift */,
+				BF2000022F70000100AA0001 /* OnboardingMicrophonePickerView.swift */,
+			);
+			path = Onboarding;
 			sourceTree = "<group>";
 		};
 		8EC700212F42000100C70001 /* Warnings */ = {
@@ -1260,6 +1277,9 @@
 				9D4000172F4E000100AA0001 /* AudioRecorder+Thresholds.swift in Sources */,
 				8EA1C1022F3D111100A1B2C3 /* AudioDeviceManager.swift in Sources */,
 				8E6D05DE2F3C523D003BD458 /* OnboardingView.swift in Sources */,
+				D50000112FF5000100AA0001 /* OnboardingWelcomeScreen.swift in Sources */,
+				D50000122FF5000100AA0001 /* OnboardingLanguageScreen.swift in Sources */,
+				D50000132FF5000100AA0001 /* OnboardingSetupScreen.swift in Sources */,
 				BF1000012F70000100AA0001 /* OnboardingMicrophoneStepController.swift in Sources */,
 				BF1000022F70000100AA0001 /* OnboardingMicrophonePickerView.swift in Sources */,
 				F20000042FB0000100AA0001 /* LogoBarView.swift in Sources */,

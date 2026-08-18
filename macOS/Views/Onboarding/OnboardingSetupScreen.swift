@@ -1,10 +1,8 @@
-import SwiftUI
 import AppKit
 import AVFoundation
+import SwiftUI
 
-struct OnboardingView: View {
-    static let preferredWindowSize = CGSize(width: 560, height: 560)
-
+struct OnboardingSetupScreen: View {
     private struct HeightPreferenceKey: PreferenceKey {
         static var defaultValue: CGFloat = OnboardingView.preferredWindowSize.height
 
@@ -13,41 +11,40 @@ struct OnboardingView: View {
         }
     }
 
-    @ObservedObject var downloader = ModelDownloader.shared
+    @ObservedObject private var downloader = ModelDownloader.shared
     @ObservedObject private var audioDeviceManager = AudioDeviceManager.shared
     @StateObject private var microphoneStepController = OnboardingMicrophoneStepController()
-    @State private var accessibilityAuthorized: Bool = false
+    @State private var accessibilityAuthorized = false
     @State private var accessibilityPollTimer: Timer?
-    
+
     private let accessibilityPollInterval: TimeInterval = 0.3
-    
-    var onComplete: () -> Void
-    var openSettings: () -> Void
-    var beginMicrophoneAuthorization: () -> Void = {}
-    var beginAccessibilityAuthorization: () -> Void = {}
-    var endAccessibilityAuthorization: () -> Void = {}
-    var onPreferredHeightChange: (CGFloat) -> Void = { _ in }
-    
+
+    let onBack: () -> Void
+    let onComplete: () -> Void
+    let openSettings: () -> Void
+    let beginMicrophoneAuthorization: () -> Void
+    let beginAccessibilityAuthorization: () -> Void
+    let endAccessibilityAuthorization: () -> Void
+    let onPreferredHeightChange: (CGFloat) -> Void
+
     var body: some View {
         ZStack {
             VStack(spacing: 20) {
-                // Header
                 VStack(spacing: 8) {
-                    LogoBarView(size: 80)
+                    LogoBarView(size: 75)
 
                     VStack(spacing: 4) {
-                        Text("Welcome to KeyVox")
+                        Text("Just a few steps...")
                             .font(.appFont(32))
                             .foregroundColor(.white)
 
-                        Text("Let's get you set up in three quick steps.")
+                        Text("After this, you may never type again.")
                             .font(.appFont(14, variant: .light))
                             .foregroundColor(.secondary)
                     }
                 }
                 .padding(.top, 50)
 
-                // Steps
                 VStack(spacing: 12) {
                     OnboardingStepRow(
                         isCompleted: downloader.isModelDownloaded,
@@ -90,7 +87,6 @@ struct OnboardingView: View {
                 }
                 .padding(.horizontal, 30)
 
-                // Footer - Persistent Button
                 VStack(spacing: 12) {
                     Button(action: onComplete) {
                         Text("Start Using KeyVox")
@@ -127,6 +123,29 @@ struct OnboardingView: View {
                 .frame(width: 310)
                 .padding(.horizontal, 20)
             }
+
+            VStack {
+                HStack {
+                    Button(action: onBack) {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundStyle(.white.opacity(0.8))
+                            .frame(width: 30, height: 30)
+                            .background(Circle().fill(MacAppTheme.cardFill))
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Back")
+                    .disabled(microphoneStepController.showMicSelectionPrompt)
+
+                    Spacer()
+                }
+
+                Spacer()
+            }
+            .padding(.leading, 25)
+            .padding(.trailing, 30)
+            .padding(.top, 36)
+            .padding(.bottom, 20)
         }
         .fixedSize(horizontal: false, vertical: true)
         .background(
@@ -137,20 +156,16 @@ struct OnboardingView: View {
                 )
             }
         )
-        .frame(width: Self.preferredWindowSize.width)
-        .frame(minHeight: Self.preferredWindowSize.height)
-        .background(
-            MacAppTheme.screenBackground
-        )
-        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+        .frame(width: OnboardingView.preferredWindowSize.width)
+        .frame(minHeight: OnboardingView.preferredWindowSize.height)
+        .background(MacAppTheme.screenBackground)
         .onPreferenceChange(HeightPreferenceKey.self) { height in
-            onPreferredHeightChange(max(Self.preferredWindowSize.height, height))
+            onPreferredHeightChange(max(OnboardingView.preferredWindowSize.height, height))
         }
         .onAppear {
             checkCurrentStatus()
             microphoneStepController.handleOnboardingAppear()
         }
-
         .onDisappear {
             accessibilityPollTimer?.invalidate()
             accessibilityPollTimer = nil
@@ -167,7 +182,7 @@ struct OnboardingView: View {
     private var allStepsCompleted: Bool {
         microphoneStepController.isMicStepCompleted && accessibilityAuthorized && downloader.isModelDownloaded
     }
-    
+
     private func checkCurrentStatus() {
         accessibilityAuthorized = AXIsProcessTrusted()
     }
@@ -180,7 +195,7 @@ struct OnboardingView: View {
         }
         microphoneStepController.requestMicAccess()
     }
-    
+
     private func requestAccessibilityAccess() {
         beginAccessibilityAuthorization()
 
@@ -195,7 +210,6 @@ struct OnboardingView: View {
             return
         }
 
-        // Prevent stacking multiple timers
         accessibilityPollTimer?.invalidate()
 
         accessibilityPollTimer = Timer.scheduledTimer(withTimeInterval: accessibilityPollInterval, repeats: true) { timer in
@@ -209,13 +223,13 @@ struct OnboardingView: View {
             }
         }
     }
-    
+
     private func setupModel() {
         downloader.downloadBaseModel()
     }
 }
 
-struct OnboardingStepRow<Content: View>: View {
+private struct OnboardingStepRow<Content: View>: View {
     let isCompleted: Bool
     let stepNumber: Int
     let title: String
@@ -223,7 +237,7 @@ struct OnboardingStepRow<Content: View>: View {
     let buttonTitle: String
     let action: @MainActor () -> Void
     let extraContent: Content
-    
+
     init(
         isCompleted: Bool,
         stepNumber: Int,
@@ -241,16 +255,15 @@ struct OnboardingStepRow<Content: View>: View {
         self.action = action
         self.extraContent = extraContent()
     }
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: 20) {
-                // Step Number Circle
                 ZStack {
                     Circle()
                         .fill(isCompleted ? Color.green : MacAppTheme.accent.opacity(0.2))
                         .frame(width: 32, height: 32)
-                    
+
                     if isCompleted {
                         Image(systemName: "checkmark")
                             .font(.system(size: 14, weight: .bold))
@@ -261,19 +274,19 @@ struct OnboardingStepRow<Content: View>: View {
                             .foregroundColor(.white)
                     }
                 }
-                
+
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title)
                         .font(.appFont(16))
                         .foregroundColor(.white)
-                    
+
                     Text(description)
                         .font(.appFont(12, variant: .light))
                         .foregroundColor(.secondary)
                 }
-                
+
                 Spacer()
-                
+
                 AppActionButton(
                     title: buttonTitle,
                     style: isCompleted ? .secondary : .primary,
@@ -282,7 +295,7 @@ struct OnboardingStepRow<Content: View>: View {
                     action: action
                 )
             }
-            
+
             extraContent
         }
         .padding(16)

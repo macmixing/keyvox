@@ -110,7 +110,6 @@ KeyVox/
 │   │   │   ├── LogoBarView.swift
 │   │   │   ├── MacAppTheme.swift
 │   │   │   ├── MacFormattingPillView.swift
-│   │   │   ├── OnboardingMicrophonePickerView.swift
 │   │   │   ├── OverlayPillCompletionStroke.swift
 │   │   │   ├── OverlayPillMetrics.swift
 │   │   │   ├── OverlayPillOverlay.swift
@@ -123,7 +122,13 @@ KeyVox/
 │   │   │   ├── VibePillView.swift
 │   │   │   └── SettingsLastTranscriptionCard.swift
 │   │   ├── StatusMenuView.swift
-│   │   ├── OnboardingView.swift
+│   │   ├── Onboarding/
+│   │   │   ├── OnboardingView.swift
+│   │   │   ├── OnboardingWelcomeScreen.swift
+│   │   │   ├── OnboardingLanguageScreen.swift
+│   │   │   ├── OnboardingSetupScreen.swift
+│   │   │   ├── OnboardingMicrophoneStepController.swift
+│   │   │   └── OnboardingMicrophonePickerView.swift
 │   │   ├── FirstDictation/
 │   │   ├── RecordingOverlay.swift
 │   │   ├── VibePillOverlay.swift
@@ -267,18 +272,24 @@ KeyVox/
   - Codable payload ownership for dictionary snapshots and per-device weekly word totals exchanged through iCloud KVS.
 - `App/UserDefaultsKeys.swift`
   - Single source of truth for app preference keys.
-- `Views/OnboardingView.swift`
-  - Onboarding step orchestration UI.
-  - Delegates microphone Step 1 flow logic to `OnboardingMicrophoneStepController`.
-  - Uses `LogoBarView(size:)` for the standalone branded logo presentation.
+- `Views/Onboarding/OnboardingView.swift`
+  - Owns the first-run route from the animated welcome screen through language selection and setup.
+  - Persists the selected Whisper language before presenting model and permission setup.
+- `Views/Onboarding/OnboardingWelcomeScreen.swift`
+  - Owns the staged logo, title, subtitle, and primary-action reveal animation.
+- `Views/Onboarding/OnboardingLanguageScreen.swift`
+  - Presents searchable Whisper languages plus Auto Detect and returns the selected language to the flow owner.
+- `Views/Onboarding/OnboardingSetupScreen.swift`
+  - Owns model download, microphone, and Accessibility setup while preserving the route back to language selection.
+  - Delegates microphone authorization and selection state to `OnboardingMicrophoneStepController`.
 - `Views/FirstDictation/*`
   - Separate optional first-dictation flow shown after setup onboarding, not inside `OnboardingView`.
   - `FirstDictationIntroView` owns the try/skip choice, `FirstDictationPracticeView` owns the focused practice field and instruction copy, `FirstDictationOptionKeyPromptView` renders the configured trigger key, and `FirstDictationSuccessCelebrationView` owns the success animation.
   - `FirstDictationOnboardingFlowView` keys completion off successful dictation revisions and verifies the focused field contains the latest dictated text.
-- `Views/OnboardingMicrophoneStepController.swift`
+- `Views/Onboarding/OnboardingMicrophoneStepController.swift`
   - Owns onboarding microphone authorization and no-built-in gating behavior.
   - Drives microphone-step completion state and prompt visibility.
-- `Views/Components/OnboardingMicrophonePickerView.swift`
+- `Views/Onboarding/OnboardingMicrophonePickerView.swift`
   - Presentation-only onboarding modal for required microphone selection confirmation.
   - Uses the shared app action button treatment for the microphone confirmation action.
 - `Views/Components/MacAppTheme.swift`
@@ -843,9 +854,9 @@ KeyVox/
 - `Views/StatusMenuView.swift`
   - Menu bar UI, status rendering, warning actions.
   - Routes model-missing actions to the Settings tab and triggers model download.
-- `Views/OnboardingView.swift`
-  - First-run setup for permissions and model download.
-  - Accessibility and microphone authorization hooks are delegated to `WindowManager` callbacks.
+- `Views/Onboarding/*`
+  - First-run welcome, language selection, model download, and permission setup inside the shared onboarding window.
+  - `OnboardingView` owns routing, while each screen owns its presentation and `WindowManager` callbacks retain authorization-window behavior.
 - `Views/FirstDictation/*`
   - Optional first-dictation practice surfaces shown only after setup onboarding, with skip and completion reported back to `WindowManager+FirstDictationOnboarding`.
 - `Views/Settings/*`
