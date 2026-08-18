@@ -3,6 +3,7 @@ import SwiftUI
 struct OnboardingFlowView: View {
     private enum Route: Equatable {
         case welcome
+        case language
         case setup
         case keyboardTour
     }
@@ -13,6 +14,8 @@ struct OnboardingFlowView: View {
     private var resolvedRoute: Route {
         if onboardingStore.shouldShowWelcomeScreen {
             return .welcome
+        } else if onboardingStore.shouldShowLanguageSelectionScreen {
+            return .language
         } else if onboardingStore.shouldShowKeyboardTourScreen {
             return .keyboardTour
         } else {
@@ -33,19 +36,25 @@ struct OnboardingFlowView: View {
                 }
                 .transition(.asymmetric(
                     insertion: .opacity.combined(with: .scale(scale: 0.985)),
-                    removal: .opacity.combined(with: .offset(y: -24))
+                    removal: .scale(scale: 1.015)
                 ))
+            case .language:
+                OnboardingLanguageScreen()
+                    .transition(.asymmetric(
+                        insertion: .opacity,
+                        removal: .scale(scale: 1.015)
+                    ))
             case .setup:
                 OnboardingSetupScreen()
                     .transition(.asymmetric(
-                        insertion: .opacity.combined(with: .offset(y: 20)),
-                        removal: .opacity.combined(with: .scale(scale: 1.015))
+                        insertion: .opacity,
+                        removal: .scale(scale: 1.015)
                     ))
             case .keyboardTour:
                 OnboardingKeyboardTourScreen()
-                .transition(.asymmetric(
+                    .transition(.asymmetric(
                         insertion: .move(edge: .trailing).combined(with: .opacity),
-                        removal: .move(edge: .leading).combined(with: .opacity)
+                        removal: .scale(scale: 1.015)
                     ))
             }
         }

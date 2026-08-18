@@ -33,6 +33,8 @@ nonisolated enum UserDefaultsKeys {
         static let weeklyWordStatsInstallationID = "KeyVox.App.WeeklyWordStatsInstallationID"
         static let hasCompletedOnboarding = "KeyVox.App.HasCompletedOnboarding"
         static let hasCompletedOnboardingWelcome = "KeyVox.App.HasCompletedOnboardingWelcome"
+        static let hasCompletedOnboardingLanguageSelection = "KeyVox.App.HasCompletedOnboardingLanguageSelection"
+        static let onboardingDictationLanguage = "KeyVox.App.OnboardingDictationLanguage"
         static let hasPendingKeyboardTour = "KeyVox.App.HasPendingKeyboardTour"
         static let dismissedDictationModelUpdatePromptID = "KeyVox.App.DismissedDictationModelUpdatePromptID"
         static let hasSeenKeyVoxSpeakIntro = "KeyVox.App.HasSeenKeyVoxSpeakIntro"

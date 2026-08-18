@@ -1,5 +1,6 @@
 import Combine
 import Foundation
+import KeyVoxCore
 
 @MainActor
 final class OnboardingStore: ObservableObject {
@@ -15,6 +16,28 @@ final class OnboardingStore: ObservableObject {
         }
     }
 
+    @Published private(set) var hasCompletedLanguageSelection: Bool {
+        didSet {
+            defaults.set(
+                hasCompletedLanguageSelection,
+                forKey: UserDefaultsKeys.App.hasCompletedOnboardingLanguageSelection
+            )
+        }
+    }
+
+    @Published private(set) var onboardingDictationLanguage: DictationLanguage? {
+        didSet {
+            if let onboardingDictationLanguage {
+                defaults.set(
+                    onboardingDictationLanguage.rawValue,
+                    forKey: UserDefaultsKeys.App.onboardingDictationLanguage
+                )
+            } else {
+                defaults.removeObject(forKey: UserDefaultsKeys.App.onboardingDictationLanguage)
+            }
+        }
+    }
+
     @Published private(set) var isForceOnboardingLaunch: Bool
     @Published private(set) var hasPendingKeyboardTour: Bool {
         didSet {
@@ -22,6 +45,7 @@ final class OnboardingStore: ObservableObject {
         }
     }
     @Published private(set) var hasPassedWelcomeScreenThisLaunch: Bool
+    @Published private(set) var hasPassedLanguageSelectionThisLaunch: Bool
     @Published private(set) var isPendingKeyboardTourRouteArmed: Bool
     @Published private(set) var isIgnoringPersistedPendingKeyboardTourThisLaunch: Bool
     @Published private(set) var hasCompletedOnboardingThisLaunch: Bool
@@ -43,6 +67,11 @@ final class OnboardingStore: ObservableObject {
             && shouldShowOnboarding
     }
 
+    var shouldShowLanguageSelectionScreen: Bool {
+        !hasPassedLanguageSelectionThisLaunch
+            && (isForceOnboardingLaunch || !hasCompletedLanguageSelection)
+    }
+
     var shouldSuppressReturnToHostView: Bool {
         shouldShowOnboarding || hasCompletedOnboardingThisLaunch
     }
@@ -54,9 +83,16 @@ final class OnboardingStore: ObservableObject {
         let persistedPendingKeyboardTour = defaults.object(forKey: UserDefaultsKeys.App.hasPendingKeyboardTour) as? Bool ?? false
         hasCompletedOnboarding = defaults.object(forKey: UserDefaultsKeys.App.hasCompletedOnboarding) as? Bool ?? false
         hasCompletedWelcomeScreen = defaults.object(forKey: UserDefaultsKeys.App.hasCompletedOnboardingWelcome) as? Bool ?? false
+        hasCompletedLanguageSelection = defaults.object(
+            forKey: UserDefaultsKeys.App.hasCompletedOnboardingLanguageSelection
+        ) as? Bool ?? false
+        onboardingDictationLanguage = defaults
+            .string(forKey: UserDefaultsKeys.App.onboardingDictationLanguage)
+            .map(DictationLanguage.init(rawValue:))
         isForceOnboardingLaunch = runtimeFlags.forceOnboarding
         hasPendingKeyboardTour = persistedPendingKeyboardTour
         hasPassedWelcomeScreenThisLaunch = false
+        hasPassedLanguageSelectionThisLaunch = false
         isPendingKeyboardTourRouteArmed = persistedPendingKeyboardTour
         isIgnoringPersistedPendingKeyboardTourThisLaunch = runtimeFlags.forceOnboarding
         hasCompletedOnboardingThisLaunch = false
@@ -84,6 +120,17 @@ final class OnboardingStore: ObservableObject {
     func completeWelcomeScreen() {
         hasCompletedWelcomeScreen = true
         hasPassedWelcomeScreenThisLaunch = true
+    }
+
+    func completeLanguageSelection(language: DictationLanguage) {
+        onboardingDictationLanguage = language
+        hasCompletedLanguageSelection = true
+        hasPassedLanguageSelectionThisLaunch = true
+    }
+
+    func returnToLanguageSelection() {
+        hasCompletedLanguageSelection = false
+        hasPassedLanguageSelectionThisLaunch = false
     }
 
     func completeKeyboardTour() {

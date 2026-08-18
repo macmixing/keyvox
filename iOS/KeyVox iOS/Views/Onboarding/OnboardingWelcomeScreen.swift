@@ -12,7 +12,7 @@ struct OnboardingWelcomeScreen: View {
 
     var body: some View {
         GeometryReader { geometry in
-            AppScrollScreen(scrollDisabled: true) {
+            AppScrollScreen {
                 VStack(spacing: 0) {
                     Spacer()
                         .frame(height: 50)
