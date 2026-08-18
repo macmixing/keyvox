@@ -3,14 +3,24 @@ import SwiftUI
 
 struct AppCard<Content: View>: View {
     let content: Content
+    let contentInsets: EdgeInsets
 
-    init(@ViewBuilder content: () -> Content) {
+    init(
+        contentInsets: EdgeInsets = EdgeInsets(
+            top: AppTheme.cardPadding,
+            leading: AppTheme.cardPadding,
+            bottom: AppTheme.cardPadding,
+            trailing: AppTheme.cardPadding
+        ),
+        @ViewBuilder content: () -> Content
+    ) {
         self.content = content()
+        self.contentInsets = contentInsets
     }
 
     var body: some View {
         content
-            .padding(AppTheme.cardPadding)
+            .padding(contentInsets)
             .background(
                 RoundedRectangle(cornerRadius: AppTheme.cardCornerRadius)
                     .fill(AppTheme.cardFill)

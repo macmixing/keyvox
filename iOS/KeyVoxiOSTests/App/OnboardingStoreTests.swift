@@ -1,4 +1,5 @@
 import Foundation
+import KeyVoxCore
 import Testing
 @testable import KeyVox_iOS
 
@@ -14,9 +15,11 @@ struct OnboardingStoreTests {
         #expect(store.shouldShowOnboarding)
         #expect(store.hasCompletedOnboarding == false)
         #expect(store.hasCompletedWelcomeScreen == false)
+        #expect(store.hasCompletedLanguageSelection == false)
         #expect(store.isForceOnboardingLaunch == false)
         #expect(store.hasPendingKeyboardTour == false)
         #expect(store.shouldShowWelcomeScreen)
+        #expect(store.shouldShowLanguageSelectionScreen)
         #expect(store.shouldShowKeyboardTourScreen == false)
     }
 
@@ -86,6 +89,48 @@ struct OnboardingStoreTests {
         #expect(store.hasPendingKeyboardTour)
         #expect(restoredStore.hasPendingKeyboardTour)
         #expect(defaults.object(forKey: UserDefaultsKeys.App.hasPendingKeyboardTour) as? Bool == true)
+    }
+
+    @Test func completingLanguageSelectionPersistsTheLanguageAndAdvancesTheFlow() {
+        let defaults = makeDefaults()
+        let store = OnboardingStore(
+            defaults: defaults,
+            runtimeFlags: RuntimeFlags(environment: [:])
+        )
+
+        let selectedLanguage = DictationLanguage(rawValue: "en")
+        store.completeLanguageSelection(language: selectedLanguage)
+
+        let restoredStore = OnboardingStore(
+            defaults: defaults,
+            runtimeFlags: RuntimeFlags(environment: [:])
+        )
+
+        #expect(store.shouldShowLanguageSelectionScreen == false)
+        #expect(restoredStore.hasCompletedLanguageSelection)
+        #expect(restoredStore.onboardingDictationLanguage == selectedLanguage)
+        #expect(defaults.string(forKey: UserDefaultsKeys.App.onboardingDictationLanguage) == "en")
+    }
+
+    @Test func returningToLanguageSelectionMakesTheStepVisibleAndDurable() {
+        let defaults = makeDefaults()
+        let store = OnboardingStore(
+            defaults: defaults,
+            runtimeFlags: RuntimeFlags(environment: [:])
+        )
+        store.completeLanguageSelection(language: DictationLanguage(rawValue: "es"))
+
+        store.returnToLanguageSelection()
+
+        let restoredStore = OnboardingStore(
+            defaults: defaults,
+            runtimeFlags: RuntimeFlags(environment: [:])
+        )
+
+        #expect(store.shouldShowLanguageSelectionScreen)
+        #expect(restoredStore.shouldShowLanguageSelectionScreen)
+        #expect(restoredStore.onboardingDictationLanguage == DictationLanguage(rawValue: "es"))
+        #expect(defaults.object(forKey: UserDefaultsKeys.App.hasCompletedOnboardingLanguageSelection) as? Bool == false)
     }
 
     @Test func persistedPendingKeyboardTourStartsArmedOnInit() {

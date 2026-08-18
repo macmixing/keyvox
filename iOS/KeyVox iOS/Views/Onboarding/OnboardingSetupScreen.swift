@@ -12,6 +12,7 @@ struct OnboardingSetupScreen: View {
     @Environment(\.appHaptics) private var appHaptics
     @EnvironmentObject private var modelManager: ModelManager
     @EnvironmentObject private var onboardingStore: OnboardingStore
+    @EnvironmentObject private var settingsStore: AppSettingsStore
     @StateObject private var downloadNetworkMonitor: OnboardingDownloadNetworkMonitor
     @StateObject private var microphonePermissionController: OnboardingMicrophonePermissionController
     @StateObject private var keyboardAccessProbe: OnboardingKeyboardAccessProbe
@@ -39,21 +40,36 @@ struct OnboardingSetupScreen: View {
     }
 
     var body: some View {
-        AppScrollScreen {
-            VStack(alignment: .center, spacing: 16) {
-                Text("Set up KeyVox")
-                    .font(.appFont(34))
-                    .foregroundStyle(.white)
-                    .multilineTextAlignment(.center)
+        NavigationStack {
+            AppScrollScreen {
+                VStack(alignment: .center, spacing: 16) {
+                    Text("Set up KeyVox")
+                        .font(.appFont(34))
+                        .foregroundStyle(.white)
+                        .multilineTextAlignment(.center)
 
-                modelRequirementRow
-                microphoneRequirementRow
-                keyboardRequirementRow
+                    modelRequirementRow
+                    microphoneRequirementRow
+                    keyboardRequirementRow
+                }
+                .padding(.bottom, 24)
             }
-            .padding(.bottom, 24)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        appHaptics.light()
+                        onboardingStore.returnToLanguageSelection()
+                    } label: {
+                        Label("Back", systemImage: "chevron.left")
+                    }
+                }
+            }
+            .toolbarBackground(AppTheme.screenBackground, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
         }
         .task {
             refreshState()
+            selectOnboardingProviderIfReady()
             advanceToKeyboardTourIfHandoffIsReady()
         }
         .onChange(of: scenePhase, initial: false) { _, newPhase in
@@ -84,6 +100,7 @@ struct OnboardingSetupScreen: View {
         }
         .onChange(of: isModelStepCompleted, initial: false) { _, newValue in
             emitStepCompletionHaptic(previousCompletion: &previousModelStepCompletion, newValue: newValue)
+            selectOnboardingProviderIfReady()
         }
         .onChange(of: isKeyboardStepCompleted, initial: false) { _, newValue in
             emitStepCompletionHaptic(previousCompletion: &previousKeyboardStepCompletion, newValue: newValue)
@@ -402,6 +419,11 @@ struct OnboardingSetupScreen: View {
 
     private var onboardingModelState: ModelInstallState {
         modelManager.state(for: onboardingModelID)
+    }
+
+    private func selectOnboardingProviderIfReady() {
+        guard onboardingModelState == .ready else { return }
+        settingsStore.activeDictationProvider = .whisper
     }
 
     private func emitStepCompletionHaptic(previousCompletion: inout Bool?, newValue: Bool) {
