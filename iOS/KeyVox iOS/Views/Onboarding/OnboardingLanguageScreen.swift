@@ -55,6 +55,7 @@ struct OnboardingLanguageScreen: View {
                     LazyVStack(spacing: 0) {
                         ForEach(Array(filteredLanguages.enumerated()), id: \.element.id) { index, language in
                             languageButton(language)
+                                .disabled(isAdvancing)
 
                             if index < filteredLanguages.count - 1 {
                                 Divider()
@@ -155,6 +156,11 @@ struct OnboardingLanguageScreen: View {
         isSearchFocused = false
         advanceTask?.cancel()
         advanceTask = Task { @MainActor in
+            defer {
+                isAdvancing = false
+                advanceTask = nil
+            }
+
             try? await Task.sleep(for: .milliseconds(300))
             guard Task.isCancelled == false else { return }
             advance(with: selection)
