@@ -215,6 +215,60 @@ struct KeyboardTextInputControllerTests {
         #expect(haptics.emissionCount == 0)
     }
 
+    @Test func transcriptionRepairsStaleSpaceAfterDeletingSelection() {
+        let documentProxy = KeyboardTextDocumentProxySpy()
+        documentProxy.documentContextBeforeInput = "Previous sentence. "
+        documentProxy.selectedText = "Deleted sentence."
+        documentProxy.hasText = true
+        let controller = KeyboardTextInputController(
+            documentProxy: documentProxy,
+            emitKeypress: {}
+        )
+        var symbolPage = KeyboardSymbolPage.primary
+
+        let deleted = controller.handleKeyActivation(
+            .delete,
+            symbolPage: &symbolPage,
+            resetCapsLockStateIfNeeded: {},
+            advanceToNextInputMode: {}
+        )
+        documentProxy.selectedText = nil
+        let insertion = controller.insertTranscriptionWithResult("Replacement sentence.")
+
+        #expect(deleted == true)
+        #expect(documentProxy.insertedTexts == [" Replacement sentence."])
+        #expect(insertion?.documentContextBeforeInput == "Previous sentence.")
+    }
+
+    @Test func interveningTypingClearsSelectionDeletionCorrection() {
+        let documentProxy = KeyboardTextDocumentProxySpy()
+        documentProxy.documentContextBeforeInput = "Previous sentence. "
+        documentProxy.selectedText = "Deleted sentence."
+        documentProxy.hasText = true
+        let controller = KeyboardTextInputController(
+            documentProxy: documentProxy,
+            emitKeypress: {}
+        )
+        var symbolPage = KeyboardSymbolPage.primary
+
+        _ = controller.handleKeyActivation(
+            .delete,
+            symbolPage: &symbolPage,
+            resetCapsLockStateIfNeeded: {},
+            advanceToNextInputMode: {}
+        )
+        documentProxy.selectedText = nil
+        _ = controller.handleKeyActivation(
+            .character("x"),
+            symbolPage: &symbolPage,
+            resetCapsLockStateIfNeeded: {},
+            advanceToNextInputMode: {}
+        )
+        _ = controller.insertTranscription("Replacement sentence.")
+
+        #expect(documentProxy.insertedTexts == ["x", "Replacement sentence."])
+    }
+
     @Test func transcriptionInsertionKeepsLeadingCapitalizationAtEmptyContext() {
         let documentProxy = KeyboardTextDocumentProxySpy()
         let haptics = KeyboardKeypressHapticsSpy()

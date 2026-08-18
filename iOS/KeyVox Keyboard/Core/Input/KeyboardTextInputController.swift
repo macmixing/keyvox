@@ -53,12 +53,17 @@ final class KeyboardTextDocumentProxyAdapter: KeyboardTextDocumentProxying {
 }
 
 final class KeyboardTextInputController {
+    private struct PendingSelectionDeletion {
+        let documentContextBeforeInput: String
+    }
+
     private let documentProxy: any KeyboardTextDocumentProxying
     private let emitKeypress: () -> Void
     private let shouldPreserveLeadingCapitalization: (String) -> Bool
 
     private var emptyContextDeleteAttempts = 0
     private var lastDeleteTimestamp: TimeInterval = 0
+    private var pendingSelectionDeletion: PendingSelectionDeletion?
 
     init(
         documentProxy: any KeyboardTextDocumentProxying,
@@ -79,10 +84,13 @@ final class KeyboardTextInputController {
     ) -> Bool {
         switch kind {
         case let .character(value):
+            pendingSelectionDeletion = nil
             emitKeypress()
             documentProxy.insertText(value)
             return true
         case .delete:
+            let selectedTextBeforeDeletion = documentProxy.selectedText
+            let contextBeforeDeletion = documentProxy.documentContextBeforeInput
             let now = Date().timeIntervalSince1970
             let isNewDeleteSession = now - lastDeleteTimestamp > 0.5
             if isNewDeleteSession {
@@ -96,10 +104,15 @@ final class KeyboardTextInputController {
 
             if !proxySeemsEmpty {
                 emptyContextDeleteAttempts = 0
+                pendingSelectionDeletion = makePendingSelectionDeletion(
+                    selectedText: selectedTextBeforeDeletion,
+                    documentContextBeforeInput: contextBeforeDeletion
+                )
                 emitKeypress()
                 documentProxy.deleteBackward()
                 return true
             } else {
+                pendingSelectionDeletion = nil
                 if emptyContextDeleteAttempts < 3 {
                     if emptyContextDeleteAttempts == 0 && isNewDeleteSession {
                         emitKeypress()
@@ -112,6 +125,7 @@ final class KeyboardTextInputController {
                 }
             }
         case .space:
+            pendingSelectionDeletion = nil
             emitKeypress()
             if handleDoubleSpacePeriodInsertionIfNeeded() {
                 return true
@@ -119,10 +133,12 @@ final class KeyboardTextInputController {
             documentProxy.insertText(" ")
             return true
         case .returnKey:
+            pendingSelectionDeletion = nil
             emitKeypress()
             documentProxy.insertText("\n")
             return true
         case .abc:
+            pendingSelectionDeletion = nil
             emitKeypress()
             resetCapsLockStateIfNeeded()
             advanceToNextInputMode()
@@ -150,15 +166,19 @@ final class KeyboardTextInputController {
         }
 
         let contextBeforeInput = documentProxy.documentContextBeforeInput
+        let compositionContextBeforeInput = contextAfterCorrectingPendingSelectionDeletion(
+            contextBeforeInput
+        )
+        pendingSelectionDeletion = nil
         let insertionText = preparedTranscriptionText(
             cleanedText,
-            documentContextBeforeInput: contextBeforeInput
+            documentContextBeforeInput: compositionContextBeforeInput
         )
         documentProxy.insertText(insertionText)
         return KeyboardTextInsertionResult(
             sourceText: cleanedText,
             insertedText: insertionText,
-            documentContextBeforeInput: contextBeforeInput
+            documentContextBeforeInput: compositionContextBeforeInput
         )
     }
 
@@ -245,6 +265,7 @@ final class KeyboardTextInputController {
             return false
         }
 
+        pendingSelectionDeletion = nil
         documentProxy.insertText(text)
         return true
     }
@@ -261,6 +282,7 @@ final class KeyboardTextInputController {
             return false
         }
 
+        pendingSelectionDeletion = nil
         for _ in currentText {
             documentProxy.deleteBackward()
         }
@@ -271,6 +293,7 @@ final class KeyboardTextInputController {
     func adjustCursorPosition(by offset: Int) {
         guard offset != 0 else { return }
 
+        pendingSelectionDeletion = nil
         let step = offset > 0 ? 1 : -1
         for _ in 0..<abs(offset) {
             documentProxy.adjustTextPosition(byCharacterOffset: step)
@@ -314,5 +337,37 @@ final class KeyboardTextInputController {
         }
 
         return true
+    }
+
+    private func makePendingSelectionDeletion(
+        selectedText: String?,
+        documentContextBeforeInput: String?
+    ) -> PendingSelectionDeletion? {
+        guard let selectedText,
+              selectedText.isEmpty == false,
+              let documentContextBeforeInput,
+              let trailingCharacter = documentContextBeforeInput.last,
+              isHorizontalWhitespace(trailingCharacter) else {
+            return nil
+        }
+
+        return PendingSelectionDeletion(
+            documentContextBeforeInput: documentContextBeforeInput
+        )
+    }
+
+    private func contextAfterCorrectingPendingSelectionDeletion(
+        _ currentContext: String?
+    ) -> String? {
+        guard let pendingSelectionDeletion,
+              currentContext == pendingSelectionDeletion.documentContextBeforeInput else {
+            return currentContext
+        }
+
+        return String(pendingSelectionDeletion.documentContextBeforeInput.dropLast())
+    }
+
+    private func isHorizontalWhitespace(_ character: Character) -> Bool {
+        character.unicodeScalars.allSatisfy(CharacterSet.whitespaces.contains)
     }
 }
