@@ -17,7 +17,7 @@ struct KeyVoxVibesSceneAView: View {
         GeometryReader { geometry in
             ScrollView {
                 VStack(spacing: 0) {
-                    Spacer(minLength: 0)
+                    Spacer(minLength: 24)
 
                     LogoBarView(size: 74)
                         .opacity(logoOpacity)
@@ -45,7 +45,7 @@ struct KeyVoxVibesSceneAView: View {
                     }
                     .padding(.bottom, 10)
 
-                    Spacer(minLength: 0)
+                    Spacer(minLength: 48)
                 }
                 .frame(maxWidth: .infinity, minHeight: geometry.size.height)
             }
