@@ -2,54 +2,57 @@ import SwiftUI
 
 struct OnboardingKeyboardTourSceneAView: View {
     private enum Metrics {
-        static let guidanceBottomOffset: CGFloat = 128
-        static let arrowBottomOffset: CGFloat = 122
         static let menuArtworkWidth: CGFloat = 160
         static let menuArtworkOffset: CGFloat = 30
     }
 
-    @State private var isArrowFloating = false
-
     var body: some View {
-        ZStack {
-            KeyboardMenuSequence(width: Metrics.menuArtworkWidth)
-                .offset(y: Metrics.menuArtworkOffset)
+        KeyboardMenuSequence(width: Metrics.menuArtworkWidth)
+            .offset(y: Metrics.menuArtworkOffset)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
 
-            guidanceText
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-                .padding(.horizontal, 20)
-                .padding(.bottom, 6)
-                .offset(y: Metrics.guidanceBottomOffset)
+    struct GuidanceView: View {
+        private enum Metrics {
+            static let fontSize: CGFloat = 17
+            static let lineSpacing: CGFloat = 1
+        }
 
-            floatingArrow
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
-                .padding(.leading, 20)
-                .padding(.bottom, 6)
-                .offset(y: Metrics.arrowBottomOffset + (isArrowFloating ? 10 : -2))
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .animation(.easeInOut(duration: 0.9).repeatForever(autoreverses: true), value: isArrowFloating)
-        .onAppear {
-            isArrowFloating = true
-        }
-        .onDisappear {
-            isArrowFloating = false
+        var body: some View {
+            Text("Tap & hold the Globe, \n then select KeyVox.")
+                .font(.appFont(Metrics.fontSize, variant: .light))
+                .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
+                .lineSpacing(Metrics.lineSpacing)
+                .lineLimit(2)
+                .foregroundStyle(.white)
+                .multilineTextAlignment(.center)
         }
     }
 
-    private var guidanceText: some View {
-        Text("Tap & hold the Globe, \n then select KeyVox.")
-            .font(.appFont(17, variant: .light))
-            .lineSpacing(1)
-            .lineLimit(2)
-            .foregroundStyle(.white)
-            .multilineTextAlignment(.center)
-    }
+    struct ArrowView: View {
+        private enum Metrics {
+            static let size: CGFloat = 44
+            static let floatingOffset: CGFloat = 6
+        }
 
-    private var floatingArrow: some View {
-        Image(systemName: "arrow.down")
-            .font(.system(size: 44, weight: .heavy))
-            .foregroundStyle(.yellow)
-            .frame(width: 44, height: 44)
+        @State private var isFloating = false
+
+        var body: some View {
+            Image(systemName: "arrow.down")
+                .font(.system(size: Metrics.size, weight: .heavy))
+                .foregroundStyle(.yellow)
+                .frame(width: Metrics.size, height: Metrics.size)
+                .offset(y: isFloating ? Metrics.floatingOffset : -Metrics.floatingOffset)
+                .animation(
+                    .easeInOut(duration: 0.9).repeatForever(autoreverses: true),
+                    value: isFloating
+                )
+                .onAppear {
+                    isFloating = true
+                }
+                .onDisappear {
+                    isFloating = false
+                }
+        }
     }
 }

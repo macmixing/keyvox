@@ -3,7 +3,7 @@ import SwiftUI
 struct OnboardingKeyboardTourSceneCView: View {
     private enum Metrics {
         static let checkmarkSize: CGFloat = 70
-        static let ringSize: CGFloat = 120
+        static let ringSize: CGFloat = 100
         static let particleCount = 12
     }
 
@@ -19,7 +19,7 @@ struct OnboardingKeyboardTourSceneCView: View {
     private var animationTask: Task<Void, Never>?
 
     var body: some View {
-        VStack(spacing: 32) {
+        VStack(spacing: 0) {
             ZStack {
                 successRing
                 checkmark
@@ -27,13 +27,16 @@ struct OnboardingKeyboardTourSceneCView: View {
             }
             .frame(height: Metrics.ringSize)
 
+            Spacer(minLength: 0)
+                .frame(maxHeight: 32)
+
             VStack(spacing: 8) {
                 Text("You're all set")
-                    .font(.appFont(24, variant: .medium))
+                    .font(.appFont(20, variant: .medium))
                     .foregroundStyle(.white)
 
                 Text("KeyVox is now ready, anywhere you type.")
-                    .font(.appFont(17, variant: .light))
+                    .font(.appFont(19, variant: .light))
                     .foregroundStyle(.white.opacity(0.8))
                     .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
@@ -41,6 +44,7 @@ struct OnboardingKeyboardTourSceneCView: View {
             .opacity(contentOpacity)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
         .padding(.top, 30)
         .onAppear {
             startCelebration()

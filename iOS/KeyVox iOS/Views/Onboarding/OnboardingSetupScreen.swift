@@ -43,10 +43,16 @@ struct OnboardingSetupScreen: View {
         NavigationStack {
             AppScrollScreen {
                 VStack(alignment: .center, spacing: 16) {
-                    Text("Set up KeyVox")
-                        .font(.appFont(34))
-                        .foregroundStyle(.white)
-                        .multilineTextAlignment(.center)
+                    VStack(spacing: 4) {
+                        Text("Just a few steps...")
+                            .font(.appFont(34))
+                            .foregroundStyle(.white)
+
+                        Text("After this, you may never type again.")
+                            .font(.appFont(14, variant: .light))
+                            .foregroundStyle(.secondary)
+                    }
+                    .multilineTextAlignment(.center)
 
                     modelRequirementRow
                     microphoneRequirementRow

@@ -16,7 +16,7 @@ struct OnboardingLanguageScreen: View {
             VStack(alignment: .leading, spacing: 20) {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Choose your language")
-                        .font(.appFont(34))
+                        .font(.appFont(30))
                         .foregroundStyle(.white)
 
                     Text("We recommend choosing the language you use most for more reliable dictation.")

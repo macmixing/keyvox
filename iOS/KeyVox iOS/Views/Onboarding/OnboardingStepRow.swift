@@ -1,5 +1,7 @@
 import SwiftUI
 
+private let onboardingStepNumberMaximumDynamicTypeSize: DynamicTypeSize = .accessibility1
+
 struct OnboardingStepRow<ExtraContent: View, TrailingContent: View>: View {
     let isCompleted: Bool
     let stepNumber: Int
@@ -91,7 +93,9 @@ struct OnboardingStepRow<ExtraContent: View, TrailingContent: View>: View {
             } else {
                 Text("\(stepNumber)")
                     .font(.appFont(16))
+                    .dynamicTypeSize(...onboardingStepNumberMaximumDynamicTypeSize)
                     .foregroundColor(.white)
+                    .offset(y: -1)
             }
         }
     }

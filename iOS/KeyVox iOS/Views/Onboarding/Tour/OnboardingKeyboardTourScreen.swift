@@ -7,6 +7,7 @@ struct OnboardingKeyboardTourScreen: View {
         static let inputBarHeight: CGFloat = 44
         static let inputBarBottomSpacing: CGFloat = 16
         static let sceneBottomSpacing: CGFloat = 92
+        static let maximumDynamicTypeSize: DynamicTypeSize = .accessibility1
     }
 
     private enum TourSceneDirection {
@@ -40,6 +41,7 @@ struct OnboardingKeyboardTourScreen: View {
                     // Keep scene content on its own overlay layer so it cannot
                     // participate in the input bar's layout when scene copy grows.
                     sceneContent
+                        .dynamicTypeSize(...Metrics.maximumDynamicTypeSize)
                         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
                         .padding(.horizontal, AppTheme.screenPadding)
                         .padding(.bottom, sceneBottomPadding(for: geometry))
@@ -59,24 +61,28 @@ struct OnboardingKeyboardTourScreen: View {
                 if let topBarTitle {
                     Text(topBarTitle)
                         .font(.appFont(22))
+                        .dynamicTypeSize(...Metrics.maximumDynamicTypeSize)
                         .foregroundStyle(.white)
                         .id(topBarTitle)
                         .transition(.opacity.combined(with: .offset(y: -8)))
                 }
 
-                HStack {
-                    Spacer()
+                if tourState.scene != .a {
+                    HStack {
+                        Spacer()
 
-                    AppActionButton(
-                        title: primaryActionTitle,
-                        style: .primary,
-                        size: .compact,
-                        fontSize: 16,
-                        isEnabled: tourState.canFinish,
-                        action: handlePrimaryAction
-                    )
+                        AppActionButton(
+                            title: "Finish",
+                            style: .primary,
+                            size: .compact,
+                            fontSize: 16,
+                            isEnabled: tourState.canFinish,
+                            action: handlePrimaryAction
+                        )
+                        .dynamicTypeSize(...Metrics.maximumDynamicTypeSize)
+                    }
+                    .frame(maxWidth: .infinity)
                 }
-                .frame(maxWidth: .infinity)
             }
             .frame(maxWidth: .infinity)
             .padding(.horizontal, AppTheme.screenPadding)
@@ -119,10 +125,6 @@ struct OnboardingKeyboardTourScreen: View {
         case .c:
             return "Success!"
         }
-    }
-
-    private var primaryActionTitle: String {
-        tourState.scene == .c ? "Finish" : "Next"
     }
 
     private var sceneContent: some View {
@@ -176,10 +178,24 @@ struct OnboardingKeyboardTourScreen: View {
             AutoFocusTextField(
                 text: $text,
                 placeholder: "",
+                allowsTextChanges: tourState.hasShownKeyVoxKeyboard,
                 onSubmit: {}
             )
             .frame(maxWidth: .infinity)
             .frame(height: 44)
+        }
+        .overlay {
+            if tourState.scene == .a {
+                ZStack {
+                    OnboardingKeyboardTourSceneAView.GuidanceView()
+                        .padding(.horizontal, AppTheme.cardPadding)
+
+                    OnboardingKeyboardTourSceneAView.ArrowView()
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.leading, 20)
+                }
+                .allowsHitTesting(false)
+            }
         }
         .frame(width: max(0, geometry.size.width - (AppTheme.screenPadding * 2)))
     }
