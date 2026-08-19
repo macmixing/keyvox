@@ -6,6 +6,32 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.3.4] - 2026-08-19
+
+Adds language selection to iOS onboarding and improves accessible keyboard-tour layouts while fixing dictation spacing after selection deletion and custom-dictionary word endings.
+
+### Added
+
+- Added a searchable Whisper language picker before setup with Auto Detect and the complete supported-language catalog.
+- Added persisted onboarding language selection with a route back from model and permission setup so the choice can be reviewed or changed.
+
+### Changed
+
+- Added extra spacing above the content on each main tab for a more comfortable default layout.
+- Updated onboarding layouts, typography, scrolling, controls, and success presentation to remain usable across compact screens and larger Dynamic Type sizes.
+- Updated the keyboard tour to keep its guidance and animation anchored inside the input card, prevent changes to the practice field before the KeyVox keyboard appears, and reserve the Finish action for the completed tour.
+- Updated setup to activate Whisper after its model is ready while retaining the language selected during onboarding.
+- Updated the Vibes introduction with clearer spacing above the logo and below the final writing example.
+- Updated shared custom-dictionary matching through `KeyVoxCore` `1.2.5` to evaluate candidate-relative word endings more reliably while keeping scoring, thresholds, and single-token safety in separate responsibilities.
+
+### Fixed
+
+- Fixed keyboard dictation spacing after deleting selected text when iOS continues reporting a separator that was removed with the selection.
+- Fixed onboarding language rows remaining interactive during the transition to setup, preventing the saved choice from changing after Continue is tapped.
+- Fixed stylized custom-dictionary entries with plural and possessive endings so possessives require supporting context, plurals remain intact before verbs and conjunctions, and exact saved entries take precedence over shorter candidate-relative alternatives.
+
+---
+
 ## [1.3.3] - 2026-08-15
 
 Improves keyboard audio feedback, spoken punctuation, custom-dictionary accuracy, and navigation reliability.
