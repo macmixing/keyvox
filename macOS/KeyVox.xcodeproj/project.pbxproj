@@ -128,9 +128,6 @@
 		C11000172FD5000100AA0001 /* DictationModelInstallManifest.swift in Sources */ = {isa = PBXBuildFile; fileRef = C11000072FD5000100AA0001 /* DictationModelInstallManifest.swift */; };
 		C20002012FF2000100AA0001 /* OverlayPresentationMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20001012FF2000100AA0001 /* OverlayPresentationMetrics.swift */; };
 		C20002022FF2000100AA0001 /* OverlayPillState.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20001022FF2000100AA0001 /* OverlayPillState.swift */; };
-		D50000112FF5000100AA0001 /* OnboardingWelcomeScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = D50000012FF5000100AA0001 /* OnboardingWelcomeScreen.swift */; };
-		D50000122FF5000100AA0001 /* OnboardingLanguageScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = D50000022FF5000100AA0001 /* OnboardingLanguageScreen.swift */; };
-		D50000132FF5000100AA0001 /* OnboardingSetupScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = D50000032FF5000100AA0001 /* OnboardingSetupScreen.swift */; };
 		C20002032FF2000100AA0001 /* OverlayPillMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20001032FF2000100AA0001 /* OverlayPillMetrics.swift */; };
 		C20002042FF2000100AA0001 /* OverlayPillCompletionStroke.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20001042FF2000100AA0001 /* OverlayPillCompletionStroke.swift */; };
 		C20002052FF2000100AA0001 /* OverlayPillView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20001052FF2000100AA0001 /* OverlayPillView.swift */; };
@@ -158,6 +155,9 @@
 		D16000122FA2000100AA0001 /* DictationLanguageSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D16000022FA2000100AA0001 /* DictationLanguageSection.swift */; };
 		D17000112FA3000100AA0001 /* AppServiceRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = D17000012FA3000100AA0001 /* AppServiceRegistry.swift */; };
 		D26000012FF0000100AA0001 /* AppProcessTerminator.swift in Sources */ = {isa = PBXBuildFile; fileRef = D26000022FF0000100AA0001 /* AppProcessTerminator.swift */; };
+		D50000112FF5000100AA0001 /* OnboardingWelcomeScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = D50000012FF5000100AA0001 /* OnboardingWelcomeScreen.swift */; };
+		D50000122FF5000100AA0001 /* OnboardingLanguageScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = D50000022FF5000100AA0001 /* OnboardingLanguageScreen.swift */; };
+		D50000132FF5000100AA0001 /* OnboardingSetupScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = D50000032FF5000100AA0001 /* OnboardingSetupScreen.swift */; };
 		E18000112FA4000100AA0001 /* KeyVoxiCloudKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = E18000012FA4000100AA0001 /* KeyVoxiCloudKeys.swift */; };
 		E18000122FA4000100AA0001 /* KeyVoxiCloudPayloads.swift in Sources */ = {isa = PBXBuildFile; fileRef = E18000022FA4000100AA0001 /* KeyVoxiCloudPayloads.swift */; };
 		E18000132FA4000100AA0001 /* KeyVoxiCloudSyncCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E18000032FA4000100AA0001 /* KeyVoxiCloudSyncCoordinator.swift */; };
@@ -278,9 +278,6 @@
 		8E6D05D12F3C51D6003BD458 /* Kanit-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Kanit-Medium.ttf"; sourceTree = "<group>"; };
 		8E6D05D52F3C51D6003BD458 /* UIComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIComponents.swift; sourceTree = "<group>"; };
 		8E6D05D72F3C51D6003BD458 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
-		D50000012FF5000100AA0001 /* OnboardingWelcomeScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingWelcomeScreen.swift; sourceTree = "<group>"; };
-		D50000022FF5000100AA0001 /* OnboardingLanguageScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingLanguageScreen.swift; sourceTree = "<group>"; };
-		D50000032FF5000100AA0001 /* OnboardingSetupScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingSetupScreen.swift; sourceTree = "<group>"; };
 		8E6D05D82F3C51D6003BD458 /* RecordingOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingOverlay.swift; sourceTree = "<group>"; };
 		8E6D05DA2F3C51D6003BD458 /* StatusMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusMenuView.swift; sourceTree = "<group>"; };
 		8E70C6EC2F623AFA00E9E555 /* updater.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = updater.sh; sourceTree = "<group>"; };
@@ -403,6 +400,9 @@
 		D16000022FA2000100AA0001 /* DictationLanguageSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictationLanguageSection.swift; sourceTree = "<group>"; };
 		D17000012FA3000100AA0001 /* AppServiceRegistry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppServiceRegistry.swift; sourceTree = "<group>"; };
 		D26000022FF0000100AA0001 /* AppProcessTerminator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppProcessTerminator.swift; sourceTree = "<group>"; };
+		D50000012FF5000100AA0001 /* OnboardingWelcomeScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingWelcomeScreen.swift; sourceTree = "<group>"; };
+		D50000022FF5000100AA0001 /* OnboardingLanguageScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingLanguageScreen.swift; sourceTree = "<group>"; };
+		D50000032FF5000100AA0001 /* OnboardingSetupScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingSetupScreen.swift; sourceTree = "<group>"; };
 		E18000012FA4000100AA0001 /* KeyVoxiCloudKeys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyVoxiCloudKeys.swift; sourceTree = "<group>"; };
 		E18000022FA4000100AA0001 /* KeyVoxiCloudPayloads.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyVoxiCloudPayloads.swift; sourceTree = "<group>"; };
 		E18000032FA4000100AA0001 /* KeyVoxiCloudSyncCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyVoxiCloudSyncCoordinator.swift; sourceTree = "<group>"; };
@@ -636,19 +636,6 @@
 				8EBB01022F41000200BB1101 /* UpdatePromptOverlay.swift */,
 			);
 			path = Views;
-			sourceTree = "<group>";
-		};
-		D50001002FF5000100AA0001 /* Onboarding */ = {
-			isa = PBXGroup;
-			children = (
-				8E6D05D72F3C51D6003BD458 /* OnboardingView.swift */,
-				D50000012FF5000100AA0001 /* OnboardingWelcomeScreen.swift */,
-				D50000022FF5000100AA0001 /* OnboardingLanguageScreen.swift */,
-				D50000032FF5000100AA0001 /* OnboardingSetupScreen.swift */,
-				BF2000012F70000100AA0001 /* OnboardingMicrophoneStepController.swift */,
-				BF2000022F70000100AA0001 /* OnboardingMicrophonePickerView.swift */,
-			);
-			path = Onboarding;
 			sourceTree = "<group>";
 		};
 		8EC700212F42000100C70001 /* Warnings */ = {
@@ -917,6 +904,19 @@
 				8E4B08682FD0000500C5DB85 /* TranscriptionManager+OverlayAndDebug.swift */,
 			);
 			path = Transcription;
+			sourceTree = "<group>";
+		};
+		D50001002FF5000100AA0001 /* Onboarding */ = {
+			isa = PBXGroup;
+			children = (
+				8E6D05D72F3C51D6003BD458 /* OnboardingView.swift */,
+				D50000012FF5000100AA0001 /* OnboardingWelcomeScreen.swift */,
+				D50000022FF5000100AA0001 /* OnboardingLanguageScreen.swift */,
+				D50000032FF5000100AA0001 /* OnboardingSetupScreen.swift */,
+				BF2000012F70000100AA0001 /* OnboardingMicrophoneStepController.swift */,
+				BF2000022F70000100AA0001 /* OnboardingMicrophonePickerView.swift */,
+			);
+			path = Onboarding;
 			sourceTree = "<group>";
 		};
 		E18000042FA4000100AA0001 /* iCloud */ = {
@@ -1544,7 +1544,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.5;
-				MARKETING_VERSION = 1.3.3;
+				MARKETING_VERSION = 1.3.4;
 				PRODUCT_BUNDLE_IDENTIFIER = com.cueit.keyvox;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1595,7 +1595,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.5;
-				MARKETING_VERSION = 1.3.3;
+				MARKETING_VERSION = 1.3.4;
 				PRODUCT_BUNDLE_IDENTIFIER = com.cueit.keyvox;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";

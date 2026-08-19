@@ -6,6 +6,31 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.3.4] - 2026-08-18
+
+Adds a guided welcome and language-selection flow to Mac onboarding while improving selection replacement spacing, Electron clipboard restoration, and custom-dictionary matching.
+
+### Added
+
+- Added an animated welcome screen before Mac setup.
+- Added a searchable Whisper language picker with Auto Detect and the complete supported-language catalog before model and permission setup.
+- Added back navigation from setup to language selection while preserving the current choice.
+
+### Changed
+
+- Updated onboarding to use shared action-button styling with clearer typography for welcome, language, and setup completion actions.
+- Organized Mac onboarding screens and microphone setup components under one dedicated view structure and updated the architecture documentation for the expanded flow.
+- Updated shared custom-dictionary matching through `KeyVoxCore` `1.2.5` to evaluate candidate-relative word endings more reliably while keeping scoring, thresholds, and single-token safety in separate responsibilities.
+
+### Fixed
+
+- Fixed dictation spacing when replacing a selection that begins with whitespace or punctuation so the replacement keeps the correct boundary from the preceding text.
+- Fixed ordinary content selections so replacement text is not given an unnecessary leading space.
+- Fixed confirmed Electron menu pastes so the user's original clipboard is restored immediately after both the expected payload and a live value change are observed, while weaker insertion evidence retains the existing safety delay.
+- Fixed stylized custom-dictionary entries with plural and possessive endings so possessives require supporting context, plurals remain intact before verbs and conjunctions, and exact saved entries take precedence over shorter candidate-relative alternatives.
+
+---
+
 ## [1.3.3] - 2026-08-15
 
 Improves Mac dictation insertion in Electron editors, spoken punctuation, first-dictation onboarding, Vibes guidance, and audio indicator responsiveness.
