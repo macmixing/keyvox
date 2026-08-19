@@ -71,6 +71,7 @@ struct OnboardingLanguageScreen: View {
                 title: "Continue",
                 style: .primary,
                 minWidth: 240,
+                fontSize: 20,
                 isEnabled: selection != nil,
                 action: completeSelection
             )

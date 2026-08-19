@@ -88,19 +88,15 @@ struct OnboardingSetupScreen: View {
                 .padding(.horizontal, 30)
 
                 VStack(spacing: 12) {
-                    Button(action: onComplete) {
-                        Text("Start Using KeyVox")
-                            .font(.appFont(16))
-                            .foregroundColor(allStepsCompleted ? .black : .white.opacity(0.3))
-                            .padding(.horizontal, 40)
-                            .padding(.vertical, 12)
-                            .frame(minWidth: 240)
-                            .background(allStepsCompleted ? Color.yellow : MacAppTheme.cardFill)
-                            .cornerRadius(25)
-                            .shadow(color: allStepsCompleted ? .yellow.opacity(0.3) : .clear, radius: 10)
+                    AppActionButton(
+                        title: "Start Using KeyVox",
+                        style: .primary,
+                        minWidth: 240,
+                        fontSize: 18,
+                        isEnabled: allStepsCompleted
+                    ) {
+                        onComplete()
                     }
-                    .buttonStyle(.plain)
-                    .disabled(!allStepsCompleted)
 
                     Text("Complete all steps to proceed")
                         .font(.appFont(11, variant: .light))

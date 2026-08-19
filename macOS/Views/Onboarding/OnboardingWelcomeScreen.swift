@@ -42,6 +42,7 @@ struct OnboardingWelcomeScreen: View {
                     title: "Let's go",
                     style: .primary,
                     minWidth: 240,
+                    fontSize: 20,
                     action: onContinue
                 )
                 .opacity(buttonOpacity)
