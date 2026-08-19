@@ -74,7 +74,7 @@ struct SettingsTabView: View {
 
     private var settingsScrollScreen: some View {
         ScrollViewReader { scrollProxy in
-            AppScrollScreen {
+            AppScrollScreen(additionalTopContentInset: AppScreenContentInset.tabPageTop) {
                 VStack(alignment: .leading, spacing: 16) {
                     sessionSection
                     speakTimeoutSection

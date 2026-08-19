@@ -39,7 +39,7 @@ struct HomeTabView: View {
     ) var isTTSTranscriptExpanded = false
 
     var body: some View {
-        AppScrollScreen {
+        AppScrollScreen(additionalTopContentInset: AppScreenContentInset.tabPageTop) {
             VStack(alignment: .leading, spacing: 16) {
                 weeklyStatsSection
                 speakClipboardSection

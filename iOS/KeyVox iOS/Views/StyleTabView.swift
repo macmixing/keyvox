@@ -12,7 +12,7 @@ struct StyleTabView: View {
     static let sectionExpansionAnimation = Animation.spring(response: 0.42, dampingFraction: 0.84)
 
     var body: some View {
-        AppScrollScreen {
+        AppScrollScreen(additionalTopContentInset: AppScreenContentInset.tabPageTop) {
             VStack(alignment: .leading, spacing: 16) {
                 keyVoxVibesSection
 

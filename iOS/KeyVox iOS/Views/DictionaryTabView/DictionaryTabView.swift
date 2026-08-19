@@ -76,7 +76,11 @@ struct DictionaryTabView: View {
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
             .scrollIndicators(.hidden)
-            .contentMargins(.top, AppScrollScreen<EmptyView>.sharedTopContentInset, for: .scrollContent)
+            .contentMargins(
+                .top,
+                AppScrollScreen<EmptyView>.sharedTopContentInset + AppScreenContentInset.tabPageTop,
+                for: .scrollContent
+            )
             .animation(.easeInOut(duration: 0.3), value: displayedEntries.map(\.id))
         }
         .safeAreaInset(edge: .bottom) {
