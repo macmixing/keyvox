@@ -10,13 +10,14 @@ struct AppActionButton: View {
     let title: String
     let style: Style
     let minWidth: CGFloat
+    var fontSize: CGFloat = 16
     var isEnabled: Bool = true
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
             Text(title)
-                .font(.appFont(14))
+                .font(.appFont(fontSize))
                 .foregroundColor(foregroundColor)
                 .padding(.horizontal, 28)
                 .padding(.vertical, 11)
