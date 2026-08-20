@@ -140,7 +140,7 @@ struct OnboardingSetupScreen: View {
             }
             .padding(.leading, 25)
             .padding(.trailing, 30)
-            .padding(.top, 36)
+            .padding(.top, 46)
             .padding(.bottom, 20)
         }
         .fixedSize(horizontal: false, vertical: true)

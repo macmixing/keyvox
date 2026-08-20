@@ -1,4 +1,3 @@
-import AppKit
 import SwiftUI
 
 struct UpdateWindowView: View {
@@ -51,7 +50,8 @@ struct UpdateWindowView: View {
         VStack(alignment: .leading, spacing: 16) {
             AnimatedWaveHeader()
             .padding(.top, 10)
-            .background(WindowDragRegion())
+            .contentShape(Rectangle())
+            .keyVoxWindowDragGesture(allowsActivationEvents: true)
 
             UpdateHeaderCard(
                 currentVersion: coordinator.currentVersion,
@@ -107,19 +107,5 @@ struct UpdateWindowView: View {
                 coordinator.primaryAction()
             }
         }
-    }
-}
-
-private struct WindowDragRegion: NSViewRepresentable {
-    func makeNSView(context: Context) -> DragRegionView {
-        DragRegionView()
-    }
-
-    func updateNSView(_ nsView: DragRegionView, context: Context) {}
-}
-
-private final class DragRegionView: NSView {
-    override func mouseDown(with event: NSEvent) {
-        window?.performDrag(with: event)
     }
 }

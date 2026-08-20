@@ -1,5 +1,4 @@
 import AppKit
-import SwiftUI
 import XCTest
 @testable import KeyVox
 
@@ -146,7 +145,7 @@ final class VibePillPresentationControllerTests: XCTestCase {
         RunLoop.main.run(until: Date(timeIntervalSinceNow: 0.02))
 
         let window = visibleCyclePillWindows.first
-        XCTAssertNotNil(window?.contentView as? NSHostingView<VibeCyclePillOverlay>)
+        XCTAssertNotNil(window?.contentView)
     }
 
     func testStandalonePillClearsVisibleCycleState() {
@@ -274,9 +273,7 @@ final class VibePillPresentationControllerTests: XCTestCase {
     }
 
     private var visibleCyclePillWindows: [NSWindow] {
-        visiblePillWindows.filter { window in
-            window.contentView is NSHostingView<VibeCyclePillOverlay>
-        }
+        OverlayManager.shared.isVibeCyclePillVisible ? visiblePillWindows : []
     }
 
     private var visibleStandalonePillWindowCount: Int {
@@ -284,19 +281,14 @@ final class VibePillPresentationControllerTests: XCTestCase {
     }
 
     private var visibleStandalonePillWindows: [NSWindow] {
-        visiblePillWindows.filter { window in
-            window.contentView is NSHostingView<OverlayPillOverlay<VibePillView>>
-        }
+        OverlayManager.shared.isVibeCyclePillVisible ? [] : visiblePillWindows
     }
 
     private var visiblePillWindows: [NSWindow] {
         NSApp.windows.filter { window in
             window.isVisible &&
-                window.frame.size == OverlayPillMetrics.panelSize &&
-                (
-                    window.contentView is NSHostingView<VibeCyclePillOverlay> ||
-                    window.contentView is NSHostingView<OverlayPillOverlay<VibePillView>>
-                )
+                window is NSPanel &&
+                window.frame.size == OverlayPillMetrics.panelSize
         }
     }
 

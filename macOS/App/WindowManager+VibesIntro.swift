@@ -57,6 +57,7 @@ extension WindowManager {
                         self.openSettings(tab: .style)
                     }
                 )
+                .keyVoxWindowDragGesture(allowsActivationEvents: true)
             )
 
         window.contentView = hostingView
@@ -73,8 +74,8 @@ extension WindowManager {
     }
 
     @MainActor
-    private func resolvedVibesIntroContentSize(
-        hostingView: NSHostingView<MacVibesIntroWindowView>,
+    private func resolvedVibesIntroContentSize<Content: View>(
+        hostingView: NSHostingView<Content>,
         fallback: CGSize
     ) -> CGSize {
         let fittingSize = hostingView.fittingSize

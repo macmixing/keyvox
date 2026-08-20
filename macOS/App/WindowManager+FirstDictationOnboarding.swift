@@ -30,24 +30,27 @@ extension WindowManager {
         window.level = .floating
         window.hidesOnDeactivate = false
 
-        window.contentView = NSHostingView(rootView: FirstDictationOnboardingFlowView(
-            onWindowSizeChange: { [weak window] newSize, completion in
-                window?.animateFirstDictationContentSize(to: newSize, completion: completion)
-            },
-            onComplete: { completion in
-                switch completion {
-                case .completed:
-                    AppSettingsStore.shared.hasCompletedFirstDictation = true
-                case .skipped:
-                    AppSettingsStore.shared.hasSkippedFirstDictation = true
-                }
+        window.contentView = NSHostingView(
+            rootView: FirstDictationOnboardingFlowView(
+                onWindowSizeChange: { [weak window] newSize, completion in
+                    window?.animateFirstDictationContentSize(to: newSize, completion: completion)
+                },
+                onComplete: { completion in
+                    switch completion {
+                    case .completed:
+                        AppSettingsStore.shared.hasCompletedFirstDictation = true
+                    case .skipped:
+                        AppSettingsStore.shared.hasSkippedFirstDictation = true
+                    }
 
-                window.close()
-                self.firstDictationOnboardingWindow = nil
-                self.openSettings(centered: true)
-                KeyVoxApp.presentVibesIntroIfEligibleAfterUpdateGate()
-            }
-        ))
+                    window.close()
+                    self.firstDictationOnboardingWindow = nil
+                    self.openSettings(centered: true)
+                    KeyVoxApp.presentVibesIntroIfEligibleAfterUpdateGate()
+                }
+            )
+            .keyVoxWindowDragGesture(allowsActivationEvents: true)
+        )
 
         window.setContentSize(windowSize)
         window.center()

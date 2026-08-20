@@ -35,6 +35,7 @@
 		8E6D05E12F3C5246003BD458 /* KeyboardMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D05CC2F3C51D6003BD458 /* KeyboardMonitor.swift */; };
 		8E6D05E22F3C5246003BD458 /* AudioRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D05CB2F3C51D6003BD458 /* AudioRecorder.swift */; };
 		8E6D05E42F3C524B003BD458 /* UIComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D05D52F3C51D6003BD458 /* UIComponents.swift */; };
+		A7D9F0012FFF000100AA0001 /* WindowDragGestureModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7D9F0022FFF000100AA0001 /* WindowDragGestureModifier.swift */; };
 		8E70C6ED2F623AFA00E9E555 /* updater.sh in Resources */ = {isa = PBXBuildFile; fileRef = 8E70C6EC2F623AFA00E9E555 /* updater.sh */; };
 		8E927F652F3C532800C071B3 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8E6D05D02F3C51D6003BD458 /* Assets.xcassets */; };
 		8E927F662F3C532D00C071B3 /* Kanit-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8E6D05D12F3C51D6003BD458 /* Kanit-Medium.ttf */; };
@@ -277,6 +278,7 @@
 		8E6D05D02F3C51D6003BD458 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		8E6D05D12F3C51D6003BD458 /* Kanit-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Kanit-Medium.ttf"; sourceTree = "<group>"; };
 		8E6D05D52F3C51D6003BD458 /* UIComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIComponents.swift; sourceTree = "<group>"; };
+		A7D9F0022FFF000100AA0001 /* WindowDragGestureModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowDragGestureModifier.swift; sourceTree = "<group>"; };
 		8E6D05D72F3C51D6003BD458 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		8E6D05D82F3C51D6003BD458 /* RecordingOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingOverlay.swift; sourceTree = "<group>"; };
 		8E6D05DA2F3C51D6003BD458 /* StatusMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusMenuView.swift; sourceTree = "<group>"; };
@@ -616,6 +618,7 @@
 				8E4B08602FD0000100C5DB85 /* MacAppTheme.swift */,
 				E90000162FE1000100AA0001 /* SelectedVibeLabel.swift */,
 				8E6D05D52F3C51D6003BD458 /* UIComponents.swift */,
+				A7D9F0022FFF000100AA0001 /* WindowDragGestureModifier.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -1185,6 +1188,7 @@
 				8F2202072F44010000BB2201 /* ConfirmDeletePromptView.swift in Sources */,
 				8E6D05DC2F3C523D003BD458 /* StatusMenuView.swift in Sources */,
 				8E6D05E42F3C524B003BD458 /* UIComponents.swift in Sources */,
+				A7D9F0012FFF000100AA0001 /* WindowDragGestureModifier.swift in Sources */,
 				8E4B085F2F45407E00C5DB85 /* TranscriptionManager.swift in Sources */,
 				8E4B08632FD0000200C5DB85 /* TranscriptionManager+Bindings.swift in Sources */,
 				8E4B08652FD0000300C5DB85 /* DictationTriggerController.swift in Sources */,

@@ -122,26 +122,29 @@ class WindowManager: ObservableObject {
         window.center()
         
         
-        window.contentView = NSHostingView(rootView: OnboardingView(onComplete: {
-            AppSettingsStore.shared.hasCompletedOnboarding = true
-            window.close()
-            self.onboardingWindow = nil
-            self.showFirstDictationOnboarding()
-        }, openSettings: {
-            self.openSettings()
-        }, beginMicrophoneAuthorization: {
-            self.lowerOnboardingWindowForMicrophoneAuthorization()
-        }, beginAccessibilityAuthorization: {
-            self.lowerOnboardingWindowForAccessibilityPrompt()
-        }, endAccessibilityAuthorization: {
-            self.restoreOnboardingWindowAfterAccessibilityGranted()
-        }, onPreferredHeightChange: { [weak window] height in
-            guard let window else { return }
-            let targetSize = CGSize(width: OnboardingView.preferredWindowSize.width, height: height)
-            if window.contentLayoutRect.size != targetSize {
-                window.setContentSize(targetSize)
-            }
-        }))
+        window.contentView = NSHostingView(
+            rootView: OnboardingView(onComplete: {
+                AppSettingsStore.shared.hasCompletedOnboarding = true
+                window.close()
+                self.onboardingWindow = nil
+                self.showFirstDictationOnboarding()
+            }, openSettings: {
+                self.openSettings()
+            }, beginMicrophoneAuthorization: {
+                self.lowerOnboardingWindowForMicrophoneAuthorization()
+            }, beginAccessibilityAuthorization: {
+                self.lowerOnboardingWindowForAccessibilityPrompt()
+            }, endAccessibilityAuthorization: {
+                self.restoreOnboardingWindowAfterAccessibilityGranted()
+            }, onPreferredHeightChange: { [weak window] height in
+                guard let window else { return }
+                let targetSize = CGSize(width: OnboardingView.preferredWindowSize.width, height: height)
+                if window.contentLayoutRect.size != targetSize {
+                    window.setContentSize(targetSize)
+                }
+            })
+            .keyVoxWindowDragGesture(allowsActivationEvents: true)
+        )
 
         window.setContentSize(onboardingSize)
         self.onboardingWindow = window
