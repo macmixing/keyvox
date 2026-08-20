@@ -56,6 +56,15 @@ struct DictationModelDescriptor: Equatable, Sendable {
 
 enum DictationModelCatalog {
     nonisolated static let manifestFilename = "install-manifest.json"
+    nonisolated private static let whisperRevision = "90a64d80ea254cf67575b41a5971f972c79f7b45"
+    nonisolated private static let parakeetRevision = "aed02740059203c4a87495924f685de3722ae9ce"
+
+    nonisolated private static let whisperGGMLBaseURL = URL(
+        string: "https://huggingface.co/ggerganov/whisper.cpp/resolve/\(whisperRevision)/ggml-base.bin"
+    )!
+    nonisolated private static let whisperCoreMLZipURL = URL(
+        string: "https://huggingface.co/ggerganov/whisper.cpp/resolve/\(whisperRevision)/ggml-base-encoder.mlmodelc.zip"
+    )!
 
     nonisolated static func descriptor(for modelID: DictationModelID) -> DictationModelDescriptor {
         switch modelID {
@@ -67,14 +76,14 @@ enum DictationModelCatalog {
                 artifacts: [
                     DictationModelArtifact(
                         relativePath: "ggml-base.bin",
-                        remoteURL: ModelDownloadURLs.ggmlBase,
+                        remoteURL: whisperGGMLBaseURL,
                         expectedSHA256: ModelArtifacts.ggmlBaseSHA256,
                         progressTotalBytes: 140_000_000,
                         retainedAfterInstall: true
                     ),
                     DictationModelArtifact(
                         relativePath: "ggml-base-encoder.mlmodelc.zip",
-                        remoteURL: ModelDownloadURLs.coreMLZip,
+                        remoteURL: whisperCoreMLZipURL,
                         expectedSHA256: ModelArtifacts.coreMLZipSHA256,
                         progressTotalBytes: 50_000_000,
                         retainedAfterInstall: false
@@ -145,7 +154,7 @@ enum DictationModelCatalog {
         _ sha256: String,
         _ progressTotalBytes: Int64
     ) -> DictationModelArtifact {
-        var url = URL(string: "https://huggingface.co/FluidInference/parakeet-tdt-0.6b-v3-coreml/resolve/main")!
+        var url = URL(string: "https://huggingface.co/FluidInference/parakeet-tdt-0.6b-v3-coreml/resolve/\(parakeetRevision)")!
         for component in relativePath.split(separator: "/") {
             url.appendPathComponent(String(component), isDirectory: false)
         }

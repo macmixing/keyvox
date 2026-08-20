@@ -151,7 +151,6 @@ iOS/
 │   │   │   ├── ModelBackgroundDownloadJob.swift
 │   │   │   ├── ModelBackgroundDownloadJobStore.swift
 │   │   │   ├── ModelDownloadBackgroundTasks.swift
-│   │   │   ├── ModelDownloadURLs.swift
 │   │   │   ├── ModelInstallManifest.swift
 │   │   │   ├── ModelInstallState.swift
 │   │   │   ├── ModelManager.swift
