@@ -15,6 +15,13 @@ class OverlayVisibilityManager: ObservableObject {
 class OverlayManager {
     static let shared = OverlayManager()
 
+    private enum OverlayContentMode {
+        case recording
+        case standaloneVibePill
+        case standaloneFormattingPill
+        case vibeCyclePill
+    }
+
     enum VibePillPlacement {
         case savedOverlayOrigin
         case currentOverlayCenter
@@ -33,6 +40,7 @@ class OverlayManager {
     private weak var activeVibeCyclePillPanel: NSPanel?
     private var visibleVibePillTitle: String?
     private var visibleVibePillState: OverlayPillState?
+    private var contentModesByPanel: [ObjectIdentifier: OverlayContentMode] = [:]
     private var moveObserver: NSObjectProtocol?
     private var screenParamsObserver: NSObjectProtocol?
 
@@ -69,22 +77,31 @@ class OverlayManager {
             panel.isMovableByWindowBackground = true
             configurePanelCallbacks(panel)
 
-            let contentView = NSHostingView(rootView: RecordingOverlay(
-                recorder: recorder,
-                isTranscribing: isTranscribing,
-                visibilityManager: visibilityManager
-            ))
-            panel.contentView = contentView
+            setDraggableContentView(
+                rootView: RecordingOverlay(
+                    recorder: recorder,
+                    isTranscribing: isTranscribing,
+                    visibilityManager: visibilityManager
+                ),
+                mode: .recording,
+                on: panel
+            )
             registerMoveObserverIfNeeded(for: panel)
             registerScreenParamsObserverIfNeeded(for: panel)
             window = panel
         }
 
-        window?.contentView = NSHostingView(rootView: RecordingOverlay(
-            recorder: recorder,
-            isTranscribing: isTranscribing,
-            visibilityManager: visibilityManager
-        ))
+        if let panel = window {
+            setDraggableContentView(
+                rootView: RecordingOverlay(
+                    recorder: recorder,
+                    isTranscribing: isTranscribing,
+                    visibilityManager: visibilityManager
+                ),
+                mode: .recording,
+                on: panel
+            )
+        }
         if configuredVibeCyclePillContentPanel === window {
             configuredVibeCyclePillContentPanel = nil
         }
@@ -187,7 +204,11 @@ class OverlayManager {
             hideVibeLabelWindow()
             self.visibleVibePillTitle = visibleVibeTitle
             visibleVibePillState = visibleVibeTitle == nil ? nil : state
-            panel.contentView = NSHostingView(rootView: content)
+            setDraggableContentView(
+                rootView: content,
+                mode: visibleVibeTitle == nil ? .standaloneFormattingPill : .standaloneVibePill,
+                on: panel
+            )
             if configuredVibeCyclePillContentPanel === panel {
                 configuredVibeCyclePillContentPanel = nil
             }
@@ -243,6 +264,7 @@ class OverlayManager {
         if panel === window {
             if let auxiliaryPanel = vibeCyclePillWindow, auxiliaryPanel !== panel {
                 auxiliaryPanel.orderOut(nil)
+                contentModesByPanel.removeValue(forKey: ObjectIdentifier(auxiliaryPanel))
             }
             vibeCyclePillWindow = nil
         } else {
@@ -255,13 +277,17 @@ class OverlayManager {
             )
         }
         if configuredVibeCyclePillContentPanel !== panel {
-            panel.contentView = NSHostingView(rootView: VibeCyclePillOverlay(
-                visibilityController: visibilityController,
-                adoptsVisiblePill: adoptedPillState != nil,
-                onAdoptedAppear: adoptedPillState == nil ? nil : {
-                    visibilityController.present(title: title, state: state)
-                }
-            ))
+            setDraggableContentView(
+                rootView: VibeCyclePillOverlay(
+                    visibilityController: visibilityController,
+                    adoptsVisiblePill: adoptedPillState != nil,
+                    onAdoptedAppear: adoptedPillState == nil ? nil : {
+                        visibilityController.present(title: title, state: state)
+                    }
+                ),
+                mode: .vibeCyclePill,
+                on: panel
+            )
             configuredVibeCyclePillContentPanel = panel
         }
         visibleVibePillTitle = nil
@@ -367,6 +393,10 @@ class OverlayManager {
             panel.orderOut(nil)
         }
 
+        if let panel = vibeCyclePillWindow, panel !== window {
+            contentModesByPanel.removeValue(forKey: ObjectIdentifier(panel))
+        }
+
         activeVibeCyclePillPanel = nil
         vibeCyclePillWindow = nil
         configuredVibeCyclePillContentPanel = nil
@@ -380,7 +410,7 @@ class OverlayManager {
     )? {
         guard let panel = window,
               panel.isVisible,
-              panel.contentView is NSHostingView<OverlayPillOverlay<VibePillView>>,
+              contentMode(for: panel) == .standaloneVibePill,
               let title = visibleVibePillTitle,
               let state = visibleVibePillState else {
             return nil
@@ -391,7 +421,7 @@ class OverlayManager {
     private func visiblePrimaryVibeCyclePillPanel() -> NSPanel? {
         guard let panel = window,
               panel.isVisible,
-              panel.contentView is NSHostingView<VibeCyclePillOverlay> else {
+              contentMode(for: panel) == .vibeCyclePill else {
             return nil
         }
         return panel
@@ -400,7 +430,7 @@ class OverlayManager {
     private func visibleAuxiliaryVibeCyclePillPanel() -> NSPanel? {
         guard let panel = vibeCyclePillWindow,
               panel.isVisible,
-              panel.contentView is NSHostingView<VibeCyclePillOverlay> else {
+              contentMode(for: panel) == .vibeCyclePill else {
             return nil
         }
         return panel
@@ -417,6 +447,25 @@ class OverlayManager {
         panel.onDragReleaseVelocity = { [weak self, weak panel] velocity in
             self?.handleFlingRelease(panel, velocity: velocity)
         }
+    }
+
+    private func makeDraggableHostingView<Content: View>(rootView: Content) -> NSView {
+        NSHostingView(
+            rootView: rootView.keyVoxWindowDragGesture(allowsActivationEvents: false)
+        )
+    }
+
+    private func setDraggableContentView<Content: View>(
+        rootView: Content,
+        mode: OverlayContentMode,
+        on panel: NSPanel
+    ) {
+        panel.contentView = makeDraggableHostingView(rootView: rootView)
+        contentModesByPanel[ObjectIdentifier(panel)] = mode
+    }
+
+    private func contentMode(for panel: NSPanel) -> OverlayContentMode? {
+        contentModesByPanel[ObjectIdentifier(panel)]
     }
 
     private func resizePanel(_ panel: NSPanel, to size: CGSize) {

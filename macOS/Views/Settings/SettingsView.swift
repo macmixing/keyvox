@@ -41,6 +41,22 @@ struct SettingsView: View {
                 // Content Area
                 contentView
             }
+
+            // Dedicated drag surface that does not participate in content layout.
+            VStack {
+                HStack(spacing: 0) {
+                    Color.clear
+                        .contentShape(Rectangle())
+                        .keyVoxWindowDragGesture(allowsActivationEvents: true)
+
+                    Color.clear
+                        .frame(width: 64)
+                        .allowsHitTesting(false)
+                }
+                .frame(height: 54)
+
+                Spacer()
+            }
             
             // Close Button (Fixed at top right)
             VStack {

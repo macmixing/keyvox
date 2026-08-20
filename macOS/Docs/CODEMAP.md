@@ -120,6 +120,7 @@ KeyVox/
 │   │   │   ├── SelectedVibeLabel.swift
 │   │   │   ├── UIComponents.swift
 │   │   │   ├── VibePillView.swift
+│   │   │   ├── WindowDragGestureModifier.swift
 │   │   │   └── SettingsLastTranscriptionCard.swift
 │   │   ├── StatusMenuView.swift
 │   │   ├── Onboarding/
@@ -296,6 +297,10 @@ KeyVox/
   - Shared macOS app-window theme tokens for settings, onboarding, updater, and related modal surfaces.
   - Owns the standard main-window background color (`#1A1740` equivalent) plus reusable card/icon/sidebar/stroke accents.
   - Explicitly excludes `StatusMenuView` and warning overlays from the shared theme boundary.
+- `Views/Components/WindowDragGestureModifier.swift`
+  - Shared window-dragging surface used by movable macOS windows and overlays.
+  - Uses `WindowDragGesture` on supported systems and falls back to AppKit `performDrag(with:)` on earlier supported macOS versions.
+  - Lets each caller choose whether dragging can activate a nonactive window.
 - `Views/Components/DictionaryFloatingAddButton.swift`
   - Shared floating circular add action used by the dictionary settings surface.
 - `Views/Components/LogoBarView.swift`

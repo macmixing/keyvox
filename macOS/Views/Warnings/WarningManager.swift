@@ -104,6 +104,7 @@ final class WarningManager {
         recoveryModel = model
         recoveryWindow?.contentView = NSHostingView(
             rootView: PasteFailureRecoveryOverlayView(model: model)
+                .keyVoxWindowDragGesture(allowsActivationEvents: false)
         )
 
         if let screen = NSScreen.main {
