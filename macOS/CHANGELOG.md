@@ -6,6 +6,22 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.3.5] - 2026-08-20
+
+Restores reliable window dragging throughout KeyVox and prevents upstream changes from breaking model downloads.
+
+### Changed
+
+- Updated overlays, settings, onboarding, warnings, and update windows to support consistent dragging from their visible surfaces.
+- Pinned Parakeet and Whisper downloads to verified artifact revisions so released app versions continue receiving the model files they expect.
+
+### Fixed
+
+- Fixed KeyVox windows and overlays not moving when dragged while preserving Vibe pill interactions.
+- Fixed Parakeet installation failing after reaching 100% when upstream model metadata changes independently of the app.
+
+---
+
 ## [1.3.4] - 2026-08-18
 
 Adds a guided welcome and language-selection flow to Mac onboarding while improving selection replacement spacing, Electron clipboard restoration, and custom-dictionary matching.

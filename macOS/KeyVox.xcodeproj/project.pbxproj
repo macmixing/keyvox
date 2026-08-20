@@ -35,7 +35,6 @@
 		8E6D05E12F3C5246003BD458 /* KeyboardMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D05CC2F3C51D6003BD458 /* KeyboardMonitor.swift */; };
 		8E6D05E22F3C5246003BD458 /* AudioRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D05CB2F3C51D6003BD458 /* AudioRecorder.swift */; };
 		8E6D05E42F3C524B003BD458 /* UIComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D05D52F3C51D6003BD458 /* UIComponents.swift */; };
-		A7D9F0012FFF000100AA0001 /* WindowDragGestureModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7D9F0022FFF000100AA0001 /* WindowDragGestureModifier.swift */; };
 		8E70C6ED2F623AFA00E9E555 /* updater.sh in Resources */ = {isa = PBXBuildFile; fileRef = 8E70C6EC2F623AFA00E9E555 /* updater.sh */; };
 		8E927F652F3C532800C071B3 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8E6D05D02F3C51D6003BD458 /* Assets.xcassets */; };
 		8E927F662F3C532D00C071B3 /* Kanit-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8E6D05D12F3C51D6003BD458 /* Kanit-Medium.ttf */; };
@@ -88,6 +87,7 @@
 		A11000022FC1000100AA0001 /* WeeklyWordStatsCloudSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11000122FC1000100AA0001 /* WeeklyWordStatsCloudSync.swift */; };
 		A11000032FC1000100AA0001 /* WeeklyWordStatsStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11000132FC1000100AA0001 /* WeeklyWordStatsStoreTests.swift */; };
 		A11000042FC1000100AA0001 /* WeeklyWordStatsCloudSyncTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11000142FC1000100AA0001 /* WeeklyWordStatsCloudSyncTests.swift */; };
+		A7D9F0012FFF000100AA0001 /* WindowDragGestureModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7D9F0022FFF000100AA0001 /* WindowDragGestureModifier.swift */; };
 		AA1000112F50000100AA0001 /* OFL.txt in Resources */ = {isa = PBXBuildFile; fileRef = AA1000012F50000100AA0001 /* OFL.txt */; };
 		AB3000012F60000100AA0001 /* TestHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000012F60000100AA0001 /* TestHelpers.swift */; };
 		AB3000032F60000100AA0001 /* OverlayScreenPersistenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000032F60000100AA0001 /* OverlayScreenPersistenceTests.swift */; };
@@ -278,7 +278,6 @@
 		8E6D05D02F3C51D6003BD458 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		8E6D05D12F3C51D6003BD458 /* Kanit-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Kanit-Medium.ttf"; sourceTree = "<group>"; };
 		8E6D05D52F3C51D6003BD458 /* UIComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIComponents.swift; sourceTree = "<group>"; };
-		A7D9F0022FFF000100AA0001 /* WindowDragGestureModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowDragGestureModifier.swift; sourceTree = "<group>"; };
 		8E6D05D72F3C51D6003BD458 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		8E6D05D82F3C51D6003BD458 /* RecordingOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingOverlay.swift; sourceTree = "<group>"; };
 		8E6D05DA2F3C51D6003BD458 /* StatusMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusMenuView.swift; sourceTree = "<group>"; };
@@ -335,6 +334,7 @@
 		A11000122FC1000100AA0001 /* WeeklyWordStatsCloudSync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeeklyWordStatsCloudSync.swift; sourceTree = "<group>"; };
 		A11000132FC1000100AA0001 /* WeeklyWordStatsStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeeklyWordStatsStoreTests.swift; sourceTree = "<group>"; };
 		A11000142FC1000100AA0001 /* WeeklyWordStatsCloudSyncTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeeklyWordStatsCloudSyncTests.swift; sourceTree = "<group>"; };
+		A7D9F0022FFF000100AA0001 /* WindowDragGestureModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowDragGestureModifier.swift; sourceTree = "<group>"; };
 		AA1000012F50000100AA0001 /* OFL.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = OFL.txt; sourceTree = "<group>"; };
 		AB2000012F60000100AA0001 /* TestHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestHelpers.swift; sourceTree = "<group>"; };
 		AB2000032F60000100AA0001 /* OverlayScreenPersistenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayScreenPersistenceTests.swift; sourceTree = "<group>"; };
@@ -1548,7 +1548,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.5;
-				MARKETING_VERSION = 1.3.4;
+				MARKETING_VERSION = 1.3.5;
 				PRODUCT_BUNDLE_IDENTIFIER = com.cueit.keyvox;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1599,7 +1599,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.5;
-				MARKETING_VERSION = 1.3.4;
+				MARKETING_VERSION = 1.3.5;
 				PRODUCT_BUNDLE_IDENTIFIER = com.cueit.keyvox;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
