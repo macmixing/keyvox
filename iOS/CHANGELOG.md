@@ -6,6 +6,20 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.3.5] - 2026-08-20
+
+Keeps model downloads reliable when upstream repositories change.
+
+### Changed
+
+- Pinned Parakeet and Whisper downloads to verified artifact revisions so released app versions continue receiving the model files they expect.
+
+### Fixed
+
+- Fixed Parakeet installation failing after reaching 100% when upstream model metadata changes independently of the app.
+
+---
+
 ## [1.3.4] - 2026-08-19
 
 Adds language selection to iOS onboarding and improves accessible keyboard-tour layouts while fixing dictation spacing after selection deletion and custom-dictionary word endings.
