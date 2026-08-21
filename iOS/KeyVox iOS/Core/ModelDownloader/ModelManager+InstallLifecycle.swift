@@ -45,7 +45,10 @@ extension ModelManager {
         backgroundJobStore().load()
     }
 
-    func applyBackgroundJobStatus(_ job: ModelBackgroundDownloadJob) {
+    func applyBackgroundJobStatus(
+        _ job: ModelBackgroundDownloadJob,
+        to modelStates: inout [DictationModelID: ModelInstallState]
+    ) {
         let state: ModelInstallState
         if let message = job.lastErrorMessage, job.finalizationState == .failed {
             state = .failed(message: message)
@@ -68,7 +71,7 @@ extension ModelManager {
             )
         }
 
-        setState(state, for: job.modelID)
+        modelStates[job.modelID] = state
     }
 
     func startOrResumeDownloadJob(for modelID: DictationModelID) async {
