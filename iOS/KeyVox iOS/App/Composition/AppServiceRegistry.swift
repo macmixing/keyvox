@@ -390,8 +390,8 @@ final class AppServiceRegistry {
             .store(in: &cancellables)
 
         modelManager.$modelStates
-            .sink { [weak self] _ in
-                self?.normalizeActiveProviderSelection()
+            .sink { [weak self] modelStates in
+                self?.normalizeActiveProviderSelection(using: modelStates)
             }
             .store(in: &cancellables)
 
@@ -407,7 +407,7 @@ final class AppServiceRegistry {
             }
             .store(in: &cancellables)
 
-        normalizeActiveProviderSelection()
+        normalizeActiveProviderSelection(using: modelManager.modelStates)
         normalizeTTSVoiceSelection()
     }
 
@@ -425,21 +425,22 @@ final class AppServiceRegistry {
         )
     }
 
-    private func normalizeActiveProviderSelection() {
+    private func normalizeActiveProviderSelection(
+        using modelStates: [DictationModelID: ModelInstallState]
+    ) {
         let selectedModelID = settingsStore.activeDictationProvider.modelID
-        if modelManager.activeInstallModelID() == selectedModelID {
+        switch modelStates[selectedModelID] ?? .notInstalled {
+        case .downloading, .installing, .ready:
             return
-        }
-
-        switch modelManager.state(for: selectedModelID) {
-        case .downloading, .installing, .ready, .failed:
-            return
-        case .notInstalled:
+        case .notInstalled, .failed:
             break
         }
 
         let readyProviders = AppSettingsStore.ActiveDictationProvider.allCases.filter {
-            modelManager.isModelReady(for: $0.modelID)
+            if case .ready = modelStates[$0.modelID] ?? .notInstalled {
+                return true
+            }
+            return false
         }
 
         if let fallback = readyProviders.first {

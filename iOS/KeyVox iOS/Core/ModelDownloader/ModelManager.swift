@@ -94,14 +94,16 @@ final class ModelManager: ObservableObject {
     }
 
     func refreshStatus() {
+        var refreshedModelStates = modelStates
         for modelID in DictationModelID.allCases {
-            modelStates[modelID] = validatedState(for: modelID)
+            refreshedModelStates[modelID] = validatedState(for: modelID)
         }
 
         if let backgroundJob = persistedBackgroundDownloadJob() {
-            applyBackgroundJobStatus(backgroundJob)
+            applyBackgroundJobStatus(backgroundJob, to: &refreshedModelStates)
         }
 
+        modelStates = refreshedModelStates
         syncLegacyWhisperState()
     }
 
