@@ -215,7 +215,7 @@ public enum TextCompositionPolicy {
         _ context: TextCompositionContext
     ) -> Bool {
         guard let previousNonWhitespaceCharacter = context.previousNonWhitespaceCharacter,
-              isEmojiCharacter(previousNonWhitespaceCharacter) else {
+              TextCompositionCharacterClassifier.isEmoji(previousNonWhitespaceCharacter) else {
             return false
         }
 
@@ -312,17 +312,6 @@ public enum TextCompositionPolicy {
         )
         return previousIsWordLike
             || previousIsTriggerPunctuation
-            || isEmojiCharacter(previousCharacter)
-    }
-
-    private static func isEmojiCharacter(_ character: Character) -> Bool {
-        let scalars = Array(character.unicodeScalars)
-        guard let baseScalar = scalars.first else { return false }
-        if baseScalar.properties.isEmojiPresentation {
-            return true
-        }
-
-        return baseScalar.properties.isEmoji
-            && scalars.dropFirst().first?.value == 0xFE0F
+            || TextCompositionCharacterClassifier.isEmoji(previousCharacter)
     }
 }
