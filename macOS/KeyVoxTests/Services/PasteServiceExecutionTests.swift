@@ -1,6 +1,7 @@
 import XCTest
 @testable import KeyVox
 import Foundation
+import ApplicationServices
 
 @MainActor
 final class PasteServiceExecutionTests: XCTestCase {
@@ -70,6 +71,51 @@ final class PasteServiceExecutionTests: XCTestCase {
         XCTAssertEqual(capitalization.inputs.map(\.text), ["Hello"])
         XCTAssertEqual(spacing.inputs.map(\.text), ["hello"])
         XCTAssertEqual(clipboard.writes, ["hello"])
+    }
+
+    func testTrailingSeparatorCompositionFeedsInsertionTransport() async throws {
+        let insertionCases = [
+            (text: "What's up?", followingCharacter: Character("T"), expected: "What's up? "),
+            (text: "That's awesome.", followingCharacter: Character("Y"), expected: "That's awesome. "),
+            (text: "definitely", followingCharacter: Character("a"), expected: "definitely "),
+            (text: "Nice", followingCharacter: Character("😎"), expected: "Nice "),
+            (text: "definitely", followingCharacter: Character(";"), expected: "definitely"),
+        ]
+
+        for testCase in insertionCases {
+            let clipboard = MockClipboardAdapter(snapshot: [[:]])
+            let element = AXUIElementCreateApplication(getpid())
+            let inspector = MockAXInspector(
+                focusedElement: element,
+                insertionContext: PasteInsertionContext(
+                    selectionLength: 0,
+                    caretLocation: 0,
+                    previousCharacter: nil,
+                    followingCharacter: testCase.followingCharacter
+                )
+            )
+            let service = try makeService(
+                clipboard: clipboard,
+                recovery: MockFailureRecoveryController(),
+                capitalization: MockCapitalizationHeuristics(outputText: testCase.text),
+                spacing: MockSpacingHeuristics(),
+                injector: MockAccessibilityInjector(outcome: .verifiedSuccess),
+                coordinator: MockMenuFallbackCoordinator(result: .init(
+                    didMenuFallbackInsert: false,
+                    menuAttempt: nil,
+                    suppressFirstWarmupFailureWarning: false
+                )),
+                restoreDelayAfterMenuFallback: 0.5,
+                axInspector: inspector
+            )
+
+            service.pasteText(testCase.text)
+
+            try await waitForCondition {
+                clipboard.restoreCalls == 1
+            }
+            XCTAssertEqual(clipboard.writes, [testCase.expected])
+        }
     }
 
     func testVerifiedMenuFallbackKeepsGraceDelayBeforeRestoringClipboard() async throws {
@@ -328,6 +374,38 @@ final class PasteServiceExecutionTests: XCTestCase {
         XCTAssertEqual(second.lastInsertionAppIdentity?.pid, 99)
         XCTAssertEqual(second.lastInsertionAt, firstTimestamp)
         XCTAssertEqual(second.lastInsertedTrailingCharacter, ".")
+    }
+
+    func testIncompleteMenuFallbackInsertionDoesNotFeedNextSpacingDecision() async throws {
+        let clipboard = MockClipboardAdapter(snapshot: [[:]])
+        let spacing = MockSpacingHeuristics()
+        let coordinator = MockMenuFallbackCoordinator(result: .init(
+            didMenuFallbackInsert: true,
+            didCompleteInsertion: false,
+            menuAttempt: .actionSucceeded,
+            completionEvidence: .expectedPayloadObserved,
+            suppressFirstWarmupFailureWarning: false
+        ))
+        let service = try makeService(
+            clipboard: clipboard,
+            recovery: MockFailureRecoveryController(),
+            capitalization: MockCapitalizationHeuristics(outputText: "hello."),
+            spacing: spacing,
+            injector: MockAccessibilityInjector(outcome: .failureNeedsFallback),
+            coordinator: coordinator,
+            restoreDelayAfterMenuFallback: 0
+        )
+
+        service.pasteText("hello.")
+        try await waitForCondition { clipboard.restoreCalls == 1 }
+
+        service.pasteText("next")
+        try await waitForCondition { clipboard.restoreCalls == 2 }
+
+        XCTAssertEqual(spacing.inputs.count, 2)
+        XCTAssertNil(spacing.inputs[1].lastInsertionAppIdentity)
+        XCTAssertEqual(spacing.inputs[1].lastInsertionAt, .distantPast)
+        XCTAssertNil(spacing.inputs[1].lastInsertedTrailingCharacter)
     }
 
     func testUntouchedInsertionTargetAndReplacementRunOffMainThread() async throws {

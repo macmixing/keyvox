@@ -272,6 +272,69 @@ struct KeyboardTextInputControllerTests {
         }
     }
 
+    @Test func transcriptionInsertionAddsTrailingSeparatorBeforeExistingWordText() {
+        let insertionCases = [
+            (
+                original: "That's cool.",
+                followingText: "That's cool.",
+                transcription: "What's up?",
+                expected: "What's up? That's cool."
+            ),
+            (
+                original: "You're good.",
+                followingText: "You're good.",
+                transcription: "That's awesome.",
+                expected: "That's awesome. You're good."
+            ),
+            (
+                original: "That's awesome.",
+                followingText: "awesome.",
+                transcription: "definitely",
+                expected: "That's definitely awesome."
+            ),
+            (
+                original: "😎",
+                followingText: "😎",
+                transcription: "Nice",
+                expected: "Nice 😎"
+            ),
+        ]
+        for testCase in insertionCases {
+            let documentProxy = StatefulSelectionDocumentProxy(
+                text: testCase.original,
+                caretBefore: testCase.followingText
+            )
+            let controller = KeyboardTextInputController(
+                documentProxy: documentProxy,
+                emitKeypress: {}
+            )
+
+            let inserted = controller.insertTranscription(testCase.transcription)
+
+            #expect(inserted == true)
+            #expect(documentProxy.text == testCase.expected)
+        }
+    }
+
+    @Test func transcriptionInsertionDoesNotAddTrailingSeparatorBeforePunctuation() {
+        for punctuation in [".", ",", "?", "!", ":", ";"] {
+            let original = "That's\(punctuation)"
+            let documentProxy = StatefulSelectionDocumentProxy(
+                text: original,
+                caretBefore: punctuation
+            )
+            let controller = KeyboardTextInputController(
+                documentProxy: documentProxy,
+                emitKeypress: {}
+            )
+
+            let inserted = controller.insertTranscription("definitely")
+
+            #expect(inserted == true)
+            #expect(documentProxy.text == "That's definitely\(punctuation)")
+        }
+    }
+
     @Test func transcriptionRepairsStaleSpaceAfterDeletingSelection() {
         let documentProxy = KeyboardTextDocumentProxySpy()
         documentProxy.documentContextBeforeInput = "Previous sentence. "
@@ -626,6 +689,15 @@ private final class StatefulSelectionDocumentProxy: KeyboardTextDocumentProxying
         let upperBound = text.distance(from: text.startIndex, to: selectedRange.upperBound)
         selection = lowerBound..<upperBound
         caretLocation = lowerBound
+    }
+
+    init(text: String, caretBefore followingText: String) {
+        characters = Array(text)
+        guard let followingRange = text.range(of: followingText) else {
+            preconditionFailure("Following test text must exist in the document")
+        }
+        selection = nil
+        caretLocation = text.distance(from: text.startIndex, to: followingRange.lowerBound)
     }
 
     var text: String { String(characters) }

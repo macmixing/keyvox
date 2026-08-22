@@ -180,7 +180,10 @@ final class KeyboardTextInputController {
             text: preparedText,
             followingCharacter: followingCharacter
         )
-        let insertionText = punctuationResolution.text
+        let insertionText = TrailingSeparatorCompositionPolicy.applyIfNeeded(
+            to: punctuationResolution.text,
+            followingCharacter: followingCharacter
+        )
         documentProxy.insertText(insertionText)
         if punctuationResolution.shouldReplaceFollowingPunctuation {
             documentProxy.adjustTextPosition(byCharacterOffset: 1)

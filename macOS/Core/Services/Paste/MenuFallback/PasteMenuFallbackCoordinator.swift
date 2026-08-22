@@ -2,17 +2,20 @@ import Cocoa
 
 struct PasteMenuFallbackExecutionResult {
     let didMenuFallbackInsert: Bool
+    let didCompleteInsertion: Bool
     let menuAttempt: PasteMenuFallbackAttemptResult?
     let completionEvidence: PasteMenuFallbackCompletionEvidence
     let suppressFirstWarmupFailureWarning: Bool
 
     init(
         didMenuFallbackInsert: Bool,
+        didCompleteInsertion: Bool? = nil,
         menuAttempt: PasteMenuFallbackAttemptResult?,
         completionEvidence: PasteMenuFallbackCompletionEvidence = .none,
         suppressFirstWarmupFailureWarning: Bool
     ) {
         self.didMenuFallbackInsert = didMenuFallbackInsert
+        self.didCompleteInsertion = didCompleteInsertion ?? didMenuFallbackInsert
         self.menuAttempt = menuAttempt
         self.completionEvidence = completionEvidence
         self.suppressFirstWarmupFailureWarning = suppressFirstWarmupFailureWarning
@@ -27,7 +30,8 @@ protocol PasteMenuFallbackCoordinating {
         menuFallbackExecutor: PasteMenuFallbackExecuting,
         shouldTrustMenuSuccessWithoutAXVerification: () -> Bool,
         setClipboardStringOnMainThread: (String) -> Void,
-        executeLeadingSpacePasteOnMainThread: (Int) -> Bool
+        executeLeadingSpacePasteOnMainThread: (Int) -> Bool,
+        typeTrailingSpacesOnMainThread: (Int) -> Bool
     ) -> PasteMenuFallbackExecutionResult
 }
 
@@ -58,7 +62,8 @@ final class PasteMenuFallbackCoordinator {
         menuFallbackExecutor: PasteMenuFallbackExecuting,
         shouldTrustMenuSuccessWithoutAXVerification: () -> Bool,
         setClipboardStringOnMainThread: (String) -> Void,
-        executeLeadingSpacePasteOnMainThread: (Int) -> Bool
+        executeLeadingSpacePasteOnMainThread: (Int) -> Bool,
+        typeTrailingSpacesOnMainThread: (Int) -> Bool
     ) -> PasteMenuFallbackExecutionResult {
         #if DEBUG
         print("Accessibility injection failed/skipped. Triggering paste fallback...")
@@ -70,7 +75,11 @@ final class PasteMenuFallbackCoordinator {
         var isFirstMenuSuccessAttemptForProcess = false
 
         let transport = didAccessibilityInsertText
-            ? PasteMenuFallbackTransport(leadingSpacesToType: 0, textToPaste: insertionText)
+            ? PasteMenuFallbackTransport(
+                leadingSpacesToType: 0,
+                textToPaste: insertionText,
+                trailingSpacesToType: 0
+            )
             : menuFallbackTransport(for: insertionText)
         let textForMenuPaste = transport.textToPaste
         var didTypeLeadingSpaces = false
@@ -195,6 +204,13 @@ final class PasteMenuFallbackCoordinator {
             )
         }
 
+        var didCompleteInsertion = didMenuFallbackInsert
+        if didMenuFallbackInsert, transport.trailingSpacesToType > 0 {
+            didCompleteInsertion = completionEvidence != .trustedWithoutVerification
+                && (typeTrailingSpacesOnMainThread(transport.trailingSpacesToType)
+                    || typeTrailingSpacesOnMainThread(transport.trailingSpacesToType))
+        }
+
         let suppressFirstWarmupFailureWarning = Self.shouldSuppressFailureWarningForFirstMenuSuccessAttempt(
             attempt: menuAttempt,
             didAccessibilityInsertText: didAccessibilityInsertText,
@@ -204,6 +220,7 @@ final class PasteMenuFallbackCoordinator {
 
         return PasteMenuFallbackExecutionResult(
             didMenuFallbackInsert: didMenuFallbackInsert,
+            didCompleteInsertion: didCompleteInsertion,
             menuAttempt: menuAttempt,
             completionEvidence: completionEvidence,
             suppressFirstWarmupFailureWarning: suppressFirstWarmupFailureWarning
@@ -341,12 +358,14 @@ final class PasteMenuFallbackCoordinator {
 
     private func menuFallbackTransport(for text: String) -> PasteMenuFallbackTransport {
         let leadingSpaces = text.prefix { $0 == " " }.count
-        guard leadingSpaces > 0 else {
-            return PasteMenuFallbackTransport(leadingSpacesToType: 0, textToPaste: text)
-        }
-
-        let remainingText = String(text.dropFirst(leadingSpaces))
-        return PasteMenuFallbackTransport(leadingSpacesToType: leadingSpaces, textToPaste: remainingText)
+        let textAfterLeadingSpaces = text.dropFirst(leadingSpaces)
+        let trailingSpaces = textAfterLeadingSpaces.reversed().prefix { $0 == " " }.count
+        let textToPaste = textAfterLeadingSpaces.dropLast(trailingSpaces)
+        return PasteMenuFallbackTransport(
+            leadingSpacesToType: leadingSpaces,
+            textToPaste: String(textToPaste),
+            trailingSpacesToType: trailingSpaces
+        )
     }
 }
 

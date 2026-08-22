@@ -4,6 +4,7 @@ import KeyVoxTextComposition
 struct PasteTerminalPunctuationInsertion {
     let text: String
     let targetElement: AXUIElement?
+    let followingCharacter: Character?
 }
 
 protocol PasteTerminalPunctuationCoordinating {
@@ -19,11 +20,25 @@ final class PasteTerminalPunctuationCoordinator: PasteTerminalPunctuationCoordin
 
     func resolveAdjacentTerminalPunctuation(in text: String) -> PasteTerminalPunctuationInsertion {
         guard let targetElement = axInspector.focusedUIElement() else {
-            return PasteTerminalPunctuationInsertion(text: text, targetElement: nil)
+            return PasteTerminalPunctuationInsertion(
+                text: text,
+                targetElement: nil,
+                followingCharacter: nil
+            )
         }
-        guard let context = axInspector.insertionContext(for: targetElement),
-              let selectionLength = context.selectionLength else {
-            return PasteTerminalPunctuationInsertion(text: text, targetElement: targetElement)
+        guard let context = axInspector.insertionContext(for: targetElement) else {
+            return PasteTerminalPunctuationInsertion(
+                text: text,
+                targetElement: targetElement,
+                followingCharacter: nil
+            )
+        }
+        guard let selectionLength = context.selectionLength else {
+            return PasteTerminalPunctuationInsertion(
+                text: text,
+                targetElement: targetElement,
+                followingCharacter: context.followingCharacter
+            )
         }
 
         let resolution = TerminalPunctuationCompositionPolicy.resolve(
@@ -33,7 +48,8 @@ final class PasteTerminalPunctuationCoordinator: PasteTerminalPunctuationCoordin
         guard resolution.shouldReplaceFollowingPunctuation else {
             return PasteTerminalPunctuationInsertion(
                 text: resolution.text,
-                targetElement: targetElement
+                targetElement: targetElement,
+                followingCharacter: context.followingCharacter
             )
         }
         guard let selectionLocation = context.caretLocation,
@@ -43,12 +59,14 @@ final class PasteTerminalPunctuationCoordinator: PasteTerminalPunctuationCoordin
               ) else {
             return PasteTerminalPunctuationInsertion(
                 text: String(resolution.text.dropLast()),
-                targetElement: targetElement
+                targetElement: targetElement,
+                followingCharacter: context.followingCharacter
             )
         }
         return PasteTerminalPunctuationInsertion(
             text: resolution.text,
-            targetElement: targetElement
+            targetElement: targetElement,
+            followingCharacter: context.followingCharacter
         )
     }
 }

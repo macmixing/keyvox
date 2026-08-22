@@ -49,6 +49,7 @@ enum PasteAccessibilityInjectionOutcome {
 struct PasteMenuFallbackTransport {
     let leadingSpacesToType: Int
     let textToPaste: String
+    let trailingSpacesToType: Int
 }
 
 enum PasteMenuFallbackAttemptResult {
