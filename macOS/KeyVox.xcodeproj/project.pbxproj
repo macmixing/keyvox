@@ -72,6 +72,8 @@
 		9A1000212F4B000100AA0001 /* PasteMenuFallbackCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1000112F4B000100AA0001 /* PasteMenuFallbackCoordinator.swift */; };
 		9A1000222F4B000100AA0001 /* PasteCapitalizationCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1000232F4B000100AA0001 /* PasteCapitalizationCoordinator.swift */; };
 		9A1000242F4B000100AA0001 /* PasteDictionaryCasingStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1000252F4B000100AA0001 /* PasteDictionaryCasingStore.swift */; };
+		A7E100012FFD000100AA0001 /* PasteTerminalPunctuationCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7E100022FFD000100AA0001 /* PasteTerminalPunctuationCoordinator.swift */; };
+		A7E100032FFD000100AA0001 /* PasteTerminalPunctuationCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7E100042FFD000100AA0001 /* PasteTerminalPunctuationCoordinatorTests.swift */; };
 		9A1000902F4B000100AA0001 /* PasteUntouchedInsertionReplacer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1000912F4B000100AA0001 /* PasteUntouchedInsertionReplacer.swift */; };
 		9B2000122F4C000100AA0001 /* OverlayPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B2000022F4C000100AA0001 /* OverlayPanel.swift */; };
 		9B2000132F4C000100AA0001 /* OverlayMotionController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B2000032F4C000100AA0001 /* OverlayMotionController.swift */; };
@@ -319,6 +321,8 @@
 		9A1000112F4B000100AA0001 /* PasteMenuFallbackCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteMenuFallbackCoordinator.swift; sourceTree = "<group>"; };
 		9A1000232F4B000100AA0001 /* PasteCapitalizationCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteCapitalizationCoordinator.swift; sourceTree = "<group>"; };
 		9A1000252F4B000100AA0001 /* PasteDictionaryCasingStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteDictionaryCasingStore.swift; sourceTree = "<group>"; };
+		A7E100022FFD000100AA0001 /* PasteTerminalPunctuationCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteTerminalPunctuationCoordinator.swift; sourceTree = "<group>"; };
+		A7E100042FFD000100AA0001 /* PasteTerminalPunctuationCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteTerminalPunctuationCoordinatorTests.swift; sourceTree = "<group>"; };
 		9A1000912F4B000100AA0001 /* PasteUntouchedInsertionReplacer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteUntouchedInsertionReplacer.swift; sourceTree = "<group>"; };
 		9B2000022F4C000100AA0001 /* OverlayPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayPanel.swift; sourceTree = "<group>"; };
 		9B2000032F4C000100AA0001 /* OverlayMotionController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayMotionController.swift; sourceTree = "<group>"; };
@@ -787,6 +791,7 @@
 				AB2000352F60000100AA0001 /* PasteServiceExecutionTests.swift */,
 				AB2000162F60000100AA0001 /* PasteServiceListRenderModeTests.swift */,
 				AB2000312F60000100AA0001 /* PasteSpacingCoordinatorTests.swift */,
+				A7E100042FFD000100AA0001 /* PasteTerminalPunctuationCoordinatorTests.swift */,
 				AB2000412F60000100AA0001 /* PasteUntouchedInsertionReplacerTests.swift */,
 				AB2000282F60000100AA0001 /* PasteWarningGuardrailTests.swift */,
 				AB2000392F60000100AA0001 /* DictationPipelineSmokeTests.swift */,
@@ -894,6 +899,7 @@
 			children = (
 				9A1000232F4B000100AA0001 /* PasteCapitalizationCoordinator.swift */,
 				9A1000072F4B000100AA0001 /* PasteSpacingCoordinator.swift */,
+				A7E100022FFD000100AA0001 /* PasteTerminalPunctuationCoordinator.swift */,
 			);
 			path = Composition;
 			sourceTree = "<group>";
@@ -1315,6 +1321,7 @@
 				9A1000222F4B000100AA0001 /* PasteCapitalizationCoordinator.swift in Sources */,
 				9A1000242F4B000100AA0001 /* PasteDictionaryCasingStore.swift in Sources */,
 				9A1000172F4B000100AA0001 /* PasteSpacingCoordinator.swift in Sources */,
+				A7E100012FFD000100AA0001 /* PasteTerminalPunctuationCoordinator.swift in Sources */,
 				9A1000182F4B000100AA0001 /* PastePolicies.swift in Sources */,
 				8F7702012F49010000117701 /* PasteFailureRecoveryCoordinator.swift in Sources */,
 				8E6D05C72F3C51C9003BD458 /* KeyVoxApp.swift in Sources */,
@@ -1354,6 +1361,7 @@
 				AB3000352F60000100AA0001 /* PasteServiceExecutionTests.swift in Sources */,
 				AB3000402F60000100AA0001 /* PasteCapitalizationCoordinatorTests.swift in Sources */,
 				AB3000312F60000100AA0001 /* PasteSpacingCoordinatorTests.swift in Sources */,
+				A7E100032FFD000100AA0001 /* PasteTerminalPunctuationCoordinatorTests.swift in Sources */,
 				AB3000412F60000100AA0001 /* PasteUntouchedInsertionReplacerTests.swift in Sources */,
 				F20000062FB0000100AA0001 /* AudioIndicatorDriverTests.swift in Sources */,
 				8E03671C2F49848500017017 /* PasteServiceExecutionMocks.swift in Sources */,

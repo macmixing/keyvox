@@ -2,7 +2,7 @@
 
 This document captures the current implementation rules and maintainer-facing architecture for the iOS app, keyboard extension, and widget extension.
 
-**Last Updated: 2026-07-31**
+**Last Updated: 2026-08-22**
 
 ## Design Philosophy
 
@@ -1512,7 +1512,7 @@ Warning precedence must remain:
 
 ### Text Insertion Rules
 
-`KeyVoxTextComposition` owns the deterministic editor-adjacent capitalization, spacing, quotation-mark, and sentence-boundary policy shared with macOS. It accepts only platform-neutral preceding-text context and never reads `UITextDocumentProxy` or inserts text.
+`KeyVoxTextComposition` owns the deterministic editor-adjacent capitalization, spacing, quotation-mark, sentence-boundary, and terminal-punctuation policy shared with macOS. It accepts platform-neutral adjacent-text context and never reads `UITextDocumentProxy` or inserts text.
 
 `KeyboardInsertionSpacingCoordinator` converts the keyboard's preceding-text snapshot into the shared context and stays intentionally thin:
 
@@ -1522,7 +1522,13 @@ Warning precedence must remain:
 
 `KeyboardInsertionCapitalizationCoordinator` supplies the keyboard's preceding-text snapshot and casing-preservation decision to the shared policy. It does not replace the all-caps override owned by the dictation pipeline.
 
-`KeyboardTextInputController` remains the insertion owner. It calls the coordinators, logs the capitalization and spacing stages in debug builds, and inserts the resulting text through the document proxy.
+`TerminalPunctuationCompositionPolicy` resolves finalized dictation against the first character following the insertion or selected span:
+
+- an incoming terminal period is removed when supported non-quote punctuation already follows
+- a matching incoming question or exclamation mark is removed so the existing mark is reused
+- a differing incoming question or exclamation mark signals that the following punctuation must be replaced
+
+`KeyboardTextInputController` remains the insertion owner. It calls the capitalization and spacing coordinators, reads the document proxy's following character, applies the shared punctuation result, and inserts the resulting text. When replacement is required, it first replaces the selected text, then advances over and deletes the old following punctuation so selection semantics remain correct.
 
 ### Keyboard-Owned Local State
 

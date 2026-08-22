@@ -6,6 +6,22 @@ The format loosely follows Keep a Changelog, and the package uses semantic versi
 
 ---
 
+## [1.0.3] - 2026-08-22
+
+Composed dictated terminal marks with punctuation immediately following replaced text.
+
+### Includes
+
+- Removed an incoming model-added period when supported non-quote punctuation already follows the selected text.
+- Reused a matching question mark or exclamation point and replaced differing supported non-quote punctuation when processed dictation explicitly ends with either mark.
+- Left incoming terminal punctuation unchanged before straight or curly quotation marks.
+- Shared the punctuation-boundary decision across macOS and iOS composition paths.
+- Added regression coverage for model periods, explicit question marks and exclamation points, supported non-quote punctuation, and quotation-mark boundaries.
+
+### Notes
+
+- `1.0.3` bumps the tracked patch version for punctuation-aware selected-text composition.
+
 ## [1.0.2] - 2026-08-08
 
 Generalized capitalization and spacing around punctuation and symbol boundaries.

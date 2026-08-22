@@ -2,6 +2,20 @@ import Cocoa
 
 protocol PasteAccessibilityInjecting {
     func injectTextViaAccessibility(_ text: String) -> PasteAccessibilityInjectionOutcome
+    func injectTextViaAccessibility(
+        _ text: String,
+        into targetElement: AXUIElement?
+    ) -> PasteAccessibilityInjectionOutcome
+}
+
+extension PasteAccessibilityInjecting {
+    func injectTextViaAccessibility(
+        _ text: String,
+        into targetElement: AXUIElement?
+    ) -> PasteAccessibilityInjectionOutcome {
+        _ = targetElement
+        return injectTextViaAccessibility(text)
+    }
 }
 
 final class PasteAccessibilityInjector {
@@ -16,20 +30,27 @@ final class PasteAccessibilityInjector {
     }
 
     func injectTextViaAccessibility(_ text: String) -> PasteAccessibilityInjectionOutcome {
-        guard let element = axInspector.focusedUIElement() else {
+        injectTextViaAccessibility(text, into: axInspector.focusedUIElement())
+    }
+
+    func injectTextViaAccessibility(
+        _ text: String,
+        into targetElement: AXUIElement?
+    ) -> PasteAccessibilityInjectionOutcome {
+        guard let targetElement else {
             return .failureNeedsFallback
         }
 
-        if isCurrentProcessElement(element) {
+        if isCurrentProcessElement(targetElement) {
             return performOnMainThread {
-                self.injectTextViaAccessibility(text, into: element)
+                self.injectText(text, into: targetElement)
             }
         }
 
-        return injectTextViaAccessibility(text, into: element)
+        return injectText(text, into: targetElement)
     }
 
-    private func injectTextViaAccessibility(
+    private func injectText(
         _ text: String,
         into element: AXUIElement
     ) -> PasteAccessibilityInjectionOutcome {
