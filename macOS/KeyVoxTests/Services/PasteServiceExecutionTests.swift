@@ -376,6 +376,38 @@ final class PasteServiceExecutionTests: XCTestCase {
         XCTAssertEqual(second.lastInsertedTrailingCharacter, ".")
     }
 
+    func testIncompleteMenuFallbackInsertionDoesNotFeedNextSpacingDecision() async throws {
+        let clipboard = MockClipboardAdapter(snapshot: [[:]])
+        let spacing = MockSpacingHeuristics()
+        let coordinator = MockMenuFallbackCoordinator(result: .init(
+            didMenuFallbackInsert: true,
+            didCompleteInsertion: false,
+            menuAttempt: .actionSucceeded,
+            completionEvidence: .expectedPayloadObserved,
+            suppressFirstWarmupFailureWarning: false
+        ))
+        let service = try makeService(
+            clipboard: clipboard,
+            recovery: MockFailureRecoveryController(),
+            capitalization: MockCapitalizationHeuristics(outputText: "hello."),
+            spacing: spacing,
+            injector: MockAccessibilityInjector(outcome: .failureNeedsFallback),
+            coordinator: coordinator,
+            restoreDelayAfterMenuFallback: 0
+        )
+
+        service.pasteText("hello.")
+        try await waitForCondition { clipboard.restoreCalls == 1 }
+
+        service.pasteText("next")
+        try await waitForCondition { clipboard.restoreCalls == 2 }
+
+        XCTAssertEqual(spacing.inputs.count, 2)
+        XCTAssertNil(spacing.inputs[1].lastInsertionAppIdentity)
+        XCTAssertEqual(spacing.inputs[1].lastInsertionAt, .distantPast)
+        XCTAssertNil(spacing.inputs[1].lastInsertedTrailingCharacter)
+    }
+
     func testUntouchedInsertionTargetAndReplacementRunOffMainThread() async throws {
         let clipboard = MockClipboardAdapter(snapshot: [[:]])
         let coordinator = MockMenuFallbackCoordinator(result: .init(

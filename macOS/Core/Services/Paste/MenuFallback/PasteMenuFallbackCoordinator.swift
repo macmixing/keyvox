@@ -2,17 +2,20 @@ import Cocoa
 
 struct PasteMenuFallbackExecutionResult {
     let didMenuFallbackInsert: Bool
+    let didCompleteInsertion: Bool
     let menuAttempt: PasteMenuFallbackAttemptResult?
     let completionEvidence: PasteMenuFallbackCompletionEvidence
     let suppressFirstWarmupFailureWarning: Bool
 
     init(
         didMenuFallbackInsert: Bool,
+        didCompleteInsertion: Bool? = nil,
         menuAttempt: PasteMenuFallbackAttemptResult?,
         completionEvidence: PasteMenuFallbackCompletionEvidence = .none,
         suppressFirstWarmupFailureWarning: Bool
     ) {
         self.didMenuFallbackInsert = didMenuFallbackInsert
+        self.didCompleteInsertion = didCompleteInsertion ?? didMenuFallbackInsert
         self.menuAttempt = menuAttempt
         self.completionEvidence = completionEvidence
         self.suppressFirstWarmupFailureWarning = suppressFirstWarmupFailureWarning
@@ -201,12 +204,11 @@ final class PasteMenuFallbackCoordinator {
             )
         }
 
-        if didMenuFallbackInsert,
-           completionEvidence != .trustedWithoutVerification,
-           transport.trailingSpacesToType > 0 {
-            _ = typeTrailingSpacesOnMainThread(
-                transport.trailingSpacesToType
-            )
+        var didCompleteInsertion = didMenuFallbackInsert
+        if didMenuFallbackInsert, transport.trailingSpacesToType > 0 {
+            didCompleteInsertion = completionEvidence != .trustedWithoutVerification
+                && (typeTrailingSpacesOnMainThread(transport.trailingSpacesToType)
+                    || typeTrailingSpacesOnMainThread(transport.trailingSpacesToType))
         }
 
         let suppressFirstWarmupFailureWarning = Self.shouldSuppressFailureWarningForFirstMenuSuccessAttempt(
@@ -218,6 +220,7 @@ final class PasteMenuFallbackCoordinator {
 
         return PasteMenuFallbackExecutionResult(
             didMenuFallbackInsert: didMenuFallbackInsert,
+            didCompleteInsertion: didCompleteInsertion,
             menuAttempt: menuAttempt,
             completionEvidence: completionEvidence,
             suppressFirstWarmupFailureWarning: suppressFirstWarmupFailureWarning

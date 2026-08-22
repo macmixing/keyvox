@@ -115,6 +115,34 @@ final class PasteMenuFallbackCoordinatorExecutionTests: XCTestCase {
         XCTAssertEqual(executor.verifyInsertionCalls, 1)
     }
 
+    func testTrailingSpaceFailureRetriesOnlyTrailingSpacesAndReportsIncompleteInsertion() {
+        let coordinator = PasteMenuFallbackCoordinator()
+        let executor = MockPasteMenuFallbackExecutor()
+        executor.pasteResult = .actionSucceeded
+        executor.verificationContext = sampleVerificationContext()
+        executor.verifyInsertionOutcomeResult = .expectedPayloadObserved
+        var trailingSpaceCounts: [Int] = []
+
+        let result = coordinator.executeMenuFallback(
+            insertionText: "hello ",
+            didAccessibilityInsertText: false,
+            targetAppIdentity: identity("com.example.app", 1),
+            menuFallbackExecutor: executor,
+            shouldTrustMenuSuccessWithoutAXVerification: { false },
+            setClipboardStringOnMainThread: { _ in },
+            executeLeadingSpacePasteOnMainThread: { _ in true },
+            typeTrailingSpacesOnMainThread: {
+                trailingSpaceCounts.append($0)
+                return false
+            }
+        )
+
+        XCTAssertTrue(result.didMenuFallbackInsert)
+        XCTAssertFalse(result.didCompleteInsertion)
+        XCTAssertEqual(trailingSpaceCounts, [1, 1])
+        XCTAssertEqual(executor.pasteViaMenuBarCalls, 1)
+    }
+
     func testTrailingSpacesAreNotTypedWhenPasteIsNotObserved() {
         let coordinator = PasteMenuFallbackCoordinator()
         let executor = MockPasteMenuFallbackExecutor()

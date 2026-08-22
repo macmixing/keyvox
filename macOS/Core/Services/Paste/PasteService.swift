@@ -178,6 +178,7 @@ class PasteService {
             #endif
 
             var didMenuFallbackInsert = false
+            var didCompleteInsertion = true
             var suppressFirstWarmupFailureWarning = false
             var menuFallbackCompletionEvidence: PasteMenuFallbackCompletionEvidence = .none
             if accessibilityDecision.needsMenuFallback {
@@ -196,6 +197,7 @@ class PasteService {
                     }
                 )
                 didMenuFallbackInsert = menuFallbackExecution.didMenuFallbackInsert
+                didCompleteInsertion = menuFallbackExecution.didCompleteInsertion
                 suppressFirstWarmupFailureWarning = menuFallbackExecution.suppressFirstWarmupFailureWarning
                 menuFallbackCompletionEvidence = menuFallbackExecution.completionEvidence
                 #if DEBUG
@@ -216,7 +218,7 @@ class PasteService {
                 restoreDelayAfterMenuFallback: self.restoreDelayAfterMenuFallback
             )
 
-            if executionPlan.shouldRememberInsertion {
+            if executionPlan.shouldRememberInsertion, didCompleteInsertion {
                 self.rememberSuccessfulInsertion(of: insertionText, in: targetAppIdentity)
             }
 
