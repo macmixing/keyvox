@@ -1,5 +1,5 @@
 # KeyVox Code Map
-**Last Updated: 2026-08-21**
+**Last Updated: 2026-08-22**
 
 ## Project Overview
 
@@ -824,10 +824,10 @@ KeyVox/
 - `Core/Services/Paste/Composition/PasteSpacingCoordinator.swift`
   - Resolves selection, caret, Accessibility, and recent-insertion fallback context before delegating leading-separator policy to `KeyVoxTextComposition`.
 - `Core/Services/Paste/Composition/PasteTerminalPunctuationCoordinator.swift`
-  - Resolves the punctuation immediately after the insertion or selected span, delegates the decision to `TerminalPunctuationCompositionPolicy`, and expands the AX selection by one character when the shared result requires replacement.
+  - Resolves punctuation and expands the selection against one retained AX target immediately before insertion; failed expansion falls back to preserving the existing punctuation.
 - `Packages/KeyVoxTextComposition/Sources/KeyVoxTextComposition/`
   - Owns deterministic capitalization, spacing, quotation-mark classification, sentence-boundary, and adjacent terminal-punctuation policy shared by macOS and iOS.
-  - `TerminalPunctuationCompositionPolicy` preserves existing following punctuation by stripping an incoming model period, deduplicates a matching incoming question or exclamation mark, and signals when a differing incoming question or exclamation mark must replace the following punctuation.
+  - `TerminalPunctuationCompositionPolicy` preserves supported non-quote following punctuation by stripping an incoming model period, deduplicates a matching incoming question or exclamation mark, and signals when a differing incoming question or exclamation mark must replace the following punctuation.
   - Accepts platform-neutral adjacent-text context and has no dependency on Accessibility, UIKit document proxies, clipboards, or insertion transports.
 - `Core/Services/Paste/Pipeline/PastePolicies.swift`
   - Static policy helpers for list render mode and failure-recovery decisions.

@@ -2,7 +2,7 @@
 
 This document contains implementation and maintainer-focused details that are intentionally kept out of the top-level README.
 
-**Last Updated: 2026-08-21**
+**Last Updated: 2026-08-22**
 
 ## Design Philosophy
 
@@ -210,7 +210,7 @@ Whisper uses a shared whole-capture VAD gate after macOS stop-time audio accepta
 6. List formatting applies numeric list rendering when confidence gates pass.
 7. Late cleanup normalizes residual model output after list rendering: `LaughterNormalizer`, `CharacterSpamNormalizer`, `AsteriskCensorshipArtifactNormalizer`, `TimeExpressionNormalizer`, `DateNormalizer`, final email boundary repair, `WebsiteNormalizer`, and `ThousandsGroupingNormalizer`.
 8. Final finishers apply render-mode whitespace cleanup, capitalization guards (including URL/domain/email and technical-token safety checks), spoken terminal punctuation, terminal-time punctuation completion, and the optional `AllCapsOverrideNormalizer`.
-9. Final text is inserted via the paste service. macOS resolves focused-target, recent-insertion, and following-character context; supplies dictionary casing preservation; delegates shared capitalization, spacing, and adjacent terminal-punctuation policy to `KeyVoxTextComposition`; and retains ownership of Accessibility selection expansion and paste fallback transport. An incoming model period is stripped when punctuation already follows, while a differing incoming question or exclamation mark replaces that following punctuation.
+9. Final text is inserted via the paste service. macOS resolves following-character context, selection expansion, and direct insertion against one retained AX target. An incoming model period is stripped when supported non-quote punctuation already follows, while a differing incoming question or exclamation mark replaces that following punctuation. Failed selection expansion preserves the existing punctuation.
 
 `TimeExpressionNormalizer` owns compact numeric time shaping. A meridiem match that continues an already colon-separated number must be ignored so input such as `810 PM` becomes `8:10 PM` exactly once, never `8:10:00 PM`.
 
@@ -408,7 +408,7 @@ These remain integration/manual-test territory by design.
 - `Views/RecordingOverlay.swift` is a thin overlay shell. Generic timing/metering state belongs in `Core/Overlay/AudioIndicatorDriver.swift`, not in the branded renderer.
 - `Views/Components/OverlayPillOverlay.swift` is the generic standalone-pill visibility shell; `Views/VibePillOverlay.swift` retains only Vibe cycle presentation and flip behavior.
 - `Core/Services/Paste/PasteService.swift` owns latest untouched insertion verification/replacement for Mac Vibes and deterministic formatting changes. Change controllers should ask PasteService whether a replacement is safe instead of reconstructing host text themselves.
-- `Core/Services/Paste/Composition/PasteTerminalPunctuationCoordinator.swift` owns Mac-specific following-character lookup and requests guarded AX selection expansion when the shared terminal-punctuation result requires replacement; punctuation classification and the preserve/replace decision remain package-owned.
+- `Core/Services/Paste/Composition/PasteTerminalPunctuationCoordinator.swift` owns Mac-specific following-character lookup and guarded AX selection expansion for the same target passed directly to the injector; punctuation classification and the preserve/replace decision remain package-owned.
 - `Core/Services/Paste/Accessibility/PasteUntouchedInsertionAuthorizer.swift` is the state owner for latest-insertion authorization. It captures and invalidates the token, verifies live app and AX context, and advances successful replacements only within the same target lineage.
 - `Core/Services/Paste/Accessibility/PasteUntouchedInsertionToken.swift` is the immutable authorization record. It binds the latest insertion to its original PID, AX element, target range, and selection snapshot; focus, caret/selection, target-range, or process changes invalidate eligibility.
 - `Core/Services/Paste/Accessibility/PasteAccessibilityInjector.swift` must keep self-targeted AX writes on the main thread, but must not use an unbounded cross-thread `DispatchQueue.main.sync`; the current contract returns fallback on timeout so paste recovery can proceed.
