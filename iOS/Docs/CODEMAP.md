@@ -1,5 +1,5 @@
 # KeyVox iOS Code Map
-**Last Updated: 2026-07-31**
+**Last Updated: 2026-08-21**
 
 ## Project Overview
 
@@ -24,7 +24,7 @@ The current default runtime flow is:
 7. When the user taps the mic in the keyboard extension, the extension decides between warm Darwin signaling and cold URL launch.
 8. The containing app records and processes audio, runs the shared dictation pipeline, and publishes `transcribing`, `transcriptionReady`, or `noSpeech` back through the App Group bridge.
 9. The app optionally rewrites the post-processed base text through the local Vibes model and LoRA adapter selected by the current Vibe.
-10. The extension resolves host-text context, delegates spacing and capitalization policy to `KeyVoxTextComposition`, and inserts the returned text through the iOS document proxy.
+10. The extension resolves preceding and following host-text context, delegates spacing, capitalization, and adjacent terminal-punctuation policy to `KeyVoxTextComposition`, and performs the resulting insertion or punctuation replacement through the iOS document proxy.
 11. Later keyboard long presses may restyle or revert only the latest untouched KeyVox insertion: Vibes changes use an app-IPC rewrite request, paragraph/list changes use persisted deterministic artifact variants, and Caps Lock swaps between the inserted text and the preserved pre-Caps selected output. If the local Vibes model is missing, keyboard Vibes taps do not cycle styles and instead route the user into the app-owned Vibes install/trial flow.
 12. When the user triggers copied-text playback, the containing app owns PocketTTS synthesis, explicit model load/unload lifetime, deterministic playback preparation, replay caching, pause/resume/stop transport state, and return-to-host readiness.
 13. If the user keeps the session active, the Live Activity coordinator mirrors session state and weekly-word updates into the widget extension.
@@ -35,7 +35,7 @@ The current default runtime flow is:
 - **`KeyVox Keyboard/`**: custom keyboard controller, presentation-scoped keyboard view lifecycle, toolbar modes, copied-text speak transport, keyboard playback pause/resume/stop controls, call-aware warning detection, key grid UI, full-access instructional surface, live indicator rendering, host-app launch handoff, haptics, cursor trackpad behavior, and platform-owned insertion coordination.
 - **`KeyVox Widget/`**: ActivityKit/WidgetKit surface for the lock screen and Dynamic Island, plus the stop-session App Intent.
 - **`../Packages/KeyVoxCore/`**: shared dictation pipeline, provider seams, dictation-language values/display names, the Whisper Base language catalog and service configuration, whole-capture Whisper VAD coordination, deterministic paragraph/list state and variant handling, dictionary store, post-processing order, model-artifact cleanup, guarded compact-time/date/math normalization, silence heuristics, and list formatting behavior.
-- **`../Packages/KeyVoxTextComposition/`**: platform-neutral leading-capitalization, leading-spacing, quotation-mark context, and sentence-boundary policy used immediately before insertion.
+- **`../Packages/KeyVoxTextComposition/`**: platform-neutral leading-capitalization, leading-spacing, quotation-mark context, sentence-boundary, and adjacent terminal-punctuation policy used immediately before insertion.
 - **`../Packages/KeyVoxWhisper/`**: local `whisper.cpp` wrapper package consumed through the shared `WhisperService`, including the iterable language identifiers used to derive model-specific picker options plus the bundled Silero voice-activity model and actor-isolated detector wrapper.
 - **`../Packages/KeyVoxParakeet/`**: local Parakeet Core ML runtime package consumed through the shared `ParakeetService`.
 - **`../Packages/KeyVoxTTS/`**: PocketTTS runtime actor, Core ML inference helpers, tokenizer support, text normalization, chunk planning, audio-frame streaming contract, and package tests for deterministic text preparation behavior.
@@ -980,7 +980,7 @@ Packages/
   - Keyboard-local App Group settings bridge for controls that mirror containing-app settings.
   - Reads and writes the shared selected Vibe, paragraph, and list-formatting defaults, derives Vibe display text from `StyleRewriteStyle`, evaluates trial access using the shared Vibes trial duration policy, forces the resolved Vibe to `None` when access or Vibes AI install readiness is missing, and posts shared Darwin notifications so the containing app can refresh visible settings.
 - `KeyVox Keyboard/Core/Input/KeyboardTextInputController.swift`
-  - Host-app text insertion, key dispatch, double-space period behavior, and cursor movement.
+  - Host-app text insertion, key dispatch, double-space period behavior, cursor movement, and document-proxy execution of adjacent punctuation replacement after selected-text insertion.
 - `KeyVox Keyboard/Core/Input/KeyboardCursorTrackpadSupport.swift`
   - Velocity-sensitive cursor-trackpad delta handling used by the space-bar trackpad interaction.
 - `KeyVox Keyboard/Core/Text/KeyboardInsertionSpacingCoordinator.swift`
@@ -988,7 +988,8 @@ Packages/
 - `KeyVox Keyboard/Core/Text/KeyboardInsertionCapitalizationCoordinator.swift`
   - Converts the iOS preceding-text snapshot into shared composition context, supplies keyboard casing-preservation decisions, and delegates leading-capitalization policy to `KeyVoxTextComposition`.
 - `Packages/KeyVoxTextComposition/Sources/KeyVoxTextComposition/`
-  - Owns deterministic capitalization, spacing, quote classification, and sentence-boundary rules without depending on `UITextDocumentProxy` or insertion transport.
+  - Owns deterministic capitalization, spacing, quote classification, sentence-boundary, and adjacent terminal-punctuation rules without depending on `UITextDocumentProxy` or insertion transport.
+  - `TerminalPunctuationCompositionPolicy` preserves existing following punctuation by stripping an incoming model period, deduplicates a matching incoming question or exclamation mark, and signals when a differing incoming question or exclamation mark must replace the following punctuation.
 - `KeyVox Keyboard/Core/KeyboardModelAvailability.swift`
   - Lightweight rooted-install gate used by the extension toolbar for Whisper, Parakeet, PocketTTS, and local Vibes AI availability.
 - `KeyVox Keyboard/Core/KeyboardLayoutGeometry.swift`

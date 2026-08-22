@@ -1,4 +1,5 @@
 import UIKit
+import KeyVoxTextComposition
 
 struct KeyboardTextInsertionResult: Equatable {
     let sourceText: String
@@ -169,12 +170,22 @@ final class KeyboardTextInputController {
         let compositionContextBeforeInput = contextAfterCorrectingPendingSelectionDeletion(
             contextBeforeInput
         )
+        let followingCharacter = documentProxy.documentContextAfterInput?.first
         pendingSelectionDeletion = nil
-        let insertionText = preparedTranscriptionText(
+        let preparedText = preparedTranscriptionText(
             cleanedText,
             documentContextBeforeInput: compositionContextBeforeInput
         )
+        let punctuationResolution = TerminalPunctuationCompositionPolicy.resolve(
+            text: preparedText,
+            followingCharacter: followingCharacter
+        )
+        let insertionText = punctuationResolution.text
         documentProxy.insertText(insertionText)
+        if punctuationResolution.shouldReplaceFollowingPunctuation {
+            documentProxy.adjustTextPosition(byCharacterOffset: 1)
+            documentProxy.deleteBackward()
+        }
         return KeyboardTextInsertionResult(
             sourceText: cleanedText,
             insertedText: insertionText,
