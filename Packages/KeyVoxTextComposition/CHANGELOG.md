@@ -6,16 +6,17 @@ The format loosely follows Keep a Changelog, and the package uses semantic versi
 
 ---
 
-## [1.0.3] - 2026-08-21
+## [1.0.3] - 2026-08-22
 
-Preserved punctuation immediately following replaced text during dictation insertion.
+Composed dictated terminal marks with punctuation immediately following replaced text.
 
 ### Includes
 
-- Removed an incoming model-added period when punctuation already follows the selected text.
-- Replaced existing punctuation when processed dictation explicitly ends with a question mark or exclamation point.
+- Removed an incoming model-added period when supported non-quote punctuation already follows the selected text.
+- Reused a matching question mark or exclamation point and replaced differing supported non-quote punctuation when processed dictation explicitly ends with either mark.
+- Left incoming terminal punctuation unchanged before straight or curly quotation marks.
 - Shared the punctuation-boundary decision across macOS and iOS composition paths.
-- Added regression coverage for periods, question marks, exclamation points, commas, semicolons, colons, parentheses, dashes, and ellipses.
+- Added regression coverage for model periods, explicit question marks and exclamation points, supported non-quote punctuation, and quotation-mark boundaries.
 
 ### Notes
 
