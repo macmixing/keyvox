@@ -8,6 +8,7 @@ protocol PasteAXInspecting {
     func selectedRange(for element: AXUIElement) -> CFRange?
     func selectedText(for element: AXUIElement) -> String?
     func setSelectedRange(_ range: CFRange, for element: AXUIElement) -> Bool
+    func includeFollowingCharacterInSelection(at location: Int, selectionLength: Int) -> Bool
     func setSelectedText(_ text: String, for element: AXUIElement) -> Bool
     func setValueString(_ text: String, for element: AXUIElement) -> Bool
     func stringForRange(_ range: CFRange, element: AXUIElement) -> String?
@@ -41,6 +42,12 @@ extension PasteAXInspecting {
     func setSelectedText(_ text: String, for element: AXUIElement) -> Bool {
         _ = text
         _ = element
+        return false
+    }
+
+    func includeFollowingCharacterInSelection(at location: Int, selectionLength: Int) -> Bool {
+        _ = location
+        _ = selectionLength
         return false
     }
 
@@ -100,6 +107,7 @@ final class PasteAXInspector: PasteAXInspecting {
         }
 
         var previousCharacter: Character?
+        var followingCharacter: Character?
         var characterBeforePreviousCharacter: Character?
         var previousNonWhitespaceCharacter: Character?
         var characterBeforePreviousNonWhitespaceCharacter: Character?
@@ -131,12 +139,20 @@ final class PasteAXInspector: PasteAXInspecting {
                 }
             }
         }
+        if let caretLocation,
+           let selectionLength {
+            followingCharacter = stringForRange(
+                CFRange(location: caretLocation + selectionLength, length: 1),
+                element: focusedElement
+            )?.first
+        }
 
         let context = PasteInsertionContext(
             selectionLength: selectionLength,
             selectedText: focusedSelectedText,
             caretLocation: caretLocation,
             previousCharacter: previousCharacter,
+            followingCharacter: followingCharacter,
             characterBeforePreviousCharacter: characterBeforePreviousCharacter,
             previousNonWhitespaceCharacter: previousNonWhitespaceCharacter,
             characterBeforePreviousNonWhitespaceCharacter: characterBeforePreviousNonWhitespaceCharacter,
@@ -151,6 +167,7 @@ final class PasteAXInspector: PasteAXInspecting {
                     + "selectionLength=\(selectionLength.map(String.init) ?? "-") "
                     + "selectedText=\(String(reflecting: focusedSelectedText)) "
                     + "previous=\(String(reflecting: previousCharacter)) "
+                    + "following=\(String(reflecting: followingCharacter)) "
                     + "beforePrevious=\(String(reflecting: characterBeforePreviousCharacter)) "
                     + "previousNonWhitespace=\(String(reflecting: previousNonWhitespaceCharacter)) "
                     + "beforePreviousNonWhitespace=\(String(reflecting: characterBeforePreviousNonWhitespaceCharacter)) "
@@ -159,6 +176,14 @@ final class PasteAXInspector: PasteAXInspecting {
         }
         #endif
         return context
+    }
+
+    func includeFollowingCharacterInSelection(at location: Int, selectionLength: Int) -> Bool {
+        guard let focusedElement = focusedUIElement() else { return false }
+        return setSelectedRange(
+            CFRange(location: location, length: selectionLength + 1),
+            for: focusedElement
+        )
     }
 
     func focusedUIElement() -> AXUIElement? {

@@ -21,6 +21,7 @@ class PasteService {
     private let dictionaryCasingStore: PasteDictionaryCasingStore
     private let capitalizationCoordinator: PasteCapitalizationCoordinating
     private let spacingCoordinator: PasteSpacingCoordinating
+    private let terminalPunctuationCoordinator: PasteTerminalPunctuationCoordinating
     private let clipboardAdapter: PasteClipboardAdapting
     private let failureRecoveryController: PasteFailureRecoveryControlling
     private let frontmostAppIdentityProvider: () -> PasteAppIdentity?
@@ -43,6 +44,7 @@ class PasteService {
         dictionaryCasingStore: PasteDictionaryCasingStore = PasteDictionaryCasingStore(),
         capitalizationCoordinator: PasteCapitalizationCoordinating? = nil,
         spacingCoordinator: PasteSpacingCoordinating? = nil,
+        terminalPunctuationCoordinator: PasteTerminalPunctuationCoordinating? = nil,
         untouchedInsertionReplacer: PasteUntouchedInsertionReplacing? = nil
     ) {
         let resolvedFrontmostAppIdentityProvider = frontmostAppIdentityProvider
@@ -86,6 +88,8 @@ class PasteService {
                 axInspector: axInspector,
                 heuristicTTL: heuristicTTL
             )
+        self.terminalPunctuationCoordinator = terminalPunctuationCoordinator
+            ?? PasteTerminalPunctuationCoordinator(axInspector: axInspector)
     }
 
     // MARK: - Entry Point
@@ -116,7 +120,7 @@ class PasteService {
             output: capitalizationNormalizedText
         )
         #endif
-        let insertionText = spacingCoordinator.applySmartLeadingSeparatorIfNeeded(
+        let spacingNormalizedText = spacingCoordinator.applySmartLeadingSeparatorIfNeeded(
             to: capitalizationNormalizedText,
             currentIdentity: targetAppIdentity,
             lastInsertionAppIdentity: lastInsertionAppIdentity,
@@ -128,6 +132,16 @@ class PasteService {
         logNormalizationStage(
             "spacingNormalized",
             input: capitalizationNormalizedText,
+            output: spacingNormalizedText
+        )
+        #endif
+        let insertionText = terminalPunctuationCoordinator.resolveAdjacentTerminalPunctuation(
+            in: spacingNormalizedText
+        )
+        #if DEBUG
+        logNormalizationStage(
+            "terminalPunctuationNormalized",
+            input: spacingNormalizedText,
             output: insertionText
         )
         #endif
