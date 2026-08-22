@@ -15,6 +15,7 @@ public enum TerminalPunctuationCompositionPolicy {
     ) -> TerminalPunctuationCompositionResult {
         guard let followingCharacter,
               followingCharacter.isPunctuation,
+              isQuotationMark(followingCharacter) == false,
               let incomingPunctuation = text.last,
               TextCompositionPolicy.isSentenceBoundary(incomingPunctuation) else {
             return TerminalPunctuationCompositionResult(
@@ -41,5 +42,14 @@ public enum TerminalPunctuationCompositionPolicy {
             text: text,
             shouldReplaceFollowingPunctuation: true
         )
+    }
+
+    private static func isQuotationMark(_ character: Character) -> Bool {
+        switch character {
+        case "\"", "'", "“", "”", "‘", "’":
+            return true
+        default:
+            return false
+        }
     }
 }

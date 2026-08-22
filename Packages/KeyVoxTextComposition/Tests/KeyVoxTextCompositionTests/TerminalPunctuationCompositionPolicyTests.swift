@@ -62,6 +62,21 @@ final class TerminalPunctuationCompositionPolicyTests: XCTestCase {
         }
     }
 
+    func testLeavesIncomingPeriodBeforeQuotationMark() {
+        for quotationMark in [
+            Character("\""), Character("'"), Character("“"),
+            Character("”"), Character("‘"), Character("’"),
+        ] {
+            let result = TerminalPunctuationCompositionPolicy.resolve(
+                text: "working.",
+                followingCharacter: quotationMark
+            )
+
+            XCTAssertEqual(result.text, "working.")
+            XCTAssertFalse(result.shouldReplaceFollowingPunctuation)
+        }
+    }
+
     func testLeavesTextUnchangedWithoutAdjacentTerminalPunctuation() {
         let result = TerminalPunctuationCompositionPolicy.resolve(
             text: "working.",
