@@ -6,6 +6,21 @@ The format loosely follows Keep a Changelog, and the package uses semantic versi
 
 ---
 
+## [1.0.3] - 2026-08-21
+
+Preserved punctuation immediately following replaced text during dictation insertion.
+
+### Includes
+
+- Removed an incoming model-added period when punctuation already follows the selected text.
+- Replaced existing punctuation when processed dictation explicitly ends with a question mark or exclamation point.
+- Shared the punctuation-boundary decision across macOS and iOS composition paths.
+- Added regression coverage for periods, question marks, exclamation points, commas, semicolons, colons, parentheses, dashes, and ellipses.
+
+### Notes
+
+- `1.0.3` bumps the tracked patch version for punctuation-aware selected-text composition.
+
 ## [1.0.2] - 2026-08-08
 
 Generalized capitalization and spacing around punctuation and symbol boundaries.
