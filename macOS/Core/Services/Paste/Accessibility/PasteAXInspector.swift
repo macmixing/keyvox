@@ -3,12 +3,12 @@ import Cocoa
 protocol PasteAXInspecting {
     func prepareApplicationAccessibility(for pid: pid_t)
     func focusedInsertionContext() -> PasteInsertionContext?
+    func insertionContext(for element: AXUIElement) -> PasteInsertionContext?
     func focusedUIElement() -> AXUIElement?
     func roleString(for element: AXUIElement) -> String?
     func selectedRange(for element: AXUIElement) -> CFRange?
     func selectedText(for element: AXUIElement) -> String?
     func setSelectedRange(_ range: CFRange, for element: AXUIElement) -> Bool
-    func includeFollowingCharacterInSelection(at location: Int, selectionLength: Int) -> Bool
     func setSelectedText(_ text: String, for element: AXUIElement) -> Bool
     func setValueString(_ text: String, for element: AXUIElement) -> Bool
     func stringForRange(_ range: CFRange, element: AXUIElement) -> String?
@@ -45,10 +45,9 @@ extension PasteAXInspecting {
         return false
     }
 
-    func includeFollowingCharacterInSelection(at location: Int, selectionLength: Int) -> Bool {
-        _ = location
-        _ = selectionLength
-        return false
+    func insertionContext(for element: AXUIElement) -> PasteInsertionContext? {
+        _ = element
+        return nil
     }
 
     func setValueString(_ text: String, for element: AXUIElement) -> Bool {
@@ -70,7 +69,10 @@ final class PasteAXInspector: PasteAXInspecting {
 
     func focusedInsertionContext() -> PasteInsertionContext? {
         guard let focusedElement = focusedUIElement() else { return nil }
+        return insertionContext(for: focusedElement)
+    }
 
+    func insertionContext(for focusedElement: AXUIElement) -> PasteInsertionContext? {
         // Best-effort context: selection/caret may be unavailable in some editors.
         let selectedRange = selectedRange(for: focusedElement)
         if isQuillBlankEditor(focusedElement) {
@@ -176,14 +178,6 @@ final class PasteAXInspector: PasteAXInspecting {
         }
         #endif
         return context
-    }
-
-    func includeFollowingCharacterInSelection(at location: Int, selectionLength: Int) -> Bool {
-        guard let focusedElement = focusedUIElement() else { return false }
-        return setSelectedRange(
-            CFRange(location: location, length: selectionLength + 1),
-            for: focusedElement
-        )
     }
 
     func focusedUIElement() -> AXUIElement? {

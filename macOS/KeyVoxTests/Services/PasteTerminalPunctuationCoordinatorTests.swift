@@ -5,24 +5,28 @@ import XCTest
 @MainActor
 final class PasteTerminalPunctuationCoordinatorTests: XCTestCase {
     func testRemovesModelPeriodBeforeExistingPunctuation() {
+        let element = AXUIElementCreateApplication(getpid())
         for existingPunctuation in [
             Character("."), Character("?"), Character("!"),
             Character(","), Character(";"), Character(":"),
             Character(")"), Character("—"), Character("…"),
         ] {
             let inspector = TerminalPunctuationAXInspector(
-                context: context(followingCharacter: existingPunctuation)
+                context: context(followingCharacter: existingPunctuation),
+                element: element
             )
             let coordinator = PasteTerminalPunctuationCoordinator(axInspector: inspector)
 
             let output = coordinator.resolveAdjacentTerminalPunctuation(in: "working.")
 
-            XCTAssertEqual(output, "working")
+            XCTAssertEqual(output.text, "working")
+            XCTAssertTrue(output.targetElement === element)
             XCTAssertTrue(inspector.expandedSelections.isEmpty)
         }
     }
 
     func testIncomingQuestionAndExclamationReplaceDifferentPunctuationAndReuseMatchingMark() {
+        let element = AXUIElementCreateApplication(getpid())
         for incomingPunctuation in [Character("?"), Character("!")] {
             for existingPunctuation in [
                 Character("."), Character("?"), Character("!"),
@@ -30,7 +34,8 @@ final class PasteTerminalPunctuationCoordinatorTests: XCTestCase {
                 Character(")"), Character("—"), Character("…"),
             ] {
                 let inspector = TerminalPunctuationAXInspector(
-                    context: context(followingCharacter: existingPunctuation)
+                    context: context(followingCharacter: existingPunctuation),
+                    element: element
                 )
                 let coordinator = PasteTerminalPunctuationCoordinator(axInspector: inspector)
 
@@ -39,17 +44,36 @@ final class PasteTerminalPunctuationCoordinatorTests: XCTestCase {
                 )
 
                 if incomingPunctuation == existingPunctuation {
-                    XCTAssertEqual(output, "working")
+                    XCTAssertEqual(output.text, "working")
                     XCTAssertTrue(inspector.expandedSelections.isEmpty)
                 } else {
-                    XCTAssertEqual(output, "working\(incomingPunctuation)")
+                    XCTAssertEqual(output.text, "working\(incomingPunctuation)")
                     XCTAssertEqual(
                         inspector.expandedSelections,
                         [.init(location: 16, length: 5)]
                     )
+                    XCTAssertTrue(inspector.expandedElements.allSatisfy { $0 === element })
                 }
+                XCTAssertTrue(output.targetElement === element)
             }
         }
+    }
+
+    func testFailedSelectionExpansionPreservesExistingPunctuationWithoutConflict() {
+        let element = AXUIElementCreateApplication(getpid())
+        let inspector = TerminalPunctuationAXInspector(
+            context: context(followingCharacter: ","),
+            element: element,
+            selectionExpansionSucceeds: false
+        )
+        let coordinator = PasteTerminalPunctuationCoordinator(axInspector: inspector)
+
+        let output = coordinator.resolveAdjacentTerminalPunctuation(in: "working?")
+
+        XCTAssertEqual(output.text, "working")
+        XCTAssertTrue(output.targetElement === element)
+        XCTAssertEqual(inspector.expandedSelections, [.init(location: 16, length: 5)])
+        XCTAssertTrue(inspector.expandedElements.allSatisfy { $0 === element })
     }
 
     private func context(followingCharacter: Character) -> PasteInsertionContext {
@@ -70,20 +94,34 @@ private final class TerminalPunctuationAXInspector: PasteAXInspecting {
     }
 
     let context: PasteInsertionContext
+    let element: AXUIElement
+    let selectionExpansionSucceeds: Bool
     var expandedSelections: [ExpandedSelection] = []
+    var expandedElements: [AXUIElement] = []
 
-    init(context: PasteInsertionContext) {
+    init(
+        context: PasteInsertionContext,
+        element: AXUIElement,
+        selectionExpansionSucceeds: Bool = true
+    ) {
         self.context = context
+        self.element = element
+        self.selectionExpansionSucceeds = selectionExpansionSucceeds
     }
 
     func focusedInsertionContext() -> PasteInsertionContext? { context }
-    func includeFollowingCharacterInSelection(at location: Int, selectionLength: Int) -> Bool {
-        expandedSelections.append(
-            ExpandedSelection(location: location, length: selectionLength + 1)
-        )
-        return true
+    func insertionContext(for element: AXUIElement) -> PasteInsertionContext? {
+        guard element === self.element else { return nil }
+        return context
     }
-    func focusedUIElement() -> AXUIElement? { nil }
+    func setSelectedRange(_ range: CFRange, for element: AXUIElement) -> Bool {
+        expandedElements.append(element)
+        expandedSelections.append(
+            ExpandedSelection(location: range.location, length: range.length)
+        )
+        return selectionExpansionSucceeds
+    }
+    func focusedUIElement() -> AXUIElement? { element }
     func roleString(for element: AXUIElement) -> String? { nil }
     func selectedRange(for element: AXUIElement) -> CFRange? { nil }
     func stringForRange(_ range: CFRange, element: AXUIElement) -> String? { nil }

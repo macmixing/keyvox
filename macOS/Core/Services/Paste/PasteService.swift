@@ -135,18 +135,17 @@ class PasteService {
             output: spacingNormalizedText
         )
         #endif
-        let insertionText = terminalPunctuationCoordinator.resolveAdjacentTerminalPunctuation(
-            in: spacingNormalizedText
-        )
-        #if DEBUG
-        logNormalizationStage(
-            "terminalPunctuationNormalized",
-            input: spacingNormalizedText,
-            output: insertionText
-        )
-        #endif
-
         pasteQueue.async {
+            let punctuationInsertion = self.terminalPunctuationCoordinator
+                .resolveAdjacentTerminalPunctuation(in: spacingNormalizedText)
+            let insertionText = punctuationInsertion.text
+            #if DEBUG
+            self.logNormalizationStage(
+                "terminalPunctuationNormalized",
+                input: spacingNormalizedText,
+                output: insertionText
+            )
+            #endif
             let savedSnapshot = self.beginClipboardTransactionOnMainThread(
                 payload: insertionText
             )
@@ -154,7 +153,10 @@ class PasteService {
             print("Clipboard updated (Backup). Starting Surgical Accessibility Injection...")
             #endif
             self.untouchedInsertionAuthorizer.invalidate()
-            let injectionOutcome = self.accessibilityInjector.injectTextViaAccessibility(insertionText)
+            let injectionOutcome = self.accessibilityInjector.injectTextViaAccessibility(
+                insertionText,
+                into: punctuationInsertion.targetElement
+            )
             let accessibilityDecision = PasteAccessibilityExecutionDecision.from(injectionOutcome)
 
             #if DEBUG
