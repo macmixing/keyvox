@@ -150,7 +150,8 @@ final class MockMenuFallbackCoordinator: PasteMenuFallbackCoordinating {
         menuFallbackExecutor: PasteMenuFallbackExecuting,
         shouldTrustMenuSuccessWithoutAXVerification: () -> Bool,
         setClipboardStringOnMainThread: (String) -> Void,
-        executeLeadingSpacePasteOnMainThread: (Int) -> Bool
+        executeLeadingSpacePasteOnMainThread: (Int) -> Bool,
+        typeTrailingSpacesOnMainThread: (Int) -> Bool
     ) -> PasteMenuFallbackExecutionResult {
         _ = insertionText
         _ = didAccessibilityInsertText
@@ -158,6 +159,7 @@ final class MockMenuFallbackCoordinator: PasteMenuFallbackCoordinating {
         _ = shouldTrustMenuSuccessWithoutAXVerification
         _ = setClipboardStringOnMainThread
         _ = executeLeadingSpacePasteOnMainThread
+        _ = typeTrailingSpacesOnMainThread
         executeCalls += 1
         executionThreadWasMain.append(Thread.isMainThread)
         targetAppIdentities.append(targetAppIdentity)
@@ -280,10 +282,15 @@ final class PasteServiceNoopFallbackExecutor: PasteMenuFallbackExecuting {
 final class MockAXInspector: PasteAXInspecting {
     private let stateLock = NSLock()
     private let focusedElement: AXUIElement?
+    private let insertionContextValue: PasteInsertionContext?
     private var selectedRangeValue = CFRange(location: 0, length: 0)
 
-    init(focusedElement: AXUIElement? = nil) {
+    init(
+        focusedElement: AXUIElement? = nil,
+        insertionContext: PasteInsertionContext? = nil
+    ) {
         self.focusedElement = focusedElement
+        insertionContextValue = insertionContext
     }
 
     func updateSelectedRange(_ range: CFRange) {
@@ -293,6 +300,10 @@ final class MockAXInspector: PasteAXInspecting {
     }
 
     func focusedInsertionContext() -> PasteInsertionContext? { nil }
+    func insertionContext(for element: AXUIElement) -> PasteInsertionContext? {
+        guard element === focusedElement else { return nil }
+        return insertionContextValue
+    }
     func focusedUIElement() -> AXUIElement? { focusedElement }
     func roleString(for element: AXUIElement) -> String? {
         _ = element

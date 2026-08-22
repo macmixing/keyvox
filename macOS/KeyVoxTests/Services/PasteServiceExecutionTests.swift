@@ -1,6 +1,7 @@
 import XCTest
 @testable import KeyVox
 import Foundation
+import ApplicationServices
 
 @MainActor
 final class PasteServiceExecutionTests: XCTestCase {
@@ -70,6 +71,51 @@ final class PasteServiceExecutionTests: XCTestCase {
         XCTAssertEqual(capitalization.inputs.map(\.text), ["Hello"])
         XCTAssertEqual(spacing.inputs.map(\.text), ["hello"])
         XCTAssertEqual(clipboard.writes, ["hello"])
+    }
+
+    func testTrailingSeparatorCompositionFeedsInsertionTransport() async throws {
+        let insertionCases = [
+            (text: "What's up?", followingCharacter: Character("T"), expected: "What's up? "),
+            (text: "That's awesome.", followingCharacter: Character("Y"), expected: "That's awesome. "),
+            (text: "definitely", followingCharacter: Character("a"), expected: "definitely "),
+            (text: "Nice", followingCharacter: Character("😎"), expected: "Nice "),
+            (text: "definitely", followingCharacter: Character(";"), expected: "definitely"),
+        ]
+
+        for testCase in insertionCases {
+            let clipboard = MockClipboardAdapter(snapshot: [[:]])
+            let element = AXUIElementCreateApplication(getpid())
+            let inspector = MockAXInspector(
+                focusedElement: element,
+                insertionContext: PasteInsertionContext(
+                    selectionLength: 0,
+                    caretLocation: 0,
+                    previousCharacter: nil,
+                    followingCharacter: testCase.followingCharacter
+                )
+            )
+            let service = try makeService(
+                clipboard: clipboard,
+                recovery: MockFailureRecoveryController(),
+                capitalization: MockCapitalizationHeuristics(outputText: testCase.text),
+                spacing: MockSpacingHeuristics(),
+                injector: MockAccessibilityInjector(outcome: .verifiedSuccess),
+                coordinator: MockMenuFallbackCoordinator(result: .init(
+                    didMenuFallbackInsert: false,
+                    menuAttempt: nil,
+                    suppressFirstWarmupFailureWarning: false
+                )),
+                restoreDelayAfterMenuFallback: 0.5,
+                axInspector: inspector
+            )
+
+            service.pasteText(testCase.text)
+
+            try await waitForCondition {
+                clipboard.restoreCalls == 1
+            }
+            XCTAssertEqual(clipboard.writes, [testCase.expected])
+        }
     }
 
     func testVerifiedMenuFallbackKeepsGraceDelayBeforeRestoringClipboard() async throws {

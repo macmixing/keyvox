@@ -1,6 +1,7 @@
 import Cocoa
 import Carbon.HIToolbox
 import KeyVoxCore
+import KeyVoxTextComposition
 
 class PasteService {
     static let shared = PasteService()
@@ -138,11 +139,22 @@ class PasteService {
         pasteQueue.async {
             let punctuationInsertion = self.terminalPunctuationCoordinator
                 .resolveAdjacentTerminalPunctuation(in: spacingNormalizedText)
-            let insertionText = punctuationInsertion.text
+            let punctuationNormalizedText = punctuationInsertion.text
             #if DEBUG
             self.logNormalizationStage(
                 "terminalPunctuationNormalized",
                 input: spacingNormalizedText,
+                output: punctuationNormalizedText
+            )
+            #endif
+            let insertionText = TrailingSeparatorCompositionPolicy.applyIfNeeded(
+                to: punctuationNormalizedText,
+                followingCharacter: punctuationInsertion.followingCharacter
+            )
+            #if DEBUG
+            self.logNormalizationStage(
+                "trailingSeparatorNormalized",
+                input: punctuationNormalizedText,
                 output: insertionText
             )
             #endif
@@ -178,6 +190,9 @@ class PasteService {
                     setClipboardStringOnMainThread: { self.setClipboardStringOnMainThread($0) },
                     executeLeadingSpacePasteOnMainThread: {
                         self.executeLeadingSpacePasteOnMainThread(count: $0)
+                    },
+                    typeTrailingSpacesOnMainThread: {
+                        self.typeTrailingSpacesOnMainThread(count: $0)
                     }
                 )
                 didMenuFallbackInsert = menuFallbackExecution.didMenuFallbackInsert
@@ -352,6 +367,9 @@ class PasteService {
             setClipboardStringOnMainThread: { self.setClipboardStringOnMainThread($0) },
             executeLeadingSpacePasteOnMainThread: {
                 self.executeLeadingSpacePasteOnMainThread(count: $0)
+            },
+            typeTrailingSpacesOnMainThread: {
+                self.typeTrailingSpacesOnMainThread(count: $0)
             }
         )
 
@@ -523,24 +541,7 @@ class PasteService {
     private func executeLeadingSpacePaste(count: Int) -> Bool {
         guard count > 0 else { return true }
         guard let source = CGEventSource(stateID: .combinedSessionState) else { return false }
-
-        var events: [CGEvent] = []
-
-        for _ in 0..<count {
-            guard let keyDown = CGEvent(
-                keyboardEventSource: source,
-                virtualKey: CGKeyCode(kVK_Space),
-                keyDown: true
-            ),
-                  let keyUp = CGEvent(
-                    keyboardEventSource: source,
-                    virtualKey: CGKeyCode(kVK_Space),
-                    keyDown: false
-                  ) else {
-                return false
-            }
-            events.append(contentsOf: [keyDown, keyUp])
-        }
+        guard var events = spaceEvents(count: count, source: source) else { return false }
 
         guard let commandDown = CGEvent(
             keyboardEventSource: source,
@@ -572,5 +573,47 @@ class PasteService {
         events.forEach { $0.post(tap: .cghidEventTap) }
 
         return true
+    }
+
+    private func typeTrailingSpacesOnMainThread(count: Int) -> Bool {
+        if Thread.isMainThread {
+            return typeSpaces(count: count)
+        }
+
+        var didSucceed = false
+        DispatchQueue.main.sync {
+            didSucceed = typeSpaces(count: count)
+        }
+        return didSucceed
+    }
+
+    private func typeSpaces(count: Int) -> Bool {
+        guard count > 0 else { return true }
+        guard let source = CGEventSource(stateID: .combinedSessionState),
+              let events = spaceEvents(count: count, source: source) else {
+            return false
+        }
+        events.forEach { $0.post(tap: .cghidEventTap) }
+        return true
+    }
+
+    private func spaceEvents(count: Int, source: CGEventSource) -> [CGEvent]? {
+        var events: [CGEvent] = []
+        for _ in 0..<count {
+            guard let keyDown = CGEvent(
+                keyboardEventSource: source,
+                virtualKey: CGKeyCode(kVK_Space),
+                keyDown: true
+            ),
+                  let keyUp = CGEvent(
+                    keyboardEventSource: source,
+                    virtualKey: CGKeyCode(kVK_Space),
+                    keyDown: false
+                  ) else {
+                return nil
+            }
+            events.append(contentsOf: [keyDown, keyUp])
+        }
+        return events
     }
 }
