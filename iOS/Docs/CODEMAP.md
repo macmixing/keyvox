@@ -1,5 +1,5 @@
 # KeyVox iOS Code Map
-**Last Updated: 2026-08-21**
+**Last Updated: 2026-08-22**
 
 ## Project Overview
 
@@ -989,7 +989,7 @@ Packages/
   - Converts the iOS preceding-text snapshot into shared composition context, supplies keyboard casing-preservation decisions, and delegates leading-capitalization policy to `KeyVoxTextComposition`.
 - `Packages/KeyVoxTextComposition/Sources/KeyVoxTextComposition/`
   - Owns deterministic capitalization, spacing, quote classification, sentence-boundary, and adjacent terminal-punctuation rules without depending on `UITextDocumentProxy` or insertion transport.
-  - `TerminalPunctuationCompositionPolicy` preserves existing following punctuation by stripping an incoming model period, deduplicates a matching incoming question or exclamation mark, and signals when a differing incoming question or exclamation mark must replace the following punctuation.
+  - `TerminalPunctuationCompositionPolicy` preserves supported non-quote following punctuation by stripping an incoming model period, deduplicates a matching incoming question or exclamation mark, and signals when a differing incoming question or exclamation mark must replace the following punctuation.
 - `KeyVox Keyboard/Core/KeyboardModelAvailability.swift`
   - Lightweight rooted-install gate used by the extension toolbar for Whisper, Parakeet, PocketTTS, and local Vibes AI availability.
 - `KeyVox Keyboard/Core/KeyboardLayoutGeometry.swift`

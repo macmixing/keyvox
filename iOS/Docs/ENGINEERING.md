@@ -2,7 +2,7 @@
 
 This document captures the current implementation rules and maintainer-facing architecture for the iOS app, keyboard extension, and widget extension.
 
-**Last Updated: 2026-08-21**
+**Last Updated: 2026-08-22**
 
 ## Design Philosophy
 
@@ -1524,7 +1524,7 @@ Warning precedence must remain:
 
 `TerminalPunctuationCompositionPolicy` resolves finalized dictation against the first character following the insertion or selected span:
 
-- an incoming terminal period is removed when any punctuation already follows
+- an incoming terminal period is removed when supported non-quote punctuation already follows
 - a matching incoming question or exclamation mark is removed so the existing mark is reused
 - a differing incoming question or exclamation mark signals that the following punctuation must be replaced
 
