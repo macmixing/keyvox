@@ -10,7 +10,7 @@ KeyVox is a macOS menu bar dictation app that records speech while a trigger key
 - **App**: app entry point, window lifecycle, shared settings/defaults ownership, and macOS-side iCloud sync wiring
 - **Core**: state machine, audio pipeline, keyboard monitoring, overlay orchestration, model management, provider-aware host integration, paste/update host integration
 - **Packages/KeyVoxCore**: shared dictation engine (transcription pipeline, whole-capture Whisper voice-activity gating, deterministic paragraph/list state and variant handling, dictionary matching, normalization, lists, shared audio helpers, packaged resources)
-- **Packages/KeyVoxTextComposition**: platform-neutral policy for joining finalized dictation to existing editor text, including leading capitalization, spacing, quotation-mark context, sentence boundaries, and adjacent terminal punctuation
+- **Packages/KeyVoxTextComposition**: platform-neutral policy for joining finalized dictation to existing editor text, including leading capitalization, leading spacing, quotation-mark context, sentence boundaries, adjacent terminal punctuation, and trailing separators
 - **Core/Services**: reusable host integration services (paste/injection, update checking)
 - **Views**: SwiftUI UI layer (menu, onboarding, settings, overlays, warnings, branded visuals)
 - **Resources**: assets, entitlements, bundled fonts/icons, pronunciation resources
@@ -215,7 +215,7 @@ KeyVox/
 7. `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Whisper/WhisperService.swift` or `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Parakeet/ParakeetService.swift` transcribes the chunk stream through the active provider and stitches chunk text with paragraph or space separators.
 8. `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/TranscriptionPostProcessor.swift` orchestrates email pre-normalization, dictionary correction, spoken colon/quantity/math normalization, list formatting, late cleanup, date/time/email/website repair, numeric grouping, whitespace/capitalization, terminal punctuation, and all-caps finishing through focused helpers under `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/`.
 9. `Core/Vibes/MacVibesCoordinator.swift` optionally runs local KeyVox Vibes rewrites through `MacLocalStyleRewriteTextTransformer`, `MacLocalRewriteInferenceService`, `Packages/KeyVoxLocalInference`, and bundled LoRA adapters from `Packages/KeyVoxVibesAdapters` when Vibes AI is installed.
-10. `Core/Services/Paste/PasteService.swift` resolves macOS editor context through its composition coordinators, delegates leading capitalization, spacing, and adjacent terminal-punctuation policy to `Packages/KeyVoxTextComposition`, then inserts text via Accessibility first and menu-bar Paste fallback second.
+10. `Core/Services/Paste/PasteService.swift` resolves macOS editor context through its composition coordinators, delegates leading capitalization, leading spacing, adjacent terminal-punctuation, and trailing-separator policy to `Packages/KeyVoxTextComposition`, then inserts text via Accessibility first and menu-bar Paste fallback second.
 11. `Core/Overlay/OverlayManager.swift` owns overlay lifecycle orchestration and delegates motion/persistence helpers.
 12. `Core/Overlay/AudioIndicatorDriver.swift` owns generic indicator timing, smoothing, stale-sample handling, and published timeline state.
 13. `Views/RecordingOverlay.swift` hosts overlay visibility behavior and feeds generic indicator state into the branded renderer.
@@ -787,7 +787,8 @@ KeyVox/
 - `Tools/README.md`
   - Maintainer/contributor guide for all scripts in `Tools/`.
 - `Core/Services/Paste/PasteService.swift`
-  - Orchestrates paste pipeline (dictionary-aware leading-cap normalization, smart spacing, AX injection, menu fallback, recovery, clipboard restore).
+  - Orchestrates paste pipeline (dictionary-aware leading-cap normalization, smart leading/trailing separation, adjacent punctuation composition, AX injection, menu fallback, recovery, clipboard restore).
+  - Applies trailing-separator composition after punctuation composition using the following character captured from the retained AX target, and remembers an insertion only when the complete payload was delivered.
   - Determines preferred list render mode from focused AX role for single-line graceful fallback.
 - `Core/Services/Paste/Clipboard/PasteFailureRecoveryCoordinator.swift`
   - Manages active paste-failure recovery session lifecycle, timers, and Command-V detection.
@@ -808,6 +809,7 @@ KeyVox/
 - `Core/Services/Paste/MenuFallback/PasteMenuFallbackCoordinator.swift`
   - Coordinates menu-fallback decision flow from `PasteService` and computes fallback result flags.
   - Owns first-success warmup suppression bookkeeping and menu fallback transport normalization.
+  - Separates leading and trailing spaces from the clipboard payload; leading spaces share the ordered keyboard-event paste sequence, while trailing spaces are typed only after verified paste completion, retried once on delivery failure, and withheld for unverified trusted results.
   - Binds live AX value-change verification to runtime frontmost PID with captured target fallback.
 - `Core/Services/Paste/MenuFallback/PasteMenuScanner.swift`
   - Encapsulates menu traversal/discovery for Paste and Undo menu items.
@@ -824,10 +826,12 @@ KeyVox/
 - `Core/Services/Paste/Composition/PasteSpacingCoordinator.swift`
   - Resolves selection, caret, Accessibility, and recent-insertion fallback context before delegating leading-separator policy to `KeyVoxTextComposition`.
 - `Core/Services/Paste/Composition/PasteTerminalPunctuationCoordinator.swift`
-  - Resolves punctuation and expands the selection against one retained AX target immediately before insertion; failed expansion falls back to preserving the existing punctuation.
+  - Resolves punctuation and returns the same retained AX target plus its following character for trailing-separator composition; selection expansion happens immediately before insertion and failed expansion falls back to preserving the existing punctuation.
 - `Packages/KeyVoxTextComposition/Sources/KeyVoxTextComposition/`
-  - Owns deterministic capitalization, spacing, quotation-mark classification, sentence-boundary, and adjacent terminal-punctuation policy shared by macOS and iOS.
+  - Owns deterministic capitalization, leading spacing, quotation-mark classification, sentence-boundary, adjacent terminal-punctuation, and trailing-separator policy shared by macOS and iOS.
   - `TerminalPunctuationCompositionPolicy` preserves supported non-quote following punctuation by stripping an incoming model period, deduplicates a matching incoming question or exclamation mark, and signals when a differing incoming question or exclamation mark must replace the following punctuation.
+  - `TrailingSeparatorCompositionPolicy` appends one space when finalized dictation would otherwise run directly into a following letter, number, or emoji; it leaves existing trailing whitespace and punctuation/symbol boundaries unchanged.
+  - `TextCompositionCharacterClassifier` centralizes the emoji classification shared by leading- and trailing-separator policy.
   - Accepts platform-neutral adjacent-text context and has no dependency on Accessibility, UIKit document proxies, clipboards, or insertion transports.
 - `Core/Services/Paste/Pipeline/PastePolicies.swift`
   - Static policy helpers for list render mode and failure-recovery decisions.

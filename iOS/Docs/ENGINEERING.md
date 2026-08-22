@@ -1512,7 +1512,7 @@ Warning precedence must remain:
 
 ### Text Insertion Rules
 
-`KeyVoxTextComposition` owns the deterministic editor-adjacent capitalization, spacing, quotation-mark, sentence-boundary, and terminal-punctuation policy shared with macOS. It accepts platform-neutral adjacent-text context and never reads `UITextDocumentProxy` or inserts text.
+`KeyVoxTextComposition` owns the deterministic editor-adjacent capitalization, leading spacing, quotation-mark, sentence-boundary, terminal-punctuation, and trailing-separator policy shared with macOS. It accepts platform-neutral adjacent-text context and never reads `UITextDocumentProxy` or inserts text.
 
 `KeyboardInsertionSpacingCoordinator` converts the keyboard's preceding-text snapshot into the shared context and stays intentionally thin:
 
@@ -1528,7 +1528,13 @@ Warning precedence must remain:
 - a matching incoming question or exclamation mark is removed so the existing mark is reused
 - a differing incoming question or exclamation mark signals that the following punctuation must be replaced
 
-`KeyboardTextInputController` remains the insertion owner. It calls the capitalization and spacing coordinators, reads the document proxy's following character, applies the shared punctuation result, and inserts the resulting text. When replacement is required, it first replaces the selected text, then advances over and deletes the old following punctuation so selection semantics remain correct.
+`TrailingSeparatorCompositionPolicy` then resolves the punctuation-normalized dictation against that same following character:
+
+- append one space when the dictation has no trailing whitespace and a following letter, number, or emoji would otherwise be joined to it
+- preserve dictation that already ends in whitespace
+- do not add a separator before following punctuation, symbols, whitespace, or the end of the document
+
+`KeyboardTextInputController` remains the insertion owner. It calls the capitalization and leading-spacing coordinators, captures the document proxy's following character once, applies the shared punctuation result followed by the shared trailing-separator result, and inserts the finalized text. When punctuation replacement is required, it first replaces the selected text, then advances over and deletes the old following punctuation so selection semantics remain correct.
 
 ### Keyboard-Owned Local State
 
