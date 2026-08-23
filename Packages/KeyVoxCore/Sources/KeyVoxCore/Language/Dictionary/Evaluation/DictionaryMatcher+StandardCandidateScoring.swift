@@ -94,11 +94,23 @@ extension DictionaryMatcher {
                             tokenIndex: start,
                             totalTokens: tokens.count
                         )
+                        || hasStrongStylizedTextEvidence(
+                            observed: form.normalized,
+                            candidate: candidateText,
+                            textSimilarity: baseScore.text
+                        )
                     let gatedFallbackPhoneticSimilarity =
                         allowStylizedFallbackBySurface ? fallbackPhoneticSimilarity : 0
                     let phoneticDelta = max(0, gatedFallbackPhoneticSimilarity - baseScore.phonetic)
                     let adjustedBaseFinal = min(1.0, baseScore.final + (scorer.phoneticWeight * phoneticDelta))
                     let adjustedPhoneticScore = max(baseScore.phonetic, gatedFallbackPhoneticSimilarity)
+                    guard scorer.hasRequiredPhoneticSimilarity(
+                        observedText: form.normalized,
+                        candidateText: candidateText,
+                        phoneticSimilarity: adjustedPhoneticScore
+                    ) else {
+                        continue
+                    }
                     let pluralHomophoneBonus: Double
                     if tokenCount == 1,
                        form.replacementSuffix == "s",

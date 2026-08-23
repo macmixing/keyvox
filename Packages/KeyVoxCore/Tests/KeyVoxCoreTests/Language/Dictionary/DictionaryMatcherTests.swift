@@ -240,6 +240,14 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "My app is called KeyVox.")
     }
 
+    func testCorrectsLowercaseStylizedBrandNearMissAfterConjunction() {
+        let matcher = makeRuntimeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "KeyVox")])
+
+        let result = matcher.apply(to: "Have you ever heard of keyboard or keybox?")
+        XCTAssertEqual(result.text, "Have you ever heard of keyboard or KeyVox?")
+    }
+
     func testCorrectsStylizedSingleTokenBrandNearMissBeforeTitlecaseProductContext() {
         let matcher = makeRuntimeMatcher()
         let entries = DictionaryBuiltInEntries.effectiveEntries(merging: [])
