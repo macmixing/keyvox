@@ -59,6 +59,7 @@ extension PasteAXInspecting {
 
 final class PasteAXInspector: PasteAXInspecting {
     private let maxPreviousNonWhitespaceScanLength = 100
+    private let maxFollowingNonWhitespaceScanLength = 100
     private let accessibilityWarmupRetryCount = 5
     private let accessibilityWarmupRetryDelay: useconds_t = 50_000
 
@@ -110,6 +111,7 @@ final class PasteAXInspector: PasteAXInspecting {
 
         var previousCharacter: Character?
         var followingCharacter: Character?
+        var followingNonWhitespaceCharacter: Character?
         var characterBeforePreviousCharacter: Character?
         var previousNonWhitespaceCharacter: Character?
         var characterBeforePreviousNonWhitespaceCharacter: Character?
@@ -143,10 +145,19 @@ final class PasteAXInspector: PasteAXInspecting {
         }
         if let caretLocation,
            let selectionLength {
+            let followingLocation = caretLocation + selectionLength
             followingCharacter = stringForRange(
-                CFRange(location: caretLocation + selectionLength, length: 1),
+                CFRange(location: followingLocation, length: 1),
                 element: focusedElement
             )?.first
+            if followingCharacter?.isWhitespace == true {
+                followingNonWhitespaceCharacter = firstNonWhitespaceCharacter(
+                    after: followingLocation,
+                    element: focusedElement
+                )
+            } else {
+                followingNonWhitespaceCharacter = followingCharacter
+            }
         }
 
         let context = PasteInsertionContext(
@@ -155,6 +166,7 @@ final class PasteAXInspector: PasteAXInspecting {
             caretLocation: caretLocation,
             previousCharacter: previousCharacter,
             followingCharacter: followingCharacter,
+            followingNonWhitespaceCharacter: followingNonWhitespaceCharacter,
             characterBeforePreviousCharacter: characterBeforePreviousCharacter,
             previousNonWhitespaceCharacter: previousNonWhitespaceCharacter,
             characterBeforePreviousNonWhitespaceCharacter: characterBeforePreviousNonWhitespaceCharacter,
@@ -170,6 +182,7 @@ final class PasteAXInspector: PasteAXInspecting {
                     + "selectedText=\(String(reflecting: focusedSelectedText)) "
                     + "previous=\(String(reflecting: previousCharacter)) "
                     + "following=\(String(reflecting: followingCharacter)) "
+                    + "followingNonWhitespace=\(String(reflecting: followingNonWhitespaceCharacter)) "
                     + "beforePrevious=\(String(reflecting: characterBeforePreviousCharacter)) "
                     + "previousNonWhitespace=\(String(reflecting: previousNonWhitespaceCharacter)) "
                     + "beforePreviousNonWhitespace=\(String(reflecting: characterBeforePreviousNonWhitespaceCharacter)) "
@@ -178,6 +191,24 @@ final class PasteAXInspector: PasteAXInspecting {
         }
         #endif
         return context
+    }
+
+    private func firstNonWhitespaceCharacter(
+        after location: Int,
+        element: AXUIElement
+    ) -> Character? {
+        for length in 1...maxFollowingNonWhitespaceScanLength {
+            guard let text = stringForRange(
+                CFRange(location: location, length: length),
+                element: element
+            ) else {
+                return nil
+            }
+            if let character = text.first(where: { $0.isWhitespace == false }) {
+                return character
+            }
+        }
+        return nil
     }
 
     func focusedUIElement() -> AXUIElement? {

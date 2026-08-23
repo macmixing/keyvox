@@ -4,6 +4,27 @@ import XCTest
 
 @MainActor
 final class PasteTerminalPunctuationCoordinatorTests: XCTestCase {
+    func testRemovesModelPeriodBeforeFollowingLowercaseWordAcrossWhitespace() {
+        let element = AXUIElementCreateApplication(getpid())
+        let inspector = TerminalPunctuationAXInspector(
+            context: PasteInsertionContext(
+                selectionLength: 0,
+                caretLocation: 16,
+                previousCharacter: "g",
+                followingCharacter: " ",
+                followingNonWhitespaceCharacter: "m"
+            ),
+            element: element
+        )
+        let coordinator = PasteTerminalPunctuationCoordinator(axInspector: inspector)
+
+        let output = coordinator.resolveAdjacentTerminalPunctuation(in: "really awesome.")
+
+        XCTAssertEqual(output.text, "really awesome")
+        XCTAssertTrue(output.targetElement === element)
+        XCTAssertTrue(inspector.expandedSelections.isEmpty)
+    }
+
     func testRemovesModelPeriodBeforeExistingPunctuation() {
         let element = AXUIElementCreateApplication(getpid())
         for existingPunctuation in [
