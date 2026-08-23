@@ -15,6 +15,7 @@ final class ReplacementScorerTests: XCTestCase {
         let scorer = ReplacementScorer.balanced
         XCTAssertTrue(scorer.ambiguityMargin == 0.05)
         XCTAssertTrue(scorer.commonWordOverrideThreshold == 0.94)
+        XCTAssertEqual(scorer.minimumPhoneticSimilarity, 0.65)
     }
 
     func testSimilarityReturnsOneForExactAndLessForNearMatch() {
@@ -44,5 +45,27 @@ final class ReplacementScorerTests: XCTestCase {
         )
 
         XCTAssertTrue(withContext.final > withoutContext.final)
+    }
+
+    func testPhoneticGateRejectsNonExactTextWithWeakPhonetics() {
+        let scorer = ReplacementScorer.balanced
+
+        XCTAssertFalse(
+            scorer.hasRequiredPhoneticSimilarity(
+                observedText: "overboard",
+                candidateText: "cueboard",
+                phoneticSimilarity: 0.5
+            )
+        )
+    }
+
+    func testPhoneticGateAllowsExactTextRegardlessOfPronunciationCoverage() {
+        XCTAssertTrue(
+            ReplacementScorer.balanced.hasRequiredPhoneticSimilarity(
+                observedText: "cueboard",
+                candidateText: "cueboard",
+                phoneticSimilarity: 0
+            )
+        )
     }
 }

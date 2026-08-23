@@ -675,6 +675,14 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "I love typing on this keyboard.")
     }
 
+    func testDoesNotReplaceUnrelatedKnownWordWithStylizedDictionaryEntry() {
+        let matcher = makeRuntimeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Cueboard")])
+
+        let input = "Go overboard talking about things."
+        XCTAssertEqual(matcher.apply(to: input).text, input)
+    }
+
     func testDoesNotReplaceKeyboardPluralInGenericProse() {
         let matcher = DictionaryMatcher(
             lexicon: PronunciationLexicon.shared,

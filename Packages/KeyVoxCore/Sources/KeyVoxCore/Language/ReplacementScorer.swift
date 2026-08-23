@@ -13,7 +13,8 @@ public struct ReplacementScorer {
         phoneticWeight: 0.40,
         contextWeight: 0.10,
         ambiguityMargin: 0.05,
-        commonWordOverrideThreshold: 0.94
+        commonWordOverrideThreshold: 0.94,
+        minimumPhoneticSimilarity: 0.65
     )
 
     public let textWeight: Double
@@ -21,19 +22,22 @@ public struct ReplacementScorer {
     public let contextWeight: Double
     public let ambiguityMargin: Double
     public let commonWordOverrideThreshold: Double
+    public let minimumPhoneticSimilarity: Double
 
     public init(
         textWeight: Double,
         phoneticWeight: Double,
         contextWeight: Double,
         ambiguityMargin: Double,
-        commonWordOverrideThreshold: Double
+        commonWordOverrideThreshold: Double,
+        minimumPhoneticSimilarity: Double = 0.65
     ) {
         self.textWeight = textWeight
         self.phoneticWeight = phoneticWeight
         self.contextWeight = contextWeight
         self.ambiguityMargin = ambiguityMargin
         self.commonWordOverrideThreshold = commonWordOverrideThreshold
+        self.minimumPhoneticSimilarity = minimumPhoneticSimilarity
     }
 
     public func threshold(for tokenCount: Int) -> Double {
@@ -69,6 +73,14 @@ public struct ReplacementScorer {
             context: contextScore,
             final: finalScore
         )
+    }
+
+    public func hasRequiredPhoneticSimilarity(
+        observedText: String,
+        candidateText: String,
+        phoneticSimilarity: Double
+    ) -> Bool {
+        observedText == candidateText || phoneticSimilarity >= minimumPhoneticSimilarity
     }
 
     private func contextScore(previousToken: String?, nextToken: String?) -> Double {

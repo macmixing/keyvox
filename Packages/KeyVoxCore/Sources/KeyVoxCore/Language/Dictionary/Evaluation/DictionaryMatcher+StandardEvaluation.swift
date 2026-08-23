@@ -34,6 +34,14 @@ extension DictionaryMatcher {
         }
 
         let exactMatch = observedNormalized == best.entry.normalizedPhrase
+        guard scorer.hasRequiredPhoneticSimilarity(
+            observedText: selection.observedNormalized,
+            candidateText: best.entry.normalizedPhrase,
+            phoneticSimilarity: best.score.phonetic
+        ) else {
+            stats.rejectedLowScore += 1
+            return nil
+        }
         if tokenCount == 1,
            window[0].normalized.count < StandardEvaluationPolicy.minimumSingleTokenLength,
            !exactMatch {
