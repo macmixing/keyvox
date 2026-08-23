@@ -148,7 +148,7 @@ final class PasteMenuFallbackCoordinatorExecutionTests: XCTestCase {
         let executor = MockPasteMenuFallbackExecutor()
         executor.pasteResult = .actionSucceeded
         executor.verificationContext = sampleVerificationContext()
-        executor.verifyInsertionOutcomeResult = .none
+        executor.verifyInsertionOutcomeResult = PasteMenuFallbackVerificationOutcome.none
         var trailingSpaceCounts: [Int] = []
 
         let result = coordinator.executeMenuFallback(

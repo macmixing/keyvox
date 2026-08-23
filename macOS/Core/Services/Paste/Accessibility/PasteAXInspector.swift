@@ -485,19 +485,36 @@ final class PasteAXInspector: PasteAXInspecting {
         }
 
         let nsValue = value as NSString
-        guard selectedRange?.location == nsValue.length else { return false }
-
-        var classListRef: CFTypeRef?
-        guard AXUIElementCopyAttributeValue(element, "AXDOMClassList" as CFString, &classListRef) == .success,
-              let classList = classListRef as? [String] else {
+        guard selectedRange?.location == 0 || selectedRange?.location == nsValue.length else {
             return false
         }
 
-        return Self.containsPlaceholderDOMClass(classList)
+        if let classList = domClassList(for: element),
+           Self.containsPlaceholderDOMClass(classList) {
+            return true
+        }
+
+        return elementsAttribute(element, attribute: kAXChildrenAttribute as String)?
+            .contains { child in
+                guard let classList = domClassList(for: child) else { return false }
+                return Self.containsPlaceholderDOMClass(classList)
+            } == true
     }
 
     static func containsPlaceholderDOMClass(_ classList: [String]) -> Bool {
         classList.contains("placeholder")
+    }
+
+    private func domClassList(for element: AXUIElement) -> [String]? {
+        var classListRef: CFTypeRef?
+        guard AXUIElementCopyAttributeValue(
+            element,
+            "AXDOMClassList" as CFString,
+            &classListRef
+        ) == .success else {
+            return nil
+        }
+        return classListRef as? [String]
     }
 
     func valueLengthForMenuVerification(element: AXUIElement) -> Int? {
