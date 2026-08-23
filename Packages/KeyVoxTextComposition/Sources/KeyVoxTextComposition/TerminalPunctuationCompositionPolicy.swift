@@ -11,13 +11,30 @@ public struct TerminalPunctuationCompositionResult: Equatable, Sendable {
 public enum TerminalPunctuationCompositionPolicy {
     public static func resolve(
         text: String,
-        followingCharacter: Character?
+        followingCharacter: Character?,
+        followingNonWhitespaceCharacter: Character? = nil
     ) -> TerminalPunctuationCompositionResult {
         guard let followingCharacter,
-              followingCharacter.isPunctuation,
-              isQuotationMark(followingCharacter) == false,
               let incomingPunctuation = text.last,
               TextCompositionPolicy.isSentenceBoundary(incomingPunctuation) else {
+            return TerminalPunctuationCompositionResult(
+                text: text,
+                shouldReplaceFollowingPunctuation: false
+            )
+        }
+
+        let nextContentCharacter = followingCharacter.isWhitespace
+            ? followingNonWhitespaceCharacter
+            : followingCharacter
+        if incomingPunctuation == ".", nextContentCharacter?.isLowercase == true {
+            return TerminalPunctuationCompositionResult(
+                text: String(text.dropLast()),
+                shouldReplaceFollowingPunctuation: false
+            )
+        }
+
+        guard followingCharacter.isPunctuation,
+              isQuotationMark(followingCharacter) == false else {
             return TerminalPunctuationCompositionResult(
                 text: text,
                 shouldReplaceFollowingPunctuation: false

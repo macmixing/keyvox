@@ -13,6 +13,7 @@ Composed dictated capitalization, terminal marks, and missing separators with su
 ### Includes
 
 - Removed an incoming model-added period when supported non-quote punctuation already follows the selected text.
+- Removed an incoming model-added period when the next existing non-whitespace character is a lowercase letter.
 - Reused a matching question mark or exclamation point and replaced differing supported non-quote punctuation when processed dictation explicitly ends with either mark.
 - Left incoming terminal punctuation unchanged before straight or curly quotation marks.
 - Added one trailing space when dictated text would otherwise run into an existing letter, number, or emoji.
