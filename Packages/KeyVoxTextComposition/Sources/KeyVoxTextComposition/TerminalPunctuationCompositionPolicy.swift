@@ -1,3 +1,5 @@
+import Foundation
+
 public struct TerminalPunctuationCompositionResult: Equatable, Sendable {
     public let text: String
     public let shouldReplaceFollowingPunctuation: Bool
@@ -12,7 +14,8 @@ public enum TerminalPunctuationCompositionPolicy {
     public static func resolve(
         text: String,
         followingCharacter: Character?,
-        followingNonWhitespaceCharacter: Character? = nil
+        followingNonWhitespaceCharacter: Character? = nil,
+        followingText: String? = nil
     ) -> TerminalPunctuationCompositionResult {
         guard let followingCharacter,
               let incomingPunctuation = text.last,
@@ -26,6 +29,14 @@ public enum TerminalPunctuationCompositionPolicy {
         let nextContentCharacter = followingCharacter.isWhitespace
             ? followingNonWhitespaceCharacter
             : followingCharacter
+        let startsNewLine = followingCharacter.isNewline
+        let startsWithURL = followingText.map(URLShapeDetector.startsWithURL) == true
+        if incomingPunctuation == ".", startsNewLine || startsWithURL {
+            return TerminalPunctuationCompositionResult(
+                text: text,
+                shouldReplaceFollowingPunctuation: false
+            )
+        }
         if incomingPunctuation == ".", nextContentCharacter?.isLowercase == true {
             return TerminalPunctuationCompositionResult(
                 text: String(text.dropLast()),
@@ -68,5 +79,11 @@ public enum TerminalPunctuationCompositionPolicy {
         default:
             return false
         }
+    }
+}
+
+private extension Character {
+    var isNewline: Bool {
+        unicodeScalars.allSatisfy(CharacterSet.newlines.contains)
     }
 }

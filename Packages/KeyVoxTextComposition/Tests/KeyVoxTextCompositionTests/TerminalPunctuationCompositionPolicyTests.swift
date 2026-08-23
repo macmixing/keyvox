@@ -19,6 +19,42 @@ final class TerminalPunctuationCompositionPolicyTests: XCTestCase {
         }
     }
 
+    func testModelPeriodIsPreservedBeforeLowercaseContentOnFollowingLine() {
+        let result = TerminalPunctuationCompositionPolicy.resolve(
+            text: "This is cool.",
+            followingCharacter: "\n",
+            followingNonWhitespaceCharacter: "t",
+            followingText: "\ntest"
+        )
+
+        XCTAssertEqual(result.text, "This is cool.")
+        XCTAssertFalse(result.shouldReplaceFollowingPunctuation)
+    }
+
+    func testModelPeriodIsPreservedBeforeURLOnFollowingLine() {
+        let result = TerminalPunctuationCompositionPolicy.resolve(
+            text: "This is cool.",
+            followingCharacter: "\n",
+            followingNonWhitespaceCharacter: "h",
+            followingText: "\nhttps://example.com"
+        )
+
+        XCTAssertEqual(result.text, "This is cool.")
+        XCTAssertFalse(result.shouldReplaceFollowingPunctuation)
+    }
+
+    func testModelPeriodIsPreservedBeforeURLOnSameLine() {
+        let result = TerminalPunctuationCompositionPolicy.resolve(
+            text: "This is cool.",
+            followingCharacter: " ",
+            followingNonWhitespaceCharacter: "h",
+            followingText: " https://example.com"
+        )
+
+        XCTAssertEqual(result.text, "This is cool.")
+        XCTAssertFalse(result.shouldReplaceFollowingPunctuation)
+    }
+
     func testModelPeriodIsPreservedBeforeNonLowercaseContent() {
         for followingCharacter in [Character("A"), Character("2"), Character("😎")] {
             let result = TerminalPunctuationCompositionPolicy.resolve(
