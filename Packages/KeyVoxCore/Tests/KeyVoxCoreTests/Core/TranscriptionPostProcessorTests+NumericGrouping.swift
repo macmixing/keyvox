@@ -595,6 +595,30 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "3,500")
     }
 
+    func testNormalizesSpokenThousandsWithArticleLedHundreds() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Yeah, that was like a hundred and five thousand dollars.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "Yeah, that was like 105,000 dollars.")
+    }
+
+    func testNormalizesCompleteSpokenThousandsWithoutTruncatingTheRemainder() {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "That's like seven hundred and eighty eight thousand nine hundred and fifty two dollars, man.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "That's like 788,952 dollars, man.")
+    }
+
     func testNormalizesSpokenThousandWithAndRemainder() {
         let processor = TranscriptionPostProcessor()
 

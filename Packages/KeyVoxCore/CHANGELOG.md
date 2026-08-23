@@ -6,6 +6,23 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.2.6] - 2026-08-22
+
+Spoken quantities now preserve complete hundreds-and-thousands values instead of grouping only an initial portion.
+
+### Includes
+
+- Replaced the fixed spoken-quantity word limit with grammatical number-span detection that continues through the complete quantity.
+- Derived number-magnitude tokens from the package's spell-out formatter and used lexical classifications for conjunctions and leading determiners without hard-coded English words.
+- Normalized article-led hundreds within larger quantities and retained complete trailing hundreds, tens, and units.
+- Added regression coverage for both partial-grouping failures.
+
+### Notes
+
+- `1.2.6` tracks complete spoken-quantity grouping repair in the shared Core engine.
+
+---
+
 ## [1.2.5] - 2026-08-16
 
 More reliable dictionary matching for stylized entries with plural and possessive endings.

@@ -12,6 +12,7 @@ public struct ThousandsGroupingNormalizer {
     private struct WordToken {
         let text: String
         let range: NSRange
+        let tag: NLTag?
     }
 
     private static let candidateRegex: NSRegularExpression? = try? NSRegularExpression(
@@ -61,7 +62,6 @@ public struct ThousandsGroupingNormalizer {
         options: []
     )
     private static let plausibleYearRange = 1000...2999
-    private static let maximumSpokenQuantityTokenCount = 8
     private static func makeGroupingFormatter() -> NumberFormatter {
         let formatter = NumberFormatter()
         formatter.locale = Locale(identifier: "en_US_POSIX")
@@ -90,6 +90,16 @@ public struct ThousandsGroupingNormalizer {
 
         return lookup
     }()
+
+    private static let hundredMagnitudeToken = spellOutMagnitudeToken(for: 100)
+    private static let thousandMagnitudeToken = spellOutMagnitudeToken(for: 1_000)
+
+    private static func spellOutMagnitudeToken(for value: Int) -> String? {
+        guard let spelledOut = makeSpellOutFormatter().string(from: NSNumber(value: value)) else {
+            return nil
+        }
+        return normalizeSpellOutPhrase(spelledOut).split(separator: " ").last.map(String.init)
+    }
 
     private static func normalizeSpellOutPhrase(_ text: String) -> String {
         text
@@ -126,30 +136,51 @@ public struct ThousandsGroupingNormalizer {
 
         let nsLine = line as NSString
         let fullRange = NSRange(location: 0, length: nsLine.length)
+        let lexicalTokens = lexicalTokens(in: line, range: fullRange)
         let words = wordRegex.matches(in: line, options: [], range: fullRange).map {
-            WordToken(text: nsLine.substring(with: $0.range), range: $0.range)
+            let range = $0.range
+            let tag = lexicalTokens.first(where: { NSEqualRanges($0.range, range) })?.tag
+            return WordToken(text: nsLine.substring(with: range), range: range, tag: tag)
         }
         guard !words.isEmpty else { return line }
 
-        let lexicalTokens = lexicalTokens(in: line, range: fullRange)
         var replacements: [(range: NSRange, value: Int, isLikelyYear: Bool)] = []
         var searchIndex = 0
 
         while searchIndex < words.count {
             var matchedSpan: (range: NSRange, value: Int, isLikelyYear: Bool, nextIndex: Int)?
-            let upperBound = min(words.count, searchIndex + Self.maximumSpokenQuantityTokenCount)
+            let upperBound = spokenQuantityCandidateEnd(startingAt: searchIndex, in: words)
+            guard upperBound > searchIndex else {
+                searchIndex += 1
+                continue
+            }
 
             for endIndex in stride(from: upperBound, through: searchIndex + 1, by: -1) {
                 let candidateWords = Array(words[searchIndex..<endIndex])
-                guard candidateWords[0].text.lowercased() != "and" else { continue }
+                guard candidateWords[0].tag != .conjunction else { continue }
                 guard wordsAreWhitespaceSeparated(candidateWords, in: nsLine) else { continue }
-                let candidateText = candidateWords.map(\.text)
-                guard let value = spokenQuantityValue(for: candidateText, formatter: formatter),
+                let candidateText = candidateWords
+                    .filter { $0.tag != .conjunction }
+                    .map(\.text)
+                let leadingWordIsDeterminer = candidateWords[0].tag == .determiner
+                guard let value = spokenQuantityValue(
+                    for: candidateText,
+                    formatter: formatter,
+                    leadingWordIsDeterminer: leadingWordIsDeterminer
+                ),
                       value >= 1000 else {
                     continue
                 }
-                if candidateWords.count > 1,
-                   let trimmedValue = spokenQuantityValue(for: candidateText.dropLast(), formatter: formatter),
+                let trimmedCandidateText = candidateWords
+                    .dropLast()
+                    .filter { $0.tag != .conjunction }
+                    .map(\.text)
+                if !trimmedCandidateText.isEmpty,
+                   let trimmedValue = spokenQuantityValue(
+                       for: trimmedCandidateText,
+                       formatter: formatter,
+                       leadingWordIsDeterminer: leadingWordIsDeterminer
+                   ),
                    trimmedValue == value {
                     continue
                 }
@@ -198,6 +229,28 @@ public struct ThousandsGroupingNormalizer {
         return mutable as String
     }
 
+    private func spokenQuantityCandidateEnd(startingAt startIndex: Int, in words: [WordToken]) -> Int {
+        guard let hundredMagnitudeToken = Self.hundredMagnitudeToken,
+              let thousandMagnitudeToken = Self.thousandMagnitudeToken else {
+            return startIndex
+        }
+
+        var endIndex = startIndex
+        while endIndex < words.count {
+            let word = words[endIndex]
+            let normalizedText = word.text.lowercased()
+            let isMagnitude = normalizedText == hundredMagnitudeToken
+                || normalizedText == thousandMagnitudeToken
+            let isNumber = word.tag == .number || isMagnitude
+            let isConnector = endIndex > startIndex && word.tag == .conjunction
+            let isLeadingDeterminer = endIndex == startIndex && word.tag == .determiner
+            guard isNumber || isConnector || isLeadingDeterminer else { break }
+            endIndex += 1
+        }
+
+        return endIndex
+    }
+
     private func normalizeLine(_ line: String, groupingFormatter: NumberFormatter) -> String {
         guard let candidateRegex = Self.candidateRegex else { return line }
 
@@ -224,23 +277,54 @@ public struct ThousandsGroupingNormalizer {
         return mutable as String
     }
 
-    private func spokenQuantityValue(for words: [String], formatter: NumberFormatter) -> Int? {
+    private func spokenQuantityValue(
+        for words: [String],
+        formatter: NumberFormatter,
+        leadingWordIsDeterminer: Bool = false
+    ) -> Int? {
         let normalizedWords = words.map { $0.lowercased() }
-        guard normalizedWords.contains("hundred") || normalizedWords.contains("thousand") else {
+        guard let hundredMagnitudeToken = Self.hundredMagnitudeToken,
+              let thousandMagnitudeToken = Self.thousandMagnitudeToken,
+              normalizedWords.contains(hundredMagnitudeToken)
+                || normalizedWords.contains(thousandMagnitudeToken) else {
             return nil
         }
 
-        return parseSpokenQuantity(normalizedWords, formatter: formatter)
+        var quantityWords = normalizedWords
+        var allowsImplicitLeadingHundred = false
+        if leadingWordIsDeterminer,
+           quantityWords.count > 1,
+           quantityWords[1] == hundredMagnitudeToken {
+            quantityWords.removeFirst()
+            allowsImplicitLeadingHundred = true
+        }
+
+        return parseSpokenQuantity(
+            quantityWords,
+            formatter: formatter,
+            allowsImplicitLeadingHundred: allowsImplicitLeadingHundred
+        )
     }
 
-    private func parseSpokenQuantity(_ words: [String], formatter: NumberFormatter) -> Int? {
-        let filteredWords = words.filter { $0 != "and" }
-        guard !filteredWords.isEmpty else { return nil }
+    private func parseSpokenQuantity(
+        _ words: [String],
+        formatter: NumberFormatter,
+        allowsImplicitLeadingHundred: Bool = false
+    ) -> Int? {
+        guard !words.isEmpty,
+              let hundredMagnitudeToken = Self.hundredMagnitudeToken,
+              let thousandMagnitudeToken = Self.thousandMagnitudeToken else {
+            return nil
+        }
 
-        if let thousandIndex = filteredWords.firstIndex(of: "thousand") {
-            let thousandsWords = Array(filteredWords[..<thousandIndex])
-            let remainderWords = Array(filteredWords[(thousandIndex + 1)...])
-            guard let thousandsValue = parseSpokenChunk(thousandsWords, formatter: formatter),
+        if let thousandIndex = words.firstIndex(of: thousandMagnitudeToken) {
+            let thousandsWords = Array(words[..<thousandIndex])
+            let remainderWords = Array(words[(thousandIndex + 1)...])
+            guard let thousandsValue = parseSpokenQuantity(
+                thousandsWords,
+                formatter: formatter,
+                allowsImplicitLeadingHundred: allowsImplicitLeadingHundred
+            ),
                   thousandsValue > 0 else {
                 return nil
             }
@@ -252,10 +336,13 @@ public struct ThousandsGroupingNormalizer {
             return (thousandsValue * 1000) + remainderValue
         }
 
-        if let hundredIndex = filteredWords.firstIndex(of: "hundred") {
-            let hundredsWords = Array(filteredWords[..<hundredIndex])
-            let remainderWords = Array(filteredWords[(hundredIndex + 1)...])
-            guard let hundredsValue = parseSpokenChunk(hundredsWords, formatter: formatter),
+        if let hundredIndex = words.firstIndex(of: hundredMagnitudeToken) {
+            let hundredsWords = Array(words[..<hundredIndex])
+            let remainderWords = Array(words[(hundredIndex + 1)...])
+            let hundredsValue = hundredsWords.isEmpty && allowsImplicitLeadingHundred
+                ? 1
+                : parseSpokenChunk(hundredsWords, formatter: formatter)
+            guard let hundredsValue,
                   hundredsValue > 0 else {
                 return nil
             }
@@ -267,7 +354,7 @@ public struct ThousandsGroupingNormalizer {
             return (hundredsValue * 100) + remainderValue
         }
 
-        return parseSpokenChunk(filteredWords, formatter: formatter)
+        return parseSpokenChunk(words, formatter: formatter)
     }
 
     private func parseSpokenChunk(_ words: [String], formatter _: NumberFormatter) -> Int? {
