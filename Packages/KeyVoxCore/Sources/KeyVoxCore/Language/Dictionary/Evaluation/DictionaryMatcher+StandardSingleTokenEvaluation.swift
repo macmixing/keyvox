@@ -67,6 +67,16 @@ extension DictionaryMatcher {
             tokens: tokens,
             text: text
         )
+        let hasUnknownWordStylizedFallbackEvidence =
+            !observedHasRuntimePronunciation
+            && allowStylizedFallbackBySurface
+            && hasStrongStylizedFallbackPhoneticEvidence(
+                observed: observedToken.normalized,
+                candidate: candidateToken,
+                observedPhonetic: observedToken.phonetic,
+                candidatePhonetic: candidatePhonetic,
+                textSimilarity: textSimilarity
+            )
 
         var adjustedThreshold = effectiveThreshold
         var requiresPeerSupport = false
@@ -87,7 +97,8 @@ extension DictionaryMatcher {
                observed: observedToken.normalized,
                candidate: candidateToken,
                textSimilarity: textSimilarity
-           ) {
+           ),
+           !hasUnknownWordStylizedFallbackEvidence {
             if !hasAdjacentTitlecaseListContext {
                 stats.rejectedLowScore += 1
                 return nil

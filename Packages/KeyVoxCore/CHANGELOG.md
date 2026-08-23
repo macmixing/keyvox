@@ -8,7 +8,7 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ## [1.2.6] - 2026-08-22
 
-Spoken quantities now preserve complete hundreds-and-thousands values, and Parakeet rejects captures without detected speech before decoding through the shared voice activity package.
+Spoken quantities now preserve complete hundreds-and-thousands values, Parakeet rejects captures without detected speech, and stylized dictionary terms correct reliably before title-cased words.
 
 ### Includes
 
@@ -17,6 +17,7 @@ Spoken quantities now preserve complete hundreds-and-thousands values, and Parak
 - Normalized article-led hundreds within larger quantities and retained complete trailing hundreds, tens, and units.
 - Added regression coverage for both partial-grouping failures.
 - Integrated Whisper and Parakeet with the provider-neutral `KeyVoxVoiceActivity` package, preventing captures without detected speech from reaching the Parakeet decoder and producing hallucinated text.
+- Allowed unknown stylized-word phonetic near-misses to match before title-cased words without requiring those following words in the dictionary, while preserving safeguards for known words and names.
 
 ### Notes
 

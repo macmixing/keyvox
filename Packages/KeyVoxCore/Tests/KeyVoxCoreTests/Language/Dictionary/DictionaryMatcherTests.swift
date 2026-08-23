@@ -250,6 +250,21 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "Yeah, the KeyVox Core package.")
     }
 
+    func testCorrectsStylizedSingleTokenBrandPhoneticNearMissBeforeUnlistedTitlecaseWords() {
+        let matcher = makeRuntimeMatcher()
+        let entries = DictionaryBuiltInEntries.effectiveEntries(merging: [])
+        matcher.rebuildIndex(entries: entries)
+
+        let result = matcher.apply(
+            to: "Kivox speak, the Kivox Core package, and Kivox Whisper."
+        )
+
+        XCTAssertEqual(
+            result.text,
+            "KeyVox Speak, the KeyVox Core package, and KeyVox Whisper."
+        )
+    }
+
     func testRuntimeMatcherDoesNotRewriteOrdinaryMergedTokenPrefixIntoStylizedSingleTokenBrand() {
         let matcher = makeRuntimeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "KeyVox")])
