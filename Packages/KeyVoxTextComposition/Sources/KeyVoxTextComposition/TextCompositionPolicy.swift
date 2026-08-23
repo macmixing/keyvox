@@ -122,6 +122,13 @@ public enum TextCompositionPolicy {
             return true
         }
 
+        if let previousNonWhitespaceCharacter = context.previousNonWhitespaceCharacter,
+           TextCompositionCharacterClassifier.isClauseIntroductionBoundary(
+               previousNonWhitespaceCharacter
+           ) {
+            return true
+        }
+
         if isImmediatelyAfterTerminalPunctuationAndDelimiter(context) {
             return true
         }
@@ -318,6 +325,7 @@ public enum TextCompositionPolicy {
         )
         return previousIsWordLike
             || previousIsTriggerPunctuation
+            || TextCompositionCharacterClassifier.isHyphenSeparator(previousCharacter)
             || TextCompositionCharacterClassifier.isEmoji(previousCharacter)
     }
 }
