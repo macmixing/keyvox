@@ -112,6 +112,7 @@ final class PasteAXInspector: PasteAXInspecting {
         var previousCharacter: Character?
         var followingCharacter: Character?
         var followingNonWhitespaceCharacter: Character?
+        var followingText: String?
         var characterBeforePreviousCharacter: Character?
         var previousNonWhitespaceCharacter: Character?
         var characterBeforePreviousNonWhitespaceCharacter: Character?
@@ -146,6 +147,10 @@ final class PasteAXInspector: PasteAXInspecting {
         if let caretLocation,
            let selectionLength {
             let followingLocation = caretLocation + selectionLength
+            followingText = textFollowingSelection(
+                from: followingLocation,
+                element: focusedElement
+            )
             followingCharacter = stringForRange(
                 CFRange(location: followingLocation, length: 1),
                 element: focusedElement
@@ -167,6 +172,7 @@ final class PasteAXInspector: PasteAXInspecting {
             previousCharacter: previousCharacter,
             followingCharacter: followingCharacter,
             followingNonWhitespaceCharacter: followingNonWhitespaceCharacter,
+            followingText: followingText,
             characterBeforePreviousCharacter: characterBeforePreviousCharacter,
             previousNonWhitespaceCharacter: previousNonWhitespaceCharacter,
             characterBeforePreviousNonWhitespaceCharacter: characterBeforePreviousNonWhitespaceCharacter,
@@ -209,6 +215,32 @@ final class PasteAXInspector: PasteAXInspecting {
             }
         }
         return nil
+    }
+
+    private func textFollowingSelection(
+        from location: Int,
+        element: AXUIElement
+    ) -> String? {
+        if let value = valueString(for: element) {
+            let safeLocation = min(max(0, location), value.utf16.count)
+            return String(decoding: value.utf16.dropFirst(safeLocation), as: UTF16.self)
+        }
+
+        var longestText: String?
+        for length in 1...maxFollowingNonWhitespaceScanLength {
+            guard let text = stringForRange(
+                CFRange(location: location, length: length),
+                element: element
+            ) else {
+                break
+            }
+            longestText = text
+            let content = text.drop(while: \.isWhitespace)
+            if content.dropFirst().contains(where: \.isWhitespace) {
+                break
+            }
+        }
+        return longestText
     }
 
     func focusedUIElement() -> AXUIElement? {

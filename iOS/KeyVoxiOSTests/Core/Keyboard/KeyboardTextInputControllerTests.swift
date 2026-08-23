@@ -316,6 +316,29 @@ struct KeyboardTextInputControllerTests {
         }
     }
 
+    @Test func transcriptionInsertionPreservesPeriodBeforeNewLineAndURLContent() {
+        let insertionCases = [
+            (followingText: "\ntest", expected: "This is cool.\ntest"),
+            (followingText: "\nhttps://example.com", expected: "This is cool.\nhttps://example.com"),
+            (followingText: "https://example.com", expected: "This is cool. https://example.com"),
+        ]
+        for testCase in insertionCases {
+            let documentProxy = StatefulSelectionDocumentProxy(
+                text: testCase.followingText,
+                caretBefore: testCase.followingText
+            )
+            let controller = KeyboardTextInputController(
+                documentProxy: documentProxy,
+                emitKeypress: {}
+            )
+
+            let inserted = controller.insertTranscription("This is cool.")
+
+            #expect(inserted == true)
+            #expect(documentProxy.text == testCase.expected)
+        }
+    }
+
     @Test func transcriptionInsertionDoesNotAddTrailingSeparatorBeforePunctuation() {
         for punctuation in [".", ",", "?", "!", ":", ";"] {
             let original = "That's\(punctuation)"

@@ -8,12 +8,13 @@ The format loosely follows Keep a Changelog, and the package uses semantic versi
 
 ## [1.0.3] - 2026-08-23
 
-Improved dictated capitalization and spacing around colons, standalone months, hyphens, terminal marks, and surrounding text.
+Improved dictated capitalization, punctuation, and spacing around colons, standalone months, hyphens, terminal marks, URLs, line boundaries, and surrounding text.
 
 ### Includes
 
 - Removed an incoming model-added period when supported non-quote punctuation already follows the selected text.
 - Removed an incoming model-added period when the next existing non-whitespace character is a lowercase letter.
+- Preserved an incoming model-added period when the following content begins on a new line or with a URL.
 - Reused a matching question mark or exclamation point and replaced differing supported non-quote punctuation when processed dictation explicitly ends with either mark.
 - Left incoming terminal punctuation unchanged before straight or curly quotation marks.
 - Added one leading space when incoming text would otherwise run directly into a preceding hyphen.
@@ -22,11 +23,11 @@ Improved dictated capitalization and spacing around colons, standalone months, h
 - Preserved incoming capitalization after a colon.
 - Preserved locale-canonical month capitalization when used alone, plus month and weekday capitalization for detected dates and spoken-number dates, while allowing relative date labels to follow normal continuation casing.
 - Shared the punctuation-boundary decision across macOS and iOS composition paths.
-- Added regression coverage for colon and hyphen boundaries, standalone months, locale-canonical calendar names, relative date labels, spoken-number dates, model periods, explicit question marks and exclamation points, supported non-quote punctuation, quotation-mark boundaries, and missing separators.
+- Added regression coverage for colon and hyphen boundaries, standalone months, locale-canonical calendar names, relative date labels, spoken-number dates, model periods, explicit question marks and exclamation points, supported non-quote punctuation, quotation-mark boundaries, new lines, URLs, and missing separators.
 
 ### Notes
 
-- `1.0.3` bumps the tracked patch version for locale-aware capitalization, punctuation-aware composition, and missing trailing separators.
+- `1.0.3` bumps the tracked patch version for locale-aware capitalization, punctuation-aware composition across line and URL boundaries, and missing trailing separators.
 
 ## [1.0.2] - 2026-08-08
 
