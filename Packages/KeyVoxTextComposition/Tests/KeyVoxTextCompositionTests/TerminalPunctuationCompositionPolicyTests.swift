@@ -2,6 +2,35 @@ import XCTest
 @testable import KeyVoxTextComposition
 
 final class TerminalPunctuationCompositionPolicyTests: XCTestCase {
+    func testModelPeriodIsRemovedBeforeFollowingLowercaseLetter() {
+        for testCase in [
+            (followingCharacter: Character("a"), followingNonWhitespaceCharacter: Character("a")),
+            (followingCharacter: Character(" "), followingNonWhitespaceCharacter: Character("m")),
+            (followingCharacter: Character("\t"), followingNonWhitespaceCharacter: Character("é")),
+        ] {
+            let result = TerminalPunctuationCompositionPolicy.resolve(
+                text: "still working.",
+                followingCharacter: testCase.followingCharacter,
+                followingNonWhitespaceCharacter: testCase.followingNonWhitespaceCharacter
+            )
+
+            XCTAssertEqual(result.text, "still working")
+            XCTAssertFalse(result.shouldReplaceFollowingPunctuation)
+        }
+    }
+
+    func testModelPeriodIsPreservedBeforeNonLowercaseContent() {
+        for followingCharacter in [Character("A"), Character("2"), Character("😎")] {
+            let result = TerminalPunctuationCompositionPolicy.resolve(
+                text: "still working.",
+                followingCharacter: followingCharacter
+            )
+
+            XCTAssertEqual(result.text, "still working.")
+            XCTAssertFalse(result.shouldReplaceFollowingPunctuation)
+        }
+    }
+
     func testModelPeriodIsRemovedBeforeExistingPunctuation() {
         for existingPunctuation in [
             Character("."), Character("?"), Character("!"),
