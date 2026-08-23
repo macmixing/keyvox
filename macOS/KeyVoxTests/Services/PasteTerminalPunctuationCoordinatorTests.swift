@@ -25,6 +25,42 @@ final class PasteTerminalPunctuationCoordinatorTests: XCTestCase {
         XCTAssertTrue(inspector.expandedSelections.isEmpty)
     }
 
+    func testPreservesModelPeriodBeforeNewLineAndURLContent() {
+        let element = AXUIElementCreateApplication(getpid())
+        let insertionCases = [
+            (followingText: "\ntest", followingCharacter: Character("\n"), nextContent: Character("t")),
+            (
+                followingText: "\nhttps://example.com",
+                followingCharacter: Character("\n"),
+                nextContent: Character("h")
+            ),
+            (
+                followingText: " https://example.com",
+                followingCharacter: Character(" "),
+                nextContent: Character("h")
+            ),
+        ]
+        for testCase in insertionCases {
+            let inspector = TerminalPunctuationAXInspector(
+                context: PasteInsertionContext(
+                    selectionLength: 0,
+                    caretLocation: 0,
+                    previousCharacter: nil,
+                    followingCharacter: testCase.followingCharacter,
+                    followingNonWhitespaceCharacter: testCase.nextContent,
+                    followingText: testCase.followingText
+                ),
+                element: element
+            )
+            let coordinator = PasteTerminalPunctuationCoordinator(axInspector: inspector)
+
+            let output = coordinator.resolveAdjacentTerminalPunctuation(in: "This is cool.")
+
+            XCTAssertEqual(output.text, "This is cool.")
+            XCTAssertTrue(inspector.expandedSelections.isEmpty)
+        }
+    }
+
     func testRemovesModelPeriodBeforeExistingPunctuation() {
         let element = AXUIElementCreateApplication(getpid())
         for existingPunctuation in [

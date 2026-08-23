@@ -44,7 +44,8 @@ final class PasteTerminalPunctuationCoordinator: PasteTerminalPunctuationCoordin
         let resolution = TerminalPunctuationCompositionPolicy.resolve(
             text: text,
             followingCharacter: context.followingCharacter,
-            followingNonWhitespaceCharacter: context.followingNonWhitespaceCharacter
+            followingNonWhitespaceCharacter: context.followingNonWhitespaceCharacter,
+            followingText: context.followingText
         )
         guard resolution.shouldReplaceFollowingPunctuation else {
             return PasteTerminalPunctuationInsertion(

@@ -13,6 +13,7 @@ struct PasteInsertionContext {
     let previousCharacter: Character?
     let followingCharacter: Character?
     let followingNonWhitespaceCharacter: Character?
+    let followingText: String?
     let characterBeforePreviousCharacter: Character?
     let previousNonWhitespaceCharacter: Character?
     let characterBeforePreviousNonWhitespaceCharacter: Character?
@@ -25,6 +26,7 @@ struct PasteInsertionContext {
         previousCharacter: Character?,
         followingCharacter: Character? = nil,
         followingNonWhitespaceCharacter: Character? = nil,
+        followingText: String? = nil,
         characterBeforePreviousCharacter: Character? = nil,
         previousNonWhitespaceCharacter: Character? = nil,
         characterBeforePreviousNonWhitespaceCharacter: Character? = nil,
@@ -36,6 +38,7 @@ struct PasteInsertionContext {
         self.previousCharacter = previousCharacter
         self.followingCharacter = followingCharacter
         self.followingNonWhitespaceCharacter = followingNonWhitespaceCharacter
+        self.followingText = followingText
         self.characterBeforePreviousCharacter = characterBeforePreviousCharacter
         self.previousNonWhitespaceCharacter = previousNonWhitespaceCharacter
         self.characterBeforePreviousNonWhitespaceCharacter = characterBeforePreviousNonWhitespaceCharacter
