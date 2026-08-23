@@ -72,8 +72,6 @@
 		9A1000212F4B000100AA0001 /* PasteMenuFallbackCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1000112F4B000100AA0001 /* PasteMenuFallbackCoordinator.swift */; };
 		9A1000222F4B000100AA0001 /* PasteCapitalizationCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1000232F4B000100AA0001 /* PasteCapitalizationCoordinator.swift */; };
 		9A1000242F4B000100AA0001 /* PasteDictionaryCasingStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1000252F4B000100AA0001 /* PasteDictionaryCasingStore.swift */; };
-		A7E100012FFD000100AA0001 /* PasteTerminalPunctuationCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7E100022FFD000100AA0001 /* PasteTerminalPunctuationCoordinator.swift */; };
-		A7E100032FFD000100AA0001 /* PasteTerminalPunctuationCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7E100042FFD000100AA0001 /* PasteTerminalPunctuationCoordinatorTests.swift */; };
 		9A1000902F4B000100AA0001 /* PasteUntouchedInsertionReplacer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1000912F4B000100AA0001 /* PasteUntouchedInsertionReplacer.swift */; };
 		9B2000122F4C000100AA0001 /* OverlayPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B2000022F4C000100AA0001 /* OverlayPanel.swift */; };
 		9B2000132F4C000100AA0001 /* OverlayMotionController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B2000032F4C000100AA0001 /* OverlayMotionController.swift */; };
@@ -90,6 +88,8 @@
 		A11000032FC1000100AA0001 /* WeeklyWordStatsStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11000132FC1000100AA0001 /* WeeklyWordStatsStoreTests.swift */; };
 		A11000042FC1000100AA0001 /* WeeklyWordStatsCloudSyncTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11000142FC1000100AA0001 /* WeeklyWordStatsCloudSyncTests.swift */; };
 		A7D9F0012FFF000100AA0001 /* WindowDragGestureModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7D9F0022FFF000100AA0001 /* WindowDragGestureModifier.swift */; };
+		A7E100012FFD000100AA0001 /* PasteTerminalPunctuationCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7E100022FFD000100AA0001 /* PasteTerminalPunctuationCoordinator.swift */; };
+		A7E100032FFD000100AA0001 /* PasteTerminalPunctuationCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7E100042FFD000100AA0001 /* PasteTerminalPunctuationCoordinatorTests.swift */; };
 		AA1000112F50000100AA0001 /* OFL.txt in Resources */ = {isa = PBXBuildFile; fileRef = AA1000012F50000100AA0001 /* OFL.txt */; };
 		AB3000012F60000100AA0001 /* TestHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000012F60000100AA0001 /* TestHelpers.swift */; };
 		AB3000032F60000100AA0001 /* OverlayScreenPersistenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000032F60000100AA0001 /* OverlayScreenPersistenceTests.swift */; };
@@ -321,8 +321,6 @@
 		9A1000112F4B000100AA0001 /* PasteMenuFallbackCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteMenuFallbackCoordinator.swift; sourceTree = "<group>"; };
 		9A1000232F4B000100AA0001 /* PasteCapitalizationCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteCapitalizationCoordinator.swift; sourceTree = "<group>"; };
 		9A1000252F4B000100AA0001 /* PasteDictionaryCasingStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteDictionaryCasingStore.swift; sourceTree = "<group>"; };
-		A7E100022FFD000100AA0001 /* PasteTerminalPunctuationCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteTerminalPunctuationCoordinator.swift; sourceTree = "<group>"; };
-		A7E100042FFD000100AA0001 /* PasteTerminalPunctuationCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteTerminalPunctuationCoordinatorTests.swift; sourceTree = "<group>"; };
 		9A1000912F4B000100AA0001 /* PasteUntouchedInsertionReplacer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteUntouchedInsertionReplacer.swift; sourceTree = "<group>"; };
 		9B2000022F4C000100AA0001 /* OverlayPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayPanel.swift; sourceTree = "<group>"; };
 		9B2000032F4C000100AA0001 /* OverlayMotionController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayMotionController.swift; sourceTree = "<group>"; };
@@ -339,6 +337,8 @@
 		A11000132FC1000100AA0001 /* WeeklyWordStatsStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeeklyWordStatsStoreTests.swift; sourceTree = "<group>"; };
 		A11000142FC1000100AA0001 /* WeeklyWordStatsCloudSyncTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeeklyWordStatsCloudSyncTests.swift; sourceTree = "<group>"; };
 		A7D9F0022FFF000100AA0001 /* WindowDragGestureModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowDragGestureModifier.swift; sourceTree = "<group>"; };
+		A7E100022FFD000100AA0001 /* PasteTerminalPunctuationCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteTerminalPunctuationCoordinator.swift; sourceTree = "<group>"; };
+		A7E100042FFD000100AA0001 /* PasteTerminalPunctuationCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteTerminalPunctuationCoordinatorTests.swift; sourceTree = "<group>"; };
 		AA1000012F50000100AA0001 /* OFL.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = OFL.txt; sourceTree = "<group>"; };
 		AB2000012F60000100AA0001 /* TestHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestHelpers.swift; sourceTree = "<group>"; };
 		AB2000032F60000100AA0001 /* OverlayScreenPersistenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayScreenPersistenceTests.swift; sourceTree = "<group>"; };
@@ -1556,7 +1556,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.5;
-				MARKETING_VERSION = 1.3.5;
+				MARKETING_VERSION = 1.3.6;
 				PRODUCT_BUNDLE_IDENTIFIER = com.cueit.keyvox;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1607,7 +1607,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.5;
-				MARKETING_VERSION = 1.3.5;
+				MARKETING_VERSION = 1.3.6;
 				PRODUCT_BUNDLE_IDENTIFIER = com.cueit.keyvox;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
