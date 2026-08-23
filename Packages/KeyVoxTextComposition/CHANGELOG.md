@@ -6,9 +6,9 @@ The format loosely follows Keep a Changelog, and the package uses semantic versi
 
 ---
 
-## [1.0.3] - 2026-08-22
+## [1.0.3] - 2026-08-23
 
-Composed dictated terminal marks and missing separators with text immediately following an insertion.
+Composed dictated capitalization, terminal marks, and missing separators with surrounding text.
 
 ### Includes
 
@@ -17,12 +17,13 @@ Composed dictated terminal marks and missing separators with text immediately fo
 - Left incoming terminal punctuation unchanged before straight or curly quotation marks.
 - Added one trailing space when dictated text would otherwise run into an existing letter, number, or emoji.
 - Left trailing spacing unchanged before punctuation, symbols, whitespace, or no following text, and when the dictated text already ends in whitespace.
+- Preserved locale-canonical month and weekday capitalization for detected dates and spoken-number dates while allowing relative date labels to follow normal continuation casing.
 - Shared the punctuation-boundary decision across macOS and iOS composition paths.
-- Added regression coverage for model periods, explicit question marks and exclamation points, supported non-quote punctuation, quotation-mark boundaries, and missing trailing separators.
+- Added regression coverage for locale-canonical calendar names, relative date labels, spoken-number dates, model periods, explicit question marks and exclamation points, supported non-quote punctuation, quotation-mark boundaries, and missing trailing separators.
 
 ### Notes
 
-- `1.0.3` bumps the tracked patch version for punctuation-aware composition and missing trailing separators.
+- `1.0.3` bumps the tracked patch version for locale-aware capitalization, punctuation-aware composition, and missing trailing separators.
 
 ## [1.0.2] - 2026-08-08
 

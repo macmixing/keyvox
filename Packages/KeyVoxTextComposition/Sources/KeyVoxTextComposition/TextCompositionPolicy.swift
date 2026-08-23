@@ -63,6 +63,12 @@ public enum TextCompositionPolicy {
         let leadingWord = text[capitalizationIndex...].prefix(while: \.isLetter)
         guard isDefaultSentenceCase(word: leadingWord) else { return text }
         guard isSentenceStart == false else { return text }
+        guard LeadingDateCapitalizationPolicy.shouldPreserveCapitalization(
+            in: text,
+            startingAt: capitalizationIndex
+        ) == false else {
+            return text
+        }
 
         var output = text
         let firstCharacter = output[capitalizationIndex]

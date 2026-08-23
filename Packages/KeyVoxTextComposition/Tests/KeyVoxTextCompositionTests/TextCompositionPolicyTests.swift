@@ -259,6 +259,112 @@ final class TextCompositionPolicyTests: XCTestCase {
         )
     }
 
+    func testDateCapitalizationPreservesCanonicalLeadingCalendarName() throws {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+        formatter.dateFormat = "MMMM d, yyyy"
+
+        let components = DateComponents(
+            calendar: formatter.calendar,
+            timeZone: formatter.timeZone,
+            year: 2025,
+            month: 3,
+            day: 15
+        )
+        let date = try XCTUnwrap(components.date)
+        let dateText = formatter.string(from: date)
+        let capitalizationIndex = try XCTUnwrap(dateText.indices.first)
+
+        XCTAssertTrue(
+            LeadingDateCapitalizationPolicy.shouldPreserveCapitalization(
+                in: dateText,
+                startingAt: capitalizationIndex,
+                locale: formatter.locale
+            )
+        )
+    }
+
+    func testDateCapitalizationDoesNotPreserveLocalizedRelativeDateLabel() throws {
+        let locale = Locale(identifier: "en_US_POSIX")
+        let formatter = DateFormatter()
+        formatter.locale = locale
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+        formatter.dateStyle = .medium
+        formatter.doesRelativeDateFormatting = true
+
+        let now = Date()
+        for dayOffset in -1...1 {
+            let date = try XCTUnwrap(
+                formatter.calendar.date(byAdding: .day, value: dayOffset, to: now)
+            )
+            let dateText = formatter.string(from: date)
+            let capitalizationIndex = try XCTUnwrap(dateText.firstIndex(where: \.isLetter))
+
+            XCTAssertFalse(
+                LeadingDateCapitalizationPolicy.shouldPreserveCapitalization(
+                    in: dateText,
+                    startingAt: capitalizationIndex,
+                    locale: locale
+                )
+            )
+        }
+    }
+
+    func testDateCapitalizationPreservesLocalizedWeekdayAtStartOfLongerText() throws {
+        let locale = Locale(identifier: "en_US_POSIX")
+        let formatter = DateFormatter()
+        formatter.locale = locale
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+        formatter.dateStyle = .full
+
+        let components = DateComponents(
+            calendar: formatter.calendar,
+            timeZone: formatter.timeZone,
+            year: 2025,
+            month: 3,
+            day: 15
+        )
+        let date = try XCTUnwrap(components.date)
+        let dateText = formatter.string(from: date)
+        let capitalizationIndex = try XCTUnwrap(dateText.indices.first)
+
+        XCTAssertTrue(
+            LeadingDateCapitalizationPolicy.shouldPreserveCapitalization(
+                in: dateText,
+                startingAt: capitalizationIndex,
+                locale: locale
+            )
+        )
+    }
+
+    func testDateCapitalizationPreservesCalendarNameBeforeSpelledOutNumber() throws {
+        let locale = Locale(identifier: "en_US_POSIX")
+        let dateFormatter = DateFormatter()
+        dateFormatter.locale = locale
+        dateFormatter.calendar = Calendar(identifier: .gregorian)
+        let month = try XCTUnwrap(dateFormatter.monthSymbols.first)
+
+        let numberFormatter = NumberFormatter()
+        numberFormatter.locale = locale
+        numberFormatter.numberStyle = .spellOut
+        let spokenNumber = try XCTUnwrap(numberFormatter.string(from: 25))
+
+        let dateText = month + " " + spokenNumber
+        let capitalizationIndex = try XCTUnwrap(dateText.indices.first)
+
+        XCTAssertTrue(
+            LeadingDateCapitalizationPolicy.shouldPreserveCapitalization(
+                in: dateText,
+                startingAt: capitalizationIndex,
+                locale: locale
+            )
+        )
+    }
+
     func testCapitalizationScopesPreserveExistingPlatformBehavior() {
         let context = TextCompositionContext(
             isAtDocumentStart: false,
