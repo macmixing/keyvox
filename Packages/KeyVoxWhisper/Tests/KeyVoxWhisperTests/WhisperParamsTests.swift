@@ -1,5 +1,5 @@
 import XCTest
-import whisper
+import KeyVoxSpeechRuntime
 @testable import KeyVoxWhisper
 
 final class WhisperParamsTests: XCTestCase {

@@ -8,7 +8,7 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ## [1.2.6] - 2026-08-22
 
-Spoken quantities now preserve complete hundreds-and-thousands values instead of grouping only an initial portion.
+Spoken quantities now preserve complete hundreds-and-thousands values, and Parakeet rejects captures without detected speech before decoding through the shared voice activity package.
 
 ### Includes
 
@@ -16,10 +16,11 @@ Spoken quantities now preserve complete hundreds-and-thousands values instead of
 - Derived number-magnitude tokens from the package's spell-out formatter and used lexical classifications for conjunctions and leading determiners without hard-coded English words.
 - Normalized article-led hundreds within larger quantities and retained complete trailing hundreds, tens, and units.
 - Added regression coverage for both partial-grouping failures.
+- Integrated Whisper and Parakeet with the provider-neutral `KeyVoxVoiceActivity` package, preventing captures without detected speech from reaching the Parakeet decoder and producing hallucinated text.
 
 ### Notes
 
-- `1.2.6` tracks complete spoken-quantity grouping repair in the shared Core engine.
+- `1.2.6` tracks complete spoken-quantity grouping repair and Core integration with shared provider-neutral VAD gating.
 
 ---
 

@@ -1,5 +1,5 @@
 import Foundation
-import whisper
+import KeyVoxSpeechRuntime
 
 public enum WhisperSamplingStrategy: Int32, Sendable {
     case greedy = 0

@@ -1,6 +1,7 @@
 import Foundation
 import AVFoundation
 import KeyVoxWhisper
+import KeyVoxVoiceActivity
 
 extension WhisperService {
     struct TranscribedChunk {
@@ -58,42 +59,18 @@ extension WhisperService {
         let speechRangePlanner = WhisperSpeechRangePlanner()
         let noSpeechSegmentProbabilityThreshold = self.noSpeechSegmentProbabilityThreshold
         let noSpeechAverageProbabilityThreshold = self.noSpeechAverageProbabilityThreshold
-        let voiceActivityThreshold = self.voiceActivityThreshold
-        let voiceActivityMinimumSpeechDurationMilliseconds = self.voiceActivityMinimumSpeechDurationMilliseconds
-        let voiceActivityMinimumSilenceDurationMilliseconds = self.voiceActivityMinimumSilenceDurationMilliseconds
-        let voiceActivitySpeechPaddingMilliseconds = self.voiceActivitySpeechPaddingMilliseconds
         let pronunciationLookup = PronunciationLexicon.shared.pronunciationLookup
 
         transcriptionTask = Task { [weak self] in
             guard let self else { return }
             do {
-                let voiceActivityAnalysis: WhisperVoiceActivityAnalysis?
+                let voiceActivityAnalysis: VoiceActivityAnalysis?
                 if let voiceActivityDetector = self.voiceActivityDetector,
                    let voiceActivity = await voiceActivityDetector.analyze(
                     audioFrames: audioFrames,
-                    threshold: voiceActivityThreshold,
-                    minimumSpeechDurationMilliseconds: voiceActivityMinimumSpeechDurationMilliseconds,
-                    minimumSilenceDurationMilliseconds: voiceActivityMinimumSilenceDurationMilliseconds,
-                    speechPaddingMilliseconds: voiceActivitySpeechPaddingMilliseconds
+                    configuration: .standard
                    ) {
-                    #if DEBUG
-                    let maximumProbability = voiceActivity.probabilities.max() ?? 0
-                    let speechRanges = voiceActivity.speechSegments.map {
-                        "\(String(format: "%.2f", Double($0.startTime) / 100.0))-\(String(format: "%.2f", Double($0.endTime) / 100.0))s"
-                    }
-                    print(
-                        "WhisperService VAD: frames=\(audioFrames.count) " +
-                        "probabilities=\(voiceActivity.probabilities.count) " +
-                        "maxProbability=\(String(format: "%.3f", maximumProbability)) " +
-                        "speechSegments=\(voiceActivity.speechSegments.count) " +
-                        "speechRangesSeconds=\(speechRanges)"
-                    )
-                    #endif
-
                     guard voiceActivity.containsSpeech else {
-                        #if DEBUG
-                        print("WhisperService VAD: rejected capture with no detected speech.")
-                        #endif
                         self.finishSuccessfulRequest(
                             requestID,
                             usedDictionaryHintPrompt: shouldUseDictionaryHintPrompt,
@@ -108,9 +85,6 @@ extension WhisperService {
                     }
                     voiceActivityAnalysis = voiceActivity
                 } else {
-                    #if DEBUG
-                    print("WhisperService VAD: unavailable; continuing with decoder safeguards.")
-                    #endif
                     voiceActivityAnalysis = nil
                 }
 
@@ -184,7 +158,9 @@ extension WhisperService {
                         chunkFrames = speechRangePlanner.compactedFrames(
                             from: audioFrames,
                             ranges: ranges,
-                            maximumInterRangeSilenceMilliseconds: Int(voiceActivityMinimumSilenceDurationMilliseconds)
+                            maximumInterRangeSilenceMilliseconds: Int(
+                                VoiceActivityConfiguration.standard.minimumSilenceDurationMilliseconds
+                            )
                         )
                         vadSelectedFrameCount += chunkFrames.count
                     } else {

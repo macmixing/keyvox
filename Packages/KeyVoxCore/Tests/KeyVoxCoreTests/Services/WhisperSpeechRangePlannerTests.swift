@@ -1,5 +1,5 @@
 import XCTest
-import KeyVoxWhisper
+import KeyVoxVoiceActivity
 @testable import KeyVoxCore
 
 final class WhisperSpeechRangePlannerTests: XCTestCase {
@@ -11,9 +11,9 @@ final class WhisperSpeechRangePlannerTests: XCTestCase {
             endFrame: 48_000
         )
         let speechSegments = [
-            WhisperVoiceActivitySegment(startTime: 50, endTime: 150),
-            WhisperVoiceActivitySegment(startTime: 250, endTime: 350),
-            WhisperVoiceActivitySegment(startTime: 400, endTime: 500)
+            VoiceActivitySegment(startTime: 50, endTime: 150),
+            VoiceActivitySegment(startTime: 250, endTime: 350),
+            VoiceActivitySegment(startTime: 400, endTime: 500)
         ]
 
         let ranges = planner.ranges(
@@ -37,8 +37,8 @@ final class WhisperSpeechRangePlannerTests: XCTestCase {
             endFrame: 32_000
         )
         let speechSegments = [
-            WhisperVoiceActivitySegment(startTime: 50, endTime: 100),
-            WhisperVoiceActivitySegment(startTime: 90, endTime: 150)
+            VoiceActivitySegment(startTime: 50, endTime: 100),
+            VoiceActivitySegment(startTime: 90, endTime: 150)
         ]
 
         let ranges = planner.ranges(

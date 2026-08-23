@@ -1,5 +1,5 @@
 import Foundation
-import KeyVoxWhisper
+import KeyVoxVoiceActivity
 
 struct WhisperSpeechRangePlanner: Sendable {
     struct FrameRange: Equatable, Sendable {
@@ -19,7 +19,7 @@ struct WhisperSpeechRangePlanner: Sendable {
 
     func ranges(
         for chunk: AudioParagraphChunker.Chunk,
-        speechSegments: [WhisperVoiceActivitySegment],
+        speechSegments: [VoiceActivitySegment],
         audioFrameCount: Int
     ) -> [FrameRange] {
         guard audioFrameCount > 0 else { return [] }

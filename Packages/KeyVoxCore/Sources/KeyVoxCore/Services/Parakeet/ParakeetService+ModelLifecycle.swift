@@ -3,6 +3,9 @@ import KeyVoxParakeet
 
 extension ParakeetService {
     public func warmup() {
+        if voiceActivityAnalyzer == nil {
+            voiceActivityAnalyzer = voiceActivityAnalyzerFactory()
+        }
         _ = scheduleWarmupIfNeeded()
     }
 
@@ -13,6 +16,7 @@ extension ParakeetService {
         parakeet?.unload()
         logModelUnloadedIfNeeded(parakeet)
         parakeet = nil
+        voiceActivityAnalyzer = nil
         isTranscribing = false
     }
 

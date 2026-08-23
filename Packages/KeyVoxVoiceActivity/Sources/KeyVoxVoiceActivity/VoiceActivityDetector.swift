@@ -1,7 +1,7 @@
 import Foundation
-import whisper
+import KeyVoxSpeechRuntime
 
-public struct WhisperVoiceActivitySegment: Equatable, Sendable {
+public struct VoiceActivitySegment: Equatable, Sendable {
     public let startTime: Float
     public let endTime: Float
 
@@ -11,9 +11,9 @@ public struct WhisperVoiceActivitySegment: Equatable, Sendable {
     }
 }
 
-public struct WhisperVoiceActivityAnalysis: Equatable, Sendable {
+public struct VoiceActivityAnalysis: Equatable, Sendable {
     public let probabilities: [Float]
-    public let speechSegments: [WhisperVoiceActivitySegment]
+    public let speechSegments: [VoiceActivitySegment]
 
     public var containsSpeech: Bool {
         !speechSegments.isEmpty
@@ -21,14 +21,14 @@ public struct WhisperVoiceActivityAnalysis: Equatable, Sendable {
 
     public init(
         probabilities: [Float],
-        speechSegments: [WhisperVoiceActivitySegment]
+        speechSegments: [VoiceActivitySegment]
     ) {
         self.probabilities = probabilities
         self.speechSegments = speechSegments
     }
 }
 
-public actor WhisperVoiceActivityDetector {
+public actor VoiceActivityDetector: VoiceActivityAnalyzing {
     private var context: OpaquePointer?
 
     public init?() {
@@ -64,14 +64,11 @@ public actor WhisperVoiceActivityDetector {
 
     public func analyze(
         audioFrames: [Float],
-        threshold: Float,
-        minimumSpeechDurationMilliseconds: Int32,
-        minimumSilenceDurationMilliseconds: Int32,
-        speechPaddingMilliseconds: Int32
-    ) -> WhisperVoiceActivityAnalysis? {
+        configuration: VoiceActivityConfiguration = .standard
+    ) -> VoiceActivityAnalysis? {
         guard let context else { return nil }
         guard !audioFrames.isEmpty else {
-            return WhisperVoiceActivityAnalysis(
+            return VoiceActivityAnalysis(
                 probabilities: [],
                 speechSegments: []
             )
@@ -100,10 +97,10 @@ public actor WhisperVoiceActivityDetector {
         }
 
         var params = whisper_vad_default_params()
-        params.threshold = threshold
-        params.min_speech_duration_ms = minimumSpeechDurationMilliseconds
-        params.min_silence_duration_ms = minimumSilenceDurationMilliseconds
-        params.speech_pad_ms = speechPaddingMilliseconds
+        params.threshold = configuration.threshold
+        params.min_speech_duration_ms = configuration.minimumSpeechDurationMilliseconds
+        params.min_silence_duration_ms = configuration.minimumSilenceDurationMilliseconds
+        params.speech_pad_ms = configuration.speechPaddingMilliseconds
 
         guard let rawSegments = whisper_vad_segments_from_probs(context, params) else {
             return nil
@@ -114,13 +111,13 @@ public actor WhisperVoiceActivityDetector {
 
         let segmentCount = Int(whisper_vad_segments_n_segments(rawSegments))
         let speechSegments = (0..<segmentCount).map { index in
-            WhisperVoiceActivitySegment(
+            VoiceActivitySegment(
                 startTime: whisper_vad_segments_get_segment_t0(rawSegments, Int32(index)),
                 endTime: whisper_vad_segments_get_segment_t1(rawSegments, Int32(index))
             )
         }
 
-        return WhisperVoiceActivityAnalysis(
+        return VoiceActivityAnalysis(
             probabilities: probabilities,
             speechSegments: speechSegments
         )
