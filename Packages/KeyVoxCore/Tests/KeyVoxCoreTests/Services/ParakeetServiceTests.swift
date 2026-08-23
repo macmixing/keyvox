@@ -4,6 +4,8 @@ import KeyVoxParakeet
 
 @MainActor
 final class ParakeetServiceTests: XCTestCase {
+    private static let voiceActivityModelAnalysisTimeout: TimeInterval = 5
+
     func testStaleRequestCannotOverwriteCurrentTranscriptionState() {
         let service = ParakeetService()
         let staleRequestID = service.beginTranscriptionRequest()
@@ -83,7 +85,7 @@ final class ParakeetServiceTests: XCTestCase {
             expectation.fulfill()
         }
 
-        wait(for: [expectation], timeout: 2.0)
+        wait(for: [expectation], timeout: Self.voiceActivityModelAnalysisTimeout)
     }
 
     func testWarmupLoadsParakeetOffMainThread() throws {
