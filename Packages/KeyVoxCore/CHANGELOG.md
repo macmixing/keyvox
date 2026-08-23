@@ -6,7 +6,7 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
-## [1.2.6] - 2026-08-22
+## [1.2.6] - 2026-08-23
 
 Spoken quantities now preserve complete hundreds-and-thousands values, Parakeet rejects captures without detected speech, and stylized dictionary terms correct reliably before title-cased words.
 
@@ -18,6 +18,7 @@ Spoken quantities now preserve complete hundreds-and-thousands values, Parakeet 
 - Added regression coverage for both partial-grouping failures.
 - Integrated Whisper and Parakeet with the provider-neutral `KeyVoxVoiceActivity` package, preventing captures without detected speech from reaching the Parakeet decoder and producing hallucinated text.
 - Allowed unknown stylized-word phonetic near-misses to match before title-cased words without requiring those following words in the dictionary, while preserving safeguards for known words and names.
+- Preserved distinct model-recognized mixed-case product names when their internal capitalization boundaries conflict with a stylized dictionary candidate, preventing `MacPaste` from being rewritten as `MrBeast` based on coarse phonetic similarity.
 
 ### Notes
 
