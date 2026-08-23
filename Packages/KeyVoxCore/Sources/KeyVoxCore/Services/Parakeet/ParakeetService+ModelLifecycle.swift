@@ -1,8 +1,12 @@
 import Foundation
 import KeyVoxParakeet
+import KeyVoxVoiceActivity
 
 extension ParakeetService {
     public func warmup() {
+        if voiceActivityDetector == nil {
+            voiceActivityDetector = VoiceActivityDetector()
+        }
         _ = scheduleWarmupIfNeeded()
     }
 
@@ -13,6 +17,7 @@ extension ParakeetService {
         parakeet?.unload()
         logModelUnloadedIfNeeded(parakeet)
         parakeet = nil
+        voiceActivityDetector = nil
         isTranscribing = false
     }
 

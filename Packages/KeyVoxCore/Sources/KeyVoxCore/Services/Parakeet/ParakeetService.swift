@@ -1,6 +1,7 @@
 import Foundation
 import Combine
 import KeyVoxParakeet
+import KeyVoxVoiceActivity
 
 @MainActor
 public final class ParakeetService: ObservableObject, DictationProvider {
@@ -22,6 +23,7 @@ public final class ParakeetService: ObservableObject, DictationProvider {
 
     var parakeet: Parakeet?
     var transcriptionTask: Task<Void, Never>?
+    var voiceActivityDetector: VoiceActivityDetector?
     let paragraphChunker = AudioParagraphChunker()
 
     public init(modelURLResolver: @escaping () -> URL? = { nil }) {

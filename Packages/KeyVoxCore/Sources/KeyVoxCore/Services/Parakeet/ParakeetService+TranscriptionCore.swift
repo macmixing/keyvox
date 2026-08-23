@@ -1,5 +1,6 @@
 import Foundation
 import KeyVoxParakeet
+import KeyVoxVoiceActivity
 
 extension ParakeetService {
     struct TranscribedChunk {
@@ -25,16 +26,39 @@ extension ParakeetService {
         isTranscribing = true
         lastResultWasLikelyNoSpeech = false
 
+        if voiceActivityDetector == nil {
+            voiceActivityDetector = VoiceActivityDetector()
+        }
+
         transcriptionTask = Task { [weak self] in
             guard let self else { return }
-            guard let parakeet = await self.loadedParakeet() else {
-                self.finishFailedRequest(requestID, completion: completion)
-                return
-            }
-
             let paragraphChunker = self.paragraphChunker
 
             do {
+                if let voiceActivityDetector = self.voiceActivityDetector,
+                   let voiceActivity = await voiceActivityDetector.analyze(
+                    audioFrames: audioFrames,
+                    configuration: .standard
+                   ) {
+                    guard voiceActivity.containsSpeech else {
+                        self.finishSuccessfulRequest(
+                            requestID,
+                            finalText: "",
+                            paragraphsText: "",
+                            inlineText: "",
+                            likelyNoSpeech: true,
+                            detectedLanguageCode: nil,
+                            completion: completion
+                        )
+                        return
+                    }
+                }
+
+                guard let parakeet = await self.loadedParakeet() else {
+                    self.finishFailedRequest(requestID, completion: completion)
+                    return
+                }
+
                 let chunkResult = paragraphChunker.split(audioFrames)
                 var transcribedChunks: [TranscribedChunk] = []
                 transcribedChunks.reserveCapacity(chunkResult.chunks.count)

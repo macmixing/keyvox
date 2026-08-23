@@ -60,6 +60,32 @@ final class ParakeetServiceTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
+    func testTranscribeRejectsSilentFramesBeforeLoadingParakeet() throws {
+        let modelURL = try makeModelDirectory()
+        var loaderWasCalled = false
+        let service = ParakeetService(
+            modelURLResolver: { modelURL },
+            parakeetLoader: { _ in
+                loaderWasCalled = true
+                throw NSError(domain: "ParakeetServiceTests", code: 1)
+            }
+        )
+        let expectation = expectation(description: "silent frames complete")
+
+        service.transcribe(
+            audioFrames: Array(repeating: 0, count: 16_000),
+            useDictionaryHintPrompt: true,
+            enableAutoParagraphs: true
+        ) { result in
+            XCTAssertEqual(result?.text, "")
+            XCTAssertTrue(service.lastResultWasLikelyNoSpeech)
+            XCTAssertFalse(loaderWasCalled)
+            expectation.fulfill()
+        }
+
+        wait(for: [expectation], timeout: 2.0)
+    }
+
     func testWarmupLoadsParakeetOffMainThread() throws {
         let modelURL = try makeModelDirectory()
         let expectation = expectation(description: "warmup loader invoked")
@@ -77,18 +103,18 @@ final class ParakeetServiceTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
-    func testTranscribeFailsSafelyWithoutRuntimeBackend() throws {
+    func testTranscribeRejectsVeryShortNonSpeechBeforeRuntimeBackend() throws {
         let modelURL = try makeModelFile()
         let service = ParakeetService(modelURLResolver: { modelURL })
-        let expectation = expectation(description: "placeholder service fails safely")
+        let expectation = expectation(description: "very short non-speech completes")
 
         service.transcribe(
             audioFrames: [0.1, 0.2],
             useDictionaryHintPrompt: true,
             enableAutoParagraphs: true
         ) { result in
-            XCTAssertNil(result)
-            XCTAssertFalse(service.lastResultWasLikelyNoSpeech)
+            XCTAssertEqual(result?.text, "")
+            XCTAssertTrue(service.lastResultWasLikelyNoSpeech)
             expectation.fulfill()
         }
 
