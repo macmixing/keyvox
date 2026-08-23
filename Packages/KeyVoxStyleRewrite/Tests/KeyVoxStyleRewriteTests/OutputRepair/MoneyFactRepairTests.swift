@@ -66,6 +66,25 @@ final class MoneyFactRepairTests: XCTestCase {
         XCTAssertEqual(output, "That was $902.")
     }
 
+    func testRewriteRepairRepairsMixedSpokenAndGroupedMoneyEvidence() {
+        let original = "The company was making a hundred and 5,000 dollars a year."
+        let rewrittenOutputs = [
+            "The company was making $5,000 a year.",
+            "The company was making $1,500 a year.",
+            "The company was making $100 and $500 a year.",
+            original,
+        ]
+
+        for rewritten in rewrittenOutputs {
+            let output = OutputRepair.repairModelOutput(
+                original: original,
+                rewritten: rewritten
+            )
+
+            XCTAssertEqual(output, "The company was making $105,000 a year.")
+        }
+    }
+
     func testRewriteRepairRepairsMultipleChangedMoneyAmountsFromOriginalDictation() {
         let output = OutputRepair.repairModelOutput(
             original: "The budget is five thousand twenty two dollars, and the backup estimate is six thousand one hundred.",

@@ -5,6 +5,19 @@ struct MoneyFactRepair {
         let majorValue: Int
         let minorValue: Int?
         let symbol: String
+        let range: Range<String.Index>?
+
+        init(
+            majorValue: Int,
+            minorValue: Int?,
+            symbol: String,
+            range: Range<String.Index>? = nil
+        ) {
+            self.majorValue = majorValue
+            self.minorValue = minorValue
+            self.symbol = symbol
+            self.range = range
+        }
     }
 
     private struct RewrittenMoneySpan {
@@ -19,7 +32,8 @@ struct MoneyFactRepair {
         let sourceSpans = sourceMoneySpans(in: original)
         guard !sourceSpans.isEmpty else { return rewritten }
 
-        let splitRepaired = repairSplitMoneyAmount(sourceSpans: sourceSpans, rewritten: rewritten)
+        let splitMajorRepaired = repairSplitMajorMoneyAmount(sourceSpans: sourceSpans, rewritten: rewritten)
+        let splitRepaired = repairSplitMoneyAmount(sourceSpans: sourceSpans, rewritten: splitMajorRepaired)
         let multipleAmountDriftRepaired = repairMultipleMoneyAmountDrift(
             sourceSpans: sourceMoneySpansIncludingImpliedMajorUnits(
                 in: original,
@@ -29,7 +43,46 @@ struct MoneyFactRepair {
             rewritten: splitRepaired
         )
         let amountDriftRepaired = repairSingleMoneyAmountDrift(sourceSpans: sourceSpans, rewritten: multipleAmountDriftRepaired)
-        return repairRedundantMinorUnit(sourceSpans: sourceSpans, rewritten: amountDriftRepaired)
+        let redundantMinorUnitRepaired = repairRedundantMinorUnit(
+            sourceSpans: sourceSpans,
+            rewritten: amountDriftRepaired
+        )
+        return repairUnformattedMoneyAmount(
+            sourceSpans: sourceSpans,
+            rewritten: redundantMinorUnitRepaired
+        )
+    }
+
+    private func repairSplitMajorMoneyAmount(sourceSpans: [SourceMoneySpan], rewritten: String) -> String {
+        guard sourceSpans.count == 1,
+              let sourceSpan = sourceSpans.first,
+              sourceSpan.minorValue == nil else {
+            return rewritten
+        }
+
+        let rewrittenSpans = rewrittenMoneySpans(in: rewritten)
+        guard rewrittenSpans.count == 2,
+              rewrittenSpans.allSatisfy({ $0.symbol == sourceSpan.symbol }) else {
+            return rewritten
+        }
+
+        let firstSpan = rewrittenSpans[0]
+        let secondSpan = rewrittenSpans[1]
+        let bridgeTokens = RepairTokenization.taggedTokens(in: rewritten).filter { token in
+            token.token.range.lowerBound >= firstSpan.range.upperBound
+                && token.token.range.upperBound <= secondSpan.range.lowerBound
+        }
+        guard bridgeTokens.count <= 3,
+              bridgeTokens.contains(where: { $0.tag == .conjunction }) else {
+            return rewritten
+        }
+
+        var repaired = rewritten
+        repaired.replaceSubrange(
+            firstSpan.range.lowerBound..<secondSpan.range.upperBound,
+            with: formattedGroupedMoneyAmount(symbol: sourceSpan.symbol, sourceSpan: sourceSpan)
+        )
+        return repaired
     }
 
     private func repairSplitMoneyAmount(sourceSpans: [SourceMoneySpan], rewritten: String) -> String {
@@ -152,6 +205,26 @@ struct MoneyFactRepair {
         return "\(symbol)\(majorText)"
     }
 
+    private func formattedGroupedMoneyAmount(symbol: String, sourceSpan: SourceMoneySpan) -> String {
+        let majorText = groupedIntegerText(sourceSpan.majorValue)
+        if let minorValue = sourceSpan.minorValue {
+            return "\(symbol)\(majorText).\(String(format: "%02d", minorValue))"
+        }
+        return "\(symbol)\(majorText)"
+    }
+
+    private func groupedIntegerText(_ value: Int) -> String {
+        let digits = String(value)
+        var output = ""
+        for (offset, character) in digits.reversed().enumerated() {
+            if offset > 0, offset.isMultiple(of: 3) {
+                output.insert(",", at: output.startIndex)
+            }
+            output.insert(character, at: output.startIndex)
+        }
+        return output
+    }
+
     private func majorValueText(_ value: Int, matching rewrittenMajorText: String) -> String {
         guard rewrittenMajorText.contains(",") else {
             return "\(value)"
@@ -178,6 +251,10 @@ struct MoneyFactRepair {
     }
 
     private func moneyValues(in tokens: [RepairWordToken]) -> (majorValue: Int, minorValue: Int?)? {
+        if let mixedGroupedMagnitudeValue = mixedGroupedMagnitudeValue(in: tokens) {
+            return (mixedGroupedMagnitudeValue, nil)
+        }
+
         if let decimalValues = decimalMoneyValues(in: tokens) {
             return decimalValues
         }
@@ -199,6 +276,80 @@ struct MoneyFactRepair {
             return nil
         }
         return (majorValue, nil)
+    }
+
+    private func mixedGroupedMagnitudeValue(in tokens: [RepairWordToken]) -> Int? {
+        let connectorIndices = tokens.indices.filter { index in
+            RepairNumberParsing.numericValue(for: tokens[index]) == nil
+                && RepairNumberParsing.parsedSpellOutNumberPhraseWithImpliedUnit(tokens[index].text) == nil
+                && !RepairNumberParsing.isSpellOutDecimalSeparator(tokens[index])
+        }
+        guard connectorIndices.count == 1,
+              let connectorIndex = connectorIndices.first,
+              connectorIndex > tokens.startIndex,
+              connectorIndex < tokens.index(before: tokens.endIndex) else {
+            return nil
+        }
+
+        let leftTokens = Array(tokens[..<connectorIndex])
+        let rightTokens = Array(tokens[(connectorIndex + 1)...])
+        let leftText = leftTokens.map(\.text).joined(separator: " ")
+        guard let leftValue = NumberEvidence.parsedValue(in: leftTokens)
+                ?? RepairNumberParsing.parsedSpellOutNumberPhraseWithImpliedUnit(leftText),
+              (100..<1_000).contains(leftValue),
+              leftValue.isMultiple(of: 100),
+              rightTokens.count >= 2,
+              rightTokens[0].text.allSatisfy(\.isNumber),
+              rightTokens.dropFirst().allSatisfy({ token in
+                  token.text.count == 3 && token.text.allSatisfy(\.isNumber)
+              }),
+              let rightValue = Int(rightTokens.map(\.text).joined()) else {
+            return nil
+        }
+
+        var scale = 1
+        for _ in rightTokens.dropFirst() {
+            let multiplied = scale.multipliedReportingOverflow(by: 1_000)
+            guard !multiplied.overflow else { return nil }
+            scale = multiplied.partialValue
+        }
+        let upperBound = scale.multipliedReportingOverflow(by: 1_000)
+        guard !upperBound.overflow,
+              leftValue < scale,
+              rightValue >= scale,
+              rightValue < upperBound.partialValue else {
+            return nil
+        }
+
+        let scaledLeft = leftValue.multipliedReportingOverflow(by: scale)
+        guard !scaledLeft.overflow else { return nil }
+        let combined = scaledLeft.partialValue.addingReportingOverflow(rightValue)
+        return combined.overflow ? nil : combined.partialValue
+    }
+
+    private func repairUnformattedMoneyAmount(sourceSpans: [SourceMoneySpan], rewritten: String) -> String {
+        guard rewrittenMoneySpans(in: rewritten).isEmpty else { return rewritten }
+
+        let rewrittenSourceSpans = sourceMoneySpans(in: rewritten)
+        guard rewrittenSourceSpans.count == sourceSpans.count,
+              zip(sourceSpans, rewrittenSourceSpans).allSatisfy({ sourceSpan, rewrittenSpan in
+                  sourceSpan.symbol == rewrittenSpan.symbol
+                      && sourceSpan.majorValue == rewrittenSpan.majorValue
+                      && sourceSpan.minorValue == rewrittenSpan.minorValue
+                      && rewrittenSpan.range != nil
+              }) else {
+            return rewritten
+        }
+
+        var repaired = rewritten
+        for (sourceSpan, rewrittenSpan) in zip(sourceSpans, rewrittenSourceSpans).reversed() {
+            guard let range = rewrittenSpan.range else { continue }
+            repaired.replaceSubrange(
+                range,
+                with: formattedGroupedMoneyAmount(symbol: sourceSpan.symbol, sourceSpan: sourceSpan)
+            )
+        }
+        return repaired
     }
 
     private func decimalMoneyValues(in tokens: [RepairWordToken]) -> (majorValue: Int, minorValue: Int?)? {
@@ -289,10 +440,18 @@ struct MoneyFactRepair {
                 nextIndex = minorRun.endIndex + 1
             }
 
+            let spanStartIndex: Int
+            if majorRun.range.lowerBound > tokens.startIndex,
+               tokens[majorRun.range.lowerBound - 1].tag == .determiner {
+                spanStartIndex = majorRun.range.lowerBound - 1
+            } else {
+                spanStartIndex = majorRun.range.lowerBound
+            }
             spans.append(SourceMoneySpan(
                 majorValue: moneyValues.majorValue,
                 minorValue: minorValue,
-                symbol: majorUnit.symbol
+                symbol: majorUnit.symbol,
+                range: tokens[spanStartIndex].token.range.lowerBound..<tokens[majorRun.endIndex].token.range.upperBound
             ))
             index = nextIndex
         }

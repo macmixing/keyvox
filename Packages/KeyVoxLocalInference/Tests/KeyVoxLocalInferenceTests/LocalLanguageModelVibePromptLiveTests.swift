@@ -4,6 +4,27 @@ import XCTest
 
 final class LocalLanguageModelVibePromptLiveTests: XCTestCase {
     @MainActor
+    func testLiveMixedSpokenAndNumericMoneyEvidenceWhenEnabled() async throws {
+        try LocalModelLiveTestEnvironment.requireStyleTestsEnabled()
+        let tester = try LiveLocalStyleTester(
+            modelURL: LocalModelLiveTestEnvironment.requireModelURL(),
+            adapterURL: LocalModelLiveTestEnvironment.optionalAdapterURL(),
+            adapterScale: LocalModelLiveTestEnvironment.adapterScale
+        )
+
+        do {
+            try await tester.assertStyleCases(
+                Self.mixedSpokenAndNumericMoneyCases,
+                coverageRequirements: Self.mixedSpokenAndNumericMoneyRequirements
+            )
+            await tester.unload()
+        } catch {
+            await tester.unload()
+            throw error
+        }
+    }
+
+    @MainActor
     func testLiveExactVibePromptsWhenEnabled() async throws {
         try LocalModelLiveTestEnvironment.requireStyleTestsEnabled()
         let tester = try LiveLocalStyleTester(
@@ -23,6 +44,38 @@ final class LocalLanguageModelVibePromptLiveTests: XCTestCase {
             throw error
         }
     }
+
+    private static let mixedSpokenAndNumericMoneyCases = [
+        LiveStylePromptCase(
+            style: .casual,
+            input: "If I was giving a hundred and 5,000 dollars a year to people that would be cool.",
+            expected: "If I was giving $105,000 a year to people that would be cool."
+        ),
+        LiveStylePromptCase(
+            style: .polished,
+            input: "If I was giving a hundred and 5,000 dollars a year to people that would be cool.",
+            expected: "If I were giving $105,000 a year to people, that would be cool."
+        ),
+        LiveStylePromptCase(
+            style: .casual,
+            input: "I'm gonna be honest with you if the company was making a hundred and 5,000 dollars a year from them that would absolutely change everything about the project right now in a meaningful way.",
+            expected: "I'm gonna be honest with you if the company was making $105,000 a year from them that would absolutely change everything about the project right now in a meaningful way."
+        ),
+        LiveStylePromptCase(
+            style: .polished,
+            input: "I'm gonna be honest with you if the company was making a hundred and 5,000 dollars a year from them that would absolutely change everything about the project right now in a meaningful way.",
+            expected: "I'm going to be honest with you: if the company were making $105,000 a year from them, that would absolutely change everything about the project right now in a meaningful way."
+        ),
+    ]
+
+    private static let mixedSpokenAndNumericMoneyRequirements = [
+        "If I was giving a hundred and 5,000 dollars a year to people that would be cool.": LiveStylePromptRequirements(
+            requiredFragments: ["$105,000"]
+        ),
+        "I'm gonna be honest with you if the company was making a hundred and 5,000 dollars a year from them that would absolutely change everything about the project right now in a meaningful way.": LiveStylePromptRequirements(
+            requiredFragments: ["$105,000"]
+        ),
+    ]
 
     private static let cases = [
         LiveStylePromptCase(

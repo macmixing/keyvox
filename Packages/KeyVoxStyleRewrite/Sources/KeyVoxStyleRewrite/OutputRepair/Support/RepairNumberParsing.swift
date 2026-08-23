@@ -86,6 +86,16 @@ enum RepairNumberParsing {
         return nil
     }
 
+    static func parsedSpellOutNumberPhraseWithImpliedUnit(_ text: String) -> Int? {
+        if let value = parsedSpellOutNumberPhrase(text) ?? parsedSpellOutInteger(text) {
+            return value
+        }
+        guard let unitText = spellOutString(for: 1) else { return nil }
+        let impliedUnitText = "\(unitText) \(text)"
+        return parsedSpellOutNumberPhrase(impliedUnitText)
+            ?? parsedSpellOutInteger(impliedUnitText)
+    }
+
     static func parsedSpellOutNumberPhraseByChunks(_ text: String) -> Int? {
         let tokens = normalizedSpellOut(text).split(separator: " ").map(String.init)
         guard tokens.count > 1 else { return nil }
