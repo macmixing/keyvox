@@ -957,6 +957,15 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "Is that MrBeast over there?")
     }
 
+    func testDoesNotReplaceUnrelatedMixedCaseTokenWithStylizedDictionaryEntry() {
+        let matcher = makeRuntimeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "MrBeast")])
+
+        let input = "Have you ever downloaded MacPaste?"
+
+        XCTAssertEqual(matcher.apply(to: input).text, input)
+    }
+
     func testSplitJoinAllowsShortTokenExactJoinForInitialedBrand() {
         let matcher = makeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "MrD")])

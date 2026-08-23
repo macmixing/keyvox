@@ -124,6 +124,20 @@ extension DictionaryMatcher {
         }
 
         if stylizedSingleTokenEntry,
+           hasConflictingMixedCaseStructure(
+               observed: observedToken.raw,
+               candidate: best.entry.phrase
+           ),
+           !hasStrongStylizedTextEvidence(
+               observed: observedToken.normalized,
+               candidate: candidateToken,
+               textSimilarity: textSimilarity
+           ) {
+            stats.rejectedLowScore += 1
+            return nil
+        }
+
+        if stylizedSingleTokenEntry,
            !hasStylizedLongPrefixTailGuardEvidence(
                 observed: selection.observedNormalized,
                 candidate: candidateToken

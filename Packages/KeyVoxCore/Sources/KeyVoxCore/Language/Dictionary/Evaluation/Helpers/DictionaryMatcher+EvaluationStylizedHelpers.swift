@@ -109,6 +109,16 @@ extension DictionaryMatcher {
         return true
     }
 
+    func hasConflictingMixedCaseStructure(
+        observed: String,
+        candidate: String
+    ) -> Bool {
+        let observedBoundaries = internalUppercaseOffsets(in: observed)
+        let candidateBoundaries = internalUppercaseOffsets(in: candidate)
+        guard !observedBoundaries.isEmpty, !candidateBoundaries.isEmpty else { return false }
+        return observedBoundaries != candidateBoundaries
+    }
+
     func stylizedFallbackPhoneticSimilarity(
         tokenCount: Int,
         observedNormalized: String,
@@ -212,5 +222,19 @@ extension DictionaryMatcher {
 
     private func sharedPrefixLength(lhs: String, rhs: String) -> Int {
         zip(lhs, rhs).prefix { $0 == $1 }.count
+    }
+
+    private func internalUppercaseOffsets(in text: String) -> [Int] {
+        guard text.unicodeScalars.contains(where: { $0.properties.isLowercase }) else {
+            return []
+        }
+
+        return text.enumerated().compactMap { offset, character in
+            guard offset > 0,
+                  character.unicodeScalars.contains(where: { $0.properties.isUppercase }) else {
+                return nil
+            }
+            return offset
+        }
     }
 }
