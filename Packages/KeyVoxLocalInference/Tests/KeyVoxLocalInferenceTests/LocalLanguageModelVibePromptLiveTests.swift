@@ -25,6 +25,27 @@ final class LocalLanguageModelVibePromptLiveTests: XCTestCase {
     }
 
     @MainActor
+    func testLiveUnsupportedCurrencyEvidenceWhenEnabled() async throws {
+        try LocalModelLiveTestEnvironment.requireStyleTestsEnabled()
+        let tester = try LiveLocalStyleTester(
+            modelURL: LocalModelLiveTestEnvironment.requireModelURL(),
+            adapterURL: LocalModelLiveTestEnvironment.optionalAdapterURL(),
+            adapterScale: LocalModelLiveTestEnvironment.adapterScale
+        )
+
+        do {
+            try await tester.assertStyleCases(
+                Self.unsupportedCurrencyCases,
+                coverageRequirements: Self.unsupportedCurrencyRequirements
+            )
+            await tester.unload()
+        } catch {
+            await tester.unload()
+            throw error
+        }
+    }
+
+    @MainActor
     func testLiveExactVibePromptsWhenEnabled() async throws {
         try LocalModelLiveTestEnvironment.requireStyleTestsEnabled()
         let tester = try LiveLocalStyleTester(
@@ -88,6 +109,21 @@ final class LocalLanguageModelVibePromptLiveTests: XCTestCase {
         ),
         "I'm gonna be honest with you if the company was making a hundred and 5,000 dollars a year from them that would absolutely change everything about the project right now in a meaningful way.": LiveStylePromptRequirements(
             requiredFragments: ["$105,000"]
+        ),
+    ]
+
+    private static let unsupportedCurrencyCases = [
+        LiveStylePromptCase(
+            style: .casual,
+            input: "But like only if there's the word hundred in front of it.",
+            expected: "But like only if there's the word hundred in front of it."
+        ),
+    ]
+
+    private static let unsupportedCurrencyRequirements = [
+        "But like only if there's the word hundred in front of it.": LiveStylePromptRequirements(
+            requiredFragments: ["hundred"],
+            extraForbiddenFragments: ["$1"]
         ),
     ]
 

@@ -21,6 +21,15 @@ final class MoneyFactRepairTests: XCTestCase {
         XCTAssertEqual(output, "I think it was $47.50.")
     }
 
+    func testRewriteRepairPreservesSeparateMoneyFactsAcrossConjunction() {
+        let output = OutputRepair.repairModelOutput(
+            original: "I paid five dollars and she paid two.",
+            rewritten: "I paid $5 and she paid $2."
+        )
+
+        XCTAssertEqual(output, "I paid $5 and she paid $2.")
+    }
+
     func testRewriteRepairDoesNotDuplicateRepairedSplitMoneyAmount() {
         let output = OutputRepair.repairModelOutput(
             original: "It's probably like forty seven dollars and like fifty cents.",
@@ -47,6 +56,16 @@ final class MoneyFactRepairTests: XCTestCase {
         )
 
         XCTAssertEqual(output, "That was $4.99.")
+    }
+
+    func testRewriteRepairPreservesPossessiveDeterminerBeforeUnformattedMoney() {
+        let original = "I spent my four dollars."
+        let output = OutputRepair.repairModelOutput(
+            original: original,
+            rewritten: original
+        )
+
+        XCTAssertEqual(output, "I spent my $4.")
     }
 
     func testRewriteRepairPreservesDecimalMoneyAmount() {

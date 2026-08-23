@@ -6,17 +6,20 @@ struct MoneyFactRepair {
         let minorValue: Int?
         let symbol: String
         let range: Range<String.Index>?
+        let supportsSplitMajorRepair: Bool
 
         init(
             majorValue: Int,
             minorValue: Int?,
             symbol: String,
-            range: Range<String.Index>? = nil
+            range: Range<String.Index>? = nil,
+            supportsSplitMajorRepair: Bool = false
         ) {
             self.majorValue = majorValue
             self.minorValue = minorValue
             self.symbol = symbol
             self.range = range
+            self.supportsSplitMajorRepair = supportsSplitMajorRepair
         }
     }
 
@@ -63,7 +66,8 @@ struct MoneyFactRepair {
     private func repairSplitMajorMoneyAmount(sourceSpans: [SourceMoneySpan], rewritten: String) -> String {
         guard sourceSpans.count == 1,
               let sourceSpan = sourceSpans.first,
-              sourceSpan.minorValue == nil else {
+              sourceSpan.minorValue == nil,
+              sourceSpan.supportsSplitMajorRepair else {
             return rewritten
         }
 
@@ -525,7 +529,11 @@ struct MoneyFactRepair {
 
             let spanStartIndex: Int
             if majorRun.range.lowerBound > tokens.startIndex,
-               tokens[majorRun.range.lowerBound - 1].tag == .determiner {
+               tokens[majorRun.range.lowerBound - 1].tag == .determiner,
+               RepairNumberParsing.numericValue(for: tokens[majorRun.range.lowerBound].token) == nil,
+               RepairNumberParsing.parsedSpellOutNumberPhraseWithImpliedUnit(
+                   tokens[majorRun.range.lowerBound].token.text
+               ) != nil {
                 spanStartIndex = majorRun.range.lowerBound - 1
             } else {
                 spanStartIndex = majorRun.range.lowerBound
@@ -534,7 +542,10 @@ struct MoneyFactRepair {
                 majorValue: moneyValues.majorValue,
                 minorValue: minorValue,
                 symbol: majorUnit.symbol,
-                range: tokens[spanStartIndex].token.range.lowerBound..<tokens[nextIndex - 1].token.range.upperBound
+                range: tokens[spanStartIndex].token.range.lowerBound..<tokens[nextIndex - 1].token.range.upperBound,
+                supportsSplitMajorRepair: mixedGroupedMagnitudeValue(
+                    in: Array(tokens[majorRun.range].map(\.token))
+                ) != nil
             ))
             index = nextIndex
         }
