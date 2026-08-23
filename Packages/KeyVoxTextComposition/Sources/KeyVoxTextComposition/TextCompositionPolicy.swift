@@ -325,6 +325,7 @@ public enum TextCompositionPolicy {
         )
         return previousIsWordLike
             || previousIsTriggerPunctuation
+            || TextCompositionCharacterClassifier.isHyphenSeparator(previousCharacter)
             || TextCompositionCharacterClassifier.isEmoji(previousCharacter)
     }
 }

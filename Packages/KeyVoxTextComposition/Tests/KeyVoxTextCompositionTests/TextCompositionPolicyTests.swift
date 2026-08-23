@@ -428,6 +428,11 @@ final class TextCompositionPolicyTests: XCTestCase {
         XCTAssertEqual(applySpacing(to: "there", after: "("), "there")
     }
 
+    func testHyphenInsertsSingleLeadingSpace() {
+        XCTAssertEqual(applySpacing(to: "there", after: "-"), " there")
+        XCTAssertEqual(applySpacing(to: " there", after: "-"), " there")
+    }
+
     private func normalize(
         _ text: String,
         context: TextCompositionContext

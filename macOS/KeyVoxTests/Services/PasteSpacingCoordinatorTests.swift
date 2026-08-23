@@ -157,6 +157,28 @@ final class PasteSpacingCoordinatorTests: XCTestCase {
         XCTAssertEqual(output, " hello")
     }
 
+    func testInsertsLeadingSpaceFromAXContextAfterHyphen() {
+        let inspector = MockPasteAXInspector(
+            focusedContext: PasteInsertionContext(
+                selectionLength: 0,
+                caretLocation: 8,
+                previousCharacter: "-"
+            )
+        )
+        let heuristics = makeRetainedHeuristics(axInspector: inspector, heuristicTTL: 10)
+
+        let output = heuristics.applySmartLeadingSeparatorIfNeeded(
+            to: "hello",
+            currentIdentity: identity("com.example.app", 1),
+            lastInsertionAppIdentity: nil,
+            lastInsertionAt: .distantPast,
+            lastInsertedTrailingCharacter: nil,
+            identityMatcher: identityMatcher
+        )
+
+        XCTAssertEqual(output, " hello")
+    }
+
     func testInsertsLeadingSpaceFromAXContextWhenPreviousCharacterIsEmoji() {
         for previousCharacter in [Character("😎"), Character("©️"), Character("#️⃣")] {
             let inspector = MockPasteAXInspector(
