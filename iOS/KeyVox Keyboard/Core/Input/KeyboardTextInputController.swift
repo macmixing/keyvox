@@ -170,7 +170,11 @@ final class KeyboardTextInputController {
         let compositionContextBeforeInput = contextAfterCorrectingPendingSelectionDeletion(
             contextBeforeInput
         )
-        let followingCharacter = documentProxy.documentContextAfterInput?.first
+        let contextAfterInput = documentProxy.documentContextAfterInput
+        let followingCharacter = contextAfterInput?.first
+        let followingNonWhitespaceCharacter = contextAfterInput?.first(where: {
+            $0.isWhitespace == false
+        })
         pendingSelectionDeletion = nil
         let preparedText = preparedTranscriptionText(
             cleanedText,
@@ -178,7 +182,8 @@ final class KeyboardTextInputController {
         )
         let punctuationResolution = TerminalPunctuationCompositionPolicy.resolve(
             text: preparedText,
-            followingCharacter: followingCharacter
+            followingCharacter: followingCharacter,
+            followingNonWhitespaceCharacter: followingNonWhitespaceCharacter
         )
         let insertionText = TrailingSeparatorCompositionPolicy.applyIfNeeded(
             to: punctuationResolution.text,
