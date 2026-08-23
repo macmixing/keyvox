@@ -18,9 +18,10 @@ Composed dictated capitalization, terminal marks, and missing separators with su
 - Left incoming terminal punctuation unchanged before straight or curly quotation marks.
 - Added one trailing space when dictated text would otherwise run into an existing letter, number, or emoji.
 - Left trailing spacing unchanged before punctuation, symbols, whitespace, or no following text, and when the dictated text already ends in whitespace.
-- Preserved locale-canonical month and weekday capitalization for detected dates and spoken-number dates while allowing relative date labels to follow normal continuation casing.
+- Preserved incoming capitalization after a colon.
+- Preserved locale-canonical month capitalization when used alone, plus month and weekday capitalization for detected dates and spoken-number dates, while allowing relative date labels to follow normal continuation casing.
 - Shared the punctuation-boundary decision across macOS and iOS composition paths.
-- Added regression coverage for locale-canonical calendar names, relative date labels, spoken-number dates, model periods, explicit question marks and exclamation points, supported non-quote punctuation, quotation-mark boundaries, and missing trailing separators.
+- Added regression coverage for colon boundaries, standalone months, locale-canonical calendar names, relative date labels, spoken-number dates, model periods, explicit question marks and exclamation points, supported non-quote punctuation, quotation-mark boundaries, and missing trailing separators.
 
 ### Notes
 

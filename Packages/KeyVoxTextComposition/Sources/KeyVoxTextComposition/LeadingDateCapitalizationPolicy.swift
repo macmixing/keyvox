@@ -13,9 +13,11 @@ enum LeadingDateCapitalizationPolicy {
         let leadingWordEnd = text[capitalizationIndex...]
             .firstIndex(where: { $0.isLetter == false }) ?? text.endIndex
         let leadingWord = String(text[capitalizationIndex..<leadingWordEnd])
-        guard canonicalCalendarSymbols(for: locale).contains(leadingWord) else {
+        let calendarSymbols = canonicalCalendarSymbols(for: locale)
+        guard calendarSymbols.all.contains(leadingWord) else {
             return false
         }
+        guard calendarSymbols.months.contains(leadingWord) == false else { return true }
 
         let nsText = text as NSString
         let fullRange = NSRange(location: 0, length: nsText.length)
@@ -33,7 +35,9 @@ enum LeadingDateCapitalizationPolicy {
         )
     }
 
-    private static func canonicalCalendarSymbols(for locale: Locale) -> Set<String> {
+    private static func canonicalCalendarSymbols(
+        for locale: Locale
+    ) -> (all: Set<String>, months: Set<String>) {
         let formatter = DateFormatter()
         formatter.locale = locale
 
@@ -41,11 +45,13 @@ enum LeadingDateCapitalizationPolicy {
         calendar.locale = locale
         formatter.calendar = calendar
 
-        let symbolGroups = [
+        let monthSymbolGroups = [
             formatter.monthSymbols,
             formatter.shortMonthSymbols,
             formatter.standaloneMonthSymbols,
             formatter.shortStandaloneMonthSymbols,
+        ]
+        let weekdaySymbolGroups = [
             formatter.weekdaySymbols,
             formatter.shortWeekdaySymbols,
             formatter.standaloneWeekdaySymbols,
@@ -54,9 +60,13 @@ enum LeadingDateCapitalizationPolicy {
         let trimmingCharacters = CharacterSet.whitespacesAndNewlines
             .union(.punctuationCharacters)
 
-        return Set(symbolGroups.compactMap { $0 }.flatMap { $0 }.map {
+        let months = Set(monthSymbolGroups.compactMap { $0 }.flatMap { $0 }.map {
             $0.trimmingCharacters(in: trimmingCharacters)
         })
+        let weekdays = Set(weekdaySymbolGroups.compactMap { $0 }.flatMap { $0 }.map {
+            $0.trimmingCharacters(in: trimmingCharacters)
+        })
+        return (months.union(weekdays), months)
     }
 
     private static func beginsWithLocalizedSpelledOutNumber(

@@ -262,6 +262,32 @@ final class PasteCapitalizationCoordinatorTests: XCTestCase {
         XCTAssertEqual(output, "Hello")
     }
 
+    func testKeepsCapitalizationAfterColon() {
+        let heuristics = makeRetainedHeuristics(
+            axInspector: MockPasteAXInspector(
+                focusedContext: PasteInsertionContext(
+                    selectionLength: 0,
+                    caretLocation: 10,
+                    previousCharacter: " ",
+                    previousNonWhitespaceCharacter: ":"
+                )
+            )
+        )
+
+        let output = heuristics.normalizeLeadingCapitalizationIfNeeded(
+            in: "Hello",
+            currentIdentity: identity("com.example.app", 1),
+            lastInsertionAppIdentity: nil,
+            lastInsertionAt: .distantPast,
+            lastInsertedTrailingCharacter: nil,
+            lastInsertedTrailingNonWhitespaceCharacter: nil,
+            identityMatcher: identityMatcher,
+            shouldPreserveLeadingCapitalization: { _ in false }
+        )
+
+        XCTAssertEqual(output, "Hello")
+    }
+
     func testLowercasesDefaultSentenceCaseMidSentence() {
         let heuristics = makeRetainedHeuristics(
             axInspector: MockPasteAXInspector(
@@ -322,6 +348,13 @@ final class PasteCapitalizationCoordinatorTests: XCTestCase {
     func testPreservesMixedCaseMidSentence() {
         let output = normalizeMidSentence("OpenAI")
         XCTAssertEqual(output, "OpenAI")
+    }
+
+    func testPreservesStandaloneMonthNameMidSentence() throws {
+        let month = try XCTUnwrap(DateFormatter().monthSymbols.first).capitalized
+        let text = month + " was memorable."
+
+        XCTAssertEqual(normalizeMidSentence(text), text)
     }
 
     func testPreservesLeadingNonLetterMidSentence() {

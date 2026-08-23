@@ -120,7 +120,6 @@ final class TextCompositionPolicyTests: XCTestCase {
             Character("{"),
             Character("/"),
             Character("\\"),
-            Character(":"),
             Character("<"),
             Character(">"),
             Character("&"),
@@ -175,6 +174,15 @@ final class TextCompositionPolicyTests: XCTestCase {
                 normalize("This is new.", context: trailingWhitespaceDocumentStartContext),
                 "This is new."
             )
+        }
+    }
+
+    func testColonPreservesIncomingCapitalization() {
+        for precedingText in ["Existing text:", "Existing text:  "] {
+            let context = TextCompositionContext(precedingText: precedingText)
+
+            XCTAssertTrue(TextCompositionPolicy.isSentenceStart(in: context))
+            XCTAssertEqual(normalize("This is new.", context: context), "This is new.")
         }
     }
 
@@ -282,6 +290,24 @@ final class TextCompositionPolicyTests: XCTestCase {
                 in: dateText,
                 startingAt: capitalizationIndex,
                 locale: formatter.locale
+            )
+        )
+    }
+
+    func testDateCapitalizationPreservesStandaloneMonthName() throws {
+        let locale = Locale(identifier: "en_US_POSIX")
+        let formatter = DateFormatter()
+        formatter.locale = locale
+        formatter.calendar = Calendar(identifier: .gregorian)
+        let month = try XCTUnwrap(formatter.monthSymbols.first)
+        let text = month + " was memorable."
+        let capitalizationIndex = try XCTUnwrap(text.indices.first)
+
+        XCTAssertTrue(
+            LeadingDateCapitalizationPolicy.shouldPreserveCapitalization(
+                in: text,
+                startingAt: capitalizationIndex,
+                locale: locale
             )
         )
     }

@@ -1,4 +1,8 @@
 enum TextCompositionCharacterClassifier {
+    static func isClauseIntroductionBoundary(_ character: Character) -> Bool {
+        character == ":"
+    }
+
     static func isEmoji(_ character: Character) -> Bool {
         let scalars = Array(character.unicodeScalars)
         guard let baseScalar = scalars.first else { return false }
