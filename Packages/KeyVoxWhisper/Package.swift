@@ -14,24 +14,22 @@ let package = Package(
             targets: ["KeyVoxWhisper"]
         ),
     ],
+    dependencies: [
+        .package(path: "../KeyVoxVoiceActivity"),
+    ],
     targets: [
-        .binaryTarget(
-            name: "whisper",
-            url: "https://github.com/ggml-org/whisper.cpp/releases/download/v1.7.6/whisper-v1.7.6-xcframework.zip",
-            checksum: "9fcb28106d0b94a525e59bec057e35b57033195ac7408d7e1ab8e4b597cdfeb5"
-        ),
         .target(
             name: "KeyVoxWhisper",
-            dependencies: ["whisper"],
-            path: "Sources/KeyVoxWhisper",
-            resources: [
-                .process("Resources"),
+            dependencies: [
+                .product(name: "KeyVoxSpeechRuntime", package: "KeyVoxVoiceActivity"),
             ]
         ),
         .testTarget(
             name: "KeyVoxWhisperTests",
-            dependencies: ["KeyVoxWhisper"],
-            path: "Tests/KeyVoxWhisperTests"
+            dependencies: [
+                "KeyVoxWhisper",
+                .product(name: "KeyVoxSpeechRuntime", package: "KeyVoxVoiceActivity"),
+            ]
         ),
     ]
 )

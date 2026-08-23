@@ -1,5 +1,5 @@
 import Foundation
-@preconcurrency import whisper
+@preconcurrency import KeyVoxSpeechRuntime
 
 public struct WhisperTranscriptionResult: Sendable {
     public let segments: [Segment]

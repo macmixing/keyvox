@@ -1,6 +1,6 @@
 import Foundation
 import XCTest
-import whisper
+import KeyVoxSpeechRuntime
 @testable import KeyVoxWhisper
 
 final class WhisperCoreTests: XCTestCase {

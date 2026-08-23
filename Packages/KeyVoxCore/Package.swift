@@ -16,6 +16,7 @@ let package = Package(
     dependencies: [
         .package(path: "../KeyVoxWhisper"),
         .package(path: "../KeyVoxParakeet"),
+        .package(path: "../KeyVoxVoiceActivity"),
     ],
     targets: [
         .target(
@@ -23,6 +24,7 @@ let package = Package(
             dependencies: [
                 .product(name: "KeyVoxWhisper", package: "KeyVoxWhisper"),
                 .product(name: "KeyVoxParakeet", package: "KeyVoxParakeet"),
+                .product(name: "KeyVoxVoiceActivity", package: "KeyVoxVoiceActivity"),
             ],
             resources: [
                 .process("Resources"),
@@ -30,7 +32,10 @@ let package = Package(
         ),
         .testTarget(
             name: "KeyVoxCoreTests",
-            dependencies: ["KeyVoxCore"]
+            dependencies: [
+                "KeyVoxCore",
+                .product(name: "KeyVoxVoiceActivity", package: "KeyVoxVoiceActivity"),
+            ]
         ),
     ]
 )

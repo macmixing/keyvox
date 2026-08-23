@@ -1,11 +1,12 @@
 import Foundation
 import KeyVoxWhisper
+import KeyVoxVoiceActivity
 
 extension WhisperService {
     /// Pre-loads the model into memory to eliminate cold-start latency.
     public func warmup() {
         if voiceActivityDetector == nil {
-            voiceActivityDetector = WhisperVoiceActivityDetector()
+            voiceActivityDetector = VoiceActivityDetector()
         }
         guard whisper == nil else {
             #if DEBUG
