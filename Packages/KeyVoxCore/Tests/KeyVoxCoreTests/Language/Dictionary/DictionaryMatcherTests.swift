@@ -240,6 +240,14 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "My app is called KeyVox.")
     }
 
+    func testCorrectsLowercaseStylizedBrandNearMissAfterConjunction() {
+        let matcher = makeRuntimeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "KeyVox")])
+
+        let result = matcher.apply(to: "Have you ever heard of keyboard or keybox?")
+        XCTAssertEqual(result.text, "Have you ever heard of keyboard or KeyVox?")
+    }
+
     func testCorrectsStylizedSingleTokenBrandNearMissBeforeTitlecaseProductContext() {
         let matcher = makeRuntimeMatcher()
         let entries = DictionaryBuiltInEntries.effectiveEntries(merging: [])
@@ -406,6 +414,25 @@ final class DictionaryMatcherTests: XCTestCase {
 
         let result = matcher.apply(to: "keyvoxes lemonade")
         XCTAssertEqual(result.text, "KeyVox's lemonade")
+    }
+
+    func testCandidateRelativeTrailingFormHonorsStricterConfiguredPhoneticThreshold() {
+        let scorer = ReplacementScorer(
+            textWeight: 0.50,
+            phoneticWeight: 0.40,
+            contextWeight: 0.10,
+            ambiguityMargin: 0.05,
+            commonWordOverrideThreshold: 0.94,
+            minimumPhoneticSimilarity: 0.90
+        )
+        let matcher = DictionaryMatcher(
+            lexicon: FakeLexicon(),
+            encoder: PhoneticEncoder(),
+            scorer: scorer
+        )
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "AbCde")])
+
+        XCTAssertEqual(matcher.apply(to: "abcdex").text, "abcdex")
     }
 
     func testPreservesCandidateRelativeTrailingPluralBeforeVerb() {
@@ -673,6 +700,14 @@ final class DictionaryMatcherTests: XCTestCase {
 
         let result = matcher.apply(to: "I love typing on this keyboard.")
         XCTAssertEqual(result.text, "I love typing on this keyboard.")
+    }
+
+    func testDoesNotReplaceUnrelatedKnownWordWithStylizedDictionaryEntry() {
+        let matcher = makeRuntimeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Cueboard")])
+
+        let input = "Go overboard talking about things."
+        XCTAssertEqual(matcher.apply(to: input).text, input)
     }
 
     func testDoesNotReplaceKeyboardPluralInGenericProse() {

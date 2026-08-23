@@ -62,6 +62,40 @@ final class DictionaryMatcherCoreLogicTests: XCTestCase {
         XCTAssertTrue(forms.contains(where: { $0.normalized == "cueboard" && $0.replacementSuffix == "'s" }))
     }
 
+    func testStandardCandidateSelectionRanksOnlyPhoneticallyEligibleCandidates() throws {
+        let observed = "abcdefghij"
+        let ineligibleCandidate = "abcdefzhij"
+        let eligibleCandidate = "abcdzzzzij"
+        let matcher = DictionaryMatcher(
+            lexicon: FakeLexicon(pronunciations: [
+                observed: "BKTFR",
+                ineligibleCandidate: "BKNSR",
+                eligibleCandidate: "BKTFS",
+            ]),
+            encoder: PhoneticEncoder(),
+            scorer: .balanced
+        )
+        matcher.rebuildIndex(entries: [
+            DictionaryEntry(phrase: ineligibleCandidate),
+            DictionaryEntry(phrase: eligibleCandidate),
+        ])
+
+        let tokens = matcher.tokenize(observed)
+        let token = try XCTUnwrap(tokens.first)
+        let candidates = try XCTUnwrap(matcher.entriesByTokenCount[1])
+        let selection = matcher.selectBestStandardCandidate(
+            start: 0,
+            tokenCount: 1,
+            tokens: tokens,
+            candidates: candidates,
+            window: [token],
+            observedNormalized: token.normalized,
+            observedPhonetic: token.phonetic
+        )
+
+        XCTAssertEqual(selection?.candidate.entry.normalizedPhrase, eligibleCandidate)
+    }
+
     func testTextNormalizationMatchesExistingBehavior() {
         XCTAssertTrue(DictionaryTextNormalization.normalizedPhrase("  Cue—Board!!! ") == "cue board")
         XCTAssertTrue(DictionaryTextNormalization.normalizedPhrase("Crème Brûlée") == "creme brulee")
