@@ -28,7 +28,7 @@ public struct VoiceActivityAnalysis: Equatable, Sendable {
     }
 }
 
-public actor VoiceActivityDetector {
+public actor VoiceActivityDetector: VoiceActivityAnalyzing {
     private var context: OpaquePointer?
 
     public init?() {

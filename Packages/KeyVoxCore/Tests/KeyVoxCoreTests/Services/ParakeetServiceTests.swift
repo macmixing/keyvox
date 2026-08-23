@@ -1,11 +1,10 @@
 import XCTest
 import KeyVoxParakeet
+import KeyVoxVoiceActivity
 @testable import KeyVoxCore
 
 @MainActor
 final class ParakeetServiceTests: XCTestCase {
-    private static let voiceActivityModelAnalysisTimeout: TimeInterval = 5
-
     func testStaleRequestCannotOverwriteCurrentTranscriptionState() {
         let service = ParakeetService()
         let staleRequestID = service.beginTranscriptionRequest()
@@ -62,7 +61,7 @@ final class ParakeetServiceTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
-    func testTranscribeRejectsSilentFramesBeforeLoadingParakeet() throws {
+    func testTranscribeRejectsSilentFramesBeforeLoadingParakeet() async throws {
         let modelURL = try makeModelDirectory()
         var loaderWasCalled = false
         let service = ParakeetService(
@@ -70,22 +69,23 @@ final class ParakeetServiceTests: XCTestCase {
             parakeetLoader: { _ in
                 loaderWasCalled = true
                 throw NSError(domain: "ParakeetServiceTests", code: 1)
-            }
+            },
+            voiceActivityAnalyzerFactory: { SilentVoiceActivityAnalyzer() }
         )
-        let expectation = expectation(description: "silent frames complete")
 
-        service.transcribe(
-            audioFrames: Array(repeating: 0, count: 16_000),
-            useDictionaryHintPrompt: true,
-            enableAutoParagraphs: true
-        ) { result in
-            XCTAssertEqual(result?.text, "")
-            XCTAssertTrue(service.lastResultWasLikelyNoSpeech)
-            XCTAssertFalse(loaderWasCalled)
-            expectation.fulfill()
+        let result = await withCheckedContinuation { continuation in
+            service.transcribe(
+                audioFrames: Array(repeating: 0, count: 16_000),
+                useDictionaryHintPrompt: true,
+                enableAutoParagraphs: true
+            ) { result in
+                continuation.resume(returning: result)
+            }
         }
 
-        wait(for: [expectation], timeout: Self.voiceActivityModelAnalysisTimeout)
+        XCTAssertEqual(result?.text, "")
+        XCTAssertTrue(service.lastResultWasLikelyNoSpeech)
+        XCTAssertFalse(loaderWasCalled)
     }
 
     func testWarmupLoadsParakeetOffMainThread() throws {
@@ -308,5 +308,14 @@ final class ParakeetServiceTests: XCTestCase {
             try? FileManager.default.removeItem(at: url)
         }
         return url
+    }
+}
+
+private struct SilentVoiceActivityAnalyzer: VoiceActivityAnalyzing {
+    func analyze(
+        audioFrames: [Float],
+        configuration: VoiceActivityConfiguration
+    ) async -> VoiceActivityAnalysis? {
+        VoiceActivityAnalysis(probabilities: [], speechSegments: [])
     }
 }

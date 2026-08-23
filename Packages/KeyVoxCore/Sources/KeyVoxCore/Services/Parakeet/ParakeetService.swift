@@ -6,6 +6,7 @@ import KeyVoxVoiceActivity
 @MainActor
 public final class ParakeetService: ObservableObject, DictationProvider {
     typealias ParakeetLoader = (_ modelURL: URL) throws -> Parakeet?
+    typealias VoiceActivityAnalyzerFactory = () -> (any VoiceActivityAnalyzing)?
 
     struct WarmupHandle {
         let id: UUID
@@ -18,25 +19,29 @@ public final class ParakeetService: ObservableObject, DictationProvider {
 
     private let modelURLResolver: () -> URL?
     let parakeetLoader: ParakeetLoader
+    let voiceActivityAnalyzerFactory: VoiceActivityAnalyzerFactory
     private var activeTranscriptionRequestID = UUID()
     var warmupHandle: WarmupHandle?
 
     var parakeet: Parakeet?
     var transcriptionTask: Task<Void, Never>?
-    var voiceActivityDetector: VoiceActivityDetector?
+    var voiceActivityAnalyzer: (any VoiceActivityAnalyzing)?
     let paragraphChunker = AudioParagraphChunker()
 
     public init(modelURLResolver: @escaping () -> URL? = { nil }) {
         self.modelURLResolver = modelURLResolver
         self.parakeetLoader = Self.makeParakeet
+        self.voiceActivityAnalyzerFactory = { VoiceActivityDetector() }
     }
 
     init(
         modelURLResolver: @escaping () -> URL? = { nil },
-        parakeetLoader: @escaping ParakeetLoader
+        parakeetLoader: @escaping ParakeetLoader,
+        voiceActivityAnalyzerFactory: @escaping VoiceActivityAnalyzerFactory = { VoiceActivityDetector() }
     ) {
         self.modelURLResolver = modelURLResolver
         self.parakeetLoader = parakeetLoader
+        self.voiceActivityAnalyzerFactory = voiceActivityAnalyzerFactory
     }
 
     public var isModelReady: Bool {
