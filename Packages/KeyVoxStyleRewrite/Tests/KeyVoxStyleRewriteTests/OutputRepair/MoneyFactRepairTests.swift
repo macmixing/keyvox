@@ -39,6 +39,16 @@ final class MoneyFactRepairTests: XCTestCase {
         XCTAssertEqual(output, "That was $4.99.")
     }
 
+    func testRewriteRepairConsumesCompleteUnformattedDollarsAndCentsPhrase() {
+        let original = "That was four dollars and ninety nine cents."
+        let output = OutputRepair.repairModelOutput(
+            original: original,
+            rewritten: original
+        )
+
+        XCTAssertEqual(output, "That was $4.99.")
+    }
+
     func testRewriteRepairPreservesDecimalMoneyAmount() {
         let output = OutputRepair.repairModelOutput(
             original: "I paid five point three dollars.",
@@ -72,6 +82,7 @@ final class MoneyFactRepairTests: XCTestCase {
             "The company was making $5,000 a year.",
             "The company was making $1,500 a year.",
             "The company was making $100 and $500 a year.",
+            "The company was making a hundred and $5,000 a year.",
             original,
         ]
 

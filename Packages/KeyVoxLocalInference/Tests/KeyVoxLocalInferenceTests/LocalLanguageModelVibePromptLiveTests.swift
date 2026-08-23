@@ -58,6 +58,16 @@ final class LocalLanguageModelVibePromptLiveTests: XCTestCase {
         ),
         LiveStylePromptCase(
             style: .casual,
+            input: "That was like a hundred and 5,000 dollars.",
+            expected: "That was like $105,000."
+        ),
+        LiveStylePromptCase(
+            style: .polished,
+            input: "That was like a hundred and 5,000 dollars.",
+            expected: "That was $105,000."
+        ),
+        LiveStylePromptCase(
+            style: .casual,
             input: "I'm gonna be honest with you if the company was making a hundred and 5,000 dollars a year from them that would absolutely change everything about the project right now in a meaningful way.",
             expected: "I'm gonna be honest with you if the company was making $105,000 a year from them that would absolutely change everything about the project right now in a meaningful way."
         ),
@@ -71,6 +81,10 @@ final class LocalLanguageModelVibePromptLiveTests: XCTestCase {
     private static let mixedSpokenAndNumericMoneyRequirements = [
         "If I was giving a hundred and 5,000 dollars a year to people that would be cool.": LiveStylePromptRequirements(
             requiredFragments: ["$105,000"]
+        ),
+        "That was like a hundred and 5,000 dollars.": LiveStylePromptRequirements(
+            requiredFragments: ["$105,000"],
+            extraForbiddenFragments: ["a hundred and $105,000"]
         ),
         "I'm gonna be honest with you if the company was making a hundred and 5,000 dollars a year from them that would absolutely change everything about the project right now in a meaningful way.": LiveStylePromptRequirements(
             requiredFragments: ["$105,000"]
