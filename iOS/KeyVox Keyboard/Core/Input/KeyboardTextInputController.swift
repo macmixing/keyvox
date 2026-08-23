@@ -183,7 +183,8 @@ final class KeyboardTextInputController {
         let punctuationResolution = TerminalPunctuationCompositionPolicy.resolve(
             text: preparedText,
             followingCharacter: followingCharacter,
-            followingNonWhitespaceCharacter: followingNonWhitespaceCharacter
+            followingNonWhitespaceCharacter: followingNonWhitespaceCharacter,
+            followingText: contextAfterInput
         )
         let insertionText = TrailingSeparatorCompositionPolicy.applyIfNeeded(
             to: punctuationResolution.text,
