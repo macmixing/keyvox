@@ -416,6 +416,25 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "KeyVox's lemonade")
     }
 
+    func testCandidateRelativeTrailingFormHonorsStricterConfiguredPhoneticThreshold() {
+        let scorer = ReplacementScorer(
+            textWeight: 0.50,
+            phoneticWeight: 0.40,
+            contextWeight: 0.10,
+            ambiguityMargin: 0.05,
+            commonWordOverrideThreshold: 0.94,
+            minimumPhoneticSimilarity: 0.90
+        )
+        let matcher = DictionaryMatcher(
+            lexicon: FakeLexicon(),
+            encoder: PhoneticEncoder(),
+            scorer: scorer
+        )
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "AbCde")])
+
+        XCTAssertEqual(matcher.apply(to: "abcdex").text, "abcdex")
+    }
+
     func testPreservesCandidateRelativeTrailingPluralBeforeVerb() {
         let matcher = DictionaryMatcher(
             lexicon: PronunciationLexicon.shared,

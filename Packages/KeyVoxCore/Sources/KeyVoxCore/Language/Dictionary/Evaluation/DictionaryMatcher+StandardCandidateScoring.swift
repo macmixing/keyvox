@@ -216,7 +216,11 @@ extension DictionaryMatcher {
             scorer.similarity(lhs: observedPhonetic, rhs: candidatePhonetic),
             scorer.similarity(lhs: observedFallback, rhs: candidateFallback)
         )
-        guard phoneticSimilarity >= StandardEvaluationPolicy.properNounSimilarityMinimum else {
+        let minimumPhoneticSimilarity = max(
+            StandardEvaluationPolicy.properNounSimilarityMinimum,
+            scorer.minimumPhoneticSimilarity
+        )
+        guard phoneticSimilarity >= minimumPhoneticSimilarity else {
             return nil
         }
 
