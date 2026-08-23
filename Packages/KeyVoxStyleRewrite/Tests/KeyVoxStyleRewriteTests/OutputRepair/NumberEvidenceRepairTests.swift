@@ -143,4 +143,44 @@ final class NumberEvidenceRepairTests: XCTestCase {
             XCTAssertEqual(output, testCase.repaired)
         }
     }
+
+    func testRewriteRepairRemovesUnsupportedCurrencyFromChangedNumberEvidence() {
+        let output = OutputRepair.repairModelOutput(
+            original: "But like only if there's the word hundred in front of it.",
+            rewritten: "But like only if there's the word $1 in front of it."
+        )
+
+        XCTAssertEqual(output, "But like only if there's the word hundred in front of it.")
+    }
+
+    func testRewriteRepairRemovesUnsupportedCurrencyBesideExistingCurrencyEvidence() {
+        let output = OutputRepair.repairModelOutput(
+            original: "I paid $5, but the word hundred stays.",
+            rewritten: "I paid $5, but the word $100 stays."
+        )
+
+        XCTAssertEqual(output, "I paid $5, but the word hundred stays.")
+    }
+
+    func testRewriteRepairRemovesUnsupportedCurrencyAtTextBoundaries() {
+        let cases = [
+            (
+                original: "Hundred people came.",
+                rewritten: "$100 people came."
+            ),
+            (
+                original: "The label says hundred.",
+                rewritten: "The label says $100."
+            ),
+        ]
+
+        for testCase in cases {
+            let output = OutputRepair.repairModelOutput(
+                original: testCase.original,
+                rewritten: testCase.rewritten
+            )
+
+            XCTAssertEqual(output, testCase.original)
+        }
+    }
 }

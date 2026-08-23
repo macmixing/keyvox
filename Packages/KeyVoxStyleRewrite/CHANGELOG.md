@@ -6,6 +6,25 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.0.12] - 2026-08-22
+
+Money evidence boundary and unsupported-currency repair for Vibes rewrites.
+
+### Includes
+
+- Preserved mixed spoken and grouped money amounts as one source-backed value, including hundred-scale evidence followed by a comma-grouped thousands value.
+- Repaired local model outputs that truncate, change, split, or leave mixed money evidence unformatted.
+- Restricted split-money recombination to source evidence that was parsed as a mixed grouped magnitude, preserving separate same-currency facts across conjunctions.
+- Preserved possessive determiners when formatting ordinary unformatted money evidence.
+- Removed unsupported currency added to standalone magnitude wording, including occurrences beside valid currency evidence and at the beginning or end of text.
+- Added package regression coverage for every observed corrupt output and permanent Casual and Polished live coverage using non-personal scenarios.
+
+### Notes
+
+- `1.0.12` bumps the tracked style rewrite package version for deterministic money evidence boundary and unsupported-currency preservation.
+
+---
+
 ## [1.0.11] - 2026-07-12
 
 Long-dictation output repair performance and main-thread responsiveness for Vibes rewrites.

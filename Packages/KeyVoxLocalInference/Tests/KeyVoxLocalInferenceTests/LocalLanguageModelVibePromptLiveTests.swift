@@ -4,6 +4,48 @@ import XCTest
 
 final class LocalLanguageModelVibePromptLiveTests: XCTestCase {
     @MainActor
+    func testLiveMixedSpokenAndNumericMoneyEvidenceWhenEnabled() async throws {
+        try LocalModelLiveTestEnvironment.requireStyleTestsEnabled()
+        let tester = try LiveLocalStyleTester(
+            modelURL: LocalModelLiveTestEnvironment.requireModelURL(),
+            adapterURL: LocalModelLiveTestEnvironment.optionalAdapterURL(),
+            adapterScale: LocalModelLiveTestEnvironment.adapterScale
+        )
+
+        do {
+            try await tester.assertStyleCases(
+                Self.mixedSpokenAndNumericMoneyCases,
+                coverageRequirements: Self.mixedSpokenAndNumericMoneyRequirements
+            )
+            await tester.unload()
+        } catch {
+            await tester.unload()
+            throw error
+        }
+    }
+
+    @MainActor
+    func testLiveUnsupportedCurrencyEvidenceWhenEnabled() async throws {
+        try LocalModelLiveTestEnvironment.requireStyleTestsEnabled()
+        let tester = try LiveLocalStyleTester(
+            modelURL: LocalModelLiveTestEnvironment.requireModelURL(),
+            adapterURL: LocalModelLiveTestEnvironment.optionalAdapterURL(),
+            adapterScale: LocalModelLiveTestEnvironment.adapterScale
+        )
+
+        do {
+            try await tester.assertStyleCases(
+                Self.unsupportedCurrencyCases,
+                coverageRequirements: Self.unsupportedCurrencyRequirements
+            )
+            await tester.unload()
+        } catch {
+            await tester.unload()
+            throw error
+        }
+    }
+
+    @MainActor
     func testLiveExactVibePromptsWhenEnabled() async throws {
         try LocalModelLiveTestEnvironment.requireStyleTestsEnabled()
         let tester = try LiveLocalStyleTester(
@@ -23,6 +65,67 @@ final class LocalLanguageModelVibePromptLiveTests: XCTestCase {
             throw error
         }
     }
+
+    private static let mixedSpokenAndNumericMoneyCases = [
+        LiveStylePromptCase(
+            style: .casual,
+            input: "If I was giving a hundred and 5,000 dollars a year to people that would be cool.",
+            expected: "If I was giving $105,000 a year to people that would be cool."
+        ),
+        LiveStylePromptCase(
+            style: .polished,
+            input: "If I was giving a hundred and 5,000 dollars a year to people that would be cool.",
+            expected: "If I were giving $105,000 a year to people, that would be cool."
+        ),
+        LiveStylePromptCase(
+            style: .casual,
+            input: "That was like a hundred and 5,000 dollars.",
+            expected: "That was like $105,000."
+        ),
+        LiveStylePromptCase(
+            style: .polished,
+            input: "That was like a hundred and 5,000 dollars.",
+            expected: "That was $105,000."
+        ),
+        LiveStylePromptCase(
+            style: .casual,
+            input: "I'm gonna be honest with you if the company was making a hundred and 5,000 dollars a year from them that would absolutely change everything about the project right now in a meaningful way.",
+            expected: "I'm gonna be honest with you if the company was making $105,000 a year from them that would absolutely change everything about the project right now in a meaningful way."
+        ),
+        LiveStylePromptCase(
+            style: .polished,
+            input: "I'm gonna be honest with you if the company was making a hundred and 5,000 dollars a year from them that would absolutely change everything about the project right now in a meaningful way.",
+            expected: "I'm going to be honest with you: if the company were making $105,000 a year from them, that would absolutely change everything about the project right now in a meaningful way."
+        ),
+    ]
+
+    private static let mixedSpokenAndNumericMoneyRequirements = [
+        "If I was giving a hundred and 5,000 dollars a year to people that would be cool.": LiveStylePromptRequirements(
+            requiredFragments: ["$105,000"]
+        ),
+        "That was like a hundred and 5,000 dollars.": LiveStylePromptRequirements(
+            requiredFragments: ["$105,000"],
+            extraForbiddenFragments: ["a hundred and $105,000"]
+        ),
+        "I'm gonna be honest with you if the company was making a hundred and 5,000 dollars a year from them that would absolutely change everything about the project right now in a meaningful way.": LiveStylePromptRequirements(
+            requiredFragments: ["$105,000"]
+        ),
+    ]
+
+    private static let unsupportedCurrencyCases = [
+        LiveStylePromptCase(
+            style: .casual,
+            input: "But like only if there's the word hundred in front of it.",
+            expected: "But like only if there's the word hundred in front of it."
+        ),
+    ]
+
+    private static let unsupportedCurrencyRequirements = [
+        "But like only if there's the word hundred in front of it.": LiveStylePromptRequirements(
+            requiredFragments: ["hundred"],
+            extraForbiddenFragments: ["$1"]
+        ),
+    ]
 
     private static let cases = [
         LiveStylePromptCase(
