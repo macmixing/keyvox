@@ -6,6 +6,29 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.3.6] - 2026-08-23
+
+Improves keyboard dictation around existing text while strengthening model selection, silence detection, number formatting, custom-dictionary matching, and factual money preservation in Vibes rewrites.
+
+### Changed
+
+- Updated Parakeet to use the same shared voice-activity detection as Whisper so captures without detected speech are rejected before decoding.
+- Updated dictated number formatting to preserve and group complete spoken quantities through hundreds, thousands, and their remaining tens and units.
+- Updated keyboard text composition to preserve contextual capitalization after colons, use locale-aware capitalization for calendar dates and standalone month names, and add missing spacing after hyphens or before following letters, numbers, and emoji.
+- Updated custom-dictionary matching to require phonetic support for non-exact replacements while still correcting supported stylized near-misses before title-cased words.
+- Updated Vibes rewrites to preserve complete mixed and grouped money amounts and remove unsupported currencies introduced by the local model.
+
+### Fixed
+
+- Fixed iOS retaining an unavailable active dictation model after it is removed or fails by immediately selecting another installed model while preserving selections that are still downloading or installing.
+- Fixed model-added periods appearing before existing punctuation or lowercase continuation text, while preserving punctuation before quotation marks and correctly reusing or replacing adjacent question and exclamation marks.
+- Fixed terminal periods being removed before content on a new line or an adjacent URL while retaining the expected behavior for ordinary lowercase continuations.
+- Fixed dictated text running into following text in the host app when a required trailing space was missing.
+- Fixed distinct mixed-case product names being replaced by unrelated custom-dictionary entries with similar coarse pronunciations.
+- Fixed Vibes rewrites truncating, changing, splitting, or misformatting source-backed money facts.
+
+---
+
 ## [1.3.5] - 2026-08-20
 
 Keeps model downloads reliable when upstream repositories change.
