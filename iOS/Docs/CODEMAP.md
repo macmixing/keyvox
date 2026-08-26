@@ -1,12 +1,12 @@
 # KeyVox iOS Code Map
-**Last Updated: 2026-08-22**
+**Last Updated: 2026-08-25**
 
 ## Project Overview
 
 KeyVox iOS ships as four cooperating targets:
 
 - The containing app owns onboarding, settings, dictation model lifecycle, local Vibes model lifecycle, bundled Vibes adapter lookup, local style rewrite inference, PocketTTS voice installs, copied-text playback, microphone capture, interrupted-capture recovery, session policy, weekly stats, iCloud sync, and the SwiftUI shell.
-- The keyboard extension owns the visible custom keyboard, warm/cold app handoff, copied-text speak transport, text insertion, warning-toolbar presentation, Vibes selection/status UI, latest-insertion editability tracking, and keyboard-only interaction behavior. For model-backed Vibes rewrites, it requests work from the containing app instead of loading the local rewrite model itself.
+- The keyboard extension owns the visible custom keyboard, full/compact key modes, warm/cold app handoff, copied-text speak transport, text insertion, warning-toolbar presentation, Vibes selection/status UI, latest-insertion editability tracking, and keyboard-only interaction behavior. For model-backed Vibes rewrites, it requests work from the containing app instead of loading the local rewrite model itself.
 - The share extension owns shared text/URL/PDF extraction, OCR for shared images and rendered PDF pages, TTS request handoff to the main app, and visual feedback during share processing.
 - The widget extension owns the Live Activity and Dynamic Island presentation plus the stop-session App Intent.
 
@@ -28,6 +28,7 @@ The current default runtime flow is:
 11. Later keyboard long presses may restyle or revert only the latest untouched KeyVox insertion: Vibes changes use an app-IPC rewrite request, paragraph/list changes use persisted deterministic artifact variants, and Caps Lock swaps between the inserted text and the preserved pre-Caps selected output. If the local Vibes model is missing, keyboard Vibes taps do not cycle styles and instead route the user into the app-owned Vibes install/trial flow.
 12. When the user triggers copied-text playback, the containing app owns PocketTTS synthesis, explicit model load/unload lifetime, deterministic playback preparation, replay caching, pause/resume/stop transport state, and return-to-host readiness.
 13. If the user keeps the session active, the Live Activity coordinator mirrors session state and weekly-word updates into the widget extension.
+14. When Compact Keys is available, a long press on `#+=` replaces the first two symbol rows with a shorter two-row keyboard; the keyboard-symbol key restores the full layout.
 
 ## Architecture
 
@@ -321,6 +322,7 @@ iOS/
 │   │   │   ├── KeyboardInteractionHaptics.swift
 │   │   │   └── KeyboardKeypressHaptics.swift
 │   │   ├── Input/
+│   │   │   ├── KeyboardCompactKeysHoldController.swift
 │   │   │   ├── KeyboardCursorTrackpadSupport.swift
 │   │   │   ├── KeyboardSpecialKeyInteractionSupport.swift
 │   │   │   └── KeyboardTextInputController.swift
@@ -336,6 +338,7 @@ iOS/
 │   │   │   ├── KeyboardTransportDisplayState.swift
 │   │   │   └── KeyboardTTSController.swift
 │   │   ├── KeyboardLayoutGeometry.swift
+│   │   ├── KeyboardKeysMode.swift
 │   │   ├── KeyboardDictationModelStatus.swift
 │   │   ├── KeyboardModelAvailability.swift
 │   │   ├── KeyboardState.swift
@@ -420,6 +423,7 @@ iOS/
 │   │   │   ├── AudioInputPreferenceResolverTests.swift
 │   │   │   └── StoppedCaptureProcessorTests.swift
 │   │   ├── Keyboard/
+│   │   │   ├── KeyboardCompactKeysTests.swift
 │   │   │   ├── KeyboardCursorTrackpadSupportTests.swift
 │   │   │   ├── KeyboardDeterministicDictationFormatterTests.swift
 │   │   │   ├── KeyboardDictationChangeControllerTests.swift
@@ -657,9 +661,11 @@ Packages/
   - Includes the app-owned cached TTS unlock state plus the local day token and free-speak usage count used by the phase-one copied-text playback gate.
   - Also includes the post-onboarding KeyVox Speak intro keys for seen-state, feature-used state, the delayed eligible-open counter, and the app-owned cached update decision keys used for cold-launch reminders.
   - Also includes the KeyVox Vibes style-selection keys used by both `AppSettingsStore` and the keyboard extension's Vibes selector.
+  - Also includes the shared Compact Keys availability and active-mode keys used by the containing app and keyboard extension.
 - `KeyVox iOS/App/iCloud/AppSettingsStore.swift`
   - Owns the device-local active dictation provider and Whisper language selection alongside the app's other persisted settings.
   - Validates restored Whisper language identifiers against `WhisperBaseLanguageCatalog` and defaults missing or unsupported values to Auto Detect; this preference is intentionally not part of iCloud settings sync.
+  - Owns the user-facing Compact Keys availability toggle, which defaults on and clears any active compact mode when disabled.
 - `KeyVox iOS/App/iCloud/KeyVoxPlaybackVoice.swift`
   - Dependency-free shared playback-voice catalog used by both `AppSettingsStore` and the share extension when resolving canonical TTS voice IDs and display names.
 - `KeyVox iOS/App/Integration/KeyVoxKeyboardBridge.swift`
@@ -905,7 +911,7 @@ Packages/
   - Central warning-priority resolver for the keyboard toolbar.
   - Also maps shared forced-update state into the existing warning surface so the branded toolbar does not remain active while an update is required.
 - `KeyVox iOS/Views/SettingsTabView/SettingsTabView+General.swift`
-  - Session timeout, Speak Timeout, Live Activities, keyboard haptics, and audio preference sections extracted from the settings root view.
+  - Session timeout, Speak Timeout, Live Activities, keyboard haptics, keyboard layout controls including Compact Keys availability, and audio preference sections extracted from the settings root view.
 - `KeyVox iOS/Views/SettingsTabView/SettingsTabView+Models.swift`
   - Release-facing `Dictation Model` section, provider selection, per-model install actions, and not-installed size labels.
   - Attaches the Language section beneath the model card: Whisper uses the shared model catalog for its picker, while Parakeet remains visible as Auto Detect with FAQ guidance because it has no native forced-language selection.
@@ -979,6 +985,9 @@ Packages/
 - `KeyVox Keyboard/Core/Settings/KeyboardAppSettingsStore.swift`
   - Keyboard-local App Group settings bridge for controls that mirror containing-app settings.
   - Reads and writes the shared selected Vibe, paragraph, and list-formatting defaults, derives Vibe display text from `StyleRewriteStyle`, evaluates trial access using the shared Vibes trial duration policy, forces the resolved Vibe to `None` when access or Vibes AI install readiness is missing, and posts shared Darwin notifications so the containing app can refresh visible settings.
+  - Reads Compact Keys availability and persists the active full/compact mode independently; availability defaults on while active mode defaults full.
+- `KeyVox Keyboard/Core/Input/KeyboardCompactKeysHoldController.swift`
+  - Owns the cancellable half-second `#+=` hold gesture that requests compact-mode activation without turning the eventual touch-up into a normal symbol-page keypress.
 - `KeyVox Keyboard/Core/Input/KeyboardTextInputController.swift`
   - Host-app text insertion, key dispatch, double-space period behavior, cursor movement, and document-proxy execution of adjacent punctuation replacement after selected-text insertion.
   - Captures the first character after the insertion or selected span once, then applies shared terminal-punctuation and trailing-separator composition before inserting the finalized text.
@@ -998,6 +1007,9 @@ Packages/
 - `KeyVox Keyboard/Core/KeyboardLayoutGeometry.swift`
   - Row-geometry helper for keyboard-specific sizing rules that should not live in `KeyboardRootView` or `KeyboardKeyGridView`.
   - Owns row 3 and row 4 live width calculations driven from the measured key grid.
+- `KeyVox Keyboard/Core/KeyboardKeysMode.swift`
+  - Resolves full versus compact presentation from availability and persisted active state.
+  - Selects the explicit 286-point full height or 174-point compact height from `KeyboardStyle` and owns visible row count plus derived key-grid height.
 - `KeyVox Keyboard/Core/KeyboardTopRowAccessoryLayout.swift`
   - Owns top-row accessory alignment driven from the measured key grid.
   - Keeps the left accessory slot stable by showing Settings while idle and the existing Cancel control while recording, transcribing, or playing speech.
@@ -1022,7 +1034,7 @@ Packages/
 - `KeyVox Keyboard/Core/Transport/KeyboardTransportDisplayState.swift`
   - Non-visual keyboard logo transport state, accessibility labels, and playback/dictation presentation inputs kept separate from the proprietary logo-bar rendering file.
 - `KeyVox Keyboard/Views/Components/KeyboardKeyGridView.swift`
-  - Builds the symbol-key rows, keeps the first two rows equal-width, and delegates row 3 and row 4 special-key sizing to the unified keyboard layout helper.
+  - Builds the symbol-key rows, wires the Compact Keys hold interaction, keeps the first two full-mode rows equal-width, and delegates row 3 and row 4 special-key sizing to the unified keyboard layout helper.
 - `KeyVox Keyboard/Views/FullAccessView.swift`
   - Full-screen keyboard-only instructional view shown when the user needs to enable Full Access.
 
