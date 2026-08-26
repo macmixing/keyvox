@@ -246,7 +246,10 @@ final class KeyboardKeyGridView: UIView {
             }
         case .changed:
             compactKeysHoldController.update(
-                isStillOnCompactKeysTrigger: hitKey?.model.kind == .alternateSymbols
+                isStillOnCompactKeysTrigger: keyView(
+                    at: location,
+                    hitSlop: 0
+                )?.model.kind == .alternateSymbols
             )
             if isDeleteTouchConsuming {
                 if hitKey?.model.kind == .delete {
@@ -327,9 +330,10 @@ final class KeyboardKeyGridView: UIView {
         }
     }
 
-    private func keyView(at point: CGPoint) -> KeyboardKeyView? {
+    private func keyView(at point: CGPoint, hitSlop: CGFloat = 6) -> KeyboardKeyView? {
         keyViews.first { keyView in
-            let frame = keyView.convert(keyView.bounds, to: self).insetBy(dx: -6, dy: -6)
+            let frame = keyView.convert(keyView.bounds, to: self)
+                .insetBy(dx: -hitSlop, dy: -hitSlop)
             return frame.contains(point)
         }
     }

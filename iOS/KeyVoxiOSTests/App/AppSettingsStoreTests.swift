@@ -89,14 +89,16 @@ struct AppSettingsStoreTests {
         #expect(defaults.object(forKey: UserDefaultsKeys.compactKeysActive) as? Bool == false)
     }
 
-    @Test func compactKeysEnabledRestoresPersistedFalseValue() {
+    @Test func compactKeysEnabledRestoresPersistedFalseValueAndClearsActiveMode() {
         let defaults = UserDefaults(suiteName: #function)!
         defaults.removePersistentDomain(forName: #function)
         defaults.set(false, forKey: UserDefaultsKeys.compactKeysEnabled)
+        defaults.set(true, forKey: UserDefaultsKeys.compactKeysActive)
 
         let store = AppSettingsStore(defaults: defaults)
 
         #expect(store.compactKeysEnabled == false)
+        #expect(defaults.object(forKey: UserDefaultsKeys.compactKeysActive) as? Bool == false)
     }
 
     @Test func selectedVibeDefaultsToNone() {
