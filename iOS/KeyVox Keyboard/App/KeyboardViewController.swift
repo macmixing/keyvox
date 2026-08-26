@@ -78,6 +78,13 @@ final class KeyboardViewController: UIInputViewController {
             updateUI()
         }
     }
+    var keysMode: KeyboardKeysMode = .full {
+        didSet {
+            guard keysMode != oldValue else { return }
+            updatePrimaryViewHeight()
+            updateUI()
+        }
+    }
     var isCapsLockEnabled = false {
         didSet {
             updateUI()
@@ -124,6 +131,10 @@ final class KeyboardViewController: UIInputViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         extensionHostIsActive = true
+        keysMode = .resolve(
+            isCompactKeysEnabled: appSettingsStore.isCompactKeysEnabled,
+            isCompactKeysActive: appSettingsStore.isCompactKeysActive
+        )
         preparePresentationIfNeeded()
         KeyVoxIPCBridge.reportKeyboardOnboardingState(hasFullAccess: hasFullAccess)
         configureDictationBehavior()
@@ -185,10 +196,16 @@ final class KeyboardViewController: UIInputViewController {
             view.removeConstraint(constraint)
         }
 
-        let heightConstraint = view.heightAnchor.constraint(equalToConstant: KeyboardStyle.keyboardHeight)
+        let heightConstraint = view.heightAnchor.constraint(equalToConstant: keysMode.keyboardHeight)
         heightConstraint.priority = .required
         heightConstraint.isActive = true
         primaryHeightConstraint = heightConstraint
+    }
+
+    private func updatePrimaryViewHeight() {
+        guard let primaryHeightConstraint else { return }
+        primaryHeightConstraint.constant = keysMode.keyboardHeight
+        view.setNeedsLayout()
     }
 
     private func configureTraitChangeObservation() {
@@ -216,6 +233,16 @@ final class KeyboardViewController: UIInputViewController {
     }
 
     func updateUI() {
+        if appSettingsStore.isCompactKeysEnabled == false {
+            if appSettingsStore.isCompactKeysActive {
+                appSettingsStore.setCompactKeysActive(false)
+            }
+            if keysMode == .compact {
+                keysMode = .full
+                return
+            }
+        }
+
         let toolbarMode = currentToolbarMode()
         let preferredTTSVoiceID = UserDefaults(suiteName: KeyVoxIPCBridge.appGroupID)?
             .string(forKey: UserDefaultsKeys.ttsVoice)
@@ -223,6 +250,7 @@ final class KeyboardViewController: UIInputViewController {
         rootContainerView?.apply(
             state: keyboardState,
             symbolPage: symbolPage,
+            keysMode: keysMode,
             isCapsLockEnabled: isCapsLockEnabled,
             isDictationCapsApplied: dictationChangeController.displayedCapsTransformApplied,
             isDictationCapsUppercase: dictationChangeController.displayedCapsTextIsUppercase,
@@ -459,7 +487,29 @@ final class KeyboardViewController: UIInputViewController {
     }
 
     @discardableResult
+    func handleCompactKeysRequest() -> Bool {
+        guard appSettingsStore.isCompactKeysEnabled,
+              keysMode == .full,
+              symbolPage == .primary else {
+            return false
+        }
+
+        appSettingsStore.setCompactKeysActive(true)
+        keysMode = .compact
+        interactionHaptics.emitSuccessIfEnabled()
+        return true
+    }
+
+    @discardableResult
     func handleKeyActivation(_ kind: KeyboardKeyKind) -> Bool {
+        if kind == .restoreFullKeyboard {
+            guard keysMode == .compact else { return false }
+            appSettingsStore.setCompactKeysActive(false)
+            keysMode = .full
+            interactionHaptics.emitMediumIfEnabled()
+            return true
+        }
+
         var updatedSymbolPage = symbolPage
         let didHandle = textInputController.handleKeyActivation(
             kind,
