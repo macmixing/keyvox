@@ -68,6 +68,37 @@ struct AppSettingsStoreTests {
         #expect(store.liveActivitiesEnabled == false)
     }
 
+    @Test func compactKeysEnabledDefaultsToTrue() {
+        let defaults = UserDefaults(suiteName: #function)!
+        defaults.removePersistentDomain(forName: #function)
+
+        let store = AppSettingsStore(defaults: defaults)
+
+        #expect(store.compactKeysEnabled)
+    }
+
+    @Test func disablingCompactKeysPersistsAvailabilityAndClearsActiveMode() {
+        let defaults = UserDefaults(suiteName: #function)!
+        defaults.removePersistentDomain(forName: #function)
+        defaults.set(true, forKey: UserDefaultsKeys.compactKeysActive)
+        let store = AppSettingsStore(defaults: defaults)
+
+        store.compactKeysEnabled = false
+
+        #expect(defaults.object(forKey: UserDefaultsKeys.compactKeysEnabled) as? Bool == false)
+        #expect(defaults.object(forKey: UserDefaultsKeys.compactKeysActive) as? Bool == false)
+    }
+
+    @Test func compactKeysEnabledRestoresPersistedFalseValue() {
+        let defaults = UserDefaults(suiteName: #function)!
+        defaults.removePersistentDomain(forName: #function)
+        defaults.set(false, forKey: UserDefaultsKeys.compactKeysEnabled)
+
+        let store = AppSettingsStore(defaults: defaults)
+
+        #expect(store.compactKeysEnabled == false)
+    }
+
     @Test func selectedVibeDefaultsToNone() {
         let defaults = UserDefaults(suiteName: #function)!
         defaults.removePersistentDomain(forName: #function)

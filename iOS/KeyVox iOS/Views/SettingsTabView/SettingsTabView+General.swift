@@ -6,6 +6,8 @@ enum SettingsTabCopy {
         static let hapticsDescription = "Get haptic feedback from KeyVox keyboard."
         static let leftHandedLayoutTitle = "Left-Handed Layout"
         static let leftHandedLayoutDescription = "Mirror keyboard controls for easier left-hand access."
+        static let compactKeysTitle = "Compact Keys"
+        static let compactKeysDescription = "Long-press #+= to use a shorter keyboard."
     }
 }
 
@@ -137,6 +139,16 @@ extension SettingsTabView {
                     title: SettingsTabCopy.Keyboard.leftHandedLayoutTitle,
                     description: SettingsTabCopy.Keyboard.leftHandedLayoutDescription,
                     isOn: $settingsStore.leftHandedKeyboardLayoutEnabled
+                )
+
+                Divider()
+                    .overlay(.white.opacity(0.22))
+
+                SettingsRow(
+                    icon: "keyboard.chevron.compact.down",
+                    title: SettingsTabCopy.Keyboard.compactKeysTitle,
+                    description: SettingsTabCopy.Keyboard.compactKeysDescription,
+                    isOn: $settingsStore.compactKeysEnabled
                 )
             }
         }

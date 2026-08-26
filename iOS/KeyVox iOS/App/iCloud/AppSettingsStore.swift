@@ -203,6 +203,15 @@ final class AppSettingsStore: ObservableObject {
         }
     }
 
+    @Published var compactKeysEnabled: Bool {
+        didSet {
+            defaults.set(compactKeysEnabled, forKey: UserDefaultsKeys.compactKeysEnabled)
+            if compactKeysEnabled == false {
+                defaults.set(false, forKey: UserDefaultsKeys.compactKeysActive)
+            }
+        }
+    }
+
     @Published var preferBuiltInMicrophone: Bool {
         didSet {
             defaults.set(preferBuiltInMicrophone, forKey: UserDefaultsKeys.preferBuiltInMicrophone)
@@ -287,6 +296,7 @@ final class AppSettingsStore: ObservableObject {
         capsLockEnabled = defaults.object(forKey: UserDefaultsKeys.capsLockEnabled) as? Bool ?? false
         keyboardHapticsEnabled = defaults.object(forKey: UserDefaultsKeys.keyboardHapticsEnabled) as? Bool ?? true
         leftHandedKeyboardLayoutEnabled = defaults.object(forKey: UserDefaultsKeys.leftHandedKeyboardLayoutEnabled) as? Bool ?? false
+        compactKeysEnabled = defaults.object(forKey: UserDefaultsKeys.compactKeysEnabled) as? Bool ?? true
         preferBuiltInMicrophone = defaults.object(forKey: UserDefaultsKeys.preferBuiltInMicrophone) as? Bool ?? true
         liveActivitiesEnabled = defaults.object(forKey: UserDefaultsKeys.liveActivitiesEnabled) as? Bool ?? true
         if let raw = defaults.string(forKey: UserDefaultsKeys.sessionDisableTiming),
