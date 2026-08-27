@@ -9,6 +9,8 @@ struct RuntimeFlags {
     static let resetVibesTrialEnvironmentKey = "KEYVOX_RESET_VIBES_TRIAL"
     static let forceKeyVoxVibesIntroEnvironmentKey = "KEYVOX_FORCE_KEYVOX_VIBES_INTRO"
     static let forceTTSRegenerationEnvironmentKey = "KEYVOX_FORCE_TTS_REGENERATION"
+    static let useLocalPromotionManifestEnvironmentKey = "KEYVOX_USE_LOCAL_PROMOTION_MANIFEST"
+    static let promotionPreviewCampaignIDEnvironmentKey = "KEYVOX_PROMOTION_PREVIEW_CAMPAIGN_ID"
 
     let forceOnboarding: Bool
     let bypassTTSFreeSpeakLimit: Bool
@@ -18,6 +20,8 @@ struct RuntimeFlags {
     let resetVibesTrial: Bool
     let forceKeyVoxVibesIntro: Bool
     let forceTTSRegeneration: Bool
+    let useLocalPromotionManifest: Bool
+    let promotionPreviewCampaignID: String?
 
     init(environment: [String: String] = ProcessInfo.processInfo.environment) {
         forceOnboarding = Self.isEnabled(
@@ -44,6 +48,17 @@ struct RuntimeFlags {
         forceTTSRegeneration = Self.isEnabled(
             environmentValue: environment[Self.forceTTSRegenerationEnvironmentKey]
         )
+        #if DEBUG
+        useLocalPromotionManifest = Self.isEnabled(
+            environmentValue: environment[Self.useLocalPromotionManifestEnvironmentKey]
+        )
+        promotionPreviewCampaignID = Self.nonEmptyValue(
+            environmentValue: environment[Self.promotionPreviewCampaignIDEnvironmentKey]
+        )
+        #else
+        useLocalPromotionManifest = false
+        promotionPreviewCampaignID = nil
+        #endif
     }
 
     private static func isEnabled(environmentValue: String?) -> Bool {
@@ -66,5 +81,13 @@ struct RuntimeFlags {
         #else
         return nil
         #endif
+    }
+
+    private static func nonEmptyValue(environmentValue: String?) -> String? {
+        guard let value = environmentValue?.trimmingCharacters(in: .whitespacesAndNewlines),
+              value.isEmpty == false else {
+            return nil
+        }
+        return value
     }
 }

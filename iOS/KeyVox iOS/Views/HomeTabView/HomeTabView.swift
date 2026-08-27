@@ -1,4 +1,5 @@
 import SwiftUI
+import KeyVoxPromotions
 
 struct HomeTabView: View {
     private enum TTSStatusTransition {
@@ -15,6 +16,7 @@ struct HomeTabView: View {
     @EnvironmentObject var settingsStore: AppSettingsStore
     @EnvironmentObject private var weeklyWordStatsStore: WeeklyWordStatsStore
     @EnvironmentObject var keyVoxSpeakIntroController: KeyVoxSpeakIntroController
+    @EnvironmentObject private var promotionCenter: PromotionCenter
     @State var showsTTSPreparationSlot = false
     @State var isTTSPreparationSlotExpanded = false
     @State var isTTSPreparationVisible = false
@@ -44,10 +46,12 @@ struct HomeTabView: View {
                 weeklyStatsSection
                 speakClipboardSection
                 lastTranscriptionSection
+                promotionSection
                 #if DEBUG
                 diagnosticsSection
                 #endif
             }
+            .animation(.easeInOut(duration: 0.2), value: promotionCenter.currentCampaign?.id)
         }
         .onAppear {
             weeklyWordStatsStore.refreshWeeklyWordStatsIfNeeded()
@@ -112,6 +116,14 @@ struct HomeTabView: View {
             text: transcriptionManager.isRecoveringInterruptedCapture ? nil : transcriptionManager.lastTranscriptionText,
             isLoading: transcriptionManager.isRecoveringInterruptedCapture
         )
+    }
+
+    @ViewBuilder
+    private var promotionSection: some View {
+        if let campaign = promotionCenter.currentCampaign {
+            IOSPromotionCard(campaign: campaign)
+                .transition(.opacity)
+        }
     }
 
     #if DEBUG
@@ -218,4 +230,5 @@ struct HomeTabView: View {
         .environmentObject(AppServiceRegistry.shared.settingsStore)
         .environmentObject(AppServiceRegistry.shared.weeklyWordStatsStore)
         .environmentObject(AppServiceRegistry.shared.keyVoxSpeakIntroController)
+        .environmentObject(AppServiceRegistry.shared.promotionCenter)
 }

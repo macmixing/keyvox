@@ -3,6 +3,7 @@ import Combine
 import Foundation
 import KeyVoxCore
 import KeyVoxLocalInference
+import KeyVoxPromotions
 import KeyVoxStyleRewrite
 
 @MainActor
@@ -38,6 +39,7 @@ final class AppServiceRegistry {
     let weeklyWordStatsCloudSync: WeeklyWordStatsCloudSync
     let sessionLiveActivityCoordinator: KeyVoxSessionLiveActivityCoordinator
     let appUpdateCoordinator: AppUpdateCoordinator
+    let promotionCenter: PromotionCenter
     let urlRouter: KeyVoxURLRouter
     private var cancellables = Set<AnyCancellable>()
 
@@ -297,6 +299,13 @@ final class AppServiceRegistry {
                 .eraseToAnyPublisher()
         )
         let appUpdateCoordinator = AppUpdateCoordinator(defaults: settingsDefaults)
+        let promotionCenter = PromotionCenter(
+            platform: .iOS,
+            appVersion: Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0",
+            defaults: settingsDefaults,
+            usesBundledManifest: runtimeFlags.useLocalPromotionManifest,
+            previewCampaignID: runtimeFlags.promotionPreviewCampaignID
+        )
         keyboardBridge.onStartRecordingCommand = {
             audioModeCoordinator.handleStartRecordingCommand()
         }
@@ -367,6 +376,7 @@ final class AppServiceRegistry {
         self.weeklyWordStatsCloudSync = weeklyWordStatsCloudSync
         self.sessionLiveActivityCoordinator = sessionLiveActivityCoordinator
         self.appUpdateCoordinator = appUpdateCoordinator
+        self.promotionCenter = promotionCenter
         self.urlRouter = KeyVoxURLRouter(
             transcriptionManager: transcriptionManager,
             ttsManager: ttsManager,
