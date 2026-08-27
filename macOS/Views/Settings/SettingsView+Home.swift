@@ -1,4 +1,5 @@
 import SwiftUI
+import KeyVoxPromotions
 
 extension SettingsView {
     var homeSettings: some View {
@@ -7,8 +8,9 @@ extension SettingsView {
 
             weeklyWordsCard
             lastTranscriptionCard
-            keyVoxiPhonePromoCard
+            promotionCard
         }
+        .animation(.easeInOut(duration: 0.2), value: promotionCenter.currentCampaign?.id)
     }
 
     private var weeklyWordsCard: some View {
@@ -35,17 +37,11 @@ extension SettingsView {
         SettingsLastTranscriptionCard(text: transcriptionManager.lastTranscription)
     }
 
-    private var keyVoxiPhonePromoCard: some View {
-        DeveloperLinkCard(
-            icon: .appBundleIcon,
-            title: "Get KeyVox Keyboard for iPhone",
-            subtitle: "The same great KeyVox dictation is available on iPhone with a keyboard experience built for iOS.",
-            buttonTitle: "View",
-            copyLink: "https://apps.apple.com/us/app/keyvox-ai-voice-keyboard/id6760396964?ct=mac-settings-ios-copy-link&mt=8",
-            isPromoted: true
-        ) {
-            guard let url = URL(string: "https://apps.apple.com/us/app/keyvox-ai-voice-keyboard/id6760396964?ct=mac-settings-ios-promo&mt=8") else { return }
-            NSWorkspace.shared.open(url)
+    @ViewBuilder
+    private var promotionCard: some View {
+        if let campaign = promotionCenter.currentCampaign {
+            MacPromotionCard(campaign: campaign)
+                .transition(.opacity)
         }
     }
 }

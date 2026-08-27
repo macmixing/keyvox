@@ -94,6 +94,16 @@
             value = "1"
             isEnabled = "NO">
          </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "KEYVOX_USE_LOCAL_PROMOTION_MANIFEST"
+            value = "1"
+            isEnabled = "NO">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "KEYVOX_PROMOTION_PREVIEW_CAMPAIGN_ID"
+            value = "macos-keyvox-for-iphone"
+            isEnabled = "NO">
+         </EnvironmentVariable>
       </EnvironmentVariables>
    </LaunchAction>
    <ProfileAction

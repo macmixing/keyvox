@@ -1,6 +1,7 @@
 import Foundation
 import Combine
 import KeyVoxCore
+import KeyVoxPromotions
 
 @MainActor
 final class AppServiceRegistry {
@@ -17,6 +18,7 @@ final class AppServiceRegistry {
     let weeklyWordStatsStore: WeeklyWordStatsStore
     let weeklyWordStatsCloudSync: WeeklyWordStatsCloudSync
     let iCloudSyncCoordinator: KeyVoxiCloudSyncCoordinator
+    let promotionCenter: PromotionCenter
     private var canSwitchActiveProvider: () -> Bool
     private var currentActiveProviderSelection: AppSettingsStore.ActiveDictationProvider
     private var cancellables = Set<AnyCancellable>()
@@ -50,6 +52,7 @@ final class AppServiceRegistry {
         weeklyWordStatsStore: WeeklyWordStatsStore,
         weeklyWordStatsCloudSync: WeeklyWordStatsCloudSync,
         iCloudSyncCoordinator: KeyVoxiCloudSyncCoordinator,
+        promotionCenter: PromotionCenter? = nil,
         canSwitchActiveProvider: @escaping () -> Bool = { true }
     ) {
         self.appSettings = appSettings
@@ -67,6 +70,7 @@ final class AppServiceRegistry {
         self.weeklyWordStatsStore = weeklyWordStatsStore
         self.weeklyWordStatsCloudSync = weeklyWordStatsCloudSync
         self.iCloudSyncCoordinator = iCloudSyncCoordinator
+        self.promotionCenter = promotionCenter ?? Self.makePromotionCenter(defaults: .standard)
         self.canSwitchActiveProvider = canSwitchActiveProvider
         self.currentActiveProviderSelection = initialActiveProviderSelection
         whisperService.updateLanguage(appSettings.whisperDictationLanguage)
@@ -114,6 +118,7 @@ final class AppServiceRegistry {
             appSettings: appSettings,
             dictionaryStore: dictionaryStore
         )
+        promotionCenter = Self.makePromotionCenter(defaults: .standard)
         ModelDownloader.shared.postInstallPreparation = { [weak parakeetService] modelID in
             guard modelID == .parakeetTdtV3 else { return }
             try Task.checkCancellation()
@@ -210,6 +215,16 @@ final class AppServiceRegistry {
                     return localRewriteModelManager?.casualLoRAURL()
                 }
             }
+        )
+    }
+
+    private static func makePromotionCenter(defaults: UserDefaults) -> PromotionCenter {
+        PromotionCenter(
+            platform: .macOS,
+            appVersion: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0",
+            defaults: defaults,
+            usesBundledManifest: MacRuntimeFlags.useLocalPromotionManifest,
+            previewCampaignID: MacRuntimeFlags.promotionPreviewCampaignID
         )
     }
 }

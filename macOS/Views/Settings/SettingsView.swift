@@ -1,5 +1,6 @@
 import SwiftUI
 import KeyVoxCore
+import KeyVoxPromotions
 
 // MARK: - Main Settings View
 @MainActor
@@ -10,6 +11,7 @@ struct SettingsView: View {
 
     @StateObject internal var appSettings = AppSettingsStore.shared
     @StateObject internal var weeklyWordStatsStore = AppServiceRegistry.shared.weeklyWordStatsStore
+    @StateObject internal var promotionCenter = AppServiceRegistry.shared.promotionCenter
     @ObservedObject internal var downloader = ModelDownloader.shared
     @ObservedObject internal var localRewriteModelManager = AppServiceRegistry.shared.localRewriteModelManager
     @ObservedObject internal var audioDeviceManager = AudioDeviceManager.shared
@@ -143,10 +145,14 @@ struct SettingsView: View {
         }
         .onAppear {
             weeklyWordStatsStore.refreshWeeklyWordStatsIfNeeded()
+            promotionCenter.refresh()
             appSettings.refreshSelectedMicrophoneFromDefaults()
             if selectedTab == .dictionary {
                 hasVisitedDictionaryTab = true
             }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+            promotionCenter.refresh()
         }
         .onDisappear {
             if hasVisitedDictionaryTab {
