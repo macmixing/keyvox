@@ -8,8 +8,8 @@ enum KeyboardStyle {
         let offset: CGSize
     }
 
-    static let keyboardHeight: CGFloat = 286
-    static let minHeight: CGFloat = 286
+    static let fullKeyboardHeight: CGFloat = 286
+    static let compactKeyboardHeight: CGFloat = 174
     static let horizontalPadding: CGFloat = 4
     static let topPadding: CGFloat = 8
     static let bottomPadding: CGFloat = 4

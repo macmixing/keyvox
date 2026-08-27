@@ -34,6 +34,7 @@ final class KeyboardRootView: UIView {
     private var cancelButtonHeightConstraint: NSLayoutConstraint?
     private var capsLockButtonWidthConstraint: NSLayoutConstraint?
     private var capsLockButtonHeightConstraint: NSLayoutConstraint?
+    private var keyGridHeightConstraint: NSLayoutConstraint?
     private var topRowAccessoryLayoutGeometry: KeyboardLayoutGeometry.TopRowAccessoryLayout?
     private var isLeftHandedLayoutEnabled = false
 
@@ -117,6 +118,7 @@ final class KeyboardRootView: UIView {
     func apply(
         state: KeyboardState,
         symbolPage: KeyboardSymbolPage,
+        keysMode: KeyboardKeysMode,
         isCapsLockEnabled: Bool,
         isDictationCapsApplied: Bool,
         isDictationCapsUppercase: Bool,
@@ -201,7 +203,8 @@ final class KeyboardRootView: UIView {
         logoBarView.applyKeyboardState(state)
         logoBarView.isEnabled = showsBrandedToolbar && state.isIndicatorEnabled
 
-        keyGridView.setSymbolPage(symbolPage)
+        keyGridView.setLayout(symbolPage: symbolPage, keysMode: keysMode)
+        keyGridHeightConstraint?.constant = keysMode.keyGridHeight
         keyGridView.setKeyboardEnabled(true)
         keyGridView.refreshAppearance()
 
@@ -340,6 +343,10 @@ final class KeyboardRootView: UIView {
         capsLockButtonWidthConstraint = capsLockButton.widthAnchor.constraint(equalToConstant: KeyboardStyle.cancelButtonSize)
         capsLockButtonHeightConstraint = capsLockButton.heightAnchor.constraint(equalToConstant: KeyboardStyle.cancelButtonSize)
 
+        keyGridHeightConstraint = keyGridView.heightAnchor.constraint(
+            equalToConstant: KeyboardKeysMode.full.keyGridHeight
+        )
+
         NSLayoutConstraint.activate([
             // Fixed width for both control containers ensures the logo stays perfectly centered
             // regardless of button visibility or individual button sizes.
@@ -381,7 +388,7 @@ final class KeyboardRootView: UIView {
             centerContainerView.widthAnchor.constraint(greaterThanOrEqualTo: logoBarView.widthAnchor),
             centerContainerView.heightAnchor.constraint(greaterThanOrEqualTo: logoBarView.heightAnchor),
 
-            keyGridView.heightAnchor.constraint(equalToConstant: KeyboardStyle.keyHeight * 4 + KeyboardStyle.keyboardRowSpacing * 3),
+            keyGridHeightConstraint!,
 
             mainStack.leadingAnchor.constraint(equalTo: leadingAnchor, constant: KeyboardStyle.horizontalPadding),
             mainStack.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -KeyboardStyle.horizontalPadding),

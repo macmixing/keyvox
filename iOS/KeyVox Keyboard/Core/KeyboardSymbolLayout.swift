@@ -18,6 +18,7 @@ enum KeyboardKeyKind: Equatable {
     case abc
     case alternateSymbols
     case numberSymbols
+    case restoreFullKeyboard
 }
 
 struct KeyboardKeyModel: Equatable {
@@ -40,6 +41,8 @@ struct KeyboardKeyModel: Equatable {
             return "#+="
         case .numberSymbols:
             return "123"
+        case .restoreFullKeyboard:
+            return ""
         }
     }
 
@@ -47,6 +50,8 @@ struct KeyboardKeyModel: Equatable {
         switch kind {
         case .delete:
             return "delete.left"
+        case .restoreFullKeyboard:
+            return "keyboard"
         default:
             return nil
         }
@@ -68,6 +73,8 @@ struct KeyboardKeyModel: Equatable {
             return "Alternate Symbols"
         case .numberSymbols:
             return "Number Symbols"
+        case .restoreFullKeyboard:
+            return "Full Keyboard"
         }
     }
 
@@ -75,7 +82,7 @@ struct KeyboardKeyModel: Equatable {
         switch kind {
         case .character:
             return true
-        case .delete, .space, .returnKey, .abc, .alternateSymbols, .numberSymbols:
+        case .delete, .space, .returnKey, .abc, .alternateSymbols, .numberSymbols, .restoreFullKeyboard:
             return false
         }
     }
@@ -84,7 +91,7 @@ struct KeyboardKeyModel: Equatable {
         switch kind {
         case .character:
             return false
-        case .delete, .space, .returnKey, .abc, .alternateSymbols, .numberSymbols:
+        case .delete, .space, .returnKey, .abc, .alternateSymbols, .numberSymbols, .restoreFullKeyboard:
             return true
         }
     }
@@ -123,12 +130,29 @@ struct KeyboardKeyModel: Equatable {
 }
 
 enum KeyboardSymbolLayout {
-    static func rows(for page: KeyboardSymbolPage) -> [[KeyboardKeyModel]] {
+    static func rows(
+        for page: KeyboardSymbolPage,
+        keysMode: KeyboardKeysMode = .full
+    ) -> [[KeyboardKeyModel]] {
+        let rows: [[KeyboardKeyModel]]
         switch page {
         case .primary:
-            return primaryRows
+            rows = primaryRows
         case .alternate:
-            return alternateRows
+            rows = alternateRows
+        }
+
+        switch keysMode {
+        case .full:
+            return rows
+        case .compact:
+            var compactRows = Array(primaryRows.suffix(keysMode.visibleRowCount))
+            guard compactRows.isEmpty == false, compactRows[0].isEmpty == false else {
+                return compactRows
+            }
+            let compactToggleWidth = compactRows[0][0].widthUnits
+            compactRows[0][0] = key(.restoreFullKeyboard, width: compactToggleWidth)
+            return compactRows
         }
     }
 

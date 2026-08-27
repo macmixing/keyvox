@@ -100,6 +100,9 @@ extension KeyboardViewController {
         rootContainerView.keyGridView.onKeyActivated = { [weak self] kind in
             self?.handleKeyActivation(kind) ?? false
         }
+        rootContainerView.keyGridView.onCompactKeysRequested = { [weak self] in
+            self?.handleCompactKeysRequest() ?? false
+        }
         rootContainerView.keyGridView.onSpaceTrackpadEvent = { [weak self] event in
             self?.handleSpaceTrackpadEvent(event)
         }
@@ -151,6 +154,7 @@ extension KeyboardViewController {
             rootContainerView.logoBarView.removeTarget(self, action: #selector(handleMicTap), for: .touchUpInside)
             rootContainerView.fullAccessInfoButton.removeTarget(self, action: #selector(handleFullAccessInfoTap), for: .touchUpInside)
             rootContainerView.keyGridView.onKeyActivated = nil
+            rootContainerView.keyGridView.onCompactKeysRequested = nil
             rootContainerView.keyGridView.onSpaceTrackpadEvent = nil
             rootContainerView.keyGridView.setPopupContainerView(nil)
             rootContainerView.keyGridView.resetInteractionState()

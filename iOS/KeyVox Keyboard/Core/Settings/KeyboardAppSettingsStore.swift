@@ -123,6 +123,18 @@ final class KeyboardAppSettingsStore {
         defaults?.object(forKey: UserDefaultsKeys.leftHandedKeyboardLayoutEnabled) as? Bool ?? false
     }
 
+    var isCompactKeysEnabled: Bool {
+        defaults?.object(forKey: UserDefaultsKeys.compactKeysEnabled) as? Bool ?? true
+    }
+
+    var isCompactKeysActive: Bool {
+        defaults?.object(forKey: UserDefaultsKeys.compactKeysActive) as? Bool ?? false
+    }
+
+    func setCompactKeysActive(_ active: Bool) {
+        defaults?.set(active, forKey: UserDefaultsKeys.compactKeysActive)
+    }
+
     @discardableResult
     func toggleListFormatting() -> Bool {
         let updatedValue = !isListFormattingEnabled

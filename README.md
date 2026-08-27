@@ -159,6 +159,10 @@ The overlay pill shows whether the requested format is on or off. If the dictati
 1. Tap microphone icon on keyboard to start recording, tap again to stop and transcribe.
 2. Tap the cancel button on the keyboard toolbar to cancel recording.
 
+### Compact Keys
+
+Need more room above the keyboard? Long press **#+=** to collapse KeyVox into a shorter two-row layout. Tap the keyboard-symbol key to restore the full keyboard. Compact Keys is available by default and can be disabled in KeyVox Settings.
+
 ### Reverse Lists and Paragraphs (iOS)
 
 The Paragraphs and Lists keys on the KeyVox keyboard support two interactions:

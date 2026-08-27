@@ -1,6 +1,6 @@
 import UIKit
 
-enum KeyboardTopRowAccessorySlot: Int {
+enum KeyboardTopRowAccessorySlot: Int, CaseIterable {
     case one = 0
     case two = 1
     case three = 2
@@ -15,18 +15,23 @@ enum KeyboardTopRowAccessorySlot: Int {
 
 final class KeyboardKeyGridView: UIView {
     var onKeyActivated: ((KeyboardKeyKind) -> Bool)?
+    var onCompactKeysRequested: (() -> Bool)?
     var onSpaceTrackpadEvent: ((KeyboardSpaceTrackpadEvent) -> Void)?
 
     private let rowsStack = UIStackView()
+    private let topRowAccessoryReferenceStack = UIStackView()
+    private var topRowAccessoryReferenceViews: [UIView] = []
     private let popupView = KeyboardKeyPopupView()
     private let pressGestureRecognizer = UILongPressGestureRecognizer()
     private var keyViews: [KeyboardKeyView] = []
     private(set) var symbolPage: KeyboardSymbolPage = .primary
+    private(set) var keysMode: KeyboardKeysMode = .full
     private var isKeyboardEnabled = true
     private weak var activeKeyView: KeyboardKeyView?
     private weak var popupContainerView: UIView?
     private weak var trackpadOriginKeyView: KeyboardKeyView?
     private let spaceTrackpadController = KeyboardSpaceTrackpadController()
+    private let compactKeysHoldController = KeyboardCompactKeysHoldController()
     private let trackpadActivationFeedback = UIImpactFeedbackGenerator(style: .medium)
     private var deleteRepeatController = KeyboardDeleteRepeatController()
     private var isDeleteTouchConsuming = false
@@ -44,9 +49,10 @@ final class KeyboardKeyGridView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
-    func setSymbolPage(_ page: KeyboardSymbolPage) {
-        guard page != symbolPage else { return }
+    func setLayout(symbolPage page: KeyboardSymbolPage, keysMode: KeyboardKeysMode) {
+        guard page != symbolPage || keysMode != self.keysMode else { return }
         symbolPage = page
+        self.keysMode = keysMode
         rebuildKeys(for: page)
     }
 
@@ -55,6 +61,7 @@ final class KeyboardKeyGridView: UIView {
         isKeyboardEnabled = enabled
         updateKeyStates(activeKey: enabled ? activeKeyView : nil)
         if !enabled {
+            compactKeysHoldController.cancel()
             cancelSpaceTrackpadIfNeeded()
             cancelDeleteRepeatIfNeeded()
             clearActiveKey(shouldDismissPopup: true)
@@ -70,6 +77,7 @@ final class KeyboardKeyGridView: UIView {
         trackpadOriginKeyView = nil
         isDeleteTouchConsuming = false
         _ = spaceTrackpadController.cancel()
+        compactKeysHoldController.cancel()
         deleteRepeatController.cancel()
         popupView.dismiss()
         for keyView in keyViews {
@@ -83,13 +91,10 @@ final class KeyboardKeyGridView: UIView {
     }
 
     func topRowKeyView(for slot: KeyboardTopRowAccessorySlot) -> UIView? {
-        guard
-            let firstRow = rowsStack.arrangedSubviews.first as? UIStackView,
-            firstRow.arrangedSubviews.indices.contains(slot.rawValue)
-        else {
+        guard topRowAccessoryReferenceViews.indices.contains(slot.rawValue) else {
             return nil
         }
-        return firstRow.arrangedSubviews[slot.rawValue]
+        return topRowAccessoryReferenceViews[slot.rawValue]
     }
 
     override func layoutSubviews() {
@@ -111,11 +116,32 @@ final class KeyboardKeyGridView: UIView {
         rowsStack.clipsToBounds = false
         addSubview(rowsStack)
 
+        topRowAccessoryReferenceStack.translatesAutoresizingMaskIntoConstraints = false
+        topRowAccessoryReferenceStack.axis = .horizontal
+        topRowAccessoryReferenceStack.alignment = .fill
+        topRowAccessoryReferenceStack.distribution = .fillEqually
+        topRowAccessoryReferenceStack.spacing = KeyboardStyle.keySpacing
+        topRowAccessoryReferenceStack.alpha = 0
+        topRowAccessoryReferenceStack.isUserInteractionEnabled = false
+        addSubview(topRowAccessoryReferenceStack)
+
+        topRowAccessoryReferenceViews = KeyboardTopRowAccessorySlot.allCases.map { _ in
+            let referenceView = UIView()
+            referenceView.translatesAutoresizingMaskIntoConstraints = false
+            topRowAccessoryReferenceStack.addArrangedSubview(referenceView)
+            return referenceView
+        }
+
         NSLayoutConstraint.activate([
             rowsStack.leadingAnchor.constraint(equalTo: leadingAnchor),
             rowsStack.trailingAnchor.constraint(equalTo: trailingAnchor),
             rowsStack.topAnchor.constraint(equalTo: topAnchor),
             rowsStack.bottomAnchor.constraint(equalTo: bottomAnchor),
+
+            topRowAccessoryReferenceStack.leadingAnchor.constraint(equalTo: leadingAnchor),
+            topRowAccessoryReferenceStack.trailingAnchor.constraint(equalTo: trailingAnchor),
+            topRowAccessoryReferenceStack.topAnchor.constraint(equalTo: topAnchor),
+            topRowAccessoryReferenceStack.heightAnchor.constraint(equalToConstant: KeyboardStyle.keyHeight),
         ])
 
         pressGestureRecognizer.minimumPressDuration = 0
@@ -137,11 +163,13 @@ final class KeyboardKeyGridView: UIView {
         thirdRowLayoutGeometry = nil
         bottomRowLayoutGeometry = nil
 
-        for (rowIndex, rowModels) in KeyboardSymbolLayout.rows(for: page).enumerated() {
+        for rowModels in KeyboardSymbolLayout.rows(for: page, keysMode: keysMode) {
             let rowStack = UIStackView()
             rowStack.axis = .horizontal
             rowStack.alignment = .fill
-            rowStack.distribution = rowIndex < 2 ? .fillEqually : .fillProportionally
+            rowStack.distribution = rowModels.allSatisfy { $0.widthUnits == 1 }
+                ? .fillEqually
+                : .fillProportionally
             rowStack.spacing = KeyboardStyle.keySpacing
             rowStack.translatesAutoresizingMaskIntoConstraints = false
 
@@ -153,12 +181,12 @@ final class KeyboardKeyGridView: UIView {
 
             rowsStack.addArrangedSubview(rowStack)
 
-            if rowIndex == 2 {
+            if rowModels.contains(where: { $0.kind == .delete }) {
                 thirdRowLayoutGeometry = KeyboardLayoutGeometry.ThirdRowLayout(
                     keyGridView: self,
                     rowStack: rowStack
                 )
-            } else if rowIndex == 3 {
+            } else if rowModels.contains(where: { $0.kind == .space }) {
                 bottomRowLayoutGeometry = KeyboardLayoutGeometry.BottomRowLayout(
                     keyGridView: self,
                     rowStack: rowStack
@@ -178,6 +206,12 @@ final class KeyboardKeyGridView: UIView {
         let hitKey = keyView(at: location)
         switch gesture.state {
         case .began:
+            compactKeysHoldController.begin(
+                onCompactKeysTrigger: hitKey?.model.kind == .alternateSymbols,
+                onActivate: { [weak self] in
+                    self?.onCompactKeysRequested?() ?? false
+                }
+            )
             if hitKey?.model.kind == .delete {
                 isDeleteTouchConsuming = true
                 trackpadOriginKeyView = nil
@@ -211,6 +245,12 @@ final class KeyboardKeyGridView: UIView {
                 updatePopup(for: hitKey)
             }
         case .changed:
+            compactKeysHoldController.update(
+                isStillOnCompactKeysTrigger: keyView(
+                    at: location,
+                    hitSlop: 0
+                )?.model.kind == .alternateSymbols
+            )
             if isDeleteTouchConsuming {
                 if hitKey?.model.kind == .delete {
                     if hitKey !== activeKeyView {
@@ -246,9 +286,17 @@ final class KeyboardKeyGridView: UIView {
                 updatePopup(for: hitKey)
             }
         case .ended:
+            let didActivateCompactKeys = compactKeysHoldController.end()
             if isDeleteTouchConsuming {
                 isDeleteTouchConsuming = false
                 deleteRepeatController.cancel()
+                clearActiveKey(shouldDismissPopup: true)
+                return
+            }
+
+            if didActivateCompactKeys {
+                trackpadOriginKeyView = nil
+                _ = spaceTrackpadController.cancel()
                 clearActiveKey(shouldDismissPopup: true)
                 return
             }
@@ -263,6 +311,7 @@ final class KeyboardKeyGridView: UIView {
                 _ = onKeyActivated?(selectedKind)
             }
         case .cancelled, .failed:
+            compactKeysHoldController.cancel()
             if isDeleteTouchConsuming {
                 isDeleteTouchConsuming = false
                 deleteRepeatController.cancel()
@@ -281,9 +330,10 @@ final class KeyboardKeyGridView: UIView {
         }
     }
 
-    private func keyView(at point: CGPoint) -> KeyboardKeyView? {
+    private func keyView(at point: CGPoint, hitSlop: CGFloat = 6) -> KeyboardKeyView? {
         keyViews.first { keyView in
-            let frame = keyView.convert(keyView.bounds, to: self).insetBy(dx: -6, dy: -6)
+            let frame = keyView.convert(keyView.bounds, to: self)
+                .insetBy(dx: -hitSlop, dy: -hitSlop)
             return frame.contains(point)
         }
     }

@@ -2,7 +2,7 @@
 
 This document captures the current implementation rules and maintainer-facing architecture for the iOS app, keyboard extension, and widget extension.
 
-**Last Updated: 2026-08-22**
+**Last Updated: 2026-08-25**
 
 ## Design Philosophy
 
@@ -443,6 +443,8 @@ Keyboard onboarding detection is deliberately split across three signals:
 - `KeyVox.CapsLockEnabled`
 - `KeyVox.KeyboardHapticsEnabled`
 - `KeyVox.LeftHandedKeyboardLayoutEnabled`
+- `KeyVox.CompactKeysEnabled`
+- `KeyVox.CompactKeysActive`
 - `KeyVox.PreferBuiltInMicrophone`
 - `KeyVox.LiveActivitiesEnabled`
 - `KeyVox.SessionDisableTiming`
@@ -1212,6 +1214,10 @@ The restore card remains visible until both unlocks are owned.
 - posts the shared list-formatting Darwin notification so the containing app refreshes its settings UI
 - reads and writes `KeyVox.AutoParagraphsEnabled` from App Group defaults
 - posts the shared auto-paragraphs Darwin notification so the containing app refreshes its settings UI
+- reads Compact Keys availability from `KeyVox.CompactKeysEnabled`, defaulting to enabled
+- reads and writes the separate `KeyVox.CompactKeysActive` presentation preference, defaulting to the full keyboard
+
+`AppSettingsStore` owns the containing-app Compact Keys availability toggle. Turning availability off must also clear `KeyVox.CompactKeysActive`, so enabling the feature again never revives a stale compact presentation.
 
 `KeyboardDictationChangeController` owns keyboard-side long-press changes for KeyVox insertions:
 
@@ -1393,6 +1399,7 @@ Rules:
 - teardown must remove the presentation tree, popup overlay, full-access overlay, IPC observers, and indicator callbacks
 - host lifecycle observers are controller-scoped and remain installed until controller teardown
 - rebuild must preserve the same visuals, toolbar behavior, warning precedence, haptics, and insertion rules as a fresh keyboard presentation
+- rebuild must resolve Compact Keys mode from App Group defaults before presentation setup so the extension returns to the user's persisted mode after a keyboard switch
 
 Implementation split:
 
@@ -1401,6 +1408,8 @@ Implementation split:
 - `KeyboardViewController+Debug.swift` owns debug-only lifecycle counters and testing hooks
 - `KeyboardTTSController.swift` owns keyboard-side copied-text speak transport state and the App Group request/start-stop coordination surface
 - `KeyboardAppSettingsStore.swift` owns keyboard-side App Group settings persistence and notification dispatch for controls that mirror containing-app settings
+- `KeyboardKeysMode.swift` owns full/compact resolution, visible row count, and height selection
+- `Input/KeyboardCompactKeysHoldController.swift` owns the cancellable activation timer for the `#+=` long press
 - `DictationChange/` groups the latest untouched insertion long-press feature files
 - `DictationChange/KeyboardDictationChangeController.swift` owns the artifact-scoped latest-insertion change facade, display-facing state, collaborators, and current session reference
 - `DictationChange/KeyboardDictationChangeController+Actions.swift` owns long-press action entry points for Vibes, Paragraphs, Lists, and Caps Lock
@@ -1467,6 +1476,21 @@ Current symbol layout rules:
 - top-row accessory slots are allocated from the logo edge inward so adding or removing feature keys does not leave empty holes
 - top-row accessory buttons use normal key palette/pressed outline behavior unless their dedicated component intentionally says otherwise
 - keyboard settings toggles should indicate setting state without looking permanently pressed
+
+Compact Keys rules:
+
+- feature availability defaults on, but the keyboard itself defaults to full mode
+- a half-second long press on the primary-page `#+=` key activates compact mode and emits the same success-style interaction haptic used by keyboard long-press actions
+- compact mode omits the first two symbol rows and keeps the final punctuation/action row plus the bottom row
+- the compact row's leading key becomes the `keyboard` SF Symbol and restores the full keyboard with one tap and a medium interaction haptic
+- normal `#+=` behavior remains unchanged when the hold does not activate or the feature is unavailable
+- both modes must use explicit required controller-view heights: 286 points for full and 174 points for compact
+- `KeyboardStyle` owns those height constants; do not infer either height from transient host bounds
+- `KeyboardKeysMode` owns visible row count and derived key-grid height, while `KeyboardSymbolLayout` owns which rows and restore key appear
+- active mode is persisted separately from availability and survives keyboard-extension recreation
+- disabling availability forces full mode and clears the persisted compact-active flag
+
+iOS may briefly display a host-cached frame while recreating a third-party keyboard at a different height. The extension must still establish the resolved mode and explicit height before presentation setup; it cannot control the host's cached transition frame.
 
 The important implementation detail is that these widths are measured from the live top-row grid, so portrait and landscape can share the same ratios without mixing keyboard shell concerns into the symbol model layer.
 
@@ -1597,6 +1621,7 @@ Views may surface manager state, but runtime ownership stays in the managers and
 - app haptics decision rules
 - shared path construction
 - settings persistence
+- Compact Keys availability, active-mode resolution, row selection, hold cancellation, and explicit mode heights
 - iCloud sync coordination
 - weekly stats storage and merge behavior
 - Live Activity coordination

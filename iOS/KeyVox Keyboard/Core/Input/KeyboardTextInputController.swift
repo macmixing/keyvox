@@ -148,6 +148,8 @@ final class KeyboardTextInputController {
             emitKeypress()
             symbolPage.toggle()
             return true
+        case .restoreFullKeyboard:
+            return false
         }
     }
 
