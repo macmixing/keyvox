@@ -85,8 +85,7 @@ extension SettingsView {
                     title: "Sponsor on GitHub",
                     subtitle: "Support open source development of KeyVox via GitHub Sponsors.",
                     buttonTitle: "Sponsor",
-                    buttonStyle: .primary,
-                    isPromoted: false
+                    buttonStyle: .primary
                 ) {
                     openDeveloperURL("https://github.com/sponsors/macmixing")
                 }
@@ -96,8 +95,7 @@ extension SettingsView {
                     title: "Need Help?",
                     subtitle: "Get help with KeyVox, download the iPhone app, read the FAQ, find more information, or contact us.",
                     buttonTitle: "Open",
-                    buttonStyle: .primary,
-                    isPromoted: false
+                    buttonStyle: .primary
                 ) {
                     openDeveloperURL("https://keyvox.app/?utm_source=keyvox_mac&utm_medium=settings&utm_campaign=help_card#faq-mac")
                 }
