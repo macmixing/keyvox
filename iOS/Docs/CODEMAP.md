@@ -1,5 +1,5 @@
 # KeyVox iOS Code Map
-**Last Updated: 2026-08-25**
+**Last Updated: 2026-08-28**
 
 ## Project Overview
 
@@ -21,8 +21,8 @@ The current default runtime flow is:
 4. The keyboard tour autofocuses a text field, waits for the KeyVox keyboard to be shown, and only enables completion after the first non-empty tour transcription completes.
 5. Finishing the keyboard tour completes onboarding directly; there is no separate customize-app screen on the current branch.
 6. After onboarding, the main app shell owns ongoing model management, style/settings changes, weekly usage, and session controls.
-7. When the user taps the mic in the keyboard extension, the extension decides between warm Darwin signaling and cold URL launch.
-8. The containing app records and processes audio, runs the shared dictation pipeline, and publishes `transcribing`, `transcriptionReady`, or `noSpeech` back through the App Group bridge.
+7. When the user taps the mic in the keyboard extension, the extension decides between warm Darwin signaling and cold URL launch. The user may instead invoke the Toggle Dictation App Shortcut to start or stop the same shared recording without foregrounding KeyVox.
+8. The containing app records and processes audio, runs the shared dictation pipeline, and publishes `transcribing`, `transcriptionReady`, or `noSpeech` back through the App Group bridge. A visible KeyVox keyboard inserts the result, while the bundled shortcut workflow copies returned text and posts the completion notification.
 9. The app optionally rewrites the post-processed base text through the local Vibes model and LoRA adapter selected by the current Vibe.
 10. The extension resolves preceding and following host-text context, delegates leading spacing, capitalization, adjacent terminal-punctuation, and trailing-separator policy to `KeyVoxTextComposition`, and performs the resulting insertion or punctuation replacement through the iOS document proxy.
 11. Later keyboard long presses may restyle or revert only the latest untouched KeyVox insertion: Vibes changes use an app-IPC rewrite request, paragraph/list changes use persisted deterministic artifact variants, and Caps Lock swaps between the inserted text and the preserved pre-Caps selected output. If the local Vibes model is missing, keyboard Vibes taps do not cycle styles and instead route the user into the app-owned Vibes install/trial flow.
@@ -123,8 +123,11 @@ iOS/
 │   │   │   ├── KeyVoxURLRoute.swift
 │   │   │   └── KeyVoxURLRouter.swift
 │   │   ├── Shortcuts/
+│   │   │   ├── DictationShortcutInstaller.swift
 │   │   │   ├── KeyVoxSpeakShortcutIntent.swift
-│   │   │   └── KeyVoxSpeakShortcutsProvider.swift
+│   │   │   ├── KeyVoxSpeakShortcutsProvider.swift
+│   │   │   ├── ShortcutDictationCoordinator.swift
+│   │   │   └── ToggleKeyVoxDictationIntent.swift
 │   │   ├── Stats/
 │   │   │   └── WeeklyWordStatsStore.swift
 │   │   └── iCloud/
@@ -200,6 +203,7 @@ iOS/
 │   │       ├── InterruptedCaptureRecovery.swift
 │   │       ├── InterruptedCaptureRecoveryStore.swift
 │   │       ├── SessionPolicy.swift
+│   │       ├── TranscriptionCommandResult.swift
 │   │       ├── TranscriptionManager.swift
 │   │       ├── TranscriptionManager+InterruptedCaptureRecovery.swift
 │   │       └── TranscriptionManager+SessionLifecycle.swift
@@ -211,6 +215,8 @@ iOS/
 │   │   ├── Kanit-Medium.ttf
 │   │   ├── KeyVoxProducts.storekit
 │   │   ├── ReturnToHost.mov
+│   │   ├── Shortcuts/
+│   │   │   └── Toggle KeyVox Dictation.shortcut
 │   │   ├── TTSVoicePreviews/
 │   │   └── keyvox.icon/
 │   ├── Views/
@@ -446,6 +452,8 @@ iOS/
 │   │   ├── KeyVoxSpeakFlowRulesTests.swift
 │   │   └── TTSPreparationPresentationPolicyTests.swift
 │   └── KeyVoxiOSTests.swift
+├── Shortcuts/
+│   └── Toggle KeyVox Dictation.wflow
 ├── Launch Screen.storyboard
 └── LaunchLogo.png
 
@@ -548,8 +556,18 @@ Packages/
 - `KeyVox iOS/App/Shortcuts/KeyVoxSpeakShortcutIntent.swift`
   - App-owned `Speak Copied Text` App Intent for the official KeyVox Speak shortcut.
   - Stages the existing `keyvoxios://tts/start` route into shared app-group state and relies on the containing app to consume and route it on activation.
+- `KeyVox iOS/App/Shortcuts/ToggleKeyVoxDictationIntent.swift`
+  - Background-capable audio-recording App Intent that starts or stops the shared KeyVox dictation session without foregrounding the containing app.
+  - Returns no value when recording begins or no speech is detected, and returns only completed transcript text when stopping succeeds.
+  - Exposes the optional `Release Mic Immediately` parameter, which defaults off.
+- `KeyVox iOS/App/Shortcuts/ShortcutDictationCoordinator.swift`
+  - Maps the shared transcription state into idle, recording, and busy shortcut outcomes without becoming a second recording owner.
+  - Prepares Live Activity support before shortcut recording begins, routes start/stop commands into `TranscriptionManager`, and maps typed command results into App Intent outcomes.
+- `KeyVox iOS/App/Shortcuts/DictationShortcutInstaller.swift`
+  - Settings-owned installer handoff for the signed bundled workflow.
+  - Opens the shortcut file directly on supported system releases and presents the standard share sheet on earlier releases, including popover anchoring for regular-width layouts.
 - `KeyVox iOS/App/Shortcuts/KeyVoxSpeakShortcutsProvider.swift`
-  - Registers the KeyVox Speak App Shortcut phrases surfaced in the Shortcuts system.
+  - Registers the Toggle Dictation and KeyVox Speak App Shortcut phrases surfaced in the Shortcuts system.
 - `KeyVox iOS/App/Lifecycle/AppDelegate.swift`
   - Receives background `URLSession` callbacks for model downloads and forwards them into `ModelManager`.
 - `KeyVox iOS/App/Lifecycle/AppSceneDelegate.swift`
@@ -672,6 +690,7 @@ Packages/
   - App-side IPC endpoint for start/stop/cancel/disable-session/style-rewrite commands and extension-facing state publishing.
 - `KeyVox iOS/App/LiveActivity/KeyVoxSessionLiveActivityCoordinator.swift`
   - App-side owner that mirrors session state and weekly-word count into the widget extension through ActivityKit.
+  - Prepares the required Live Activity before background audio-recording intents start and reconciles the pending activity against the actual session outcome.
 - `KeyVox iOS/App/LiveActivity/KeyVoxSessionLiveActivityAttributes.swift`
   - Shared ActivityKit attributes and content state.
 - `KeyVox Widget/AppIntent.swift`
@@ -837,12 +856,16 @@ Packages/
   - iOS-local transcription-service abstraction used by the runtime manager.
 - `KeyVox iOS/Core/Transcription/TranscriptionManager.swift`
   - Primary iOS runtime state machine and dictation owner.
+  - Exposes typed start/stop command results used by keyboard, URL, and App Shortcut entry points; a new recording clears the previously published IPC transcript before capture begins.
+  - When immediate microphone release is requested, preserves transcription after an initial shutdown failure, retries shutdown after output completes, and restores the configured idle timeout if that retry also fails.
   - Starts KeyVox Vibes prewarm after audio recording successfully begins, never before recorder startup finishes.
   - Releases the utterance-scoped KeyVox Vibes local rewrite cache after dictation output is published, and on stale, empty, cancelled, or unavailable-model stop paths.
   - Prints speed-profile transformation duration, style, processing mode, chunk count, errors, and raw final text when raw debug logging is enabled.
 - `KeyVox iOS/Core/Transcription/TranscriptionManager+SessionLifecycle.swift`
   - Idle shutdown, user-configured session timeout scheduling including Never, deferred disable-session handling, and watchdog cleanup.
   - Releases any retained style rewrite prewarm session when an active utterance is cancelled.
+- `KeyVox iOS/Core/Transcription/TranscriptionCommandResult.swift`
+  - Typed start and stop outcomes shared by non-UI transcription command callers.
 - `KeyVox iOS/Core/Transcription/TranscriptionManager+InterruptedCaptureRecovery.swift`
   - Interrupted-capture staging and recovery on app reactivation.
 - `KeyVox iOS/Core/Transcription/InterruptedCaptureRecoveryStore.swift`
@@ -906,12 +929,14 @@ Packages/
   - Uses the shared Vibes trial remaining-time formatter for active-trial status while keeping the card sentence local to the Style tab.
   - Keeps selected Vibe displayed as `None` until both Vibes access and local Vibes AI readiness are active, and exposes an install entry point when the model is missing.
 - `KeyVox iOS/Views/SettingsTabView/SettingsTabView.swift`
-  - Top-level settings composition, shared disclosure state, download-confirmation request binding, third-party notices sheet presentation, and cross-section coordination for the extracted settings surface.
+  - Top-level settings composition, shared disclosure state, download-confirmation request binding, shortcut-installation error presentation, third-party notices sheet presentation, and cross-section coordination for the extracted settings surface.
 - `KeyVox Keyboard/Core/KeyboardToolbarMode.swift`
   - Central warning-priority resolver for the keyboard toolbar.
   - Also maps shared forced-update state into the existing warning surface so the branded toolbar does not remain active while an update is required.
 - `KeyVox iOS/Views/SettingsTabView/SettingsTabView+General.swift`
-  - Session timeout, Speak Timeout, Live Activities, keyboard haptics, keyboard layout controls including Compact Keys availability, and audio preference sections extracted from the settings root view.
+  - Session timeout, Live Activities, Dictation Shortcut installation, Speak Timeout, keyboard haptics, keyboard layout controls including Compact Keys availability, and audio preference sections extracted from the settings root view.
+- `KeyVox iOS/Views/SettingsTabView/SettingsRow.swift`
+  - Shared settings-row layout with mutually exclusive SF Symbol and template-rendered asset icon support.
 - `KeyVox iOS/Views/SettingsTabView/SettingsTabView+Models.swift`
   - Release-facing `Dictation Model` section, provider selection, per-model install actions, and not-installed size labels.
   - Attaches the Language section beneath the model card: Whisper uses the shared model catalog for its picker, while Parakeet remains visible as Auto Detect with FAQ guidance because it has no native forced-language selection.
@@ -982,6 +1007,7 @@ Packages/
   - Keyboard-owned interaction haptic coordinator that respects the extension’s local haptics preference.
 - `KeyVox Keyboard/Core/Transport/KeyboardIPCManager.swift`
   - Extension-side App Group/Darwin client plus stale shared-state reconciliation.
+  - Preserves fresh recording/transcribing state across short heartbeat gaps, but treats a cold state with an expired or missing recording timestamp as stale.
 - `KeyVox Keyboard/Core/Settings/KeyboardAppSettingsStore.swift`
   - Keyboard-local App Group settings bridge for controls that mirror containing-app settings.
   - Reads and writes the shared selected Vibe, paragraph, and list-formatting defaults, derives Vibe display text from `StyleRewriteStyle`, evaluates trial access using the shared Vibes trial duration policy, forces the resolved Vibe to `None` when access or Vibes AI install readiness is missing, and posts shared Darwin notifications so the containing app can refresh visible settings.
@@ -1041,7 +1067,7 @@ Packages/
 ### Tests
 
 - `KeyVoxiOSTests/App/`
-  - Onboarding state, onboarding keyboard-tour state, keyboard access probing, app haptics decisions, settings persistence, KeyVox Vibes latest-artifact persistence, Vibes intro/access/purchase semantics, shared paths, iCloud sync, weekly stats, Live Activity coordination, URL routing, and model manager behavior across rooted Whisper migration and Parakeet installs.
+  - Onboarding state, onboarding keyboard-tour state, keyboard access probing, app haptics decisions, settings persistence, KeyVox Vibes latest-artifact persistence, Vibes intro/access/purchase semantics, shared paths, iCloud sync, weekly stats, Live Activity coordination, shortcut dictation coordination, URL routing, and model manager behavior across rooted Whisper migration and Parakeet installs.
 - `KeyVoxiOSTests/App/TTSPurchaseControllerTests.swift`
   - Deterministic copied-text playback monetization coverage for cached unlock state, two-free-speaks-per-day accounting, local day resets, and purchase or restore state transitions through the placeholder store abstraction.
 - `KeyVoxiOSTests/Core/Audio/`
@@ -1053,7 +1079,7 @@ Packages/
 - `KeyVoxiOSTests/Views/`
   - Pure presentation-rule coverage for inline warning visibility, KeyVox Speak scene selection, and Home copied-text playback preparation spinner/progress behavior.
 - `KeyVoxiOSTests/Core/Transcription/`
-  - Transcription/session lifecycle and interrupted-capture recovery behavior.
+  - Transcription/session lifecycle, typed command outcomes, immediate microphone-release retry and timeout fallback, and interrupted-capture recovery behavior.
 - `Packages/KeyVoxStyleRewrite/Tests/KeyVoxStyleRewriteTests/`
   - Package-level coverage for style request construction, token-aware chunk planning, chunk fallback/stitching, latest-utterance artifact serialization, Chill heuristics, and output repair.
 - `Packages/KeyVoxLocalInference/Tests/KeyVoxLocalInferenceTests/`

@@ -2,7 +2,7 @@
 
 This document captures the current implementation rules and maintainer-facing architecture for the iOS app, keyboard extension, and widget extension.
 
-**Last Updated: 2026-08-25**
+**Last Updated: 2026-08-28**
 
 ## Design Philosophy
 
@@ -615,6 +615,52 @@ Cold path:
 5. the user returns to the host app once the session is active
 
 `ReturnToHostView` must never interrupt onboarding.
+
+## Background Dictation Shortcut Contract
+
+The Toggle Dictation App Shortcut is another controller for the existing shared dictation session. It does not own a recorder, transcription provider, or parallel session state.
+
+### Intent and Coordination
+
+- `ToggleKeyVoxDictationIntent` conforms to `AudioRecordingIntent` and `LiveActivityIntent`, uses `openAppWhenRun = false`, and supports background execution on system releases that expose background intent modes.
+- `ShortcutDictationCoordinator` reads the state owned by `TranscriptionManager`: idle starts recording, recording stops it, and capture processing or transcription returns busy.
+- Shortcut recording starts with `isFromURL = false`; it must not present the keyboard cold-launch `ReturnToHostView` flow.
+- `TranscriptionStartCommandResult` and `TranscriptionStopCommandResult` are the typed boundary between the coordinator and transcription owner.
+- Live Activity preparation must complete before background microphone startup. Disabled Live Activities or failed preparation prevent recording from starting, and failed recorder startup releases the pending activity state.
+
+### Result Delivery
+
+- Starting a recording returns no shortcut value.
+- Stopping with no speech returns no shortcut value.
+- A completed stop returns the final processed transcript.
+- Busy and operational failures become App Intent errors rather than text output.
+- The signed workflow checks whether the intent returned a value before running completion actions; completed text is copied to the clipboard, included in the notification, and followed by completion vibration.
+- If the KeyVox keyboard is visible, it observes the same `transcribingStarted` and `transcriptionReady` IPC events and inserts the current result through the existing keyboard composition pipeline. Starting any new recording clears the previously published IPC transcript so reconciliation cannot insert an older result.
+
+### Optional Immediate Microphone Release
+
+`Release Mic Immediately` is an App Intent parameter and defaults to `false`.
+
+- Off preserves normal warm-session behavior and lets the configured session timing decide when monitoring ends.
+- On attempts to stop monitoring immediately after audio capture, while transcription continues from the captured frames.
+- A failed first release attempt must never discard or replace the user's transcription.
+- After transcription finishes, `TranscriptionManager` retries the immediate release once.
+- If the retry also fails, the session stays active and the configured idle timeout is re-armed for later cleanup.
+
+### Shared-State Reconciliation
+
+- The keyboard may temporarily observe a cold heartbeat immediately after microphone release even though transcription is still active.
+- A recording or transcribing state whose timestamp remains inside `heartbeatFreshnessWindow` must be preserved during that gap.
+- A cold recording or transcribing state with an expired or missing timestamp is stale and must be cleared.
+- The heartbeat write throttle resets when session activity is cleared so the next legitimate heartbeat can recreate shared warmth immediately.
+
+### Installation Ownership
+
+- `iOS/Shortcuts/Toggle KeyVox Dictation.wflow` is the editable workflow source.
+- `KeyVox iOS/Resources/Shortcuts/Toggle KeyVox Dictation.shortcut` is the signed distributable bundled with the app.
+- The Dictation Shortcut row in Settings is the app-owned installation entry point.
+- `DictationShortcutInstaller` opens the bundled shortcut directly where supported and otherwise presents the standard system share sheet, which exposes Shortcuts and Save to Files.
+- Installation failures remain Settings presentation errors; they do not alter dictation session state.
 
 ## Session Lifecycle and Safety Policy
 
@@ -1351,6 +1397,8 @@ The Live Activity should be shown only when:
 
 Turning the toggle off must end any active Live Activity immediately.
 
+Background dictation intents require the coordinator to prepare or update the Live Activity before recorder startup. The coordinator keeps that preparation pending until startup resolves, then reconciles against the actual session state so a failed start cannot leave an orphaned activity.
+
 ### Widget-Side Rules
 
 `KeyVox_WidgetLiveActivity` owns:
@@ -1593,7 +1641,7 @@ Current app-owned surfaces:
 - `DictionaryTabView`: dictionary browsing/editing
 - `StyleTabView`: dictation style toggles
 - `SettingsTabView`: top-level settings composition, shared disclosure state, third-party notices presentation, and cross-section coordination
-- `SettingsTabView+General`: session timeout, Speak Timeout, Live Activities, keyboard haptics, and audio preference sections extracted from the settings root view
+- `SettingsTabView+General`: session timeout, Live Activities, Dictation Shortcut installation, Speak Timeout, keyboard haptics, and audio preference sections extracted from the settings root view
 - `SettingsTabView+Models`: release-facing `Dictation Model` section for provider selection, per-model install actions, uninstalled model size display, and the attached language section driven by the shared Whisper catalog or Parakeet Auto Detect guidance
 - `SettingsTabView+TTS`: release-facing `KeyVox Speak` section for PocketTTS runtime install state, per-voice install actions, previews, voice selection, and the `KeyVox Speak Unlimited` unlock row placed beneath the model section
 - `SettingsTabView+VibesAI`: release-facing `KeyVox Vibes AI` section for local rewrite model install state, confirmed download/delete actions, repair, progress, and animated progress collapse
@@ -1625,6 +1673,7 @@ Views may surface manager state, but runtime ownership stays in the managers and
 - iCloud sync coordination
 - weekly stats storage and merge behavior
 - Live Activity coordination
+- background shortcut dictation coordination and Live Activity preparation
 - model manager validation and repair behavior
 - KeyVox Vibes intro scheduling, access matrix semantics, and purchase/trial behavior
 - PocketTTS engine runtime preparation, unload, and prepared-runtime compute-mode behavior
@@ -1637,7 +1686,7 @@ Views may surface manager state, but runtime ownership stays in the managers and
 - keyboard controller presentation teardown and rebuild behavior
 - keyboard text input helpers
 - keyboard cursor-trackpad support
-- transcription manager lifecycle and interruption handling
+- transcription manager lifecycle, typed shortcut command outcomes, immediate microphone-release retry and timeout fallback, and interruption handling
 
 ### Integration-Only Exclusions
 
