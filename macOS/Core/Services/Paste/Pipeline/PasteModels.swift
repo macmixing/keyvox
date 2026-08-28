@@ -18,6 +18,7 @@ struct PasteInsertionContext {
     let previousNonWhitespaceCharacter: Character?
     let characterBeforePreviousNonWhitespaceCharacter: Character?
     let isPreviousNonWhitespaceCharacterAtLineStart: Bool
+    let isAfterNewline: Bool
 
     init(
         selectionLength: Int?,
@@ -30,7 +31,8 @@ struct PasteInsertionContext {
         characterBeforePreviousCharacter: Character? = nil,
         previousNonWhitespaceCharacter: Character? = nil,
         characterBeforePreviousNonWhitespaceCharacter: Character? = nil,
-        isPreviousNonWhitespaceCharacterAtLineStart: Bool = false
+        isPreviousNonWhitespaceCharacterAtLineStart: Bool = false,
+        isAfterNewline: Bool = false
     ) {
         self.selectionLength = selectionLength
         self.selectedText = selectedText
@@ -43,6 +45,7 @@ struct PasteInsertionContext {
         self.previousNonWhitespaceCharacter = previousNonWhitespaceCharacter
         self.characterBeforePreviousNonWhitespaceCharacter = characterBeforePreviousNonWhitespaceCharacter
         self.isPreviousNonWhitespaceCharacterAtLineStart = isPreviousNonWhitespaceCharacterAtLineStart
+        self.isAfterNewline = isAfterNewline
     }
 }
 

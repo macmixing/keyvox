@@ -118,6 +118,11 @@ final class PastePoliciesStabilityTests: XCTestCase {
         )
     }
 
+    func testTrailingWhitespaceRetainsNewlineBoundaryAcrossIndentation() {
+        XCTAssertTrue(PasteAXInspector.isAfterNewlineInTrailingWhitespace("first line\n  "))
+        XCTAssertFalse(PasteAXInspector.isAfterNewlineInTrailingWhitespace("first line  "))
+    }
+
     func testListMultilineOverridePolicyMatchesPreFixBehavior() {
         assertListRenderMode(
             PastePolicies.listRenderMode(

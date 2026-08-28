@@ -121,15 +121,17 @@ final class PasteCapitalizationCoordinator: PasteCapitalizationCoordinating {
         ].compactMap { $0 }.filter { !$0.isInvisibleFormatCharacter }
         let previousCharacter = precedingCharacters.first
         let characterBeforePreviousCharacter = precedingCharacters.dropFirst().first
+        let hasPrecedingContent = precedingNonWhitespaceCharacters.isEmpty == false
 
         return TextCompositionContext(
-            isAtDocumentStart: false,
+            isAtDocumentStart: hasPrecedingContent == false,
             previousCharacter: previousCharacter,
             characterBeforePreviousCharacter: characterBeforePreviousCharacter,
             previousNonWhitespaceCharacter: precedingNonWhitespaceCharacters.first,
             characterBeforePreviousNonWhitespaceCharacter: precedingNonWhitespaceCharacters.dropFirst().first,
             isPreviousNonWhitespaceCharacterAtLineStart: context.isPreviousNonWhitespaceCharacterAtLineStart,
-            isAfterNewline: previousCharacter?.isNewline == true
+            isAfterNewline: context.isAfterNewline
+                || previousCharacter?.isNewline == true
                 || characterBeforePreviousCharacter?.isNewline == true
         )
     }
