@@ -5,9 +5,7 @@ struct KeyVoxSpeakShortcutsProvider: AppShortcutsProvider {
         AppShortcut(
             intent: ToggleKeyVoxDictationIntent(),
             phrases: [
-                "Toggle dictation in \(.applicationName)",
-                "Start dictation in \(.applicationName)",
-                "Stop dictation in \(.applicationName)"
+                "Toggle dictation in \(.applicationName)"
             ],
             shortTitle: "KeyVox Dictation",
             systemImageName: "waveform"
