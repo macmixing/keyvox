@@ -128,6 +128,7 @@ enum KeyVoxIPCBridge {
         let d = defaults
         d?.removeObject(forKey: Key.sessionTimestamp)
         d?.removeObject(forKey: Key.sessionHasBluetoothAudioRoute)
+        lastHeartbeatUpdateTime = 0
         log("clearSessionActive")
     }
     

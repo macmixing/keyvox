@@ -130,6 +130,8 @@ final class KeyboardIPCManager {
 
     func reconcileStaleSharedStateIfNeeded() -> SharedRecordingState {
         let state = currentSharedRecordingState()
+        let stateAge = KeyVoxIPCBridge.currentRecordingStateAge()
+        let sessionWarm = isSessionWarm()
 
         switch state {
         case .idle:
@@ -141,7 +143,11 @@ final class KeyboardIPCManager {
             }
             return .waitingForApp
         case .recording, .transcribing:
-            guard !isSessionWarm() else { return state }
+            guard !sessionWarm else { return state }
+            if let stateAge,
+               stateAge <= KeyVoxIPCBridge.heartbeatFreshnessWindow {
+                return state
+            }
             KeyVoxIPCBridge.clearTransientOperationState()
             return .idle
         }

@@ -3,6 +3,15 @@ import AppIntents
 struct KeyVoxSpeakShortcutsProvider: AppShortcutsProvider {
     static var appShortcuts: [AppShortcut] {
         AppShortcut(
+            intent: ToggleKeyVoxDictationIntent(),
+            phrases: [
+                "Toggle dictation in \(.applicationName)"
+            ],
+            shortTitle: "Toggle Dictation",
+            systemImageName: "waveform"
+        )
+
+        AppShortcut(
             intent: KeyVoxSpeakShortcutIntent(),
             phrases: [
                 "Speak copied text in \(.applicationName)",

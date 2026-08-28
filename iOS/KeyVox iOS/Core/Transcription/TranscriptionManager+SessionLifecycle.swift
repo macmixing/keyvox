@@ -113,6 +113,14 @@ extension TranscriptionManager {
     }
 
     func completeSessionShutdown() async {
+        await completeSessionShutdown(publishCancellation: true)
+    }
+
+    func releaseSessionMonitoringAfterCapture() async {
+        await completeSessionShutdown(publishCancellation: false)
+    }
+
+    private func completeSessionShutdown(publishCancellation: Bool) async {
         cancelIdleTimeout()
         cancelUtteranceSafetyWatchdog()
 
@@ -121,7 +129,9 @@ extension TranscriptionManager {
             isSessionActive = false
             sessionDisablePending = false
             sessionExpirationDate = nil
-            keyboardBridge.publishCancelled()
+            if publishCancellation {
+                keyboardBridge.publishCancelled()
+            }
         } catch {
             lastErrorMessage = error.localizedDescription
         }

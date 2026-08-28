@@ -38,6 +38,7 @@ final class AppServiceRegistry {
     let iCloudSyncCoordinator: CloudSyncCoordinator
     let weeklyWordStatsCloudSync: WeeklyWordStatsCloudSync
     let sessionLiveActivityCoordinator: KeyVoxSessionLiveActivityCoordinator
+    let shortcutDictationCoordinator: ShortcutDictationCoordinator
     let appUpdateCoordinator: AppUpdateCoordinator
     let promotionCenter: PromotionCenter
     let urlRouter: KeyVoxURLRouter
@@ -298,6 +299,10 @@ final class AppServiceRegistry {
                 .map(\.combinedWordCount)
                 .eraseToAnyPublisher()
         )
+        let shortcutDictationCoordinator = ShortcutDictationCoordinator(
+            sessionController: transcriptionManager,
+            liveActivityCoordinator: sessionLiveActivityCoordinator
+        )
         let appUpdateCoordinator = AppUpdateCoordinator(defaults: settingsDefaults)
         let promotionCenter = PromotionCenter(
             platform: .iOS,
@@ -375,6 +380,7 @@ final class AppServiceRegistry {
         self.iCloudSyncCoordinator = iCloudSyncCoordinator
         self.weeklyWordStatsCloudSync = weeklyWordStatsCloudSync
         self.sessionLiveActivityCoordinator = sessionLiveActivityCoordinator
+        self.shortcutDictationCoordinator = shortcutDictationCoordinator
         self.appUpdateCoordinator = appUpdateCoordinator
         self.promotionCenter = promotionCenter
         self.urlRouter = KeyVoxURLRouter(

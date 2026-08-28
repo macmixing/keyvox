@@ -5,7 +5,7 @@ import Foundation
 @MainActor
 protocol KeyVoxSessionLiveActivityControlling {
     var isActivityActive: Bool { get }
-    func startOrUpdate(weeklyWordCount: Int) async
+    func startOrUpdate(weeklyWordCount: Int) async throws
     func end() async
 }
 
@@ -22,7 +22,7 @@ final class KeyVoxSessionLiveActivityController: KeyVoxSessionLiveActivityContro
         currentActivity != nil
     }
 
-    func startOrUpdate(weeklyWordCount: Int) async {
+    func startOrUpdate(weeklyWordCount: Int) async throws {
         if let activity = currentActivity {
             guard lastWeeklyWordCount != weeklyWordCount else { return }
 
@@ -36,22 +36,16 @@ final class KeyVoxSessionLiveActivityController: KeyVoxSessionLiveActivityContro
             return
         }
 
-        do {
-            let activity = try Activity.request(
-                attributes: KeyVoxSessionLiveActivityAttributes(),
-                content: ActivityContent(
-                    state: .init(weeklyWordCount: weeklyWordCount),
-                    staleDate: nil
-                ),
-                pushType: nil
-            )
-            self.activity = activity
-            lastWeeklyWordCount = weeklyWordCount
-        } catch {
-            #if DEBUG
-            print("[KeyVoxSessionLiveActivityController] Failed to request activity: \(error)")
-            #endif
-        }
+        let activity = try Activity.request(
+            attributes: KeyVoxSessionLiveActivityAttributes(),
+            content: ActivityContent(
+                state: .init(weeklyWordCount: weeklyWordCount),
+                staleDate: nil
+            ),
+            pushType: nil
+        )
+        self.activity = activity
+        lastWeeklyWordCount = weeklyWordCount
     }
 
     func end() async {
@@ -81,6 +75,7 @@ final class KeyVoxSessionLiveActivityCoordinator {
     private var sessionDisablePending: Bool
     private var liveActivitiesEnabled: Bool
     private var weeklyWordCount: Int
+    private var isAudioRecordingStartPending = false
 
     init(
         initialIsSessionActive: Bool,
@@ -121,6 +116,30 @@ final class KeyVoxSessionLiveActivityCoordinator {
         self.sessionDisablePending = sessionDisablePending
         self.liveActivitiesEnabled = liveActivitiesEnabled
         self.weeklyWordCount = weeklyWordCount
+        await reconcileActivity()
+    }
+
+    func prepareForAudioRecordingIntent() async throws {
+        guard liveActivitiesEnabled else {
+            throw KeyVoxRequiredLiveActivityError.disabled
+        }
+
+        isAudioRecordingStartPending = true
+        do {
+            try await liveActivityController.startOrUpdate(weeklyWordCount: weeklyWordCount)
+        } catch {
+            isAudioRecordingStartPending = false
+            throw error
+        }
+    }
+
+    func completeAudioRecordingIntentStart(
+        isSessionActive: Bool,
+        sessionDisablePending: Bool
+    ) async {
+        self.isSessionActive = isSessionActive
+        self.sessionDisablePending = sessionDisablePending
+        isAudioRecordingStartPending = false
         await reconcileActivity()
     }
 
@@ -202,10 +221,28 @@ final class KeyVoxSessionLiveActivityCoordinator {
             return
         }
 
-        await liveActivityController.startOrUpdate(weeklyWordCount: weeklyWordCount)
+        do {
+            try await liveActivityController.startOrUpdate(weeklyWordCount: weeklyWordCount)
+        } catch {
+            #if DEBUG
+            print("[KeyVoxSessionLiveActivityCoordinator] Failed to reconcile activity: \(error)")
+            #endif
+        }
     }
 
     private var shouldShowActivity: Bool {
-        liveActivitiesEnabled && isSessionActive && !sessionDisablePending
+        isAudioRecordingStartPending
+            || (liveActivitiesEnabled && isSessionActive && !sessionDisablePending)
+    }
+}
+
+enum KeyVoxRequiredLiveActivityError: LocalizedError {
+    case disabled
+
+    var errorDescription: String? {
+        switch self {
+        case .disabled:
+            String(localized: "Live Activities must be enabled in KeyVox before background dictation can start.")
+        }
     }
 }

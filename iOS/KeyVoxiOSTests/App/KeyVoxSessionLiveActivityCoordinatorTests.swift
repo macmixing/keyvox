@@ -111,6 +111,105 @@ struct KeyVoxSessionLiveActivityCoordinatorTests {
         #expect(controller.endCallCount == 1)
     }
 
+    @Test func preparesActivityBeforeRecordingSessionBecomesActive() async throws {
+        let controller = MockKeyVoxSessionLiveActivityController()
+        let coordinator = makeCoordinator(controller: controller)
+        await Task.yield()
+
+        try await coordinator.prepareForAudioRecordingIntent()
+
+        #expect(controller.startedOrUpdatedWordCounts == [0])
+        #expect(controller.isActivityActive)
+    }
+
+    @Test func refusesPreparationWhenLiveActivitiesAreDisabled() async {
+        let controller = MockKeyVoxSessionLiveActivityController()
+        let coordinator = makeCoordinator(
+            initialLiveActivitiesEnabled: false,
+            controller: controller
+        )
+        await Task.yield()
+
+        var didThrow = false
+        do {
+            try await coordinator.prepareForAudioRecordingIntent()
+        } catch {
+            didThrow = true
+        }
+
+        #expect(didThrow)
+        #expect(controller.startedOrUpdatedWordCounts.isEmpty)
+    }
+
+    @Test func failedPreparationClearsStartupReservation() async {
+        let controller = MockKeyVoxSessionLiveActivityController(startError: TestLiveActivityError.requestFailed)
+        let coordinator = makeCoordinator(controller: controller)
+        await Task.yield()
+
+        do {
+            try await coordinator.prepareForAudioRecordingIntent()
+        } catch {
+            // Expected: the explicit preparation path propagates ActivityKit failures.
+        }
+        controller.startError = nil
+        await coordinator.applyState(
+            isSessionActive: false,
+            sessionDisablePending: false,
+            liveActivitiesEnabled: true,
+            weeklyWordCount: 0
+        )
+
+        #expect(controller.startAttemptCount == 1)
+        #expect(controller.startedOrUpdatedWordCounts.isEmpty)
+    }
+
+    @Test func failedRecordingStartRollsBackPreparedActivity() async throws {
+        let controller = MockKeyVoxSessionLiveActivityController()
+        let coordinator = makeCoordinator(controller: controller)
+        await Task.yield()
+
+        try await coordinator.prepareForAudioRecordingIntent()
+        await coordinator.completeAudioRecordingIntentStart(
+            isSessionActive: false,
+            sessionDisablePending: false
+        )
+
+        #expect(controller.endCallCount == 1)
+        #expect(!controller.isActivityActive)
+    }
+
+    @Test func inactiveReconciliationDoesNotEndPreparedActivity() async throws {
+        let controller = MockKeyVoxSessionLiveActivityController()
+        let coordinator = makeCoordinator(controller: controller)
+        await Task.yield()
+
+        try await coordinator.prepareForAudioRecordingIntent()
+        await coordinator.applyState(
+            isSessionActive: false,
+            sessionDisablePending: false,
+            liveActivitiesEnabled: true,
+            weeklyWordCount: 0
+        )
+
+        #expect(controller.endCallCount == 0)
+        #expect(controller.isActivityActive)
+    }
+
+    @Test func successfulRecordingStartKeepsPreparedActivity() async throws {
+        let controller = MockKeyVoxSessionLiveActivityController()
+        let coordinator = makeCoordinator(controller: controller)
+        await Task.yield()
+
+        try await coordinator.prepareForAudioRecordingIntent()
+        await coordinator.completeAudioRecordingIntentStart(
+            isSessionActive: true,
+            sessionDisablePending: false
+        )
+
+        #expect(controller.endCallCount == 0)
+        #expect(controller.isActivityActive)
+    }
+
     private func makeCoordinator(
         initialIsSessionActive: Bool = false,
         initialSessionDisablePending: Bool = false,
@@ -136,13 +235,20 @@ struct KeyVoxSessionLiveActivityCoordinatorTests {
 private final class MockKeyVoxSessionLiveActivityController: KeyVoxSessionLiveActivityControlling {
     var isActivityActive: Bool
     var startedOrUpdatedWordCounts: [Int] = []
+    var startAttemptCount = 0
+    var startError: Error?
     var endCallCount = 0
 
-    init(isActivityActive: Bool = false) {
+    init(isActivityActive: Bool = false, startError: Error? = nil) {
         self.isActivityActive = isActivityActive
+        self.startError = startError
     }
 
-    func startOrUpdate(weeklyWordCount: Int) async {
+    func startOrUpdate(weeklyWordCount: Int) async throws {
+        startAttemptCount += 1
+        if let startError {
+            throw startError
+        }
         isActivityActive = true
         startedOrUpdatedWordCounts.append(weeklyWordCount)
     }
@@ -151,4 +257,8 @@ private final class MockKeyVoxSessionLiveActivityController: KeyVoxSessionLiveAc
         isActivityActive = false
         endCallCount += 1
     }
+}
+
+private enum TestLiveActivityError: Error {
+    case requestFailed
 }

@@ -61,7 +61,7 @@ struct TranscriptionManagerTests {
         harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "hello world", languageCode: "en", paragraphsText: nil, inlineText: nil)
 
         await harness.manager.performEnableSessionCommand()
-        await harness.manager.performStartRecordingCommand()
+        _ = await harness.manager.performStartRecordingCommand()
         await harness.manager.performDisableSessionCommand()
 
         await settleAsyncManagerWork()
@@ -82,7 +82,7 @@ struct TranscriptionManagerTests {
         harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "test phrase", languageCode: "en", paragraphsText: nil, inlineText: nil)
 
         await harness.manager.performEnableSessionCommand()
-        await harness.manager.performStartRecordingCommand()
+        _ = await harness.manager.performStartRecordingCommand()
         let task = Task { await harness.manager.performStopRecordingCommand() }
         await Task.yield()
         await Task.yield()
@@ -91,7 +91,7 @@ struct TranscriptionManagerTests {
         await harness.manager.performDisableSessionCommand()
 
         harness.transcriptionService.resumeSuccess()
-        await task.value
+        _ = await task.value
         await settleAsyncManagerWork()
 
         #expect(harness.manager.state == .idle)
@@ -138,12 +138,12 @@ struct TranscriptionManagerTests {
         harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "hello", languageCode: "en", paragraphsText: nil, inlineText: nil)
 
         await harness.manager.performEnableSessionCommand()
-        await harness.manager.performStartRecordingCommand()
+        _ = await harness.manager.performStartRecordingCommand()
         try await Task.sleep(nanoseconds: 50_000_000)
         #expect(harness.manager.isSessionActive == true)
         #expect(harness.manager.state == .recording)
 
-        await harness.manager.performStopRecordingCommand()
+        _ = await harness.manager.performStopRecordingCommand()
         await settleAsyncManagerWork()
         try await Task.sleep(nanoseconds: 80_000_000)
         await settleAsyncManagerWork()
@@ -169,7 +169,7 @@ struct TranscriptionManagerTests {
         defer { harness.cleanup() }
 
         await harness.manager.performEnableSessionCommand()
-        await harness.manager.performStartRecordingCommand()
+        _ = await harness.manager.performStartRecordingCommand()
         harness.recorder.currentCaptureDuration = 12
         harness.recorder.hasMeaningfulSpeechInCurrentCapture = true
 
@@ -188,7 +188,7 @@ struct TranscriptionManagerTests {
         harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "test phrase", languageCode: "en", paragraphsText: nil, inlineText: nil)
 
         await harness.manager.performEnableSessionCommand()
-        await harness.manager.performStartRecordingCommand()
+        _ = await harness.manager.performStartRecordingCommand()
         let task = Task { await harness.manager.performStopRecordingCommand() }
         await Task.yield()
         await Task.yield()
@@ -199,7 +199,7 @@ struct TranscriptionManagerTests {
         #expect(harness.manager.state == .idle)
         #expect(harness.transcriptionService.cancelCallCount == 1)
         harness.transcriptionService.resumeSuccess()
-        await task.value
+        _ = await task.value
     }
 
     @Test func abandonedRecordingCancellationKeepsSessionAlive() async throws {
@@ -212,7 +212,7 @@ struct TranscriptionManagerTests {
         defer { harness.cleanup() }
 
         await harness.manager.performEnableSessionCommand()
-        await harness.manager.performStartRecordingCommand()
+        _ = await harness.manager.performStartRecordingCommand()
         harness.recorder.currentCaptureDuration = 0.03
         harness.recorder.hasMeaningfulSpeechInCurrentCapture = false
 
@@ -235,7 +235,7 @@ struct TranscriptionManagerTests {
         defer { harness.cleanup() }
 
         await harness.manager.performEnableSessionCommand()
-        await harness.manager.performStartRecordingCommand()
+        _ = await harness.manager.performStartRecordingCommand()
         harness.recorder.currentCaptureDuration = 0.03
         harness.recorder.hasMeaningfulSpeechInCurrentCapture = true
         harness.recorder.timeSinceLastMeaningfulSpeech = 0.01
@@ -252,7 +252,7 @@ struct TranscriptionManagerTests {
         let harness = try makeHarness()
         defer { harness.cleanup() }
 
-        await harness.manager.performStartRecordingCommand()
+        _ = await harness.manager.performStartRecordingCommand()
 
         #expect(harness.manager.state == .recording)
         #expect(harness.recorder.startCallCount == 1)
@@ -262,8 +262,8 @@ struct TranscriptionManagerTests {
         let harness = try makeHarness()
         defer { harness.cleanup() }
 
-        await harness.manager.performStartRecordingCommand()
-        await harness.manager.performStartRecordingCommand()
+        _ = await harness.manager.performStartRecordingCommand()
+        _ = await harness.manager.performStartRecordingCommand()
 
         #expect(harness.manager.state == .recording)
         #expect(harness.recorder.startCallCount == 1)
@@ -273,8 +273,9 @@ struct TranscriptionManagerTests {
         let harness = try makeHarness()
         defer { harness.cleanup() }
 
-        await harness.manager.performStopRecordingCommand()
+        let result = await harness.manager.performStopRecordingCommand()
 
+        #expect(result == .notRecording)
         #expect(harness.manager.state == .idle)
         #expect(harness.recorder.stopCallCount == 0)
     }
@@ -285,10 +286,11 @@ struct TranscriptionManagerTests {
         harness.recorder.stoppedCapture = acceptedCapture()
         harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "hello world", languageCode: "en", paragraphsText: nil, inlineText: nil)
 
-        await harness.manager.performStartRecordingCommand()
-        await harness.manager.performStopRecordingCommand()
+        _ = await harness.manager.performStartRecordingCommand()
+        let result = await harness.manager.performStopRecordingCommand()
         await settleAsyncManagerWork()
 
+        #expect(result == .completed(harness.manager.lastTranscriptionText ?? ""))
         #expect(harness.manager.state == .idle)
         #expect(harness.recorder.stopCallCount == 1)
         #expect(harness.manager.lastTranscriptionText != nil)
@@ -301,8 +303,8 @@ struct TranscriptionManagerTests {
         harness.recorder.stoppedCapture = acceptedCapture()
         harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "hello world again", languageCode: "en", paragraphsText: nil, inlineText: nil)
 
-        await harness.manager.performStartRecordingCommand()
-        await harness.manager.performStopRecordingCommand()
+        _ = await harness.manager.performStartRecordingCommand()
+        _ = await harness.manager.performStopRecordingCommand()
         await settleAsyncManagerWork()
 
         #expect(harness.weeklyWordStatsStore.combinedWordCount == 3)
@@ -315,8 +317,8 @@ struct TranscriptionManagerTests {
         harness.recorder.stoppedCapture = acceptedCapture()
         harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "hello world", languageCode: "en", paragraphsText: nil, inlineText: nil)
 
-        await harness.manager.performStartRecordingCommand()
-        await harness.manager.performStopRecordingCommand()
+        _ = await harness.manager.performStartRecordingCommand()
+        _ = await harness.manager.performStopRecordingCommand()
         await settleAsyncManagerWork()
 
         #expect(harness.manager.lastTranscriptionText != nil)
@@ -329,17 +331,91 @@ struct TranscriptionManagerTests {
         harness.recorder.stoppedCapture = acceptedCapture()
         harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "test phrase", languageCode: "en", paragraphsText: nil, inlineText: nil)
 
-        await harness.manager.performStartRecordingCommand()
+        _ = await harness.manager.performStartRecordingCommand()
 
         let task = Task { await harness.manager.performStopRecordingCommand() }
         await Task.yield()
         await Task.yield()
 
         #expect(harness.manager.state == .transcribing)
+        #expect(harness.manager.isSessionActive)
+        #expect(harness.recorder.stopMonitoringCallCount == 0)
         harness.transcriptionService.resumeSuccess()
-        await task.value
+        _ = await task.value
         await waitForManagerState(harness.manager, toBe: .idle)
         #expect(harness.manager.state == .idle)
+    }
+
+    @Test func immediateMicReleaseEndsSessionWhileTranscriptionContinues() async throws {
+        let harness = try makeHarness(serviceShouldSuspend: true)
+        defer { harness.cleanup() }
+        harness.recorder.stoppedCapture = acceptedCapture()
+        harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "test phrase", languageCode: "en", paragraphsText: nil, inlineText: nil)
+
+        _ = await harness.manager.performStartRecordingCommand()
+        let task = Task {
+            await harness.manager.performStopRecordingCommand(releaseMicImmediately: true)
+        }
+        await Task.yield()
+        await Task.yield()
+
+        #expect(harness.manager.state == .transcribing)
+        #expect(harness.manager.isSessionActive == false)
+        #expect(harness.recorder.stopMonitoringCallCount == 1)
+        #expect(harness.recorder.lastStopMonitoringKeepAudioSessionActive == false)
+        #expect(harness.transcriptionService.cancelCallCount == 0)
+
+        harness.transcriptionService.resumeSuccess()
+        let result = await task.value
+        await waitForManagerState(harness.manager, toBe: .idle)
+
+        #expect(result == .completed(harness.manager.lastTranscriptionText ?? ""))
+        #expect(harness.manager.lastTranscriptionText != nil)
+    }
+
+    @Test func immediateMicReleaseRetriesAfterTranscriptionWithoutLosingText() async throws {
+        let harness = try makeHarness()
+        defer { harness.cleanup() }
+        harness.recorder.stoppedCapture = acceptedCapture()
+        harness.recorder.stopMonitoringErrors = [NSError(domain: "StopMonitoring", code: 1)]
+        harness.transcriptionService.nextResult = TranscriptionProviderResult(
+            text: "test phrase",
+            languageCode: "en",
+            paragraphsText: nil,
+            inlineText: nil
+        )
+
+        _ = await harness.manager.performStartRecordingCommand()
+        let result = await harness.manager.performStopRecordingCommand(releaseMicImmediately: true)
+
+        #expect(result == .completed(harness.manager.lastTranscriptionText ?? ""))
+        #expect(harness.manager.lastTranscriptionText != nil)
+        #expect(harness.transcriptionService.transcribeCallCount == 1)
+        #expect(harness.recorder.stopMonitoringCallCount == 2)
+        #expect(harness.manager.isSessionActive == false)
+    }
+
+    @Test func repeatedImmediateMicReleaseFailurePreservesSessionTimeout() async throws {
+        let harness = try makeHarness()
+        defer { harness.cleanup() }
+        let stopMonitoringError = NSError(domain: "StopMonitoring", code: 1)
+        harness.recorder.stoppedCapture = acceptedCapture()
+        harness.recorder.stopMonitoringErrors = [stopMonitoringError, stopMonitoringError]
+        harness.transcriptionService.nextResult = TranscriptionProviderResult(
+            text: "test phrase",
+            languageCode: "en",
+            paragraphsText: nil,
+            inlineText: nil
+        )
+
+        _ = await harness.manager.performStartRecordingCommand()
+        let result = await harness.manager.performStopRecordingCommand(releaseMicImmediately: true)
+
+        #expect(result == .completed(harness.manager.lastTranscriptionText ?? ""))
+        #expect(harness.transcriptionService.transcribeCallCount == 1)
+        #expect(harness.recorder.stopMonitoringCallCount == 2)
+        #expect(harness.manager.isSessionActive)
+        #expect(harness.manager.sessionExpirationDate != nil)
     }
 
     @Test func acceptedCaptureWithMissingModelSurfacesErrorAndSkipsTranscription() async throws {
@@ -349,8 +425,8 @@ struct TranscriptionManagerTests {
         harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "should not run", languageCode: "en", paragraphsText: nil, inlineText: nil)
         let initialLastTranscriptionText = harness.manager.lastTranscriptionText
 
-        await harness.manager.performStartRecordingCommand()
-        await harness.manager.performStopRecordingCommand()
+        _ = await harness.manager.performStartRecordingCommand()
+        _ = await harness.manager.performStopRecordingCommand()
 
         #expect(harness.manager.state == .idle)
         #expect(harness.manager.isModelAvailable == false)
@@ -367,8 +443,8 @@ struct TranscriptionManagerTests {
         harness.transcriptionService.lastResultWasLikelyNoSpeech = true
         let initialLastTranscriptionText = harness.manager.lastTranscriptionText
 
-        await harness.manager.performStartRecordingCommand()
-        await harness.manager.performStopRecordingCommand()
+        _ = await harness.manager.performStartRecordingCommand()
+        _ = await harness.manager.performStopRecordingCommand()
         await settleAsyncManagerWork()
 
         #expect(harness.manager.lastTranscriptionText == initialLastTranscriptionText)
@@ -380,8 +456,8 @@ struct TranscriptionManagerTests {
         harness.recorder.stoppedCapture = acceptedCapture()
         harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "hello world", languageCode: "en", paragraphsText: nil, inlineText: nil)
 
-        await harness.manager.performStartRecordingCommand()
-        await harness.manager.performStopRecordingCommand()
+        _ = await harness.manager.performStartRecordingCommand()
+        _ = await harness.manager.performStopRecordingCommand()
         await settleAsyncManagerWork()
 
         #expect(harness.manager.isSessionActive == false)
@@ -394,8 +470,8 @@ struct TranscriptionManagerTests {
         defer { harness.cleanup() }
         harness.recorder.stoppedCapture = emptyOutputCapture()
 
-        await harness.manager.performStartRecordingCommand()
-        await harness.manager.performStopRecordingCommand()
+        _ = await harness.manager.performStartRecordingCommand()
+        _ = await harness.manager.performStopRecordingCommand()
         await settleAsyncManagerWork()
 
         #expect(harness.manager.isSessionActive == false)
@@ -408,8 +484,8 @@ struct TranscriptionManagerTests {
         defer { harness.cleanup() }
         harness.recorder.stoppedCapture = acceptedCapture()
 
-        await harness.manager.performStartRecordingCommand()
-        await harness.manager.performStopRecordingCommand()
+        _ = await harness.manager.performStartRecordingCommand()
+        _ = await harness.manager.performStopRecordingCommand()
         await settleAsyncManagerWork()
 
         #expect(harness.manager.isSessionActive == false)
@@ -423,8 +499,8 @@ struct TranscriptionManagerTests {
         harness.recorder.stoppedCapture = acceptedCapture()
         harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "hello world", languageCode: "en", paragraphsText: nil, inlineText: nil)
 
-        await harness.manager.performStartRecordingCommand()
-        await harness.manager.performStopRecordingCommand()
+        _ = await harness.manager.performStartRecordingCommand()
+        _ = await harness.manager.performStopRecordingCommand()
         await settleAsyncManagerWork()
 
         #expect(harness.manager.isSessionActive == false)
@@ -497,7 +573,7 @@ struct TranscriptionManagerTests {
         harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "hello world", languageCode: "en", paragraphsText: nil, inlineText: nil)
 
         await harness.manager.performEnableSessionCommand()
-        await harness.manager.performStartRecordingCommand()
+        _ = await harness.manager.performStartRecordingCommand()
 
         harness.updateSessionDisableTiming(.immediately)
         await settleAsyncManagerWork()
@@ -506,7 +582,7 @@ struct TranscriptionManagerTests {
         #expect(harness.manager.isSessionActive == true)
         #expect(harness.recorder.stopMonitoringCallCount == 0)
 
-        await harness.manager.performStopRecordingCommand()
+        _ = await harness.manager.performStopRecordingCommand()
         await settleAsyncManagerWork()
 
         #expect(harness.manager.isSessionActive == false)
@@ -520,17 +596,17 @@ struct TranscriptionManagerTests {
         harness.recorder.stoppedCapture = acceptedCapture()
         harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "pending result", languageCode: "en", paragraphsText: nil, inlineText: nil)
 
-        await harness.manager.performStartRecordingCommand()
+        _ = await harness.manager.performStartRecordingCommand()
         let task = Task { await harness.manager.performStopRecordingCommand() }
         await Task.yield()
         await Task.yield()
 
         #expect(harness.manager.state == .transcribing)
-        await harness.manager.performStartRecordingCommand()
+        _ = await harness.manager.performStartRecordingCommand()
         #expect(harness.recorder.startCallCount == 1)
 
         harness.transcriptionService.resumeSuccess()
-        await task.value
+        _ = await task.value
     }
 
     @Test func repeatedStopWhileTranscribingIsIgnored() async throws {
@@ -539,17 +615,17 @@ struct TranscriptionManagerTests {
         harness.recorder.stoppedCapture = acceptedCapture()
         harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "pending result", languageCode: "en", paragraphsText: nil, inlineText: nil)
 
-        await harness.manager.performStartRecordingCommand()
+        _ = await harness.manager.performStartRecordingCommand()
         let task = Task { await harness.manager.performStopRecordingCommand() }
         await Task.yield()
         await Task.yield()
 
         #expect(harness.manager.state == .transcribing)
-        await harness.manager.performStopRecordingCommand()
+        _ = await harness.manager.performStopRecordingCommand()
         #expect(harness.recorder.stopCallCount == 1)
 
         harness.transcriptionService.resumeSuccess()
-        await task.value
+        _ = await task.value
     }
 
     @Test func emptyOutputFramesReturnToIdleWithoutTranscribing() async throws {
@@ -558,8 +634,8 @@ struct TranscriptionManagerTests {
         harness.recorder.stoppedCapture = emptyOutputCapture()
         let initialLastTranscriptionText = harness.manager.lastTranscriptionText
 
-        await harness.manager.performStartRecordingCommand()
-        await harness.manager.performStopRecordingCommand()
+        _ = await harness.manager.performStartRecordingCommand()
+        _ = await harness.manager.performStopRecordingCommand()
         await settleAsyncManagerWork()
 
         #expect(harness.manager.state == .idle)
@@ -571,7 +647,7 @@ struct TranscriptionManagerTests {
         let harness = try makeHarness()
         defer { harness.cleanup() }
 
-        await harness.manager.performStartRecordingCommand()
+        _ = await harness.manager.performStartRecordingCommand()
         harness.recorder.isMonitoring = false
 
         await harness.manager.handleRecorderInterruptedCapture(acceptedCapture())
@@ -586,7 +662,7 @@ struct TranscriptionManagerTests {
         let harness = try makeHarness()
         defer { harness.cleanup() }
 
-        await harness.manager.performStartRecordingCommand()
+        _ = await harness.manager.performStartRecordingCommand()
         harness.recorder.isMonitoring = false
 
         await harness.manager.handleRecorderInterruptedCapture(emptyOutputCapture())
@@ -601,7 +677,7 @@ struct TranscriptionManagerTests {
         defer { harness.cleanup() }
         harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "recovered phrase", languageCode: "en", paragraphsText: nil, inlineText: nil)
 
-        await harness.manager.performStartRecordingCommand()
+        _ = await harness.manager.performStartRecordingCommand()
         harness.recorder.isMonitoring = false
         await harness.manager.handleRecorderInterruptedCapture(acceptedCapture())
 
@@ -618,7 +694,7 @@ struct TranscriptionManagerTests {
         defer { harness.cleanup() }
         harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "should not run", languageCode: "en", paragraphsText: nil, inlineText: nil)
 
-        await harness.manager.performStartRecordingCommand()
+        _ = await harness.manager.performStartRecordingCommand()
         harness.recorder.isMonitoring = false
         await harness.manager.handleRecorderInterruptedCapture(acceptedCapture())
 
@@ -641,8 +717,8 @@ struct TranscriptionManagerTests {
         harness.recorder.stoppedCapture = acceptedCapture()
         harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "cueit launched", languageCode: "en", paragraphsText: nil, inlineText: nil)
 
-        await harness.manager.performStartRecordingCommand()
-        await harness.manager.performStopRecordingCommand()
+        _ = await harness.manager.performStartRecordingCommand()
+        _ = await harness.manager.performStopRecordingCommand()
         await settleAsyncManagerWork()
 
         #expect(harness.transcriptionService.lastUpdatedPrompt?.lowercased().contains("cueit") == true)
@@ -853,6 +929,7 @@ private final class StubAudioRecorder: AudioRecording {
     var cancelCurrentUtteranceCallCount = 0
     var startError: Error?
     var enableMonitoringError: Error?
+    var stopMonitoringErrors: [Error] = []
     var stoppedCapture = StoppedCaptureProcessor.process(
         snapshot: Array(repeating: Float(0.2), count: 4_000),
         captureDuration: 1.0,
@@ -912,6 +989,9 @@ private final class StubAudioRecorder: AudioRecording {
     func stopMonitoring(keepAudioSessionActive: Bool) throws {
         stopMonitoringCallCount += 1
         lastStopMonitoringKeepAudioSessionActive = keepAudioSessionActive
+        if !stopMonitoringErrors.isEmpty {
+            throw stopMonitoringErrors.removeFirst()
+        }
         isMonitoring = false
     }
 
