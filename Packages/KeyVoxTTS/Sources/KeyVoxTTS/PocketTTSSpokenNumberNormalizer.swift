@@ -2,9 +2,9 @@ import Foundation
 
 enum PocketTTSSpokenNumberNormalizer {
     private static let decimalDollarAmountPattern = #"\$((?:[0-9]{1,3}(?:,[0-9]{3})+|[0-9]+))\.([0-9]{1,2})(?![\p{L}\p{N}%]|\.[0-9])"#
-    private static let compactDollarThousandsPattern = #"\$([0-9]+)\s*[kK]\b"#
+    private static let compactDollarThousandsPattern = #"\$([0-9]+(?:\.[0-9]{1,3})?)\s*[kK]\b"#
     private static let largeDollarAmountPattern = #"\$((?:[0-9]{1,3}(?:,[0-9]{3})+|[0-9]{4,}))(?!(?:[.,][0-9])|[\p{L}\p{N}%])"#
-    private static let compactThousandsPattern = #"(?<![\p{L}\p{N}$])([0-9]+)\s*[kK]\b(?!%)"#
+    private static let compactThousandsPattern = #"(?<![\p{L}\p{N}$.,])([0-9]+(?:\.[0-9]{1,3})?)\s*[kK]\b(?!%)"#
     private static let groupedNumberPattern = #"(?<![\p{L}\p{N}$.,])([0-9]{1,3}(?:,[0-9]{3})+)(?!(?:[.,][0-9])|[\p{L}\p{N}%])"#
 
     static func normalize(in text: String) -> String {
@@ -70,9 +70,31 @@ enum PocketTTSSpokenNumberNormalizer {
     }
 
     private static func scaledThousands(from digits: String) -> Int64? {
-        guard let value = Int64(digits) else { return nil }
+        let components = digits.split(separator: ".", omittingEmptySubsequences: false)
+        guard
+            components.count <= 2,
+            let wholeValue = Int64(components[0])
+        else {
+            return nil
+        }
 
-        let scaledValue = value.multipliedReportingOverflow(by: 1_000)
+        let scaledWholeValue = wholeValue.multipliedReportingOverflow(by: 1_000)
+        guard scaledWholeValue.overflow == false else { return nil }
+
+        guard components.count == 2 else { return scaledWholeValue.partialValue }
+
+        let fractionDigits = String(components[1])
+        guard fractionDigits.isEmpty == false, fractionDigits.count <= 3 else {
+            return nil
+        }
+
+        let paddedFraction = fractionDigits + String(
+            repeating: "0",
+            count: 3 - fractionDigits.count
+        )
+        guard let fractionValue = Int64(paddedFraction) else { return nil }
+
+        let scaledValue = scaledWholeValue.partialValue.addingReportingOverflow(fractionValue)
         guard scaledValue.overflow == false else { return nil }
         return scaledValue.partialValue
     }

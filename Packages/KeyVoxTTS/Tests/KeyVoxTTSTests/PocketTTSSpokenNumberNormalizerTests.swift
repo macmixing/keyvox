@@ -49,6 +49,27 @@ final class PocketTTSSpokenNumberNormalizerTests: XCTestCase {
         }
     }
 
+    func testNormalizeSpeaksDecimalCompactThousandsAsCompleteValues() {
+        let examples = [
+            "3.8k": "three thousand eight hundred",
+            "$3.8K": "three thousand eight hundred dollars",
+        ]
+
+        for (input, expected) in examples {
+            XCTAssertEqual(
+                PocketTTSSpokenNumberNormalizer.normalize(in: input),
+                expected
+            )
+        }
+
+        let normalized = PocketTTSChunkPlanner.normalize("3.8K and $3.8K")
+        XCTAssertTrue(
+            normalized.text.hasSuffix(
+                "Three thousand eight hundred and three thousand eight hundred dollars."
+            )
+        )
+    }
+
     func testNormalizeSpeaksDollarAmounts() {
         let examples = [
             "$46,532": "forty-six thousand five hundred thirty-two dollars",
