@@ -40,7 +40,7 @@ final class AudioModeCoordinator: ObservableObject {
                 await ttsManager.stopPlayback()
             }
 
-            await transcriptionManager.performStartRecordingCommand(isFromURL: isFromURL)
+            _ = await transcriptionManager.performStartRecordingCommand(isFromURL: isFromURL)
         }
     }
 

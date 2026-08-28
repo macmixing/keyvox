@@ -273,8 +273,9 @@ struct TranscriptionManagerTests {
         let harness = try makeHarness()
         defer { harness.cleanup() }
 
-        await harness.manager.performStopRecordingCommand()
+        let result = await harness.manager.performStopRecordingCommand()
 
+        #expect(result == .notRecording)
         #expect(harness.manager.state == .idle)
         #expect(harness.recorder.stopCallCount == 0)
     }
@@ -286,9 +287,10 @@ struct TranscriptionManagerTests {
         harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "hello world", languageCode: "en", paragraphsText: nil, inlineText: nil)
 
         await harness.manager.performStartRecordingCommand()
-        await harness.manager.performStopRecordingCommand()
+        let result = await harness.manager.performStopRecordingCommand()
         await settleAsyncManagerWork()
 
+        #expect(result == .completed(harness.manager.lastTranscriptionText ?? ""))
         #expect(harness.manager.state == .idle)
         #expect(harness.recorder.stopCallCount == 1)
         #expect(harness.manager.lastTranscriptionText != nil)

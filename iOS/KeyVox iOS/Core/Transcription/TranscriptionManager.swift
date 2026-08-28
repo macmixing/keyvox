@@ -226,8 +226,8 @@ final class TranscriptionManager: ObservableObject {
         await performCancelCurrentUtterance()
     }
 
-    func performStartRecordingCommand(isFromURL: Bool = false) async {
-        guard state == .idle else { return }
+    func performStartRecordingCommand(isFromURL: Bool = false) async -> TranscriptionStartCommandResult {
+        guard state == .idle else { return .alreadyInProgress }
         state = .recording
         lastErrorMessage = nil
         pendingPipelineOutputText = nil
@@ -246,11 +246,13 @@ final class TranscriptionManager: ObservableObject {
             keyboardBridge.publishRecordingStarted()
             armUtteranceSafetyWatchdog(for: activeUtteranceID)
             prewarmStyleRewriteForUpcomingDictation()
+            return .started
         } catch {
             state = .idle
             lastErrorMessage = error.localizedDescription
             keyboardBridge.publishNoSpeech()
             await finishAndDisableSessionIfNeeded()
+            return .failed(error.localizedDescription)
         }
     }
 
@@ -270,8 +272,8 @@ final class TranscriptionManager: ObservableObject {
         }
     }
 
-    func performStopRecordingCommand() async {
-        guard state == .recording else { return }
+    func performStopRecordingCommand() async -> TranscriptionStopCommandResult {
+        guard state == .recording else { return .notRecording }
         let utteranceID = activeUtteranceID
         cancelUtteranceSafetyWatchdog()
         state = .processingCapture
@@ -282,14 +284,18 @@ final class TranscriptionManager: ObservableObject {
         #endif
 
         let stoppedCapture = await recorder.stopRecording()
-        await completeStopRecording(stoppedCapture, utteranceID: utteranceID, startTime: startTime)
+        return await completeStopRecording(stoppedCapture, utteranceID: utteranceID, startTime: startTime)
     }
 
-    func completeStopRecording(_ stoppedCapture: StoppedCapture, utteranceID: UUID, startTime: Date) async {
+    func completeStopRecording(
+        _ stoppedCapture: StoppedCapture,
+        utteranceID: UUID,
+        startTime: Date
+    ) async -> TranscriptionStopCommandResult {
         guard utteranceID == activeUtteranceID else {
             await releaseStyleRewritePrewarmSession("stale-utterance")
             await finishAndDisableSessionIfNeeded()
-            return
+            return .superseded
         }
 
         guard !stoppedCapture.outputFrames.isEmpty else {
@@ -297,7 +303,7 @@ final class TranscriptionManager: ObservableObject {
             state = .idle
             keyboardBridge.publishNoSpeech()
             await finishAndDisableSessionIfNeeded()
-            return
+            return .noSpeech
         }
 
         refreshModelAvailability()
@@ -307,7 +313,7 @@ final class TranscriptionManager: ObservableObject {
             state = .idle
             keyboardBridge.publishNoSpeech()
             await finishAndDisableSessionIfNeeded()
-            return
+            return .failed(lastErrorMessage ?? missingModelMessageProvider())
         }
 
         transcriptionService.warmup()
@@ -331,7 +337,7 @@ final class TranscriptionManager: ObservableObject {
 
         guard utteranceID == activeUtteranceID else {
             await releaseStyleRewritePrewarmSession("stale-result")
-            return
+            return .superseded
         }
 
         let finalText = pendingPipelineOutputText ?? result.finalText
@@ -344,6 +350,7 @@ final class TranscriptionManager: ObservableObject {
         state = .idle
         recordPipelineResult(result, finalText)
 
+        let commandResult: TranscriptionStopCommandResult
         if result.wasLikelyNoSpeech || finalText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             #if DEBUG
             print("4. Injection trigger: \(String(format: "%.3f", result.pasteDuration))s")
@@ -352,6 +359,7 @@ final class TranscriptionManager: ObservableObject {
             print("--- Speed Profile End ---")
             #endif
             keyboardBridge.publishNoSpeech()
+            commandResult = .noSpeech
         } else {
             #if DEBUG
             print("4. Injection trigger: \(String(format: "%.3f", result.pasteDuration))s")
@@ -361,10 +369,12 @@ final class TranscriptionManager: ObservableObject {
             #endif
             lastTranscriptionText = finalText
             keyboardBridge.publishTranscriptionReady(finalText)
+            commandResult = .completed(finalText)
         }
 
         await releaseStyleRewritePrewarmSession("utterance-finished")
         await finishAndDisableSessionIfNeeded()
+        return commandResult
     }
 
     private func bindDictionaryState() {
