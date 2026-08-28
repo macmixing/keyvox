@@ -108,6 +108,16 @@
             value = "1"
             isEnabled = "NO">
          </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "KEYVOX_USE_LOCAL_PROMOTION_MANIFEST"
+            value = "1"
+            isEnabled = "NO">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "KEYVOX_PROMOTION_PREVIEW_CAMPAIGN_ID"
+            value = "ios-keyvox-for-mac"
+            isEnabled = "NO">
+         </EnvironmentVariable>
       </EnvironmentVariables>
       <StoreKitConfigurationFileReference
          identifier = "../../KeyVox iOS/Resources/KeyVoxProducts.storekit">

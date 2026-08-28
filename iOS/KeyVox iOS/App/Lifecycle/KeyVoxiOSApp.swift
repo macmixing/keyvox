@@ -1,6 +1,7 @@
 import SwiftUI
 import UIKit
 import KeyVoxCore
+import KeyVoxPromotions
 
 @main
 struct KeyVoxApp: App {
@@ -24,6 +25,7 @@ struct KeyVoxApp: App {
     @StateObject private var appReviewRequestCoordinator: AppReviewRequestCoordinator
     @StateObject private var appTabRouter: AppTabRouter
     @StateObject private var appUpdateCoordinator: AppUpdateCoordinator
+    @StateObject private var promotionCenter: PromotionCenter
     private let appHaptics: AppHaptics
     private let urlRouter: KeyVoxURLRouter
     private let dictionaryStore: DictionaryStore
@@ -48,6 +50,7 @@ struct KeyVoxApp: App {
         _appReviewRequestCoordinator = StateObject(wrappedValue: services.appReviewRequestCoordinator)
         _appTabRouter = StateObject(wrappedValue: services.appTabRouter)
         _appUpdateCoordinator = StateObject(wrappedValue: services.appUpdateCoordinator)
+        _promotionCenter = StateObject(wrappedValue: services.promotionCenter)
         appHaptics = services.appHaptics
         urlRouter = services.urlRouter
         dictionaryStore = services.dictionaryStore
@@ -93,6 +96,7 @@ struct KeyVoxApp: App {
                 .environmentObject(appReviewRequestCoordinator)
                 .environmentObject(appTabRouter)
                 .environmentObject(appUpdateCoordinator)
+                .environmentObject(promotionCenter)
                 .environmentObject(dictionaryStore)
                 .onChange(of: scenePhase, initial: true) { _, newPhase in
                     Self.log("scenePhase=\(String(describing: newPhase))")
@@ -108,6 +112,7 @@ struct KeyVoxApp: App {
                         pocketTTSModelManager.handleAppDidBecomeActive()
                         modelManager.handleAppDidBecomeActive()
                         appUpdateCoordinator.handleAppDidBecomeActive()
+                        promotionCenter.refresh()
                         onboardingStore.armPendingKeyboardTourRouteIfNeeded(
                             isKeyboardEnabledInSystemSettings: OnboardingKeyboardAccessProbe.isKeyboardEnabledInSystemSettings()
                         )

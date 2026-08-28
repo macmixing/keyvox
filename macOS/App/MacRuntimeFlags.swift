@@ -7,6 +7,8 @@ enum MacRuntimeFlags {
     static let modelDownloadPreviewErrorEnvironmentKey = "KVX_MODEL_DOWNLOAD_PREVIEW_ERROR"
     static let debugLogRawTextEnvironmentKey = "KVX_DEBUG_LOG_RAW_TEXT"
     static let forceKeyVoxVibesIntroEnvironmentKey = "KEYVOX_FORCE_KEYVOX_VIBES_INTRO"
+    static let useLocalPromotionManifestEnvironmentKey = "KEYVOX_USE_LOCAL_PROMOTION_MANIFEST"
+    static let promotionPreviewCampaignIDEnvironmentKey = "KEYVOX_PROMOTION_PREVIEW_CAMPAIGN_ID"
 
     static var forceOnboarding: Bool {
         forceOnboarding(environment: ProcessInfo.processInfo.environment)
@@ -26,6 +28,22 @@ enum MacRuntimeFlags {
 
     static var debugLogRawText: Bool {
         debugLogRawText(environment: ProcessInfo.processInfo.environment)
+    }
+
+    static var useLocalPromotionManifest: Bool {
+#if DEBUG
+        isEnabled(environmentValue: ProcessInfo.processInfo.environment[useLocalPromotionManifestEnvironmentKey])
+#else
+        false
+#endif
+    }
+
+    static var promotionPreviewCampaignID: String? {
+#if DEBUG
+        nonEmptyValue(ProcessInfo.processInfo.environment[promotionPreviewCampaignIDEnvironmentKey])
+#else
+        nil
+#endif
     }
 
     static func forceOnboarding(environment: [String: String]) -> Bool {
@@ -72,5 +90,13 @@ enum MacRuntimeFlags {
         value?
             .trimmingCharacters(in: .whitespacesAndNewlines)
             .lowercased()
+    }
+
+    private static func nonEmptyValue(_ value: String?) -> String? {
+        guard let value = value?.trimmingCharacters(in: .whitespacesAndNewlines),
+              value.isEmpty == false else {
+            return nil
+        }
+        return value
     }
 }

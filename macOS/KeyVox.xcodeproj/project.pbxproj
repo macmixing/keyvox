@@ -18,6 +18,8 @@
 		8E4B08692FD0000500C5DB85 /* TranscriptionManager+OverlayAndDebug.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E4B08682FD0000500C5DB85 /* TranscriptionManager+OverlayAndDebug.swift */; };
 		8E4CE8532F6CE8FD009C7CE8 /* KeyVoxCore in Frameworks */ = {isa = PBXBuildFile; productRef = A10000012FD1000100AA0001 /* KeyVoxCore */; };
 		8E4CE8542F6CE8FD009C7CE8 /* KeyVoxCore in Frameworks */ = {isa = PBXBuildFile; productRef = A10000022FD1000100AA0001 /* KeyVoxCore */; };
+		F41010012FF3000100AA0001 /* KeyVoxPromotions in Frameworks */ = {isa = PBXBuildFile; productRef = F41010032FF3000100AA0001 /* KeyVoxPromotions */; };
+		F41010042FF3000100AA0001 /* MacPromotionCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = F41010052FF3000100AA0001 /* MacPromotionCard.swift */; };
 		8E57FB8A2F3C9B6100935A26 /* UserDefaultsKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E57FB892F3C9B6100935A26 /* UserDefaultsKeys.swift */; };
 		8E57FB9C2F3E444B00935A26 /* SettingsView+Home.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E57FB972F3E444B00935A26 /* SettingsView+Home.swift */; };
 		8E57FB9D2F3E444B00935A26 /* SettingsComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E57FB952F3E444B00935A26 /* SettingsComponents.swift */; };
@@ -273,6 +275,7 @@
 		8E57FB9A2F3E444B00935A26 /* SettingsView+Sidebar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsView+Sidebar.swift"; sourceTree = "<group>"; };
 		8E57FBA22F3E449000935A26 /* SettingsView+Legal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsView+Legal.swift"; sourceTree = "<group>"; };
 		8E57FBA32F3E449000935A26 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		F41010052FF3000100AA0001 /* MacPromotionCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacPromotionCard.swift; sourceTree = "<group>"; };
 		8E6D05C42F3C51C9003BD458 /* KeyVoxApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyVoxApp.swift; sourceTree = "<group>"; };
 		8E6D05CB2F3C51D6003BD458 /* AudioRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioRecorder.swift; sourceTree = "<group>"; };
 		8E6D05CC2F3C51D6003BD458 /* KeyboardMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardMonitor.swift; sourceTree = "<group>"; };
@@ -491,6 +494,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F41010012FF3000100AA0001 /* KeyVoxPromotions in Frameworks */,
 				B4C100012FF1000100AA0001 /* KeyVoxTextComposition in Frameworks */,
 				8E4CE8532F6CE8FD009C7CE8 /* KeyVoxCore in Frameworks */,
 				E90000062FE1000100AA0001 /* KeyVoxStyleRewrite in Frameworks */,
@@ -516,6 +520,7 @@
 		8E57FB9B2F3E444B00935A26 /* Settings */ = {
 			isa = PBXGroup;
 			children = (
+				F41010052FF3000100AA0001 /* MacPromotionCard.swift */,
 				8F2201052F44010000BB2201 /* DictionaryWordEditorView.swift */,
 				8E57FBA22F3E449000935A26 /* SettingsView+Legal.swift */,
 				8E57FBA32F3E449000935A26 /* SettingsView.swift */,
@@ -1045,6 +1050,7 @@
 			);
 			name = KeyVox;
 			packageProductDependencies = (
+				F41010032FF3000100AA0001 /* KeyVoxPromotions */,
 				B4C100022FF1000100AA0001 /* KeyVoxTextComposition */,
 				A10000012FD1000100AA0001 /* KeyVoxCore */,
 				E90000212FE1000100AA0001 /* KeyVoxStyleRewrite */,
@@ -1108,6 +1114,7 @@
 			);
 			mainGroup = 8EE004512F3BA59900BBAB30;
 			packageReferences = (
+				F41010022FF3000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxPromotions" */,
 				B4C100032FF1000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxTextComposition" */,
 				8E9540072F6AA8AA00B1F3B5 /* XCLocalSwiftPackageReference "../Packages/KeyVoxWhisper" */,
 				8E9540082F6AA8B800B1F3B5 /* XCLocalSwiftPackageReference "../Packages/KeyVoxCore" */,
@@ -1159,6 +1166,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F41010042FF3000100AA0001 /* MacPromotionCard.swift in Sources */,
 				D26000012FF0000100AA0001 /* AppProcessTerminator.swift in Sources */,
 				F26000072FF1000100AA0001 /* WindowManager+VibesIntro.swift in Sources */,
 				F26000012FF1000100AA0001 /* MacVibesIntroController.swift in Sources */,
@@ -1706,6 +1714,10 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
+		F41010022FF3000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxPromotions" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../Packages/KeyVoxPromotions;
+		};
 		8E0D0A3A2F79D7F10097A0A3 /* XCLocalSwiftPackageReference "../Packages/KeyVoxParakeet" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = ../Packages/KeyVoxParakeet;
@@ -1737,6 +1749,11 @@
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		F41010032FF3000100AA0001 /* KeyVoxPromotions */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F41010022FF3000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxPromotions" */;
+			productName = KeyVoxPromotions;
+		};
 		A10000012FD1000100AA0001 /* KeyVoxCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = KeyVoxCore;

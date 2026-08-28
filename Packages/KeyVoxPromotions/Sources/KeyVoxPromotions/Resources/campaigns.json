@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "selection": {
+    "mode": "rotating",
+    "intervalHours": 72
+  },
+  "campaigns": [
+    {
+      "id": "ios-compact-keys",
+      "targets": [
+        {
+          "platform": "ios",
+          "minimumAppVersion": "1.4.0"
+        }
+      ],
+      "icon": {
+        "kind": "systemImage",
+        "name": "keyboard.chevron.compact.down"
+      },
+      "title": "More room while you type",
+      "message": "Long press #+= to enter Compact Mode. Tap the keyboard icon whenever you want the full keyboard back."
+    },
+    {
+      "id": "ios-keyvox-for-mac",
+      "targets": [
+        {
+          "platform": "ios"
+        }
+      ],
+      "icon": {
+        "kind": "appBundleIcon"
+      },
+      "title": "Bring KeyVox to your Mac",
+      "message": "Get the same private, on-device dictation experience across macOS.",
+      "buttonTitle": "Learn More",
+      "action": {
+        "kind": "web",
+        "url": "https://keyvox.app/?utm_source=keyvox_ios&utm_medium=promotion&utm_campaign=mac_app"
+      },
+      "sharing": {
+        "url": "https://keyvox.app/?utm_source=keyvox_ios&utm_medium=share&utm_campaign=mac_app_share",
+        "title": "KeyVox for Mac"
+      }
+    },
+    {
+      "id": "macos-keyvox-for-iphone",
+      "targets": [
+        {
+          "platform": "macos"
+        }
+      ],
+      "icon": {
+        "kind": "appBundleIcon"
+      },
+      "title": "Get KeyVox Keyboard for iPhone",
+      "message": "The same great KeyVox dictation is available on iPhone with a keyboard experience built for iOS.",
+      "buttonTitle": "View",
+      "action": {
+        "kind": "web",
+        "url": "https://apps.apple.com/us/app/keyvox-ai-voice-keyboard/id6760396964?ct=mac-settings-ios-promo&mt=8"
+      },
+      "sharing": {
+        "url": "https://apps.apple.com/us/app/keyvox-ai-voice-keyboard/id6760396964?ct=mac-settings-ios-share&mt=8",
+        "title": "KeyVox Keyboard for iPhone"
+      }
+    }
+  ]
+}
