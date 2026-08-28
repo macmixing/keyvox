@@ -538,4 +538,40 @@ final class ListPatternDetectorTests: XCTestCase {
         XCTAssertNotNil(detected)
         XCTAssertEqual(detected?.items.map(\.spokenIndex), [1, 2])
     }
+
+    func testDetectsTwoItemListWhenLastItemContainsNumericRange() {
+        let detector = ListPatternDetector()
+        let text = "One, doesn't speak thousands or millions correctly. Two, play button on keyboard times out after about 10 to 15 seconds."
+
+        let detected = detector.detectList(in: text, languageCode: "en")
+
+        XCTAssertNotNil(detected)
+        XCTAssertEqual(detected?.items.map(\.spokenIndex), [1, 2])
+        XCTAssertEqual(
+            detected?.items.map(\.content),
+            [
+                "Doesn't speak thousands or millions correctly.",
+                "Play button on keyboard times out after about 10 to 15 seconds."
+            ]
+        )
+    }
+
+    func testDetectsSequentialPatternWithUnrelatedNumbersBetweenMarkers() {
+        let detector = ListPatternDetector()
+        let text = "1. first issue 2. second issue affects 15 and 20 accounts 3. third issue 4. fourth issue 5. fifth issue 6. sixth issue"
+
+        let detected = detector.detectList(in: text, languageCode: "en")
+
+        XCTAssertEqual(detected?.items.map(\.spokenIndex), [1, 2, 3, 4, 5, 6])
+        XCTAssertTrue(detected?.items[1].content.contains("15 and 20") == true)
+    }
+
+    func testRejectsAmbiguousTwoItemRunFollowedBySkippedMarker() {
+        let detector = ListPatternDetector()
+        let text = "one buy apples two buy pears four buy oranges"
+
+        let detected = detector.detectList(in: text, languageCode: "en")
+
+        XCTAssertNil(detected)
+    }
 }

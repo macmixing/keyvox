@@ -72,7 +72,9 @@ public struct ListPatternRunSelector {
 
         guard best.count >= 2 else { return nil }
         guard isCredibleRunStart(run: best, in: nsText) else { return nil }
-        guard hasNoCredibleTrailingSkippedMarkers(after: best, from: markers, in: nsText) else { return nil }
+        guard hasNoCredibleTrailingSkippedMarkers(after: best, from: markers, in: nsText, languageCode: languageCode) else {
+            return nil
+        }
         guard hasCredibleAmbiguousTwoItemSpokenContent(run: best, in: nsText, languageCode: languageCode) else { return nil }
         guard hasCredibleRunCadence(run: best, in: nsText, languageCode: languageCode) else { return nil }
         return best
@@ -127,9 +129,15 @@ public struct ListPatternRunSelector {
     private func hasNoCredibleTrailingSkippedMarkers(
         after run: [ListPatternMarker],
         from markers: [ListPatternMarker],
-        in nsText: NSString
+        in nsText: NSString,
+        languageCode: String?
     ) -> Bool {
         guard let last = run.last else { return true }
+        guard run.count == 2 else { return true }
+        let hasAmbiguousMarker = run.contains {
+            !markerHasExplicitDelimiter($0, in: nsText, languageCode: languageCode)
+        }
+        guard hasAmbiguousMarker else { return true }
 
         // Intentionally reject a shorter consecutive run when a nearby later
         // marker skips ahead (for example 1, 2, 4). We no longer support
