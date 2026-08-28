@@ -18,7 +18,7 @@
         "name": "keyboard.chevron.compact.down"
       },
       "title": "More room while you type",
-      "message": "Long press #+= to hide two rows of keys. Tap the keyboard icon whenever you want the full keyboard back."
+      "message": "Long press #+= to enter Compact Mode. Tap the keyboard icon whenever you want the full keyboard back."
     },
     {
       "id": "ios-keyvox-for-mac",
@@ -31,14 +31,14 @@
         "kind": "appBundleIcon"
       },
       "title": "Bring KeyVox to your Mac",
-      "message": "Get the same private, on-device dictation experience across your Mac.",
+      "message": "Get the same private, on-device dictation experience across macOS.",
       "buttonTitle": "Learn More",
       "action": {
         "kind": "web",
         "url": "https://keyvox.app/?utm_source=keyvox_ios&utm_medium=promotion&utm_campaign=mac_app"
       },
       "sharing": {
-        "url": "https://keyvox.app",
+        "url": "https://keyvox.app/?utm_source=keyvox_ios&utm_medium=share&utm_campaign=mac_app_share",
         "title": "KeyVox for Mac"
       }
     },
