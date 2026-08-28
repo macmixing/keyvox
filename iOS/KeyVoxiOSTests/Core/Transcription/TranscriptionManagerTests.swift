@@ -338,10 +338,39 @@ struct TranscriptionManagerTests {
         await Task.yield()
 
         #expect(harness.manager.state == .transcribing)
+        #expect(harness.manager.isSessionActive)
+        #expect(harness.recorder.stopMonitoringCallCount == 0)
         harness.transcriptionService.resumeSuccess()
         _ = await task.value
         await waitForManagerState(harness.manager, toBe: .idle)
         #expect(harness.manager.state == .idle)
+    }
+
+    @Test func immediateMicReleaseEndsSessionWhileTranscriptionContinues() async throws {
+        let harness = try makeHarness(serviceShouldSuspend: true)
+        defer { harness.cleanup() }
+        harness.recorder.stoppedCapture = acceptedCapture()
+        harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "test phrase", languageCode: "en", paragraphsText: nil, inlineText: nil)
+
+        _ = await harness.manager.performStartRecordingCommand()
+        let task = Task {
+            await harness.manager.performStopRecordingCommand(releaseMicImmediately: true)
+        }
+        await Task.yield()
+        await Task.yield()
+
+        #expect(harness.manager.state == .transcribing)
+        #expect(harness.manager.isSessionActive == false)
+        #expect(harness.recorder.stopMonitoringCallCount == 1)
+        #expect(harness.recorder.lastStopMonitoringKeepAudioSessionActive == false)
+        #expect(harness.transcriptionService.cancelCallCount == 0)
+
+        harness.transcriptionService.resumeSuccess()
+        let result = await task.value
+        await waitForManagerState(harness.manager, toBe: .idle)
+
+        #expect(result == .completed(harness.manager.lastTranscriptionText ?? ""))
+        #expect(harness.manager.lastTranscriptionText != nil)
     }
 
     @Test func acceptedCaptureWithMissingModelSurfacesErrorAndSkipsTranscription() async throws {

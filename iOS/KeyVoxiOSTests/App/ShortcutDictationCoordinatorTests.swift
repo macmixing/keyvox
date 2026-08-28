@@ -49,10 +49,10 @@ struct ShortcutDictationCoordinatorTests {
             liveActivityCoordinator: activity
         )
 
-        let outcome = await coordinator.toggleRecording()
+        let outcome = await coordinator.toggleRecording(releaseMicImmediately: true)
 
         #expect(outcome == .transcriptionCompleted("Shared transcription"))
-        #expect(calls.values == ["stopRecording"])
+        #expect(calls.values == ["stopRecording:true"])
     }
 
     @Test func returnsNoSpeechWithoutProducingShortcutText() async {
@@ -70,6 +70,7 @@ struct ShortcutDictationCoordinatorTests {
         let outcome = await coordinator.toggleRecording()
 
         #expect(outcome == .noSpeech)
+        #expect(calls.values == ["stopRecording:false"])
     }
 
     @Test func refusesAnotherToggleWhileSharedTranscriptionIsBusy() async {
@@ -118,8 +119,10 @@ private final class MockShortcutDictationSessionController: ShortcutDictationSes
         return startResult
     }
 
-    func performStopRecordingCommand() async -> TranscriptionStopCommandResult {
-        calls.values.append("stopRecording")
+    func performStopRecordingCommand(
+        releaseMicImmediately: Bool
+    ) async -> TranscriptionStopCommandResult {
+        calls.values.append("stopRecording:\(releaseMicImmediately)")
         shortcutDictationState = .idle
         return stopResult
     }

@@ -272,7 +272,9 @@ final class TranscriptionManager: ObservableObject {
         }
     }
 
-    func performStopRecordingCommand() async -> TranscriptionStopCommandResult {
+    func performStopRecordingCommand(
+        releaseMicImmediately: Bool = false
+    ) async -> TranscriptionStopCommandResult {
         guard state == .recording else { return .notRecording }
         let utteranceID = activeUtteranceID
         cancelUtteranceSafetyWatchdog()
@@ -284,6 +286,9 @@ final class TranscriptionManager: ObservableObject {
         #endif
 
         let stoppedCapture = await recorder.stopRecording()
+        if releaseMicImmediately {
+            await releaseSessionMonitoringAfterCapture()
+        }
         return await completeStopRecording(stoppedCapture, utteranceID: utteranceID, startTime: startTime)
     }
 

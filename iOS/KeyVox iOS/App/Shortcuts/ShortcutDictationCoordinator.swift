@@ -21,7 +21,7 @@ protocol ShortcutDictationSessionControlling: AnyObject {
     var sessionDisablePending: Bool { get }
 
     func performStartRecordingCommand(isFromURL: Bool) async -> TranscriptionStartCommandResult
-    func performStopRecordingCommand() async -> TranscriptionStopCommandResult
+    func performStopRecordingCommand(releaseMicImmediately: Bool) async -> TranscriptionStopCommandResult
 }
 
 @MainActor
@@ -61,12 +61,12 @@ final class ShortcutDictationCoordinator {
         self.liveActivityCoordinator = liveActivityCoordinator
     }
 
-    func toggleRecording() async -> ShortcutDictationOutcome {
+    func toggleRecording(releaseMicImmediately: Bool = false) async -> ShortcutDictationOutcome {
         switch sessionController.shortcutDictationState {
         case .idle:
             return await startRecording()
         case .recording:
-            return await stopRecording()
+            return await stopRecording(releaseMicImmediately: releaseMicImmediately)
         case .busy:
             return .busy
         }
@@ -95,8 +95,10 @@ final class ShortcutDictationCoordinator {
         }
     }
 
-    private func stopRecording() async -> ShortcutDictationOutcome {
-        switch await sessionController.performStopRecordingCommand() {
+    private func stopRecording(releaseMicImmediately: Bool) async -> ShortcutDictationOutcome {
+        switch await sessionController.performStopRecordingCommand(
+            releaseMicImmediately: releaseMicImmediately
+        ) {
         case .completed(let text):
             return .transcriptionCompleted(text)
         case .noSpeech:

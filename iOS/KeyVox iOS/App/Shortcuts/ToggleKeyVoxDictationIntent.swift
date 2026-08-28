@@ -6,6 +6,12 @@ struct ToggleKeyVoxDictationIntent: AudioRecordingIntent, LiveActivityIntent {
     static var openAppWhenRun: Bool { false }
     static var authenticationPolicy: IntentAuthenticationPolicy { .alwaysAllowed }
 
+    @Parameter(
+        title: "Release Mic Immediately",
+        default: false
+    )
+    var releaseMicImmediately: Bool
+
     @available(iOS 26.0, *)
     static var supportedModes: IntentModes { .background }
 
@@ -23,7 +29,9 @@ struct ToggleKeyVoxDictationIntent: AudioRecordingIntent, LiveActivityIntent {
 
     @MainActor
     func perform() async throws -> some IntentResult & ReturnsValue<String?> {
-        let outcome = await AppServiceRegistry.shared.shortcutDictationCoordinator.toggleRecording()
+        let outcome = await AppServiceRegistry.shared.shortcutDictationCoordinator.toggleRecording(
+            releaseMicImmediately: releaseMicImmediately
+        )
 
         switch outcome {
         case .recordingStarted, .noSpeech:
