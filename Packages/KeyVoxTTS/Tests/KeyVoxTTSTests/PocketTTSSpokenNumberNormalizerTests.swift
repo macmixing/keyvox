@@ -36,17 +36,22 @@ final class PocketTTSSpokenNumberNormalizerTests: XCTestCase {
     }
 
     func testNormalizeSpeaksStandaloneCompactThousands() {
-        let examples = [
-            "8k": "eight thousand",
-            "12K": "twelve thousand",
-        ]
+        XCTAssertEqual(
+            PocketTTSSpokenNumberNormalizer.normalize(in: "8k"),
+            "eight thousand"
+        )
+    }
 
-        for (input, expected) in examples {
-            XCTAssertEqual(
-                PocketTTSSpokenNumberNormalizer.normalize(in: input),
-                expected
-            )
-        }
+    func testNormalizeSpeaksBareUppercaseCompactValuesAsLetterNames() {
+        XCTAssertEqual(
+            PocketTTSSpokenNumberNormalizer.normalize(in: "4K video and 8K video"),
+            "four kay video and eight kay video"
+        )
+
+        let normalized = PocketTTSChunkPlanner.normalize("4K video and 8K video")
+        XCTAssertTrue(
+            normalized.text.hasSuffix("Four kay video and eight kay video.")
+        )
     }
 
     func testNormalizeSpeaksDecimalCompactThousandsAsCompleteValues() {
@@ -62,7 +67,7 @@ final class PocketTTSSpokenNumberNormalizerTests: XCTestCase {
             )
         }
 
-        let normalized = PocketTTSChunkPlanner.normalize("3.8K and $3.8K")
+        let normalized = PocketTTSChunkPlanner.normalize("3.8k and $3.8K")
         XCTAssertTrue(
             normalized.text.hasSuffix(
                 "Three thousand eight hundred and three thousand eight hundred dollars."

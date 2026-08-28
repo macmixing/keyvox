@@ -4,7 +4,8 @@ enum PocketTTSSpokenNumberNormalizer {
     private static let decimalDollarAmountPattern = #"\$((?:[0-9]{1,3}(?:,[0-9]{3})+|[0-9]+))\.([0-9]{1,2})(?![\p{L}\p{N}%]|\.[0-9])"#
     private static let compactDollarThousandsPattern = #"\$([0-9]+(?:\.[0-9]{1,3})?)\s*[kK]\b"#
     private static let largeDollarAmountPattern = #"\$((?:[0-9]{1,3}(?:,[0-9]{3})+|[0-9]{4,}))(?!(?:[.,][0-9])|[\p{L}\p{N}%])"#
-    private static let compactThousandsPattern = #"(?<![\p{L}\p{N}$.,])([0-9]+(?:\.[0-9]{1,3})?)\s*[kK]\b(?!%)"#
+    private static let compactThousandsPattern = #"(?<![\p{L}\p{N}$.,])([0-9]+(?:\.[0-9]{1,3})?)\s*k\b(?!%)"#
+    private static let uppercaseCompactLabelPattern = #"(?<![\p{L}\p{N}$.,])([0-9]+(?:\.[0-9]{1,3})?)\s*K\b(?!%)"#
     private static let groupedNumberPattern = #"(?<![\p{L}\p{N}$.,])([0-9]{1,3}(?:,[0-9]{3})+)(?!(?:[.,][0-9])|[\p{L}\p{N}%])"#
 
     static func normalize(in text: String) -> String {
@@ -50,8 +51,16 @@ enum PocketTTSSpokenNumberNormalizer {
             return spokenValue(value)
         }
 
-        return replacingMatches(
+        let normalizedUppercaseCompactLabels = replacingMatches(
             in: normalizedCompactThousands,
+            pattern: uppercaseCompactLabelPattern
+        ) { captures in
+            guard let digits = captures.first else { return nil }
+            return spokenUppercaseCompactLabel(from: digits)
+        }
+
+        return replacingMatches(
+            in: normalizedUppercaseCompactLabels,
             pattern: groupedNumberPattern
         ) { captures in
             guard let digits = captures.first else { return nil }
@@ -122,6 +131,19 @@ enum PocketTTSSpokenNumberNormalizer {
         }
 
         return components.joined(separator: " and ")
+    }
+
+    private static func spokenUppercaseCompactLabel(from digits: String) -> String? {
+        let formatter = NumberFormatter()
+        formatter.locale = Locale(identifier: "en_US")
+        formatter.numberStyle = .spellOut
+
+        let value = NSDecimalNumber(
+            string: digits,
+            locale: Locale(identifier: "en_US")
+        )
+        guard let spokenValue = formatter.string(from: value) else { return nil }
+        return "\(spokenValue) kay"
     }
 
     private static func replacingMatches(
