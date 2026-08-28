@@ -4,6 +4,14 @@ import XCTest
 
 @MainActor
 final class DictionaryMatcherTests: XCTestCase {
+    func testDoesNotMatchSixDictationsToBigDictation() {
+        let matcher = makeRuntimeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Big Dictation")])
+        let input = "Did you try six dictations?"
+
+        XCTAssertEqual(matcher.apply(to: input).text, input)
+    }
+
     func testDoesNotMatchNumericDictionaryEntryToUnrelatedPluralTail() {
         let matcher = makeRuntimeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "7-Eleven")])

@@ -6,9 +6,9 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
-## [1.2.7] - 2026-08-27
+## [1.2.7] - 2026-08-28
 
-Numbered lists now remain detectable when their item content contains unrelated numbers.
+Numbered lists now remain detectable around unrelated numbers, and multiword dictionary replacements require phonetic agreement for every changed word.
 
 ### Includes
 
@@ -16,10 +16,12 @@ Numbered lists now remain detectable when their item content contains unrelated 
 - Allowed explicit two-item lists and lists with three or more sequential markers to remain valid when later content contains higher numbers.
 - Preserved the skipped-marker safeguard for ambiguous undelimited two-item sequences.
 - Added regression coverage for numeric ranges after a final list marker and unrelated numbers between a longer sequence of list markers.
+- Required each changed word in an aligned multiword dictionary candidate to independently pass the phonetic threshold, preventing an exact shared word from masking an unrelated word during plural or possessive matching.
+- Added regression coverage ensuring `six dictations` does not match `Big Dictation`.
 
 ### Notes
 
-- `1.2.7` tracks mixed-number list-pattern detection improvements in the shared Core engine.
+- `1.2.7` tracks mixed-number list-pattern detection and stricter multiword dictionary phonetic alignment in the shared Core engine.
 
 ---
 
