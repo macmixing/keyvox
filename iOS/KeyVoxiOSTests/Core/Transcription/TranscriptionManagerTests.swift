@@ -373,6 +373,51 @@ struct TranscriptionManagerTests {
         #expect(harness.manager.lastTranscriptionText != nil)
     }
 
+    @Test func immediateMicReleaseRetriesAfterTranscriptionWithoutLosingText() async throws {
+        let harness = try makeHarness()
+        defer { harness.cleanup() }
+        harness.recorder.stoppedCapture = acceptedCapture()
+        harness.recorder.stopMonitoringErrors = [NSError(domain: "StopMonitoring", code: 1)]
+        harness.transcriptionService.nextResult = TranscriptionProviderResult(
+            text: "test phrase",
+            languageCode: "en",
+            paragraphsText: nil,
+            inlineText: nil
+        )
+
+        _ = await harness.manager.performStartRecordingCommand()
+        let result = await harness.manager.performStopRecordingCommand(releaseMicImmediately: true)
+
+        #expect(result == .completed(harness.manager.lastTranscriptionText ?? ""))
+        #expect(harness.manager.lastTranscriptionText != nil)
+        #expect(harness.transcriptionService.transcribeCallCount == 1)
+        #expect(harness.recorder.stopMonitoringCallCount == 2)
+        #expect(harness.manager.isSessionActive == false)
+    }
+
+    @Test func repeatedImmediateMicReleaseFailurePreservesSessionTimeout() async throws {
+        let harness = try makeHarness()
+        defer { harness.cleanup() }
+        let stopMonitoringError = NSError(domain: "StopMonitoring", code: 1)
+        harness.recorder.stoppedCapture = acceptedCapture()
+        harness.recorder.stopMonitoringErrors = [stopMonitoringError, stopMonitoringError]
+        harness.transcriptionService.nextResult = TranscriptionProviderResult(
+            text: "test phrase",
+            languageCode: "en",
+            paragraphsText: nil,
+            inlineText: nil
+        )
+
+        _ = await harness.manager.performStartRecordingCommand()
+        let result = await harness.manager.performStopRecordingCommand(releaseMicImmediately: true)
+
+        #expect(result == .completed(harness.manager.lastTranscriptionText ?? ""))
+        #expect(harness.transcriptionService.transcribeCallCount == 1)
+        #expect(harness.recorder.stopMonitoringCallCount == 2)
+        #expect(harness.manager.isSessionActive)
+        #expect(harness.manager.sessionExpirationDate != nil)
+    }
+
     @Test func acceptedCaptureWithMissingModelSurfacesErrorAndSkipsTranscription() async throws {
         let harness = try makeHarness(modelPath: "")
         defer { harness.cleanup() }
@@ -884,6 +929,7 @@ private final class StubAudioRecorder: AudioRecording {
     var cancelCurrentUtteranceCallCount = 0
     var startError: Error?
     var enableMonitoringError: Error?
+    var stopMonitoringErrors: [Error] = []
     var stoppedCapture = StoppedCaptureProcessor.process(
         snapshot: Array(repeating: Float(0.2), count: 4_000),
         captureDuration: 1.0,
@@ -943,6 +989,9 @@ private final class StubAudioRecorder: AudioRecording {
     func stopMonitoring(keepAudioSessionActive: Bool) throws {
         stopMonitoringCallCount += 1
         lastStopMonitoringKeepAudioSessionActive = keepAudioSessionActive
+        if !stopMonitoringErrors.isEmpty {
+            throw stopMonitoringErrors.removeFirst()
+        }
         isMonitoring = false
     }
 

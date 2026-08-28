@@ -287,10 +287,25 @@ final class TranscriptionManager: ObservableObject {
         #endif
 
         let stoppedCapture = await recorder.stopRecording()
+        var shouldRetryImmediateRelease = false
         if releaseMicImmediately {
             await releaseSessionMonitoringAfterCapture()
+            shouldRetryImmediateRelease = isSessionActive
         }
-        return await completeStopRecording(stoppedCapture, utteranceID: utteranceID, startTime: startTime)
+
+        let result = await completeStopRecording(
+            stoppedCapture,
+            utteranceID: utteranceID,
+            startTime: startTime
+        )
+
+        if shouldRetryImmediateRelease, isSessionActive {
+            await releaseSessionMonitoringAfterCapture()
+            if isSessionActive {
+                armIdleTimeout()
+            }
+        }
+        return result
     }
 
     func completeStopRecording(
