@@ -69,6 +69,7 @@ enum PocketTTSTextNormalizer {
             with: " email ",
             options: [.regularExpression, .caseInsensitive]
         )
+        sanitized = PocketTTSSpokenNumberNormalizer.normalize(in: sanitized)
         sanitized = sanitized.replacingOccurrences(
             of: dollarAmountPattern,
             with: "$1 dollars",
