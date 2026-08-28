@@ -6,6 +6,16 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.0.3] - 2026-08-27
+
+### Fixed
+
+- PocketTTS now speaks grouped thousands, millions, and billions as complete numbers instead of reading their digits or punctuation separately.
+- PocketTTS now expands compact thousands such as `8k` and `12K`, including dollar-prefixed amounts.
+- PocketTTS now speaks decimal dollar amounts with explicit dollar and cent units, including singular, zero, hundred-dollar, and large grouped values.
+
+---
+
 ## [1.0.2] - 2026-05-31
 
 ### Fixed
