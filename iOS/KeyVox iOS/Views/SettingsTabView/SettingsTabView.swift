@@ -22,6 +22,7 @@ struct SettingsTabView: View {
     @State var isTTSSectionExpanded = false
     @State var ttsExpandedContentHeight: CGFloat = 0
     @State var isThirdPartyNoticesPresented = false
+    @State var shortcutInstallationErrorMessage: String?
     @State private var handledModelSectionExpansionRequestID: UUID?
     @StateObject var downloadNetworkMonitor = OnboardingDownloadNetworkMonitor()
     
@@ -44,6 +45,23 @@ struct SettingsTabView: View {
         settingsScrollScreen
             .sheet(isPresented: $isThirdPartyNoticesPresented) {
                 ThirdPartyNoticesView()
+            }
+            .alert(
+                "Unable to Add Shortcut",
+                isPresented: Binding(
+                    get: { shortcutInstallationErrorMessage != nil },
+                    set: { isPresented in
+                        if isPresented == false {
+                            shortcutInstallationErrorMessage = nil
+                        }
+                    }
+                )
+            ) {
+                Button("OK", role: .cancel) {
+                    shortcutInstallationErrorMessage = nil
+                }
+            } message: {
+                Text(shortcutInstallationErrorMessage ?? "")
             }
             .blocksAppReviewRequest(isThirdPartyNoticesPresented)
             .onDisappear {

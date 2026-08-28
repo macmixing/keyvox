@@ -1,18 +1,24 @@
 import SwiftUI
 
 struct SettingsRow<TrailingContent: View>: View {
-    let icon: String?
+    private enum Icon {
+        case system(String)
+        case asset(String)
+    }
+
+    private let icon: Icon?
     let title: String
     let description: String
     let trailingContent: TrailingContent
     
     init(
         icon: String? = nil,
+        assetIcon: String? = nil,
         title: String,
         description: String,
         @ViewBuilder trailingContent: () -> TrailingContent
     ) {
-        self.icon = icon
+        self.icon = assetIcon.map(Icon.asset) ?? icon.map(Icon.system)
         self.title = title
         self.description = description
         self.trailingContent = trailingContent()
@@ -20,11 +26,12 @@ struct SettingsRow<TrailingContent: View>: View {
     
     init(
         icon: String? = nil,
+        assetIcon: String? = nil,
         title: String,
         description: String,
         isOn: Binding<Bool>
     ) where TrailingContent == AnyView {
-        self.icon = icon
+        self.icon = assetIcon.map(Icon.asset) ?? icon.map(Icon.system)
         self.title = title
         self.description = description
         self.trailingContent = AnyView(
@@ -56,15 +63,25 @@ struct SettingsRow<TrailingContent: View>: View {
         }
     }
     
-    private func iconView(_ systemName: String) -> some View {
+    private func iconView(_ icon: Icon) -> some View {
         ZStack {
             Circle()
                 .fill(AppTheme.accent.opacity(0.4))
                 .frame(width: 32, height: 32)
             
-            Image(systemName: systemName)
-                .font(.system(size: 16, weight: .medium))
-                .foregroundColor(.yellow)
+            switch icon {
+            case .system(let systemName):
+                Image(systemName: systemName)
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(.yellow)
+            case .asset(let assetName):
+                Image(assetName)
+                    .resizable()
+                    .renderingMode(.template)
+                    .scaledToFit()
+                    .frame(width: 18, height: 18)
+                    .foregroundStyle(.yellow)
+            }
         }
     }
 }

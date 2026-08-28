@@ -68,6 +68,30 @@ extension SettingsTabView {
                     description: "Allow KeyVox to show live activity updates.",
                     isOn: $settingsStore.liveActivitiesEnabled
                 )
+
+                Divider()
+                    .overlay(.white.opacity(0.22))
+
+                SettingsRow(
+                    assetIcon: "keyvox-circle",
+                    title: "Dictation Shortcut",
+                    description: "Add a quick shortcut to toggle KeyVox dictation anywhere."
+                ) {
+                    AppActionButton(
+                        title: "Add",
+                        style: .primary,
+                        size: .compact,
+                        fontSize: 15
+                    ) {
+                        Task {
+                            do {
+                                try await DictationShortcutInstaller.openInstallation()
+                            } catch {
+                                shortcutInstallationErrorMessage = error.localizedDescription
+                            }
+                        }
+                    }
+                }
             }
         }
     }
