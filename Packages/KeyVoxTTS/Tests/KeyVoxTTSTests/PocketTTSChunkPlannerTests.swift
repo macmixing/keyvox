@@ -41,7 +41,7 @@ final class PocketTTSChunkPlannerTests: XCTestCase {
 
     func testNormalizeExpandsCurrencyAndPercentSymbols() {
         let normalized = PocketTTSChunkPlanner.normalize("It costs $12.50 and saves 30%")
-        XCTAssertTrue(normalized.text.hasSuffix("It costs 12.50 dollars and saves 30 percent."))
+        XCTAssertTrue(normalized.text.hasSuffix("It costs twelve dollars and fifty cents and saves 30 percent."))
     }
 
     func testNormalizeFlattensDatesAndTimes() {

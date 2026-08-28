@@ -67,15 +67,63 @@ final class PocketTTSSpokenNumberNormalizerTests: XCTestCase {
         }
     }
 
+    func testNormalizeSpeaksDollarsAndCents() {
+        let examples = [
+            "$12.15": "twelve dollars and fifteen cents",
+            "$12.05": "twelve dollars and five cents",
+            "$12.5": "twelve dollars and fifty cents",
+            "$1.01": "one dollar and one cent",
+            "$0.15": "fifteen cents",
+            "$12.00": "twelve dollars",
+            "$0.00": "zero dollars",
+            "$1,236,456.78": "one million two hundred thirty-six thousand four hundred fifty-six dollars and seventy-eight cents",
+        ]
+
+        for (input, expected) in examples {
+            XCTAssertEqual(
+                PocketTTSSpokenNumberNormalizer.normalize(in: input),
+                expected
+            )
+        }
+    }
+
+    func testNormalizeSpeaksHundredDollarVariants() {
+        let examples = [
+            "$100.15": "one hundred dollars and fifteen cents",
+            "$101.01": "one hundred one dollars and one cent",
+            "$115.50": "one hundred fifteen dollars and fifty cents",
+            "$999.99": "nine hundred ninety-nine dollars and ninety-nine cents",
+            "$1,200.15": "one thousand two hundred dollars and fifteen cents",
+        ]
+
+        for (input, expected) in examples {
+            XCTAssertEqual(
+                PocketTTSSpokenNumberNormalizer.normalize(in: input),
+                expected
+            )
+        }
+    }
+
     func testNormalizeHandlesSentencePunctuation() {
         XCTAssertEqual(
             PocketTTSSpokenNumberNormalizer.normalize(in: "Totals: 46,532, then $1,236,456."),
             "Totals: forty-six thousand five hundred thirty-two, then one million two hundred thirty-six thousand four hundred fifty-six dollars."
         )
+        XCTAssertEqual(
+            PocketTTSSpokenNumberNormalizer.normalize(in: "The total is $12.15."),
+            "The total is twelve dollars and fifteen cents."
+        )
     }
 
-    func testNormalizeLeavesDecimalsPercentagesAndYearsUnchanged() {
-        let input = "$12.50 46,532.75 46,532% 2026"
+    func testNormalizeLeavesNonCurrencyDecimalsPercentagesAndYearsUnchanged() {
+        let input = "46,532.75 46,532% 2026"
         XCTAssertEqual(PocketTTSSpokenNumberNormalizer.normalize(in: input), input)
+    }
+
+    func testNormalizeLeavesUnsupportedCurrencyPrecisionUnchanged() {
+        XCTAssertEqual(
+            PocketTTSSpokenNumberNormalizer.normalize(in: "$12.155"),
+            "$12.155"
+        )
     }
 }
