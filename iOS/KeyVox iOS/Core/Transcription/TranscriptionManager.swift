@@ -228,6 +228,7 @@ final class TranscriptionManager: ObservableObject {
 
     func performStartRecordingCommand(isFromURL: Bool = false) async -> TranscriptionStartCommandResult {
         guard state == .idle else { return .alreadyInProgress }
+        KeyVoxIPCBridge.removeTranscription()
         state = .recording
         lastErrorMessage = nil
         pendingPipelineOutputText = nil
