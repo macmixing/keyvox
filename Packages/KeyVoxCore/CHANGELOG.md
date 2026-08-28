@@ -6,6 +6,23 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.2.7] - 2026-08-27
+
+Numbered lists now remain detectable when their item content contains unrelated numbers.
+
+### Includes
+
+- Trusted strong consecutive marker patterns while preserving unrelated numeric values inside list-item content.
+- Allowed explicit two-item lists and lists with three or more sequential markers to remain valid when later content contains higher numbers.
+- Preserved the skipped-marker safeguard for ambiguous undelimited two-item sequences.
+- Added regression coverage for numeric ranges after a final list marker and unrelated numbers between a longer sequence of list markers.
+
+### Notes
+
+- `1.2.7` tracks mixed-number list-pattern detection improvements in the shared Core engine.
+
+---
+
 ## [1.2.6] - 2026-08-23
 
 Spoken quantities now preserve complete hundreds-and-thousands values, Parakeet rejects captures without detected speech, and stylized dictionary terms correct reliably before title-cased words.
