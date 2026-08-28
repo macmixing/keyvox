@@ -7,7 +7,7 @@ struct KeyVoxSpeakShortcutsProvider: AppShortcutsProvider {
             phrases: [
                 "Toggle dictation in \(.applicationName)"
             ],
-            shortTitle: "KeyVox Dictation",
+            shortTitle: "Toggle Dictation",
             systemImageName: "waveform"
         )
 
