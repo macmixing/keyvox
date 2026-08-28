@@ -115,7 +115,7 @@
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "KEYVOX_PROMOTION_PREVIEW_CAMPAIGN_ID"
-            value = "ios-compact-keys"
+            value = "ios-keyvox-for-mac"
             isEnabled = "NO">
          </EnvironmentVariable>
       </EnvironmentVariables>
