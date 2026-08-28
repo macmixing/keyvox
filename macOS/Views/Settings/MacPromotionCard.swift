@@ -26,8 +26,8 @@ struct MacPromotionCard: View {
 
                 HStack(alignment: .center, spacing: 16) {
                     Text(campaign.message)
-                        .font(.appFont(13))
-                        .foregroundColor(.secondary)
+                        .font(.appFont(13, variant: .light))
+                        .foregroundColor(.primary)
                         .lineSpacing(2)
                         .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -92,7 +92,7 @@ struct MacPromotionCard: View {
         ) {
             Image(systemName: "square.and.arrow.up")
                 .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(Color.white.opacity(0.46))
+                .foregroundStyle(.white)
                 .frame(width: 44, height: 44)
                 .contentShape(Rectangle())
         }

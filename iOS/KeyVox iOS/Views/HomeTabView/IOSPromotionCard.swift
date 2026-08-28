@@ -22,7 +22,7 @@ struct IOSPromotionCard: View {
 
             Text(campaign.message)
                 .font(.appFont(15, variant: .light))
-                .foregroundStyle(.white.opacity(0.7))
+                .foregroundStyle(.white)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
             if let buttonTitle = campaign.buttonTitle,
@@ -93,7 +93,7 @@ struct IOSPromotionCard: View {
         ) {
             Image(systemName: "square.and.arrow.up")
                 .font(.system(size: 15, weight: .semibold))
-                .foregroundStyle(Color.white.opacity(0.48))
+                .foregroundStyle(.white)
                 .frame(width: 44, height: 44)
                 .contentShape(Rectangle())
         }
