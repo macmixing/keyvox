@@ -1247,10 +1247,6 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		F41000022FF3000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxPromotions" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = ../Packages/KeyVoxPromotions;
-		};
 		8E9E38942F5BF56600EAFA72 /* XCLocalSwiftPackageReference "../Packages/KeyVoxCore" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = ../Packages/KeyVoxCore;
@@ -1275,6 +1271,10 @@
 			isa = XCLocalSwiftPackageReference;
 			relativePath = ../Packages/KeyVoxTextComposition;
 		};
+		F41000022FF3000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxPromotions" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../Packages/KeyVoxPromotions;
+		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCRemoteSwiftPackageReference section */
@@ -1297,11 +1297,6 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		F41000032FF3000100AA0001 /* KeyVoxPromotions */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = F41000022FF3000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxPromotions" */;
-			productName = KeyVoxPromotions;
-		};
 		8E7DB28D2F80FBE0009E3576 /* SwiftSoup */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 8E7DB28C2F80FB54009E3576 /* XCRemoteSwiftPackageReference "SwiftSoup" */;
@@ -1340,6 +1335,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = B4C200042FF2000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxTextComposition" */;
 			productName = KeyVoxTextComposition;
+		};
+		F41000032FF3000100AA0001 /* KeyVoxPromotions */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F41000022FF3000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxPromotions" */;
+			productName = KeyVoxPromotions;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

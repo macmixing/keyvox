@@ -104,6 +104,12 @@ extension DictionaryMatcher {
                     let phoneticDelta = max(0, gatedFallbackPhoneticSimilarity - baseScore.phonetic)
                     let adjustedBaseFinal = min(1.0, baseScore.final + (scorer.phoneticWeight * phoneticDelta))
                     let adjustedPhoneticScore = max(baseScore.phonetic, gatedFallbackPhoneticSimilarity)
+                    guard hasRequiredAlignedTokenPhonetics(
+                        observedText: form.normalized,
+                        candidateText: candidateText
+                    ) else {
+                        continue
+                    }
                     guard scorer.hasRequiredPhoneticSimilarity(
                         observedText: form.normalized,
                         candidateText: candidateText,
