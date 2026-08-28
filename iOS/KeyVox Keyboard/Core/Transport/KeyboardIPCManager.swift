@@ -144,8 +144,8 @@ final class KeyboardIPCManager {
             return .waitingForApp
         case .recording, .transcribing:
             guard !sessionWarm else { return state }
-            guard let stateAge,
-                  stateAge > KeyVoxIPCBridge.heartbeatFreshnessWindow else {
+            if let stateAge,
+               stateAge <= KeyVoxIPCBridge.heartbeatFreshnessWindow {
                 return state
             }
             KeyVoxIPCBridge.clearTransientOperationState()
