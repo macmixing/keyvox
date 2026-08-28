@@ -117,6 +117,7 @@ final class PasteAXInspector: PasteAXInspecting {
         var previousNonWhitespaceCharacter: Character?
         var characterBeforePreviousNonWhitespaceCharacter: Character?
         var isPreviousNonWhitespaceCharacterAtLineStart = false
+        var isAfterNewline = false
         if let caretLocation, caretLocation > 0 {
             if let precedingText = textBeforeCaret(
                 element: focusedElement,
@@ -125,6 +126,7 @@ final class PasteAXInspector: PasteAXInspecting {
                 let precedingCharacters = Array(precedingText)
                 previousCharacter = precedingCharacters.last
                 characterBeforePreviousCharacter = precedingCharacters.dropLast().last
+                isAfterNewline = Self.isAfterNewlineInTrailingWhitespace(precedingText)
 
                 let precedingNonWhitespace = precedingCharacters.reversed().filter {
                     !$0.isWhitespace
@@ -176,7 +178,8 @@ final class PasteAXInspector: PasteAXInspecting {
             characterBeforePreviousCharacter: characterBeforePreviousCharacter,
             previousNonWhitespaceCharacter: previousNonWhitespaceCharacter,
             characterBeforePreviousNonWhitespaceCharacter: characterBeforePreviousNonWhitespaceCharacter,
-            isPreviousNonWhitespaceCharacterAtLineStart: isPreviousNonWhitespaceCharacterAtLineStart
+            isPreviousNonWhitespaceCharacterAtLineStart: isPreviousNonWhitespaceCharacterAtLineStart,
+            isAfterNewline: isAfterNewline
         )
         #if DEBUG
         if ProcessInfo.processInfo.environment["KVX_DEBUG_LOG_RAW_TEXT"] == "1" {
@@ -192,11 +195,18 @@ final class PasteAXInspector: PasteAXInspecting {
                     + "beforePrevious=\(String(reflecting: characterBeforePreviousCharacter)) "
                     + "previousNonWhitespace=\(String(reflecting: previousNonWhitespaceCharacter)) "
                     + "beforePreviousNonWhitespace=\(String(reflecting: characterBeforePreviousNonWhitespaceCharacter)) "
-                    + "previousNonWhitespaceAtLineStart=\(isPreviousNonWhitespaceCharacterAtLineStart)"
+                    + "previousNonWhitespaceAtLineStart=\(isPreviousNonWhitespaceCharacterAtLineStart) "
+                    + "isAfterNewline=\(isAfterNewline)"
             )
         }
         #endif
         return context
+    }
+
+    static func isAfterNewlineInTrailingWhitespace(_ text: String) -> Bool {
+        text.reversed().prefix(while: \.isWhitespace).contains { character in
+            character.unicodeScalars.allSatisfy(CharacterSet.newlines.contains)
+        }
     }
 
     private func firstNonWhitespaceCharacter(

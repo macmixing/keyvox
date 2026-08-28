@@ -263,6 +263,34 @@ final class PasteCapitalizationCoordinatorTests: XCTestCase {
         XCTAssertEqual(output, "Hello")
     }
 
+    func testKeepsCapitalizationAfterNewLineWithMultipleIndentationSpaces() {
+        let heuristics = makeRetainedHeuristics(
+            axInspector: MockPasteAXInspector(
+                focusedContext: PasteInsertionContext(
+                    selectionLength: 0,
+                    caretLocation: 7,
+                    previousCharacter: " ",
+                    characterBeforePreviousCharacter: " ",
+                    previousNonWhitespaceCharacter: "x",
+                    isAfterNewline: true
+                )
+            )
+        )
+
+        let output = heuristics.normalizeLeadingCapitalizationIfNeeded(
+            in: "Hello",
+            currentIdentity: identity("com.example.app", 1),
+            lastInsertionAppIdentity: nil,
+            lastInsertionAt: .distantPast,
+            lastInsertedTrailingCharacter: nil,
+            lastInsertedTrailingNonWhitespaceCharacter: nil,
+            identityMatcher: identityMatcher,
+            shouldPreserveLeadingCapitalization: { _ in false }
+        )
+
+        XCTAssertEqual(output, "Hello")
+    }
+
     func testKeepsCapitalizationAfterPunctuationAndSpace() {
         let heuristics = makeRetainedHeuristics(
             axInspector: MockPasteAXInspector(

@@ -130,7 +130,8 @@ final class PasteCapitalizationCoordinator: PasteCapitalizationCoordinating {
             previousNonWhitespaceCharacter: precedingNonWhitespaceCharacters.first,
             characterBeforePreviousNonWhitespaceCharacter: precedingNonWhitespaceCharacters.dropFirst().first,
             isPreviousNonWhitespaceCharacterAtLineStart: context.isPreviousNonWhitespaceCharacterAtLineStart,
-            isAfterNewline: previousCharacter?.isNewline == true
+            isAfterNewline: context.isAfterNewline
+                || previousCharacter?.isNewline == true
                 || characterBeforePreviousCharacter?.isNewline == true
         )
     }
