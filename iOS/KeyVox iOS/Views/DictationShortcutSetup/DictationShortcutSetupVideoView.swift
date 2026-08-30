@@ -7,6 +7,7 @@ struct DictationShortcutSetupVideoView: View {
     var body: some View {
         LoopingVideoPlayer(
             videoName: asset.name,
+            isPlaying: isActive,
             isReady: .constant(false)
         )
         .aspectRatio(asset.aspectRatio, contentMode: .fit)
