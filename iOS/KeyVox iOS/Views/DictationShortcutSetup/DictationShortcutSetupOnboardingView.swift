@@ -54,8 +54,7 @@ struct DictationShortcutSetupOnboardingView: View {
                     }
                 }
             }
-            .toolbarBackground(AppTheme.screenBackground, for: .navigationBar)
-            .toolbarBackground(.visible, for: .navigationBar)
+            .toolbarBackground(.hidden, for: .navigationBar)
         }
         .alert(
             "Unable to Complete Action",
@@ -77,7 +76,10 @@ struct DictationShortcutSetupOnboardingView: View {
     }
 
     private var pageContent: some View {
-        DictationShortcutSetupPageView(page: selectedPage)
+        DictationShortcutSetupPageView(
+            page: selectedPage,
+            isActive: true
+        )
             .id(selectedPage)
             .transition(pageTransition)
             .animation(.easeInOut(duration: 0.32), value: selectedPage)
@@ -117,7 +119,6 @@ struct DictationShortcutSetupOnboardingView: View {
         .padding(.horizontal, 20)
         .padding(.top, 8)
         .padding(.bottom, 12)
-        .background(AppTheme.screenBackground)
     }
 
     private var skipButton: some View {

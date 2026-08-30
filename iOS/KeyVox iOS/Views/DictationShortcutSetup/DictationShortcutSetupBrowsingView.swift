@@ -16,36 +16,47 @@ struct DictationShortcutSetupBrowsingView: View {
     let onClose: () -> Void
 
     var body: some View {
-        ZStack {
-            AppTheme.screenBackground
-                .ignoresSafeArea()
+        NavigationStack {
+            ZStack {
+                AppTheme.screenBackground
+                    .ignoresSafeArea()
 
-            VStack(spacing: 0) {
-                TabView(selection: $selectedPage) {
-                    ForEach(DictationShortcutSetupPage.allCases, id: \.self) { page in
-                        VStack(spacing: 0) {
-                            DictationShortcutSetupPageView(page: page)
+                VStack(spacing: 0) {
+                    GeometryReader { pagerGeometry in
+                        pager(in: pagerGeometry)
+                    }
 
-                            actionBar(for: page)
+                    AppPageIndicator(
+                        pageCount: DictationShortcutSetupPage.allCases.count,
+                        selectedIndex: selectedPage.rawValue - 1,
+                        onNavigate: handlePageIndicatorNavigation
+                    )
+                    .padding(.top, 12)
+                    .padding(.bottom, 12)
+                    .frame(maxWidth: .infinity)
+                    .background(AppTheme.screenBackground)
+                }
+            }
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text("")
+                        .font(.appFont(22))
+                }
+
+                if showsCloseButton {
+                    if #available(iOS 26.0, *) {
+                        ToolbarItem(placement: .topBarTrailing) {
+                            closeButton
                         }
-                        .tag(page)
+                        .sharedBackgroundVisibility(.hidden)
+                    } else {
+                        ToolbarItem(placement: .topBarTrailing) {
+                            closeButton
+                        }
                     }
                 }
-                .tabViewStyle(.page(indexDisplayMode: .never))
-
-                AppPageIndicator(
-                    pageCount: DictationShortcutSetupPage.allCases.count,
-                    selectedIndex: selectedPage.rawValue - 1,
-                    onNavigate: handlePageIndicatorNavigation
-                )
-                .padding(.top, 12)
-                .padding(.bottom, 12)
-                .frame(maxWidth: .infinity)
-                .background(AppTheme.screenBackground)
             }
-        }
-        .safeAreaInset(edge: .top, spacing: 0) {
-            topBar
+            .toolbarBackground(.hidden, for: .navigationBar)
         }
         .interactiveDismissDisabled()
         .onAppear {
@@ -70,39 +81,70 @@ struct DictationShortcutSetupBrowsingView: View {
         }
     }
 
-    private var topBar: some View {
-        ZStack {
-            Text("")
-                .font(.appFont(22))
+    private var closeButton: some View {
+        Button(action: close) {
+            Image(systemName: "xmark")
+                .font(.system(size: 18, weight: .semibold))
+                .foregroundStyle(.white.opacity(0.58))
+                .frame(width: 44, height: 44)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Close")
+    }
 
-            if showsCloseButton {
-                HStack {
-                    Spacer()
-
-                    Button(action: close) {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 18, weight: .semibold))
-                            .foregroundStyle(.white.opacity(0.58))
-                            .frame(width: 44, height: 44)
-                            .contentShape(Rectangle())
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel("Close")
+    private var selectedPageScrollPosition: Binding<DictationShortcutSetupPage?> {
+        Binding(
+            get: { selectedPage },
+            set: { page in
+                if let page {
+                    selectedPage = page
                 }
             }
+        )
+    }
+
+    @ViewBuilder
+    private func pager(in geometry: GeometryProxy) -> some View {
+        if #available(iOS 26.0, *) {
+            pagerScrollView(in: geometry)
+                .scrollEdgeEffectHidden()
+        } else {
+            pagerScrollView(in: geometry)
         }
-        .frame(maxWidth: .infinity, minHeight: 44)
-        .padding(.horizontal, 12)
-        .padding(.top, 4)
-        .padding(.bottom, 8)
-        .background(AppTheme.screenBackground.opacity(0.98))
+    }
+
+    private func pagerScrollView(in geometry: GeometryProxy) -> some View {
+        ScrollView(.horizontal) {
+            LazyHStack(spacing: 0) {
+                ForEach(DictationShortcutSetupPage.allCases, id: \.self) { page in
+                    VStack(spacing: 0) {
+                        DictationShortcutSetupPageView(
+                            page: page,
+                            isActive: selectedPage == page
+                        )
+
+                        actionBar(for: page)
+                    }
+                    .frame(
+                        width: geometry.size.width,
+                        height: geometry.size.height
+                    )
+                    .id(page)
+                }
+            }
+            .scrollTargetLayout()
+        }
+        .scrollIndicators(.hidden)
+        .scrollTargetBehavior(.paging)
+        .scrollPosition(id: selectedPageScrollPosition)
+        .scrollClipDisabled()
     }
 
     private func actionBar(for page: DictationShortcutSetupPage) -> some View {
         actionSlot(for: page)
             .padding(.horizontal, 20)
             .padding(.top, 8)
-            .background(AppTheme.screenBackground)
     }
 
     private var showsCloseButton: Bool {
