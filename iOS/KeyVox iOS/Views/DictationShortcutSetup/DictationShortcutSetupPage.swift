@@ -29,7 +29,13 @@ enum DictationShortcutSetupPage: Int, CaseIterable, Hashable {
                 pixelWidth: 1170,
                 pixelHeight: 1850
             )
-        case .one, .two, .three, .five, .six, .seven:
+        case .five:
+            DictationShortcutSetupVideoAsset(
+                name: "AddShortcut-Page5",
+                pixelWidth: 1170,
+                pixelHeight: 2450
+            )
+        case .one, .two, .three, .six, .seven:
             nil
         }
     }
