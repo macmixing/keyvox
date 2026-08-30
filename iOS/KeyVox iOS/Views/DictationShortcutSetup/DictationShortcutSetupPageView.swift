@@ -8,7 +8,15 @@ struct DictationShortcutSetupPageView: View {
     }
 
     let page: DictationShortcutSetupPage
-    let isActive: Bool = true
+    let isActive: Bool
+
+    init(
+        page: DictationShortcutSetupPage,
+        isActive: Bool = true
+    ) {
+        self.page = page
+        self.isActive = isActive
+    }
 
     var body: some View {
         ZStack {

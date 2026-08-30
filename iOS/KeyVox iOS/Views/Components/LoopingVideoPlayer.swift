@@ -3,9 +3,21 @@ import AVFoundation
 
 struct LoopingVideoPlayer: UIViewRepresentable {
     let videoName: String
-    let videoType: String = "mov"
-    let isPlaying: Bool = true
+    let videoType: String
+    let isPlaying: Bool
     @Binding var isReady: Bool
+
+    init(
+        videoName: String,
+        videoType: String = "mov",
+        isPlaying: Bool = true,
+        isReady: Binding<Bool>
+    ) {
+        self.videoName = videoName
+        self.videoType = videoType
+        self.isPlaying = isPlaying
+        self._isReady = isReady
+    }
 
     func makeUIView(context: Context) -> UIView {
         let view = LoopingVideoUIView(
