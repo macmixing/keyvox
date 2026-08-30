@@ -34,7 +34,6 @@ struct DictationShortcutSetupBrowsingView: View {
                     .padding(.top, 12)
                     .padding(.bottom, 12)
                     .frame(maxWidth: .infinity)
-                    .background(AppTheme.screenBackground)
                 }
             }
             .toolbar {
