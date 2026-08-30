@@ -20,4 +20,17 @@ enum DictationShortcutSetupPage: Int, CaseIterable, Hashable {
     var includesVideoPlaceholder: Bool {
         self != .one
     }
+
+    var videoAsset: DictationShortcutSetupVideoAsset? {
+        switch self {
+        case .four:
+            DictationShortcutSetupVideoAsset(
+                name: "ActionButtonSettings-Page4",
+                pixelWidth: 1170,
+                pixelHeight: 1850
+            )
+        case .one, .two, .three, .five, .six, .seven:
+            nil
+        }
+    }
 }
