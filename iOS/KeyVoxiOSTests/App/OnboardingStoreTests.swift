@@ -17,7 +17,9 @@ struct OnboardingStoreTests {
         #expect(store.hasCompletedWelcomeScreen == false)
         #expect(store.hasCompletedLanguageSelection == false)
         #expect(store.isForceOnboardingLaunch == false)
+        #expect(store.isForceDictationShortcutSetupLaunch == false)
         #expect(store.hasPendingKeyboardTour == false)
+        #expect(store.hasPendingDictationShortcutSetup == false)
         #expect(store.shouldShowWelcomeScreen)
         #expect(store.shouldShowLanguageSelectionScreen)
         #expect(store.shouldShowKeyboardTourScreen == false)
@@ -161,7 +163,7 @@ struct OnboardingStoreTests {
         #expect(defaults.object(forKey: UserDefaultsKeys.App.hasPendingKeyboardTour) as? Bool == false)
     }
 
-    @Test func completingKeyboardTourClearsPendingFlagAndCompletesOnboarding() {
+    @Test func completingKeyboardTourAdvancesToShortcutSetupWithoutCompletingOnboarding() {
         let defaults = makeDefaults()
         let store = OnboardingStore(
             defaults: defaults,
@@ -172,10 +174,46 @@ struct OnboardingStoreTests {
         store.completeKeyboardTour()
 
         #expect(store.hasPendingKeyboardTour == false)
+        #expect(store.hasPendingDictationShortcutSetup)
+        #expect(store.shouldShowDictationShortcutSetupScreen)
+        #expect(store.hasCompletedOnboarding == false)
+        #expect(store.shouldShowOnboarding)
+        #expect(defaults.object(forKey: UserDefaultsKeys.App.hasPendingKeyboardTour) as? Bool == false)
+        #expect(defaults.object(forKey: UserDefaultsKeys.App.hasPendingDictationShortcutSetup) as? Bool == true)
+        #expect(defaults.bool(forKey: UserDefaultsKeys.App.hasCompletedOnboarding) == false)
+    }
+
+    @Test func shortcutSetupForceFlagStartsDirectlyAtPageOneRoute() {
+        let defaults = makeDefaults()
+        defaults.set(true, forKey: UserDefaultsKeys.App.hasCompletedOnboarding)
+        let store = OnboardingStore(
+            defaults: defaults,
+            runtimeFlags: RuntimeFlags(environment: [
+                RuntimeFlags.forceDictationShortcutSetupEnvironmentKey: "1"
+            ])
+        )
+
+        #expect(store.shouldShowOnboarding)
+        #expect(store.isForceDictationShortcutSetupLaunch)
+        #expect(store.shouldShowDictationShortcutSetupScreen)
+        #expect(store.hasPendingDictationShortcutSetup == false)
+    }
+
+    @Test func completingOnboardingClearsShortcutSetupAndMarksItsIntroductionSeen() {
+        let defaults = makeDefaults()
+        let store = OnboardingStore(
+            defaults: defaults,
+            runtimeFlags: RuntimeFlags(environment: [:])
+        )
+        store.recordPendingKeyboardTour()
+        store.completeKeyboardTour()
+
+        store.completeOnboarding()
+
+        #expect(store.hasPendingDictationShortcutSetup == false)
         #expect(store.hasCompletedOnboarding)
         #expect(store.shouldShowOnboarding == false)
-        #expect(defaults.object(forKey: UserDefaultsKeys.App.hasPendingKeyboardTour) as? Bool == false)
-        #expect(defaults.object(forKey: UserDefaultsKeys.App.hasCompletedOnboarding) as? Bool == true)
+        #expect(defaults.bool(forKey: UserDefaultsKeys.App.hasSeenDictationShortcutSetup))
     }
 
     @Test func recordingPendingKeyboardTourDisarmsRouteUntilActivationCheckRuns() {
