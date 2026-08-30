@@ -17,6 +17,7 @@ struct AppRootView: View {
 
     @EnvironmentObject private var appLaunchRouteStore: AppLaunchRouteStore
     @EnvironmentObject private var onboardingStore: OnboardingStore
+    @EnvironmentObject private var dictationShortcutSetupIntroController: DictationShortcutSetupIntroController
     @EnvironmentObject private var transcriptionManager: TranscriptionManager
     @EnvironmentObject private var ttsManager: TTSManager
     @EnvironmentObject private var ttsPurchaseController: TTSPurchaseController
@@ -83,6 +84,29 @@ struct AppRootView: View {
             isPresented: Binding(
                 get: {
                     destination == .main
+                        && dictationShortcutSetupIntroController.isPresented
+                        && ttsPurchaseController.isUnlockSheetPresented == false
+                        && keyVoxSpeakIntroController.isPresented == false
+                        && keyVoxVibesIntroController.isPresented == false
+                        && keyVoxVibesPurchaseController.sheetPresentation == nil
+                },
+                set: { isPresented in
+                    if isPresented == false,
+                       dictationShortcutSetupIntroController.isPresented {
+                        dismissAutomaticDictationShortcutSetup()
+                    }
+                }
+            )
+        ) {
+            DictationShortcutSetupBrowsingView(mode: .existingUserIntroduction) {
+                dismissAutomaticDictationShortcutSetup()
+            }
+        }
+        .sheet(
+            isPresented: Binding(
+                get: {
+                    destination == .main
+                        && dictationShortcutSetupIntroController.isPresented == false
                         && keyVoxSpeakIntroController.isPresented
                         && ttsPurchaseController.isUnlockSheetPresented == false
                         && keyVoxVibesIntroController.isPresented == false
@@ -107,6 +131,7 @@ struct AppRootView: View {
             isPresented: Binding(
                 get: {
                     destination == .main
+                        && dictationShortcutSetupIntroController.isPresented == false
                         && keyVoxVibesIntroController.isPresented
                         && keyVoxVibesPurchaseController.sheetPresentation == nil
                 },
@@ -163,6 +188,7 @@ struct AppRootView: View {
         }
         .onChange(of: onboardingStore.hasCompletedOnboardingThisLaunch, initial: false) { _, newValue in
             guard newValue else { return }
+            dictationShortcutSetupIntroController.markHandled()
             keyVoxVibesIntroController.markDeferredUntilNextEligibleLaunch()
             keyVoxVibesIntroController.cancelPendingPresentation()
             keyVoxSpeakIntroController.markDeferredUntilNextEligibleLaunch()
@@ -180,6 +206,7 @@ struct AppRootView: View {
         .onChange(of: scenePhase, initial: true) { _, newPhase in
             if newPhase == .active {
                 appReviewRequestCoordinator.handleAppDidBecomeActive()
+                updateKeyVoxSpeakIntroPresentation(for: destination)
                 Task { @MainActor in
                     evaluateReviewRequest()
                 }
@@ -211,6 +238,18 @@ struct AppRootView: View {
         if destination == .main,
            onboardingStore.hasCompletedOnboardingThisLaunch == false,
            appUpdateCoordinator.activePrompt == nil {
+            if dictationShortcutSetupIntroController.wantsPresentationOnEligibleLaunch
+                || dictationShortcutSetupIntroController.hasPresentedThisLaunch {
+                keyVoxVibesIntroController.markDeferredUntilNextEligibleLaunch()
+                keyVoxVibesIntroController.cancelPendingPresentation()
+                keyVoxSpeakIntroController.markDeferredUntilNextEligibleLaunch()
+                keyVoxSpeakIntroController.cancelPendingPresentation()
+                dictationShortcutSetupIntroController.schedulePresentationIfEligible(
+                    onboardingStore: onboardingStore
+                )
+                return
+            }
+
             if keyVoxVibesIntroController.wantsPresentationOnEligibleLaunch {
                 keyVoxSpeakIntroController.markDeferredUntilNextEligibleLaunch()
                 keyVoxSpeakIntroController.cancelPendingPresentation()
@@ -222,9 +261,18 @@ struct AppRootView: View {
                 keyVoxSpeakIntroController.schedulePresentationIfEligible()
             }
         } else {
+            dictationShortcutSetupIntroController.cancelPendingPresentation()
             keyVoxSpeakIntroController.cancelPendingPresentation()
             keyVoxVibesIntroController.cancelPendingPresentation()
         }
+    }
+
+    private func dismissAutomaticDictationShortcutSetup() {
+        dictationShortcutSetupIntroController.markHandled()
+        keyVoxVibesIntroController.markDeferredUntilNextEligibleLaunch()
+        keyVoxVibesIntroController.cancelPendingPresentation()
+        keyVoxSpeakIntroController.markDeferredUntilNextEligibleLaunch()
+        keyVoxSpeakIntroController.cancelPendingPresentation()
     }
 
     private var activeUpdatePrompt: AppUpdateCoordinator.Prompt? {
@@ -247,6 +295,8 @@ struct AppRootView: View {
             || keyVoxSpeakIntroController.wantsPresentationOnEligibleLaunch
             || keyVoxVibesIntroController.isPresented
             || keyVoxVibesIntroController.wantsPresentationOnEligibleLaunch
+            || dictationShortcutSetupIntroController.isPresented
+            || dictationShortcutSetupIntroController.wantsPresentationOnEligibleLaunch
             || ttsPurchaseController.isUnlockSheetPresented
             || keyVoxVibesPurchaseController.sheetPresentation != nil
             || transcriptionManager.state != .idle
@@ -295,6 +345,7 @@ struct AppRootView: View {
         .environmentObject(AppServiceRegistry.shared.localRewriteModelManager)
         .environmentObject(AppServiceRegistry.shared.settingsStore)
         .environmentObject(AppServiceRegistry.shared.onboardingStore)
+        .environmentObject(AppServiceRegistry.shared.dictationShortcutSetupIntroController)
         .environmentObject(AppServiceRegistry.shared.weeklyWordStatsStore)
         .environmentObject(AppServiceRegistry.shared.dictionaryStore)
 }

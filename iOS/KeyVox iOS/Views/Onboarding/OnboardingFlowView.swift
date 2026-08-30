@@ -6,18 +6,23 @@ struct OnboardingFlowView: View {
         case language
         case setup
         case keyboardTour
+        case dictationShortcutSetup
     }
 
     @EnvironmentObject private var onboardingStore: OnboardingStore
     @State private var lastActiveRoute: Route = .welcome
 
     private var resolvedRoute: Route {
-        if onboardingStore.shouldShowWelcomeScreen {
+        if onboardingStore.isForceDictationShortcutSetupLaunch {
+            return .dictationShortcutSetup
+        } else if onboardingStore.shouldShowWelcomeScreen {
             return .welcome
         } else if onboardingStore.shouldShowLanguageSelectionScreen {
             return .language
         } else if onboardingStore.shouldShowKeyboardTourScreen {
             return .keyboardTour
+        } else if onboardingStore.shouldShowDictationShortcutSetupScreen {
+            return .dictationShortcutSetup
         } else {
             return .setup
         }
@@ -56,6 +61,14 @@ struct OnboardingFlowView: View {
                         insertion: .move(edge: .trailing).combined(with: .opacity),
                         removal: .scale(scale: 1.015)
                     ))
+            case .dictationShortcutSetup:
+                DictationShortcutSetupOnboardingView {
+                    onboardingStore.completeOnboarding()
+                }
+                .transition(.asymmetric(
+                    insertion: .move(edge: .trailing).combined(with: .opacity),
+                    removal: .scale(scale: 1.015)
+                ))
             }
         }
         .onAppear {

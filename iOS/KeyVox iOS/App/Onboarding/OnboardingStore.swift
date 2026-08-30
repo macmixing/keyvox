@@ -39,9 +39,18 @@ final class OnboardingStore: ObservableObject {
     }
 
     @Published private(set) var isForceOnboardingLaunch: Bool
+    @Published private(set) var isForceDictationShortcutSetupLaunch: Bool
     @Published private(set) var hasPendingKeyboardTour: Bool {
         didSet {
             defaults.set(hasPendingKeyboardTour, forKey: UserDefaultsKeys.App.hasPendingKeyboardTour)
+        }
+    }
+    @Published private(set) var hasPendingDictationShortcutSetup: Bool {
+        didSet {
+            defaults.set(
+                hasPendingDictationShortcutSetup,
+                forKey: UserDefaultsKeys.App.hasPendingDictationShortcutSetup
+            )
         }
     }
     @Published private(set) var hasPassedWelcomeScreenThisLaunch: Bool
@@ -53,7 +62,9 @@ final class OnboardingStore: ObservableObject {
     var shouldShowOnboarding: Bool {
         !hasCompletedOnboarding
             || isForceOnboardingLaunch
+            || isForceDictationShortcutSetupLaunch
             || hasPendingKeyboardTour
+            || hasPendingDictationShortcutSetup
     }
 
     var shouldShowWelcomeScreen: Bool {
@@ -72,6 +83,11 @@ final class OnboardingStore: ObservableObject {
             && (isForceOnboardingLaunch || !hasCompletedLanguageSelection)
     }
 
+    var shouldShowDictationShortcutSetupScreen: Bool {
+        (isForceDictationShortcutSetupLaunch || hasPendingDictationShortcutSetup)
+            && shouldShowOnboarding
+    }
+
     var shouldSuppressReturnToHostView: Bool {
         shouldShowOnboarding || hasCompletedOnboardingThisLaunch
     }
@@ -81,6 +97,9 @@ final class OnboardingStore: ObservableObject {
     init(defaults: UserDefaults, runtimeFlags: RuntimeFlags) {
         self.defaults = defaults
         let persistedPendingKeyboardTour = defaults.object(forKey: UserDefaultsKeys.App.hasPendingKeyboardTour) as? Bool ?? false
+        let persistedPendingDictationShortcutSetup = defaults.object(
+            forKey: UserDefaultsKeys.App.hasPendingDictationShortcutSetup
+        ) as? Bool ?? false
         hasCompletedOnboarding = defaults.object(forKey: UserDefaultsKeys.App.hasCompletedOnboarding) as? Bool ?? false
         hasCompletedWelcomeScreen = defaults.object(forKey: UserDefaultsKeys.App.hasCompletedOnboardingWelcome) as? Bool ?? false
         hasCompletedLanguageSelection = defaults.object(
@@ -90,7 +109,9 @@ final class OnboardingStore: ObservableObject {
             .string(forKey: UserDefaultsKeys.App.onboardingDictationLanguage)
             .map(DictationLanguage.init(rawValue:))
         isForceOnboardingLaunch = runtimeFlags.forceOnboarding
+        isForceDictationShortcutSetupLaunch = runtimeFlags.forceDictationShortcutSetup
         hasPendingKeyboardTour = persistedPendingKeyboardTour
+        hasPendingDictationShortcutSetup = persistedPendingDictationShortcutSetup
         hasPassedWelcomeScreenThisLaunch = false
         hasPassedLanguageSelectionThisLaunch = false
         isPendingKeyboardTourRouteArmed = persistedPendingKeyboardTour
@@ -100,8 +121,11 @@ final class OnboardingStore: ObservableObject {
 
     func completeOnboarding() {
         clearPendingKeyboardTour()
+        clearPendingDictationShortcutSetup()
+        defaults.set(true, forKey: UserDefaultsKeys.App.hasSeenDictationShortcutSetup)
         hasCompletedOnboarding = true
         isForceOnboardingLaunch = false
+        isForceDictationShortcutSetupLaunch = false
         hasCompletedOnboardingThisLaunch = true
     }
 
@@ -115,6 +139,10 @@ final class OnboardingStore: ObservableObject {
         hasPendingKeyboardTour = false
         isPendingKeyboardTourRouteArmed = false
         isIgnoringPersistedPendingKeyboardTourThisLaunch = false
+    }
+
+    func clearPendingDictationShortcutSetup() {
+        hasPendingDictationShortcutSetup = false
     }
 
     func completeWelcomeScreen() {
@@ -134,7 +162,8 @@ final class OnboardingStore: ObservableObject {
     }
 
     func completeKeyboardTour() {
-        completeOnboarding()
+        clearPendingKeyboardTour()
+        hasPendingDictationShortcutSetup = true
     }
 
     func handleAppDidEnterBackground() {

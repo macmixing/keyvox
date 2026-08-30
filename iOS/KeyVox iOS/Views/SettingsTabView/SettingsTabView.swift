@@ -10,6 +10,7 @@ struct SettingsTabView: View {
     @EnvironmentObject var keyVoxVibesPurchaseController: KeyVoxVibesPurchaseController
     @EnvironmentObject var ttsPreviewPlayer: TTSPreviewPlayer
     @EnvironmentObject var settingsStore: AppSettingsStore
+    @EnvironmentObject var dictationShortcutSetupIntroController: DictationShortcutSetupIntroController
     @EnvironmentObject private var appTabRouter: AppTabRouter
     @Binding var pendingDeletionConfirmation: SettingsPendingDeletionConfirmation?
     @Binding var pendingDownloadConfirmation: PendingDownloadConfirmation?
@@ -22,7 +23,7 @@ struct SettingsTabView: View {
     @State var isTTSSectionExpanded = false
     @State var ttsExpandedContentHeight: CGFloat = 0
     @State var isThirdPartyNoticesPresented = false
-    @State var shortcutInstallationErrorMessage: String?
+    @State var isDictationShortcutSetupPresented = false
     @State private var handledModelSectionExpansionRequestID: UUID?
     @StateObject var downloadNetworkMonitor = OnboardingDownloadNetworkMonitor()
     
@@ -46,24 +47,14 @@ struct SettingsTabView: View {
             .sheet(isPresented: $isThirdPartyNoticesPresented) {
                 ThirdPartyNoticesView()
             }
-            .alert(
-                "Unable to Add Shortcut",
-                isPresented: Binding(
-                    get: { shortcutInstallationErrorMessage != nil },
-                    set: { isPresented in
-                        if isPresented == false {
-                            shortcutInstallationErrorMessage = nil
-                        }
-                    }
-                )
-            ) {
-                Button("OK", role: .cancel) {
-                    shortcutInstallationErrorMessage = nil
+            .fullScreenCover(isPresented: $isDictationShortcutSetupPresented) {
+                DictationShortcutSetupBrowsingView(mode: .settingsReference) {
+                    isDictationShortcutSetupPresented = false
                 }
-            } message: {
-                Text(shortcutInstallationErrorMessage ?? "")
             }
-            .blocksAppReviewRequest(isThirdPartyNoticesPresented)
+            .blocksAppReviewRequest(
+                isThirdPartyNoticesPresented || isDictationShortcutSetupPresented
+            )
             .onDisappear {
                 ttsPreviewPlayer.stop()
             }
@@ -157,5 +148,6 @@ enum SettingsScrollTarget {
         .environmentObject(AppServiceRegistry.shared.keyVoxVibesPurchaseController)
         .environmentObject(AppServiceRegistry.shared.ttsPreviewPlayer)
         .environmentObject(AppServiceRegistry.shared.settingsStore)
+        .environmentObject(AppServiceRegistry.shared.dictationShortcutSetupIntroController)
         .environmentObject(AppTabRouter())
 }

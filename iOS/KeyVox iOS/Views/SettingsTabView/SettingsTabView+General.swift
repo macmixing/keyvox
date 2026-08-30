@@ -78,18 +78,13 @@ extension SettingsTabView {
                     description: "Add a quick shortcut to toggle KeyVox dictation anywhere."
                 ) {
                     AppActionButton(
-                        title: "Add",
+                        title: "Set Up",
                         style: .primary,
                         size: .compact,
                         fontSize: 15
                     ) {
-                        Task {
-                            do {
-                                try await DictationShortcutInstaller.openInstallation()
-                            } catch {
-                                shortcutInstallationErrorMessage = error.localizedDescription
-                            }
-                        }
+                        dictationShortcutSetupIntroController.markHandled()
+                        isDictationShortcutSetupPresented = true
                     }
                 }
             }
