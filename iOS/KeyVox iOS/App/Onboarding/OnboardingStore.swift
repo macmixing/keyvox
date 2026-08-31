@@ -111,7 +111,9 @@ final class OnboardingStore: ObservableObject {
         isForceOnboardingLaunch = runtimeFlags.forceOnboarding
         isForceDictationShortcutSetupLaunch = runtimeFlags.forceDictationShortcutSetup
         hasPendingKeyboardTour = persistedPendingKeyboardTour
-        hasPendingDictationShortcutSetup = persistedPendingDictationShortcutSetup
+        hasPendingDictationShortcutSetup = runtimeFlags.forceOnboarding
+            ? false
+            : persistedPendingDictationShortcutSetup
         hasPassedWelcomeScreenThisLaunch = false
         hasPassedLanguageSelectionThisLaunch = false
         isPendingKeyboardTourRouteArmed = persistedPendingKeyboardTour

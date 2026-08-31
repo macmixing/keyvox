@@ -66,7 +66,7 @@ struct OnboardingFlowView: View {
                     onboardingStore.completeOnboarding()
                 }
                 .transition(.asymmetric(
-                    insertion: .move(edge: .trailing).combined(with: .opacity),
+                    insertion: .opacity,
                     removal: .scale(scale: 1.015)
                 ))
             }
