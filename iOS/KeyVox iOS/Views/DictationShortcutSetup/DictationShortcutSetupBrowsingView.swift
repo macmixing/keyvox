@@ -149,7 +149,7 @@ struct DictationShortcutSetupBrowsingView: View {
     private var showsCloseButton: Bool {
         switch mode {
         case .existingUserIntroduction:
-            selectedPage != .seven
+            selectedPage != .eight
         case .settingsReference:
             true
         }
@@ -187,7 +187,7 @@ struct DictationShortcutSetupBrowsingView: View {
                     fontSize: 22,
                     action: openSettings
                 )
-            case .one, .three, .four, .five, .seven:
+            case .one, .three, .four, .five, .seven, .eight:
                 Color.clear
                     .frame(height: 36)
                     .accessibilityHidden(true)
@@ -206,13 +206,15 @@ struct DictationShortcutSetupBrowsingView: View {
         case .six:
             hasRequestedSettings ? "Next" : "Open Settings"
         case .seven:
+            "Next"
+        case .eight:
             "Finish"
         }
     }
 
     private func handleGuidedAction(for page: DictationShortcutSetupPage) {
         switch page {
-        case .one, .three, .four, .five:
+        case .one, .three, .four, .five, .seven:
             advance(from: page)
         case .two:
             if hasRequestedShortcutInstallation {
@@ -228,7 +230,7 @@ struct DictationShortcutSetupBrowsingView: View {
                 hasRequestedSettings = true
                 openSettings()
             }
-        case .seven:
+        case .eight:
             appHaptics.medium()
             onClose()
         }

@@ -41,7 +41,7 @@ struct DictationShortcutSetupOnboardingView: View {
                         .font(.appFont(22))
                 }
 
-                if selectedPage != .seven {
+                if selectedPage != .eight {
                     if #available(iOS 26.0, *) {
                         ToolbarItem(placement: .topBarTrailing) {
                             skipButton
@@ -55,6 +55,7 @@ struct DictationShortcutSetupOnboardingView: View {
                 }
             }
             .toolbarBackground(.hidden, for: .navigationBar)
+            .containerBackground(AppTheme.screenBackground, for: .navigation)
         }
         .alert(
             "Unable to Complete Action",
@@ -144,13 +145,15 @@ struct DictationShortcutSetupOnboardingView: View {
         case .six:
             return hasRequestedSettings ? "Next" : "Open Settings"
         case .seven:
+            return "Next"
+        case .eight:
             return "Finish"
         }
     }
 
     private func handleAction() {
         switch selectedPage {
-        case .one, .three, .four, .five:
+        case .one, .three, .four, .five, .seven:
             advance()
         case .two:
             if hasRequestedShortcutInstallation {
@@ -166,7 +169,7 @@ struct DictationShortcutSetupOnboardingView: View {
                 hasRequestedSettings = true
                 openSettings()
             }
-        case .seven:
+        case .eight:
             complete()
         }
     }

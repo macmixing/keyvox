@@ -22,21 +22,28 @@ struct DictationShortcutSetupPageView: View {
         ZStack {
             if let videoAsset = page.videoAsset {
                 GeometryReader { geometry in
-                    let videoWidth = max(
+                    let viewportWidth = max(
                         geometry.size.width - (Layout.videoHorizontalInset * 2),
                         0
                     )
+                    let videoWidth = videoAsset.width(
+                        forViewportWidth: viewportWidth
+                    )
                     let videoHeight = videoAsset.height(forWidth: videoWidth)
 
-                    DictationShortcutSetupVideoView(
-                        asset: videoAsset,
-                        isActive: isActive
-                    )
-                        .frame(width: videoWidth, height: videoHeight)
-                        .position(
-                            x: geometry.size.width / 2,
-                            y: Layout.videoTopInset + (videoHeight / 2)
+                    ZStack {
+                        DictationShortcutSetupVideoView(
+                            asset: videoAsset,
+                            isActive: isActive
                         )
+                        .frame(width: videoWidth, height: videoHeight)
+                    }
+                    .frame(width: geometry.size.width, height: videoHeight)
+                    .clipped()
+                    .position(
+                        x: geometry.size.width / 2,
+                        y: Layout.videoTopInset + (videoHeight / 2)
+                    )
                 }
             } else if page.includesVideoPlaceholder {
                 DictationShortcutSetupVideoPlaceholder(page: page)
