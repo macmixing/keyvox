@@ -3,6 +3,7 @@ import SwiftUI
 struct SettingsTabView: View {
     @Environment(\.appHaptics) var appHaptics
     @Environment(\.openURL) var openURL
+    @Environment(\.scenePhase) private var scenePhase
     @EnvironmentObject var modelManager: ModelManager
     @EnvironmentObject var pocketTTSModelManager: PocketTTSModelManager
     @EnvironmentObject var localRewriteModelManager: LocalRewriteModelManager
@@ -11,6 +12,8 @@ struct SettingsTabView: View {
     @EnvironmentObject var ttsPreviewPlayer: TTSPreviewPlayer
     @EnvironmentObject var settingsStore: AppSettingsStore
     @EnvironmentObject var dictationShortcutSetupIntroController: DictationShortcutSetupIntroController
+    @EnvironmentObject private var keyVoxSpeakIntroController: KeyVoxSpeakIntroController
+    @EnvironmentObject private var keyVoxVibesIntroController: KeyVoxVibesIntroController
     @EnvironmentObject private var appTabRouter: AppTabRouter
     @Binding var pendingDeletionConfirmation: SettingsPendingDeletionConfirmation?
     @Binding var pendingDownloadConfirmation: PendingDownloadConfirmation?
@@ -63,6 +66,14 @@ struct SettingsTabView: View {
                     ttsPreviewPlayer.stop()
                 }
             }
+            .onChange(of: isDictationShortcutSetupPresented) { _, isPresented in
+                guard isPresented else { return }
+                deferAutomaticFeatureIntroductions()
+            }
+            .onChange(of: scenePhase) { _, newPhase in
+                guard newPhase == .active, isDictationShortcutSetupPresented else { return }
+                deferAutomaticFeatureIntroductions()
+            }
             .onChange(of: pocketTTSModelManager.sharedModelInstallState, initial: true) { oldValue, newValue in
                 let wasReady = {
                     if case .ready = oldValue { return true }
@@ -79,6 +90,13 @@ struct SettingsTabView: View {
                     }
                 }
             }
+    }
+
+    private func deferAutomaticFeatureIntroductions() {
+        keyVoxVibesIntroController.markDeferredUntilNextEligibleLaunch()
+        keyVoxVibesIntroController.cancelPendingPresentation()
+        keyVoxSpeakIntroController.markDeferredUntilNextEligibleLaunch()
+        keyVoxSpeakIntroController.cancelPendingPresentation()
     }
 
     private var settingsScrollScreen: some View {
