@@ -1,6 +1,8 @@
 import AppIntents
 
 struct KeyVoxSpeakShortcutsProvider: AppShortcutsProvider {
+    static var shortcutTileColor: ShortcutTileColor = .navy
+
     static var appShortcuts: [AppShortcut] {
         AppShortcut(
             intent: ToggleKeyVoxDictationIntent(),
