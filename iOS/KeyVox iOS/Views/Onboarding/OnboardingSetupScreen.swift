@@ -185,11 +185,19 @@ struct OnboardingSetupScreen: View {
             isCompleted: false,
             stepNumber: 3,
             title: "Keyboard & Shortcut",
-            description: "Set up the KeyVox keyboard and shortcut to access dictation anywhere.",
+            description: keyboardStepDescription,
             buttonTitle: "Continue",
             isButtonEnabled: isKeyboardRequirementAvailable,
             action: beginDictationShortcutSetup
         )
+    }
+
+    private var keyboardStepDescription: String {
+        guard isKeyboardRequirementAvailable else {
+            return "Finish downloading the model and allow microphone access before continuing."
+        }
+
+        return "Set up the KeyVox keyboard and shortcut to access dictation anywhere."
     }
 
     private var modelStepButton: OnboardingStepButton? {
