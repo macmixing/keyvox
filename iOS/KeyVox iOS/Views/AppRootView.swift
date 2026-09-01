@@ -60,6 +60,7 @@ struct AppRootView: View {
 
                 if onboardingOverlayState == .visible || destination == .onboarding {
                     OnboardingFlowView()
+                        .compositingGroup()
                         .opacity(onboardingOverlayOpacity)
                 }
 

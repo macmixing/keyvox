@@ -62,7 +62,14 @@ enum DictationShortcutSetupPage: Int, CaseIterable, Hashable {
                 pixelHeight: 2450,
                 viewportPixelWidth: 1170
             )
-        case .one, .eight:
+        case .eight:
+            DictationShortcutSetupVideoAsset(
+                name: "Page-8",
+                pixelWidth: 2150,
+                pixelHeight: 2450,
+                viewportPixelWidth: 1170
+            )
+        case .one:
             nil
         }
     }

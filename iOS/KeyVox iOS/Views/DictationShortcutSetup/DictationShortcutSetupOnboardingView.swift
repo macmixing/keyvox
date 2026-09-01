@@ -7,13 +7,28 @@ struct DictationShortcutSetupOnboardingView: View {
     }
 
     @Environment(\.appHaptics) private var appHaptics
-    @State private var selectedPage = DictationShortcutSetupPage.one
+    @State private var selectedPage: DictationShortcutSetupPage
     @State private var pageDirection = PageDirection.forward
-    @State private var hasRequestedShortcutInstallation = false
-    @State private var hasRequestedSettings = false
+    @Binding private var hasRequestedShortcutInstallation: Bool
+    @Binding private var hasRequestedSettings: Bool
     @State private var errorMessage: String?
 
-    let onComplete: () -> Void
+    let onReturnToSetup: () -> Void
+    let onContinueToKeyboardSetup: () -> Void
+
+    init(
+        initialPage: DictationShortcutSetupPage = .one,
+        hasRequestedShortcutInstallation: Binding<Bool>,
+        hasRequestedSettings: Binding<Bool>,
+        onReturnToSetup: @escaping () -> Void,
+        onContinueToKeyboardSetup: @escaping () -> Void
+    ) {
+        _selectedPage = State(initialValue: initialPage)
+        _hasRequestedShortcutInstallation = hasRequestedShortcutInstallation
+        _hasRequestedSettings = hasRequestedSettings
+        self.onReturnToSetup = onReturnToSetup
+        self.onContinueToKeyboardSetup = onContinueToKeyboardSetup
+    }
 
     var body: some View {
         NavigationStack {
@@ -22,14 +37,29 @@ struct DictationShortcutSetupOnboardingView: View {
                     .ignoresSafeArea()
 
                 VStack(spacing: 0) {
-                    pageContent
+                    GeometryReader { geometry in
+                        ZStack {
+                            ScrollView(showsIndicators: false) {
+                                Color.clear
+                                    .frame(maxWidth: .infinity)
+                                    .frame(minHeight: geometry.size.height)
+                            }
+                            .scrollDisabled(true)
+
+                            pageContent
+                        }
+                    }
 
                     bottomBar
                 }
             }
             .toolbar {
-                if selectedPage != .one {
-                    ToolbarItem(placement: .topBarLeading) {
+                ToolbarItem(placement: .topBarLeading) {
+                    if selectedPage == .one {
+                        Button(action: returnToSetup) {
+                            Label("Back", systemImage: "chevron.left")
+                        }
+                    } else {
                         Button(action: goBack) {
                             Label("Back", systemImage: "chevron.left")
                         }
@@ -147,7 +177,7 @@ struct DictationShortcutSetupOnboardingView: View {
         case .seven:
             return "Next"
         case .eight:
-            return "Finish"
+            return "Set Up Keyboard"
         }
     }
 
@@ -192,9 +222,14 @@ struct DictationShortcutSetupOnboardingView: View {
         }
     }
 
+    private func returnToSetup() {
+        appHaptics.light()
+        onReturnToSetup()
+    }
+
     private func complete() {
         appHaptics.medium()
-        onComplete()
+        onContinueToKeyboardSetup()
     }
 
     private func addShortcut() {

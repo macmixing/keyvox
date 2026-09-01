@@ -72,7 +72,7 @@ struct OnboardingKeyboardTourScreen: View {
                         Spacer()
 
                         AppActionButton(
-                            title: "Next",
+                            title: "Finish",
                             style: .primary,
                             size: .compact,
                             fontSize: 16,

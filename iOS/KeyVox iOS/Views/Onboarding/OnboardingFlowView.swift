@@ -1,16 +1,19 @@
 import SwiftUI
 
 struct OnboardingFlowView: View {
-    private enum Route: Equatable {
+    private enum Route: Hashable {
         case welcome
         case language
         case setup
+        case keyboardSetup
         case keyboardTour
         case dictationShortcutSetup
     }
 
     @EnvironmentObject private var onboardingStore: OnboardingStore
-    @State private var lastActiveRoute: Route = .welcome
+    @State private var routeStack: [Route] = []
+    @State private var hasRequestedShortcutInstallation = false
+    @State private var hasRequestedSettings = false
 
     private var resolvedRoute: Route {
         if onboardingStore.isForceDictationShortcutSetupLaunch {
@@ -23,61 +26,86 @@ struct OnboardingFlowView: View {
             return .keyboardTour
         } else if onboardingStore.shouldShowDictationShortcutSetupScreen {
             return .dictationShortcutSetup
+        } else if onboardingStore.shouldShowKeyboardSetupScreen {
+            return .keyboardSetup
         } else {
             return .setup
         }
     }
 
-    private var route: Route {
-        onboardingStore.shouldShowOnboarding ? resolvedRoute : lastActiveRoute
+    private var displayedRoutes: [Route] {
+        routeStack.isEmpty ? [resolvedRoute] : routeStack
+    }
+
+    private var initialRouteStack: [Route] {
+        if resolvedRoute == .keyboardSetup {
+            return [.dictationShortcutSetup, .keyboardSetup]
+        }
+
+        return [resolvedRoute]
     }
 
     var body: some View {
         ZStack {
-            switch route {
-            case .welcome:
-                OnboardingWelcomeScreen {
-                    onboardingStore.completeWelcomeScreen()
-                }
-                .transition(.asymmetric(
-                    insertion: .opacity.combined(with: .scale(scale: 0.985)),
-                    removal: .scale(scale: 1.015)
-                ))
-            case .language:
-                OnboardingLanguageScreen()
-                    .transition(.asymmetric(
-                        insertion: .opacity,
-                        removal: .scale(scale: 1.015)
-                    ))
-            case .setup:
-                OnboardingSetupScreen()
-                    .transition(.asymmetric(
-                        insertion: .opacity,
-                        removal: .scale(scale: 1.015)
-                    ))
-            case .keyboardTour:
-                OnboardingKeyboardTourScreen()
-                    .transition(.asymmetric(
-                        insertion: .move(edge: .trailing).combined(with: .opacity),
-                        removal: .scale(scale: 1.015)
-                    ))
-            case .dictationShortcutSetup:
-                DictationShortcutSetupOnboardingView {
-                    onboardingStore.completeOnboarding()
-                }
-                .transition(.asymmetric(
-                    insertion: .opacity,
-                    removal: .scale(scale: 1.015)
-                ))
+            AppTheme.screenBackground
+                .ignoresSafeArea()
+
+            ForEach(Array(displayedRoutes.enumerated()), id: \.element) { index, route in
+                screen(for: route)
+                    .transition(.move(edge: .trailing))
+                    .zIndex(Double(index))
             }
         }
         .onAppear {
-            lastActiveRoute = resolvedRoute
+            guard routeStack.isEmpty else { return }
+            var transaction = Transaction()
+            transaction.disablesAnimations = true
+            withTransaction(transaction) {
+                routeStack = initialRouteStack
+            }
         }
         .onChange(of: resolvedRoute, initial: false) { _, newValue in
             guard onboardingStore.shouldShowOnboarding else { return }
-            lastActiveRoute = newValue
+            updateRouteStack(for: newValue)
         }
-        .animation(.easeInOut(duration: 0.34), value: route)
+        .animation(.easeInOut(duration: 0.34), value: routeStack)
+    }
+
+    @ViewBuilder
+    private func screen(for route: Route) -> some View {
+        switch route {
+        case .welcome:
+            OnboardingWelcomeScreen {
+                onboardingStore.completeWelcomeScreen()
+            }
+        case .language:
+            OnboardingLanguageScreen()
+        case .setup:
+            OnboardingSetupScreen()
+        case .dictationShortcutSetup:
+            DictationShortcutSetupOnboardingView(
+                initialPage: routeStack.contains(.keyboardSetup) ? .eight : .one,
+                hasRequestedShortcutInstallation: $hasRequestedShortcutInstallation,
+                hasRequestedSettings: $hasRequestedSettings,
+                onReturnToSetup: {
+                    onboardingStore.returnToSetupFromDictationShortcutSetup()
+                },
+                onContinueToKeyboardSetup: {
+                    onboardingStore.continueToKeyboardSetup()
+                }
+            )
+        case .keyboardSetup:
+            OnboardingEnableKeyboardScreen()
+        case .keyboardTour:
+            OnboardingKeyboardTourScreen()
+        }
+    }
+
+    private func updateRouteStack(for route: Route) {
+        if let existingIndex = routeStack.firstIndex(of: route) {
+            routeStack.removeSubrange(routeStack.index(after: existingIndex)...)
+        } else {
+            routeStack.append(route)
+        }
     }
 }

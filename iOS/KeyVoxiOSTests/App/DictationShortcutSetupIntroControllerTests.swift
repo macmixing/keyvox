@@ -15,9 +15,10 @@ struct DictationShortcutSetupIntroControllerTests {
             defaults: defaults,
             presentationDelayNanoseconds: 0
         )
+        defer { withExtendedLifetime(onboardingStore) {} }
 
         controller.schedulePresentationIfEligible(onboardingStore: onboardingStore)
-        try? await Task.sleep(for: .milliseconds(10))
+        await settlePresentationTask()
 
         #expect(controller.isPresented)
         #expect(controller.hasPresentedThisLaunch)
@@ -84,5 +85,11 @@ struct DictationShortcutSetupIntroControllerTests {
         let defaults = UserDefaults(suiteName: suiteName)!
         defaults.removePersistentDomain(forName: suiteName)
         return defaults
+    }
+
+    private func settlePresentationTask() async {
+        for _ in 0..<5 {
+            await Task.yield()
+        }
     }
 }
