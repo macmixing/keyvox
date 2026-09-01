@@ -38,7 +38,7 @@ struct OnboardingSetupScreen: View {
         NavigationStack {
             AppScrollScreen {
                 VStack(alignment: .center, spacing: 16) {
-                    VStack(alignment: .leading, spacing: 4) {
+                    VStack(spacing: 4) {
                         Text("Just a few steps...")
                             .font(.appFont(34))
                             .foregroundStyle(.white)
@@ -47,8 +47,8 @@ struct OnboardingSetupScreen: View {
                             .font(.appFont(14, variant: .light))
                             .foregroundStyle(.secondary)
                     }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .multilineTextAlignment(.leading)
+                    .frame(maxWidth: .infinity)
+                    .multilineTextAlignment(.center)
 
                     modelRequirementRow
                     microphoneRequirementRow
