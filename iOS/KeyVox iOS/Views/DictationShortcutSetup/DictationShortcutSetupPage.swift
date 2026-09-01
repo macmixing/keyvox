@@ -24,6 +24,12 @@ enum DictationShortcutSetupPage: Int, CaseIterable, Hashable {
 
     var videoAsset: DictationShortcutSetupVideoAsset? {
         switch self {
+        case .one:
+            DictationShortcutSetupVideoAsset(
+                name: "Page-1",
+                pixelWidth: 600,
+                pixelHeight: 600
+            )
         case .two:
             DictationShortcutSetupVideoAsset(
                 name: "Page-2",
@@ -69,8 +75,6 @@ enum DictationShortcutSetupPage: Int, CaseIterable, Hashable {
                 pixelHeight: 2450,
                 viewportPixelWidth: 1170
             )
-        case .one:
-            nil
         }
     }
 }

@@ -9,16 +9,31 @@ struct DictationShortcutSetupPageView: View {
 
     let page: DictationShortcutSetupPage
     let isActive: Bool
+    let animatesPageOneEntrance: Bool
 
     init(
         page: DictationShortcutSetupPage,
-        isActive: Bool = true
+        isActive: Bool = true,
+        animatesPageOneEntrance: Bool = true
     ) {
         self.page = page
         self.isActive = isActive
+        self.animatesPageOneEntrance = animatesPageOneEntrance
     }
 
     var body: some View {
+        if page == .one, let videoAsset = page.videoAsset {
+            DictationShortcutSetupPageOneView(
+                videoAsset: videoAsset,
+                isActive: isActive,
+                animatesEntrance: animatesPageOneEntrance
+            )
+        } else {
+            standardPage
+        }
+    }
+
+    private var standardPage: some View {
         ZStack {
             if let videoAsset = page.videoAsset {
                 GeometryReader { geometry in
