@@ -29,10 +29,10 @@ struct OnboardingEnableKeyboardScreen: View {
                             .foregroundStyle(.white.opacity(0.72))
 
                         LoopingVideoPlayer(
-                            videoName: "ReturnToHost",
+                            videoName: "EnableKeyboard",
                             isReady: $isVideoReady
                         )
-                        .aspectRatio(1, contentMode: .fit)
+                        .aspectRatio(1024.0 / 700.0, contentMode: .fit)
                         .frame(maxWidth: 350)
                         .frame(maxWidth: .infinity)
                         .accessibilityHidden(true)
