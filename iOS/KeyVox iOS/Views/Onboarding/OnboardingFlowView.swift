@@ -52,10 +52,14 @@ struct OnboardingFlowView: View {
 
             ForEach(Array(displayedRoutes.enumerated()), id: \.element) { index, route in
                 screen(for: route)
+                    .allowsHitTesting(route == displayedRoutes.last)
+                    .accessibilityHidden(route != displayedRoutes.last)
                     .transition(.move(edge: .trailing))
                     .zIndex(Double(index))
             }
         }
+        .accessibilityElement(children: .contain)
+        .accessibilityAddTraits(.isModal)
         .onAppear {
             guard routeStack.isEmpty else { return }
             var transaction = Transaction()
