@@ -2,14 +2,22 @@ import SwiftUI
 
 struct OnboardingKeyboardTourSceneAView: View {
     private enum Metrics {
-        static let menuArtworkWidth: CGFloat = 160
-        static let menuArtworkOffset: CGFloat = 30
+        static let videoWidth: CGFloat = 200
+        static let videoHeight: CGFloat = 300
+        static let menuArtworkOffset: CGFloat = 20
     }
 
+    @State private var isVideoReady = false
+
     var body: some View {
-        KeyboardMenuSequence(width: Metrics.menuArtworkWidth)
+        LoopingVideoPlayer(
+            videoName: "SelectKeyVox",
+            isReady: $isVideoReady
+        )
+            .frame(width: Metrics.videoWidth, height: Metrics.videoHeight)
             .offset(y: Metrics.menuArtworkOffset)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .accessibilityHidden(true)
     }
 
     struct GuidanceView: View {
