@@ -65,7 +65,7 @@ extension SettingsTabView {
                 SettingsRow(
                     icon: "widget.small",
                     title: "Live Activities",
-                    description: "Allow KeyVox to show live activity updates.",
+                    description: "Allow KeyVox to show live activity updates. Required for the Dictation Shortcut.",
                     isOn: $settingsStore.liveActivitiesEnabled
                 )
 
