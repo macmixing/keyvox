@@ -55,6 +55,9 @@ struct DictationShortcutSetupPageView: View {
                     }
                     .frame(width: geometry.size.width, height: videoHeight)
                     .clipped()
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel(Text(page.videoAccessibilityLabel ?? ""))
+                    .accessibilityHidden(page.videoAccessibilityLabel == nil)
                     .position(
                         x: geometry.size.width / 2,
                         y: Layout.videoTopInset + (videoHeight / 2)

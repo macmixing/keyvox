@@ -142,6 +142,7 @@ struct DictationShortcutSetupOnboardingView: View {
                 fontSize: 22,
                 action: handleAction
             )
+            .accessibilitySortPriority(1)
 
             AppPageIndicator(
                 pageCount: DictationShortcutSetupPage.allCases.count,

@@ -142,6 +142,7 @@ struct DictationShortcutSetupBrowsingView: View {
 
     private func actionBar(for page: DictationShortcutSetupPage) -> some View {
         actionSlot(for: page)
+            .accessibilitySortPriority(1)
             .padding(.horizontal, 20)
             .padding(.top, 8)
     }
