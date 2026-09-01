@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct DictationShortcutSetupOnboardingView: View {
-    private enum PageDirection {
+    private enum PageDirection: Equatable {
         case forward
         case backward
     }
@@ -109,7 +109,8 @@ struct DictationShortcutSetupOnboardingView: View {
     private var pageContent: some View {
         DictationShortcutSetupPageView(
             page: selectedPage,
-            isActive: true
+            isActive: true,
+            animatesPageOneEntrance: pageDirection == .forward
         )
             .id(selectedPage)
             .transition(pageTransition)
