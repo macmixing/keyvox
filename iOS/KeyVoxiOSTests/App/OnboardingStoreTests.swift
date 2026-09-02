@@ -183,7 +183,7 @@ struct OnboardingStoreTests {
         #expect(defaults.bool(forKey: UserDefaultsKeys.App.hasCompletedOnboarding))
     }
 
-    @Test func shortcutSetupForceFlagStartsAtPageOneAndContinuesToKeyboardSetup() {
+    @Test func shortcutSetupForceFlagStartsAtShortcutIntroAndContinuesToKeyboardSetup() {
         let defaults = makeDefaults()
         defaults.set(true, forKey: UserDefaultsKeys.App.hasCompletedOnboarding)
         let store = OnboardingStore(

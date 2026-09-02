@@ -11,7 +11,7 @@ struct OnboardingKeyboardTourSceneAView: View {
 
     var body: some View {
         LoopingVideoPlayer(
-            videoName: "SelectKeyVox",
+            videoName: "KeyVoxKeyboardSelection",
             isReady: $isVideoReady
         )
             .frame(width: Metrics.videoWidth, height: Metrics.videoHeight)

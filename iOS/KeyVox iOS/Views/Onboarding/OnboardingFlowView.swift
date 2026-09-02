@@ -88,7 +88,9 @@ struct OnboardingFlowView: View {
             OnboardingSetupScreen()
         case .dictationShortcutSetup:
             DictationShortcutSetupOnboardingView(
-                initialPage: routeStack.contains(.keyboardSetup) ? .eight : .one,
+                initialPage: routeStack.contains(.keyboardSetup)
+                    ? .actionButtonDemoHandoff
+                    : .shortcutIntro,
                 hasRequestedShortcutInstallation: $hasRequestedShortcutInstallation,
                 hasRequestedSettings: $hasRequestedSettings,
                 onReturnToSetup: {

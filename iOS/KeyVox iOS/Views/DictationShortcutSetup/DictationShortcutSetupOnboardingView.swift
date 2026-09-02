@@ -17,7 +17,7 @@ struct DictationShortcutSetupOnboardingView: View {
     let onContinueToKeyboardSetup: () -> Void
 
     init(
-        initialPage: DictationShortcutSetupPage = .one,
+        initialPage: DictationShortcutSetupPage = .shortcutIntro,
         hasRequestedShortcutInstallation: Binding<Bool>,
         hasRequestedSettings: Binding<Bool>,
         onReturnToSetup: @escaping () -> Void,
@@ -55,7 +55,7 @@ struct DictationShortcutSetupOnboardingView: View {
             }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    if selectedPage == .one {
+                    if selectedPage == .shortcutIntro {
                         Button(action: returnToSetup) {
                             Label("Back", systemImage: "chevron.left")
                         }
@@ -71,7 +71,7 @@ struct DictationShortcutSetupOnboardingView: View {
                         .font(.appFont(22))
                 }
 
-                if selectedPage != .eight {
+                if selectedPage != .actionButtonDemoHandoff {
                     if #available(iOS 26.0, *) {
                         ToolbarItem(placement: .topBarTrailing) {
                             skipButton
@@ -110,7 +110,7 @@ struct DictationShortcutSetupOnboardingView: View {
         DictationShortcutSetupPageView(
             page: selectedPage,
             isActive: true,
-            animatesPageOneEntrance: pageDirection == .forward
+            animatesShortcutIntroEntrance: pageDirection == .forward
         )
             .id(selectedPage)
             .transition(pageTransition)
@@ -168,40 +168,41 @@ struct DictationShortcutSetupOnboardingView: View {
 
     private var actionTitle: String {
         switch selectedPage {
-        case .one, .three:
+        case .shortcutIntro, .actionButtonIntro:
             return "Continue"
-        case .two:
+        case .addShortcut:
             return hasRequestedShortcutInstallation ? "Next" : "Add Shortcut"
-        case .four, .five:
+        case .actionButtonSettings, .actionButtonShortcutOption:
             return "Next"
-        case .six:
+        case .actionButtonShortcutSelection:
             return hasRequestedSettings ? "Next" : "Open Settings"
-        case .seven:
+        case .actionButtonDemoPaste:
             return "Next"
-        case .eight:
+        case .actionButtonDemoHandoff:
             return "Set Up Keyboard"
         }
     }
 
     private func handleAction() {
         switch selectedPage {
-        case .one, .three, .four, .five, .seven:
+        case .shortcutIntro, .actionButtonIntro, .actionButtonSettings,
+             .actionButtonShortcutOption, .actionButtonDemoPaste:
             advance()
-        case .two:
+        case .addShortcut:
             if hasRequestedShortcutInstallation {
                 advance()
             } else {
                 hasRequestedShortcutInstallation = true
                 addShortcut()
             }
-        case .six:
+        case .actionButtonShortcutSelection:
             if hasRequestedSettings {
                 advance()
             } else {
                 hasRequestedSettings = true
                 openSettings()
             }
-        case .eight:
+        case .actionButtonDemoHandoff:
             complete()
         }
     }

@@ -4,29 +4,28 @@ struct DictationShortcutSetupPageView: View {
     private enum Layout {
         static let videoHorizontalInset: CGFloat = 5
         static let videoTopInset: CGFloat = -60
-        static let placeholderTitleTopPadding: CGFloat = 36
     }
 
     let page: DictationShortcutSetupPage
     let isActive: Bool
-    let animatesPageOneEntrance: Bool
+    let animatesShortcutIntroEntrance: Bool
 
     init(
         page: DictationShortcutSetupPage,
         isActive: Bool = true,
-        animatesPageOneEntrance: Bool = true
+        animatesShortcutIntroEntrance: Bool = true
     ) {
         self.page = page
         self.isActive = isActive
-        self.animatesPageOneEntrance = animatesPageOneEntrance
+        self.animatesShortcutIntroEntrance = animatesShortcutIntroEntrance
     }
 
     var body: some View {
-        if page == .one, let videoAsset = page.videoAsset {
-            DictationShortcutSetupPageOneView(
+        if page == .shortcutIntro, let videoAsset = page.videoAsset {
+            ShortcutIntroView(
                 videoAsset: videoAsset,
                 isActive: isActive,
-                animatesEntrance: animatesPageOneEntrance
+                animatesEntrance: animatesShortcutIntroEntrance
             )
         } else {
             standardPage
@@ -63,19 +62,6 @@ struct DictationShortcutSetupPageView: View {
                         y: Layout.videoTopInset + (videoHeight / 2)
                     )
                 }
-            } else if page.includesVideoPlaceholder {
-                DictationShortcutSetupVideoPlaceholder(page: page)
-                    .frame(maxWidth: 350)
-                    .padding(.horizontal, AppTheme.screenPadding)
-            }
-
-            if page.videoAsset == nil {
-                Text("Page \(page.rawValue)")
-                    .font(.appFont(34, variant: .medium))
-                    .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-                    .padding(.top, Layout.placeholderTitleTopPadding)
-                    .padding(.horizontal, AppTheme.screenPadding)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)

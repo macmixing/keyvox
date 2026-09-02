@@ -1,14 +1,14 @@
 import Foundation
 
 enum DictationShortcutSetupPage: Int, CaseIterable, Hashable {
-    case one = 1
-    case two
-    case three
-    case four
-    case five
-    case six
-    case seven
-    case eight
+    case shortcutIntro = 1
+    case addShortcut
+    case actionButtonIntro
+    case actionButtonSettings
+    case actionButtonShortcutOption
+    case actionButtonShortcutSelection
+    case actionButtonDemoPaste
+    case actionButtonDemoHandoff
 
     var next: Self? {
         Self(rawValue: rawValue + 1)
@@ -18,80 +18,76 @@ enum DictationShortcutSetupPage: Int, CaseIterable, Hashable {
         Self(rawValue: rawValue - 1)
     }
 
-    var includesVideoPlaceholder: Bool {
-        self != .one
-    }
-
     var videoAccessibilityLabel: String? {
         switch self {
-        case .one:
+        case .shortcutIntro:
             nil
-        case .two:
+        case .addShortcut:
             "Tap the button below to add the KeyVox shortcut."
-        case .three:
+        case .actionButtonIntro:
             "Dictate with the Action Button."
-        case .four:
+        case .actionButtonSettings:
             "Open iPhone Settings and tap “Action Button.”"
-        case .five:
+        case .actionButtonShortcutOption:
             "Swipe through the options and find “Shortcut,” then tap “Choose a Shortcut…”"
-        case .six:
+        case .actionButtonShortcutSelection:
             "Tap “Toggle KeyVox Dictation.”"
-        case .seven:
+        case .actionButtonDemoPaste:
             "Press the Action Button to toggle KeyVox dictation. Press it again to transcribe your words. Paste your text into any app."
-        case .eight:
+        case .actionButtonDemoHandoff:
             "Or start by pressing the Action Button and talking. Pull up the KeyVox keyboard and tap the dictation button. Turn your speech into text."
         }
     }
 
     var videoAsset: DictationShortcutSetupVideoAsset? {
         switch self {
-        case .one:
+        case .shortcutIntro:
             DictationShortcutSetupVideoAsset(
-                name: "Page-1",
+                name: "ShortcutHero",
                 pixelWidth: 600,
                 pixelHeight: 600
             )
-        case .two:
+        case .addShortcut:
             DictationShortcutSetupVideoAsset(
-                name: "Page-2",
+                name: "AddShortcutPage",
                 pixelWidth: 1170,
                 pixelHeight: 2100
             )
-        case .three:
+        case .actionButtonIntro:
             DictationShortcutSetupVideoAsset(
-                name: "Page-3",
+                name: "ActionButtonIntro",
                 pixelWidth: 2150,
                 pixelHeight: 2450,
                 viewportPixelWidth: 1170
             )
-        case .four:
+        case .actionButtonSettings:
             DictationShortcutSetupVideoAsset(
-                name: "Page-4",
+                name: "ActionButtonSettings",
                 pixelWidth: 1170,
                 pixelHeight: 1850
             )
-        case .five:
+        case .actionButtonShortcutOption:
             DictationShortcutSetupVideoAsset(
-                name: "Page-5",
+                name: "ActionButtonShortcutOption",
                 pixelWidth: 1170,
                 pixelHeight: 2450
             )
-        case .six:
+        case .actionButtonShortcutSelection:
             DictationShortcutSetupVideoAsset(
-                name: "Page-6",
+                name: "ActionButtonShortcutSelection",
                 pixelWidth: 1170,
                 pixelHeight: 2450
             )
-        case .seven:
+        case .actionButtonDemoPaste:
             DictationShortcutSetupVideoAsset(
-                name: "Page-7",
+                name: "ActionButtonDemoPaste",
                 pixelWidth: 2150,
                 pixelHeight: 2450,
                 viewportPixelWidth: 1170
             )
-        case .eight:
+        case .actionButtonDemoHandoff:
             DictationShortcutSetupVideoAsset(
-                name: "Page-8",
+                name: "ActionButtonDemoHandoff",
                 pixelWidth: 2150,
                 pixelHeight: 2450,
                 viewportPixelWidth: 1170

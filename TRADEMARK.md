@@ -21,17 +21,21 @@ This policy applies to:
 - The name `KeyVox`
 - KeyVox logos, app icons, and related brand imagery
 - Brand-identity assets listed as excluded/proprietary in `LICENSE.md`, including:
-   `macOS/Resources/Assets.xcassets/`  
-   `iOS/KeyVox iOS/Resources/Assets.xcassets`
-   `iOS/KeyVox Widget/Assets.xcassets`
-   `iOS/KeyVox iOS/Resources/ReturnToHost.mov`
-   `iOS/LaunchLogo.png`
-   `macOS/Views/Components/LogoBarView.swift`  
-   `iOS/KeyVox iOS/Views/Components/LogoBarView.swift`
-   `iOS/KeyVox Keyboard/Views/Components/KeyboardLogoBarView.swift`
-   `macOS/Resources/keyvox.icon/`  
-   `iOS/KeyVox iOS/Resources/keyvox.icon/`
-   `macOS/Resources/logo.png` 
+  - `macOS/Resources/Assets.xcassets/`
+  - `iOS/KeyVox iOS/Resources/Assets.xcassets`
+  - `iOS/KeyVox Widget/Assets.xcassets`
+  - `iOS/KeyVox iOS/Resources/DictationShortcutSetup/`
+  - `iOS/KeyVox iOS/Resources/Onboarding/`
+  - `iOS/KeyVox iOS/Resources/ReturnToHost.mov`
+  - `iOS/LaunchLogo.png`
+  - `macOS/Views/Components/LogoBarView.swift`
+  - `iOS/KeyVox iOS/Views/Components/LogoBarView.swift`
+  - `iOS/KeyVox Keyboard/Views/Components/KeyboardLogoBarView.swift`
+  - `macOS/Resources/keyvox.icon/`
+  - `iOS/KeyVox iOS/Resources/keyvox.icon/`
+  - `macOS/Resources/logo.png`
+
+The covered onboarding video inventory is `DictationShortcutSetup/ShortcutHero.mov`, `DictationShortcutSetup/AddShortcutPage.mov`, `DictationShortcutSetup/ActionButtonIntro.mov`, `DictationShortcutSetup/ActionButtonSettings.mov`, `DictationShortcutSetup/ActionButtonShortcutOption.mov`, `DictationShortcutSetup/ActionButtonShortcutSelection.mov`, `DictationShortcutSetup/ActionButtonDemoPaste.mov`, `DictationShortcutSetup/ActionButtonDemoHandoff.mov`, `Onboarding/EnableKeyboard.mov`, and `Onboarding/KeyVoxKeyboardSelection.mov`, all rooted under `iOS/KeyVox iOS/Resources/`.
 
 ## 4) Allowed Uses (No Prior Approval Required)
 

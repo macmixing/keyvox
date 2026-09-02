@@ -7,7 +7,7 @@ struct DictationShortcutSetupBrowsingView: View {
     }
 
     @Environment(\.appHaptics) private var appHaptics
-    @State private var selectedPage = DictationShortcutSetupPage.one
+    @State private var selectedPage = DictationShortcutSetupPage.shortcutIntro
     @State private var hasRequestedShortcutInstallation = false
     @State private var hasRequestedSettings = false
     @State private var errorMessage: String?
@@ -59,7 +59,7 @@ struct DictationShortcutSetupBrowsingView: View {
         }
         .interactiveDismissDisabled()
         .onAppear {
-            selectedPage = .one
+            selectedPage = .shortcutIntro
         }
         .alert(
             "Unable to Complete Action",
@@ -150,7 +150,7 @@ struct DictationShortcutSetupBrowsingView: View {
     private var showsCloseButton: Bool {
         switch mode {
         case .existingUserIntroduction:
-            selectedPage != .eight
+            selectedPage != .actionButtonDemoHandoff
         case .settingsReference:
             true
         }
@@ -170,7 +170,7 @@ struct DictationShortcutSetupBrowsingView: View {
             )
         case .settingsReference:
             switch page {
-            case .two:
+            case .addShortcut:
                 AppActionButton(
                     title: "Add Shortcut",
                     style: .primary,
@@ -179,7 +179,7 @@ struct DictationShortcutSetupBrowsingView: View {
                     fontSize: 22,
                     action: addShortcut
                 )
-            case .six:
+            case .actionButtonShortcutSelection:
                 AppActionButton(
                     title: "Open Settings",
                     style: .primary,
@@ -188,7 +188,9 @@ struct DictationShortcutSetupBrowsingView: View {
                     fontSize: 22,
                     action: openSettings
                 )
-            case .one, .three, .four, .five, .seven, .eight:
+            case .shortcutIntro, .actionButtonIntro, .actionButtonSettings,
+                 .actionButtonShortcutOption, .actionButtonDemoPaste,
+                 .actionButtonDemoHandoff:
                 Color.clear
                     .frame(height: 36)
                     .accessibilityHidden(true)
@@ -198,40 +200,41 @@ struct DictationShortcutSetupBrowsingView: View {
 
     private func guidedActionTitle(for page: DictationShortcutSetupPage) -> String {
         switch page {
-        case .one, .three:
+        case .shortcutIntro, .actionButtonIntro:
             "Continue"
-        case .two:
+        case .addShortcut:
             hasRequestedShortcutInstallation ? "Next" : "Add Shortcut"
-        case .four, .five:
+        case .actionButtonSettings, .actionButtonShortcutOption:
             "Next"
-        case .six:
+        case .actionButtonShortcutSelection:
             hasRequestedSettings ? "Next" : "Open Settings"
-        case .seven:
+        case .actionButtonDemoPaste:
             "Next"
-        case .eight:
+        case .actionButtonDemoHandoff:
             "Finish"
         }
     }
 
     private func handleGuidedAction(for page: DictationShortcutSetupPage) {
         switch page {
-        case .one, .three, .four, .five, .seven:
+        case .shortcutIntro, .actionButtonIntro, .actionButtonSettings,
+             .actionButtonShortcutOption, .actionButtonDemoPaste:
             advance(from: page)
-        case .two:
+        case .addShortcut:
             if hasRequestedShortcutInstallation {
                 advance(from: page)
             } else {
                 hasRequestedShortcutInstallation = true
                 addShortcut()
             }
-        case .six:
+        case .actionButtonShortcutSelection:
             if hasRequestedSettings {
                 advance(from: page)
             } else {
                 hasRequestedSettings = true
                 openSettings()
             }
-        case .eight:
+        case .actionButtonDemoHandoff:
             appHaptics.medium()
             onClose()
         }

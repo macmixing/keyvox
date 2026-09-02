@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct DictationShortcutSetupPageOneView: View {
+struct ShortcutIntroView: View {
     private enum Layout {
         static let contentTopInset: CGFloat = -50
         static let videoSize: CGFloat = 160
