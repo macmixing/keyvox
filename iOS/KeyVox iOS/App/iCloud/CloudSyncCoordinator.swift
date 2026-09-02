@@ -22,6 +22,8 @@ final class CloudSyncCoordinator {
     private let dictionaryStore: DictionaryStore
     private let defaults: UserDefaults
     private let now: () -> Date
+    private let hasExistingLocalInstallation: Bool
+    private let forceFreshDictionaryInstall: Bool
 
     private var cancellables = Set<AnyCancellable>()
     private var externalChangeObserver: NSObjectProtocol?
@@ -36,6 +38,8 @@ final class CloudSyncCoordinator {
         settingsStore: AppSettingsStore,
         dictionaryStore: DictionaryStore,
         defaults: UserDefaults,
+        hasExistingLocalInstallation: Bool = true,
+        forceFreshDictionaryInstall: Bool = false,
         now: @escaping () -> Date = Date.init
     ) {
         self.ubiquitousStore = ubiquitousStore
@@ -43,6 +47,8 @@ final class CloudSyncCoordinator {
         self.settingsStore = settingsStore
         self.dictionaryStore = dictionaryStore
         self.defaults = defaults
+        self.hasExistingLocalInstallation = hasExistingLocalInstallation
+        self.forceFreshDictionaryInstall = forceFreshDictionaryInstall
         self.now = now
 
         setupObservers()
@@ -159,6 +165,7 @@ final class CloudSyncCoordinator {
 
     private func bootstrap() {
         bootstrapDictionary()
+        recordInstallationIfNeeded()
         bootstrapTriggerBinding()
         bootstrapAutoParagraphs()
         bootstrapListFormatting()
@@ -168,18 +175,34 @@ final class CloudSyncCoordinator {
         let localEntries = dictionaryStore.entries
         let localModifiedAt = inferredLocalDictionaryModifiedAt()
         let remotePayload = loadRemoteDictionaryPayload()
+        let hasLocalSnapshot = localModifiedAt != nil
+        let hasExistingCloudInstallation =
+            ubiquitousStore.object(forKey: KeyVoxiCloudKeys.hasInstalledKeyVox) as? Bool == true
 
-        switch (localEntries.isEmpty, remotePayload) {
-        case (true, nil):
+        if forceFreshDictionaryInstall {
+            seedInitialKeyVoxEntry(merging: localEntries)
             return
+        }
+
+        if !hasExistingLocalInstallation,
+           !hasExistingCloudInstallation,
+           !hasLocalSnapshot,
+           remotePayload == nil {
+            seedInitialKeyVoxEntry(merging: localEntries)
+            return
+        }
+
+        switch (hasLocalSnapshot, remotePayload) {
         case (false, nil):
+            return
+        case (true, nil):
             let modifiedAt = localModifiedAt ?? now()
             setLocalDictionaryModifiedAt(modifiedAt)
             pushDictionary(entries: localEntries, modifiedAt: modifiedAt)
-        case (true, .some(let payload)):
-            applyRemoteDictionary(payload)
         case (false, .some(let payload)):
-            let modifiedAt = localModifiedAt ?? now()
+            applyRemoteDictionary(payload)
+        case (true, .some(let payload)):
+            let modifiedAt = localModifiedAt!
             setLocalDictionaryModifiedAt(modifiedAt)
             if payload.modifiedAt > modifiedAt {
                 applyRemoteDictionary(payload)
@@ -187,6 +210,37 @@ final class CloudSyncCoordinator {
                 pushDictionary(entries: localEntries, modifiedAt: modifiedAt)
             }
         }
+    }
+
+    private func seedInitialKeyVoxEntry(merging entries: [DictionaryEntry]) {
+        let initialEntry = DictionaryInitialEntries.keyVox
+        let alreadyContainsKeyVox = entries.contains {
+            $0.phrase.compare(initialEntry.phrase, options: [.caseInsensitive, .diacriticInsensitive]) == .orderedSame
+        }
+        let seededEntries = alreadyContainsKeyVox ? entries : entries + [initialEntry]
+        let modifiedAt = now()
+
+        isApplyingRemoteDictionary = true
+        defer { isApplyingRemoteDictionary = false }
+
+        do {
+            if dictionaryStore.entries != seededEntries {
+                try dictionaryStore.replaceAll(entries: seededEntries)
+            }
+            setLocalDictionaryModifiedAt(modifiedAt)
+            pushDictionary(entries: seededEntries, modifiedAt: modifiedAt)
+        } catch {
+            return
+        }
+    }
+
+    private func recordInstallationIfNeeded() {
+        guard ubiquitousStore.object(forKey: KeyVoxiCloudKeys.hasInstalledKeyVox) as? Bool != true else {
+            return
+        }
+
+        ubiquitousStore.set(true, forKey: KeyVoxiCloudKeys.hasInstalledKeyVox)
+        _ = ubiquitousStore.synchronize()
     }
 
     private func bootstrapTriggerBinding() {
@@ -495,7 +549,8 @@ final class CloudSyncCoordinator {
     }
 
     private func inferredLocalDictionaryModifiedAt() -> Date? {
-        dictionaryModifiedAt() ?? (dictionaryStore.entries.isEmpty ? nil : now())
+        dictionaryModifiedAt()
+            ?? (dictionaryStore.entries.isEmpty ? dictionaryStore.persistedSnapshotModifiedAt : now())
     }
 
     private func inferredLocalTriggerBindingModifiedAt(defaultValue: String) -> Date? {

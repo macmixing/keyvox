@@ -286,7 +286,9 @@ final class AppServiceRegistry {
         let iCloudSyncCoordinator = CloudSyncCoordinator(
             settingsStore: settingsStore,
             dictionaryStore: dictionaryStore,
-            defaults: settingsDefaults
+            defaults: settingsDefaults,
+            hasExistingLocalInstallation: onboardingStore.hasCompletedOnboarding,
+            forceFreshDictionaryInstall: runtimeFlags.forceFreshDictionaryInstall
         )
         let weeklyWordStatsCloudSync = WeeklyWordStatsCloudSync(
             weeklyWordStatsStore: weeklyWordStatsStore
