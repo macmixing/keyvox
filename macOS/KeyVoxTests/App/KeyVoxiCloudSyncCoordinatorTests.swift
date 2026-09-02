@@ -5,6 +5,108 @@ import XCTest
 
 @MainActor
 final class KeyVoxiCloudSyncCoordinatorTests: XCTestCase {
+    func testFreshInstallationSeedsKeyVoxAndRecordsInstallation() throws {
+        let harness = try makeHarness(now: makeDate(year: 2026, month: 9, day: 2, hour: 10))
+
+        let coordinator = makeCoordinator(
+            harness: harness,
+            hasExistingLocalInstallation: false
+        )
+        _ = coordinator
+
+        XCTAssertEqual(harness.dictionaryStore.entries, [DictionaryInitialEntries.keyVox])
+        XCTAssertEqual(
+            harness.cloudStore.object(forKey: KeyVoxiCloudKeys.hasInstalledKeyVox) as? Bool,
+            true
+        )
+        let payload = try XCTUnwrap(harness.cloudStore.dictionaryPayload())
+        XCTAssertEqual(payload.entries, [DictionaryInitialEntries.keyVox])
+    }
+
+    func testDeletedInitialEntryStaysDeletedOnLaterLaunch() throws {
+        let harness = try makeHarness(now: makeDate(year: 2026, month: 9, day: 2, hour: 10))
+
+        let initialCoordinator = makeCoordinator(
+            harness: harness,
+            hasExistingLocalInstallation: false
+        )
+        _ = initialCoordinator
+        try harness.dictionaryStore.delete(id: DictionaryInitialEntries.keyVox.id)
+
+        let laterCoordinator = makeCoordinator(
+            harness: harness,
+            hasExistingLocalInstallation: false
+        )
+        _ = laterCoordinator
+
+        XCTAssertTrue(harness.dictionaryStore.entries.isEmpty)
+        let payload = try XCTUnwrap(harness.cloudStore.dictionaryPayload())
+        XCTAssertTrue(payload.entries.isEmpty)
+    }
+
+    func testExistingLocalInstallationNeverReceivesInitialEntry() throws {
+        let harness = try makeHarness(now: makeDate(year: 2026, month: 9, day: 2, hour: 11))
+
+        let coordinator = makeCoordinator(harness: harness)
+        _ = coordinator
+
+        XCTAssertTrue(harness.dictionaryStore.entries.isEmpty)
+        XCTAssertNil(try harness.cloudStore.dictionaryPayload())
+        XCTAssertEqual(
+            harness.cloudStore.object(forKey: KeyVoxiCloudKeys.hasInstalledKeyVox) as? Bool,
+            true
+        )
+    }
+
+    func testSharedInstallationFlagPreventsInitialEntryOnFreshLocalInstall() throws {
+        let harness = try makeHarness(now: makeDate(year: 2026, month: 9, day: 2, hour: 12))
+        harness.cloudStore.seedValue(true, forKey: KeyVoxiCloudKeys.hasInstalledKeyVox)
+
+        let coordinator = makeCoordinator(
+            harness: harness,
+            hasExistingLocalInstallation: false
+        )
+        _ = coordinator
+
+        XCTAssertTrue(harness.dictionaryStore.entries.isEmpty)
+        XCTAssertNil(try harness.cloudStore.dictionaryPayload())
+    }
+
+    func testExistingEmptyCloudDictionaryPreventsInitialEntry() throws {
+        let remoteDate = makeDate(year: 2026, month: 9, day: 2, hour: 13)
+        let harness = try makeHarness(now: remoteDate)
+        try harness.cloudStore.seedDictionary(entries: [], modifiedAt: remoteDate)
+
+        let coordinator = makeCoordinator(
+            harness: harness,
+            hasExistingLocalInstallation: false
+        )
+        _ = coordinator
+
+        XCTAssertTrue(harness.dictionaryStore.entries.isEmpty)
+        XCTAssertEqual(
+            harness.defaults.object(forKey: UserDefaultsKeys.iCloud.dictionaryLastModifiedAt) as? Date,
+            remoteDate
+        )
+        XCTAssertEqual(
+            harness.cloudStore.object(forKey: KeyVoxiCloudKeys.hasInstalledKeyVox) as? Bool,
+            true
+        )
+    }
+
+    func testDebugOverrideForcesInitialEntry() throws {
+        let harness = try makeHarness(now: makeDate(year: 2026, month: 9, day: 2, hour: 14))
+        harness.cloudStore.seedValue(true, forKey: KeyVoxiCloudKeys.hasInstalledKeyVox)
+
+        let coordinator = makeCoordinator(
+            harness: harness,
+            forceFreshDictionaryInstall: true
+        )
+        _ = coordinator
+
+        XCTAssertEqual(harness.dictionaryStore.entries, [DictionaryInitialEntries.keyVox])
+    }
+
     func testLocalDictionarySeedsEmptyCloud() async throws {
         let localDate = makeDate(year: 2026, month: 3, day: 7, hour: 12)
         let harness = try makeHarness(now: localDate)
@@ -344,13 +446,19 @@ final class KeyVoxiCloudSyncCoordinatorTests: XCTestCase {
         XCTAssertEqual(harness.cloudStore.object(forKey: KeyVoxiCloudKeys.triggerBindingModifiedAt) as? Date, now)
     }
 
-    private func makeCoordinator(harness: Harness) -> KeyVoxiCloudSyncCoordinator {
+    private func makeCoordinator(
+        harness: Harness,
+        hasExistingLocalInstallation: Bool = true,
+        forceFreshDictionaryInstall: Bool = false
+    ) -> KeyVoxiCloudSyncCoordinator {
         KeyVoxiCloudSyncCoordinator(
             ubiquitousStore: harness.cloudStore,
             notificationCenter: harness.notificationCenter,
             appSettings: harness.appSettings,
             dictionaryStore: harness.dictionaryStore,
             defaults: harness.defaults,
+            hasExistingLocalInstallation: hasExistingLocalInstallation,
+            forceFreshDictionaryInstall: forceFreshDictionaryInstall,
             now: harness.now
         )
     }

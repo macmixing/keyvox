@@ -9,6 +9,7 @@ enum MacRuntimeFlags {
     static let forceKeyVoxVibesIntroEnvironmentKey = "KEYVOX_FORCE_KEYVOX_VIBES_INTRO"
     static let useLocalPromotionManifestEnvironmentKey = "KEYVOX_USE_LOCAL_PROMOTION_MANIFEST"
     static let promotionPreviewCampaignIDEnvironmentKey = "KEYVOX_PROMOTION_PREVIEW_CAMPAIGN_ID"
+    static let forceFreshDictionaryInstallEnvironmentKey = "KEYVOX_FORCE_FRESH_DICTIONARY_INSTALL"
 
     static var forceOnboarding: Bool {
         forceOnboarding(environment: ProcessInfo.processInfo.environment)
@@ -46,6 +47,14 @@ enum MacRuntimeFlags {
 #endif
     }
 
+    static var forceFreshDictionaryInstall: Bool {
+#if DEBUG
+        forceFreshDictionaryInstall(environment: ProcessInfo.processInfo.environment)
+#else
+        false
+#endif
+    }
+
     static func forceOnboarding(environment: [String: String]) -> Bool {
         isEnabled(environmentValue: environment[forceOnboardingEnvironmentKey])
     }
@@ -76,6 +85,14 @@ enum MacRuntimeFlags {
 
     static func forceKeyVoxVibesIntro(environment: [String: String]) -> Bool {
         isEnabled(environmentValue: environment[forceKeyVoxVibesIntroEnvironmentKey])
+    }
+
+    static func forceFreshDictionaryInstall(environment: [String: String]) -> Bool {
+#if DEBUG
+        isEnabled(environmentValue: environment[forceFreshDictionaryInstallEnvironmentKey])
+#else
+        false
+#endif
     }
 
     private static func isEnabled(environmentValue: String?) -> Bool {
