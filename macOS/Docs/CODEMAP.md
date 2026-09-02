@@ -266,9 +266,11 @@ KeyVox/
   - Merges same-week per-device totals deterministically and keeps `KeyVoxiCloudSyncCoordinator` focused on dictionary/settings sync.
 - `App/iCloud/KeyVoxiCloudSyncCoordinator.swift`
   - Owns macOS iCloud KVS convergence for dictionary entries plus `triggerBinding`, `autoParagraphsEnabled`, and `listFormattingEnabled`.
+  - Seeds the ordinary `KeyVox` dictionary entry only when local onboarding, local dictionary state, synchronized dictionary state, and shared installation history all identify a genuine first installation.
+  - Records shared installation history without mutating an existing user's dictionary and preserves deletion of the initial entry on later launches.
   - Uses per-setting modified-at timestamps so newer local/remote values win deterministically during bootstrap and live sync.
 - `App/iCloud/KeyVoxiCloudKeys.swift`
-  - Single source of truth for macOS iCloud KVS value keys and per-setting modified-at keys.
+  - Single source of truth for macOS iCloud KVS value keys, the shared installation marker, and per-setting modified-at keys.
 - `App/iCloud/KeyVoxiCloudPayloads.swift`
   - Codable payload ownership for dictionary snapshots and per-device weekly word totals exchanged through iCloud KVS.
 - `App/UserDefaultsKeys.swift`
@@ -424,12 +426,12 @@ KeyVox/
   - Allows a successful replacement to advance only within the same process, AX element, and target start location.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/DictationPipeline.swift`
   - Boundary helper for transcribe -> post-process -> paste orchestration with injected dependencies for smoke/integration tests.
-  - Treats the host-provided dictionary-hint flag as an audio/silence eligibility signal, then applies package-owned dictionary availability so built-in entries can participate consistently across macOS and iOS.
+  - Treats the host-provided dictionary-hint flag as an audio/silence eligibility signal and enables prompting only when the supplied user dictionary is nonempty.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/DictationPromptEchoGuard.swift`
   - Post-transcription guard that suppresses likely dictionary-prompt echo output by treating repetitive prompt-like text as no-speech.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/TranscriptionPostProcessor.swift`
   - Post-transcription orchestration (email pre-normalization, dictionary correction, idiom/colon/spoken-quantity/math/list passes, laughter/spam/model-artifact/time/date/email/website/numeric grouping cleanup, then whitespace/capitalization/terminal-punctuation/all-caps finishing).
-  - Merges hidden package-owned dictionary entries before matching so app-brand corrections work even when the user has not created visible dictionary entries.
+  - Rebuilds and applies matching from the supplied persisted dictionary entries without adding hidden app or product entries.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/AudioParagraphChunker.swift`
   - Shared conservative silence/fallback chunking used by both Whisper and Parakeet services.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/DictationDeterministicState.swift`
@@ -608,14 +610,13 @@ KeyVox/
 
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/DictionaryMatcher.swift`
   - Orchestrates dictionary matching flow and delegates tokenizer/candidate/split-join/overlap helpers.
-  - Compiles built-in aliases to the same canonical replacement entry, so observed variants of the app/product name normalize through the same deterministic matcher path as user dictionary entries.
+  - Compiles only the supplied dictionary entries into the deterministic matching index.
   - Maintains a domain-indexed email dictionary for spoken/literal email recovery.
-- `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/DictionaryBuiltInEntries.swift`
-  - Package-owned hidden dictionary entries for app/product naming, currently `KeyVox` and `KeyVox Speak`, plus supported observed aliases such as `Kivok`, `Kivox`, and `Keyvox`.
-  - Merges built-ins with user entries while suppressing duplicate canonical phrases, keeping the visible/persisted user dictionary unchanged.
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/DictionaryInitialEntries.swift`
+  - Defines `KeyVox` as the single ordinary entry available for platform-owned fresh-install seeding.
+  - Does not participate automatically in matching or prompts; the entry must exist in the supplied user dictionary.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/DictionaryHintPromptBuilder.swift`
-  - Builds provider prompt text from visible user entries plus package-owned canonical built-ins, excluding alias spellings from the prompt surface.
-  - De-dupes canonical phrases so a user-owned `KeyVox` entry does not feed duplicate prompt or matcher input.
+  - Builds bounded provider prompt text only from the visible entries supplied by the user dictionary.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/EmailAddressNormalizer.swift`
   - Shared non-dictionary email literal cleanup (casing, punctuation spacing, sentence-boundary repair, ellipsis normalization).
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/WebsiteNormalizer.swift`
@@ -691,7 +692,7 @@ KeyVox/
   - Shared phrase/token normalization used by dictionary matching and pronunciation lexicon loading.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/DictionaryStore.swift`
   - Persistent custom dictionary storage, validation, and backup recovery.
-  - Exposes the shared dictionary hint prompt builder while keeping built-in entries out of persisted user storage and settings UI.
+  - Exposes the shared dictionary hint prompt builder for the entries present in persisted user storage and settings UI.
   - Exposes warning-clear helper for settings lifecycle cleanup.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/DictionaryEntry.swift`
   - Canonical dictionary entry model.
