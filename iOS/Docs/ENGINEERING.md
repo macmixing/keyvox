@@ -27,6 +27,7 @@ Convenience matters, but not more than predictable behavior.
 The containing app owns:
 
 - onboarding state and routing
+- Dictation Shortcut background coordination, installation, and guided setup presentation
 - app-owned haptics
 - settings and iCloud sync
 - model installation, validation, and recovery
@@ -131,6 +132,7 @@ It builds and wires:
 - `DictionaryStore`
 - `AppSettingsStore`
 - `OnboardingStore`
+- `DictationShortcutSetupIntroController`
 - `WeeklyWordStatsStore`
 - `AppTabRouter`
 - `AppHaptics`
@@ -144,6 +146,7 @@ It builds and wires:
 - `LocalStyleRewriteTextTransformer`
 - `KeyVoxKeyboardBridge`
 - `TranscriptionManager`
+- `ShortcutDictationCoordinator`
 - `StyleRewritePipelineCoordinator`
 - `StyleRewriteLatestArtifactStore`
 - `TTSPreviewPlayer`
@@ -186,7 +189,9 @@ Service ownership rules:
 - `KeyVoxVibes/` owns the post-onboarding intro controller, shared local trial policy, trial time formatting, local trial state, and purchase gate for KeyVox Vibes.
 - `Purchases/` owns shared StoreKit non-consumable plumbing used by app-owned purchase controllers.
 - `Stats/` owns app-local weekly usage aggregation.
-- `Onboarding/`, `Shortcuts/`, `iCloud/`, and `AppUpdate/` remain isolated feature folders.
+- `Onboarding/` owns full onboarding route state and prerequisites.
+- `Shortcuts/` owns background dictation intent coordination, signed-workflow installation handoffs, system Settings opening, and one-time Dictation Shortcut introduction state.
+- `iCloud/` and `AppUpdate/` remain isolated feature folders.
 
 `KeyVox iOS/Core/` owns app runtime services that are not view or composition concerns:
 
@@ -210,7 +215,9 @@ Current root behavior:
 - layer onboarding on top of the main shell when `OnboardingStore.shouldShowOnboarding` is `true`
 - `ReturnToHostView` may appear only when onboarding is not being suppressed by the onboarding store for the current launch
 - a cold `keyvoxios://record/start` launch may preselect `ReturnToHostView` before the first real SwiftUI route render
+- the one-time existing-user Dictation Shortcut guide may appear only while the resolved root destination is truly `.main`, after previously completed onboarding, and never during the launch that just completed onboarding
 - the post-onboarding `KeyVoxSpeakIntroSheetView` may appear only while the resolved root destination is truly `.main`, and must never interrupt onboarding, `ReturnToHostView`, or `PlaybackPreparationView`
+- an unhandled Dictation Shortcut guide has automatic-presentation priority over KeyVox Vibes and KeyVox Speak; presenting or browsing the guide defers those lower-priority introductions to a later eligible launch
 - app update prompts may appear only while the resolved root destination is truly `.main`, and must never interrupt launch hold, onboarding, `ReturnToHostView`, or `PlaybackPreparationView`
 
 ### Onboarding Store Rules
@@ -219,18 +226,31 @@ Current root behavior:
 
 - `hasCompletedOnboarding`
 - `hasCompletedWelcomeScreen`
+- `hasCompletedLanguageSelection`
+- `onboardingDictationLanguage`
 - `isForceOnboardingLaunch`
+- `isForceDictationShortcutSetupLaunch`
 - `hasPendingKeyboardTour`
+- `hasPendingDictationShortcutSetup`
 - `hasPassedWelcomeScreenThisLaunch`
+- `hasPassedLanguageSelectionThisLaunch`
 - `isPendingKeyboardTourRouteArmed`
 - `isIgnoringPersistedPendingKeyboardTourThisLaunch`
 - `hasCompletedOnboardingThisLaunch`
+
+Rules:
+
+- the onboarding language value is persisted separately from language-step completion so returning from setup restores the exact prior selection
+- entering the guided Shortcut flow records a pending Shortcut setup route; continuing from Action Button Demo Handoff replaces it with the pending keyboard-tour handoff
+- completing onboarding clears both pending routes and marks the Dictation Shortcut introduction handled so a new user is not shown the same guide again after onboarding
+- forced Dictation Shortcut setup enters that route directly without replaying welcome or language selection
 
 ### Runtime Flags
 
 The supported runtime flags are:
 
 - `KEYVOX_FORCE_ONBOARDING`
+- `KEYVOX_FORCE_DICTATION_SHORTCUT_SETUP`
 - `KEYVOX_BYPASS_TTS_FREE_SPEAK_LIMIT`
 - `KEYVOX_FORCE_KEYVOX_SPEAK_INTRO`
 - `KEYVOX_FORCE_TTS_REGENERATION`
@@ -238,6 +258,10 @@ The supported runtime flags are:
 - `KEYVOX_VIBES_TRIAL_DURATION_SECONDS`
 - `KEYVOX_RESET_VIBES_TRIAL`
 - `KEYVOX_FORCE_KEYVOX_VIBES_INTRO`
+- `KEYVOX_USE_LOCAL_PROMOTION_MANIFEST`
+- `KEYVOX_PROMOTION_PREVIEW_CAMPAIGN_ID`
+
+### Force Onboarding Runtime Flag
 
 Accepted truthy values:
 
@@ -251,6 +275,22 @@ Behavior:
 - the flag must still allow in-launch progression through the flow
 - persisted onboarding completion must not block the forced flow
 - stale persisted keyboard-tour handoff state must not skip setup during a forced run
+
+### Dictation Shortcut Setup Runtime Flag
+
+Accepted truthy values:
+
+- `1`
+- `true`
+- `yes`
+
+Behavior:
+
+- `KEYVOX_FORCE_DICTATION_SHORTCUT_SETUP` launches directly into the guided eight-page Shortcut/Action Button flow
+- it bypasses welcome and language selection for that launch without changing the user's stored language
+- completing or returning from the forced guide clears the forced route through `OnboardingStore`
+
+The promotion flags are debug presentation tools: `KEYVOX_USE_LOCAL_PROMOTION_MANIFEST` selects the bundled local manifest, while `KEYVOX_PROMOTION_PREVIEW_CAMPAIGN_ID` selects a non-empty campaign identifier. Production builds ignore both values.
 
 ### TTS Free-Speak Bypass Runtime Flag
 
@@ -346,26 +386,70 @@ Behavior:
 Current onboarding order is:
 
 1. welcome
-2. setup
-3. keyboard tour
+2. language selection
+3. model and microphone setup
+4. Dictation Shortcut and Action Button guide
+5. keyboard enablement
+6. keyboard tour
+
+### Language Selection Contract
+
+- onboarding lists the Whisper Base language catalog plus Auto Detect before model download
+- the selected language is persisted through both `OnboardingStore.onboardingDictationLanguage` and `AppSettingsStore.whisperDictationLanguage`
+- returning from setup must restore the prior selection and checkmark rather than defaulting or re-resolving it
+- when search has focus, Continue dismisses the keyboard before advancing; the language screen remains visually unchanged while the setup screen moves over it
+- the short advance lock prevents repeat input but must clear when `shouldShowLanguageSelectionScreen` becomes active again
 
 ### Setup Screen Contract
 
-The setup screen owns three real requirements:
+The setup screen owns two prerequisites:
 
 - model ready
 - microphone permission granted
-- keyboard access confirmed
 
 Rules:
 
-- keyboard setup stays gated until the model install state is `.ready` and microphone permission is granted
+- the combined keyboard-and-Shortcut setup handoff stays gated until the model install state is `.ready` and microphone permission is granted
 - microphone permission may be completed while the model download is still running
 - model download may continue while the user works through the other visible steps
 - tapping the onboarding model download action must present an explicit download confirmation with the Whisper Base model name and approximate size before `ModelManager` starts the download
 - when microphone access is denied, onboarding must route the user to app settings rather than pretending the permission can still be requested in place
-- the setup screen records a pending keyboard-tour handoff before opening KeyVox settings
-- the setup screen records and arms the keyboard-tour handoff when the model is ready, microphone access is granted, and the keyboard is already enabled, even if the user enabled the keyboard during a microphone settings trip or before the model finished downloading
+- Continue records a pending Dictation Shortcut setup route and advances into the guided Shortcut pages
+- keyboard enablement is intentionally deferred until after the Shortcut/Action Button guide
+
+### Dictation Shortcut and Action Button Setup Contract
+
+The same eight-page content model is reused in three presentation modes:
+
+- onboarding mode is controlled with Back, Skip, and a single bottom CTA; page swiping and page-indicator navigation are not enabled
+- existing-user introduction mode is freely swipeable, retains the guided CTA sequence, exposes close before the final step, and uses Finish on Action Button Demo Handoff
+- Settings reference mode is freely swipeable with close available throughout; only Add Shortcut exposes its installation action and Action Button Shortcut Selection exposes Open Settings
+
+Shared rules:
+
+- `DictationShortcutSetupPage` owns page order, accessibility descriptions, bundled video names, native media dimensions, and optional viewport width
+- all eight bundled videos live under `Resources/DictationShortcutSetup/`; `ShortcutHero.mov` supplies the centered Dictate Anywhere brand animation, while the seven semantically named instructional assets cover Shortcut installation, Action Button setup, and both dictation demonstrations
+- only the selected page may actively play; videos loop and restart through `LoopingVideoPlayer` when their page becomes active
+- Add Shortcut invokes `DictationShortcutInstaller`; after the first request, the guided CTA becomes Next so returning from Shortcuts does not reopen installation automatically
+- Open Settings invokes `DictationShortcutSettingsOpener`; after the first request, the guided CTA becomes Next so returning from Settings preserves progress
+- onboarding Skip and Action Button Demo Handoff's Set Up Keyboard action both clear the pending Shortcut route and record the pending keyboard-tour handoff
+- page indicator navigation moves only one page per action and exposes VoiceOver adjustable previous/next behavior
+
+### Existing-User Introduction Contract
+
+- `DictationShortcutSetupIntroController` presents the guide once to users who completed onboarding before the current launch and have not handled the guide
+- automatic guide scheduling is suppressed during onboarding, return-to-host, playback preparation, update-prompt presentation, and competing feature sheets
+- completing new-user onboarding marks the guide handled because those users already saw the same content in-flow
+- opening the guide from Settings also marks the automatic introduction handled
+- the Dictation Shortcut guide has automatic priority over KeyVox Vibes and KeyVox Speak introductions
+
+### Keyboard Enablement Contract
+
+- `OnboardingEnableKeyboardScreen` owns the explicit KeyVox keyboard and Allow Full Access instructions after the Shortcut guide
+- the bundled `Resources/Onboarding/EnableKeyboard.mov` animation demonstrates the system-settings steps
+- opening Settings clears stale keyboard-onboarding presentation state before leaving the app
+- when the app becomes active, `OnboardingKeyboardAccessProbe` refreshes enablement and arms the pending keyboard-tour route once the KeyVox keyboard is enabled
+- Back returns to Action Button Demo Handoff without discarding the pending setup journey
 
 ### Download Confirmation Contract
 
@@ -384,7 +468,7 @@ Rules:
 
 ### Keyboard Tour Contract
 
-The keyboard tour is a resumed onboarding step after the user leaves setup for Settings.
+The keyboard tour resumes after the user returns from keyboard enablement in Settings.
 
 Rules:
 
@@ -392,6 +476,7 @@ Rules:
 - it autofocuses a text field so the KeyVox keyboard can appear immediately
 - it uses `KeyboardObserver` height to pin the input above the keyboard
 - it is driven by `OnboardingKeyboardTourState` scene progression (`a` -> `b` -> `c`)
+- scene A uses the bundled `Resources/Onboarding/KeyVoxKeyboardSelection.mov` animation; the removed keyboard-menu image sequence is not part of the current flow
 - the final completion action is disabled until the user has both shown the KeyVox keyboard and completed a first non-empty transcription while the tour is active
 - stale old keyboard-ready state must not be enough to finish onboarding
 - completing the keyboard tour clears the pending keyboard-tour handoff and completes onboarding directly
@@ -459,8 +544,13 @@ Keyboard onboarding detection is deliberately split across three signals:
 - `KeyVox.App.WeeklyWordStatsInstallationID`
 - `KeyVox.App.HasCompletedOnboarding`
 - `KeyVox.App.HasCompletedOnboardingWelcome`
+- `KeyVox.App.HasCompletedOnboardingLanguageSelection`
+- `KeyVox.App.OnboardingDictationLanguage`
 - `KeyVox.App.HasPendingKeyboardTour`
+- `KeyVox.App.HasPendingDictationShortcutSetup`
+- `KeyVox.App.HasSeenDictationShortcutSetup`
 - `KeyVox.App.ActiveDictationProvider`
+- `KeyVox.App.WhisperDictationLanguage`
 - `KeyVox.App.CachedAppStoreReleaseURL`
 - `KeyVox.App.CachedAppStoreReleaseVersion`
 - `KeyVox.App.CachedAppUpdateUrgency`
@@ -620,6 +710,8 @@ Cold path:
 
 The Toggle Dictation App Shortcut is another controller for the existing shared dictation session. It does not own a recorder, transcription provider, or parallel session state.
 
+The signed workflow can run from Shortcuts and can be assigned by the user to system surfaces such as the Action Button or Control Center. KeyVox owns the intent, workflow, installer, and guidance; iOS owns those system assignments.
+
 ### Intent and Coordination
 
 - `ToggleKeyVoxDictationIntent` conforms to `AudioRecordingIntent` and `LiveActivityIntent`, uses `openAppWhenRun = false`, and supports background execution on system releases that expose background intent modes.
@@ -658,9 +750,11 @@ The Toggle Dictation App Shortcut is another controller for the existing shared 
 
 - `iOS/Shortcuts/Toggle KeyVox Dictation.wflow` is the editable workflow source.
 - `KeyVox iOS/Resources/Shortcuts/Toggle KeyVox Dictation.shortcut` is the signed distributable bundled with the app.
-- The Dictation Shortcut row in Settings is the app-owned installation entry point.
+- The Dictation Shortcut row in Settings opens the reusable eight-page reference guide rather than installing immediately.
+- Add Shortcut is the app-owned installation entry point in onboarding, the existing-user introduction, and Settings reference modes.
 - `DictationShortcutInstaller` opens the bundled shortcut directly where supported and otherwise presents the standard system share sheet, which exposes Shortcuts and Save to Files.
-- Installation failures remain Settings presentation errors; they do not alter dictation session state.
+- Open Settings on Action Button Shortcut Selection uses `DictationShortcutSettingsOpener` to open system Settings while the guide explains the Action Button selection steps.
+- Installation or Settings-opening failures remain guide presentation errors; they do not alter dictation session state.
 
 ## Session Lifecycle and Safety Policy
 
@@ -1640,15 +1734,17 @@ Current app-owned surfaces:
 - `ThirdPartyNoticesView`: shared legal-notices sheet that renders the bundled repo-root `THIRD_PARTY_NOTICES.md` markdown with app-owned styling and explicit close-only dismissal
 - `DictionaryTabView`: dictionary browsing/editing
 - `StyleTabView`: dictation style toggles
-- `SettingsTabView`: top-level settings composition, shared disclosure state, third-party notices presentation, and cross-section coordination
-- `SettingsTabView+General`: session timeout, Live Activities, Dictation Shortcut installation, Speak Timeout, keyboard haptics, and audio preference sections extracted from the settings root view
+- `SettingsTabView`: top-level settings composition, shared disclosure state, third-party notices presentation, full-screen Dictation Shortcut reference-guide presentation, and cross-section coordination
+- `SettingsTabView+General`: session timeout, Live Activities, Dictation Shortcut setup-guide entry, Speak Timeout, keyboard haptics, and audio preference sections extracted from the settings root view
 - `SettingsTabView+Models`: release-facing `Dictation Model` section for provider selection, per-model install actions, uninstalled model size display, and the attached language section driven by the shared Whisper catalog or Parakeet Auto Detect guidance
 - `SettingsTabView+TTS`: release-facing `KeyVox Speak` section for PocketTTS runtime install state, per-voice install actions, previews, voice selection, and the `KeyVox Speak Unlimited` unlock row placed beneath the model section
 - `SettingsTabView+VibesAI`: release-facing `KeyVox Vibes AI` section for local rewrite model install state, confirmed download/delete actions, repair, progress, and animated progress collapse
 - `SettingsTabView+About`: rate-and-review, GitHub support, restore-purchases, version footer, and third-party notices launcher extracted from the settings root view
 - `PlaybackPreparationView`: keyboard cold-launch playback-preparation surface shown before returning to the host app
 - `ReturnToHostView`: one-time host-return guidance after a cold keyboard launch, with a top-right dismiss affordance that returns the app to Home while preserving the containing app as the route/session owner
-- onboarding screens: welcome, setup, keyboard tour
+- onboarding screens: welcome, searchable language selection, model/microphone setup, the guided Dictation Shortcut and Action Button flow, keyboard enablement, and keyboard tour
+- `DictationShortcutSetupBrowsingView`: shared freely swipeable existing-user introduction and Settings reference presentation for the same eight-page guide
+- `AppPageIndicator`: shared page position control with optional one-step navigation and VoiceOver adjustable behavior
 
 `AppHaptics` is the app-owned feedback bridge for these surfaces, while `AppHapticsDecisions` keeps the trigger rules deterministic and testable.
 
@@ -1662,6 +1758,7 @@ Views may surface manager state, but runtime ownership stays in the managers and
 ### iOS-Focused Test Coverage
 
 - onboarding store persistence and routing state
+- Dictation Shortcut existing-user intro eligibility, delay, cancellation, and handled-state behavior
 - onboarding keyboard access probe behavior
 - onboarding keyboard-tour state transitions
 - onboarding microphone permission refresh behavior

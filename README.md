@@ -41,6 +41,7 @@ KeyVox for iOS brings the same speech-to-text workflow from the Mac app into a m
 
 - 🎙️ Hold-to-talk dictation with optional hands-free mode on macOS
 - 🎙️ Tap-to-talk dictation on iOS
+- ⚡ Background iOS dictation from the Action Button, Control Center, or Shortcuts
 - 🧾 Custom dictionary with phonetic-aware matching and iCloud sync
 - ♥️ KeyVox Vibes (macOS/iOS) - Pick a style, change your mind later
 - 🔈 KeyVox Speak (iOS) - On-device text-to-speech with 8 AI voices to choose from
@@ -158,6 +159,23 @@ The overlay pill shows whether the requested format is on or off. If the dictati
 
 1. Tap microphone icon on keyboard to start recording, tap again to stop and transcribe.
 2. Tap the cancel button on the keyboard toolbar to cancel recording.
+
+### Dictation Shortcut and Action Button
+
+KeyVox can start and stop on-device dictation from the Action Button, Control Center, or the Shortcuts app without bringing the KeyVox app to the foreground.
+
+To set it up:
+
+1. Open KeyVox Settings and tap **Set Up** beside **Dictation Shortcut**.
+2. On the Add Shortcut page, tap **Add Shortcut** and add **Toggle KeyVox Dictation** to Shortcuts.
+3. To use the Action Button, open iPhone Settings, choose **Action Button**, select **Shortcut**, and choose **Toggle KeyVox Dictation**.
+4. Keep **Live Activities** enabled in KeyVox Settings so iOS can support the background recording session.
+
+The first Action Button press starts recording. Press it again to stop and transcribe locally. If the KeyVox keyboard is visible, the finished transcription flows into the active text field through the normal keyboard insertion path. The installed Shortcut also returns completed text to the workflow, which copies it to the clipboard and posts a notification so it can be pasted into any app. Starting a recording or stopping without detected speech does not overwrite the clipboard with an empty result.
+
+The Shortcut action includes an optional **Release Mic Immediately** setting. It is off by default to preserve KeyVox’s normal warm-session behavior; turn it on when you want microphone monitoring released as soon as capture stops while transcription finishes.
+
+New users receive the complete Shortcut and Action Button guide during onboarding before keyboard enablement. Existing users receive the same guide once, and it can always be reopened from the Dictation Shortcut row in KeyVox Settings.
 
 ### Compact Keys
 

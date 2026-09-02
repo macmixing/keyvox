@@ -13,6 +13,7 @@ final class AppServiceRegistry {
     let dictionaryStore: DictionaryStore
     let settingsStore: AppSettingsStore
     let onboardingStore: OnboardingStore
+    let dictationShortcutSetupIntroController: DictationShortcutSetupIntroController
     let weeklyWordStatsStore: WeeklyWordStatsStore
     let appReviewRequestStore: AppReviewRequestStore
     let appReviewRequestCoordinator: AppReviewRequestCoordinator
@@ -72,6 +73,9 @@ final class AppServiceRegistry {
         )
         let runtimeFlags = RuntimeFlags()
         let onboardingStore = OnboardingStore(defaults: settingsDefaults, runtimeFlags: runtimeFlags)
+        let dictationShortcutSetupIntroController = DictationShortcutSetupIntroController(
+            defaults: settingsDefaults
+        )
         let weeklyWordStatsStore = WeeklyWordStatsStore(defaults: settingsDefaults)
         let appReviewRequestStore = AppReviewRequestStore(defaults: settingsDefaults)
         let appReviewRequestCoordinator = AppReviewRequestCoordinator(store: appReviewRequestStore)
@@ -355,6 +359,7 @@ final class AppServiceRegistry {
         self.dictionaryStore = dictionaryStore
         self.settingsStore = settingsStore
         self.onboardingStore = onboardingStore
+        self.dictationShortcutSetupIntroController = dictationShortcutSetupIntroController
         self.weeklyWordStatsStore = weeklyWordStatsStore
         self.appReviewRequestStore = appReviewRequestStore
         self.appReviewRequestCoordinator = appReviewRequestCoordinator

@@ -105,7 +105,6 @@ iOS/
 │   │   ├── Onboarding/
 │   │   │   ├── OnboardingDownloadNetworkMonitor.swift
 │   │   │   ├── OnboardingKeyboardAccessProbe.swift
-│   │   │   ├── OnboardingKeyboardTourHandoffState.swift
 │   │   │   ├── OnboardingKeyboardTourState.swift
 │   │   │   ├── OnboardingMicrophonePermissionController.swift
 │   │   │   ├── OnboardingSetupState.swift
@@ -124,6 +123,8 @@ iOS/
 │   │   │   └── KeyVoxURLRouter.swift
 │   │   ├── Shortcuts/
 │   │   │   ├── DictationShortcutInstaller.swift
+│   │   │   ├── DictationShortcutSettingsOpener.swift
+│   │   │   ├── DictationShortcutSetupIntroController.swift
 │   │   │   ├── KeyVoxSpeakShortcutIntent.swift
 │   │   │   ├── KeyVoxSpeakShortcutsProvider.swift
 │   │   │   ├── ShortcutDictationCoordinator.swift
@@ -211,9 +212,21 @@ iOS/
 │   ├── KeyVoxiOS.entitlements
 │   ├── Resources/
 │   │   ├── Assets.xcassets/
+│   │   ├── DictationShortcutSetup/
+│   │   │   ├── ActionButtonDemoHandoff.mov
+│   │   │   ├── ActionButtonDemoPaste.mov
+│   │   │   ├── ActionButtonIntro.mov
+│   │   │   ├── ActionButtonSettings.mov
+│   │   │   ├── ActionButtonShortcutOption.mov
+│   │   │   ├── ActionButtonShortcutSelection.mov
+│   │   │   ├── AddShortcutPage.mov
+│   │   │   └── ShortcutHero.mov
 │   │   ├── Kanit-Light.ttf
 │   │   ├── Kanit-Medium.ttf
 │   │   ├── KeyVoxProducts.storekit
+│   │   ├── Onboarding/
+│   │   │   ├── EnableKeyboard.mov
+│   │   │   └── KeyVoxKeyboardSelection.mov
 │   │   ├── ReturnToHost.mov
 │   │   ├── Shortcuts/
 │   │   │   └── Toggle KeyVox Dictation.shortcut
@@ -241,6 +254,7 @@ iOS/
 │   │   │   │   ├── AppActionButton.swift
 │   │   │   │   ├── AppCard.swift
 │   │   │   │   ├── AppIconTile.swift
+│   │   │   │   ├── AppPageIndicator.swift
 │   │   │   │   ├── AppScrollMetrics.swift
 │   │   │   │   ├── AppScrollScreen.swift
 │   │   │   │   ├── AppTheme.swift
@@ -266,6 +280,14 @@ iOS/
 │   │   │   ├── DictionaryTabView.swift
 │   │   │   ├── DictionaryWordEditorMode.swift
 │   │   │   └── DictionaryWordEditorView.swift
+│   │   ├── DictationShortcutSetup/
+│   │   │   ├── DictationShortcutSetupBrowsingView.swift
+│   │   │   ├── DictationShortcutSetupOnboardingView.swift
+│   │   │   ├── DictationShortcutSetupPage.swift
+│   │   │   ├── DictationShortcutSetupPageView.swift
+│   │   │   ├── DictationShortcutSetupVideoAsset.swift
+│   │   │   ├── DictationShortcutSetupVideoView.swift
+│   │   │   └── ShortcutIntroView.swift
 │   │   ├── HomeTabView/
 │   │   │   ├── HomeTabView.swift
 │   │   │   ├── LastTranscriptionCardView.swift
@@ -293,17 +315,18 @@ iOS/
 │   │   │   ├── KeyVoxVibesUnlockScene.swift
 │   │   │   └── KeyVoxVibesUnlockSheetView.swift
 │   │   ├── Onboarding/
-│   │   │   ├── OnboardingStepRow.swift
+│   │   │   ├── OnboardingEnableKeyboardScreen.swift
 │   │   │   ├── OnboardingFlowView.swift
+│   │   │   ├── OnboardingLanguageScreen.swift
 │   │   │   ├── OnboardingLogoPopInSequence.swift
 │   │   │   ├── OnboardingSetupScreen.swift
+│   │   │   ├── OnboardingStepRow.swift
 │   │   │   ├── OnboardingWelcomeScreen.swift
 │   │   │   └── Tour/
 │   │   │       ├── OnboardingKeyboardTourSceneAView.swift
 │   │   │       ├── OnboardingKeyboardTourSceneBView.swift
 │   │   │       ├── OnboardingKeyboardTourSceneCView.swift
-│   │   │       ├── OnboardingKeyboardTourScreen.swift
-│   │   │       └── KeyboardMenuSequence.swift
+│   │   │       └── OnboardingKeyboardTourScreen.swift
 ├── KeyVox Keyboard/
 │   ├── App/
 │   │   ├── KeyboardContainingAppLauncher.swift
@@ -404,6 +427,7 @@ iOS/
 │   │   ├── AppHapticsDecisionTests.swift
 │   │   ├── AppSettingsStoreTests.swift
 │   │   ├── CloudSyncCoordinatorTests.swift
+│   │   ├── DictationShortcutSetupIntroControllerTests.swift
 │   │   ├── KeyVoxSessionLiveActivityCoordinatorTests.swift
 │   │   ├── KeyVoxURLRouterTests.swift
 │   │   ├── KeyVoxURLRouteTests.swift
@@ -412,7 +436,6 @@ iOS/
 │   │   ├── KeyVoxVibesPurchaseControllerTests.swift
 │   │   ├── ModelManagerTests.swift
 │   │   ├── OnboardingKeyboardAccessProbeTests.swift
-│   │   ├── OnboardingKeyboardTourHandoffStateTests.swift
 │   │   ├── OnboardingKeyboardTourStateTests.swift
 │   │   ├── OnboardingMicrophonePermissionControllerTests.swift
 │   │   ├── OnboardingDownloadNetworkMonitorTests.swift
@@ -549,7 +572,7 @@ Packages/
   - SwiftUI app entry point.
   - Injects all app-wide environment objects.
   - Registers model-download background tasks.
-  - Handles scene activation/background callbacks for transcription recovery, model recovery, onboarding keyboard-tour arming, and shortcut-route consumption.
+  - Handles scene activation/background callbacks for transcription recovery, model recovery, onboarding keyboard-tour arming, Dictation Shortcut intro scheduling, and shortcut-route consumption.
   - Consumes any cold-launch URL route that was captured before SwiftUI rendered and pre-presents `ReturnToHostView` without animation before routing `keyvoxios://record/start`.
 - `KeyVox iOS/App/Composition/SharedPaths.swift`
   - Centralizes rooted app-group, cache, and install filesystem locations used by app-owned services.
@@ -564,8 +587,13 @@ Packages/
   - Maps the shared transcription state into idle, recording, and busy shortcut outcomes without becoming a second recording owner.
   - Prepares Live Activity support before shortcut recording begins, routes start/stop commands into `TranscriptionManager`, and maps typed command results into App Intent outcomes.
 - `KeyVox iOS/App/Shortcuts/DictationShortcutInstaller.swift`
-  - Settings-owned installer handoff for the signed bundled workflow.
+  - App-owned installer handoff used by the onboarding and Settings guide for the signed bundled workflow.
   - Opens the shortcut file directly on supported system releases and presents the standard share sheet on earlier releases, including popover anchoring for regular-width layouts.
+- `KeyVox iOS/App/Shortcuts/DictationShortcutSettingsOpener.swift`
+  - Main-actor system Settings handoff used by the guided Action Button setup pages.
+- `KeyVox iOS/App/Shortcuts/DictationShortcutSetupIntroController.swift`
+  - App-owned one-time presentation state for showing the full Dictation Shortcut guide to existing users on an eligible launch.
+  - Defers presentation until onboarding is already complete, records handled state, and takes priority over automatic KeyVox Vibes and KeyVox Speak introductions.
 - `KeyVox iOS/App/Shortcuts/KeyVoxSpeakShortcutsProvider.swift`
   - Registers the Toggle Dictation and KeyVox Speak App Shortcut phrases surfaced in the Shortcuts system.
 - `KeyVox iOS/App/Lifecycle/AppDelegate.swift`
@@ -580,7 +608,7 @@ Packages/
   - App-owned URL parsing and route dispatch owner for record, TTS, locked Vibes, Vibes trial-start, model recovery, and return-to-host flows.
 - `KeyVox iOS/App/Composition/AppServiceRegistry.swift`
   - Main composition root.
-  - Builds dictionary, onboarding, settings, weekly stats, app haptics, the shared app-tab router, Whisper, Parakeet, the active-provider router, post-processing, dictation model management, local Vibes model management, local Vibes inference, keyboard bridge, transcription, KeyVox Vibes style rewrite coordination, PocketTTS runtime services, the TTS unlock gate, KeyVox Vibes purchase/trial state, the KeyVox Speak and Vibes intro controllers, the App Store update coordinator, iCloud sync, Live Activity, and URL-routing services.
+  - Builds dictionary, onboarding, settings, weekly stats, app haptics, the shared app-tab router, Whisper, Parakeet, the active-provider router, post-processing, dictation model management, local Vibes model management, local Vibes inference, keyboard bridge, transcription, Shortcut dictation coordination, Dictation Shortcut intro state, KeyVox Vibes style rewrite coordination, PocketTTS runtime services, the TTS unlock gate, KeyVox Vibes purchase/trial state, the KeyVox Speak and Vibes intro controllers, the App Store update coordinator, iCloud sync, Live Activity, and URL-routing services.
   - Applies the persisted Whisper language when the service is created and keeps later device-local language changes synchronized with `WhisperService`.
   - Normalizes the persisted active provider back to a ready model when install state changes.
   - Normalizes copied-text playback voice selection when PocketTTS install state changes, but does not prewarm PocketTTS; playback owns runtime preparation and teardown.
@@ -631,20 +659,44 @@ Packages/
   - Root router for launch hold vs return-to-host vs onboarding overlay vs main app.
   - Keeps `MainTabView` mounted under the onboarding overlay so onboarding can fade into the live shell without re-rooting the scene tree.
   - Suppresses `ReturnToHostView` whenever onboarding is active or was just completed during the same launch.
-  - Also owns post-onboarding KeyVox Speak and KeyVox Vibes intro-sheet presentation so feature intros can only appear on the true `.main` route, never over onboarding, return-to-host, or playback-preparation flows.
-  - Gives KeyVox Vibes first priority when Speak and Vibes both want the same eligible cold launch, deferring Speak to the next eligible launch.
+  - Owns the automatic existing-user Dictation Shortcut guide plus post-onboarding KeyVox Speak and KeyVox Vibes intro sheets, all gated to the true `.main` route.
+  - Gives the unhandled Dictation Shortcut guide first priority, then KeyVox Vibes, then KeyVox Speak, deferring lower-priority introductions to later eligible launches.
   - Also owns the system update alert presentation and keeps update prompts scoped to the `.main` route so launch-hold, onboarding, return-to-host, and playback-preparation flows remain uninterrupted.
 - `KeyVox iOS/App/Onboarding/OnboardingStore.swift`
-  - Persisted onboarding state, welcome completion, pending keyboard-tour handoff, and force-onboarding launch behavior.
-  - Also owns launch-scoped routing flags for welcome progression, pending-tour arming, persisted-tour ignore behavior, and post-completion suppression.
-  - Records and arms the keyboard-tour handoff once app-level prerequisites say the model is ready, microphone access is granted, and the keyboard is enabled.
+  - Persisted onboarding state for welcome, language selection, the Dictation Shortcut setup handoff, keyboard setup/tour continuation, and full completion.
+  - Owns the selected onboarding language separately from completion so returning to the picker restores the exact checkmark.
+  - Also owns launch-scoped route flags, forced onboarding/Shortcut setup entry, pending keyboard and Shortcut setup state, and post-completion suppression.
+  - Records the keyboard-tour handoff after the guided Shortcut pages and arms it when the KeyVox keyboard becomes enabled in system settings.
 - `KeyVox iOS/Views/Onboarding/OnboardingFlowView.swift`
-  - Ordered onboarding router: welcome -> setup -> keyboard tour.
+  - Stack-based onboarding router: welcome -> language -> setup -> Dictation Shortcut setup -> keyboard enablement -> keyboard tour.
+  - Keeps earlier screens mounted so forward routes slide over them and back navigation restores their existing state.
+- `KeyVox iOS/Views/Onboarding/OnboardingLanguageScreen.swift`
+  - Searchable Whisper-language picker, including Auto Detect, before model setup.
+  - Persists the selected language through `OnboardingStore` and `AppSettingsStore`, dismisses search focus before advancing, and restores interaction when the setup route returns to it.
 - `KeyVox iOS/Views/Onboarding/OnboardingSetupScreen.swift`
-  - Model download, microphone permission, and keyboard-settings handoff screen.
-  - Gates keyboard setup until both the model is ready and microphone access has been granted, while allowing those two setup tasks to proceed in parallel.
-  - Records the pending keyboard-tour handoff before opening Settings and reconciles completed app-level requirements on return from Settings or model completion.
+  - Whisper Base download and microphone-permission prerequisite screen.
+  - Gates the combined keyboard-and-Shortcut setup handoff until both prerequisites are complete, while allowing them to proceed in parallel.
+  - Starts the guided Dictation Shortcut route; keyboard system settings are handled later by `OnboardingEnableKeyboardScreen`.
   - Uses app-owned haptics for warning/success step feedback.
+- `KeyVox iOS/Views/DictationShortcutSetup/DictationShortcutSetupOnboardingView.swift`
+  - Controlled eight-step onboarding flow with back, Skip, bottom CTA, and non-interactive shared page indicator behavior.
+  - Installs the bundled Shortcut from Add Shortcut, opens system Settings from Action Button Shortcut Selection, and hands off to keyboard enablement from Action Button Demo Handoff.
+- `KeyVox iOS/Views/DictationShortcutSetup/DictationShortcutSetupBrowsingView.swift`
+  - Swipeable reuse of the same eight steps for the one-time existing-user introduction and the Settings reference guide.
+  - Existing-user mode retains guided CTAs and Finish; Settings mode limits actions to Add Shortcut and Open Settings while allowing free step browsing and close.
+- `KeyVox iOS/Views/DictationShortcutSetup/DictationShortcutSetupPage.swift`
+  - Ordered setup-step model, semantic step identifiers, accessibility descriptions, and single source of truth for the eight bundled video asset names and viewport dimensions.
+- `KeyVox iOS/Views/DictationShortcutSetup/DictationShortcutSetupPageView.swift`
+  - Shared per-step presentation that composes `ShortcutIntroView` with the reusable video viewport.
+- `KeyVox iOS/Views/DictationShortcutSetup/DictationShortcutSetupVideoView.swift`
+  - Active-page looping playback wrapper for the transparent Shortcut/Action Button instructional media.
+- `KeyVox iOS/Views/Components/App/AppPageIndicator.swift`
+  - Shared page-count/selection presentation with optional one-page previous/next navigation and VoiceOver adjustable actions.
+- `KeyVox iOS/Views/Components/LoopingVideoPlayer.swift`
+  - Reusable bundled-video player with readiness binding and explicit play/pause control.
+  - Pauses and seeks inactive pages to the start, restarts when they become active, and resumes active playback after app activation.
+- `KeyVox iOS/Views/Onboarding/OnboardingEnableKeyboardScreen.swift`
+  - Dedicated post-Shortcut screen that demonstrates enabling the KeyVox keyboard and Full Access, opens app keyboard settings, and resumes into the keyboard tour when enablement is detected.
 - `KeyVox iOS/Views/Onboarding/OnboardingStepRow.swift`
   - Shared onboarding setup card row with step state, optional action button, trailing status content, and extra content below the description.
   - Keeps the onboarding setup presentation consistent while the screen owns step-specific button state and copy.
@@ -658,8 +710,6 @@ Packages/
   - Completes onboarding directly when the final `Finish` action runs.
 - `KeyVox iOS/App/Onboarding/OnboardingKeyboardTourState.swift`
   - Small state machine that drives tour scene A/B/C progression and completion gating.
-- `KeyVox iOS/App/Onboarding/OnboardingKeyboardTourHandoffState.swift`
-  - Small app-level gate for starting the keyboard tour once the model is ready, microphone access is granted, and the keyboard is enabled in system settings.
 - `KeyVox iOS/App/Onboarding/OnboardingKeyboardAccessProbe.swift`
   - App-side probe for keyboard enablement, keyboard presentation, and keyboard-reported Full Access confirmation.
 - `KeyVox iOS/App/Onboarding/OnboardingMicrophonePermissionController.swift`
@@ -667,7 +717,7 @@ Packages/
 - `KeyVox iOS/App/Onboarding/OnboardingDownloadNetworkMonitor.swift`
   - Cellular vs non-cellular detection for onboarding download copy.
 - `KeyVox iOS/App/Onboarding/RuntimeFlags.swift`
-  - Reads `KEYVOX_FORCE_ONBOARDING`, `KEYVOX_BYPASS_TTS_FREE_SPEAK_LIMIT`, `KEYVOX_FORCE_KEYVOX_SPEAK_INTRO`, `KEYVOX_FORCE_TTS_REGENERATION`, `KEYVOX_BYPASS_VIBES_TRIAL`, `KEYVOX_VIBES_TRIAL_DURATION_SECONDS`, `KEYVOX_RESET_VIBES_TRIAL`, and `KEYVOX_FORCE_KEYVOX_VIBES_INTRO`.
+  - Reads `KEYVOX_FORCE_ONBOARDING`, `KEYVOX_FORCE_DICTATION_SHORTCUT_SETUP`, copied-text playback/Vibes development flags, and promotion-preview flags from the process environment.
 
 ### Shared State, IPC, and Session Surfaces
 
@@ -676,6 +726,7 @@ Packages/
 - `KeyVox iOS/App/Integration/KeyVoxTTSRequest.swift`
   - Dependency-free shared copied-text playback request model and enums used by both the containing app and share extension to keep the JSON handoff contract compile-time safe.
 - `KeyVox iOS/App/iCloud/UserDefaultsKeys.swift`
+  - Includes onboarding language completion/selection, pending Dictation Shortcut setup, and one-time Shortcut guide handled-state keys.
   - Includes the app-owned cached TTS unlock state plus the local day token and free-speak usage count used by the phase-one copied-text playback gate.
   - Also includes the post-onboarding KeyVox Speak intro keys for seen-state, feature-used state, the delayed eligible-open counter, and the app-owned cached update decision keys used for cold-launch reminders.
   - Also includes the KeyVox Vibes style-selection keys used by both `AppSettingsStore` and the keyboard extension's Vibes selector.
@@ -929,12 +980,12 @@ Packages/
   - Uses the shared Vibes trial remaining-time formatter for active-trial status while keeping the card sentence local to the Style tab.
   - Keeps selected Vibe displayed as `None` until both Vibes access and local Vibes AI readiness are active, and exposes an install entry point when the model is missing.
 - `KeyVox iOS/Views/SettingsTabView/SettingsTabView.swift`
-  - Top-level settings composition, shared disclosure state, download-confirmation request binding, shortcut-installation error presentation, third-party notices sheet presentation, and cross-section coordination for the extracted settings surface.
+  - Top-level settings composition, shared disclosure state, download-confirmation request binding, full-screen Dictation Shortcut reference-guide presentation, third-party notices sheet presentation, and cross-section coordination for the extracted settings surface.
 - `KeyVox Keyboard/Core/KeyboardToolbarMode.swift`
   - Central warning-priority resolver for the keyboard toolbar.
   - Also maps shared forced-update state into the existing warning surface so the branded toolbar does not remain active while an update is required.
 - `KeyVox iOS/Views/SettingsTabView/SettingsTabView+General.swift`
-  - Session timeout, Live Activities, Dictation Shortcut installation, Speak Timeout, keyboard haptics, keyboard layout controls including Compact Keys availability, and audio preference sections extracted from the settings root view.
+  - Session timeout, Live Activities, the Dictation Shortcut setup-guide entry point, Speak Timeout, keyboard haptics, keyboard layout controls including Compact Keys availability, and audio preference sections extracted from the settings root view.
 - `KeyVox iOS/Views/SettingsTabView/SettingsRow.swift`
   - Shared settings-row layout with mutually exclusive SF Symbol and template-rendered asset icon support.
 - `KeyVox iOS/Views/SettingsTabView/SettingsTabView+Models.swift`
@@ -1067,7 +1118,7 @@ Packages/
 ### Tests
 
 - `KeyVoxiOSTests/App/`
-  - Onboarding state, onboarding keyboard-tour state, keyboard access probing, app haptics decisions, settings persistence, KeyVox Vibes latest-artifact persistence, Vibes intro/access/purchase semantics, shared paths, iCloud sync, weekly stats, Live Activity coordination, shortcut dictation coordination, URL routing, and model manager behavior across rooted Whisper migration and Parakeet installs.
+  - Onboarding state, Dictation Shortcut intro scheduling, onboarding keyboard-tour state, keyboard access probing, app haptics decisions, settings persistence, KeyVox Vibes latest-artifact persistence, Vibes intro/access/purchase semantics, shared paths, iCloud sync, weekly stats, Live Activity coordination, shortcut dictation coordination, URL routing, and model manager behavior across rooted Whisper migration and Parakeet installs.
 - `KeyVoxiOSTests/App/TTSPurchaseControllerTests.swift`
   - Deterministic copied-text playback monetization coverage for cached unlock state, two-free-speaks-per-day accounting, local day resets, and purchase or restore state transitions through the placeholder store abstraction.
 - `KeyVoxiOSTests/Core/Audio/`

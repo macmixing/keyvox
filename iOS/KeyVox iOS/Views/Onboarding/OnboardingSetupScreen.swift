@@ -15,10 +15,8 @@ struct OnboardingSetupScreen: View {
     @EnvironmentObject private var settingsStore: AppSettingsStore
     @StateObject private var downloadNetworkMonitor: OnboardingDownloadNetworkMonitor
     @StateObject private var microphonePermissionController: OnboardingMicrophonePermissionController
-    @StateObject private var keyboardAccessProbe: OnboardingKeyboardAccessProbe
     @State private var previousWarningToken: String?
     @State private var previousModelStepCompletion: Bool?
-    @State private var previousKeyboardStepCompletion: Bool?
     @State private var displaysMicrophoneStepCompletion = false
     @State private var hasPendingMicrophoneStepCompletion = false
     @State private var pendingDownloadConfirmation: PendingDownloadConfirmation?
@@ -27,16 +25,13 @@ struct OnboardingSetupScreen: View {
     @MainActor
     init(
         downloadNetworkMonitor: OnboardingDownloadNetworkMonitor? = nil,
-        microphonePermissionController: OnboardingMicrophonePermissionController? = nil,
-        keyboardAccessProbe: OnboardingKeyboardAccessProbe? = nil
+        microphonePermissionController: OnboardingMicrophonePermissionController? = nil
     ) {
         let resolvedDownloadNetworkMonitor = downloadNetworkMonitor ?? OnboardingDownloadNetworkMonitor()
         let resolvedMicrophonePermissionController = microphonePermissionController ?? OnboardingMicrophonePermissionController()
-        let resolvedKeyboardAccessProbe = keyboardAccessProbe ?? OnboardingKeyboardAccessProbe()
 
         _downloadNetworkMonitor = StateObject(wrappedValue: resolvedDownloadNetworkMonitor)
         _microphonePermissionController = StateObject(wrappedValue: resolvedMicrophonePermissionController)
-        _keyboardAccessProbe = StateObject(wrappedValue: resolvedKeyboardAccessProbe)
     }
 
     var body: some View {
@@ -52,6 +47,7 @@ struct OnboardingSetupScreen: View {
                             .font(.appFont(14, variant: .light))
                             .foregroundStyle(.secondary)
                     }
+                    .frame(maxWidth: .infinity)
                     .multilineTextAlignment(.center)
 
                     modelRequirementRow
@@ -70,13 +66,11 @@ struct OnboardingSetupScreen: View {
                     }
                 }
             }
-            .toolbarBackground(AppTheme.screenBackground, for: .navigationBar)
-            .toolbarBackground(.visible, for: .navigationBar)
+            .toolbarBackground(.hidden, for: .navigationBar)
         }
         .task {
             refreshState()
             selectOnboardingProviderIfReady()
-            advanceToKeyboardTourIfHandoffIsReady()
         }
         .onChange(of: scenePhase, initial: false) { _, newPhase in
             guard newPhase == .active else { return }
@@ -86,13 +80,10 @@ struct OnboardingSetupScreen: View {
                microphonePermissionController.status == .granted {
                 completeMicrophoneStep()
             }
-
-            advanceToKeyboardTourIfHandoffIsReady()
         }
         .onAppear {
             previousWarningToken = currentWarningToken
             previousModelStepCompletion = isModelStepCompleted
-            previousKeyboardStepCompletion = isKeyboardStepCompleted
             displaysMicrophoneStepCompletion = microphonePermissionController.status == .granted
         }
         .onChange(of: currentWarningToken, initial: false) { _, newToken in
@@ -107,12 +98,6 @@ struct OnboardingSetupScreen: View {
         .onChange(of: isModelStepCompleted, initial: false) { _, newValue in
             emitStepCompletionHaptic(previousCompletion: &previousModelStepCompletion, newValue: newValue)
             selectOnboardingProviderIfReady()
-        }
-        .onChange(of: isKeyboardStepCompleted, initial: false) { _, newValue in
-            emitStepCompletionHaptic(previousCompletion: &previousKeyboardStepCompletion, newValue: newValue)
-        }
-        .onChange(of: keyboardTourHandoffState, initial: false) { _, _ in
-            advanceToKeyboardTourIfHandoffIsReady()
         }
         .onChange(of: microphonePermissionController.status, initial: false) { oldValue, newValue in
             if newValue != .granted {
@@ -197,14 +182,22 @@ struct OnboardingSetupScreen: View {
 
     private var keyboardRequirementRow: some View {
         OnboardingStepRow(
-            isCompleted: isKeyboardStepCompleted,
+            isCompleted: false,
             stepNumber: 3,
-            title: "Enable Keyboard",
+            title: "Keyboard & Shortcut",
             description: keyboardStepDescription,
-            buttonTitle: keyboardStepButton?.title,
-            isButtonEnabled: keyboardStepButton?.isEnabled ?? true,
-            action: keyboardStepButton?.action
+            buttonTitle: "Continue",
+            isButtonEnabled: isKeyboardRequirementAvailable,
+            action: beginDictationShortcutSetup
         )
+    }
+
+    private var keyboardStepDescription: String {
+        guard isKeyboardRequirementAvailable else {
+            return "Finish downloading the model and allow microphone access before continuing."
+        }
+
+        return "Set up the KeyVox keyboard and shortcut to access dictation anywhere."
     }
 
     private var modelStepButton: OnboardingStepButton? {
@@ -272,56 +265,9 @@ struct OnboardingSetupScreen: View {
         }
     }
 
-    private var keyboardStepDescription: String {
-        guard isKeyboardRequirementAvailable else {
-            return "Finish downloading the model and allow microphone access before continuing."
-        }
-
-        if keyboardAccessProbe.isKeyboardEnabledInSystemSettings {
-            return "KeyVox Keyboard is enabled. Open Settings and turn on Allow Full Access to finish setup."
-        }
-
-        return "Enable KeyVox Keyboard and turn on Allow Full Access in Settings, then come back here."
-    }
-
-    private var keyboardStepButton: OnboardingStepButton? {
-        if keyboardAccessProbe.hasConfirmedKeyboardAccess {
-            return nil
-        }
-
-        guard isKeyboardRequirementAvailable else {
-            return OnboardingStepButton(
-                title: "Open Settings",
-                isEnabled: false,
-                action: {}
-            )
-        }
-
-        if keyboardAccessProbe.isKeyboardEnabledInSystemSettings && keyboardAccessProbe.hasFullAccessConfirmedByKeyboard {
-            return OnboardingStepButton(
-                title: "Check again",
-                isEnabled: true,
-                action: {
-                    appHaptics.light()
-                    keyboardAccessProbe.refresh()
-                }
-            )
-        }
-
-        return OnboardingStepButton(
-            title: "Open Settings",
-            isEnabled: true,
-            action: {
-                appHaptics.light()
-                openKeyboardSettings()
-            }
-        )
-    }
-
     private func refreshState() {
         modelManager.refreshStatus()
         microphonePermissionController.refreshStatus()
-        keyboardAccessProbe.refresh()
     }
 
     private func performDownloadConfirmation(_ confirmation: PendingDownloadConfirmation) {
@@ -332,17 +278,6 @@ struct OnboardingSetupScreen: View {
             // Onboarding only confirms dictation model downloads; other download confirmations are owned by their feature surfaces.
             break
         }
-    }
-
-    private func openKeyboardSettings() {
-        guard let bundleIdentifier = Bundle.main.bundleIdentifier,
-              let url = URL(string: "App-prefs:\(bundleIdentifier)") else {
-            return
-        }
-
-        KeyVoxIPCBridge.clearKeyboardOnboardingPresentation()
-        onboardingStore.recordPendingKeyboardTour()
-        UIApplication.shared.open(url)
     }
 
     private func openAppSettings() {
@@ -379,18 +314,6 @@ struct OnboardingSetupScreen: View {
 
     private var isModelStepCompleted: Bool {
         onboardingModelState == .ready
-    }
-
-    private var isKeyboardStepCompleted: Bool {
-        isKeyboardRequirementAvailable && keyboardAccessProbe.hasConfirmedKeyboardAccess
-    }
-
-    private var keyboardTourHandoffState: OnboardingKeyboardTourHandoffState {
-        OnboardingKeyboardTourHandoffState(
-            isModelReady: isModelStepCompleted,
-            isMicrophonePermissionGranted: microphonePermissionController.status == .granted,
-            isKeyboardEnabledInSystemSettings: keyboardAccessProbe.isKeyboardEnabledInSystemSettings
-        )
     }
 
     private var currentWarningToken: String? {
@@ -449,23 +372,9 @@ struct OnboardingSetupScreen: View {
         hasPendingMicrophoneStepCompletion = false
     }
 
-    private func advanceToKeyboardTourIfHandoffIsReady() {
-        guard keyboardTourHandoffState.canStartKeyboardTour else { return }
-
-        Self.log(
-            "advanceToKeyboardTour handoffReady modelReady=\(keyboardTourHandoffState.isModelReady) microphoneGranted=\(keyboardTourHandoffState.isMicrophonePermissionGranted) keyboardEnabled=\(keyboardTourHandoffState.isKeyboardEnabledInSystemSettings) hasFullAccess=\(keyboardAccessProbe.hasFullAccessConfirmedByKeyboard) accessTimestamp=\(String(describing: keyboardAccessProbe.lastConfirmedAccessTimestamp)) presentationTimestamp=\(String(describing: keyboardAccessProbe.lastKeyboardPresentationTimestamp))"
-        )
-        onboardingStore.recordKeyboardTourHandoffIfReady(
-            isModelReady: keyboardTourHandoffState.isModelReady,
-            isMicrophonePermissionGranted: keyboardTourHandoffState.isMicrophonePermissionGranted,
-            isKeyboardEnabledInSystemSettings: keyboardTourHandoffState.isKeyboardEnabledInSystemSettings
-        )
+    private func beginDictationShortcutSetup() {
+        guard isKeyboardRequirementAvailable else { return }
+        appHaptics.medium()
+        onboardingStore.beginDictationShortcutSetup()
     }
-
-    private static func log(_ message: String) {
-        #if DEBUG
-        NSLog("[OnboardingSetupScreen] %@", message)
-        #endif
-    }
-
 }

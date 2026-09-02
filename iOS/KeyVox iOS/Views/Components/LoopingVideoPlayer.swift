@@ -3,29 +3,55 @@ import AVFoundation
 
 struct LoopingVideoPlayer: UIViewRepresentable {
     let videoName: String
-    let videoType: String = "mov"
+    let videoType: String
+    let isPlaying: Bool
     @Binding var isReady: Bool
+
+    init(
+        videoName: String,
+        videoType: String = "mov",
+        isPlaying: Bool = true,
+        isReady: Binding<Bool>
+    ) {
+        self.videoName = videoName
+        self.videoType = videoType
+        self.isPlaying = isPlaying
+        self._isReady = isReady
+    }
 
     func makeUIView(context: Context) -> UIView {
         let view = LoopingVideoUIView(
             videoName: videoName, 
             videoType: videoType, 
+            isPlaying: isPlaying,
             isReady: $isReady
         )
         return view
     }
 
-    func updateUIView(_ uiView: UIView, context: Context) {}
+    func updateUIView(_ uiView: UIView, context: Context) {
+        guard let videoView = uiView as? LoopingVideoUIView else { return }
+        videoView.setPlaying(isPlaying)
+    }
 }
 
 private class LoopingVideoUIView: UIView {
     private let playerLayer = AVPlayerLayer()
     private var playerLooper: AVPlayerLooper?
     private var readyToDisplayObserver: NSKeyValueObservation?
+    private var didBecomeActiveObserver: NSObjectProtocol?
     private var isReady: Binding<Bool>
+    private var player: AVQueuePlayer?
+    private var isPlaying: Bool
 
-    init(videoName: String, videoType: String, isReady: Binding<Bool>) {
+    init(
+        videoName: String,
+        videoType: String,
+        isPlaying: Bool,
+        isReady: Binding<Bool>
+    ) {
         self.isReady = isReady
+        self.isPlaying = isPlaying
         super.init(frame: .zero)
 
         guard let fileURL = Bundle.main.url(forResource: videoName, withExtension: videoType) else {
@@ -40,6 +66,7 @@ private class LoopingVideoUIView: UIView {
         
         let player = AVQueuePlayer(playerItem: item)
         player.automaticallyWaitsToMinimizeStalling = false
+        self.player = player
         
         playerLayer.player = player
         playerLayer.videoGravity = .resizeAspect
@@ -65,7 +92,20 @@ private class LoopingVideoUIView: UIView {
         }
 
         playerLooper = AVPlayerLooper(player: player, templateItem: item)
-        player.play()
+        if isPlaying {
+            player.play()
+        } else {
+            player.pause()
+            player.seek(to: .zero)
+        }
+
+        didBecomeActiveObserver = NotificationCenter.default.addObserver(
+            forName: UIApplication.didBecomeActiveNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.resumePlaybackIfNeeded()
+        }
         
         backgroundColor = .clear
     }
@@ -81,8 +121,31 @@ private class LoopingVideoUIView: UIView {
         playerLayer.frame = bounds
         CATransaction.commit()
     }
+
+    func setPlaying(_ shouldPlay: Bool) {
+        guard shouldPlay != isPlaying, let player else { return }
+        isPlaying = shouldPlay
+
+        if shouldPlay {
+            player.seek(to: .zero) { [weak self, weak player] _ in
+                guard self?.isPlaying == true else { return }
+                player?.play()
+            }
+        } else {
+            player.pause()
+            player.seek(to: .zero)
+        }
+    }
+
+    private func resumePlaybackIfNeeded() {
+        guard isPlaying else { return }
+        player?.play()
+    }
     
     deinit {
         readyToDisplayObserver?.invalidate()
+        if let didBecomeActiveObserver {
+            NotificationCenter.default.removeObserver(didBecomeActiveObserver)
+        }
     }
 }

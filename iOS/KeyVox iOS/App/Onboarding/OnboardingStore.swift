@@ -39,9 +39,18 @@ final class OnboardingStore: ObservableObject {
     }
 
     @Published private(set) var isForceOnboardingLaunch: Bool
+    @Published private(set) var isForceDictationShortcutSetupLaunch: Bool
     @Published private(set) var hasPendingKeyboardTour: Bool {
         didSet {
             defaults.set(hasPendingKeyboardTour, forKey: UserDefaultsKeys.App.hasPendingKeyboardTour)
+        }
+    }
+    @Published private(set) var hasPendingDictationShortcutSetup: Bool {
+        didSet {
+            defaults.set(
+                hasPendingDictationShortcutSetup,
+                forKey: UserDefaultsKeys.App.hasPendingDictationShortcutSetup
+            )
         }
     }
     @Published private(set) var hasPassedWelcomeScreenThisLaunch: Bool
@@ -53,7 +62,9 @@ final class OnboardingStore: ObservableObject {
     var shouldShowOnboarding: Bool {
         !hasCompletedOnboarding
             || isForceOnboardingLaunch
+            || isForceDictationShortcutSetupLaunch
             || hasPendingKeyboardTour
+            || hasPendingDictationShortcutSetup
     }
 
     var shouldShowWelcomeScreen: Bool {
@@ -67,9 +78,21 @@ final class OnboardingStore: ObservableObject {
             && shouldShowOnboarding
     }
 
+    var shouldShowKeyboardSetupScreen: Bool {
+        hasPendingKeyboardTour
+            && !isPendingKeyboardTourRouteArmed
+            && !isIgnoringPersistedPendingKeyboardTourThisLaunch
+            && shouldShowOnboarding
+    }
+
     var shouldShowLanguageSelectionScreen: Bool {
         !hasPassedLanguageSelectionThisLaunch
             && (isForceOnboardingLaunch || !hasCompletedLanguageSelection)
+    }
+
+    var shouldShowDictationShortcutSetupScreen: Bool {
+        (isForceDictationShortcutSetupLaunch || hasPendingDictationShortcutSetup)
+            && shouldShowOnboarding
     }
 
     var shouldSuppressReturnToHostView: Bool {
@@ -81,6 +104,9 @@ final class OnboardingStore: ObservableObject {
     init(defaults: UserDefaults, runtimeFlags: RuntimeFlags) {
         self.defaults = defaults
         let persistedPendingKeyboardTour = defaults.object(forKey: UserDefaultsKeys.App.hasPendingKeyboardTour) as? Bool ?? false
+        let persistedPendingDictationShortcutSetup = defaults.object(
+            forKey: UserDefaultsKeys.App.hasPendingDictationShortcutSetup
+        ) as? Bool ?? false
         hasCompletedOnboarding = defaults.object(forKey: UserDefaultsKeys.App.hasCompletedOnboarding) as? Bool ?? false
         hasCompletedWelcomeScreen = defaults.object(forKey: UserDefaultsKeys.App.hasCompletedOnboardingWelcome) as? Bool ?? false
         hasCompletedLanguageSelection = defaults.object(
@@ -90,18 +116,25 @@ final class OnboardingStore: ObservableObject {
             .string(forKey: UserDefaultsKeys.App.onboardingDictationLanguage)
             .map(DictationLanguage.init(rawValue:))
         isForceOnboardingLaunch = runtimeFlags.forceOnboarding
+        isForceDictationShortcutSetupLaunch = runtimeFlags.forceDictationShortcutSetup
         hasPendingKeyboardTour = persistedPendingKeyboardTour
-        hasPassedWelcomeScreenThisLaunch = false
-        hasPassedLanguageSelectionThisLaunch = false
-        isPendingKeyboardTourRouteArmed = persistedPendingKeyboardTour
+        hasPendingDictationShortcutSetup = runtimeFlags.forceOnboarding
+            ? false
+            : persistedPendingDictationShortcutSetup
+        hasPassedWelcomeScreenThisLaunch = runtimeFlags.forceDictationShortcutSetup
+        hasPassedLanguageSelectionThisLaunch = runtimeFlags.forceDictationShortcutSetup
+        isPendingKeyboardTourRouteArmed = false
         isIgnoringPersistedPendingKeyboardTourThisLaunch = runtimeFlags.forceOnboarding
         hasCompletedOnboardingThisLaunch = false
     }
 
     func completeOnboarding() {
         clearPendingKeyboardTour()
+        clearPendingDictationShortcutSetup()
+        defaults.set(true, forKey: UserDefaultsKeys.App.hasSeenDictationShortcutSetup)
         hasCompletedOnboarding = true
         isForceOnboardingLaunch = false
+        isForceDictationShortcutSetupLaunch = false
         hasCompletedOnboardingThisLaunch = true
     }
 
@@ -115,6 +148,26 @@ final class OnboardingStore: ObservableObject {
         hasPendingKeyboardTour = false
         isPendingKeyboardTourRouteArmed = false
         isIgnoringPersistedPendingKeyboardTourThisLaunch = false
+    }
+
+    func clearPendingDictationShortcutSetup() {
+        hasPendingDictationShortcutSetup = false
+    }
+
+    func beginDictationShortcutSetup() {
+        clearPendingKeyboardTour()
+        hasPendingDictationShortcutSetup = true
+    }
+
+    func returnToSetupFromDictationShortcutSetup() {
+        clearPendingDictationShortcutSetup()
+        isForceDictationShortcutSetupLaunch = false
+    }
+
+    func continueToKeyboardSetup() {
+        recordPendingKeyboardTour()
+        clearPendingDictationShortcutSetup()
+        isForceDictationShortcutSetupLaunch = false
     }
 
     func completeWelcomeScreen() {
@@ -144,28 +197,8 @@ final class OnboardingStore: ObservableObject {
     func armPendingKeyboardTourRouteIfNeeded(isKeyboardEnabledInSystemSettings: Bool) {
         guard hasPendingKeyboardTour, !isIgnoringPersistedPendingKeyboardTourThisLaunch else { return }
 
-        guard isKeyboardEnabledInSystemSettings else {
-            clearPendingKeyboardTour()
-            return
-        }
+        guard isKeyboardEnabledInSystemSettings else { return }
 
         isPendingKeyboardTourRouteArmed = true
-    }
-
-    func recordKeyboardTourHandoffIfReady(
-        isModelReady: Bool,
-        isMicrophonePermissionGranted: Bool,
-        isKeyboardEnabledInSystemSettings: Bool
-    ) {
-        guard isModelReady,
-              isMicrophonePermissionGranted,
-              isKeyboardEnabledInSystemSettings else {
-            return
-        }
-
-        recordPendingKeyboardTour()
-        armPendingKeyboardTourRouteIfNeeded(
-            isKeyboardEnabledInSystemSettings: isKeyboardEnabledInSystemSettings
-        )
     }
 }

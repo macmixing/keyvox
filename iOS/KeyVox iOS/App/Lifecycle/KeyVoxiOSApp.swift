@@ -21,6 +21,7 @@ struct KeyVoxApp: App {
     @StateObject private var modelManager: ModelManager
     @StateObject private var settingsStore: AppSettingsStore
     @StateObject private var onboardingStore: OnboardingStore
+    @StateObject private var dictationShortcutSetupIntroController: DictationShortcutSetupIntroController
     @StateObject private var weeklyWordStatsStore: WeeklyWordStatsStore
     @StateObject private var appReviewRequestCoordinator: AppReviewRequestCoordinator
     @StateObject private var appTabRouter: AppTabRouter
@@ -46,6 +47,9 @@ struct KeyVoxApp: App {
         _modelManager = StateObject(wrappedValue: services.modelManager)
         _settingsStore = StateObject(wrappedValue: services.settingsStore)
         _onboardingStore = StateObject(wrappedValue: services.onboardingStore)
+        _dictationShortcutSetupIntroController = StateObject(
+            wrappedValue: services.dictationShortcutSetupIntroController
+        )
         _weeklyWordStatsStore = StateObject(wrappedValue: services.weeklyWordStatsStore)
         _appReviewRequestCoordinator = StateObject(wrappedValue: services.appReviewRequestCoordinator)
         _appTabRouter = StateObject(wrappedValue: services.appTabRouter)
@@ -92,6 +96,7 @@ struct KeyVoxApp: App {
                 .environmentObject(modelManager)
                 .environmentObject(settingsStore)
                 .environmentObject(onboardingStore)
+                .environmentObject(dictationShortcutSetupIntroController)
                 .environmentObject(weeklyWordStatsStore)
                 .environmentObject(appReviewRequestCoordinator)
                 .environmentObject(appTabRouter)
@@ -119,7 +124,18 @@ struct KeyVoxApp: App {
                         keyVoxVibesPurchaseController.refreshTrialStateIfNeeded()
                         let isShowingReturnToHost = transcriptionManager.isReturnToHostViewPresented
                             || appLaunchRouteStore.initialURLRoute == .startRecording
-                        if keyVoxVibesIntroController.wantsPresentationOnEligibleLaunch {
+                        if isShowingReturnToHost == false,
+                           appUpdateCoordinator.activePrompt == nil,
+                           dictationShortcutSetupIntroController.wantsPresentationOnEligibleLaunch
+                            || dictationShortcutSetupIntroController.hasPresentedThisLaunch {
+                            keyVoxSpeakIntroController.markDeferredUntilNextEligibleLaunch()
+                            keyVoxSpeakIntroController.cancelPendingPresentation()
+                            keyVoxVibesIntroController.markDeferredUntilNextEligibleLaunch()
+                            keyVoxVibesIntroController.cancelPendingPresentation()
+                            dictationShortcutSetupIntroController.schedulePresentationIfEligible(
+                                onboardingStore: onboardingStore
+                            )
+                        } else if keyVoxVibesIntroController.wantsPresentationOnEligibleLaunch {
                             keyVoxSpeakIntroController.markDeferredUntilNextEligibleLaunch()
                             keyVoxVibesIntroController.handleAppDidBecomeActive(
                                 onboardingStore: onboardingStore,

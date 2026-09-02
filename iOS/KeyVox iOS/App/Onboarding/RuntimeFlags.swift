@@ -2,6 +2,7 @@ import Foundation
 
 struct RuntimeFlags {
     static let forceOnboardingEnvironmentKey = "KEYVOX_FORCE_ONBOARDING"
+    static let forceDictationShortcutSetupEnvironmentKey = "KEYVOX_FORCE_DICTATION_SHORTCUT_SETUP"
     static let bypassTTSFreeSpeakLimitEnvironmentKey = "KEYVOX_BYPASS_TTS_FREE_SPEAK_LIMIT"
     static let forceKeyVoxSpeakIntroEnvironmentKey = "KEYVOX_FORCE_KEYVOX_SPEAK_INTRO"
     static let bypassVibesTrialEnvironmentKey = "KEYVOX_BYPASS_VIBES_TRIAL"
@@ -13,6 +14,7 @@ struct RuntimeFlags {
     static let promotionPreviewCampaignIDEnvironmentKey = "KEYVOX_PROMOTION_PREVIEW_CAMPAIGN_ID"
 
     let forceOnboarding: Bool
+    let forceDictationShortcutSetup: Bool
     let bypassTTSFreeSpeakLimit: Bool
     let forceKeyVoxSpeakIntro: Bool
     let bypassVibesTrial: Bool
@@ -26,6 +28,9 @@ struct RuntimeFlags {
     init(environment: [String: String] = ProcessInfo.processInfo.environment) {
         forceOnboarding = Self.isEnabled(
             environmentValue: environment[Self.forceOnboardingEnvironmentKey]
+        )
+        forceDictationShortcutSetup = Self.isEnabled(
+            environmentValue: environment[Self.forceDictationShortcutSetupEnvironmentKey]
         )
         bypassTTSFreeSpeakLimit = Self.isEnabled(
             environmentValue: environment[Self.bypassTTSFreeSpeakLimitEnvironmentKey]

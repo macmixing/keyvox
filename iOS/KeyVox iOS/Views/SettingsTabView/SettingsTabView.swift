@@ -3,6 +3,7 @@ import SwiftUI
 struct SettingsTabView: View {
     @Environment(\.appHaptics) var appHaptics
     @Environment(\.openURL) var openURL
+    @Environment(\.scenePhase) private var scenePhase
     @EnvironmentObject var modelManager: ModelManager
     @EnvironmentObject var pocketTTSModelManager: PocketTTSModelManager
     @EnvironmentObject var localRewriteModelManager: LocalRewriteModelManager
@@ -10,6 +11,9 @@ struct SettingsTabView: View {
     @EnvironmentObject var keyVoxVibesPurchaseController: KeyVoxVibesPurchaseController
     @EnvironmentObject var ttsPreviewPlayer: TTSPreviewPlayer
     @EnvironmentObject var settingsStore: AppSettingsStore
+    @EnvironmentObject var dictationShortcutSetupIntroController: DictationShortcutSetupIntroController
+    @EnvironmentObject private var keyVoxSpeakIntroController: KeyVoxSpeakIntroController
+    @EnvironmentObject private var keyVoxVibesIntroController: KeyVoxVibesIntroController
     @EnvironmentObject private var appTabRouter: AppTabRouter
     @Binding var pendingDeletionConfirmation: SettingsPendingDeletionConfirmation?
     @Binding var pendingDownloadConfirmation: PendingDownloadConfirmation?
@@ -22,7 +26,7 @@ struct SettingsTabView: View {
     @State var isTTSSectionExpanded = false
     @State var ttsExpandedContentHeight: CGFloat = 0
     @State var isThirdPartyNoticesPresented = false
-    @State var shortcutInstallationErrorMessage: String?
+    @State var isDictationShortcutSetupPresented = false
     @State private var handledModelSectionExpansionRequestID: UUID?
     @StateObject var downloadNetworkMonitor = OnboardingDownloadNetworkMonitor()
     
@@ -46,24 +50,14 @@ struct SettingsTabView: View {
             .sheet(isPresented: $isThirdPartyNoticesPresented) {
                 ThirdPartyNoticesView()
             }
-            .alert(
-                "Unable to Add Shortcut",
-                isPresented: Binding(
-                    get: { shortcutInstallationErrorMessage != nil },
-                    set: { isPresented in
-                        if isPresented == false {
-                            shortcutInstallationErrorMessage = nil
-                        }
-                    }
-                )
-            ) {
-                Button("OK", role: .cancel) {
-                    shortcutInstallationErrorMessage = nil
+            .fullScreenCover(isPresented: $isDictationShortcutSetupPresented) {
+                DictationShortcutSetupBrowsingView(mode: .settingsReference) {
+                    isDictationShortcutSetupPresented = false
                 }
-            } message: {
-                Text(shortcutInstallationErrorMessage ?? "")
             }
-            .blocksAppReviewRequest(isThirdPartyNoticesPresented)
+            .blocksAppReviewRequest(
+                isThirdPartyNoticesPresented || isDictationShortcutSetupPresented
+            )
             .onDisappear {
                 ttsPreviewPlayer.stop()
             }
@@ -71,6 +65,14 @@ struct SettingsTabView: View {
                 if isExpanded == false {
                     ttsPreviewPlayer.stop()
                 }
+            }
+            .onChange(of: isDictationShortcutSetupPresented) { _, isPresented in
+                guard isPresented else { return }
+                deferAutomaticFeatureIntroductions()
+            }
+            .onChange(of: scenePhase) { _, newPhase in
+                guard newPhase == .active, isDictationShortcutSetupPresented else { return }
+                deferAutomaticFeatureIntroductions()
             }
             .onChange(of: pocketTTSModelManager.sharedModelInstallState, initial: true) { oldValue, newValue in
                 let wasReady = {
@@ -88,6 +90,13 @@ struct SettingsTabView: View {
                     }
                 }
             }
+    }
+
+    private func deferAutomaticFeatureIntroductions() {
+        keyVoxVibesIntroController.markDeferredUntilNextEligibleLaunch()
+        keyVoxVibesIntroController.cancelPendingPresentation()
+        keyVoxSpeakIntroController.markDeferredUntilNextEligibleLaunch()
+        keyVoxSpeakIntroController.cancelPendingPresentation()
     }
 
     private var settingsScrollScreen: some View {
@@ -157,5 +166,6 @@ enum SettingsScrollTarget {
         .environmentObject(AppServiceRegistry.shared.keyVoxVibesPurchaseController)
         .environmentObject(AppServiceRegistry.shared.ttsPreviewPlayer)
         .environmentObject(AppServiceRegistry.shared.settingsStore)
+        .environmentObject(AppServiceRegistry.shared.dictationShortcutSetupIntroController)
         .environmentObject(AppTabRouter())
 }

@@ -55,7 +55,6 @@ struct OnboardingLanguageScreen: View {
                     LazyVStack(spacing: 0) {
                         ForEach(Array(filteredLanguages.enumerated()), id: \.element.id) { index, language in
                             languageButton(language)
-                                .disabled(isAdvancing)
 
                             if index < filteredLanguages.count - 1 {
                                 Divider()
@@ -81,7 +80,7 @@ struct OnboardingLanguageScreen: View {
                 style: .primary,
                 fillsWidth: true,
                 fontSize: 20,
-                isEnabled: selection != nil && !isAdvancing,
+                isEnabled: selection != nil,
                 action: completeSelection
             )
             .padding(.horizontal, AppTheme.screenPadding)
@@ -91,6 +90,12 @@ struct OnboardingLanguageScreen: View {
         }
         .onAppear {
             selection = onboardingStore.onboardingDictationLanguage
+        }
+        .onChange(of: onboardingStore.shouldShowLanguageSelectionScreen) { _, shouldShowLanguageSelection in
+            guard shouldShowLanguageSelection else { return }
+            isAdvancing = false
+            advanceTask?.cancel()
+            advanceTask = nil
         }
         .onDisappear {
             advanceTask?.cancel()
@@ -124,6 +129,7 @@ struct OnboardingLanguageScreen: View {
 
     private func languageButton(_ language: DictationLanguage) -> some View {
         Button {
+            guard isAdvancing == false else { return }
             appHaptics.light()
             selection = language
         } label: {
@@ -144,7 +150,7 @@ struct OnboardingLanguageScreen: View {
     }
 
     private func completeSelection() {
-        guard let selection else { return }
+        guard let selection, isAdvancing == false else { return }
 
         appHaptics.medium()
         guard isSearchFocused else {
@@ -156,13 +162,9 @@ struct OnboardingLanguageScreen: View {
         isSearchFocused = false
         advanceTask?.cancel()
         advanceTask = Task { @MainActor in
-            defer {
-                isAdvancing = false
-                advanceTask = nil
-            }
-
             try? await Task.sleep(for: .milliseconds(300))
             guard Task.isCancelled == false else { return }
+            advanceTask = nil
             advance(with: selection)
         }
     }

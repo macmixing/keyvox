@@ -54,12 +54,17 @@ The following files and assets are **NOT licensed under the MIT License** and re
 
 ### Excluded Files and Assets
 
-1. `macOS/Resources/Assets.xcassets/`  
-   `iOS/KeyVox iOS/Resources/Assets.xcassets`
-   `iOS/KeyVox Widget/Assets.xcassets`
-   `iOS/KeyVox iOS/Resources/ReturnToHost.mov`
-   `iOS/LaunchLogo.png`
-   Includes all App Icons, instructional assets, the KeyVox logo, and related brand imagery.
+1. Visual assets and brand imagery:
+   - `macOS/Resources/Assets.xcassets/`
+   - `iOS/KeyVox iOS/Resources/Assets.xcassets`
+   - `iOS/KeyVox Widget/Assets.xcassets`
+   - `iOS/KeyVox iOS/Resources/DictationShortcutSetup/`
+   - `iOS/KeyVox iOS/Resources/Onboarding/`
+   - `iOS/KeyVox iOS/Resources/ReturnToHost.mov`
+   - `iOS/LaunchLogo.png`
+
+   Includes all App Icons, onboarding and Shortcut/Action Button instructional videos, the KeyVox logo, and related brand imagery.
+   The current covered onboarding video inventory is `DictationShortcutSetup/ShortcutHero.mov`, `DictationShortcutSetup/AddShortcutPage.mov`, `DictationShortcutSetup/ActionButtonIntro.mov`, `DictationShortcutSetup/ActionButtonSettings.mov`, `DictationShortcutSetup/ActionButtonShortcutOption.mov`, `DictationShortcutSetup/ActionButtonShortcutSelection.mov`, `DictationShortcutSetup/ActionButtonDemoPaste.mov`, `DictationShortcutSetup/ActionButtonDemoHandoff.mov`, `Onboarding/EnableKeyboard.mov`, and `Onboarding/KeyVoxKeyboardSelection.mov`.
 
 2. `macOS/Views/Components/LogoBarView.swift`  
    `iOS/KeyVox iOS/Views/Components/LogoBarView.swift`
