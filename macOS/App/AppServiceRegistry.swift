@@ -116,7 +116,9 @@ final class AppServiceRegistry {
         )
         iCloudSyncCoordinator = KeyVoxiCloudSyncCoordinator(
             appSettings: appSettings,
-            dictionaryStore: dictionaryStore
+            dictionaryStore: dictionaryStore,
+            hasExistingLocalInstallation: appSettings.hasCompletedOnboarding,
+            forceFreshDictionaryInstall: MacRuntimeFlags.forceFreshDictionaryInstall
         )
         promotionCenter = Self.makePromotionCenter(defaults: .standard)
         ModelDownloader.shared.postInstallPreparation = { [weak parakeetService] modelID in

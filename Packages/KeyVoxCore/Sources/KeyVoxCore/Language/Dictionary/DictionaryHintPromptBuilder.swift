@@ -6,15 +6,10 @@ public enum DictionaryHintPromptBuilder {
         maxEntries: Int = 200,
         maxChars: Int = 1200
     ) -> String {
-        let builtInPhrases = Set(DictionaryBuiltInEntries.entries.map {
-            DictionaryTextNormalization.normalizedPhrase($0.phrase)
-        })
-        let userCandidates = userEntries
+        let candidates = userEntries
             .map(\.phrase)
             .filter { !$0.isEmpty }
-            .filter { !builtInPhrases.contains(DictionaryTextNormalization.normalizedPhrase($0)) }
             .suffix(maxEntries)
-        let candidates = userCandidates + DictionaryBuiltInEntries.entries.map(\.phrase)
 
         guard !candidates.isEmpty else { return "" }
 

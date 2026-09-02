@@ -1,6 +1,7 @@
 import Foundation
 
 enum KeyVoxiCloudKeys {
+    static let hasInstalledKeyVox = "kvx.installation.hasInstalledKeyVox.v1"
     static let dictionaryPayload = "kvx.dictionary.payload.v1"
     static let dictionaryModifiedAt = "kvx.dictionary.modifiedAt.v1"
     static let weeklyWordStatsPayload = "kvx.weeklyWordStats.payload.v1"

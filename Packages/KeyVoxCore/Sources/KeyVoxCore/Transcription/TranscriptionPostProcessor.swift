@@ -50,11 +50,10 @@ public final class TranscriptionPostProcessor: @unchecked Sendable {
     }
 
     private func updateDictionaryEntriesSynchronously(_ entries: [DictionaryEntry]) {
-        let effectiveEntries = DictionaryBuiltInEntries.effectiveEntries(merging: entries)
-        let fingerprint = fingerprint(for: effectiveEntries)
+        let fingerprint = fingerprint(for: entries)
         guard fingerprint != dictionaryFingerprint else { return }
         dictionaryFingerprint = fingerprint
-        dictionaryMatcher.rebuildIndex(entries: effectiveEntries)
+        dictionaryMatcher.rebuildIndex(entries: entries)
     }
 
     public func process(

@@ -213,7 +213,7 @@ public final class DictationPipeline {
         let listFormattingEnabled = listFormattingEnabledProvider()
         let userDictionaryEntries = dictionaryEntriesProvider()
         let shouldUseDictionaryHintPrompt = useDictionaryHintPrompt
-            && DictionaryBuiltInEntries.hasEffectiveEntries(merging: userDictionaryEntries)
+            && !userDictionaryEntries.isEmpty
         transcriptionController?.updateDictionaryHintPrompt(
             DictionaryHintPromptBuilder.prompt(for: userDictionaryEntries)
         )
@@ -260,9 +260,7 @@ public final class DictationPipeline {
                 return
             }
 
-            let dictionaryEntries = DictionaryBuiltInEntries.effectiveEntries(
-                merging: userDictionaryEntries
-            )
+            let dictionaryEntries = userDictionaryEntries
             let renderMode = self.listRenderModeProvider()
             Task { @MainActor [self] in
                 let finalText = await self.postProcessor.processAsync(

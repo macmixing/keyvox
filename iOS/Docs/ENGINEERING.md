@@ -1101,6 +1101,7 @@ The containing app owns live dictionary and style state, while the dictation pip
 
 - `DictionaryStore` is created with the App Group-backed base directory
 - `TranscriptionManager` observes dictionary entries and refreshes the post-processor plus the currently selected provider’s hint prompt
+- only visible, persisted dictionary entries participate in prompt generation and post-processing; the shared engine does not merge hidden app or product entries
 - hint prompts are bounded to the newest entries, up to `200` phrases and `1200` characters
 
 ### Shared Post-Processing Rules
@@ -1110,7 +1111,7 @@ The containing app owns live dictionary and style state, while the dictation pip
 Current order:
 
 1. normalize literal email text before dictionary matching
-2. apply dictionary matching with package-owned hidden built-ins merged at effective-use boundaries
+2. apply dictionary matching using the entries supplied by the persisted user dictionary
 3. normalize lightweight idioms and spoken colons
 4. group spoken quantity forms before math normalization
 5. normalize math expressions through the split math normalization helpers
@@ -1429,9 +1430,12 @@ It reports:
 `CloudSyncCoordinator` syncs:
 
 - dictionary payloads
+- shared KeyVox installation history used to protect existing users from initial-entry seeding
 - trigger binding timestamps
 - auto paragraphs timestamps
 - list formatting timestamps
+
+`KeyVox` is created as an ordinary dictionary entry only when onboarding is incomplete and no local dictionary snapshot, synchronized dictionary payload, or shared installation history exists. Existing installations record shared installation history without changing their dictionaries. The entry remains user-owned after creation, so deleting it is synchronized normally and does not cause it to be recreated later.
 
 `WeeklyWordStatsCloudSync` syncs only the current-week usage snapshot.
 

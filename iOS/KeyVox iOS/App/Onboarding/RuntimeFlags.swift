@@ -12,6 +12,7 @@ struct RuntimeFlags {
     static let forceTTSRegenerationEnvironmentKey = "KEYVOX_FORCE_TTS_REGENERATION"
     static let useLocalPromotionManifestEnvironmentKey = "KEYVOX_USE_LOCAL_PROMOTION_MANIFEST"
     static let promotionPreviewCampaignIDEnvironmentKey = "KEYVOX_PROMOTION_PREVIEW_CAMPAIGN_ID"
+    static let forceFreshDictionaryInstallEnvironmentKey = "KEYVOX_FORCE_FRESH_DICTIONARY_INSTALL"
 
     let forceOnboarding: Bool
     let forceDictationShortcutSetup: Bool
@@ -24,6 +25,7 @@ struct RuntimeFlags {
     let forceTTSRegeneration: Bool
     let useLocalPromotionManifest: Bool
     let promotionPreviewCampaignID: String?
+    let forceFreshDictionaryInstall: Bool
 
     init(environment: [String: String] = ProcessInfo.processInfo.environment) {
         forceOnboarding = Self.isEnabled(
@@ -63,6 +65,13 @@ struct RuntimeFlags {
         #else
         useLocalPromotionManifest = false
         promotionPreviewCampaignID = nil
+        #endif
+        #if DEBUG
+        forceFreshDictionaryInstall = Self.isEnabled(
+            environmentValue: environment[Self.forceFreshDictionaryInstallEnvironmentKey]
+        )
+        #else
+        forceFreshDictionaryInstall = false
         #endif
     }
 

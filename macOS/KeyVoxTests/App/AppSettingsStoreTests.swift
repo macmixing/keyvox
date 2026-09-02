@@ -6,6 +6,19 @@ import KeyVoxStyleRewrite
 
 @MainActor
 final class AppSettingsStoreTests: XCTestCase {
+    func testFreshDictionaryInstallOverrideUsesDebugEnvironmentFlag() {
+        XCTAssertFalse(MacRuntimeFlags.forceFreshDictionaryInstall(environment: [:]))
+        #if DEBUG
+        XCTAssertTrue(MacRuntimeFlags.forceFreshDictionaryInstall(environment: [
+            MacRuntimeFlags.forceFreshDictionaryInstallEnvironmentKey: "1",
+        ]))
+        #else
+        XCTAssertFalse(MacRuntimeFlags.forceFreshDictionaryInstall(environment: [
+            MacRuntimeFlags.forceFreshDictionaryInstallEnvironmentKey: "1",
+        ]))
+        #endif
+    }
+
     func testInitUsesExpectedDefaultsWhenNoValuesPersisted() {
         let (defaults, suiteName) = makeIsolatedDefaults()
         defer { defaults.removePersistentDomain(forName: suiteName) }

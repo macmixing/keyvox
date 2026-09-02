@@ -6,9 +6,9 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
-## [1.2.7] - 2026-08-28
+## [1.2.7] - 2026-09-02
 
-Numbered lists now remain detectable around unrelated numbers, and multiword dictionary replacements require phonetic agreement for every changed word.
+Numbered lists now remain detectable around unrelated numbers, multiword dictionary replacements require phonetic agreement for every changed word, and dictionary processing now uses only actual user-visible entries.
 
 ### Includes
 
@@ -18,10 +18,12 @@ Numbered lists now remain detectable around unrelated numbers, and multiword dic
 - Added regression coverage for numeric ranges after a final list marker and unrelated numbers between a longer sequence of list markers.
 - Required each changed word in an aligned multiword dictionary candidate to independently pass the phonetic threshold, preventing an exact shared word from masking an unrelated word during plural or possessive matching.
 - Added regression coverage ensuring `six dictations` does not match `Big Dictation`.
+- Removed the hidden built-in entries for KeyVox, KeyVox Speak, and KeyVox Vibes so matching and transcription hints now use only entries stored in the user's dictionary.
+- Added the initial KeyVox entry definition used by fresh installations as a normal dictionary entry that users can edit or delete.
 
 ### Notes
 
-- `1.2.7` tracks mixed-number list-pattern detection and stricter multiword dictionary phonetic alignment in the shared Core engine.
+- `1.2.7` tracks mixed-number list-pattern detection, stricter multiword dictionary phonetic alignment, and the removal of hidden built-in dictionary entries in the shared Core engine.
 
 ---
 

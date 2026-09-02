@@ -20,60 +20,60 @@ final class TranscriptionPostProcessorTests: XCTestCase {
         XCTAssertTrue(output.contains("2. Cueboard"))
     }
 
-    func testAppliesBuiltInAppNameDictionaryEntryWithoutUserEntry() {
+    func testAppliesInitialAppNameDictionaryEntry() {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
             "My app is called Keybox.",
-            dictionaryEntries: [],
+            dictionaryEntries: [DictionaryInitialEntries.keyVox],
             renderMode: .singleLineInline
         )
 
         XCTAssertEqual(output, "My app is called KeyVox.")
     }
 
-    func testAppliesBuiltInBrandNameNearMissesWithoutUserEntry() {
+    func testAppliesInitialBrandNameNearMisses() {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
             "Have you heard of Kivox? Keyvox works.",
-            dictionaryEntries: [],
+            dictionaryEntries: [DictionaryInitialEntries.keyVox],
             renderMode: .singleLineInline
         )
 
         XCTAssertEqual(output, "Have you heard of KeyVox? KeyVox works.")
     }
 
-    func testDoesNotApplyBuiltInBrandNameToFuzzyPluralSplit() {
+    func testDoesNotApplyInitialBrandNameToFuzzyPluralSplit() {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
             "I said key vocals.",
-            dictionaryEntries: [],
+            dictionaryEntries: [DictionaryInitialEntries.keyVox],
             renderMode: .singleLineInline
         )
 
         XCTAssertEqual(output, "I said key vocals.")
     }
 
-    func testAppliesBuiltInBrandNameFromSplitPossessive() {
+    func testAppliesInitialBrandNameFromSplitPossessive() {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
             "I use key vox's shortcuts.",
-            dictionaryEntries: [],
+            dictionaryEntries: [DictionaryInitialEntries.keyVox],
             renderMode: .singleLineInline
         )
 
         XCTAssertEqual(output, "I use KeyVox's shortcuts.")
     }
 
-    func testAppliesBuiltInBrandAliasBeforeTitlecaseSentenceBoundary() {
+    func testAppliesInitialBrandNameBeforeTitlecaseSentenceBoundary() {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
             "Have you ever heard of Kivox? Yeah, it's a really cool dictation app and has a TTS feature inside of it called KeyVox Speak.",
-            dictionaryEntries: [],
+            dictionaryEntries: [DictionaryInitialEntries.keyVox],
             renderMode: .singleLineInline
         )
 
@@ -83,7 +83,7 @@ final class TranscriptionPostProcessorTests: XCTestCase {
         )
     }
 
-    func testAppliesBuiltInProductNameDictionaryEntryWithoutUserEntry() {
+    func testDoesNotApplySpeakProductNameWithoutDictionaryEntry() {
         let processor = TranscriptionPostProcessor()
 
         let kivokOutput = processor.process(
@@ -102,12 +102,12 @@ final class TranscriptionPostProcessorTests: XCTestCase {
             renderMode: .singleLineInline
         )
 
-        XCTAssertEqual(kivokOutput, "I am using KeyVox Speak.")
-        XCTAssertEqual(kivoxOutput, "I am using KeyVox Speak.")
-        XCTAssertEqual(keyvoxOutput, "I am using KeyVox Speak.")
+        XCTAssertEqual(kivokOutput, "I am using Kivok Speak.")
+        XCTAssertEqual(kivoxOutput, "I am using Kivox Speak.")
+        XCTAssertEqual(keyvoxOutput, "I am using Keyvox Speak.")
     }
 
-    func testAppliesBuiltInVibesProductNameDictionaryEntryWithoutUserEntry() {
+    func testDoesNotApplyVibesProductNameWithoutDictionaryEntry() {
         let processor = TranscriptionPostProcessor()
 
         let kivoxOutput = processor.process(
@@ -121,14 +121,14 @@ final class TranscriptionPostProcessorTests: XCTestCase {
             renderMode: .singleLineInline
         )
 
-        XCTAssertEqual(kivoxOutput, "I am using KeyVox Vibes.")
-        XCTAssertEqual(keyvoxOutput, "I am using KeyVox Vibes.")
+        XCTAssertEqual(kivoxOutput, "I am using Kivox Vibes.")
+        XCTAssertEqual(keyvoxOutput, "I am using Keyvox Vibes.")
     }
 
-    func testBuiltInAppNameDictionaryEntryWinsOverUserDuplicate() {
+    func testDictionaryEntryCasingRemainsTheCanonicalReplacement() {
         let processor = TranscriptionPostProcessor()
         let entries = [
-            DictionaryEntry(phrase: "keyvox"),
+            DictionaryInitialEntries.keyVox,
         ]
 
         let output = processor.process(

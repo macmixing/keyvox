@@ -74,6 +74,11 @@
             isEnabled = "NO">
          </EnvironmentVariable>
          <EnvironmentVariable
+            key = "KEYVOX_FORCE_FRESH_DICTIONARY_INSTALL"
+            value = "1"
+            isEnabled = "NO">
+         </EnvironmentVariable>
+         <EnvironmentVariable
             key = "KEYVOX_FORCE_DICTATION_SHORTCUT_SETUP"
             value = "1"
             isEnabled = "NO">

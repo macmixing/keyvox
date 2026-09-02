@@ -5,6 +5,20 @@ import Testing
 
 @MainActor
 struct OnboardingStoreTests {
+    @Test func freshDictionaryInstallOverrideUsesDebugEnvironmentFlag() {
+        let disabled = RuntimeFlags(environment: [:])
+        let enabled = RuntimeFlags(environment: [
+            RuntimeFlags.forceFreshDictionaryInstallEnvironmentKey: "1",
+        ])
+
+        #expect(disabled.forceFreshDictionaryInstall == false)
+        #if DEBUG
+        #expect(enabled.forceFreshDictionaryInstall)
+        #else
+        #expect(enabled.forceFreshDictionaryInstall == false)
+        #endif
+    }
+
     @Test func firstLaunchShowsOnboardingWhenCompletionStateIsMissing() {
         let defaults = makeDefaults()
         let store = OnboardingStore(
