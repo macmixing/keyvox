@@ -164,14 +164,15 @@ final class CloudSyncCoordinator {
     }
 
     private func bootstrap() {
-        bootstrapDictionary()
-        recordInstallationIfNeeded()
+        if bootstrapDictionary() {
+            recordInstallationIfNeeded()
+        }
         bootstrapTriggerBinding()
         bootstrapAutoParagraphs()
         bootstrapListFormatting()
     }
 
-    private func bootstrapDictionary() {
+    private func bootstrapDictionary() -> Bool {
         let localEntries = dictionaryStore.entries
         let localModifiedAt = inferredLocalDictionaryModifiedAt()
         let remotePayload = loadRemoteDictionaryPayload()
@@ -180,21 +181,19 @@ final class CloudSyncCoordinator {
             ubiquitousStore.object(forKey: KeyVoxiCloudKeys.hasInstalledKeyVox) as? Bool == true
 
         if forceFreshDictionaryInstall {
-            seedInitialKeyVoxEntry(merging: localEntries)
-            return
+            return seedInitialKeyVoxEntry(merging: localEntries)
         }
 
         if !hasExistingLocalInstallation,
            !hasExistingCloudInstallation,
            !hasLocalSnapshot,
            remotePayload == nil {
-            seedInitialKeyVoxEntry(merging: localEntries)
-            return
+            return seedInitialKeyVoxEntry(merging: localEntries)
         }
 
         switch (hasLocalSnapshot, remotePayload) {
         case (false, nil):
-            return
+            break
         case (true, nil):
             let modifiedAt = localModifiedAt ?? now()
             setLocalDictionaryModifiedAt(modifiedAt)
@@ -210,9 +209,11 @@ final class CloudSyncCoordinator {
                 pushDictionary(entries: localEntries, modifiedAt: modifiedAt)
             }
         }
+
+        return true
     }
 
-    private func seedInitialKeyVoxEntry(merging entries: [DictionaryEntry]) {
+    private func seedInitialKeyVoxEntry(merging entries: [DictionaryEntry]) -> Bool {
         let initialEntry = DictionaryInitialEntries.keyVox
         let alreadyContainsKeyVox = entries.contains {
             $0.phrase.compare(initialEntry.phrase, options: [.caseInsensitive, .diacriticInsensitive]) == .orderedSame
@@ -229,8 +230,9 @@ final class CloudSyncCoordinator {
             }
             setLocalDictionaryModifiedAt(modifiedAt)
             pushDictionary(entries: seededEntries, modifiedAt: modifiedAt)
+            return true
         } catch {
-            return
+            return false
         }
     }
 
