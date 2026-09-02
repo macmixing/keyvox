@@ -125,6 +125,7 @@ struct KeyVoxApp: App {
                         let isShowingReturnToHost = transcriptionManager.isReturnToHostViewPresented
                             || appLaunchRouteStore.initialURLRoute == .startRecording
                         if isShowingReturnToHost == false,
+                           appUpdateCoordinator.activePrompt == nil,
                            dictationShortcutSetupIntroController.wantsPresentationOnEligibleLaunch
                             || dictationShortcutSetupIntroController.hasPresentedThisLaunch {
                             keyVoxSpeakIntroController.markDeferredUntilNextEligibleLaunch()
