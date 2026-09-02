@@ -258,7 +258,7 @@ final class DictionaryMatcherTests: XCTestCase {
 
     func testCorrectsStylizedSingleTokenBrandNearMissBeforeTitlecaseProductContext() {
         let matcher = makeRuntimeMatcher()
-        let entries = DictionaryBuiltInEntries.effectiveEntries(merging: [])
+        let entries = [DictionaryInitialEntries.keyVox]
         matcher.rebuildIndex(entries: entries)
 
         let result = matcher.apply(to: "Yeah, the Keybox Core package.")
@@ -268,7 +268,7 @@ final class DictionaryMatcherTests: XCTestCase {
 
     func testCorrectsStylizedSingleTokenBrandPhoneticNearMissBeforeUnlistedTitlecaseWords() {
         let matcher = makeRuntimeMatcher()
-        let entries = DictionaryBuiltInEntries.effectiveEntries(merging: [])
+        let entries = [DictionaryInitialEntries.keyVox]
         matcher.rebuildIndex(entries: entries)
 
         let result = matcher.apply(
@@ -277,7 +277,7 @@ final class DictionaryMatcherTests: XCTestCase {
 
         XCTAssertEqual(
             result.text,
-            "KeyVox Speak, the KeyVox Core package, and KeyVox Whisper."
+            "Kivox speak, the KeyVox Core package, and KeyVox Whisper."
         )
     }
 
@@ -1090,9 +1090,10 @@ final class DictionaryMatcherTests: XCTestCase {
 
     func testDoesNotReplaceUnrelatedPluralWordWithSingularCueEntry() {
         let matcher = makeRuntimeMatcher()
-        let entries = DictionaryBuiltInEntries.effectiveEntries(
-            merging: [DictionaryEntry(phrase: "cue")]
-        )
+        let entries = [
+            DictionaryEntry(phrase: "cue"),
+            DictionaryInitialEntries.keyVox,
+        ]
         matcher.rebuildIndex(entries: entries)
 
         let input = "The gear should only be spinning when data is actually being transmitted, not when empty checks are running."

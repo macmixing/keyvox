@@ -6,9 +6,10 @@ import XCTest
 extension TranscriptionPostProcessorTests {
     func testPostProcessorDoesNotRewriteMismatchedSpelledUppercaseSequences() {
         let processor = TranscriptionPostProcessor()
-        let entries = DictionaryBuiltInEntries.effectiveEntries(
-            merging: [DictionaryEntry(phrase: "ChatGPT")]
-        )
+        let entries = [
+            DictionaryEntry(phrase: "ChatGPT"),
+            DictionaryInitialEntries.keyVox,
+        ]
         let inputs = [
             "But as that got better, this got worse.",
             "But as chat GOT better, this got worse.",

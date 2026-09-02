@@ -273,7 +273,7 @@ final class DictationPipelineTests: XCTestCase {
         XCTAssertEqual(variants[.init(paragraphsEnabled: true, listsEnabled: true)], "Project notes:\n\n1. Cueboard\n2. Cueboard")
     }
 
-    func testPipelineAppliesBuiltInDictionaryEntryAndRefreshesProviderPrompt() async throws {
+    func testPipelineAppliesInitialDictionaryEntryAndRefreshesProviderPrompt() async throws {
         let provider = StubTranscriptionProvider(
             result: .init(text: "my app is called key box", languageCode: "en", paragraphsText: nil, inlineText: nil)
         )
@@ -281,7 +281,7 @@ final class DictationPipelineTests: XCTestCase {
         let pipeline = DictationPipeline(
             transcriptionProvider: provider,
             postProcessor: TranscriptionPostProcessor(),
-            dictionaryEntriesProvider: { [] },
+            dictionaryEntriesProvider: { [DictionaryInitialEntries.keyVox] },
             autoParagraphsEnabledProvider: { true },
             listFormattingEnabledProvider: { true },
             listRenderModeProvider: { .singleLineInline },
@@ -295,7 +295,7 @@ final class DictationPipelineTests: XCTestCase {
             useDictionaryHintPrompt: true
         )
 
-        XCTAssertEqual(provider.receivedDictionaryHintPrompt, "Domain vocabulary: KeyVox, KeyVox Speak, KeyVox Vibes")
+        XCTAssertEqual(provider.receivedDictionaryHintPrompt, "Domain vocabulary: KeyVox")
         XCTAssertEqual(provider.receivedUseDictionaryHintPrompt, true)
         XCTAssertEqual(result.finalText, "My app is called KeyVox.")
         XCTAssertEqual(recorded, ["My app is called KeyVox."])
@@ -579,7 +579,7 @@ final class DictationPipelineTests: XCTestCase {
             useDictionaryHintPrompt: false
         )
 
-        XCTAssertEqual(provider.receivedDictionaryHintPrompt, "Domain vocabulary: KeyVox, KeyVox Speak, KeyVox Vibes")
+        XCTAssertEqual(provider.receivedDictionaryHintPrompt, "")
         XCTAssertEqual(provider.receivedUseDictionaryHintPrompt, false)
     }
 

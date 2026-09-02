@@ -91,17 +91,17 @@ final class DictionaryStoreTests: XCTestCase {
         }
     }
 
-    func testBuiltInDictionaryEntryIsPromptedButNotPersisted() throws {
+    func testEmptyDictionaryHasNoHintPrompt() throws {
         try withTemporaryDirectory { root in
             let base = root.appendingPathComponent("KeyVox", isDirectory: true)
             let store = DictionaryStore(fileManager: .default, baseDirectoryURL: base)
 
             XCTAssertEqual(store.entries, [])
-            XCTAssertEqual(store.whisperHintPrompt(), "Domain vocabulary: KeyVox, KeyVox Speak, KeyVox Vibes")
+            XCTAssertEqual(store.whisperHintPrompt(), "")
 
             let reloaded = DictionaryStore(fileManager: .default, baseDirectoryURL: base)
             XCTAssertEqual(reloaded.entries, [])
-            XCTAssertEqual(reloaded.whisperHintPrompt(), "Domain vocabulary: KeyVox, KeyVox Speak, KeyVox Vibes")
+            XCTAssertEqual(reloaded.whisperHintPrompt(), "")
         }
     }
 

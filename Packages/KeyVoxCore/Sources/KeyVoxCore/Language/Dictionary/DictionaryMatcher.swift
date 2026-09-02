@@ -100,21 +100,6 @@ public final class DictionaryMatcher {
                 grouped[compiled.tokens.count, default: []].append(compiled)
             }
 
-            for alias in DictionaryBuiltInEntries.aliases(for: entry) {
-                let normalizedAlias = DictionaryTextNormalization.normalizedPhrase(alias)
-                guard !normalizedAlias.isEmpty, normalizedAlias != normalizedPhrase else { continue }
-
-                let aliasTokens = normalizedAlias.split(separator: " ").map(String.init)
-                guard !aliasTokens.isEmpty, aliasTokens.count <= 4 else { continue }
-
-                for compiledAlias in compiledEntries(
-                    phrase: entry.phrase,
-                    normalizedPhrase: normalizedAlias,
-                    tokens: aliasTokens
-                ) {
-                    grouped[compiledAlias.tokens.count, default: []].append(compiledAlias)
-                }
-            }
         }
 
         entriesByTokenCount = grouped
