@@ -6,6 +6,33 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.4.0] - 2026-09-02
+
+Adds Compact Keys, background dictation through Shortcuts and the Action Button, guided setup, and dynamic campaign cards while improving spoken numbers, list formatting, and dictionary accuracy.
+
+### Added
+
+- Added Compact Keys, a persisted two-row keyboard mode activated by long-pressing `#+=`, with a default-enabled Settings toggle and an explicit control for returning to the full layout.
+- Added an installable Toggle KeyVox Dictation Shortcut that starts and stops dictation without opening KeyVox, keeps the active session visible through Live Activities, and returns completed text for pasting into any app.
+- Added a guided Dictation Shortcut and Action Button setup flow for new and existing users, with instructional videos, direct Shortcut installation, reusable Settings guidance, and demonstrations of dictation and transcript handoff.
+- Added dynamic campaign cards to the Home tab with platform- and version-aware content, campaign actions, sharing attribution, stable selection, and cached fallback content.
+- Added KeyVox as a visible initial custom-dictionary entry on fresh installations so it can be edited or deleted like any other saved term.
+
+### Changed
+
+- Reordered onboarding so language selection, model and microphone preparation, Shortcut setup, keyboard enablement, and the keyboard tour follow the complete Dictate Anywhere setup path.
+- Updated custom-dictionary hints and matching to use only user-visible saved entries instead of hidden built-in KeyVox product terms.
+
+### Fixed
+
+- Fixed PocketTTS pronunciation of grouped thousands, millions, billions, compact thousands, resolution-style uppercase `K` values, and decimal dollar-and-cent amounts.
+- Fixed numbered-list detection so strong sequential marker patterns remain intact when list items contain unrelated numbers, while preserving safeguards for ambiguous sequences.
+- Fixed multiword custom-dictionary matching so every changed word requires its own phonetic support, preventing a shared exact word from masking an unrelated replacement.
+- Fixed Shortcut onboarding presentation conflicts with update prompts and other feature introductions while preserving progress, language navigation, and keyboard-tour completion state.
+- Fixed initial KeyVox dictionary seeding so a failed first write is retried without restoring entries that an existing user deleted.
+
+---
+
 ## [1.3.6] - 2026-08-23
 
 Improves keyboard dictation around existing text while strengthening model selection, silence detection, number formatting, custom-dictionary matching, and factual money preservation in Vibes rewrites.
