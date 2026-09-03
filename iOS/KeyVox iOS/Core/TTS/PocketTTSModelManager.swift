@@ -38,21 +38,31 @@ final class PocketTTSModelManager: ObservableObject {
     let fileManager: FileManager
     let session: URLSession
     let assetLocator: PocketTTSAssetLocator
+    let backgroundDownloadCoordinator: PocketTTSBackgroundDownloadCoordinator
     var installTask: Task<Void, Never>?
     var pendingVoiceInstallAfterSharedModel: AppSettingsStore.TTSVoice?
     var onDidInvalidateInstalledAssets: (() -> Void)?
+    var appIsActive = false
+    var isFinalizationInFlight = false
 
     init(
         fileManager: FileManager = .default,
         session: URLSession = .shared,
-        assetLocator: PocketTTSAssetLocator? = nil
+        assetLocator: PocketTTSAssetLocator? = nil,
+        backgroundDownloadCoordinator: PocketTTSBackgroundDownloadCoordinator
     ) {
         self.fileManager = fileManager
         self.session = session
         self.assetLocator = assetLocator ?? PocketTTSAssetLocator(fileManager: fileManager)
+        self.backgroundDownloadCoordinator = backgroundDownloadCoordinator
         self.voiceInstallStates = Dictionary(
             uniqueKeysWithValues: AppSettingsStore.TTSVoice.userFacingCases.map { ($0, .notInstalled) }
         )
+        self.backgroundDownloadCoordinator.stateDidChange = { [weak self] _ in
+            Task { @MainActor [weak self] in
+                await self?.handleBackgroundDownloadStateChanged()
+            }
+        }
         refreshStatus()
     }
 
@@ -70,13 +80,44 @@ final class PocketTTSModelManager: ObservableObject {
         for voice in AppSettingsStore.TTSVoice.userFacingCases {
             voiceInstallStates[voice] = assetLocator.isVoiceInstalled(voice) ? .ready : .notInstalled
         }
+
+        guard let job = backgroundDownloadCoordinator.loadJob() else {
+            activeInstallTarget = nil
+            return
+        }
+        activeInstallTarget = job.target
+        applyBackgroundJobState(job)
     }
 
     func handleAppDidBecomeActive() {
-        refreshStatus()
+        appIsActive = true
+        Task { [weak self] in
+            guard let self else { return }
+            let job = await self.backgroundDownloadCoordinator.synchronizeWithSystemTasks()
+            if let job,
+               !job.isReadyForFinalization,
+               job.finalizationState != .failed {
+                try? await self.backgroundDownloadCoordinator.startOrResumeJob(job)
+            }
+            self.refreshStatus()
+            await self.resumeForegroundFinalizationIfNeeded()
+        }
     }
 
-    func handleAppDidEnterBackground() {}
+    func handleAppDidEnterBackground() {
+        appIsActive = false
+    }
+
+    func handleBackgroundURLSessionEvents(
+        identifier: String,
+        completionHandler: @escaping () -> Void
+    ) {
+        guard identifier == PocketTTSBackgroundDownloadCoordinator.sessionIdentifier else {
+            completionHandler()
+            return
+        }
+        backgroundDownloadCoordinator.registerBackgroundSessionCompletionHandler(completionHandler)
+    }
 
     func isSharedModelReady() -> Bool {
         if case .ready = sharedModelInstallState {

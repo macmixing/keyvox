@@ -154,6 +154,11 @@ nonisolated enum SharedPaths {
             .appendingPathComponent("Voices", isDirectory: true)
     }
 
+    static func pocketTTSDownloadJobURL(fileManager: FileManager = .default) -> URL? {
+        pocketTTSRootDirectoryURL(fileManager: fileManager)?
+            .appendingPathComponent("background-download-job.json", isDirectory: false)
+    }
+
     static func localRewriteRootDirectoryURL(fileManager: FileManager = .default) -> URL? {
         modelsDirectoryURL(fileManager: fileManager)?
             .appendingPathComponent("rewrite", isDirectory: true)

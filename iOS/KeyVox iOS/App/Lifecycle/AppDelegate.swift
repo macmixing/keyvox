@@ -7,10 +7,20 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
         handleEventsForBackgroundURLSession identifier: String,
         completionHandler: @escaping () -> Void
     ) {
-        AppServiceRegistry.shared.modelManager.handleBackgroundURLSessionEvents(
-            identifier: identifier,
-            completionHandler: completionHandler
-        )
+        switch identifier {
+        case ModelBackgroundDownloadCoordinator.sessionIdentifier:
+            AppServiceRegistry.shared.modelManager.handleBackgroundURLSessionEvents(
+                identifier: identifier,
+                completionHandler: completionHandler
+            )
+        case PocketTTSBackgroundDownloadCoordinator.sessionIdentifier:
+            AppServiceRegistry.shared.pocketTTSModelManager.handleBackgroundURLSessionEvents(
+                identifier: identifier,
+                completionHandler: completionHandler
+            )
+        default:
+            completionHandler()
+        }
     }
 
     func application(

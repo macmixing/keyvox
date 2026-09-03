@@ -244,7 +244,21 @@ final class AppServiceRegistry {
         )
         let ttsSystemPlaybackController = TTSSystemPlaybackController()
         let ttsEngine = PocketTTSEngine(fileManager: fileManager)
-        let pocketTTSModelManager = PocketTTSModelManager(fileManager: fileManager)
+        let pocketTTSBackgroundDownloadJobStore = PocketTTSBackgroundDownloadJobStore(
+            fileManager: fileManager,
+            jobURLProvider: { SharedPaths.pocketTTSDownloadJobURL(fileManager: fileManager) }
+        )
+        let pocketTTSBackgroundDownloadCoordinator = PocketTTSBackgroundDownloadCoordinator(
+            fileManager: fileManager,
+            jobStore: pocketTTSBackgroundDownloadJobStore,
+            stagingRootProvider: { target in
+                try PocketTTSModelManager.makeStagingRootURL(fileManager: fileManager, target: target)
+            }
+        )
+        let pocketTTSModelManager = PocketTTSModelManager(
+            fileManager: fileManager,
+            backgroundDownloadCoordinator: pocketTTSBackgroundDownloadCoordinator
+        )
         let ttsManager = TTSManager(
             settingsStore: settingsStore,
             appHaptics: appHaptics,
