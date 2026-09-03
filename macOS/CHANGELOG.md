@@ -6,6 +6,28 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.3.7] - 2026-09-02
+
+Adds dynamic campaign cards to Mac settings while fixing capitalization, numbered-list formatting, and custom-dictionary matches.
+
+### Added
+
+- Added dynamic campaign cards to the Home settings screen with relevant actions, sharing, stable selection, and cached fallback content.
+- Added KeyVox as a visible initial custom-dictionary entry on fresh installations so it can be edited or deleted like any other saved term.
+
+### Changed
+
+- Updated custom-dictionary hints and matching to use only user-visible saved entries instead of hidden built-in KeyVox product terms.
+
+### Fixed
+
+- Fixed dictated text losing sentence-leading capitalization in empty editors containing only whitespace and after indented line breaks.
+- Fixed numbered-list detection so strong sequential marker patterns remain intact when list items contain unrelated numbers, while preserving safeguards for ambiguous sequences.
+- Fixed multiword custom-dictionary matching so every changed word requires its own phonetic support, preventing a shared exact word from masking an unrelated replacement.
+- Fixed initial KeyVox dictionary seeding so a failed first write is retried without restoring entries that an existing user deleted.
+
+---
+
 ## [1.3.6] - 2026-08-23
 
 Improves Mac dictation in empty web editors and around existing text while strengthening silence detection, number formatting, custom-dictionary matching, and factual money preservation in Vibes rewrites.
