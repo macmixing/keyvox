@@ -223,6 +223,14 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "My app is called KeyVox.")
     }
 
+    func testSplitStylizedBrandDoesNotInferPossessionFromIntrinsicEnding() {
+        let matcher = makeRuntimeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "KeyVox")])
+
+        let result = matcher.apply(to: "Just put it inside of the key box repository.")
+        XCTAssertEqual(result.text, "Just put it inside of the KeyVox repository.")
+    }
+
     func testDoesNotCollapseOrdinaryTwoWordPhraseIntoAnchoredStylizedSplitJoinMatch() {
         let matcher = makeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "KeyVox")])

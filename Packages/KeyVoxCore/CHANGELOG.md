@@ -6,6 +6,22 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.2.8] - 2026-09-02
+
+Split stylized dictionary terms now remain singular when their own ending resembles a possessive sound.
+
+### Includes
+
+- Required actual suffix evidence before converting a split-word dictionary match into a possessive form.
+- Preserved possessive inference when a transcription carries a plural-like suffix and the following context supports possession.
+- Added regression coverage for singular stylized terms followed by nouns.
+
+### Notes
+
+- `1.2.8` tracks stricter possessive inference for split-word dictionary matches in the shared Core engine.
+
+---
+
 ## [1.2.7] - 2026-09-02
 
 Numbered lists now remain detectable around unrelated numbers, multiword dictionary replacements require phonetic agreement for every changed word, and dictionary processing now uses only actual user-visible entries.

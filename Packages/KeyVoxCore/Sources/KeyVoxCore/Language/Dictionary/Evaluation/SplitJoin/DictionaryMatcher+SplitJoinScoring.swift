@@ -291,20 +291,6 @@ extension DictionaryMatcher {
            ) {
             replacementSuffix = "'s"
         }
-        if replacementSuffix.isEmpty,
-           isStylizedSingleTokenEntry(best.entry),
-           let candidateToken = best.entry.tokens.first,
-           isAnchoredStylizedSplitJoin(window: window, candidateToken: candidateToken),
-           shouldInferSplitJoinPossessiveSuffix(
-               observedCombined: window.map(\.normalized).joined(),
-               observedTail: window[1].normalized,
-               candidate: candidateToken,
-               nextToken: end < tokens.count ? tokens[end] : nil,
-               followingToken: end + 1 < tokens.count ? tokens[end + 1] : nil
-           ) {
-            replacementSuffix = "'s"
-        }
-
         let range = combinedRange(from: window)
         let observedRaw = (text as NSString).substring(with: range)
         let normalizedReplacementSuffix = resolvedSplitJoinReplacementSuffix(
