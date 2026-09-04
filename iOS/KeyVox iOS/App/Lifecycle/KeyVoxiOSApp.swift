@@ -115,6 +115,7 @@ struct KeyVoxApp: App {
                         transcriptionManager.handleAppDidBecomeActive()
                         ttsManager.handleAppDidBecomeActive()
                         pocketTTSModelManager.handleAppDidBecomeActive()
+                        localRewriteModelManager.handleAppDidBecomeActive()
                         modelManager.handleAppDidBecomeActive()
                         appUpdateCoordinator.handleAppDidBecomeActive()
                         promotionCenter.refresh()
@@ -155,6 +156,7 @@ struct KeyVoxApp: App {
                     case .inactive:
                         ttsManager.handleAppWillResignActive()
                         pocketTTSModelManager.handleAppWillResignActive()
+                        localRewriteModelManager.handleAppWillResignActive()
                     @unknown default:
                         break
                     }

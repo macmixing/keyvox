@@ -129,7 +129,29 @@ final class AppServiceRegistry {
         let postProcessor = TranscriptionPostProcessor()
         let keyboardBridge = KeyVoxKeyboardBridge()
         let styleRewriteArtifactStore = StyleRewriteLatestArtifactStore(defaults: settingsDefaults)
-        let localRewriteModelManager = LocalRewriteModelManager(fileManager: fileManager)
+        let localRewriteBackgroundDownloadJobStore = LocalRewriteBackgroundDownloadJobStore(
+            fileManager: fileManager,
+            jobURLProvider: { SharedPaths.localRewriteDownloadJobURL(fileManager: fileManager) }
+        )
+        let localRewriteBackgroundDownloadCoordinator = LocalRewriteBackgroundDownloadCoordinator(
+            fileManager: fileManager,
+            jobStore: localRewriteBackgroundDownloadJobStore,
+            stagingArtifactURLProvider: {
+                guard let stagingRootURL = SharedPaths.localRewriteModelStagingDirectoryURL(
+                    fileManager: fileManager
+                ) else {
+                    throw LocalRewriteModelInstallError.appGroupUnavailable
+                }
+                return stagingRootURL.appendingPathComponent(
+                    LocalRewriteModelCatalog.descriptor.artifact.filename,
+                    isDirectory: false
+                )
+            }
+        )
+        let localRewriteModelManager = LocalRewriteModelManager(
+            fileManager: fileManager,
+            backgroundDownloadCoordinator: localRewriteBackgroundDownloadCoordinator
+        )
         let localRewriteInferenceService = LocalRewriteInferenceService(
             modelURLProvider: { [weak localRewriteModelManager] in
                 localRewriteModelManager?.installedModelURL()
