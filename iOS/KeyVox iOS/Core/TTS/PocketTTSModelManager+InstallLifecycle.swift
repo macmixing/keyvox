@@ -34,9 +34,14 @@ extension PocketTTSModelManager {
         activeInstallTarget = .sharedModel
 
         installTask = Task { [session] in
+            var installError: Error?
             defer {
                 installTask = nil
-                refreshStatus()
+                if let installError {
+                    sharedModelInstallState = .failed(installError.localizedDescription)
+                } else {
+                    refreshStatus()
+                }
             }
 
             do {
@@ -57,7 +62,7 @@ extension PocketTTSModelManager {
                 pendingVoiceInstallAfterSharedModel = nil
             } catch {
                 Self.log("Shared model install failed with error: \(error.localizedDescription)")
-                sharedModelInstallState = .failed(error.localizedDescription)
+                installError = error
                 pendingVoiceInstallAfterSharedModel = nil
             }
         }
@@ -99,9 +104,14 @@ extension PocketTTSModelManager {
         activeInstallTarget = .voice(voice)
 
         installTask = Task { [session] in
+            var installError: Error?
             defer {
                 installTask = nil
-                refreshStatus()
+                if let installError {
+                    voiceInstallStates[voice] = .failed(installError.localizedDescription)
+                } else {
+                    refreshStatus()
+                }
             }
 
             do {
@@ -115,7 +125,7 @@ extension PocketTTSModelManager {
                 try await startBackgroundInstall(descriptor: descriptor, target: .voice(voice))
             } catch {
                 Self.log("Voice install failed for \(voice.rawValue) with error: \(error.localizedDescription)")
-                voiceInstallStates[voice] = .failed(error.localizedDescription)
+                installError = error
             }
         }
     }

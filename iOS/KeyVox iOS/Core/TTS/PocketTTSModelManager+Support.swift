@@ -35,7 +35,7 @@ extension PocketTTSModelManager {
         return rootURL
     }
 
-    static func makeStagingRootURL(
+    nonisolated static func makeStagingRootURL(
         fileManager: FileManager,
         target: PocketTTSInstallTarget
     ) throws -> URL {
