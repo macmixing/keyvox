@@ -1079,7 +1079,7 @@ Primary owners:
 
 ### Background Download Rules
 
-Dictation and Speak currently have separate model-family coordinators. `ModelBackgroundDownloadCoordinator` owns Dictation’s existing background-only system. Speak uses the reusable `ResumableDownloadTransport` through `PocketTTSBackgroundDownloadCoordinator`.
+Dictation, Speak, and Vibes have separate model-family coordinators. `ModelBackgroundDownloadCoordinator` owns Dictation’s existing background-only system. Speak and Vibes each use the reusable `ResumableDownloadTransport` through their own coordinator.
 
 #### Reusable Handoff Transport
 
@@ -1088,6 +1088,7 @@ Dictation and Speak currently have separate model-family coordinators. `ModelBac
 Rules:
 
 - each model family receives its own transport instance and unique background-session identifier; tasks from one family must never cancel, replace, or reconcile against another family
+- transport and underlying URL session creation must be serialized so one app process cannot create duplicate sessions for a family identifier
 - task identity is the universal `jobID` plus `artifactID` descriptor stored in `URLSessionTask.taskDescription`
 - the foreground session uses the default URLSession configuration so an active-app download follows the normal foreground network path
 - the background session enables launch events, waits for connectivity, uses the App Group container, and remains non-discretionary when started while the app still has foreground execution time
@@ -1113,6 +1114,21 @@ Rules:
 - shared-engine finalization writes and validates the existing manifest at the existing model root; voice finalization writes and validates the selected voice root
 - a Settings shared-engine request ends after engine finalization; a combined Home/setup request then starts its explicitly queued voice download
 - there is no legacy foreground fallback path: active downloads use the foreground side of the reusable transport and inactive downloads use its background side
+
+#### Vibes Download Policy
+
+- `LocalRewriteBackgroundDownloadJob` persists the fixed Vibes artifact identity, remote URL, expected byte count, transfer progress, task identity, error, and finalization state
+- the active job is stored as `Models/rewrite/background-download-job.json`
+- the installed model remains `Models/rewrite/qwen2-5-0-5b-instruct/`, and incomplete work remains under `Models/rewrite/.staging/qwen2-5-0-5b-instruct/`
+- Vibes owns a dedicated transport instance and background session named `com.cueit.keyvox.vibes-download.background-session`; it does not reuse or cancel Speak or Dictation tasks
+- an active-app request uses the foreground session, `.inactive` begins the handoff to the Vibes background session, and `.active` hands an unfinished transfer back to the foreground session
+- persisted completed bytes never decrease when a recreated URLSession task initially reports a smaller task-local byte count
+- app activation serializes job reconciliation and restart so repeated active events cannot schedule duplicate tasks for the same persisted job
+- a completed URLSession temporary file is moved into Vibes staging during the delegate callback; non-2xx HTTP responses become download failures instead of staged integrity failures
+- download completion is not installation completion: SHA-256 validation, manifest creation, and installation remain foreground-owned
+- finalization builds the complete artifact and manifest in staging before atomically replacing an existing installed model, preserving the current valid installation if replacement fails
+- delete and repair cancel only Vibes-owned URLSession tasks, clear the Vibes job, and retain the existing user-facing install-state flow
+- there is no legacy foreground downloader: both foreground and background transfers use the reusable transport
 
 #### Dictation Background Downloads
 

@@ -175,6 +175,11 @@ nonisolated enum SharedPaths {
             .appendingPathComponent("qwen2-5-0-5b-instruct", isDirectory: true)
     }
 
+    static func localRewriteDownloadJobURL(fileManager: FileManager = .default) -> URL? {
+        localRewriteRootDirectoryURL(fileManager: fileManager)?
+            .appendingPathComponent("background-download-job.json", isDirectory: false)
+    }
+
     static func ttsRequestURL(fileManager: FileManager = .default) -> URL? {
         ttsDirectoryURL(fileManager: fileManager)?
             .appendingPathComponent("request.json", isDirectory: false)

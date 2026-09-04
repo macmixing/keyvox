@@ -18,6 +18,11 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
                 identifier: identifier,
                 completionHandler: completionHandler
             )
+        case LocalRewriteBackgroundDownloadCoordinator.sessionIdentifier:
+            AppServiceRegistry.shared.localRewriteModelManager.handleBackgroundURLSessionEvents(
+                identifier: identifier,
+                completionHandler: completionHandler
+            )
         default:
             completionHandler()
         }

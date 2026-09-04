@@ -11,12 +11,14 @@ struct SharedPathsTests {
         let coreMLZipURL = SharedPaths.coreMLEncoderZipURL(fileManager: fileManager)
         let coreMLDirectoryURL = SharedPaths.coreMLEncoderDirectoryURL(fileManager: fileManager)
         let manifestURL = SharedPaths.modelInstallManifestURL(fileManager: fileManager)
+        let localRewriteDownloadJobURL = SharedPaths.localRewriteDownloadJobURL(fileManager: fileManager)
 
         #expect(modelURL?.path == "/tmp/KeyVoxGroup/Models/whisper/ggml-base.bin")
         #expect(modelsDirectoryURL?.path == "/tmp/KeyVoxGroup/Models")
         #expect(coreMLZipURL?.path == "/tmp/KeyVoxGroup/Models/whisper/ggml-base-encoder.mlmodelc.zip")
         #expect(coreMLDirectoryURL?.path == "/tmp/KeyVoxGroup/Models/whisper/ggml-base-encoder.mlmodelc")
         #expect(manifestURL?.path == "/tmp/KeyVoxGroup/Models/whisper/install-manifest.json")
+        #expect(localRewriteDownloadJobURL?.path == "/tmp/KeyVoxGroup/Models/rewrite/background-download-job.json")
     }
 
     @Test func dictionaryBaseDirectoryAppendsExpectedPath() {
