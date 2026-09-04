@@ -55,4 +55,13 @@ extension LocalRewriteBackgroundDownloadCoordinator {
         guard let job else { return }
         stateDidChange?(job)
     }
+
+    func markDownloadFailed(message: String) {
+        updateLoadedJob {
+            $0.phase = .failed
+            $0.taskIdentifier = nil
+            $0.finalizationState = .failed
+            $0.lastErrorMessage = message
+        }
+    }
 }

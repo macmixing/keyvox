@@ -11,11 +11,7 @@ final class LocalRewriteBackgroundDownloadCoordinator: ResumableDownloadTranspor
     let jobStore: LocalRewriteBackgroundDownloadJobStore
     let stagingArtifactURLProvider: () throws -> URL
     let jobStoreLock = NSLock()
-    lazy var transport = ResumableDownloadTransport(
-        sessionIdentifier: Self.sessionIdentifier,
-        sharedContainerIdentifier: SharedPaths.appGroupID,
-        delegate: self
-    )
+    let transport: ResumableDownloadTransport
 
     init(
         fileManager: FileManager = .default,
@@ -25,6 +21,12 @@ final class LocalRewriteBackgroundDownloadCoordinator: ResumableDownloadTranspor
         self.fileManager = fileManager
         self.jobStore = jobStore
         self.stagingArtifactURLProvider = stagingArtifactURLProvider
+        self.transport = ResumableDownloadTransport(
+            sessionIdentifier: Self.sessionIdentifier,
+            sharedContainerIdentifier: SharedPaths.appGroupID,
+            delegate: nil
+        )
+        self.transport.delegate = self
     }
 
     func loadJob() -> LocalRewriteBackgroundDownloadJob? {

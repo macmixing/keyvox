@@ -23,6 +23,12 @@ extension LocalRewriteBackgroundDownloadCoordinator {
         response: URLResponse?
     ) {
         do {
+            if let httpResponse = response as? HTTPURLResponse,
+               !(200...299).contains(httpResponse.statusCode) {
+                markDownloadFailed(for: descriptor)
+                return
+            }
+
             let updatedJob = try withJobStoreLock { () -> LocalRewriteBackgroundDownloadJob? in
                 guard var job = jobStore.load(),
                       job.id == descriptor.jobID,

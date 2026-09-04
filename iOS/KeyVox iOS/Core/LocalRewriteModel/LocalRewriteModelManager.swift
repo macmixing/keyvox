@@ -12,6 +12,7 @@ final class LocalRewriteModelManager: ObservableObject {
     let descriptor: LocalRewriteModelDescriptor
     let backgroundDownloadCoordinator: LocalRewriteBackgroundDownloadCoordinator
     var installTask: Task<Void, Never>?
+    var activationRecoveryTask: Task<Void, Never>?
     var onDidInvalidateInstalledModel: (() -> Void)?
     var appIsActive = false
     var isFinalizationInFlight = false

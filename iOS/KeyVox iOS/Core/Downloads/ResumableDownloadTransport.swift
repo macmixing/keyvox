@@ -40,6 +40,7 @@ final class ResumableDownloadTransport: NSObject {
     private let sharedContainerIdentifier: String
     private let lifecycleLock = NSLock()
     private let completionHandlerLock = NSLock()
+    private let sessionLock = NSLock()
 
     weak var delegate: ResumableDownloadTransportDelegate?
     var appIsActive = false
@@ -48,42 +49,52 @@ final class ResumableDownloadTransport: NSObject {
     private var pendingResumeDataByArtifactID: [String: Data] = [:]
     private var backgroundSessionCompletionHandler: (() -> Void)?
 
-    private lazy var backgroundSession: URLSession = {
-        let configuration = URLSessionConfiguration.background(withIdentifier: sessionIdentifier)
-        configuration.sharedContainerIdentifier = sharedContainerIdentifier
-        configuration.sessionSendsLaunchEvents = true
-        configuration.waitsForConnectivity = true
-        configuration.isDiscretionary = false
-        return URLSession(configuration: configuration, delegate: self, delegateQueue: nil)
-    }()
-
-    private lazy var foregroundSession: URLSession = {
-        URLSession(configuration: .default, delegate: self, delegateQueue: nil)
-    }()
+    private var storedBackgroundSession: URLSession?
+    private var storedForegroundSession: URLSession?
 
     init(
         sessionIdentifier: String,
         sharedContainerIdentifier: String,
-        delegate: ResumableDownloadTransportDelegate
+        delegate: ResumableDownloadTransportDelegate?
     ) {
         self.sessionIdentifier = sessionIdentifier
         self.sharedContainerIdentifier = sharedContainerIdentifier
         self.delegate = delegate
+        super.init()
     }
 
     func registerBackgroundSessionCompletionHandler(_ completionHandler: @escaping () -> Void) {
         completionHandlerLock.lock()
         backgroundSessionCompletionHandler = completionHandler
         completionHandlerLock.unlock()
-        _ = backgroundSession
+        _ = session(for: .background)
     }
 
     func session(for kind: ResumableDownloadSessionKind) -> URLSession {
         switch kind {
         case .foreground:
-            foregroundSession
+            sessionLock.lock()
+            defer { sessionLock.unlock() }
+            if let storedForegroundSession {
+                return storedForegroundSession
+            }
+            let session = URLSession(configuration: .default, delegate: self, delegateQueue: nil)
+            storedForegroundSession = session
+            return session
         case .background:
-            backgroundSession
+            sessionLock.lock()
+            defer { sessionLock.unlock() }
+            if let storedBackgroundSession {
+                return storedBackgroundSession
+            }
+            let configuration = URLSessionConfiguration.background(withIdentifier: sessionIdentifier)
+            configuration.sharedContainerIdentifier = sharedContainerIdentifier
+            configuration.sessionSendsLaunchEvents = true
+            configuration.waitsForConnectivity = true
+            configuration.isDiscretionary = false
+            let session = URLSession(configuration: configuration, delegate: self, delegateQueue: nil)
+            storedBackgroundSession = session
+            return session
         }
     }
 
@@ -161,10 +172,10 @@ final class ResumableDownloadTransport: NSObject {
     }
 
     func cancelAllTasksWithoutWaiting() {
-        backgroundSession.getAllTasks { tasks in
+        session(for: .background).getAllTasks { tasks in
             tasks.forEach { $0.cancel() }
         }
-        foregroundSession.getAllTasks { tasks in
+        session(for: .foreground).getAllTasks { tasks in
             tasks.forEach { $0.cancel() }
         }
         storePendingResumeData([:])

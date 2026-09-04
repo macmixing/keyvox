@@ -24,8 +24,10 @@ extension LocalRewriteModelManager {
 
     func handleAppDidBecomeActive() {
         appIsActive = true
-        Task { [weak self] in
+        guard activationRecoveryTask == nil else { return }
+        activationRecoveryTask = Task { [weak self] in
             guard let self else { return }
+            defer { self.activationRecoveryTask = nil }
             await self.backgroundDownloadCoordinator.handleAppDidBecomeActive()
             guard self.appIsActive else { return }
             let job = await self.backgroundDownloadCoordinator.synchronizeWithSystemTasks()
@@ -33,7 +35,14 @@ extension LocalRewriteModelManager {
                job.matches(self.descriptor),
                !job.isReadyForFinalization,
                job.finalizationState != .failed {
-                try? await self.backgroundDownloadCoordinator.startOrResumeJob(job)
+                do {
+                    try await self.backgroundDownloadCoordinator.startOrResumeJob(job)
+                } catch {
+                    let message = Self.userFacingErrorMessage(for: error)
+                    self.backgroundDownloadCoordinator.markDownloadFailed(message: message)
+                    self.setFailure(message)
+                    return
+                }
             }
             self.refreshStatus()
             await self.resumeForegroundFinalizationIfNeeded()
@@ -141,8 +150,7 @@ extension LocalRewriteModelManager {
         guard job.matches(descriptor),
               let stagingArtifactURL = stagingArtifactURL(),
               let finalRootURL = finalRootURL(),
-              let finalArtifactURL = finalArtifactURL(),
-              let manifestURL = manifestURL() else {
+              let stagingRootURL = stagingRootURL() else {
             throw LocalRewriteModelInstallError.appGroupUnavailable
         }
 
@@ -153,9 +161,7 @@ extension LocalRewriteModelManager {
         }
 
         setState(.installing(progress: 0.98))
-        try prepareCleanDirectory(finalRootURL)
-        try fileManager.moveItem(at: stagingArtifactURL, to: finalArtifactURL)
-        let fileSize = try fileSize(at: finalArtifactURL)
+        let fileSize = try fileSize(at: stagingArtifactURL)
         let manifest = LocalRewriteModelInstallManifest(
             modelID: descriptor.id,
             artifactFilename: descriptor.artifact.filename,
@@ -165,9 +171,16 @@ extension LocalRewriteModelManager {
             fileSize: fileSize,
             installedAt: Date()
         )
-        try writeManifest(manifest, to: manifestURL)
-        guard isModelReady() else {
-            throw LocalRewriteModelInstallError.integrityCheckFailed
+        let stagingManifestURL = stagingRootURL.appendingPathComponent(
+            LocalRewriteModelCatalog.manifestFilename,
+            isDirectory: false
+        )
+        try writeManifest(manifest, to: stagingManifestURL)
+
+        if fileManager.fileExists(atPath: finalRootURL.path) {
+            _ = try fileManager.replaceItemAt(finalRootURL, withItemAt: stagingRootURL)
+        } else {
+            try fileManager.moveItem(at: stagingRootURL, to: finalRootURL)
         }
         setState(.ready)
     }
