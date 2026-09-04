@@ -2,7 +2,7 @@
 
 This document captures the current implementation rules and maintainer-facing architecture for the iOS app, keyboard extension, and widget extension.
 
-**Last Updated: 2026-09-03**
+**Last Updated: 2026-09-04**
 
 ## Design Philosophy
 
@@ -1079,7 +1079,7 @@ Primary owners:
 
 ### Background Download Rules
 
-Dictation, Speak, and Vibes have separate model-family coordinators. `ModelBackgroundDownloadCoordinator` owns Dictation’s existing background-only system. Speak and Vibes each use the reusable `ResumableDownloadTransport` through their own coordinator.
+Dictation, Speak, and Vibes have separate model-family coordinators. Each family uses the reusable `ResumableDownloadTransport` through its own coordinator while retaining its own catalog, persistence, staging, installation, retry, and public-state policies.
 
 #### Reusable Handoff Transport
 
@@ -1130,18 +1130,30 @@ Rules:
 - delete and repair cancel only Vibes-owned URLSession tasks, clear the Vibes job, and retain the existing user-facing install-state flow
 - there is no legacy foreground downloader: both foreground and background transfers use the reusable transport
 
-#### Dictation Background Downloads
+#### Dictation Download Policy
 
-`ModelBackgroundDownloadCoordinator` owns the Dictation background `URLSession`.
+`ModelBackgroundDownloadCoordinator` owns Dictation’s reusable foreground/background transport integration. Its responsibilities follow the same extension-file structure as Speak and Vibes:
+
+- `ModelBackgroundDownloadCoordinator.swift` owns Dictation job reconciliation, artifact preparation, cancellation, and the family-specific transport instance
+- `ModelBackgroundDownloadCoordinator+Transport.swift` adapts transport handoffs into Dictation artifact scheduling
+- `ModelBackgroundDownloadCoordinator+TransportDelegate.swift` handles transport events and claims completed temporary files into Dictation staging
+- `ModelBackgroundDownloadCoordinator+State.swift` serializes persisted job and artifact mutations and publishes state changes
 
 Rules:
 
-- each model download is tracked inside a single persisted background job that carries its `modelID`
-- rediscovered background tasks are resumed on relaunch, not just relabeled
+- each model download is tracked inside a single persisted job carrying a stable UUID, its `modelID`, per-artifact state, and a monotonic aggregate progress floor
+- the active job remains stored at `Models/model-download-job.json`; incomplete artifacts remain under `Models/.staging/<model-id>/`, and final Whisper and Parakeet locations are unchanged
+- every URLSession task uses the shared `jobID` plus artifact-relative-path descriptor so multi-artifact Dictation jobs can be reconciled independently
+- Dictation retains the existing `com.cueit.keyvox.model-download.background-session` namespace and never reuses or cancels Speak or Vibes tasks
+- an active-app request uses the foreground session, `.inactive` begins the handoff to the Dictation background session, and `.active` hands unfinished artifacts back to the foreground session before recovery continues
+- persisted per-artifact bytes and aggregate progress never decrease when recreated URLSession tasks initially report smaller task-local values
+- rediscovered foreground or background tasks are resumed on relaunch, not just relabeled
 - missing tasks are demoted back to `.pending` so the manager can restart them
+- completed temporary files are moved into Dictation staging during the delegate callback; non-2xx HTTP responses become download failures
 - finalization remains foreground-owned even when downloads finished in the background
 - app activation must attempt interrupted-download recovery on the first relaunch after a kill
 - only one model download/install may be active at a time on iOS
+- there is no legacy coordinator-owned downloader: both foreground and background transfers use the reusable transport
 
 Important force-quit nuance:
 

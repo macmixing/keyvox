@@ -1,5 +1,5 @@
 # KeyVox iOS Code Map
-**Last Updated: 2026-09-03**
+**Last Updated: 2026-09-04**
 
 ## Project Overview
 
@@ -158,6 +158,9 @@ iOS/
 │   │   │   ├── DictationModelCatalog.swift
 │   │   │   ├── InstalledDictationModelLocator.swift
 │   │   │   ├── ModelBackgroundDownloadCoordinator.swift
+│   │   │   ├── ModelBackgroundDownloadCoordinator+State.swift
+│   │   │   ├── ModelBackgroundDownloadCoordinator+Transport.swift
+│   │   │   ├── ModelBackgroundDownloadCoordinator+TransportDelegate.swift
 │   │   │   ├── ModelBackgroundDownloadJob.swift
 │   │   │   ├── ModelBackgroundDownloadJobStore.swift
 │   │   │   ├── ModelDownloadBackgroundTasks.swift
@@ -484,6 +487,9 @@ iOS/
 │   │   │   └── KeyboardViewControllerTests.swift
 │   │   ├── LocalRewriteModel/
 │   │   │   └── LocalRewriteBackgroundDownloadJobTests.swift
+│   │   ├── ModelDownloader/
+│   │   │   ├── ModelBackgroundDownloadCoordinatorTests.swift
+│   │   │   └── ModelBackgroundDownloadJobTests.swift
 │   │   ├── TTS/
 │   │   │   ├── TTSManager/
 │   │   │   │   ├── TTSManagerLifecycleTests.swift
@@ -595,8 +601,8 @@ Packages/
   - SwiftUI app entry point.
   - Injects all app-wide environment objects.
   - Registers model-download background tasks.
-  - Handles scene activation/background callbacks for transcription recovery, model recovery, onboarding keyboard-tour arming, Dictation Shortcut intro scheduling, shortcut-route consumption, and Speak/Vibes download transport handoffs.
-  - Starts Speak and Vibes foreground-to-background handoffs during `.inactive`, while the app still has foreground execution time, and hands unfinished transfers back during `.active`.
+  - Handles scene activation/background callbacks for transcription recovery, model recovery, onboarding keyboard-tour arming, Dictation Shortcut intro scheduling, shortcut-route consumption, and Dictation/Speak/Vibes download transport handoffs.
+  - Starts Dictation, Speak, and Vibes foreground-to-background handoffs during `.inactive`, while the app still has foreground execution time, and hands unfinished transfers back during `.active`.
   - Consumes any cold-launch URL route that was captured before SwiftUI rendered and pre-presents `ReturnToHostView` without animation before routing `keyvoxios://record/start`.
 - `KeyVox iOS/App/Composition/SharedPaths.swift`
   - Centralizes rooted app-group, cache, and install filesystem locations used by app-owned services.
@@ -789,18 +795,25 @@ Packages/
   - The transport is reusable because model-specific persistence, installation, scheduling, and retry behavior stay behind its delegate boundary.
 
 - `KeyVox iOS/Core/ModelDownloader/ModelManager.swift`
-  - Observable owner of per-model install state, active-install gating, user-facing download/delete/repair actions, and relaunch recovery.
+  - Observable owner of per-model install state, active-install gating, user-facing download/delete/repair actions, relaunch recovery, and Dictation transport lifecycle handoffs.
   - Enforces one active download/install at a time and keeps provider selection persistence outside the model manager.
 - `KeyVox iOS/Core/ModelDownloader/DictationModelCatalog.swift`
   - iOS-local model descriptor catalog for `Whisper Base` and `Parakeet TDT v3`, including artifact metadata and rooted install layout rules.
 - `KeyVox iOS/Core/ModelDownloader/InstalledDictationModelLocator.swift`
   - Rooted install/staging locator plus legacy Whisper migration and lightweight installed-model resolution helpers for Whisper and Parakeet.
 - `KeyVox iOS/Core/ModelDownloader/ModelBackgroundDownloadCoordinator.swift`
-  - Background `URLSession` owner for staged model artifact downloads.
+  - Dictation-specific owner of the reusable foreground/background transport and the existing `com.cueit.keyvox.model-download.background-session` namespace.
+  - Reconciles the persisted Dictation job with both sessions, prepares staged artifact downloads, and limits cancellation and recovery to the active Dictation job.
+- `KeyVox iOS/Core/ModelDownloader/ModelBackgroundDownloadCoordinator+Transport.swift`
+  - Recreates every unfinished Dictation artifact in the destination session during foreground/background handoff.
+- `KeyVox iOS/Core/ModelDownloader/ModelBackgroundDownloadCoordinator+TransportDelegate.swift`
+  - Maps transport callbacks into Dictation artifact state, rejects non-2xx responses, and moves successful temporary downloads into the existing model staging location.
+- `KeyVox iOS/Core/ModelDownloader/ModelBackgroundDownloadCoordinator+State.swift`
+  - Serializes persisted Dictation job mutations, preserves monotonic per-artifact progress, and publishes state changes.
 - `KeyVox iOS/Core/ModelDownloader/ModelBackgroundDownloadJob.swift`
-  - Durable representation of per-model, per-artifact progress and finalization state.
+  - Durable representation of the Dictation job UUID, per-model and per-artifact transfer state, monotonic aggregate progress floor, and finalization state.
 - `KeyVox iOS/Core/ModelDownloader/ModelBackgroundDownloadJobStore.swift`
-  - Persistence seam for the background download job file.
+  - Persistence seam for the active Dictation job at `Models/model-download-job.json`.
 - `KeyVox iOS/Core/ModelDownloader/ModelManager+InstallLifecycle.swift`
   - Finalization, extraction, manifest writes, staged-file cleanup, model-specific warmup/preload sequencing, and safe delete/repair coordination after downloads complete.
 - `KeyVox iOS/Core/ModelDownloader/ModelManager+Validation.swift`
