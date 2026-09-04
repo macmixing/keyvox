@@ -93,6 +93,7 @@ final class PocketTTSModelManager: ObservableObject {
         appIsActive = true
         Task { [weak self] in
             guard let self else { return }
+            await self.backgroundDownloadCoordinator.handleAppDidBecomeActive()
             let job = await self.backgroundDownloadCoordinator.synchronizeWithSystemTasks()
             if let job,
                !job.isReadyForFinalization,
@@ -104,8 +105,9 @@ final class PocketTTSModelManager: ObservableObject {
         }
     }
 
-    func handleAppDidEnterBackground() {
+    func handleAppWillResignActive() {
         appIsActive = false
+        backgroundDownloadCoordinator.handleAppWillResignActive()
     }
 
     func handleBackgroundURLSessionEvents(

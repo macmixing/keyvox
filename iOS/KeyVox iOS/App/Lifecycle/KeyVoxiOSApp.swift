@@ -150,11 +150,11 @@ struct KeyVoxApp: App {
                     case .background:
                         transcriptionManager.handleAppDidEnterBackground()
                         ttsManager.handleAppDidEnterBackground()
-                        pocketTTSModelManager.handleAppDidEnterBackground()
                         modelManager.handleAppDidEnterBackground()
                         onboardingStore.handleAppDidEnterBackground()
                     case .inactive:
                         ttsManager.handleAppWillResignActive()
+                        pocketTTSModelManager.handleAppWillResignActive()
                     @unknown default:
                         break
                     }
