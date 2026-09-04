@@ -1,33 +1,5 @@
 import Foundation
 
-struct ModelBackgroundTaskDescriptor: Equatable, Sendable {
-    let modelID: DictationModelID
-    let relativePath: String
-
-    var taskDescription: String {
-        "\(modelID.rawValue)::\(relativePath)"
-    }
-
-    init(modelID: DictationModelID, relativePath: String) {
-        self.modelID = modelID
-        self.relativePath = relativePath
-    }
-
-    init?(taskDescription: String) {
-        guard let separatorRange = taskDescription.range(of: "::") else {
-            return nil
-        }
-
-        let modelIDRawValue = String(taskDescription[..<separatorRange.lowerBound])
-        guard let modelID = DictationModelID(rawValue: modelIDRawValue) else {
-            return nil
-        }
-
-        self.modelID = modelID
-        self.relativePath = String(taskDescription[separatorRange.upperBound...])
-    }
-}
-
 enum ModelBackgroundArtifactPhase: String, Codable, Sendable {
     case pending
     case downloading
@@ -76,19 +48,24 @@ struct ModelBackgroundArtifactState: Codable, Sendable {
 }
 
 struct ModelBackgroundDownloadJob: Codable, Sendable {
+    var id: UUID
     var modelID: DictationModelID
     var artifactStatesByRelativePath: [String: ModelBackgroundArtifactState]
+    var highestObservedDownloadProgressFraction: Double
     var finalizationState: ModelBackgroundFinalizationState
     var lastErrorMessage: String?
     var updatedAt: Date
 
     init(
+        id: UUID = UUID(),
         modelID: DictationModelID,
         artifactStatesByRelativePath: [String: ModelBackgroundArtifactState]? = nil,
+        highestObservedDownloadProgressFraction: Double = 0,
         finalizationState: ModelBackgroundFinalizationState = .awaitingDownloads,
         lastErrorMessage: String? = nil,
         updatedAt: Date = .now
     ) {
+        self.id = id
         self.modelID = modelID
         if let artifactStatesByRelativePath {
             self.artifactStatesByRelativePath = artifactStatesByRelativePath
@@ -99,6 +76,7 @@ struct ModelBackgroundDownloadJob: Codable, Sendable {
                 }
             )
         }
+        self.highestObservedDownloadProgressFraction = highestObservedDownloadProgressFraction
         self.finalizationState = finalizationState
         self.lastErrorMessage = lastErrorMessage
         self.updatedAt = updatedAt
@@ -116,11 +94,20 @@ struct ModelBackgroundDownloadJob: Codable, Sendable {
         _ state: ModelBackgroundArtifactState,
         for relativePath: String
     ) {
+        let previousProgress = downloadProgressFraction
         artifactStatesByRelativePath[relativePath] = state
+        highestObservedDownloadProgressFraction = max(
+            highestObservedDownloadProgressFraction,
+            max(previousProgress, calculatedDownloadProgressFraction)
+        )
         touch()
     }
 
     var downloadProgressFraction: Double {
+        max(highestObservedDownloadProgressFraction, calculatedDownloadProgressFraction)
+    }
+
+    private var calculatedDownloadProgressFraction: Double {
         let descriptor = DictationModelCatalog.descriptor(for: modelID)
         let expectedBytes = descriptor.artifacts.reduce(into: Int64(0)) { total, artifact in
             let state = artifactState(for: artifact.relativePath)

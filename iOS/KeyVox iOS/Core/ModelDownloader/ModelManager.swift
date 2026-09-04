@@ -163,8 +163,14 @@ final class ModelManager: ObservableObject {
         appIsActive = true
         Task { [weak self] in
             guard let self else { return }
+            await self.backgroundDownloadCoordinator?.handleAppDidBecomeActive()
             await self.recoverInterruptedDownloadIfNeeded()
         }
+    }
+
+    func handleAppWillResignActive() {
+        appIsActive = false
+        backgroundDownloadCoordinator?.handleAppWillResignActive()
     }
 
     func handleAppDidEnterBackground() {
