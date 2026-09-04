@@ -168,9 +168,16 @@ iOS/
 │   │   │   ├── ModelManager+Support.swift
 │   │   │   └── ModelManager+Validation.swift
 │   │   ├── LocalRewriteModel/
+│   │   │   ├── LocalRewriteBackgroundDownloadCoordinator.swift
+│   │   │   ├── LocalRewriteBackgroundDownloadCoordinator+DownloadState.swift
+│   │   │   ├── LocalRewriteBackgroundDownloadCoordinator+Transport.swift
+│   │   │   ├── LocalRewriteBackgroundDownloadCoordinator+TransportDelegate.swift
+│   │   │   ├── LocalRewriteBackgroundDownloadJob.swift
+│   │   │   ├── LocalRewriteBackgroundDownloadJobStore.swift
 │   │   │   ├── LocalRewriteModelCatalog.swift
 │   │   │   ├── LocalRewriteModelInstallManifest.swift
 │   │   │   ├── LocalRewriteModelInstallState.swift
+│   │   │   ├── LocalRewriteModelManager+BackgroundLifecycle.swift
 │   │   │   └── LocalRewriteModelManager.swift
 │   │   ├── TTS/
 │   │   │   ├── AudioModeCoordinator.swift
@@ -475,6 +482,8 @@ iOS/
 │   │   │   ├── KeyboardToolbarModeTests.swift
 │   │   │   ├── KeyboardTextInputControllerTests.swift
 │   │   │   └── KeyboardViewControllerTests.swift
+│   │   ├── LocalRewriteModel/
+│   │   │   └── LocalRewriteBackgroundDownloadJobTests.swift
 │   │   ├── TTS/
 │   │   │   ├── TTSManager/
 │   │   │   │   ├── TTSManagerLifecycleTests.swift
@@ -586,8 +595,8 @@ Packages/
   - SwiftUI app entry point.
   - Injects all app-wide environment objects.
   - Registers model-download background tasks.
-  - Handles scene activation/background callbacks for transcription recovery, model recovery, onboarding keyboard-tour arming, Dictation Shortcut intro scheduling, shortcut-route consumption, and Speak download transport handoffs.
-  - Starts the Speak foreground-to-background handoff during `.inactive`, while the app still has foreground execution time, and hands the transfer back during `.active`.
+  - Handles scene activation/background callbacks for transcription recovery, model recovery, onboarding keyboard-tour arming, Dictation Shortcut intro scheduling, shortcut-route consumption, and Speak/Vibes download transport handoffs.
+  - Starts Speak and Vibes foreground-to-background handoffs during `.inactive`, while the app still has foreground execution time, and hands unfinished transfers back during `.active`.
   - Consumes any cold-launch URL route that was captured before SwiftUI rendered and pre-presents `ReturnToHostView` without animation before routing `keyvoxios://record/start`.
 - `KeyVox iOS/App/Composition/SharedPaths.swift`
   - Centralizes rooted app-group, cache, and install filesystem locations used by app-owned services.
@@ -612,7 +621,7 @@ Packages/
 - `KeyVox iOS/App/Shortcuts/KeyVoxSpeakShortcutsProvider.swift`
   - Registers the Toggle Dictation and KeyVox Speak App Shortcut phrases surfaced in the Shortcuts system.
 - `KeyVox iOS/App/Lifecycle/AppDelegate.swift`
-  - Receives background `URLSession` callbacks and routes each configured session identifier to its owning Dictation or Speak model manager.
+  - Receives background `URLSession` callbacks and routes each configured session identifier to its owning Dictation, Speak, or Vibes model manager.
 - `KeyVox iOS/App/Lifecycle/AppSceneDelegate.swift`
   - Captures cold-launch scene connection URLs before the first root render and forwards them into the launch-route store.
 - `KeyVox iOS/App/Routing/AppLaunchRouteStore.swift`
@@ -767,7 +776,7 @@ Packages/
 ### Model Installation and Recovery
 
 - `KeyVox iOS/Core/Downloads/ResumableDownloadTransport.swift`
-  - Reusable transport owner for paired foreground and background `URLSession` instances, per-family session configuration, task discovery and deduplication, pending resume data, cancellation, and background-session completion handlers.
+  - Reusable transport owner for paired foreground and background `URLSession` instances, synchronized per-family session creation, task discovery and deduplication, pending resume data, cancellation, and background-session completion handlers.
   - Contains no model catalog, installation path, retry policy, persisted job, or finalization logic. Each model family supplies those policies through `ResumableDownloadTransportDelegate`.
 - `KeyVox iOS/Core/Downloads/ResumableDownloadTransport+Lifecycle.swift`
   - Owns the reusable foreground/background handoff state machine.
@@ -806,9 +815,25 @@ Packages/
   - Current base model is `Qwen2.5-0.5B-Instruct` from `Qwen/Qwen2.5-0.5B-Instruct-GGUF`, artifact `qwen2.5-0.5b-instruct-q4_k_m.gguf`, with strict SHA-256 validation and a 491,400,032-byte expected size.
   - Current bundled adapters are provided by `KeyVoxVibesAdapters`: `polished-alpha-027-lora.gguf` and `casual-alpha-9-lora.gguf`.
 - `KeyVox iOS/Core/LocalRewriteModel/LocalRewriteModelManager.swift`
-  - Containing-app owner for local Vibes model install state, foreground download, staging/finalization, manifest validation, SHA-256 integrity checks, delete/repair-style cleanup, and adapter URL resolution.
+  - Containing-app owner for local Vibes model install state, lifecycle recovery, foreground-owned finalization, manifest validation, SHA-256 integrity checks, delete/repair-style cleanup, and adapter URL resolution.
   - Resolves LoRA adapters from the bundled `KeyVoxVibesAdapters` package first and falls back to the installed model directory only when needed.
   - Invalidates the local inference service when the installed base model is deleted or replaced.
+- `KeyVox iOS/Core/LocalRewriteModel/LocalRewriteModelManager+BackgroundLifecycle.swift`
+  - Starts or resumes the persisted Vibes job, serializes activation recovery, maps job progress into public install state, and finalizes completed downloads only while the app is active.
+  - Builds the artifact and manifest completely in the existing staging directory before replacing the installed model directory.
+- `KeyVox iOS/Core/LocalRewriteModel/LocalRewriteBackgroundDownloadJob.swift`
+  - Persisted single-artifact Vibes job containing download identity, byte progress, task identity, errors, and finalization state.
+- `KeyVox iOS/Core/LocalRewriteModel/LocalRewriteBackgroundDownloadJobStore.swift`
+  - Atomic JSON persistence seam for the active Vibes job at `Models/rewrite/background-download-job.json`.
+- `KeyVox iOS/Core/LocalRewriteModel/LocalRewriteBackgroundDownloadCoordinator.swift`
+  - Vibes-specific owner of the reusable foreground/background transport and the unique `com.cueit.keyvox.vibes-download.background-session` namespace.
+  - Reconciles persisted state with both sessions, prevents progress regression across handoffs, and limits cancellation and recovery to the active Vibes job.
+- `KeyVox iOS/Core/LocalRewriteModel/LocalRewriteBackgroundDownloadCoordinator+Transport.swift`
+  - Recreates the active Vibes transfer in the destination session during a foreground/background handoff.
+- `KeyVox iOS/Core/LocalRewriteModel/LocalRewriteBackgroundDownloadCoordinator+TransportDelegate.swift`
+  - Maps transport callbacks into Vibes state, rejects non-2xx responses, and moves successful temporary downloads into the existing Vibes staging location.
+- `KeyVox iOS/Core/LocalRewriteModel/LocalRewriteBackgroundDownloadCoordinator+DownloadState.swift`
+  - Owns persisted Vibes progress and failure mutations plus state-change publication.
 - `KeyVox iOS/Core/LocalRewriteModel/LocalRewriteModelInstallManifest.swift`
   - Durable manifest for the installed local rewrite model identity, source repository, artifact filename, expected hash, installed hash, file size, and install date.
 - `KeyVox iOS/Core/LocalRewriteModel/LocalRewriteModelInstallState.swift`
