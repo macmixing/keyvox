@@ -51,7 +51,7 @@ struct ModelBackgroundDownloadCoordinatorTests {
             artifactID: artifact.relativePath
         ).encoded
         task.resume()
-        await waitForTask(task, in: harness.coordinator.transport)
+        try await waitForTask(task, in: harness.coordinator.transport)
 
         let recoveredJob = await harness.coordinator.synchronizeWithSystemTasks()
 
@@ -75,7 +75,7 @@ struct ModelBackgroundDownloadCoordinatorTests {
             artifactID: artifact.relativePath
         ).encoded
         task.resume()
-        await waitForTask(task, in: harness.coordinator.transport)
+        try await waitForTask(task, in: harness.coordinator.transport)
 
         await harness.coordinator.cancelJob(for: job.modelID)
 
@@ -111,15 +111,22 @@ struct ModelBackgroundDownloadCoordinatorTests {
     private func waitForTask(
         _ task: URLSessionDownloadTask,
         in transport: ResumableDownloadTransport
-    ) async {
-        for _ in 0 ..< 1_000 {
+    ) async throws {
+        let deadline = ContinuousClock.now.advanced(by: .seconds(5))
+        while ContinuousClock.now < deadline {
             let tasks = await transport.downloadTasks(in: .foreground)
             if tasks.contains(where: { $0.taskIdentifier == task.taskIdentifier }) {
                 return
             }
-            await Task.yield()
+            try await Task.sleep(for: .milliseconds(10))
         }
+
+        throw CoordinatorTestError.timedOutWaitingForTask
     }
+}
+
+private enum CoordinatorTestError: Error {
+    case timedOutWaitingForTask
 }
 
 private struct CoordinatorHarness {
