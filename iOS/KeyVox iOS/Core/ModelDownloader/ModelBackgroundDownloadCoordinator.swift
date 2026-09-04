@@ -11,11 +11,7 @@ final class ModelBackgroundDownloadCoordinator: ResumableDownloadTransportDelega
     let jobStore: ModelBackgroundDownloadJobStore
     let modelLocator: InstalledDictationModelLocator
     let jobStoreLock = NSLock()
-    lazy var transport = ResumableDownloadTransport(
-        sessionIdentifier: Self.sessionIdentifier,
-        sharedContainerIdentifier: SharedPaths.appGroupID,
-        delegate: self
-    )
+    let transport: ResumableDownloadTransport
 
     init(
         fileManager: FileManager = .default,
@@ -25,6 +21,12 @@ final class ModelBackgroundDownloadCoordinator: ResumableDownloadTransportDelega
         self.fileManager = fileManager
         self.jobStore = jobStore
         self.modelLocator = modelLocator
+        self.transport = ResumableDownloadTransport(
+            sessionIdentifier: Self.sessionIdentifier,
+            sharedContainerIdentifier: SharedPaths.appGroupID,
+            delegate: nil
+        )
+        self.transport.delegate = self
     }
 
     func loadJob() -> ModelBackgroundDownloadJob? {
