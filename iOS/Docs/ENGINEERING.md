@@ -2,7 +2,7 @@
 
 This document captures the current implementation rules and maintainer-facing architecture for the iOS app, keyboard extension, and widget extension.
 
-**Last Updated: 2026-08-28**
+**Last Updated: 2026-09-03**
 
 ## Design Philosophy
 
@@ -195,6 +195,7 @@ Service ownership rules:
 
 `KeyVox iOS/Core/` owns app runtime services that are not view or composition concerns:
 
+- `Downloads/` owns the reusable foreground/background transfer mechanism: paired sessions, task identity, resume-data handoffs, lifecycle transition serialization, and raw transport callbacks. It must remain independent of any model family’s catalog, persisted job schema, install paths, retry policy, scheduling policy, or finalization.
 - `ModelDownloader/` owns dictation model install, validation, recovery, and background download behavior.
 - `LocalRewriteModel/` owns the Vibes rewrite base model catalog, foreground install state, manifest validation, SHA-256 checks, bundled adapter lookup, and installed-model invalidation.
 - `StyleRewrite/` owns the app adapter from dictation output and keyboard IPC requests into the reusable style rewrite and local inference packages.
@@ -984,6 +985,8 @@ Primary owners:
 ### PocketTTS Install Rules
 
 - PocketTTS is split into one shared `PocketTTS CoreML` runtime install plus independently downloaded voice prompt installs.
+- Settings downloads the shared Speak engine by itself; the user chooses and downloads a voice separately.
+- Home and the shared Speak setup surface request a combined first-use install, but this remains two ordered jobs: install the shared engine first, then start the queued selected voice.
 - deleting the shared PocketTTS runtime removes the entire PocketTTS install root, including any downloaded voices
 - the selected playback voice is persisted in `AppSettingsStore`
 - the settings UI may surface approximate voice download sizes, but install validation still depends on the manifest-backed artifact set
@@ -993,7 +996,15 @@ Primary owners:
 
 ### Runtime Structure Rules
 
-- `PocketTTSModelManager` is split by concern into `PocketTTSModelManager.swift`, `PocketTTSModelManager+InstallLifecycle.swift`, and `PocketTTSModelManager+Support.swift`
+- `PocketTTSModelManager` is split by concern into `PocketTTSModelManager.swift`, `PocketTTSModelManager+BackgroundLifecycle.swift`, `PocketTTSModelManager+InstallLifecycle.swift`, and `PocketTTSModelManager+Support.swift`.
+- Speak background download ownership is split by concern:
+  - `PocketTTSBackgroundDownloadCoordinator.swift` owns Speak job reconciliation and artifact preparation.
+  - `PocketTTSBackgroundDownloadCoordinator+Transport.swift` adapts shared transport handoffs into Speak scheduling.
+  - `PocketTTSBackgroundDownloadCoordinator+TransportDelegate.swift` handles transport events and claims completed temporary files into Speak staging.
+  - `PocketTTSBackgroundDownloadCoordinator+DownloadState.swift` owns persisted artifact state changes.
+  - `PocketTTSBackgroundDownloadCoordinator+Scheduling.swift` advances sequential foreground work.
+  - `PocketTTSBackgroundDownloadCoordinator+RateLimit.swift` owns HTTP 429 retry timing and retry scheduling.
+  - `PocketTTSBackgroundDownloadJob.swift` and `PocketTTSBackgroundDownloadJobStore.swift` own the durable Speak job and its atomic JSON persistence.
 - `PocketTTSEngine` owns the app-side runtime wrapper seam around `KeyVoxPocketTTSRuntime` so tests can verify runtime creation, preparation, compute-mode requests, and unload behavior without instantiating real Core ML assets.
 - `TTSManager` is split by concern into `TTSManager.swift`, `TTSManager+Playback.swift`, `TTSManager+State.swift`, `TTSManager+RuntimeUnload.swift`, `TTSManager+SystemPlayback.swift`, `TTSManager+AppLifecycle.swift`, and `TTSManagerPolicy.swift`
   - `TTSManager+RuntimeUnload.swift` owns Speak Timeout scheduling, cancellation on new playback, memory-warning unloads, asset-invalidation unloads, and debug unload-reason logging.
@@ -1068,7 +1079,44 @@ Primary owners:
 
 ### Background Download Rules
 
-`ModelBackgroundDownloadCoordinator` owns the background `URLSession`.
+Dictation and Speak currently have separate model-family coordinators. `ModelBackgroundDownloadCoordinator` owns Dictation’s existing background-only system. Speak uses the reusable `ResumableDownloadTransport` through `PocketTTSBackgroundDownloadCoordinator`.
+
+#### Reusable Handoff Transport
+
+`ResumableDownloadTransport` is the shared mechanism for production-speed foreground downloads plus continued background transfer.
+
+Rules:
+
+- each model family receives its own transport instance and unique background-session identifier; tasks from one family must never cancel, replace, or reconcile against another family
+- task identity is the universal `jobID` plus `artifactID` descriptor stored in `URLSessionTask.taskDescription`
+- the foreground session uses the default URLSession configuration so an active-app download follows the normal foreground network path
+- the background session enables launch events, waits for connectivity, uses the App Group container, and remains non-discretionary when started while the app still has foreground execution time
+- foreground-to-background handoff begins on `.inactive`, not after `.background`; waiting until `.background` can cause iOS to treat newly created background transfers as discretionary and leave them parked
+- background-to-foreground handoff begins on `.active`
+- handoff cancels source tasks with `cancel(byProducingResumeData:)`, gives those resume tokens to the owning family, and recreates work in the destination session without resetting persisted aggregate progress
+- lifecycle changes that occur during a handoff are serialized; after the current transition finishes, the transport immediately follows the newest requested phase
+- the owning family must synchronously move a completed URLSession temporary file into its own staging location during the completion callback
+- the transport must not select install paths, define artifact order, interpret HTTP retry policy, mutate a family’s persisted job, or finalize an installation
+- any configured download server used with resumable handoff must honor byte-range requests
+- the abstraction supports simultaneous downloads across model families because each family has an independent instance and session namespace; it intentionally does not add multi-job support within one family
+- the transport is reusable across independent download families without owning or coupling their model-specific behavior
+
+#### Speak Download Policy
+
+- `PocketTTSBackgroundDownloadJob` persists the target, dynamic artifact URLs, byte counts, per-artifact state, `retryNotBefore`, finalization state, and optional queued voice
+- the active job is stored as `Models/tts/pockettts/background-download-job.json`; final engine and voice locations remain `Models/tts/pockettts/Model/` and `Models/tts/pockettts/Voices/<voice>/`
+- foreground Speak transfer schedules one artifact at a time, matching the original foreground behavior and avoiding a burst of resolver requests
+- background Speak transfer schedules the remaining persisted artifact set into the Speak background session so iOS can continue it while the app is suspended
+- moving between sessions preserves the previously recorded byte count when URLSession briefly reports a smaller task-local value, preventing visible progress from dropping during handoff
+- HTTP 429 responses persist their retry date from `Retry-After` or `RateLimit`; the coordinator recreates the retry task in the background session instead of failing the entire install immediately
+- download completion is not installation completion: staged artifacts are finalized only while the app is active
+- shared-engine finalization writes and validates the existing manifest at the existing model root; voice finalization writes and validates the selected voice root
+- a Settings shared-engine request ends after engine finalization; a combined Home/setup request then starts its explicitly queued voice download
+- there is no legacy foreground fallback path: active downloads use the foreground side of the reusable transport and inactive downloads use its background side
+
+#### Dictation Background Downloads
+
+`ModelBackgroundDownloadCoordinator` owns the Dictation background `URLSession`.
 
 Rules:
 
