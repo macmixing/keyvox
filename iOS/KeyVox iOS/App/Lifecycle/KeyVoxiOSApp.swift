@@ -157,6 +157,7 @@ struct KeyVoxApp: App {
                         ttsManager.handleAppWillResignActive()
                         pocketTTSModelManager.handleAppWillResignActive()
                         localRewriteModelManager.handleAppWillResignActive()
+                        modelManager.handleAppWillResignActive()
                     @unknown default:
                         break
                     }
