@@ -35,7 +35,7 @@ extension PocketTTSModelManager {
         return rootURL
     }
 
-    static func makeStagingRootURL(
+    nonisolated static func makeStagingRootURL(
         fileManager: FileManager,
         target: PocketTTSInstallTarget
     ) throws -> URL {
@@ -66,33 +66,6 @@ extension PocketTTSModelManager {
             try fileManager.removeItem(at: url)
         }
         try fileManager.createDirectory(at: url, withIntermediateDirectories: true)
-    }
-
-    static func prepareParentDirectory(for url: URL, fileManager: FileManager) throws {
-        let parentURL = url.deletingLastPathComponent()
-        try fileManager.createDirectory(at: parentURL, withIntermediateDirectories: true)
-    }
-
-    static func download(_ url: URL, using session: URLSession) async throws -> URL {
-        let (temporaryURL, response) = try await session.download(from: url)
-        guard let httpResponse = response as? HTTPURLResponse,
-              200 ..< 300 ~= httpResponse.statusCode else {
-            log("Download request failed for \(url.absoluteString).")
-            throw NSError(
-                domain: "PocketTTSModelManager",
-                code: 4,
-                userInfo: [NSLocalizedDescriptionKey: "Speak engine download failed."]
-            )
-        }
-        log("Download request succeeded for \(url.absoluteString) with status \(httpResponse.statusCode).")
-        return temporaryURL
-    }
-
-    static func replaceItem(at destinationURL: URL, with temporaryURL: URL, fileManager: FileManager) throws {
-        if fileManager.fileExists(atPath: destinationURL.path) {
-            try fileManager.removeItem(at: destinationURL)
-        }
-        try fileManager.moveItem(at: temporaryURL, to: destinationURL)
     }
 
     static func writeManifest(_ manifest: PocketTTSInstallManifest, to rootURL: URL) throws {

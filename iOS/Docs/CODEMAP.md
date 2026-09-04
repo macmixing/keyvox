@@ -1,5 +1,5 @@
 # KeyVox iOS Code Map
-**Last Updated: 2026-08-28**
+**Last Updated: 2026-09-03**
 
 ## Project Overview
 
@@ -32,7 +32,7 @@ The current default runtime flow is:
 
 ## Architecture
 
-- **`KeyVox iOS/`**: app lifecycle, grouped app composition/routing/integration surfaces, onboarding state, app haptics, App Group storage, iCloud sync, dictation model background downloads, local Vibes model download/validation, bundled Vibes adapter lookup, app-owned local style rewrite inference, PocketTTS install ownership and playback-scoped runtime ownership, audio capture, transcription/session management, KeyVox Vibes app wiring, Live Activity coordination, and the SwiftUI shell.
+- **`KeyVox iOS/`**: app lifecycle, grouped app composition/routing/integration surfaces, onboarding state, app haptics, App Group storage, iCloud sync, reusable resumable download transport, dictation model background downloads, local Vibes model download/validation, bundled Vibes adapter lookup, app-owned local style rewrite inference, PocketTTS install ownership and playback-scoped runtime ownership, audio capture, transcription/session management, KeyVox Vibes app wiring, Live Activity coordination, and the SwiftUI shell.
 - **`KeyVox Keyboard/`**: custom keyboard controller, presentation-scoped keyboard view lifecycle, toolbar modes, copied-text speak transport, keyboard playback pause/resume/stop controls, call-aware warning detection, key grid UI, full-access instructional surface, live indicator rendering, host-app launch handoff, haptics, cursor trackpad behavior, and platform-owned insertion coordination.
 - **`KeyVox Widget/`**: ActivityKit/WidgetKit surface for the lock screen and Dynamic Island, plus the stop-session App Intent.
 - **`../Packages/KeyVoxCore/`**: shared dictation pipeline, provider seams, dictation-language values/display names, the Whisper Base language catalog and service configuration, whole-capture Whisper VAD coordination, deterministic paragraph/list state and variant handling, dictionary store, post-processing order, model-artifact cleanup, guarded compact-time/date/math normalization, silence heuristics, and list formatting behavior.
@@ -147,6 +147,11 @@ iOS/
 │   │   │   ├── AudioRecorder+Session.swift
 │   │   │   ├── AudioRecorder+StopPipeline.swift
 │   │   │   └── AudioRecorder+Streaming.swift
+│   │   ├── Downloads/
+│   │   │   ├── ResumableDownloadTaskDescriptor.swift
+│   │   │   ├── ResumableDownloadTransport.swift
+│   │   │   ├── ResumableDownloadTransport+Lifecycle.swift
+│   │   │   └── ResumableDownloadTransport+SessionDelegate.swift
 │   │   ├── Extensions/
 │   │   │   └── String+NilIfEmpty.swift
 │   │   ├── ModelDownloader/
@@ -170,9 +175,18 @@ iOS/
 │   │   ├── TTS/
 │   │   │   ├── AudioModeCoordinator.swift
 │   │   │   ├── PocketTTSAssetLocator.swift
+│   │   │   ├── PocketTTSBackgroundDownloadCoordinator.swift
+│   │   │   ├── PocketTTSBackgroundDownloadCoordinator+DownloadState.swift
+│   │   │   ├── PocketTTSBackgroundDownloadCoordinator+RateLimit.swift
+│   │   │   ├── PocketTTSBackgroundDownloadCoordinator+Scheduling.swift
+│   │   │   ├── PocketTTSBackgroundDownloadCoordinator+Transport.swift
+│   │   │   ├── PocketTTSBackgroundDownloadCoordinator+TransportDelegate.swift
+│   │   │   ├── PocketTTSBackgroundDownloadJob.swift
+│   │   │   ├── PocketTTSBackgroundDownloadJobStore.swift
 │   │   │   ├── PocketTTSEngine.swift
 │   │   │   ├── PocketTTSInstallManifest.swift
 │   │   │   ├── PocketTTSModelCatalog.swift
+│   │   │   ├── PocketTTSModelManager+BackgroundLifecycle.swift
 │   │   │   ├── PocketTTSModelManager+InstallLifecycle.swift
 │   │   │   ├── PocketTTSModelManager+Support.swift
 │   │   │   ├── PocketTTSModelManager.swift
@@ -572,7 +586,8 @@ Packages/
   - SwiftUI app entry point.
   - Injects all app-wide environment objects.
   - Registers model-download background tasks.
-  - Handles scene activation/background callbacks for transcription recovery, model recovery, onboarding keyboard-tour arming, Dictation Shortcut intro scheduling, and shortcut-route consumption.
+  - Handles scene activation/background callbacks for transcription recovery, model recovery, onboarding keyboard-tour arming, Dictation Shortcut intro scheduling, shortcut-route consumption, and Speak download transport handoffs.
+  - Starts the Speak foreground-to-background handoff during `.inactive`, while the app still has foreground execution time, and hands the transfer back during `.active`.
   - Consumes any cold-launch URL route that was captured before SwiftUI rendered and pre-presents `ReturnToHostView` without animation before routing `keyvoxios://record/start`.
 - `KeyVox iOS/App/Composition/SharedPaths.swift`
   - Centralizes rooted app-group, cache, and install filesystem locations used by app-owned services.
@@ -597,7 +612,7 @@ Packages/
 - `KeyVox iOS/App/Shortcuts/KeyVoxSpeakShortcutsProvider.swift`
   - Registers the Toggle Dictation and KeyVox Speak App Shortcut phrases surfaced in the Shortcuts system.
 - `KeyVox iOS/App/Lifecycle/AppDelegate.swift`
-  - Receives background `URLSession` callbacks for model downloads and forwards them into `ModelManager`.
+  - Receives background `URLSession` callbacks and routes each configured session identifier to its owning Dictation or Speak model manager.
 - `KeyVox iOS/App/Lifecycle/AppSceneDelegate.swift`
   - Captures cold-launch scene connection URLs before the first root render and forwards them into the launch-route store.
 - `KeyVox iOS/App/Routing/AppLaunchRouteStore.swift`
@@ -751,6 +766,19 @@ Packages/
 
 ### Model Installation and Recovery
 
+- `KeyVox iOS/Core/Downloads/ResumableDownloadTransport.swift`
+  - Reusable transport owner for paired foreground and background `URLSession` instances, per-family session configuration, task discovery and deduplication, pending resume data, cancellation, and background-session completion handlers.
+  - Contains no model catalog, installation path, retry policy, persisted job, or finalization logic. Each model family supplies those policies through `ResumableDownloadTransportDelegate`.
+- `KeyVox iOS/Core/Downloads/ResumableDownloadTransport+Lifecycle.swift`
+  - Owns the reusable foreground/background handoff state machine.
+  - Cancels tasks with resume data, transfers the resume tokens to the destination session through the family delegate, and follows a newer lifecycle state if the app changes phase while a handoff is running.
+- `KeyVox iOS/Core/Downloads/ResumableDownloadTransport+SessionDelegate.swift`
+  - Converts raw `URLSessionDownloadDelegate` callbacks into family-neutral progress, temporary-file completion, task completion, and background-event notifications.
+- `KeyVox iOS/Core/Downloads/ResumableDownloadTaskDescriptor.swift`
+  - Encodes and decodes the universal `jobID` plus `artifactID` identity stored in `URLSessionTask.taskDescription`.
+  - Family separation comes from distinct transport instances and background-session identifiers, allowing independent download families to run simultaneously without sharing or cancelling each other's tasks.
+  - The transport is reusable because model-specific persistence, installation, scheduling, and retry behavior stay behind its delegate boundary.
+
 - `KeyVox iOS/Core/ModelDownloader/ModelManager.swift`
   - Observable owner of per-model install state, active-install gating, user-facing download/delete/repair actions, and relaunch recovery.
   - Enforces one active download/install at a time and keeps provider selection persistence outside the model manager.
@@ -792,11 +820,30 @@ Packages/
   - PocketTTS shared-runtime and per-voice artifact metadata plus approximate voice download sizes used by settings.
 - `KeyVox iOS/Core/TTS/PocketTTSModelManager.swift`
   - Observable owner of shared PocketTTS Core ML install state and independent per-voice install state.
-  - Keeps the public install-state surface, readiness queries, and queue state for the follow-up voice install flow.
+  - Keeps the public install-state surface, readiness queries, lifecycle bridge to the reusable transport, and queue state for the follow-up voice install flow.
+- `KeyVox iOS/Core/TTS/PocketTTSModelManager+BackgroundLifecycle.swift`
+  - Creates or resumes persisted Speak download jobs, maps their progress into public install state, performs foreground-owned finalization, and starts the queued voice only after a combined Home engine-plus-voice request finishes installing the shared engine.
 - `KeyVox iOS/Core/TTS/PocketTTSModelManager+InstallLifecycle.swift`
-  - Install, repair, delete, and queued follow-up voice install sequencing for PocketTTS runtime and voice assets.
+  - Public install, repair, and delete entry points for PocketTTS runtime and voice assets.
 - `KeyVox iOS/Core/TTS/PocketTTSModelManager+Support.swift`
-  - Shared staging, manifest, filesystem replacement, download, and install-helper utilities used by the PocketTTS manager lifecycle split.
+  - Shared staging, manifest, filesystem replacement, and install-helper utilities used by the PocketTTS manager lifecycle split.
+- `KeyVox iOS/Core/TTS/PocketTTSBackgroundDownloadJob.swift`
+  - Persisted Speak job model containing the install target, dynamic artifact identity, per-artifact byte progress, retry timing, finalization state, and optional voice queued after a shared-engine install.
+- `KeyVox iOS/Core/TTS/PocketTTSBackgroundDownloadJobStore.swift`
+  - Atomic JSON persistence seam for the active Speak job at the existing rooted PocketTTS install location.
+- `KeyVox iOS/Core/TTS/PocketTTSBackgroundDownloadCoordinator.swift`
+  - Speak-specific download owner built on `ResumableDownloadTransport`.
+  - Reconciles persisted artifact state with both sessions, prepares zero-byte and remote artifacts, preserves monotonic byte progress across handoffs, and keeps foreground downloads sequential while allowing the background session to own the full remaining job.
+- `KeyVox iOS/Core/TTS/PocketTTSBackgroundDownloadCoordinator+Transport.swift`
+  - Adapts a transport handoff back into the active Speak job, selecting the existing Speak scheduling policy for the destination session.
+- `KeyVox iOS/Core/TTS/PocketTTSBackgroundDownloadCoordinator+TransportDelegate.swift`
+  - Handles family-neutral transport callbacks at the Speak boundary, moves completed temporary files into Speak staging, validates HTTP responses, and dispatches completion into Speak scheduling or retry behavior.
+- `KeyVox iOS/Core/TTS/PocketTTSBackgroundDownloadCoordinator+DownloadState.swift`
+  - Owns persisted Speak artifact progress, completion, and failure mutations plus state-change publication.
+- `KeyVox iOS/Core/TTS/PocketTTSBackgroundDownloadCoordinator+Scheduling.swift`
+  - Advances the next sequential foreground Speak artifact after a successful foreground task completes.
+- `KeyVox iOS/Core/TTS/PocketTTSBackgroundDownloadCoordinator+RateLimit.swift`
+  - Owns Speak HTTP 429 parsing, persisted retry timing, and background retry task creation.
 - `KeyVox iOS/Core/TTS/PocketTTSEngine.swift`
   - App-owned streaming TTS engine wrapper around the local PocketTTS runtime.
   - Owns the app-side runtime injection seam, explicit prepare/unload lifecycle, prepared-runtime compute-mode guards, and debug load/unload visibility.
