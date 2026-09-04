@@ -5,6 +5,7 @@ extension PocketTTSBackgroundDownloadCoordinator {
         guard transport.isReadyForForegroundScheduling() else { return }
 
         var resumeDataByRelativePath = transport.takePendingResumeData()
+        defer { transport.storePendingResumeData(resumeDataByRelativePath) }
         do {
             guard let existingJob = loadJob(),
                   existingJob.id == jobID,
@@ -26,11 +27,9 @@ extension PocketTTSBackgroundDownloadCoordinator {
                 try jobStore.save(job)
                 return job
             }
-            transport.storePendingResumeData(resumeDataByRelativePath)
             guard let job else { return }
             stateDidChange?(job)
         } catch {
-            transport.storePendingResumeData(resumeDataByRelativePath)
             markJobFailed(jobID: jobID, error: error)
         }
     }

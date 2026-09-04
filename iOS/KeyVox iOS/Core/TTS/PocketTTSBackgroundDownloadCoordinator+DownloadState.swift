@@ -75,10 +75,7 @@ extension PocketTTSBackgroundDownloadCoordinator {
             state.errorMessage = error.localizedDescription
             state.updatedAt = .now
         }
-        updateLoadedJob {
-            $0.finalizationState = .failed
-            $0.lastErrorMessage = error.localizedDescription
-        }
+        markJobFailed(jobID: descriptor.jobID, error: error)
     }
 
     func markJobFailed(jobID: UUID, error: Error) {
