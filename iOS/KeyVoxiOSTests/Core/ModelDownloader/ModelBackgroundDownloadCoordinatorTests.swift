@@ -2,6 +2,7 @@ import Foundation
 import Testing
 @testable import KeyVox_iOS
 
+@MainActor
 @Suite(.serialized)
 struct ModelBackgroundDownloadCoordinatorTests {
     @Test func dictationUsesIndependentBackgroundSessionNamespace() {

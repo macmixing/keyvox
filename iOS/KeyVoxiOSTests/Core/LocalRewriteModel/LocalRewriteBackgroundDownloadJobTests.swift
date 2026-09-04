@@ -2,6 +2,7 @@ import Foundation
 import Testing
 @testable import KeyVox_iOS
 
+@MainActor
 struct LocalRewriteBackgroundDownloadJobTests {
     @Test func jobRoundTripsThroughPersistentStore() throws {
         let rootURL = FileManager.default.temporaryDirectory
