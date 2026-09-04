@@ -30,8 +30,13 @@ extension PocketTTSModelManager {
         refreshStatus()
     }
 
-    func handleBackgroundDownloadStateChanged() async {
-        refreshStatus()
+    func handleBackgroundDownloadStateChanged(_ job: PocketTTSBackgroundDownloadJob?) async {
+        if let job {
+            activeInstallTarget = job.target
+            applyBackgroundJobState(job)
+        } else {
+            refreshStatus()
+        }
         await resumeForegroundFinalizationIfNeeded()
     }
 

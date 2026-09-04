@@ -44,6 +44,7 @@ final class ResumableDownloadTransport: NSObject {
     weak var delegate: ResumableDownloadTransportDelegate?
     var appIsActive = false
     var isTransitioning = false
+    var lifecycleStabilityWaiters: [CheckedContinuation<Void, Never>] = []
     private var pendingResumeDataByArtifactID: [String: Data] = [:]
     private var backgroundSessionCompletionHandler: (() -> Void)?
 

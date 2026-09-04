@@ -58,9 +58,9 @@ final class PocketTTSModelManager: ObservableObject {
         self.voiceInstallStates = Dictionary(
             uniqueKeysWithValues: AppSettingsStore.TTSVoice.userFacingCases.map { ($0, .notInstalled) }
         )
-        self.backgroundDownloadCoordinator.stateDidChange = { [weak self] _ in
+        self.backgroundDownloadCoordinator.stateDidChange = { [weak self] job in
             Task { @MainActor [weak self] in
-                await self?.handleBackgroundDownloadStateChanged()
+                await self?.handleBackgroundDownloadStateChanged(job)
             }
         }
         refreshStatus()
@@ -94,6 +94,7 @@ final class PocketTTSModelManager: ObservableObject {
         Task { [weak self] in
             guard let self else { return }
             await self.backgroundDownloadCoordinator.handleAppDidBecomeActive()
+            guard self.appIsActive else { return }
             let job = await self.backgroundDownloadCoordinator.synchronizeWithSystemTasks()
             if let job,
                !job.isReadyForFinalization,
