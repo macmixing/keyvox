@@ -178,9 +178,11 @@ extension DictionaryMatcher {
         tokenIndex: Int,
         totalTokens: Int
     ) -> Bool {
-        guard let first = token.raw.first else { return false }
-        guard String(first).uppercased() == String(first) else { return false }
-        if token.raw.dropFirst().contains(where: { String($0).uppercased() == String($0) }) {
+        guard let first = token.raw.unicodeScalars.first,
+              first.properties.isUppercase else {
+            return false
+        }
+        if token.raw.unicodeScalars.dropFirst().contains(where: { $0.properties.isUppercase }) {
             return true
         }
 
