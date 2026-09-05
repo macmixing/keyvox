@@ -31,7 +31,7 @@ final class KeyVoxiCloudSyncCoordinatorTests: XCTestCase {
             hasExistingLocalInstallation: false
         )
         _ = initialCoordinator
-        try harness.dictionaryStore.delete(id: DictionaryInitialEntries.keyVox.id)
+        harness.dictionaryStore.delete(id: DictionaryInitialEntries.keyVox.id)
 
         let laterCoordinator = makeCoordinator(
             harness: harness,
