@@ -32,14 +32,11 @@ struct ModelBackgroundDownloadCoordinatorTests {
         #expect(!harness.coordinator.transport.isTransitioning)
     }
 
-    @Test func synchronizationRecoversPersistedArtifactFromTransportTask() async throws {
-        URLProtocol.registerClass(BlockingDownloadURLProtocol.self)
-        defer { URLProtocol.unregisterClass(BlockingDownloadURLProtocol.self) }
-        let harness = makeHarness()
-        defer { harness.cleanup() }
+    @Test func synchronizationRecoversPersistedArtifactFromTaskSnapshot() async throws {
         let modelID = DictationModelID.parakeetTdtV3
         let artifact = try #require(DictationModelCatalog.descriptor(for: modelID).artifacts.first)
         let persistedCompletedBytes: Int64 = 123
+        let taskIdentifier = 1
         var job = ModelBackgroundDownloadJob(modelID: modelID)
         job.setArtifactState(
             .init(
@@ -49,26 +46,28 @@ struct ModelBackgroundDownloadCoordinatorTests {
             ),
             for: artifact.relativePath
         )
+        let jobID = job.id
+        let harness = makeHarness { requestedJobID in
+            guard requestedJobID == jobID else { return [:] }
+            return [
+                artifact.relativePath: ModelBackgroundDownloadTaskSnapshot(
+                    taskIdentifier: taskIdentifier,
+                    completedBytes: 0,
+                    expectedBytes: artifact.progressTotalBytes
+                )
+            ]
+        }
+        defer { harness.cleanup() }
         try harness.store.save(job)
-        let task = harness.coordinator.transport.session(for: .foreground).downloadTask(with: artifact.remoteURL)
-        task.taskDescription = ResumableDownloadTaskDescriptor(
-            jobID: job.id,
-            artifactID: artifact.relativePath
-        ).encoded
-        task.resume()
-        try await waitForTask(task, in: harness.coordinator.transport)
-        task.suspend()
-        try #require(task.state == .suspended)
 
         let recoveredJob = await harness.coordinator.synchronizeWithSystemTasks()
 
         #expect(recoveredJob?.artifactState(for: artifact.relativePath).phase == .downloading)
-        #expect(recoveredJob?.artifactState(for: artifact.relativePath).taskIdentifier == task.taskIdentifier)
+        #expect(recoveredJob?.artifactState(for: artifact.relativePath).taskIdentifier == taskIdentifier)
         #expect(
             recoveredJob?.artifactState(for: artifact.relativePath).completedBytes ?? 0
                 >= persistedCompletedBytes
         )
-        task.cancel()
     }
 
     @Test func cancelJobCancelsEveryArtifactTaskInDictationNamespace() async throws {
@@ -92,7 +91,9 @@ struct ModelBackgroundDownloadCoordinatorTests {
         #expect(task.state == .canceling || task.state == .completed)
     }
 
-    private func makeHarness() -> CoordinatorHarness {
+    private func makeHarness(
+        taskSnapshotProvider: ModelBackgroundDownloadCoordinator.TaskSnapshotProvider? = nil
+    ) -> CoordinatorHarness {
         let rootURL = FileManager.default.temporaryDirectory
             .appendingPathComponent(UUID().uuidString, isDirectory: true)
         let modelsURL = rootURL.appendingPathComponent("Models", isDirectory: true)
@@ -107,9 +108,15 @@ struct ModelBackgroundDownloadCoordinatorTests {
         let coordinator = ModelBackgroundDownloadCoordinator(
             fileManager: .default,
             jobStore: store,
-            modelLocator: locator
+            modelLocator: locator,
+            taskSnapshotProvider: taskSnapshotProvider
         )
-        return CoordinatorHarness(rootURL: rootURL, store: store, coordinator: coordinator)
+        return CoordinatorHarness(
+            rootURL: rootURL,
+            store: store,
+            coordinator: coordinator,
+            cancelsTransportTasksOnCleanup: taskSnapshotProvider == nil
+        )
     }
 
     private func waitForLifecycleTransition(in transport: ResumableDownloadTransport) async {
@@ -143,9 +150,12 @@ private struct CoordinatorHarness {
     let rootURL: URL
     let store: ModelBackgroundDownloadJobStore
     let coordinator: ModelBackgroundDownloadCoordinator
+    let cancelsTransportTasksOnCleanup: Bool
 
     func cleanup() {
-        coordinator.transport.cancelAllTasksWithoutWaiting()
+        if cancelsTransportTasksOnCleanup {
+            coordinator.transport.cancelAllTasksWithoutWaiting()
+        }
         try? FileManager.default.removeItem(at: rootURL)
     }
 }
