@@ -111,6 +111,13 @@ final class PasteCapitalizationCoordinator: PasteCapitalizationCoordinating {
     }
 
     private func compositionContext(from context: PasteInsertionContext) -> TextCompositionContext {
+        if let precedingText = context.precedingText {
+            let visiblePrecedingText = precedingText.filter {
+                !$0.isInvisibleFormatCharacter
+            }
+            return TextCompositionContext(precedingText: String(visiblePrecedingText))
+        }
+
         let precedingCharacters = [
             context.previousCharacter,
             context.characterBeforePreviousCharacter
