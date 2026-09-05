@@ -6,6 +6,21 @@ The format loosely follows Keep a Changelog, and the package uses semantic versi
 
 ---
 
+## [1.0.4] - 2026-09-04
+
+Preserved sentence-start capitalization when dictation follows a numbered hyphen sequence.
+
+### Includes
+
+- Treated one or more trailing hyphens after a number as a sentence boundary, with or without spaces between the number and hyphens.
+- Kept ordinary hyphens after non-numeric text as lowercase continuation boundaries.
+- Evaluated the complete trailing hyphen sequence so additional hyphens no longer hide the preceding number.
+- Added regression coverage for single- and multi-digit numbers, spaced and compact hyphens, repeated hyphens, and ordinary text continuations.
+
+### Notes
+
+- `1.0.4` bumps the tracked patch version for numbered hyphen-sequence capitalization.
+
 ## [1.0.3] - 2026-08-23
 
 Improved dictated capitalization, punctuation, and spacing around colons, standalone months, hyphens, terminal marks, URLs, line boundaries, and surrounding text.
