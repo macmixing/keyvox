@@ -4,6 +4,37 @@ import XCTest
 
 @MainActor
 final class DictionaryMatcherCoreLogicTests: XCTestCase {
+    func testStylizedFallbackRequiresActualInternalUppercase() {
+        let matcher = makeMatcher()
+        let punctuationOnly = DictionaryMatcher.Token(
+            raw: "Α'α",
+            normalized: "α'α",
+            range: NSRange(location: 0, length: 3),
+            phonetic: ""
+        )
+        let actualInternalUppercase = DictionaryMatcher.Token(
+            raw: "Α'Β",
+            normalized: "α'β",
+            range: NSRange(location: 0, length: 3),
+            phonetic: ""
+        )
+
+        XCTAssertFalse(
+            matcher.allowStylizedFallbackForCommonObservedToken(
+                token: punctuationOnly,
+                tokenIndex: 0,
+                totalTokens: 2
+            )
+        )
+        XCTAssertTrue(
+            matcher.allowStylizedFallbackForCommonObservedToken(
+                token: actualInternalUppercase,
+                tokenIndex: 0,
+                totalTokens: 2
+            )
+        )
+    }
+
     func testOverlapResolverPrefersHigherScoreThenLongerSpanThenEarlierStart() {
         let matcher = makeMatcher()
 

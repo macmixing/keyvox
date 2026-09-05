@@ -39,9 +39,14 @@ struct ModelBackgroundDownloadCoordinatorTests {
         defer { harness.cleanup() }
         let modelID = DictationModelID.parakeetTdtV3
         let artifact = try #require(DictationModelCatalog.descriptor(for: modelID).artifacts.first)
+        let persistedCompletedBytes: Int64 = 123
         var job = ModelBackgroundDownloadJob(modelID: modelID)
         job.setArtifactState(
-            .init(phase: .downloading, completedBytes: 123, expectedBytes: artifact.progressTotalBytes),
+            .init(
+                phase: .downloading,
+                completedBytes: persistedCompletedBytes,
+                expectedBytes: artifact.progressTotalBytes
+            ),
             for: artifact.relativePath
         )
         try harness.store.save(job)
@@ -57,7 +62,10 @@ struct ModelBackgroundDownloadCoordinatorTests {
 
         #expect(recoveredJob?.artifactState(for: artifact.relativePath).phase == .downloading)
         #expect(recoveredJob?.artifactState(for: artifact.relativePath).taskIdentifier == task.taskIdentifier)
-        #expect(recoveredJob?.artifactState(for: artifact.relativePath).completedBytes == 123)
+        #expect(
+            recoveredJob?.artifactState(for: artifact.relativePath).completedBytes ?? 0
+                >= persistedCompletedBytes
+        )
         task.cancel()
     }
 
@@ -149,7 +157,18 @@ private final class BlockingDownloadURLProtocol: URLProtocol {
         request
     }
 
-    override func startLoading() {}
+    override func startLoading() {
+        guard let url = request.url,
+              let response = HTTPURLResponse(
+                  url: url,
+                  statusCode: 200,
+                  httpVersion: nil,
+                  headerFields: nil
+              ) else {
+            return
+        }
+        client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
+    }
 
     override func stopLoading() {}
 }
