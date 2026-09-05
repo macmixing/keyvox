@@ -75,11 +75,25 @@ extension StyleTabView {
                 }
 
                 if let statusText = keyVoxVibesStatusText {
-                    Text(statusText)
-                        .font(.appFont(15, variant: .light))
-                        .foregroundStyle(.white.opacity(0.7))
-                        .fixedSize(horizontal: false, vertical: true)
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack(alignment: .center, spacing: 12) {
+                            Text(statusText)
+                                .font(.appFont(15, variant: .light))
+                                .foregroundStyle(.white.opacity(0.7))
+                                .fixedSize(horizontal: false, vertical: true)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+
+                            if case .downloading(let progress) = localRewriteModelManager.installState {
+                                Text("\(Int((progress * 100).rounded()))%")
+                                    .font(.appFont(14, variant: .medium))
+                                    .foregroundStyle(.yellow)
+                            }
+                        }
+
+                        if case .downloading(let progress) = localRewriteModelManager.installState {
+                            ModelDownloadProgress(progress: progress, showLabel: false)
+                        }
+                    }
                 }
 
                 Divider()
@@ -246,6 +260,10 @@ extension StyleTabView {
     }
 
     private var keyVoxVibesStatusText: String? {
+        if case .downloading = localRewriteModelManager.installState {
+            return "Downloading KeyVox Vibes AI..."
+        }
+
         if keyVoxVibesMatrix.dynamicText == .mainCardTrialRemaining {
             let remainingText = KeyVoxVibesTrialRemainingTimeFormatter.remainingText(
                 for: keyVoxVibesPurchaseController.trialRemaining
