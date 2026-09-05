@@ -57,6 +57,8 @@ struct ModelBackgroundDownloadCoordinatorTests {
         ).encoded
         task.resume()
         try await waitForTask(task, in: harness.coordinator.transport)
+        task.suspend()
+        try #require(task.state == .suspended)
 
         let recoveredJob = await harness.coordinator.synchronizeWithSystemTasks()
 
