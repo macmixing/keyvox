@@ -94,6 +94,35 @@ final class PasteCapitalizationCoordinatorTests: XCTestCase {
         assertSentenceBoundaryPreservesCapitalization(previousCharacter: "!")
     }
 
+    func testKeepsCapitalizationAfterNumberedHyphenSequence() {
+        let heuristics = makeRetainedHeuristics(
+            axInspector: MockPasteAXInspector(
+                focusedContext: PasteInsertionContext(
+                    selectionLength: 0,
+                    caretLocation: 6,
+                    precedingText: "5 - - ",
+                    previousCharacter: " ",
+                    characterBeforePreviousCharacter: "-",
+                    previousNonWhitespaceCharacter: "-",
+                    characterBeforePreviousNonWhitespaceCharacter: "-"
+                )
+            )
+        )
+
+        let output = heuristics.normalizeLeadingCapitalizationIfNeeded(
+            in: "Hello",
+            currentIdentity: identity("com.example.app", 1),
+            lastInsertionAppIdentity: nil,
+            lastInsertionAt: .distantPast,
+            lastInsertedTrailingCharacter: nil,
+            lastInsertedTrailingNonWhitespaceCharacter: nil,
+            identityMatcher: identityMatcher,
+            shouldPreserveLeadingCapitalization: { _ in false }
+        )
+
+        XCTAssertEqual(output, "Hello")
+    }
+
     func testEmojiCapitalizationUsesCharacterBeforeEmojiBoundary() {
         let cases = [
             (characterBeforeEmoji: Character("l"), expected: "hello"),

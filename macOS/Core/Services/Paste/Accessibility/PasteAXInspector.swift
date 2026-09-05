@@ -110,6 +110,7 @@ final class PasteAXInspector: PasteAXInspecting {
         }
 
         var previousCharacter: Character?
+        var precedingText: String?
         var followingCharacter: Character?
         var followingNonWhitespaceCharacter: Character?
         var followingText: String?
@@ -119,14 +120,15 @@ final class PasteAXInspector: PasteAXInspecting {
         var isPreviousNonWhitespaceCharacterAtLineStart = false
         var isAfterNewline = false
         if let caretLocation, caretLocation > 0 {
-            if let precedingText = textBeforeCaret(
+            if let inspectedPrecedingText = textBeforeCaret(
                 element: focusedElement,
                 caretLocation: caretLocation
             ) {
-                let precedingCharacters = Array(precedingText)
+                precedingText = inspectedPrecedingText
+                let precedingCharacters = Array(inspectedPrecedingText)
                 previousCharacter = precedingCharacters.last
                 characterBeforePreviousCharacter = precedingCharacters.dropLast().last
-                isAfterNewline = Self.isAfterNewlineInTrailingWhitespace(precedingText)
+                isAfterNewline = Self.isAfterNewlineInTrailingWhitespace(inspectedPrecedingText)
 
                 let precedingNonWhitespace = precedingCharacters.reversed().filter {
                     !$0.isWhitespace
@@ -171,6 +173,7 @@ final class PasteAXInspector: PasteAXInspecting {
             selectionLength: selectionLength,
             selectedText: focusedSelectedText,
             caretLocation: caretLocation,
+            precedingText: precedingText,
             previousCharacter: previousCharacter,
             followingCharacter: followingCharacter,
             followingNonWhitespaceCharacter: followingNonWhitespaceCharacter,
