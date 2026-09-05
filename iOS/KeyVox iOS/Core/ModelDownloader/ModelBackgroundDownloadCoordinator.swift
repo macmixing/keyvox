@@ -1,7 +1,14 @@
 import Foundation
 
+struct ModelBackgroundDownloadTaskSnapshot: Sendable {
+    let taskIdentifier: Int
+    let completedBytes: Int64
+    let expectedBytes: Int64
+}
+
 final class ModelBackgroundDownloadCoordinator: ResumableDownloadTransportDelegate {
     typealias StateChangeHandler = @Sendable (ModelBackgroundDownloadJob?) -> Void
+    typealias TaskSnapshotProvider = @MainActor (UUID) async -> [String: ModelBackgroundDownloadTaskSnapshot]
 
     static let sessionIdentifier = "com.cueit.keyvox.model-download.background-session"
 
@@ -12,15 +19,18 @@ final class ModelBackgroundDownloadCoordinator: ResumableDownloadTransportDelega
     let modelLocator: InstalledDictationModelLocator
     let jobStoreLock = NSLock()
     let transport: ResumableDownloadTransport
+    private let taskSnapshotProvider: TaskSnapshotProvider?
 
     init(
         fileManager: FileManager = .default,
         jobStore: ModelBackgroundDownloadJobStore,
-        modelLocator: InstalledDictationModelLocator
+        modelLocator: InstalledDictationModelLocator,
+        taskSnapshotProvider: TaskSnapshotProvider? = nil
     ) {
         self.fileManager = fileManager
         self.jobStore = jobStore
         self.modelLocator = modelLocator
+        self.taskSnapshotProvider = taskSnapshotProvider
         self.transport = ResumableDownloadTransport(
             sessionIdentifier: Self.sessionIdentifier,
             sharedContainerIdentifier: SharedPaths.appGroupID,
@@ -99,13 +109,7 @@ final class ModelBackgroundDownloadCoordinator: ResumableDownloadTransportDelega
     func synchronizeWithSystemTasks() async -> ModelBackgroundDownloadJob? {
         guard let existingJob = loadJob() else { return nil }
 
-        let backgroundTasks = await transport.downloadTasks(in: .background)
-        let foregroundTasks = await transport.downloadTasks(in: .foreground)
-        let tasks = backgroundTasks + foregroundTasks
-        let tasksByRelativePath = transport.deduplicatedTasksByArtifactID(
-            from: tasks,
-            jobID: existingJob.id
-        )
+        let taskSnapshotsByRelativePath = await taskSnapshots(for: existingJob.id)
         let job = withJobStoreLock { () -> ModelBackgroundDownloadJob? in
             guard var job = jobStore.load(), job.id == existingJob.id else { return nil }
             let descriptor = DictationModelCatalog.descriptor(for: job.modelID)
@@ -118,17 +122,17 @@ final class ModelBackgroundDownloadCoordinator: ResumableDownloadTransportDelega
                     continue
                 }
 
-                if let task = tasksByRelativePath[artifact.relativePath] {
+                if let taskSnapshot = taskSnapshotsByRelativePath[artifact.relativePath] {
                     artifactState.phase = .downloading
-                    artifactState.taskIdentifier = task.taskIdentifier
+                    artifactState.taskIdentifier = taskSnapshot.taskIdentifier
                     artifactState.completedBytes = max(
                         artifactState.completedBytes,
-                        max(task.countOfBytesReceived, 0)
+                        max(taskSnapshot.completedBytes, 0)
                     )
-                    if task.countOfBytesExpectedToReceive > 0 {
+                    if taskSnapshot.expectedBytes > 0 {
                         artifactState.expectedBytes = max(
                             artifactState.expectedBytes ?? artifact.progressTotalBytes,
-                            task.countOfBytesExpectedToReceive
+                            taskSnapshot.expectedBytes
                         )
                     }
                     artifactState.errorMessage = nil
@@ -152,6 +156,30 @@ final class ModelBackgroundDownloadCoordinator: ResumableDownloadTransportDelega
         }
         stateDidChange?(job)
         return job
+    }
+
+    private func taskSnapshots(
+        for jobID: UUID
+    ) async -> [String: ModelBackgroundDownloadTaskSnapshot] {
+        if let taskSnapshotProvider {
+            return await taskSnapshotProvider(jobID)
+        }
+
+        let backgroundTasks = await transport.downloadTasks(in: .background)
+        let foregroundTasks = await transport.downloadTasks(in: .foreground)
+        let tasks = backgroundTasks + foregroundTasks
+        let tasksByRelativePath = transport.deduplicatedTasksByArtifactID(
+            from: tasks,
+            jobID: jobID
+        )
+
+        return tasksByRelativePath.mapValues { task in
+            ModelBackgroundDownloadTaskSnapshot(
+                taskIdentifier: task.taskIdentifier,
+                completedBytes: task.countOfBytesReceived,
+                expectedBytes: task.countOfBytesExpectedToReceive
+            )
+        }
     }
 
     func markFinalizationInProgress() {
