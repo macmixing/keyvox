@@ -18,7 +18,7 @@ struct InlineWarningRow: View {
     var alignmentMode: AlignmentMode = .leading
 
     var body: some View {
-        HStack(alignment: .center, spacing: spacing) {
+        HStack(alignment: .firstTextBaseline, spacing: spacing) {
             Image(systemName: "exclamationmark.triangle.fill")
                 .font(.system(size: iconSize, weight: .semibold))
                 .foregroundStyle(.yellow)
