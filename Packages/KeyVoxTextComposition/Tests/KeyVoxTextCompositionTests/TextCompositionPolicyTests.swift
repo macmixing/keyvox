@@ -87,6 +87,7 @@ final class TextCompositionPolicyTests: XCTestCase {
     func testSentenceBoundariesAndNewlinesPreserveCapitalization() {
         let contexts = [
             TextCompositionContext.documentStart,
+            TextCompositionContext(precedingText: "  \t"),
             TextCompositionContext(
                 isAtDocumentStart: false,
                 previousCharacter: " ",

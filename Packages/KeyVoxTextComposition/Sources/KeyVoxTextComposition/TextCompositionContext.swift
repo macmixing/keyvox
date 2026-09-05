@@ -46,7 +46,7 @@ public struct TextCompositionContext: Equatable, Sendable {
             }
         } ?? false
         self.init(
-            isAtDocumentStart: precedingText.isEmpty,
+            isAtDocumentStart: nonWhitespaceCharacters.isEmpty,
             previousCharacter: previousCharacter,
             characterBeforePreviousCharacter: precedingText.dropLast().last,
             previousNonWhitespaceCharacter: nonWhitespaceCharacters.first,
