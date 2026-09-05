@@ -129,6 +129,10 @@ public enum TextCompositionPolicy {
             return true
         }
 
+        if isImmediatelyAfterNumberedHyphen(context) {
+            return true
+        }
+
         if isImmediatelyAfterTerminalPunctuationAndDelimiter(context) {
             return true
         }
@@ -187,6 +191,19 @@ public enum TextCompositionPolicy {
 
         guard let characterBeforeDelimiter else { return true }
         return isSentenceBoundary(characterBeforeDelimiter)
+    }
+
+    private static func isImmediatelyAfterNumberedHyphen(
+        _ context: TextCompositionContext
+    ) -> Bool {
+        guard let previousNonWhitespaceCharacter = context.previousNonWhitespaceCharacter,
+              TextCompositionCharacterClassifier.isHyphenSeparator(
+                  previousNonWhitespaceCharacter
+              ) else {
+            return false
+        }
+
+        return context.characterBeforeTrailingHyphenSequence?.isNumber == true
     }
 
     private static func isCapitalizationDelimiter(_ character: Character) -> Bool {

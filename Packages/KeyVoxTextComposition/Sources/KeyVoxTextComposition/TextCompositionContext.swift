@@ -6,6 +6,7 @@ public struct TextCompositionContext: Equatable, Sendable {
     public let characterBeforePreviousCharacter: Character?
     public let previousNonWhitespaceCharacter: Character?
     public let characterBeforePreviousNonWhitespaceCharacter: Character?
+    public let characterBeforeTrailingHyphenSequence: Character?
     public let isPreviousNonWhitespaceCharacterAtLineStart: Bool
     public let isAfterNewline: Bool
 
@@ -15,6 +16,7 @@ public struct TextCompositionContext: Equatable, Sendable {
         characterBeforePreviousCharacter: Character? = nil,
         previousNonWhitespaceCharacter: Character? = nil,
         characterBeforePreviousNonWhitespaceCharacter: Character? = nil,
+        characterBeforeTrailingHyphenSequence: Character? = nil,
         isPreviousNonWhitespaceCharacterAtLineStart: Bool = false,
         isAfterNewline: Bool = false
     ) {
@@ -23,6 +25,11 @@ public struct TextCompositionContext: Equatable, Sendable {
         self.characterBeforePreviousCharacter = characterBeforePreviousCharacter
         self.previousNonWhitespaceCharacter = previousNonWhitespaceCharacter
         self.characterBeforePreviousNonWhitespaceCharacter = characterBeforePreviousNonWhitespaceCharacter
+        self.characterBeforeTrailingHyphenSequence = characterBeforeTrailingHyphenSequence
+            ?? Self.characterBeforeSingleTrailingHyphen(
+                previousNonWhitespaceCharacter: previousNonWhitespaceCharacter,
+                characterBeforePreviousNonWhitespaceCharacter: characterBeforePreviousNonWhitespaceCharacter
+            )
         self.isPreviousNonWhitespaceCharacterAtLineStart = isPreviousNonWhitespaceCharacterAtLineStart
         self.isAfterNewline = isAfterNewline
     }
@@ -44,6 +51,9 @@ public struct TextCompositionContext: Equatable, Sendable {
             characterBeforePreviousCharacter: precedingText.dropLast().last,
             previousNonWhitespaceCharacter: nonWhitespaceCharacters.first,
             characterBeforePreviousNonWhitespaceCharacter: nonWhitespaceCharacters.dropFirst().first,
+            characterBeforeTrailingHyphenSequence: Self.characterBeforeTrailingHyphenSequence(
+                in: precedingText
+            ),
             isPreviousNonWhitespaceCharacterAtLineStart: isPreviousNonWhitespaceCharacterAtLineStart,
             isAfterNewline: precedingText.reversed().prefix(while: \.isWhitespace).contains {
                 $0.isNewline
@@ -55,6 +65,34 @@ public struct TextCompositionContext: Equatable, Sendable {
         isAtDocumentStart: true,
         previousCharacter: nil
     )
+
+    public static func characterBeforeTrailingHyphenSequence(
+        in text: String
+    ) -> Character? {
+        let nonWhitespaceCharacters = text.reversed().filter { $0.isWhitespace == false }
+        let trailingHyphens = nonWhitespaceCharacters.prefix {
+            TextCompositionCharacterClassifier.isHyphenSeparator($0)
+        }
+        guard trailingHyphens.isEmpty == false else { return nil }
+        return nonWhitespaceCharacters.dropFirst(trailingHyphens.count).first
+    }
+
+    private static func characterBeforeSingleTrailingHyphen(
+        previousNonWhitespaceCharacter: Character?,
+        characterBeforePreviousNonWhitespaceCharacter: Character?
+    ) -> Character? {
+        guard let previousNonWhitespaceCharacter,
+              TextCompositionCharacterClassifier.isHyphenSeparator(
+                  previousNonWhitespaceCharacter
+              ),
+              characterBeforePreviousNonWhitespaceCharacter.map(
+                  TextCompositionCharacterClassifier.isHyphenSeparator
+              ) != true else {
+            return nil
+        }
+
+        return characterBeforePreviousNonWhitespaceCharacter
+    }
 }
 
 public enum LeadingCapitalizationScope: Sendable {

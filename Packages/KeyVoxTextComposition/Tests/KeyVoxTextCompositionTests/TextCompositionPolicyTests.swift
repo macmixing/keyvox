@@ -186,6 +186,22 @@ final class TextCompositionPolicyTests: XCTestCase {
         }
     }
 
+    func testNumberedHyphenPreservesIncomingCapitalization() {
+        for precedingText in ["5 - ", "12-", "5 - - ", "12--- "] {
+            let context = TextCompositionContext(precedingText: precedingText)
+
+            XCTAssertTrue(TextCompositionPolicy.isSentenceStart(in: context))
+            XCTAssertEqual(normalize("This is cool.", context: context), "This is cool.")
+        }
+    }
+
+    func testHyphenAfterTextContinuesLowercase() {
+        let context = TextCompositionContext(precedingText: "Existing text - - ")
+
+        XCTAssertFalse(TextCompositionPolicy.isSentenceStart(in: context))
+        XCTAssertEqual(normalize("This is new.", context: context), "this is new.")
+    }
+
     func testEmojiAtDocumentOrLineStartPreservesIncomingCapitalization() {
         for precedingText in ["😎 ", "Hello.\n😎 "] {
             let context = TextCompositionContext(precedingText: precedingText)
