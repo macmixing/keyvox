@@ -126,8 +126,8 @@ extension HomeTabView {
                                         .frame(maxWidth: .infinity, alignment: .leading)
                                         .opacity(showsPrimaryTTSStatusRow ? 1 : 0)
 
-                                    if let preparationPercentageText = ttsPreparationPercentageText {
-                                        Text(preparationPercentageText)
+                                    if let percentageText = ttsPrimaryStatusPercentageText {
+                                        Text(percentageText)
                                             .font(.appFont(14, variant: .medium))
                                             .foregroundStyle(.yellow)
                                             .opacity(showsPrimaryTTSStatusRow ? 1 : 0)
