@@ -68,9 +68,20 @@ final class AudioEngineInputCapture {
         guard var deviceID = Self.audioDeviceID(forUID: deviceUID) else {
             throw CaptureError.deviceNotFound
         }
-
-        let engine = AVAudioEngine()
-        let inputNode = engine.inputNode
+        let engine: AVAudioEngine
+        let inputNode: AVAudioInputNode
+        if let retainedEngine = self.engine, let retainedInputNode = self.inputNode {
+            callbackGate.closeAndWait()
+            retainedEngine.stop()
+            retainedInputNode.removeTap(onBus: 0)
+            retainedEngine.reset()
+            self.deviceUID = nil
+            engine = retainedEngine
+            inputNode = retainedInputNode
+        } else {
+            engine = AVAudioEngine()
+            inputNode = engine.inputNode
+        }
         guard let audioUnit = inputNode.audioUnit else {
             throw CaptureError.audioUnitUnavailable
         }

@@ -45,14 +45,7 @@ extension AudioRecorder {
             self.liveInputSignalState = .dead
         }
 
-        let inputCapture: AudioEngineInputCapture
-        if let existingCapture = audioInputCapture,
-           existingCapture.deviceUID == device.uniqueID {
-            inputCapture = existingCapture
-        } else {
-            audioInputCapture?.stop()
-            inputCapture = AudioEngineInputCapture()
-        }
+        let inputCapture = audioInputCapture ?? AudioEngineInputCapture()
         do {
             try inputCapture.start(
                 deviceUID: device.uniqueID,
