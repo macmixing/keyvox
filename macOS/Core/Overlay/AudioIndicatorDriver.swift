@@ -47,8 +47,8 @@ final class AudioIndicatorDriver: ObservableObject {
         static let timerInterval: TimeInterval = AudioIndicatorDriver.animationFrameDuration
         static let meterPollInterval: TimeInterval = 1.0 / 30.0
         static let sampleFreshnessWindow: TimeInterval = 0.35
-        static let attackSmoothingRate: CGFloat = 15
-        static let decaySmoothingRate: CGFloat = 5
+        static let attackSmoothingRate: CGFloat = 25
+        static let decaySmoothingRate: CGFloat = 8
     }
 
     var sampleProvider: (() -> AudioIndicatorSample?)?

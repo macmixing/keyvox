@@ -106,7 +106,7 @@ final class AudioEngineInputCapture {
         }
 
         let callbackGate = callbackGate
-        inputNode.installTap(onBus: 0, bufferSize: 1_024, format: inputFormat) { buffer, _ in
+        inputNode.installTap(onBus: 0, bufferSize: 512, format: inputFormat) { buffer, _ in
             callbackGate.performIfOpen {
                 guard let copiedBuffer = Self.copy(buffer) else { return }
                 deliveryQueue.async {
