@@ -14,6 +14,7 @@ Deterministic dotted-time separator repair for Vibes rewrites.
 
 - Corrected observed Whisper dotted-time output in question-shaped sentences even when platform linguistic assets are unavailable.
 - Preserved a time separator already corrected by the Vibes model instead of restoring the original dotted form.
+- Treated unavailable iOS 27 lexical tagging as ambiguous evidence instead of decimal evidence so period-terminated Vibes time corrections are not reverted.
 - Applied sentence-scoped detection so the correction works at any position in multi-sentence dictation, including immediately before one trailing spoken word.
 - Preserved observed Whisper version numbers, decimals, and percentage decimals without hard-coded language vocabulary.
 - Added regression coverage for the observed Whisper outputs and multi-sentence placement.
