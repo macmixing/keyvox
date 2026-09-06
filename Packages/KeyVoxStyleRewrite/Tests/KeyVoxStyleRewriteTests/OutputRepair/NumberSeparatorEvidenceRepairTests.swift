@@ -29,4 +29,75 @@ final class NumberSeparatorEvidenceRepairTests: XCTestCase {
 
         XCTAssertEqual(output, "The concert is gonna start at like um maybe 5:30.")
     }
+
+    func testRewriteRepairRepairsObservedWhisperTimeBeforeInterjection() {
+        let output = OutputRepair.repairModelOutput(
+            original: "Can you meet me there at 5.30 please?",
+            rewritten: "Can you meet me there at 5.30 please?"
+        )
+
+        XCTAssertEqual(output, "Can you meet me there at 5:30 please?")
+    }
+
+    func testRewriteRepairRepairsObservedWhisperTerminalTime() {
+        let output = OutputRepair.repairModelOutput(
+            original: "Can you meet me there at 5.30?",
+            rewritten: "Can you meet me there at 5.30?"
+        )
+
+        XCTAssertEqual(output, "Can you meet me there at 5:30?")
+    }
+
+    func testRewriteRepairRepairsObservedWhisperTimeAtAnySentencePosition() {
+        let cases = [
+            (
+                original: "Can you meet me there at 5.30? I will send the address next.",
+                repaired: "Can you meet me there at 5:30? I will send the address next."
+            ),
+            (
+                original: "I will send the address next. Can you meet me there at 5.30? Let me know.",
+                repaired: "I will send the address next. Can you meet me there at 5:30? Let me know."
+            ),
+            (
+                original: "I will send the address next. Let me know. Can you meet me there at 5.30?",
+                repaired: "I will send the address next. Let me know. Can you meet me there at 5:30?"
+            ),
+        ]
+
+        for testCase in cases {
+            let output = OutputRepair.repairModelOutput(
+                original: testCase.original,
+                rewritten: testCase.original
+            )
+
+            XCTAssertEqual(output, testCase.repaired)
+        }
+    }
+
+    func testRewriteRepairPreservesObservedWhisperVersion() {
+        let output = OutputRepair.repairModelOutput(
+            original: "Please install version 5.30.",
+            rewritten: "Please install version 5.30."
+        )
+
+        XCTAssertEqual(output, "Please install version 5.30.")
+    }
+
+    func testRewriteRepairPreservesObservedWhisperDecimal() {
+        let output = OutputRepair.repairModelOutput(
+            original: "The measurement is 5.30.",
+            rewritten: "The measurement is 5.30."
+        )
+
+        XCTAssertEqual(output, "The measurement is 5.30.")
+    }
+
+    func testRewriteRepairPreservesObservedWhisperPercentDecimal() {
+        let output = OutputRepair.repairModelOutput(
+            original: "The rate is 5.30%.",
+            rewritten: "The rate is 5.30%."
+        )
+
+        XCTAssertEqual(output, "The rate is 5.30%.")
+    }
 }

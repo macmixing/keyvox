@@ -6,6 +6,23 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.0.13] - 2026-09-06
+
+Deterministic dotted-time separator repair for Vibes rewrites.
+
+### Includes
+
+- Corrected observed Whisper dotted-time output when a valid time-shaped value follows a grammatical preposition and ends its sentence or precedes an interjection.
+- Applied sentence-scoped detection so the correction works at any position in multi-sentence dictation.
+- Preserved observed Whisper version numbers, decimals, and percentage decimals without hard-coded language vocabulary.
+- Added regression coverage for the observed Whisper outputs and multi-sentence placement.
+
+### Notes
+
+- `1.0.13` bumps the tracked style rewrite package version for deterministic dotted-time correction while preserving decimal and version evidence.
+
+---
+
 ## [1.0.12] - 2026-08-22
 
 Money evidence boundary and unsupported-currency repair for Vibes rewrites.

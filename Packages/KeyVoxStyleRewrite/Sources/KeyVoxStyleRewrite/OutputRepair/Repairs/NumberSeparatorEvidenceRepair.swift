@@ -1,4 +1,5 @@
 import Foundation
+import NaturalLanguage
 
 struct NumberSeparatorEvidenceRepair {
     private static let dotSeparatedCandidatePattern = #"(?<![\w.])([1-9]|1[0-2])\.([0-5][0-9])(?![\w]|\.[\w])"#
@@ -172,11 +173,44 @@ struct NumberSeparatorEvidenceRepair {
             return true
         }
 
+        if isPrepositionBoundTerminatingCandidate(
+            candidateRange: candidateRange,
+            in: text
+        ) {
+            return true
+        }
+
         return isDetectedTimeAfterElidingInterveningWords(
             candidateRange: candidateRange,
             in: text,
             using: dateDetector
         )
+    }
+
+    private func isPrepositionBoundTerminatingCandidate(
+        candidateRange: Range<String.Index>,
+        in text: String
+    ) -> Bool {
+        let sentenceTokenizer = NLTokenizer(unit: .sentence)
+        sentenceTokenizer.string = text
+        let sentenceRange = sentenceTokenizer.tokenRange(at: candidateRange.lowerBound)
+        let tokens = RepairTokenization.taggedTokens(in: text)
+        guard let precedingToken = tokens.last(where: {
+            $0.token.range.upperBound <= candidateRange.lowerBound
+        }), precedingToken.tag == .preposition else {
+            return false
+        }
+
+        if let followingToken = tokens.first(where: {
+            $0.token.range.lowerBound >= candidateRange.upperBound
+                && $0.token.range.lowerBound < sentenceRange.upperBound
+        }) {
+            return followingToken.tag == .interjection
+        }
+
+        return text[candidateRange.upperBound..<sentenceRange.upperBound].allSatisfy {
+            $0.isWhitespace || $0.isPunctuation
+        }
     }
 
     private func isDetectedTimeAfterElidingInterveningWords(
