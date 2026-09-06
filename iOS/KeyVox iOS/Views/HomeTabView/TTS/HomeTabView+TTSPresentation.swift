@@ -173,6 +173,24 @@ extension HomeTabView {
         showsTTSPreparationProgress ? ttsPreparationProgressLabel : nil
     }
 
+    var ttsInstallPercentageText: String? {
+        guard let activeTTSInstallState else { return nil }
+
+        let progress: Double
+        switch activeTTSInstallState {
+        case .downloading(let currentProgress), .installing(let currentProgress):
+            progress = currentProgress
+        case .notInstalled, .ready, .failed:
+            return nil
+        }
+
+        return "\(Int((progress * 100).rounded()))%"
+    }
+
+    var ttsPrimaryStatusPercentageText: String? {
+        ttsInstallPercentageText ?? ttsPreparationPercentageText
+    }
+
     var activeTTSInstallState: PocketTTSInstallState? {
         if pocketTTSModelManager.isSharedModelReady() == false {
             switch pocketTTSModelManager.sharedModelInstallState {

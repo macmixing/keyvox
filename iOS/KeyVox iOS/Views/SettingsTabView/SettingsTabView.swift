@@ -104,11 +104,11 @@ struct SettingsTabView: View {
             AppScrollScreen(additionalTopContentInset: AppScreenContentInset.tabPageTop) {
                 VStack(alignment: .leading, spacing: 16) {
                     sessionSection
-                    speakTimeoutSection
                     keyboardSection
                     audioSection
                     activeModelSection
                     vibesAISection
+                    speakTimeoutSection
                     ttsSection
                     rateAndReviewSection
                     supportSection
