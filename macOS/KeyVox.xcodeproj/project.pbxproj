@@ -82,6 +82,7 @@
 		9D4000152F4E000100AA0001 /* AudioRecorder+Streaming.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D4000062F4E000100AA0001 /* AudioRecorder+Streaming.swift */; };
 		9D4000162F4E000100AA0001 /* AudioRecorder+PostProcessing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D4000072F4E000100AA0001 /* AudioRecorder+PostProcessing.swift */; };
 		9D4000172F4E000100AA0001 /* AudioRecorder+Thresholds.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D4000082F4E000100AA0001 /* AudioRecorder+Thresholds.swift */; };
+		9D4000192F4E000100AA0001 /* AudioEngineInputCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D4000092F4E000100AA0001 /* AudioEngineInputCapture.swift */; };
 		9E5000112F4F000100AA0001 /* AppSettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E5000012F4F000100AA0001 /* AppSettingsStore.swift */; };
 		A11000012FC1000100AA0001 /* WeeklyWordStatsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11000112FC1000100AA0001 /* WeeklyWordStatsStore.swift */; };
 		A11000022FC1000100AA0001 /* WeeklyWordStatsCloudSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11000122FC1000100AA0001 /* WeeklyWordStatsCloudSync.swift */; };
@@ -333,6 +334,7 @@
 		9D4000062F4E000100AA0001 /* AudioRecorder+Streaming.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AudioRecorder+Streaming.swift"; sourceTree = "<group>"; };
 		9D4000072F4E000100AA0001 /* AudioRecorder+PostProcessing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AudioRecorder+PostProcessing.swift"; sourceTree = "<group>"; };
 		9D4000082F4E000100AA0001 /* AudioRecorder+Thresholds.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AudioRecorder+Thresholds.swift"; sourceTree = "<group>"; };
+		9D4000092F4E000100AA0001 /* AudioEngineInputCapture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioEngineInputCapture.swift; sourceTree = "<group>"; };
 		9E5000012F4F000100AA0001 /* AppSettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettingsStore.swift; sourceTree = "<group>"; };
 		A11000112FC1000100AA0001 /* WeeklyWordStatsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeeklyWordStatsStore.swift; sourceTree = "<group>"; };
 		A11000122FC1000100AA0001 /* WeeklyWordStatsCloudSync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeeklyWordStatsCloudSync.swift; sourceTree = "<group>"; };
@@ -726,6 +728,7 @@
 		9D4000012F4E000100AA0001 /* Audio */ = {
 			isa = PBXGroup;
 			children = (
+				9D4000092F4E000100AA0001 /* AudioEngineInputCapture.swift */,
 				8E6D05CB2F3C51D6003BD458 /* AudioRecorder.swift */,
 				9D4000072F4E000100AA0001 /* AudioRecorder+PostProcessing.swift */,
 				9D4000052F4E000100AA0001 /* AudioRecorder+Session.swift */,
@@ -1293,6 +1296,7 @@
 				9D4000142F4E000100AA0001 /* AudioRecorder+Session.swift in Sources */,
 				9D4000152F4E000100AA0001 /* AudioRecorder+Streaming.swift in Sources */,
 				9D4000172F4E000100AA0001 /* AudioRecorder+Thresholds.swift in Sources */,
+				9D4000192F4E000100AA0001 /* AudioEngineInputCapture.swift in Sources */,
 				8EA1C1022F3D111100A1B2C3 /* AudioDeviceManager.swift in Sources */,
 				8E6D05DE2F3C523D003BD458 /* OnboardingView.swift in Sources */,
 				D50000112FF5000100AA0001 /* OnboardingWelcomeScreen.swift in Sources */,

@@ -2,7 +2,7 @@
 
 This document contains implementation and maintainer-focused details that are intentionally kept out of the top-level README.
 
-**Last Updated: 2026-08-22**
+**Last Updated: 2026-09-05**
 
 ## Design Philosophy
 
@@ -32,7 +32,7 @@ KeyVox is organized by responsibility:
 - `Core/Transcription/`: Runtime state machine and macOS host-side transcription orchestration split across `TranscriptionManager.swift` plus focused extensions for bindings, recording sessions, and overlay/debug work. The reusable transcribe -> post-process -> paste boundary remains extracted into `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/` (`DictationPipeline`, `TranscriptionPostProcessor`, `DictationPromptEchoGuard`). The macOS host owns capture/audio eligibility for dictionary hinting, while `KeyVoxCore` owns dictionary availability, prompt content, post-processing, and prompt-echo suppression for the persisted entries supplied by the host. The macOS host also persists the most recent successful transcription for Home-tab display after relaunch and publishes a per-successful-dictation revision for UI flows that must observe repeated identical dictations.
 - `Core/DictationTriggerController.swift`: Trigger-key orchestration that converts keyboard press/release/escape state into recording-session commands and hands consumed trigger+L/P chords to the formatting action controller without owning transcription or replacement behavior.
 - `Core/Vibes/`: Mac-owned KeyVox Vibes and latest-insertion change runtime. The Mac Vibes path uses a local GGUF rewrite model plus bundled LoRA adapters, not Foundation Models. `MacLocalRewriteModelManager` owns local model installation, `MacLocalRewriteInferenceService` owns cached local inference composition, `MacLocalStyleRewriteTextTransformer` bridges shared style rewrite requests to local inference, `MacVibesCoordinator` owns readiness-gated style resolution/prewarm/transform, `MacVibesIntroController` owns one-time intro eligibility, `MacVibesAccessMatrix` owns settings-state decisions, `MacDictationChangeController` owns latest untouched dictation Vibe and deterministic paragraph/list changes, `MacFormattingShortcutMonitor` owns safe chord interception, `MacFormattingTriggerActionController` owns formatting feedback/action orchestration, `MacVibesTriggerActionController` owns quick-tap orchestration and the Vibes trigger-key interaction toggle gate, and `MacTriggerTapClassifier` keeps single/double tap timing separate from recording orchestration.
-- `Core/Audio/`: Recording, stream processing, silence classification, and threshold policy.
+- `Core/Audio/`: Selected-device `AVAudioEngine` capture, deterministic multichannel-to-mono mixing, stream processing, silence classification, and threshold policy.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/` and `Packages/KeyVoxCore/Sources/KeyVoxCore/Lists/`: Deterministic dictionary correction and list parsing/rendering, with matcher evaluation strategies organized under `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/Evaluation/` (`Helpers/`, `SplitJoin/`, and strategy files). `DictionaryMatcher+SpelledUppercaseGuard.swift` owns shared phonetic validation for uppercase dictionary sequences, while `DictionaryMatcher+ExactMultiTokenJoin.swift` owns exact three- and four-token joins into canonical single-entry replacements. `DictionaryInitialEntries.swift` defines the single `KeyVox` entry that a host may persist for a genuine fresh installation; matching itself uses only the entries supplied by the user dictionary.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/`: Ordered pure normalization stages used by post-processing: early literal cleanup, pre-list normalization, late model-output cleanup, and final finishers. The individual passes remain small and composable, while the documented contract stays centered on stable ordering boundaries rather than every micro-pass. Shared normalization utilities (for example URL/domain/email-safe capitalization guards) also live here.
 - `Packages/KeyVoxTextComposition/`: Platform-neutral policy for composing finalized dictation with adjacent editor text. It owns leading capitalization, leading spacing, quote classification, sentence-boundary rules, adjacent terminal-punctuation decisions, and trailing-separator decisions, but never reads Accessibility state or performs insertion.
@@ -60,6 +60,15 @@ File-level ownership and locations are intentionally maintained in one place: [`
 - `TranscriptionManager+RecordingSession.swift` owns recording start/stop, formatting-chord recorder discard, transcription pipeline execution, paste insertion handoff, weekly word totals, and last-transcription persistence.
 - `TranscriptionManager+OverlayAndDebug.swift` owns overlay hands-free visual updates, playback sound effects, and debug-only transformation-speed logging.
 - `Core/DictationTriggerController.swift` owns trigger-key press/release handling, pending-stop behavior, deferred starts, hands-free toggles, and cancellation, and calls back into `TranscriptionManager` only for recording-session commands.
+
+### Audio Capture Contract
+
+- `AudioDeviceManager` remains the source of truth for microphone discovery, persisted selection, and the selected capture-device UID.
+- `AudioEngineInputCapture` resolves that UID to a CoreAudio device, binds it to the `AVAudioEngine` input unit, and configures output scope element 1 from the complete hardware input format before installing the tap. This prevents a multichannel interface from being reduced to an unrelated default channel before KeyVox receives audio.
+- Capture behavior is device-agnostic: there are no interface names, transport assumptions, fixed channel counts, or device-specific identifiers in the capture path.
+- `AudioRecorder+Streaming` sums every finite sample from every channel exposed by the selected input device into deterministic mono audio. The summed sample is clamped to the valid Float32 PCM range; KeyVox does not select, rank, or switch channels based on signal level.
+- Every simultaneously active input is therefore included. KeyVox intentionally treats the selected interface as one combined microphone instead of acting as an audio-routing application.
+- The combined stream is resampled to the existing mono Float32 16kHz recorder contract. Silence classification, normalization, transcription providers, and downstream text processing remain unchanged.
 
 ## Platform Compatibility
 
