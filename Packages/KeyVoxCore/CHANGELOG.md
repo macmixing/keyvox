@@ -6,9 +6,9 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
-## [1.2.8] - 2026-09-05
+## [1.2.8] - 2026-09-06
 
-Split stylized dictionary terms now remain singular when their own ending resembles a possessive sound, and punctuation no longer makes ordinary text look like a stylized dictionary match.
+Split stylized dictionary terms now remain singular when their own ending resembles a possessive sound, and sentence-start capitalization no longer makes ordinary text look like a stylized dictionary match.
 
 ### Includes
 
@@ -17,11 +17,12 @@ Split stylized dictionary terms now remain singular when their own ending resemb
 - Added regression coverage for singular stylized terms followed by nouns.
 - Required actual Unicode uppercase characters before enabling the internal-capitalization fallback for stylized dictionary entries.
 - Added regression coverage ensuring punctuation is not treated as uppercase evidence.
+- Recognized capitalization after every sentence boundary as sentence-start capitalization, preventing later sentences from enabling stylized dictionary fallback.
 - Preserved year references in counterfactual temporal clauses without treating them as grouped quantities.
 
 ### Notes
 
-- `1.2.8` tracks stricter possessive inference and internal-capitalization evidence for stylized dictionary matches in the shared Core engine.
+- `1.2.8` tracks stricter possessive inference and sentence-aware capitalization evidence for stylized dictionary matches in the shared Core engine.
 
 ---
 

@@ -175,8 +175,7 @@ extension DictionaryMatcher {
 
     func allowStylizedFallbackForCommonObservedToken(
         token: Token,
-        tokenIndex: Int,
-        totalTokens: Int
+        isAtSentenceStartInMultiTokenText: Bool
     ) -> Bool {
         guard let first = token.raw.unicodeScalars.first,
               first.properties.isUppercase else {
@@ -191,11 +190,21 @@ extension DictionaryMatcher {
         }
 
         // Avoid sentence-start capitalization false positives in prose.
-        if tokenIndex == 0, totalTokens > 1 {
+        if isAtSentenceStartInMultiTokenText {
             return false
         }
 
         return true
+    }
+
+    func isAtSentenceStartInMultiTokenText(
+        tokenIndex: Int,
+        tokens: [Token],
+        text: String
+    ) -> Bool {
+        guard tokens.count > 1 else { return false }
+        guard tokenIndex > 0 else { return true }
+        return hasSentenceBoundaryBetween(tokens[tokenIndex - 1], tokens[tokenIndex], in: text)
     }
 
     func hasStylizedLongPrefixTailGuardEvidence(

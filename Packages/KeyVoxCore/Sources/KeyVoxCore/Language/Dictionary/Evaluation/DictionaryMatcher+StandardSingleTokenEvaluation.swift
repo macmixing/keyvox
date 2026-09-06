@@ -52,8 +52,11 @@ extension DictionaryMatcher {
         let allowStylizedFallbackBySurface =
             allowStylizedFallbackForCommonObservedToken(
                 token: observedToken,
-                tokenIndex: start,
-                totalTokens: tokens.count
+                isAtSentenceStartInMultiTokenText: isAtSentenceStartInMultiTokenText(
+                    tokenIndex: start,
+                    tokens: tokens,
+                    text: text
+                )
             )
         let hasAdjacentTitlecaseContext = hasAdjacentTitlecasePhraseContext(
             tokenIndex: start,
@@ -222,6 +225,7 @@ extension DictionaryMatcher {
     func requiresPeerSupportAfterStandardCommonWordGuard(
         start: Int,
         tokens: [Token],
+        text: String,
         window: [Token],
         candidate: Candidate,
         candidatePhonetic: String,
@@ -236,8 +240,11 @@ extension DictionaryMatcher {
 
         let allowStylizedBySurface = allowStylizedFallbackForCommonObservedToken(
             token: window[0],
-            tokenIndex: start,
-            totalTokens: tokens.count
+            isAtSentenceStartInMultiTokenText: isAtSentenceStartInMultiTokenText(
+                tokenIndex: start,
+                tokens: tokens,
+                text: text
+            )
         )
         let hasStructuralContext = hasStructuralCommonWordBrandContext(
             tokenStart: start,

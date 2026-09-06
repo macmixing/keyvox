@@ -22,15 +22,76 @@ final class DictionaryMatcherCoreLogicTests: XCTestCase {
         XCTAssertFalse(
             matcher.allowStylizedFallbackForCommonObservedToken(
                 token: punctuationOnly,
-                tokenIndex: 0,
-                totalTokens: 2
+                isAtSentenceStartInMultiTokenText: true
             )
         )
         XCTAssertTrue(
             matcher.allowStylizedFallbackForCommonObservedToken(
                 token: actualInternalUppercase,
-                tokenIndex: 0,
-                totalTokens: 2
+                isAtSentenceStartInMultiTokenText: true
+            )
+        )
+    }
+
+    func testStylizedFallbackRejectsOrdinaryTitlecaseAtLaterSentenceStart() {
+        let matcher = makeMatcher()
+        let sentenceText = "Ζαζ. Α'α βαβ"
+        let tokens = [
+            DictionaryMatcher.Token(
+                raw: "Ζαζ",
+                normalized: "ζαζ",
+                range: NSRange(location: 0, length: 3),
+                phonetic: ""
+            ),
+            DictionaryMatcher.Token(
+                raw: "Α'α",
+                normalized: "α'α",
+                range: NSRange(location: 5, length: 3),
+                phonetic: ""
+            ),
+            DictionaryMatcher.Token(
+                raw: "βαβ",
+                normalized: "βαβ",
+                range: NSRange(location: 9, length: 3),
+                phonetic: ""
+            ),
+        ]
+
+        XCTAssertFalse(
+            matcher.allowStylizedFallbackForCommonObservedToken(
+                token: tokens[1],
+                isAtSentenceStartInMultiTokenText: matcher.isAtSentenceStartInMultiTokenText(
+                    tokenIndex: 1,
+                    tokens: tokens,
+                    text: sentenceText
+                )
+            )
+        )
+
+        let phraseText = "Ζαζ Α'α βαβ"
+        let phraseTokens = [
+            tokens[0],
+            DictionaryMatcher.Token(
+                raw: "Α'α",
+                normalized: "α'α",
+                range: NSRange(location: 4, length: 3),
+                phonetic: ""
+            ),
+            DictionaryMatcher.Token(
+                raw: "βαβ",
+                normalized: "βαβ",
+                range: NSRange(location: 8, length: 3),
+                phonetic: ""
+            ),
+        ]
+        XCTAssertTrue(
+            matcher.allowStylizedFallbackForCommonObservedToken(
+                token: phraseTokens[1],
+                isAtSentenceStartInMultiTokenText: matcher.isAtSentenceStartInMultiTokenText(
+                    tokenIndex: 1,
+                    tokens: phraseTokens,
+                    text: phraseText
+                )
             )
         )
     }
@@ -118,6 +179,7 @@ final class DictionaryMatcherCoreLogicTests: XCTestCase {
             start: 0,
             tokenCount: 1,
             tokens: tokens,
+            text: observed,
             candidates: candidates,
             window: [token],
             observedNormalized: token.normalized,

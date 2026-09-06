@@ -12,6 +12,7 @@ extension DictionaryMatcher {
         start: Int,
         tokenCount: Int,
         tokens: [Token],
+        text: String,
         candidates: [CompiledEntry],
         window: [Token],
         observedNormalized: String,
@@ -91,8 +92,11 @@ extension DictionaryMatcher {
                         || !isStylizedSingleTokenEntry(candidate)
                         || allowStylizedFallbackForCommonObservedToken(
                             token: window[0],
-                            tokenIndex: start,
-                            totalTokens: tokens.count
+                            isAtSentenceStartInMultiTokenText: isAtSentenceStartInMultiTokenText(
+                                tokenIndex: start,
+                                tokens: tokens,
+                                text: text
+                            )
                         )
                         || hasStrongStylizedTextEvidence(
                             observed: form.normalized,
