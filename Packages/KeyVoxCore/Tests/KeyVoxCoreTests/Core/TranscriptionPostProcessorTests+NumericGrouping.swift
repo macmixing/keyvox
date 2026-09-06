@@ -88,6 +88,26 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "Yeah, that came out in 2001, right?")
     }
 
+    func testPreservesYearInCounterfactualTemporalClause() {
+        let processor = TranscriptionPostProcessor()
+        let expected = "If somebody had told me back in 2001 that this would happen, I wouldn't have believed them."
+        let samples = [
+            expected,
+            "If somebody had told me back in two thousand one that this would happen, I wouldn't have believed them.",
+            "If somebody had told me back in two thousand and one that this would happen, I wouldn't have believed them.",
+        ]
+
+        for sample in samples {
+            let output = processor.process(
+                sample,
+                dictionaryEntries: [],
+                renderMode: .singleLineInline
+            )
+
+            XCTAssertEqual(output, expected)
+        }
+    }
+
     func testPreservesYearAfterSimplePrepositionWithoutGroupingSeparator() {
         let processor = TranscriptionPostProcessor()
 

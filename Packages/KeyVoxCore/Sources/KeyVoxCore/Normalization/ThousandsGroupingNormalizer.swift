@@ -199,7 +199,8 @@ public struct ThousandsGroupingNormalizer {
                         secondPrevious: context.secondPrevious,
                         previous: context.previous,
                         next: context.next,
-                        secondNext: context.secondNext
+                        secondNext: context.secondNext,
+                        thirdNext: context.thirdNext
                     ),
                     nextIndex: endIndex
                 )
@@ -435,7 +436,8 @@ public struct ThousandsGroupingNormalizer {
         secondPrevious: LexicalToken?,
         previous: LexicalToken?,
         next: LexicalToken?,
-        secondNext: LexicalToken?
+        secondNext: LexicalToken?,
+        thirdNext: LexicalToken?
     ) {
         let previousTokens = tokens.filter { NSMaxRange($0.range) <= range.location }
         let followingTokens = tokens.filter { $0.range.location >= NSMaxRange(range) }
@@ -445,7 +447,8 @@ public struct ThousandsGroupingNormalizer {
             secondPrevious: previousTokens.dropLast().last,
             previous: previousTokens.last,
             next: followingTokens.first,
-            secondNext: followingTokens.dropFirst().first
+            secondNext: followingTokens.dropFirst().first,
+            thirdNext: followingTokens.dropFirst(2).first
         )
     }
 
@@ -488,6 +491,7 @@ public struct ThousandsGroupingNormalizer {
         let previous = tokenIndex > 0 ? tokens[tokenIndex - 1] : nil
         let next = tokenIndex + 1 < tokens.count ? tokens[tokenIndex + 1] : nil
         let secondNext = tokenIndex + 2 < tokens.count ? tokens[tokenIndex + 2] : nil
+        let thirdNext = tokenIndex + 3 < tokens.count ? tokens[tokenIndex + 3] : nil
 
         if isLikelyYearReference(
             value: value,
@@ -496,7 +500,8 @@ public struct ThousandsGroupingNormalizer {
             secondPrevious: secondPrevious,
             previous: previous,
             next: next,
-            secondNext: secondNext
+            secondNext: secondNext,
+            thirdNext: thirdNext
         ) {
             return false
         }
@@ -523,7 +528,8 @@ public struct ThousandsGroupingNormalizer {
         secondPrevious: LexicalToken?,
         previous: LexicalToken?,
         next: LexicalToken?,
-        secondNext: LexicalToken?
+        secondNext: LexicalToken?,
+        thirdNext: LexicalToken?
     ) -> Bool {
         guard Self.plausibleYearRange.contains(value) else { return false }
 
@@ -562,7 +568,13 @@ public struct ThousandsGroupingNormalizer {
             return false
         }
 
-        let hasPartitiveComplement = nextTag == .preposition
+        let hasFollowingFiniteClause = previousTag == .preposition
+            && secondPreviousTag == .adverb
+            && nextTag == .preposition
+            && [.pronoun, .determiner].contains(secondNext?.tag)
+            && thirdNext?.tag == .verb
+        let hasPartitiveComplement = !hasFollowingFiniteClause
+            && nextTag == .preposition
             && [.pronoun, .determiner].contains(secondNext?.tag)
         let hasFiniteClauseLead = previousTag == .verb
             && secondPreviousTag == .pronoun
@@ -572,6 +584,7 @@ public struct ThousandsGroupingNormalizer {
 
         let yearEvidence = [
             hasAlphabeticOtherWordNeighbor,
+            hasFollowingFiniteClause,
             [.verb, .pronoun, .determiner, .conjunction].contains(nextTag),
             nextTag == .noun,
             previousTag == .preposition && !hasPartitiveComplement,
