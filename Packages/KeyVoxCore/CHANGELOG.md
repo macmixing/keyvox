@@ -6,7 +6,7 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
-## [1.2.8] - 2026-09-04
+## [1.2.8] - 2026-09-05
 
 Split stylized dictionary terms now remain singular when their own ending resembles a possessive sound, and punctuation no longer makes ordinary text look like a stylized dictionary match.
 
@@ -17,6 +17,7 @@ Split stylized dictionary terms now remain singular when their own ending resemb
 - Added regression coverage for singular stylized terms followed by nouns.
 - Required actual Unicode uppercase characters before enabling the internal-capitalization fallback for stylized dictionary entries.
 - Added regression coverage ensuring punctuation is not treated as uppercase evidence.
+- Preserved year references in counterfactual temporal clauses without treating them as grouped quantities.
 
 ### Notes
 
