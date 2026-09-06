@@ -19,6 +19,7 @@ extension DictionaryMatcher {
             start: start,
             tokenCount: tokenCount,
             tokens: tokens,
+            text: text,
             candidates: candidates,
             window: window,
             observedNormalized: observedNormalized,
@@ -91,6 +92,7 @@ extension DictionaryMatcher {
             let commonWordGuardOutcome = requiresPeerSupportAfterStandardCommonWordGuard(
                 start: start,
                 tokens: tokens,
+                text: text,
                 window: window,
                 candidate: best,
                 candidatePhonetic: singleTokenEvaluation.candidatePhonetic,
