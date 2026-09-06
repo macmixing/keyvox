@@ -48,6 +48,24 @@ final class NumberSeparatorEvidenceRepairTests: XCTestCase {
         XCTAssertEqual(output, "Can you meet me there at 5:30?")
     }
 
+    func testRewriteRepairRepairsObservedPolishedNoOpTerminalTime() {
+        let output = OutputRepair.repairModelOutput(
+            original: "Can you meet me there at 4.30?",
+            rewritten: "Can you meet me there at 4.30?"
+        )
+
+        XCTAssertEqual(output, "Can you meet me there at 4:30?")
+    }
+
+    func testRewriteRepairPreservesModelCorrectedObservedWhisperTerminalTime() {
+        let output = OutputRepair.repairModelOutput(
+            original: "Can you meet me there at 5.30?",
+            rewritten: "Can you meet me there at 5:30?"
+        )
+
+        XCTAssertEqual(output, "Can you meet me there at 5:30?")
+    }
+
     func testRewriteRepairRepairsObservedWhisperTimeAtAnySentencePosition() {
         let cases = [
             (
