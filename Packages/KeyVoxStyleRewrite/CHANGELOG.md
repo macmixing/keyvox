@@ -12,8 +12,9 @@ Deterministic dotted-time separator repair for Vibes rewrites.
 
 ### Includes
 
-- Corrected observed Whisper dotted-time output when a valid time-shaped value follows a grammatical preposition and ends its sentence or precedes an interjection.
-- Applied sentence-scoped detection so the correction works at any position in multi-sentence dictation.
+- Corrected observed Whisper dotted-time output in question-shaped sentences even when platform linguistic assets are unavailable.
+- Preserved a time separator already corrected by the Vibes model instead of restoring the original dotted form.
+- Applied sentence-scoped detection so the correction works at any position in multi-sentence dictation, including immediately before one trailing spoken word.
 - Preserved observed Whisper version numbers, decimals, and percentage decimals without hard-coded language vocabulary.
 - Added regression coverage for the observed Whisper outputs and multi-sentence placement.
 

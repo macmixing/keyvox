@@ -3,8 +3,12 @@ import NaturalLanguage
 
 struct NumberSeparatorEvidenceRepair {
     private static let dotSeparatedCandidatePattern = #"(?<![\w.])([1-9]|1[0-2])\.([0-5][0-9])(?![\w]|\.[\w])"#
+    private static let strongSentenceTerminalExpression = try? NSRegularExpression(
+        pattern: #"^\p{Sentence_Break=STerm}"#
+    )
 
     private static let maximumInterveningWordTokenCount = 4
+    private static let maximumTrailingWordTokenCount = 1
 
     private static let dateDetector: NSDataDetector? = try? NSDataDetector(
         types: NSTextCheckingResult.CheckingType.date.rawValue
@@ -24,7 +28,8 @@ struct NumberSeparatorEvidenceRepair {
             let hour = nsText.substring(with: match.range(at: 1))
             let minute = nsText.substring(with: match.range(at: 2))
             let decimal = "\(hour).\(minute)"
-            guard separatorEvidence.decimalSeparatedRuns.contains(decimal) else {
+            guard separatorEvidence.decimalSeparatedRuns.contains(decimal),
+                  !isStrongSentenceTerminatingCandidate(match: match, in: nsText as String) else {
                 return nil
             }
 
@@ -164,12 +169,16 @@ struct NumberSeparatorEvidenceRepair {
     }
 
     private func isTimeTerminatingAtCandidate(match: NSTextCheckingResult, in text: String) -> Bool {
-        guard let dateDetector = Self.dateDetector,
-              let candidateRange = Range(match.range, in: text) else {
+        guard let candidateRange = Range(match.range, in: text) else {
             return false
         }
 
-        if isDetectedTime(candidateRange: candidateRange, in: text, using: dateDetector) {
+        if let dateDetector = Self.dateDetector,
+           isDetectedTime(candidateRange: candidateRange, in: text, using: dateDetector) {
+            return true
+        }
+
+        if isStrongSentenceTerminatingCandidate(candidateRange: candidateRange, in: text) {
             return true
         }
 
@@ -180,11 +189,61 @@ struct NumberSeparatorEvidenceRepair {
             return true
         }
 
+        guard let dateDetector = Self.dateDetector else { return false }
         return isDetectedTimeAfterElidingInterveningWords(
             candidateRange: candidateRange,
             in: text,
             using: dateDetector
         )
+    }
+
+    private func isStrongSentenceTerminatingCandidate(
+        match: NSTextCheckingResult,
+        in text: String
+    ) -> Bool {
+        guard let candidateRange = Range(match.range, in: text) else {
+            return false
+        }
+
+        return isStrongSentenceTerminatingCandidate(candidateRange: candidateRange, in: text)
+    }
+
+    private func isStrongSentenceTerminatingCandidate(
+        candidateRange: Range<String.Index>,
+        in text: String
+    ) -> Bool {
+        let sentenceTokenizer = NLTokenizer(unit: .sentence)
+        sentenceTokenizer.string = text
+        let sentenceRange = sentenceTokenizer.tokenRange(at: candidateRange.lowerBound)
+
+        let trailingTokens = RepairTokenization.wordTokens(in: text).filter {
+            $0.range.lowerBound >= candidateRange.upperBound
+                && $0.range.lowerBound < sentenceRange.upperBound
+        }
+        guard trailingTokens.count <= Self.maximumTrailingWordTokenCount else {
+            return false
+        }
+
+        let terminalContextStart: String.Index
+        if let trailingToken = trailingTokens.first {
+            guard text[candidateRange.upperBound..<trailingToken.range.lowerBound].allSatisfy(\.isWhitespace) else {
+                return false
+            }
+            terminalContextStart = trailingToken.range.upperBound
+        } else {
+            terminalContextStart = candidateRange.upperBound
+        }
+
+        let terminalContext = String(text[terminalContextStart..<sentenceRange.upperBound])
+            .drop(while: \.isWhitespace)
+        guard !terminalContext.isEmpty,
+              let expression = Self.strongSentenceTerminalExpression else {
+            return false
+        }
+
+        let probe = String(terminalContext)
+        let probeRange = NSRange(probe.startIndex..<probe.endIndex, in: probe)
+        return expression.firstMatch(in: probe, options: [], range: probeRange) != nil
     }
 
     private func isPrepositionBoundTerminatingCandidate(
