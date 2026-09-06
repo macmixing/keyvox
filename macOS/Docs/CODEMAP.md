@@ -55,6 +55,7 @@ KeyVox/
 │   │   ├── KeyboardMonitor.swift
 │   │   ├── AudioDeviceManager.swift
 │   │   ├── Audio/
+│   │   │   ├── AudioEngineInputCapture.swift
 │   │   │   └── AudioRecorder*.swift
 │   │   ├── ModelDownloader/
 │   │   ├── Transcription/
@@ -208,7 +209,7 @@ KeyVox/
 
 1. `Core/KeyboardMonitor.swift` publishes trigger/shift/escape/caps-lock state.
 2. `Core/Transcription/TranscriptionManager*.swift` drives app state: `idle -> recording -> transcribing -> idle`.
-3. `Core/Audio/AudioRecorder.swift` captures live audio as mono float frames at 16kHz.
+3. `Core/Audio/AudioEngineInputCapture.swift` binds the selected macOS input device to `AVAudioEngine`, exposes its complete hardware input stream, and hands every channel to `AudioRecorder`; `AudioRecorder+Streaming.swift` deterministically sums all exposed channels before converting the result to mono Float32 frames at 16kHz.
 4. `App/AppServiceRegistry.swift` routes dictation through `SwitchableDictationProvider`, normalizes active-provider selection, synchronizes the device-local Whisper language, and binds install-time Parakeet preloading to the downloader.
 5. For Whisper, `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Whisper/WhisperService+TranscriptionCore.swift` runs whole-capture voice-activity analysis through the package-owned Silero detector before decoding; Parakeet does not use this Whisper-specific gate.
 6. `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/AudioParagraphChunker.swift` detects long internal silence and computes conservative chunk boundaries shared by both providers.
@@ -506,10 +507,13 @@ KeyVox/
   - Validates legacy Whisper installs and strict manifest-backed subdirectory installs before marking models available.
 - `Core/Audio/AudioRecorder.swift`
   - Audio-recorder state holder and public orchestration entrypoints (`startRecording`, `stopRecording`).
+- `Core/Audio/AudioEngineInputCapture.swift`
+  - Selected-device `AVAudioEngine` capture boundary for macOS input hardware.
+  - Resolves the selected capture UID to its CoreAudio device, binds that device to the engine input unit, and configures the input unit's client stream from the complete hardware input format before installing the tap.
 - `Core/Audio/AudioRecorder+Session.swift`
-  - Capture session/device lifecycle setup and teardown.
+  - Selected-device resolution plus capture-engine lifecycle setup and teardown.
 - `Core/Audio/AudioRecorder+Streaming.swift`
-  - Live sample conversion/downsampling, frame buffering, and quiet/dead/active waveform state updates.
+  - Deterministic all-channel summing with clipping protection, mono conversion/downsampling, frame buffering, and quiet/dead/active waveform state updates.
 - `Core/Audio/AudioRecorder+PostProcessing.swift`
   - Stop-time gap removal, normalization, capture classification, and final output frame selection.
 - `Core/Audio/AudioRecorder+Thresholds.swift`

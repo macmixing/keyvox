@@ -3,56 +3,22 @@ import AVFoundation
 import KeyVoxCore
 
 extension AudioRecorder {
-    func startRecordingSession() {
-        guard !isRecording, !isStopFinalizationPending else { return }
-
-        let session = AVCaptureSession()
-        session.beginConfiguration()
+    func startRecordingSession() -> Bool {
+        guard !isRecording, !isStopFinalizationPending else { return false }
 
         // App-scoped input selection: selected mic -> built-in -> first available.
         guard let device = AudioDeviceManager.shared.resolvedCaptureDevice()
             ?? AudioDeviceManager.shared.builtInCaptureDevice()
             ?? AVCaptureDevice.default(for: .audio)
             ?? Self.captureAudioDevices().first else {
-            session.commitConfiguration()
-            return
+            return false
         }
-
-        let input: AVCaptureDeviceInput
-        do {
-            input = try AVCaptureDeviceInput(device: device)
-        } catch {
-            session.commitConfiguration()
-            return
-        }
-
-        guard session.canAddInput(input) else {
-            session.commitConfiguration()
-            return
-        }
-        session.addInput(input)
-
-        let output = AVCaptureAudioDataOutput()
-        output.setSampleBufferDelegate(self, queue: captureQueue)
-
-        guard session.canAddOutput(output) else {
-            session.commitConfiguration()
-            return
-        }
-        session.addOutput(output)
-
-        session.commitConfiguration()
-
-        captureSession = session
-        captureInput = input
-        audioCaptureOutput = output
 
         // Map current device kind for conditional logic upstream
         currentDeviceKind = AudioDeviceManager.shared.availableMicrophones.first(where: { $0.id == device.uniqueID })?.kind ?? .builtIn
         currentCaptureDeviceName = AudioSilenceGatePolicy.normalizedMicrophoneName(device.localizedName)
         configureSessionSilenceThresholds(for: device)
 
-        // Converter is rebuilt lazily when first buffer arrives (or source format changes).
         converter = nil
 
         audioDataQueue.sync {
@@ -79,8 +45,28 @@ extension AudioRecorder {
             self.liveInputSignalState = .dead
         }
 
-        session.startRunning()
+        let inputCapture: AudioEngineInputCapture
+        if let existingCapture = audioInputCapture,
+           existingCapture.deviceUID == device.uniqueID {
+            inputCapture = existingCapture
+        } else {
+            audioInputCapture?.stop()
+            inputCapture = AudioEngineInputCapture()
+        }
+        do {
+            try inputCapture.start(
+                deviceUID: device.uniqueID,
+                deliveryQueue: captureQueue
+            ) { [weak self] buffer in
+                self?.processCapturedBuffer(buffer)
+            }
+        } catch {
+            return false
+        }
+
+        audioInputCapture = inputCapture
         isRecording = true
+        return true
     }
 
     func stopRecordingSession(completion: @escaping ([Float]) -> Void) {
@@ -91,40 +77,13 @@ extension AudioRecorder {
         guard !isStopFinalizationPending else { return }
 
         isStopFinalizationPending = true
+        audioInputCapture?.stop()
         captureQueue.async { [weak self] in
             self?.finalizeStopRecordingSession(completion: completion)
         }
     }
 
-    private func drainPendingCaptureQueueWork() {
-        guard DispatchQueue.getSpecific(key: captureQueueSpecificKey) != captureQueueSpecificValue else {
-            return
-        }
-        captureQueue.sync {}
-    }
-
     private func finalizeStopRecordingSession(completion: @escaping ([Float]) -> Void) {
-        audioCaptureOutput?.setSampleBufferDelegate(nil, queue: nil)
-
-        // Finalize from the capture queue so anything already queued for delivery
-        // lands in the buffer before we tear the session down.
-        if let session = captureSession {
-            session.beginConfiguration()
-            if let input = captureInput {
-                session.removeInput(input)
-            }
-            if let output = audioCaptureOutput {
-                session.removeOutput(output)
-            }
-            session.commitConfiguration()
-            session.stopRunning()
-        }
-
-        drainPendingCaptureQueueWork()
-
-        captureSession = nil
-        captureInput = nil
-        audioCaptureOutput = nil
         converter = nil
         isRecording = false
         isStopFinalizationPending = false
