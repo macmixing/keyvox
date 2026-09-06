@@ -83,7 +83,12 @@ extension TranscriptionManager {
             recorder: audioRecorder,
             selectedVibeTitle: selectedRecordingVibeTitle
         )
-        audioRecorder.startRecording()
+        guard audioRecorder.startRecording() else {
+            OverlayManager.shared.hide()
+            state = .idle
+            updateOverlayHandsFreeVisualState()
+            return
+        }
         vibesCoordinator.prewarmForUpcomingDictationIfNeeded()
     }
 

@@ -3,15 +3,15 @@ import AVFoundation
 import KeyVoxCore
 
 extension AudioRecorder {
-    func startRecordingSession() {
-        guard !isRecording, !isStopFinalizationPending else { return }
+    func startRecordingSession() -> Bool {
+        guard !isRecording, !isStopFinalizationPending else { return false }
 
         // App-scoped input selection: selected mic -> built-in -> first available.
         guard let device = AudioDeviceManager.shared.resolvedCaptureDevice()
             ?? AudioDeviceManager.shared.builtInCaptureDevice()
             ?? AVCaptureDevice.default(for: .audio)
             ?? Self.captureAudioDevices().first else {
-            return
+            return false
         }
 
         // Map current device kind for conditional logic upstream
@@ -45,7 +45,14 @@ extension AudioRecorder {
             self.liveInputSignalState = .dead
         }
 
-        let inputCapture = AudioEngineInputCapture()
+        let inputCapture: AudioEngineInputCapture
+        if let existingCapture = audioInputCapture,
+           existingCapture.deviceUID == device.uniqueID {
+            inputCapture = existingCapture
+        } else {
+            audioInputCapture?.stop()
+            inputCapture = AudioEngineInputCapture()
+        }
         do {
             try inputCapture.start(
                 deviceUID: device.uniqueID,
@@ -54,11 +61,12 @@ extension AudioRecorder {
                 self?.processCapturedBuffer(buffer)
             }
         } catch {
-            return
+            return false
         }
 
         audioInputCapture = inputCapture
         isRecording = true
+        return true
     }
 
     func stopRecordingSession(completion: @escaping ([Float]) -> Void) {
@@ -76,7 +84,6 @@ extension AudioRecorder {
     }
 
     private func finalizeStopRecordingSession(completion: @escaping ([Float]) -> Void) {
-        audioInputCapture = nil
         converter = nil
         isRecording = false
         isStopFinalizationPending = false

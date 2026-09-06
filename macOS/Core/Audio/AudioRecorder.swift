@@ -55,7 +55,8 @@ class AudioRecorder: NSObject, ObservableObject {
     var lastCaptureHadNonDeadSignal: Bool = false
     var captureStartedAt = Date.distantPast
 
-    func startRecording() {
+    @discardableResult
+    func startRecording() -> Bool {
         startRecordingSession()
     }
 

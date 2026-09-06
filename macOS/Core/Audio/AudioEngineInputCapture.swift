@@ -2,6 +2,38 @@ import AVFoundation
 import AudioToolbox
 import CoreAudio
 
+private final class AudioInputCallbackGate {
+    private let lock = NSLock()
+    private let group = DispatchGroup()
+    private var isOpen = false
+
+    func open() {
+        lock.lock()
+        isOpen = true
+        lock.unlock()
+    }
+
+    func performIfOpen(_ work: () -> Void) {
+        lock.lock()
+        guard isOpen else {
+            lock.unlock()
+            return
+        }
+        group.enter()
+        lock.unlock()
+
+        defer { group.leave() }
+        work()
+    }
+
+    func closeAndWait() {
+        lock.lock()
+        isOpen = false
+        lock.unlock()
+        group.wait()
+    }
+}
+
 final class AudioEngineInputCapture {
     enum CaptureError: Error {
         case deviceNotFound
@@ -13,12 +45,26 @@ final class AudioEngineInputCapture {
 
     private var engine: AVAudioEngine?
     private var inputNode: AVAudioInputNode?
+    private let callbackGate = AudioInputCallbackGate()
+    private(set) var deviceUID: String?
 
     func start(
         deviceUID: String,
         deliveryQueue: DispatchQueue,
         bufferHandler: @escaping (AVAudioPCMBuffer) -> Void
     ) throws {
+        if let engine, self.deviceUID == deviceUID {
+            callbackGate.open()
+            do {
+                engine.prepare()
+                try engine.start()
+                return
+            } catch {
+                callbackGate.closeAndWait()
+                throw error
+            }
+        }
+
         guard var deviceID = Self.audioDeviceID(forUID: deviceUID) else {
             throw CaptureError.deviceNotFound
         }
@@ -59,25 +105,34 @@ final class AudioEngineInputCapture {
             throw CaptureError.invalidInputFormat
         }
 
+        let callbackGate = callbackGate
         inputNode.installTap(onBus: 0, bufferSize: 1_024, format: inputFormat) { buffer, _ in
-            guard let copiedBuffer = Self.copy(buffer) else { return }
-            deliveryQueue.async {
-                bufferHandler(copiedBuffer)
+            callbackGate.performIfOpen {
+                guard let copiedBuffer = Self.copy(buffer) else { return }
+                deliveryQueue.async {
+                    bufferHandler(copiedBuffer)
+                }
             }
         }
 
-        engine.prepare()
-        try engine.start()
+        callbackGate.open()
+        do {
+            engine.prepare()
+            try engine.start()
+        } catch {
+            callbackGate.closeAndWait()
+            inputNode.removeTap(onBus: 0)
+            throw error
+        }
 
         self.engine = engine
         self.inputNode = inputNode
+        self.deviceUID = deviceUID
     }
 
     func stop() {
-        inputNode?.removeTap(onBus: 0)
+        callbackGate.closeAndWait()
         engine?.stop()
-        inputNode = nil
-        engine = nil
     }
 
     private static func audioDeviceID(forUID deviceUID: String) -> AudioDeviceID? {
