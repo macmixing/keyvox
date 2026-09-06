@@ -2,6 +2,23 @@ import Cocoa
 import Combine
 import CoreGraphics
 
+private final class KeyboardModifierEventTimestampStore {
+    private let lock = NSLock()
+    private var timestampsByKeyCode: [UInt16: TimeInterval] = [:]
+
+    func record(keyCode: UInt16, timestamp: TimeInterval) {
+        lock.lock()
+        timestampsByKeyCode[keyCode] = timestamp
+        lock.unlock()
+    }
+
+    func takeTimestamp(for keyCode: UInt16) -> TimeInterval? {
+        lock.lock()
+        defer { lock.unlock() }
+        return timestampsByKeyCode.removeValue(forKey: keyCode)
+    }
+}
+
 struct KeyboardModifierStateMachine {
     var leftOptionDown = false
     var rightOptionDown = false
@@ -112,10 +129,13 @@ final class KeyboardMonitor: ObservableObject {
     private var localMonitor: Any?
     private var globalKeyDownMonitor: Any?
     private var localKeyDownMonitor: Any?
+    private var modifierEventTap: CFMachPort?
+    private var modifierEventTapRunLoopSource: CFRunLoopSource?
     private var cancellables = Set<AnyCancellable>()
 
     private var modifierState = KeyboardModifierStateMachine()
     private var lastFlagsChangedEvent: NSEvent?
+    private let modifierEventTimestampStore = KeyboardModifierEventTimestampStore()
 
     // MARK: - Init
 
@@ -144,6 +164,8 @@ final class KeyboardMonitor: ObservableObject {
     // MARK: - Monitoring
 
     func startMonitoring() {
+        startPhysicalModifierTimestampMonitoringIfAuthorized()
+
         // Global monitor for when the app is in the background
         globalMonitor = NSEvent.addGlobalMonitorForEvents(matching: .flagsChanged) { [weak self] event in
             Task { @MainActor [weak self] in
@@ -178,6 +200,41 @@ final class KeyboardMonitor: ObservableObject {
         }
     }
 
+    private func startPhysicalModifierTimestampMonitoringIfAuthorized() {
+        guard modifierEventTap == nil, AXIsProcessTrusted() else { return }
+
+        let callback: CGEventTapCallBack = { _, eventType, event, userInfo in
+            guard eventType == .flagsChanged, let userInfo else {
+                return Unmanaged.passUnretained(event)
+            }
+            let timestampStore = Unmanaged<KeyboardModifierEventTimestampStore>
+                .fromOpaque(userInfo)
+                .takeUnretainedValue()
+            let keyCode = UInt16(event.getIntegerValueField(.keyboardEventKeycode))
+            let timestamp = TimeInterval(event.timestamp) / TimeInterval(NSEC_PER_SEC)
+            timestampStore.record(keyCode: keyCode, timestamp: timestamp)
+            return Unmanaged.passUnretained(event)
+        }
+        let eventMask = CGEventMask(1 << CGEventType.flagsChanged.rawValue)
+        let userInfo = Unmanaged.passUnretained(modifierEventTimestampStore).toOpaque()
+        guard let eventTap = CGEvent.tapCreate(
+            tap: .cgSessionEventTap,
+            place: .headInsertEventTap,
+            options: .listenOnly,
+            eventsOfInterest: eventMask,
+            callback: callback,
+            userInfo: userInfo
+        ) else {
+            return
+        }
+
+        modifierEventTap = eventTap
+        let runLoopSource = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, eventTap, 0)
+        modifierEventTapRunLoopSource = runLoopSource
+        CFRunLoopAddSource(CFRunLoopGetMain(), runLoopSource, .commonModes)
+        CGEvent.tapEnable(tap: eventTap, enable: true)
+    }
+
     @Published var escapePressedSignal = false
 
     private func handleEscapeKey() {
@@ -197,9 +254,18 @@ final class KeyboardMonitor: ObservableObject {
         if let localKeyDownMonitor {
             NSEvent.removeMonitor(localKeyDownMonitor)
         }
+        if let modifierEventTapRunLoopSource {
+            CFRunLoopRemoveSource(CFRunLoopGetMain(), modifierEventTapRunLoopSource, .commonModes)
+        }
+        if let modifierEventTap {
+            CGEvent.tapEnable(tap: modifierEventTap, enable: false)
+        }
     }
 
     private func handleModifierChange(event: NSEvent) {
+        if modifierEventTap == nil {
+            startPhysicalModifierTimestampMonitoringIfAuthorized()
+        }
         lastFlagsChangedEvent = event
         modifierState.update(keyCode: event.keyCode, flags: event.modifierFlags)
 
@@ -217,7 +283,8 @@ final class KeyboardMonitor: ObservableObject {
         if triggerStateChanged {
             triggerKeyEvent = KeyboardTriggerEvent(
                 isPressed: newState,
-                timestamp: event.timestamp
+                timestamp: modifierEventTimestampStore.takeTimestamp(for: event.keyCode)
+                    ?? event.timestamp
             )
         }
     }
