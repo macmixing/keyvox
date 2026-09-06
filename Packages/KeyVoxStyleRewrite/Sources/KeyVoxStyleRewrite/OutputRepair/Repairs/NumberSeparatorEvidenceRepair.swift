@@ -2,6 +2,12 @@ import Foundation
 import NaturalLanguage
 
 struct NumberSeparatorEvidenceRepair {
+    private enum CandidateKind {
+        case time
+        case decimal
+        case ambiguous
+    }
+
     private static let dotSeparatedCandidatePattern = #"(?<![\w.])([1-9]|1[0-2])\.([0-5][0-9])(?![\w]|\.[\w])"#
     private static let strongSentenceTerminalExpression = try? NSRegularExpression(
         pattern: #"^\p{Sentence_Break=STerm}"#
@@ -13,6 +19,12 @@ struct NumberSeparatorEvidenceRepair {
     private static let dateDetector: NSDataDetector? = try? NSDataDetector(
         types: NSTextCheckingResult.CheckingType.date.rawValue
     )
+
+    private let taggedTokens: (String) -> [RepairTaggedToken]
+
+    init(taggedTokens: @escaping (String) -> [RepairTaggedToken] = RepairTokenization.taggedTokens(in:)) {
+        self.taggedTokens = taggedTokens
+    }
 
     func repair(original: String, rewritten: String) -> String {
         let separatorEvidence = numericSeparatorEvidence(in: original)
@@ -111,10 +123,13 @@ struct NumberSeparatorEvidenceRepair {
         ) { match, nsText in
             guard match.numberOfRanges == 3 else { return }
             let separatorRun = nsText.substring(with: match.range)
-            if isTimeTerminatingAtCandidate(match: match, in: nsText as String) {
+            switch candidateKind(match: match, in: nsText as String) {
+            case .time:
                 timeSeparatedRuns.insert(separatorRun)
-            } else {
+            case .decimal:
                 decimalSeparatedRuns.insert(separatorRun)
+            case .ambiguous:
+                break
             }
         }
 
@@ -168,33 +183,38 @@ struct NumberSeparatorEvidenceRepair {
         return decimalRuns
     }
 
-    private func isTimeTerminatingAtCandidate(match: NSTextCheckingResult, in text: String) -> Bool {
+    private func candidateKind(match: NSTextCheckingResult, in text: String) -> CandidateKind {
         guard let candidateRange = Range(match.range, in: text) else {
-            return false
+            return .decimal
         }
 
         if let dateDetector = Self.dateDetector,
            isDetectedTime(candidateRange: candidateRange, in: text, using: dateDetector) {
-            return true
+            return .time
         }
 
         if isStrongSentenceTerminatingCandidate(candidateRange: candidateRange, in: text) {
-            return true
+            return .time
         }
 
-        if isPrepositionBoundTerminatingCandidate(
+        let prepositionBound = isPrepositionBoundTerminatingCandidate(
             candidateRange: candidateRange,
             in: text
-        ) {
-            return true
+        )
+        if prepositionBound == true {
+            return .time
         }
 
-        guard let dateDetector = Self.dateDetector else { return false }
-        return isDetectedTimeAfterElidingInterveningWords(
-            candidateRange: candidateRange,
-            in: text,
-            using: dateDetector
-        )
+        if let dateDetector = Self.dateDetector,
+           isDetectedTimeAfterElidingInterveningWords(
+               candidateRange: candidateRange,
+               in: text,
+               using: dateDetector
+           ) {
+            return .time
+        }
+
+        return prepositionBound == nil ? .ambiguous : .decimal
     }
 
     private func isStrongSentenceTerminatingCandidate(
@@ -249,11 +269,16 @@ struct NumberSeparatorEvidenceRepair {
     private func isPrepositionBoundTerminatingCandidate(
         candidateRange: Range<String.Index>,
         in text: String
-    ) -> Bool {
+    ) -> Bool? {
         let sentenceTokenizer = NLTokenizer(unit: .sentence)
         sentenceTokenizer.string = text
         let sentenceRange = sentenceTokenizer.tokenRange(at: candidateRange.lowerBound)
-        let tokens = RepairTokenization.taggedTokens(in: text)
+        let tokens = taggedTokens(text)
+        guard tokens.contains(where: {
+            ($0.tag != nil && $0.tag != .otherWord) || $0.lemma != nil
+        }) else {
+            return nil
+        }
         guard let precedingToken = tokens.last(where: {
             $0.token.range.upperBound <= candidateRange.lowerBound
         }), precedingToken.tag == .preposition else {

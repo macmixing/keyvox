@@ -48,6 +48,16 @@ final class NumberSeparatorEvidenceRepairTests: XCTestCase {
         XCTAssertEqual(output, "Can you meet me there at 5:30?")
     }
 
+    func testRewriteRepairPreservesModelCorrectedPeriodTerminatedTimeWhenTaggingIsUnavailable() {
+        let repair = NumberSeparatorEvidenceRepair(taggedTokens: Self.unavailableTaggedTokens(in:))
+        let output = repair.repair(
+            original: "Tell John to meet me there at 5.30.",
+            rewritten: "Tell John to meet me there at 5:30."
+        )
+
+        XCTAssertEqual(output, "Tell John to meet me there at 5:30.")
+    }
+
     func testRewriteRepairRepairsObservedPolishedNoOpTerminalTime() {
         let output = OutputRepair.repairModelOutput(
             original: "Can you meet me there at 4.30?",
@@ -117,5 +127,11 @@ final class NumberSeparatorEvidenceRepairTests: XCTestCase {
         )
 
         XCTAssertEqual(output, "The rate is 5.30%.")
+    }
+
+    private static func unavailableTaggedTokens(in text: String) -> [RepairTaggedToken] {
+        RepairTokenization.wordTokens(in: text).map {
+            RepairTaggedToken(token: $0, tag: .otherWord, lemma: nil)
+        }
     }
 }
