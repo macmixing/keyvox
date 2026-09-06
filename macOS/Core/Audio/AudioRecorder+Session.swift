@@ -6,6 +6,12 @@ extension AudioRecorder {
     func prepareRecordingSession() {
         guard let device = resolvedRecordingDevice() else { return }
 
+        captureQueue.async { [weak self] in
+            self?.prepareInputCapture(for: device)
+        }
+    }
+
+    private func prepareInputCapture(for device: AVCaptureDevice) {
         let inputCapture = audioInputCapture ?? AudioEngineInputCapture()
         do {
             try inputCapture.prepare(
@@ -59,19 +65,25 @@ extension AudioRecorder {
             self.liveInputSignalState = .dead
         }
 
-        let inputCapture = audioInputCapture ?? AudioEngineInputCapture()
-        do {
-            try inputCapture.start(
-                deviceUID: device.uniqueID,
-                deliveryQueue: captureQueue
-            ) { [weak self] buffer in
-                self?.processCapturedBuffer(buffer)
+        let didStartCapture = captureQueue.sync {
+            let inputCapture = audioInputCapture ?? AudioEngineInputCapture()
+            do {
+                try inputCapture.start(
+                    deviceUID: device.uniqueID,
+                    deliveryQueue: captureQueue
+                ) { [weak self] buffer in
+                    self?.processCapturedBuffer(buffer)
+                }
+                audioInputCapture = inputCapture
+                return true
+            } catch {
+                return false
             }
-        } catch {
+        }
+        guard didStartCapture else {
             return false
         }
 
-        audioInputCapture = inputCapture
         isRecording = true
         return true
     }
