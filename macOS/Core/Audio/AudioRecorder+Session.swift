@@ -4,6 +4,7 @@ import KeyVoxCore
 
 extension AudioRecorder {
     func prepareRecordingSession() {
+        guard AVCaptureDevice.authorizationStatus(for: .audio) == .authorized else { return }
         guard let device = resolvedRecordingDevice() else { return }
 
         captureQueue.async { [weak self] in
