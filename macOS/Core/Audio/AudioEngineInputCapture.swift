@@ -53,16 +53,30 @@ final class AudioEngineInputCapture {
         deliveryQueue: DispatchQueue,
         bufferHandler: @escaping (AVAudioPCMBuffer) -> Void
     ) throws {
+        try prepare(
+            deviceUID: deviceUID,
+            deliveryQueue: deliveryQueue,
+            bufferHandler: bufferHandler
+        )
+
+        guard let engine else { throw CaptureError.audioUnitUnavailable }
+        callbackGate.open()
+        do {
+            try engine.start()
+        } catch {
+            callbackGate.closeAndWait()
+            throw error
+        }
+    }
+
+    func prepare(
+        deviceUID: String,
+        deliveryQueue: DispatchQueue,
+        bufferHandler: @escaping (AVAudioPCMBuffer) -> Void
+    ) throws {
         if let engine, self.deviceUID == deviceUID {
-            callbackGate.open()
-            do {
-                engine.prepare()
-                try engine.start()
-                return
-            } catch {
-                callbackGate.closeAndWait()
-                throw error
-            }
+            engine.prepare()
+            return
         }
 
         guard var deviceID = Self.audioDeviceID(forUID: deviceUID) else {
@@ -126,19 +140,10 @@ final class AudioEngineInputCapture {
             }
         }
 
-        callbackGate.open()
-        do {
-            engine.prepare()
-            try engine.start()
-        } catch {
-            callbackGate.closeAndWait()
-            inputNode.removeTap(onBus: 0)
-            throw error
-        }
-
         self.engine = engine
         self.inputNode = inputNode
         self.deviceUID = deviceUID
+        engine.prepare()
     }
 
     func stop() {
