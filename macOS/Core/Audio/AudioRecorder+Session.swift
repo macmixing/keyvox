@@ -3,14 +3,28 @@ import AVFoundation
 import KeyVoxCore
 
 extension AudioRecorder {
+    func prepareRecordingSession() {
+        guard let device = resolvedRecordingDevice() else { return }
+
+        let inputCapture = audioInputCapture ?? AudioEngineInputCapture()
+        do {
+            try inputCapture.prepare(
+                deviceUID: device.uniqueID,
+                deliveryQueue: captureQueue
+            ) { [weak self] buffer in
+                self?.processCapturedBuffer(buffer)
+            }
+            audioInputCapture = inputCapture
+        } catch {
+            audioInputCapture = nil
+        }
+    }
+
     func startRecordingSession() -> Bool {
         guard !isRecording, !isStopFinalizationPending else { return false }
 
         // App-scoped input selection: selected mic -> built-in -> first available.
-        guard let device = AudioDeviceManager.shared.resolvedCaptureDevice()
-            ?? AudioDeviceManager.shared.builtInCaptureDevice()
-            ?? AVCaptureDevice.default(for: .audio)
-            ?? Self.captureAudioDevices().first else {
+        guard let device = resolvedRecordingDevice() else {
             return false
         }
 
@@ -85,5 +99,12 @@ extension AudioRecorder {
         DispatchQueue.main.async {
             completion(outputFrames)
         }
+    }
+
+    private func resolvedRecordingDevice() -> AVCaptureDevice? {
+        AudioDeviceManager.shared.resolvedCaptureDevice()
+            ?? AudioDeviceManager.shared.builtInCaptureDevice()
+            ?? AVCaptureDevice.default(for: .audio)
+            ?? Self.captureAudioDevices().first
     }
 }

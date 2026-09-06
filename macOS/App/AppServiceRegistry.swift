@@ -23,14 +23,16 @@ final class AppServiceRegistry {
     private var currentActiveProviderSelection: AppSettingsStore.ActiveDictationProvider
     private var cancellables = Set<AnyCancellable>()
     lazy var transcriptionManager: TranscriptionManager = {
+        let audioRecorder = AudioRecorder()
         let manager = TranscriptionManager(
             appSettings: appSettings,
             modelDownloader: .shared,
-            audioRecorder: AudioRecorder(),
+            audioRecorder: audioRecorder,
             serviceRegistry: self,
             vibesCoordinator: vibesCoordinator,
             postProcessor: TranscriptionPostProcessor()
         )
+        audioRecorder.prepareRecordingSession()
 
         canSwitchActiveProvider = { [weak manager] in
             manager?.state == .idle
