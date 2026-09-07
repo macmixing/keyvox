@@ -1,5 +1,5 @@
 import Foundation
-import Combine
+import KeyVoxState
 
 public enum DictionaryStoreError: LocalizedError, Equatable {
     case emptyPhrase
@@ -22,11 +22,11 @@ public enum DictionaryStoreError: LocalizedError, Equatable {
 }
 
 @MainActor
-public final class DictionaryStore: ObservableObject {
-    @Published public private(set) var entries: [DictionaryEntry] = []
-    @Published public private(set) var loadWarningMessage: String?
-    @Published public private(set) var saveErrorMessage: String?
-    @Published public private(set) var degradedDurability: Bool = false
+public final class DictionaryStore: StatePublishing {
+    @StateValue public private(set) var entries: [DictionaryEntry] = []
+    @StateValue public private(set) var loadWarningMessage: String?
+    @StateValue public private(set) var saveErrorMessage: String?
+    @StateValue public private(set) var degradedDurability: Bool = false
     public private(set) var persistedSnapshotModifiedAt: Date?
 
     private struct DictionaryPayload: Codable {

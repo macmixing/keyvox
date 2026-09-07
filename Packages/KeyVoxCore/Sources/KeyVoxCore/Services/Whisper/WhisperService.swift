@@ -1,13 +1,13 @@
 import Foundation
 import KeyVoxWhisper
 import KeyVoxVoiceActivity
-import Combine
+import KeyVoxState
 
 @MainActor
-public class WhisperService: ObservableObject, DictationProvider {
-    @Published public internal(set) var isTranscribing = false
-    @Published public internal(set) var transcriptionText = ""
-    @Published public internal(set) var lastResultWasLikelyNoSpeech = false
+public class WhisperService: StatePublishing, DictationProvider {
+    @StateValue public internal(set) var isTranscribing = false
+    @StateValue public internal(set) var transcriptionText = ""
+    @StateValue public internal(set) var lastResultWasLikelyNoSpeech = false
 
     private let modelPathResolver: () -> String?
     private var activeTranscriptionRequestID = UUID()
