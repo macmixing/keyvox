@@ -1,6 +1,6 @@
 # Portable speech harness
 
-This command-line host exercises real KeyVox Whisper and Silero VAD. It makes no
+This command-line host exercises real KeyVox Whisper, Silero VAD, and Core processing. It makes no
 frontend decision. Input is mono, 16 kHz, little-endian float32 PCM with samples
 in [-1, 1]. Convert an audio fixture using:
 
@@ -29,8 +29,9 @@ and GGML CPU libraries. Apple retains the existing v1.7.6 XCFramework. The C
 module is selected by destination platform, not the build host. Its regular C
 target also lets Xcode resolve the dependency graph when building Apple apps.
 
-Deploy the executable and `KeyVoxVoiceActivity_KeyVoxVoiceActivity.resources`
-directory from the Android build output together. Also deploy `libc++_shared.so`
+Deploy the executable, `KeyVoxVoiceActivity_KeyVoxVoiceActivity.resources`, and
+`KeyVoxCore_KeyVoxCore.resources` directories from the Android build output together.
+Preserve the bundled resource notices. Also deploy `libc++_shared.so`
 from the NDK's `toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/aarch64-linux-android`
 directory and put its location on `LD_LIBRARY_PATH`. The Swift standard library
 is linked statically. Any additional runtime dependencies must be verified on
@@ -39,7 +40,17 @@ the execution target.
 ```sh
 ./KeyVoxSpeechHarness vad audio.f32le
 ./KeyVoxSpeechHarness transcribe ggml-tiny.en.bin audio.f32le
+./KeyVoxSpeechHarness pipeline model.bin audio.f32le
+./KeyVoxSpeechHarness process input.txt
 ```
+
+`pipeline` feeds actual Whisper segments to `TranscriptionPostProcessor` with an
+empty in-memory dictionary. `process` accepts a UTF-8 text file. Both emit a JSON
+report containing input, output, processing language, and available linguistic
+features. An optional final language-code argument selects the processing
+language; it does not change speech inference. Without it, `pipeline` forwards
+detected metadata, including any model metadata anomaly. The harness does not
+create or change the user's dictionary or model installation state.
 
 ## Engineering record
 
@@ -52,7 +63,7 @@ the execution target.
 | Android speech inference / VAD execution | FUNCTIONAL | Public upstream JFK fixture: 176,000 samples, two transcript segments |
 | Portable WAV/sample loading | COMPILING | Android compiled the new audio sources; generated PCM and resampling fixtures pass on macOS; device execution pending |
 | Core package graph | COMPILING | Full Android build with static Swift standard library and real Whisper native dependencies passes |
-| Core text processing execution | UNRESOLVED | Runtime harness integration pending; linguistic features remain incomplete |
+| Core text processing execution | FUNCTIONAL | Real Whisper transcript passed through production Core on the Android phone; linguistic features remain incomplete |
 | Date/address numeric protection | STUBBED | Semantic availability is explicit; non-Apple prose is conservatively preserved |
 
 There are no placeholder inference implementations. Compilation is not execution
@@ -67,7 +78,11 @@ from mono 16 kHz signed PCM16 to float32. Model: `ggml-tiny.en.bin` from
 
 > And so my fellow Americans ask not what your country can do for you ask what you can do for your country.
 
-This proves file-based inference, not microphone capture or Core processing.
+The `pipeline` command subsequently passed this actual inferred text through
+Core on the same phone and produced the transcript with its leading whitespace
+removed. This proves execution of the real processing path, not linguistic
+parity: the JSON report explicitly showed all four linguistic features unavailable.
+Microphone capture is not yet demonstrated.
 The model's automatic language metadata reported an unexpected language for this
 English-only model; transcript generation succeeded, but language metadata needs
 separate investigation before relying on it.
