@@ -25,12 +25,9 @@ let package = Package(
         ),
         .target(
             name: "KeyVoxSpeechRuntime",
-            dependencies: [
-                .target(name: "whisper", condition: .when(platforms: [.iOS, .macOS])),
-                .target(name: "CWhisper", condition: .when(platforms: [.android, .linux, .windows])),
-            ]
+            dependencies: ["whisper", "CWhisper"]
         ),
-        .systemLibrary(name: "CWhisper", pkgConfig: "whisper"),
+        .target(name: "CWhisper", publicHeadersPath: "include"),
         .target(
             name: "KeyVoxVoiceActivity",
             dependencies: ["KeyVoxSpeechRuntime"],

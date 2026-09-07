@@ -1,4 +1,4 @@
-module CWhisper [system] {
+module CWhisper {
     header "shim.h"
     link "whisper"
     link "ggml"
