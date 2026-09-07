@@ -1,4 +1,5 @@
 import Foundation
+import Dispatch
 import KeyVoxVoiceActivity
 import KeyVoxWhisper
 
@@ -8,8 +9,8 @@ struct SpeechHarness {
 
     static func main() async throws {
         let arguments = Array(CommandLine.arguments.dropFirst())
-        guard arguments.count == 2 || arguments.count == 3 else {
-            print("Usage: KeyVoxSpeechHarness vad <audio.f32le> | transcribe <model.bin> <audio.f32le>")
+        guard (2...4).contains(arguments.count) else {
+            print("Usage: KeyVoxSpeechHarness vad <audio.f32le> | transcribe <model.bin> <audio.f32le> | pipeline <model.bin> <audio.f32le> [language-code] | process <text-file> [language-code]")
             throw HarnessError.usage
         }
         switch arguments[0] {
@@ -26,6 +27,19 @@ struct SpeechHarness {
             let result = try await whisper.transcribeWithMetadata(audioFrames: frames)
             print("samples=\(frames.count) segments=\(result.segments.count)")
             print(result.segments.map(\.text).joined())
+        case "pipeline" where arguments.count == 3 || arguments.count == 4:
+            let frames = try PCMInput.read(arguments[2])
+            let whisper = Whisper(fromFileURL: URL(fileURLWithPath: arguments[1]))
+            let result = try await whisper.transcribeWithMetadata(audioFrames: frames)
+            let language = arguments.count == 4 ? arguments[3] : result.detectedLanguageCode
+            try await CoreProcessing.run(
+                text: result.segments.map(\.text).joined(),
+                languageCode: language,
+                detectedLanguageCode: result.detectedLanguageCode
+            )
+        case "process" where arguments.count == 2 || arguments.count == 3:
+            let text = try String(contentsOfFile: arguments[1], encoding: .utf8)
+            try await CoreProcessing.run(text: text, languageCode: arguments.count == 3 ? arguments[2] : nil)
         default:
             throw HarnessError.usage
         }
