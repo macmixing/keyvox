@@ -53,15 +53,27 @@ apps do not acquire this dependency. Its GGML symbols remain private to that lib
 ./KeyVoxSpeechHarness file-pipeline model.bin audio.wav
 ./KeyVoxSpeechHarness parakeet-file-pipeline model.gguf audio.wav
 ./KeyVoxSpeechHarness process input.txt
+./KeyVoxSpeechHarness dictionary-add /path/to/diagnostic-storage phrase.txt
 ```
 
-`pipeline` feeds actual Whisper segments to `TranscriptionPostProcessor` with an
-empty in-memory dictionary. `process` accepts a UTF-8 text file. Both emit a JSON
+`pipeline` feeds actual Whisper segments to `TranscriptionPostProcessor`.
+`process` accepts a UTF-8 text file. Both emit a JSON
 report containing input, output, processing language, and available linguistic
 features. An optional final language-code argument selects the processing
 language; it does not change speech inference. Without it, `pipeline` forwards
 detected metadata, including any model metadata anomaly. The harness does not
-create or change the user's dictionary or model installation state.
+change model installation state. With no dictionary directory selected, processing
+uses an empty dictionary and does not open dictionary storage.
+
+Set `KEYVOX_DICTIONARY_DIRECTORY` to explicitly select a diagnostic DictionaryStore
+base directory for any processing command. `dictionary-add` reads one phrase from
+the supplied UTF-8 file and saves through the existing store. It prints snapshots
+before and after the mutation, including load/save warnings and degraded durability;
+failure exits nonzero. Processing reports the loaded entry count and the same
+diagnostics. The selected directory uses normal store recovery behavior: loading
+can restore a backup or quarantine damaged data. It is not a read-only import.
+Use a dedicated diagnostic directory. The existing pronunciation resources and
+dictionary correction rules are unchanged.
 
 `file-pipeline` uses the production `WhisperService` file path: platform audio
 decoding, Silero VAD, speech-range selection, Whisper inference, then Core text
@@ -99,6 +111,7 @@ its optional assets.
 | Portable WAV/sample loading | FUNCTIONAL | Android production service decoded mono 16 kHz speech and stereo 48 kHz speech; 48 kHz stereo silence produced empty output; malformed WAV failed |
 | Core package graph | COMPILING | Full Android build with static Swift standard library and real Whisper native dependencies passes |
 | Core text processing execution | FUNCTIONAL | Real Whisper transcript passed through production Core on the Android phone; linguistic features remain incomplete |
+| Dictionary persistence and Core connection | FUNCTIONAL | Android/macOS separate-process canonical output matched; duplicate rejection preserved entries; backup recovery and pre-mutation warnings verified; speech pipeline loaded persisted entries |
 | Unicode word boundaries | FUNCTIONAL | Real transcript yielded matching UTF-16 token ranges on Android and macOS |
 | Optional statistical grammatical roles | FUNCTIONAL | Explicitly selected MIT model: 22 word tokens, 20 supported roles; Android/macOS reports identical; pinned reference predictor matched all 23 context tokens |
 | Portable names / lemmas | UNRESOLVED | Optional predictor reports both unavailable; Apple implementation remains available |
