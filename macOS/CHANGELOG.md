@@ -6,6 +6,39 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.3.8] - 2026-09-07
+
+Improves Mac audio and trigger-key reliability while refining listening feedback, text handling, number and time preservation, and custom-dictionary accuracy.
+
+### Changed
+
+- Updated audio capture to work reliably with multichannel microphones and audio interfaces.
+- Updated the recording overlay to react more quickly to speech and settle more naturally as input becomes quiet.
+
+### Fixed
+
+- Fixed dictation after numbered hyphen sequences beginning with lowercase text instead of preserving sentence-start capitalization, including when pasting into existing content.
+- Fixed singular stylized dictionary entries being changed to possessives without suffix evidence and ordinary sentence-start capitalization being mistaken for stylized-word evidence.
+- Fixed years in counterfactual phrases being reformatted as grouped quantities.
+- Fixed quick modifier-key trigger taps being misread when macOS delivered their events late.
+- Fixed Vibes moving the cursor when a rewrite left the selected text unchanged.
+- Fixed Vibes rewrites leaving dotted times formatted like decimals while preserving actual version numbers, measurements, and percentages.
+
+### Package versions
+
+KeyVox macOS 1.3.8:
+- KeyVoxCore            1.2.8
+- KeyVoxWhisper         1.1.0
+- KeyVoxParakeet        1.0.4
+- KeyVoxStyleRewrite    1.0.13
+- KeyVoxLocalInference  1.0.4
+- KeyVoxVibesAdapters   1.0.4
+- KeyVoxTextComposition 1.0.4
+- KeyVoxPromotions      1.0.0
+- KeyVoxVoiceActivity   1.0.0
+
+---
+
 ## [1.3.7] - 2026-09-02
 
 Adds dynamic campaign cards to Mac settings while fixing capitalization, numbered-list formatting, and custom-dictionary matches.
