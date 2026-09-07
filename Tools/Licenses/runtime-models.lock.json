@@ -23,5 +23,19 @@
     "license_source": "https://raw.githubusercontent.com/openai/whisper/31243bad24cc746f07d4c8bfdd2d974872cb1803/LICENSE",
     "conversion": "Published GGML conversion of OpenAI Whisper weights; published model repository declares MIT. Exact historical conversion invocation is not independently reproduced.",
     "license_declaration": "https://huggingface.co/ggerganov/whisper.cpp/raw/5359861c739e955e79d9a303bcbc70fb988958b1/README.md"
+  },
+  "whisper_ios_baseline_model": {
+    "filename": "ggml-base.bin",
+    "bundled": false,
+    "sha256": "60ed5bc3dd14eea856493d334349b405782ddcaf0028d4b5df4088345fba2efe",
+    "size": 147951465,
+    "artifact_url": "https://huggingface.co/ggerganov/whisper.cpp/resolve/90a64d80ea254cf67575b41a5971f972c79f7b45/ggml-base.bin",
+    "license": "MIT",
+    "license_path": "Tools/Licenses/WHISPER-MODEL-LICENSE.txt",
+    "license_sha256": "b5d65a59060e68c4ff940e1eddfa6f94b2d68fdf58ed7f4dd57721c997e35e9d",
+    "license_source": "https://raw.githubusercontent.com/openai/whisper/31243bad24cc746f07d4c8bfdd2d974872cb1803/LICENSE",
+    "conversion": "Published GGML conversion of OpenAI Whisper weights; published model repository declares MIT. Exact historical conversion invocation is not independently reproduced.",
+    "license_declaration": "https://huggingface.co/ggerganov/whisper.cpp/raw/90a64d80ea254cf67575b41a5971f972c79f7b45/README.md",
+    "product_source_of_truth": "iOS/KeyVox iOS/Core/ModelDownloader/DictationModelCatalog.swift and ModelInstallManifest.swift; this record mirrors the existing iOS artifact, not a separate product catalog."
   }
 }

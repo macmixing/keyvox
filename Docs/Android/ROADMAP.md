@@ -42,6 +42,8 @@ link detailed commands and limitations rather than duplicating them here.
 | URL-prefix and file-type handling | FUNCTIONAL | Portable implementations exercised with fixtures; Apple-specific detection retained where applicable |
 | Word boundaries | FUNCTIONAL | Unicode tokenization executed on Android and macOS |
 | Optional grammatical roles | FUNCTIONAL | Explicitly selected permissively licensed model executed; accuracy and language coverage are limited |
+| iOS Whisper Base baseline | FUNCTIONAL | Exact iOS GGML artifact/revision/checksum; existing microphone audio passed through shared service, automatic language metadata, VAD, and dictionary/Core processing |
+| Language-specific text groundwork | FUNCTIONAL | Existing Spanish/French list fixtures matched macOS output; speech-accuracy evaluation is outside this experiment |
 | Names and lemmas outside Apple | UNRESOLVED | Current portable analyzer explicitly reports them unavailable |
 | Semantic date/address protection | STUBBED | Conservative fallback preserves prose; not equivalent to Apple's detection |
 | Model installation and management on Android | UNRESOLVED | Runtime trials use explicitly deployed files; full install/download/recovery flow is not demonstrated |
@@ -52,8 +54,12 @@ link detailed commands and limitations rather than duplicating them here.
 
 - [x] Verify dictionary persistence, recovery diagnostics, and the existing
       correction path on Android using host-supplied entries.
-- [ ] Run multilingual speech/text fixtures with explicit model and processing
-      language selection. Do not introduce shared English defaults.
+- [x] Verify the exact iOS Base model and language metadata routing, and
+      reuse language-specific text fixtures. Spanish/French outputs match macOS.
+- [ ] Verify supported-language availability and selection through the eventual
+      host. Language exposure and routing are required; evaluating recognition
+      accuracy across languages is outside this experiment. Do not introduce
+      shared English defaults.
 - [ ] Audit the semantic NLP behavior consumed by Core and close practical gaps
       with portable implementations or small platform adapters. Reuse the same
       fixtures on Apple and Android; do not recreate an entire Apple framework.
@@ -135,3 +141,14 @@ Recent milestones: [native Parakeet packaging](https://github.com/macmixing/keyv
 and [Swift/Core integration](https://github.com/macmixing/keyvox-platform-lab/pull/20).
 Apple regression checks passed alongside that integration; continue distinguishing
 package checks, Apple app checks, and Android device execution in future records.
+
+## Model parity source of truth
+
+Use the existing iOS `DictationModelCatalog` and `ModelArtifacts` values for model
+identity, revision, and integrity, and shared `WhisperService` for decoding settings.
+The Base artifact is identical on Android; its CPU backend replaces Apple's
+Core ML acceleration. Earlier Tiny runs are historical diagnostics only.
+
+The optional native Parakeet Q8 GGUF trial is not equivalent to iOS's cataloged
+Core ML EncoderInt4 model. Exact artifact/quantization parity remains UNRESOLVED;
+that capability trial does not select a different product model.
