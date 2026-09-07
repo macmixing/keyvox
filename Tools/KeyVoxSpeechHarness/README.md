@@ -112,9 +112,13 @@ pinned upstream Python implementation using identical tokens; all 23 predictions
 matched. Tokenization and sentence-context limitations remain as documented with
 the model. This does not establish general linguistic accuracy or Apple parity.
 Microphone capture is not yet demonstrated.
-The model's automatic language metadata reported an unexpected language for this
-English-only model; transcript generation succeeded, but language metadata needs
-separate investigation before relying on it.
+The initial monolingual run exposed invalid automatic language metadata in the
+pinned Whisper runtime. The native adapter now uses that model family's fixed
+runtime language and disables unsupported detection on request-local parameters.
+Multilingual requests retain their existing behavior. A subsequent Android
+`file-pipeline` run reported the correct model language and enabled the optional
+grammatical model without a processing-language override. No language literal or
+default was added to the shared engine.
 
 Core's audio-file capability retains the existing Apple converter. Its portable
 implementation supports little-endian RIFF/WAVE integer PCM (8/16/24/32-bit) and
