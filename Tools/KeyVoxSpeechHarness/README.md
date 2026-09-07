@@ -42,6 +42,7 @@ the execution target.
 ./KeyVoxSpeechHarness vad audio.f32le
 ./KeyVoxSpeechHarness transcribe ggml-tiny.en.bin audio.f32le
 ./KeyVoxSpeechHarness pipeline model.bin audio.f32le
+./KeyVoxSpeechHarness file-pipeline model.bin audio.wav
 ./KeyVoxSpeechHarness process input.txt
 ```
 
@@ -52,6 +53,13 @@ features. An optional final language-code argument selects the processing
 language; it does not change speech inference. Without it, `pipeline` forwards
 detected metadata, including any model metadata anomaly. The harness does not
 create or change the user's dictionary or model installation state.
+
+`file-pipeline` uses the production `WhisperService` file path: platform audio
+decoding, Silero VAD, speech-range selection, Whisper inference, then Core text
+processing. Android accepts the portable WAV formats below; Apple uses its
+existing audio converter. Its optional final language-code argument selects text
+processing only. A missing model or failed decode/transcription exits with an
+error; detected silence succeeds with empty output.
 
 Set `KEYVOX_LINGUISTIC_MODEL` to an external model directory to explicitly select
 the optional statistical analyzer. See `Tools/Models/averaged-perceptron-tagger-eng`
@@ -72,7 +80,7 @@ its optional assets.
 | Silero VAD wrapper and resource | FUNCTIONAL | Silence: 32 probabilities, no speech; spoken audio: 344 probabilities, five speech segments |
 | Speech harness | FUNCTIONAL | Executed both commands on the connected Android device |
 | Android speech inference / VAD execution | FUNCTIONAL | Public upstream JFK fixture: 176,000 samples, two transcript segments |
-| Portable WAV/sample loading | COMPILING | Android compiled the new audio sources; generated PCM and resampling fixtures pass on macOS; device execution pending |
+| Portable WAV/sample loading | FUNCTIONAL | Android production service decoded mono 16 kHz speech and stereo 48 kHz speech; 48 kHz stereo silence produced empty output; malformed WAV failed |
 | Core package graph | COMPILING | Full Android build with static Swift standard library and real Whisper native dependencies passes |
 | Core text processing execution | FUNCTIONAL | Real Whisper transcript passed through production Core on the Android phone; linguistic features remain incomplete |
 | Unicode word boundaries | FUNCTIONAL | Real transcript yielded matching UTF-16 token ranges on Android and macOS |
