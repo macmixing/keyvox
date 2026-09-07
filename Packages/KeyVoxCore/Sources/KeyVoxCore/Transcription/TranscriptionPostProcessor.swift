@@ -1,4 +1,5 @@
 import Foundation
+import KeyVoxLinguistics
 
 #if DEBUG
 enum TranscriptionPostProcessingDebugLogging {
@@ -17,6 +18,7 @@ enum TranscriptionPostProcessingDebugLogging {
 #endif
 
 public final class TranscriptionPostProcessor: @unchecked Sendable {
+    private let linguisticAnalyzer: any LinguisticAnalyzing
     private let processingQueue = DispatchQueue(
         label: "com.cueit.keyvox.transcription-post-processing",
         qos: .userInitiated
@@ -41,11 +43,19 @@ public final class TranscriptionPostProcessor: @unchecked Sendable {
     // Keep teardown explicit to avoid synthesized deinit runtime issues in test host.
     deinit {}
 
-    public init() {}
+    public convenience init() {
+        self.init(linguisticAnalyzer: TextLinguistics.provider)
+    }
+
+    public init(linguisticAnalyzer: any LinguisticAnalyzing) {
+        self.linguisticAnalyzer = linguisticAnalyzer
+    }
 
     public func updateDictionaryEntries(_ entries: [DictionaryEntry]) {
         processingQueue.sync {
-            updateDictionaryEntriesSynchronously(entries)
+            TextLinguistics.$provider.withValue(linguisticAnalyzer) {
+                updateDictionaryEntriesSynchronously(entries)
+            }
         }
     }
 
@@ -112,15 +122,17 @@ public final class TranscriptionPostProcessor: @unchecked Sendable {
         languageCode: String?,
         debugLoggingEnabled: Bool
     ) -> String {
-        withDebugLogging(debugLoggingEnabled) {
-            processSynchronously(
-                text,
-                dictionaryEntries: dictionaryEntries,
-                renderMode: renderMode,
-                listFormattingEnabled: listFormattingEnabled,
-                forceAllCaps: forceAllCaps,
-                languageCode: languageCode
-            )
+        TextLinguistics.$provider.withValue(linguisticAnalyzer) {
+            withDebugLogging(debugLoggingEnabled) {
+                processSynchronously(
+                    text,
+                    dictionaryEntries: dictionaryEntries,
+                    renderMode: renderMode,
+                    listFormattingEnabled: listFormattingEnabled,
+                    forceAllCaps: forceAllCaps,
+                    languageCode: languageCode
+                )
+            }
         }
     }
 

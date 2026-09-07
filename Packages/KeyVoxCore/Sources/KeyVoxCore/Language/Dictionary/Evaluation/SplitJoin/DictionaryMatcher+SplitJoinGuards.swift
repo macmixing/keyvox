@@ -1,5 +1,5 @@
 import Foundation
-import NaturalLanguage
+import KeyVoxLinguistics
 
 extension DictionaryMatcher {
     private static let domainLabelTokenRegex: NSRegularExpression? = try? NSRegularExpression(

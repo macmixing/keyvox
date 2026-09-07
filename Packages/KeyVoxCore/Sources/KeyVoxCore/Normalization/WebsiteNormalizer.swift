@@ -1,5 +1,5 @@
 import Foundation
-import NaturalLanguage
+import KeyVoxLinguistics
 
 public enum WebsiteNormalizer {
     static let attachedDomainLookaheadPattern = "(?=[A-Za-z0-9\\-]+(?:\\.[A-Za-z0-9\\-]+)+\\b)"
@@ -142,24 +142,8 @@ public enum WebsiteNormalizer {
         guard let following = nextWord(in: text, from: tokenEnd) else { return false }
 
         let phrase = "\(first) \(second) \(following)"
-        let tagger = NLTagger(tagSchemes: [.lexicalClass])
-        tagger.string = phrase
-
-        var wordIndex = 0
-        var middleTag: NLTag?
-        tagger.enumerateTags(
-            in: phrase.startIndex..<phrase.endIndex,
-            unit: .word,
-            scheme: .lexicalClass,
-            options: [.omitPunctuation, .omitWhitespace]
-        ) { tag, _ in
-            if wordIndex == 1 {
-                middleTag = tag
-                return false
-            }
-            wordIndex += 1
-            return true
-        }
+        let tokens = TextLinguistics.analyze(phrase).tokens
+        let middleTag = tokens.dropFirst().first?.role
 
         return middleTag == .conjunction
     }

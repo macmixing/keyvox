@@ -15,6 +15,7 @@ let package = Package(
     ],
     dependencies: [
         .package(path: "../KeyVoxState"),
+        .package(path: "../KeyVoxLinguistics"),
         .package(path: "../KeyVoxWhisper"),
         .package(path: "../KeyVoxParakeet"),
         .package(path: "../KeyVoxVoiceActivity"),
@@ -24,6 +25,7 @@ let package = Package(
             name: "KeyVoxCore",
             dependencies: [
                 .product(name: "KeyVoxState", package: "KeyVoxState"),
+                .product(name: "KeyVoxLinguistics", package: "KeyVoxLinguistics"),
                 .product(name: "KeyVoxWhisper", package: "KeyVoxWhisper"),
                 .product(name: "KeyVoxParakeet", package: "KeyVoxParakeet"),
                 .product(name: "KeyVoxVoiceActivity", package: "KeyVoxVoiceActivity"),

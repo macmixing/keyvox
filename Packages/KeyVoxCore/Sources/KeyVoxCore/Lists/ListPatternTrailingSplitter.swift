@@ -1,3 +1,4 @@
+import KeyVoxLinguistics
 import Foundation
 
 public struct ListPatternTrailingSplitter {
@@ -327,25 +328,13 @@ public struct ListPatternTrailingSplitter {
         return hasVerb && hasClauseAnchor
     }
 
-    private func lexicalWordTags(in text: String) -> [(String, NSLinguisticTag?)] {
+    private func lexicalWordTags(in text: String) -> [(String, LexicalRole?)] {
         let nsText = text as NSString
-        let range = NSRange(location: 0, length: nsText.length)
-        let tagger = NSLinguisticTagger(tagSchemes: [.lexicalClass], options: 0)
-        tagger.string = text
-
-        var result: [(String, NSLinguisticTag?)] = []
-        tagger.enumerateTags(
-            in: range,
-            unit: .word,
-            scheme: .lexicalClass,
-            options: [.omitWhitespace, .omitPunctuation, .joinNames]
-        ) { tag, tokenRange, _ in
-            let token = nsText.substring(with: tokenRange)
-            guard token.rangeOfCharacter(from: .letters) != nil else { return }
-            result.append((token, tag))
+        return TextLinguistics.analyze(text, grouping: .namedPhrases).tokens.compactMap { token in
+            let word = nsText.substring(with: token.range)
+            guard word.rangeOfCharacter(from: .letters) != nil else { return nil }
+            return (word, token.role)
         }
-
-        return result
     }
 
     private func looksLikeContinuationStart(_ text: String) -> Bool {

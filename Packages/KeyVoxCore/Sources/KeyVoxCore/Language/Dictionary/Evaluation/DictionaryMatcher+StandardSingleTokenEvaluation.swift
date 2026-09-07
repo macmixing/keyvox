@@ -1,4 +1,4 @@
-import NaturalLanguage
+import KeyVoxLinguistics
 
 extension DictionaryMatcher {
     struct StandardSingleTokenEvaluation {

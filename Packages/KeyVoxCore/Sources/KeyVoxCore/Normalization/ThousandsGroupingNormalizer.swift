@@ -1,18 +1,18 @@
 import Foundation
-import NaturalLanguage
+import KeyVoxLinguistics
 
 public struct ThousandsGroupingNormalizer {
     private struct LexicalToken {
         let text: String
         let range: NSRange
-        let tag: NLTag?
+        let tag: LexicalRole?
         let lemma: String?
     }
 
     private struct WordToken {
         let text: String
         let range: NSRange
-        let tag: NLTag?
+        let tag: LexicalRole?
     }
 
     private static let candidateRegex: NSRegularExpression? = try? NSRegularExpression(
@@ -406,25 +406,10 @@ public struct ThousandsGroupingNormalizer {
     }
 
     private func lexicalTokens(in line: String, range: NSRange) -> [LexicalToken] {
-        guard let stringRange = Range(range, in: line) else { return [] }
-
-        let tagger = NLTagger(tagSchemes: [.lexicalClass, .lemma])
-        tagger.string = line
-
-        var tokens: [LexicalToken] = []
-        tagger.enumerateTags(
-            in: stringRange,
-            unit: .word,
-            scheme: .lexicalClass,
-            options: [.omitWhitespace, .omitPunctuation]
-        ) { tag, tokenRange in
-            let token = String(line[tokenRange])
-            let nsTokenRange = NSRange(tokenRange, in: line)
-            let lemma = tagger.tag(at: tokenRange.lowerBound, unit: .word, scheme: .lemma).0?.rawValue
-            tokens.append(LexicalToken(text: token, range: nsTokenRange, tag: tag, lemma: lemma))
-            return true
+        TextLinguistics.analyze(line, range: range, features: [.roles, .lemmas]).tokens.compactMap { token in
+            guard let stringRange = Range(token.range, in: line) else { return nil }
+            return LexicalToken(text: String(line[stringRange]), range: token.range, tag: token.role, lemma: token.lemma)
         }
-        return tokens
     }
 
     private func lexicalContext(

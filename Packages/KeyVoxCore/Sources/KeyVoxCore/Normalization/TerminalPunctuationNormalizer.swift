@@ -1,11 +1,11 @@
 import Foundation
-import NaturalLanguage
+import KeyVoxLinguistics
 
 public struct TerminalPunctuationNormalizer {
     private struct WordToken {
         let text: String
         let range: Range<String.Index>
-        let lexicalClass: NLTag?
+        let lexicalClass: LexicalRole?
     }
 
     private struct CommandMatch {
@@ -78,19 +78,11 @@ public struct TerminalPunctuationNormalizer {
     }
 
     private func wordTokens(in text: String) -> [WordToken] {
-        let tokenizer = NLTokenizer(unit: .word)
-        tokenizer.string = text
-        let tagger = NLTagger(tagSchemes: [.lexicalClass])
-        tagger.string = text
-
-        var tokens: [WordToken] = []
-        tokenizer.enumerateTokens(in: text.startIndex..<text.endIndex) { range, _ in
-            let lexicalClass = tagger.tag(at: range.lowerBound, unit: .word, scheme: .lexicalClass).0
-            tokens.append(WordToken(text: String(text[range]), range: range, lexicalClass: lexicalClass))
-            return true
+        let analysis = TextLinguistics.analyze(text, features: [.roles, .wordBoundaries])
+        return analysis.tokens.compactMap { token in
+            guard let range = Range(token.range, in: text) else { return nil }
+            return WordToken(text: String(text[range]), range: range, lexicalClass: token.role)
         }
-
-        return tokens
     }
 
     private func terminalCommandMatches(in words: [WordToken], text: String) -> [CommandMatch] {
