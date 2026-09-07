@@ -199,7 +199,9 @@ cat > "$LOCK_FILE" <<EOF
       "revision": "$SCOWL_COMMIT",
       "license": "MIT-like (SCOWL Copyright)",
       "sha256": "$SCOWL_SOURCE_SHA"
-    },
+    }
+  ],
+  "optional_regeneration_tools": [
     {
       "id": "phonetisaurus",
       "url": "https://github.com/AdolfVonKleist/Phonetisaurus",
