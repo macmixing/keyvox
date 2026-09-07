@@ -50,6 +50,7 @@ the execution target.
 | Silero VAD wrapper and resource | FUNCTIONAL | Silence: 32 probabilities, no speech; spoken audio: 344 probabilities, five speech segments |
 | Speech harness | FUNCTIONAL | Executed both commands on the connected Android device |
 | Android speech inference / VAD execution | FUNCTIONAL | Public upstream JFK fixture: 176,000 samples, two transcript segments |
+| Portable WAV/sample loading | COMPILING | Android compiled the new audio sources; generated PCM and resampling fixtures pass on macOS; device execution pending |
 | Core text processing | UNRESOLVED | Apple framework dependencies still need portability work |
 
 There are no placeholder inference implementations. Compilation is not execution
@@ -68,6 +69,16 @@ This proves file-based inference, not microphone capture or Core processing.
 The model's automatic language metadata reported an unexpected language for this
 English-only model; transcript generation succeeded, but language metadata needs
 separate investigation before relying on it.
+
+Core's audio-file capability retains the existing Apple converter. Its portable
+implementation supports little-endian RIFF/WAVE integer PCM (8/16/24/32-bit) and
+float32, equal-weight channel mixing, and windowed-sinc conversion to mono 16 kHz.
+Supported source rates are 8–384 kHz; compressed audio and WAVE extensible require
+another decoder and currently fail explicitly. Malformed chunks and nonfinite
+samples are rejected. Generated fixtures cover decoding, malformed input,
+channel mixing, rate conversion, and alias suppression. No third-party code or
+recordings were introduced for this capability. The same implementation is
+available to future Windows and Linux hosts.
 
 The existing `VoiceActivityAnalyzing` semantic boundary remains intact. The
 Whisper C packaging boundary can also accept Linux/Windows native libraries;
