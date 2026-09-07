@@ -1,0 +1,241 @@
+{
+  "sdk": "swift-6.3.3-RELEASE_android.artifactbundle",
+  "destination": "aarch64-unknown-linux-android28",
+  "notices": [
+    {
+      "path": "ICU-LICENSE.txt",
+      "source": "https://raw.githubusercontent.com/unicode-org/icu/release-76-1/LICENSE",
+      "sha256": "01edac20612b1e590c1c1cfb02b7218c6adc7b0a944eda7a1e03aeee10725aed"
+    },
+    {
+      "path": "LIBXML2-COPYRIGHT.txt",
+      "source": "https://raw.githubusercontent.com/GNOME/libxml2/v2.11.5/Copyright",
+      "sha256": "c5c63674f8a83c4d2e385d96d1c670a03cb871ba2927755467017317878574bd"
+    },
+    {
+      "path": "CURL-COPYING.txt",
+      "source": "https://raw.githubusercontent.com/curl/curl/curl-8_9_1/COPYING",
+      "sha256": "adb1fc06547fd136244179809f7b7c2d2ae6c4534f160aa513af9b6a12866a32"
+    },
+    {
+      "path": "BORINGSSL-LICENSE.txt",
+      "source": "https://raw.githubusercontent.com/google/boringssl/fips-20220613/LICENSE",
+      "sha256": "60bd7c54856bf9387221bde5ab55d516d7cea15870d0fed69406bcd1c8ec7c9d"
+    },
+    {
+      "path": "FOUNDATION-LICENSE.txt",
+      "source": "https://raw.githubusercontent.com/swiftlang/swift-corelibs-foundation/swift-6.3.3-RELEASE/LICENSE",
+      "sha256": "0ca84095d1de77cad1a866ebbad28f8db98a0826c6055d92b0608c5baa1643e2"
+    },
+    {
+      "path": "SWIFT-FOUNDATION-LICENSE.txt",
+      "source": "https://raw.githubusercontent.com/swiftlang/swift-foundation/swift-6.3.3-RELEASE/LICENSE.md",
+      "sha256": "2245a990b635558be210fb3eb4f8a6f7a49aebc0fefbf5859146a65ddc7ddcf3"
+    },
+    {
+      "path": "DISPATCH-LICENSE.txt",
+      "source": "https://raw.githubusercontent.com/swiftlang/swift-corelibs-libdispatch/swift-6.3.3-RELEASE/LICENSE",
+      "sha256": "0ca84095d1de77cad1a866ebbad28f8db98a0826c6055d92b0608c5baa1643e2"
+    },
+    {
+      "path": "FOUNDATION-ICU-LICENSE.txt",
+      "source": "https://raw.githubusercontent.com/swiftlang/swift-foundation-icu/swift-6.3.3-RELEASE/LICENSE.md",
+      "sha256": "2245a990b635558be210fb3eb4f8a6f7a49aebc0fefbf5859146a65ddc7ddcf3"
+    },
+    {
+      "path": "COLLECTIONS-LICENSE.txt",
+      "source": "https://raw.githubusercontent.com/apple/swift-collections/1.1.6/LICENSE.txt",
+      "sha256": "770af8291f708538d8ff885a0bbc4e045cd700531741c4f99528d435c14d7f55"
+    },
+    {
+      "path": "COMPILER-RT-LICENSE.txt",
+      "source": "https://raw.githubusercontent.com/swiftlang/llvm-project/swift-6.3.3-RELEASE/compiler-rt/LICENSE.TXT",
+      "sha256": "1a8f1058753f1ba890de984e48f0242a3a5c29a6a8f2ed9fd813f36985387e8d"
+    },
+    {
+      "path": "SWIFT-LICENSE.txt",
+      "source": "installed-sdk:swift-android/swift-resources/usr/share/swift/LICENSE.txt",
+      "sha256": "770af8291f708538d8ff885a0bbc4e045cd700531741c4f99528d435c14d7f55"
+    },
+    {
+      "path": "sdk-sbom.spdx.json",
+      "source": "installed-sdk:sbom.spdx.json",
+      "sha256": "2364710f570fc82861bfd7dab22a53c186a4cf0d284192e53454cbd53319af48"
+    },
+    {
+      "path": "LIBUNWIND-LICENSE.txt",
+      "source": "https://raw.githubusercontent.com/swiftlang/llvm-project/swift-6.3.3-RELEASE/libunwind/LICENSE.TXT",
+      "sha256": "b5efebcaca80879234098e52d1725e6d9eb8fb96a19fce625d39184b705f7b6d"
+    }
+  ],
+  "installed_static_archives": [
+    {
+      "path": "swift-android/swift-resources/usr/lib/swift_static-aarch64/android/libBlocksRuntime.a",
+      "sha256": "4386f1b12baff0cc56234bc2df9eb15e527a66da3fd627c5bbab6b48a813789e"
+    },
+    {
+      "path": "swift-android/swift-resources/usr/lib/swift_static-aarch64/android/libCoreFoundation.a",
+      "sha256": "86968f8018e9545d397b2fffa35d72566b620d547401b396375667cffe56190b"
+    },
+    {
+      "path": "swift-android/swift-resources/usr/lib/swift_static-aarch64/android/libFoundation.a",
+      "sha256": "80039b62e3d2a4767e67c3f7a554fe38ba4a1b6f9b74bab5be6e78ec8567e867"
+    },
+    {
+      "path": "swift-android/swift-resources/usr/lib/swift_static-aarch64/android/libFoundationEssentials.a",
+      "sha256": "4629cd2a9212733c8b9898986982f6817a6a3e4f1ae9feebe77dbf47fa01d3ee"
+    },
+    {
+      "path": "swift-android/swift-resources/usr/lib/swift_static-aarch64/android/libFoundationInternationalization.a",
+      "sha256": "c9a1d1addaf94161b0aaaf3c7c9e6c9e380de7040f12db51eec45fa5739f3e22"
+    },
+    {
+      "path": "swift-android/swift-resources/usr/lib/swift_static-aarch64/android/libFoundationNetworking.a",
+      "sha256": "d77e6527e39c387af6e4e5fb077557152ce6e050ba7b824f2c1023354bbe6c22"
+    },
+    {
+      "path": "swift-android/swift-resources/usr/lib/swift_static-aarch64/android/libFoundationXML.a",
+      "sha256": "680ebcc90b9e545e2b77b4223c760809811562c4676637e90a2fc1ac5a6d7a67"
+    },
+    {
+      "path": "swift-android/swift-resources/usr/lib/swift_static-aarch64/android/lib_CFURLSessionInterface.a",
+      "sha256": "5d02e45c7820078e7a570966cf30ca0c625d32aaddaa3ccb8d8bf10f5f642382"
+    },
+    {
+      "path": "swift-android/swift-resources/usr/lib/swift_static-aarch64/android/lib_CFXMLInterface.a",
+      "sha256": "bf5f835f512a4f12f323ca28926e8660fb78a94979cc0b74c57a07fce6f30b43"
+    },
+    {
+      "path": "swift-android/swift-resources/usr/lib/swift_static-aarch64/android/lib_FoundationCShims.a",
+      "sha256": "c553549e803cd4bb659c0a06af4654822637b1ad75d4eb25f57a4aa9451b2d81"
+    },
+    {
+      "path": "swift-android/swift-resources/usr/lib/swift_static-aarch64/android/lib_FoundationCollections.a",
+      "sha256": "3b75278c9dd0d8286eba7ccaa4dd491dd1f00092eda598510be8184f3ba28a9f"
+    },
+    {
+      "path": "swift-android/swift-resources/usr/lib/swift_static-aarch64/android/lib_FoundationICU.a",
+      "sha256": "ced1f11f66146ec6a0b20d60951a4cb1400c74d7c536b005659888f422dc2c3f"
+    },
+    {
+      "path": "swift-android/swift-resources/usr/lib/swift_static-aarch64/android/libcrypto.a",
+      "sha256": "3ffb515cca2ee7415d400b359edd51ab4fead9f5ab67efd352c371b79819fa24"
+    },
+    {
+      "path": "swift-android/swift-resources/usr/lib/swift_static-aarch64/android/libcurl.a",
+      "sha256": "b3e925a0d1d1cd5e7b057ae1931102bafed1736bbb890ffea70d46add7a62b9e"
+    },
+    {
+      "path": "swift-android/swift-resources/usr/lib/swift_static-aarch64/android/libdispatch.a",
+      "sha256": "ba1493485ca04bcc84e6d04fb3a87461d75a25cc7a98e843881914b90ed82aca"
+    },
+    {
+      "path": "swift-android/swift-resources/usr/lib/swift_static-aarch64/android/libssl.a",
+      "sha256": "03ce0faa548aed9603a4b5ecc37eb407e36019f67e4bd3aba1d8f7056ea72e75"
+    },
+    {
+      "path": "swift-android/swift-resources/usr/lib/swift_static-aarch64/android/libswiftAndroid.a",
+      "sha256": "20a1d82ff19485cb26b016066d1fcdad8ca948742ee110f6047093dc87836ca6"
+    },
+    {
+      "path": "swift-android/swift-resources/usr/lib/swift_static-aarch64/android/libswiftCore.a",
+      "sha256": "95958a67830645a03b12fc8fd1fc1743510628e9e2c906026e034be3a5372ef2"
+    },
+    {
+      "path": "swift-android/swift-resources/usr/lib/swift_static-aarch64/android/libswiftDispatch.a",
+      "sha256": "343cd0da193e32e0f9755765d9e5139737d438ee186e4b0439094a01da190db8"
+    },
+    {
+      "path": "swift-android/swift-resources/usr/lib/swift_static-aarch64/android/libswiftDistributed.a",
+      "sha256": "b8b9e91cbadb671114b84584f06f1488981a1396b66d206d2a1965143fca0281"
+    },
+    {
+      "path": "swift-android/swift-resources/usr/lib/swift_static-aarch64/android/libswiftObservation.a",
+      "sha256": "8fccdd82ed2972108923b49f5648e05922fb9d7bf170c235d0fe2f718006a4e9"
+    },
+    {
+      "path": "swift-android/swift-resources/usr/lib/swift_static-aarch64/android/libswiftRegexBuilder.a",
+      "sha256": "a7c832b7755510677ffa04d32c0b5f2ba72c0fb83ca2213f5ef0fe73413b4e62"
+    },
+    {
+      "path": "swift-android/swift-resources/usr/lib/swift_static-aarch64/android/libswiftSwiftOnoneSupport.a",
+      "sha256": "9b0d849e2a28af83f976e7503a1d5e4587c9775d6349a223baf3b89521236813"
+    },
+    {
+      "path": "swift-android/swift-resources/usr/lib/swift_static-aarch64/android/libswiftSynchronization.a",
+      "sha256": "70ca5e8ef0288e9a31c05ea3a81ccbcb76377f037eb8823e0d95c3b66a06aea2"
+    },
+    {
+      "path": "swift-android/swift-resources/usr/lib/swift_static-aarch64/android/libswift_Builtin_float.a",
+      "sha256": "7bcc6b9dd6ef282aa40693fb1ab9383a831008e62f9f835dd9f33f9eec919fab"
+    },
+    {
+      "path": "swift-android/swift-resources/usr/lib/swift_static-aarch64/android/libswift_Concurrency.a",
+      "sha256": "a044547466abf77c57e386320a918c897f37c90fcd71e0614cf8b1799348c80b"
+    },
+    {
+      "path": "swift-android/swift-resources/usr/lib/swift_static-aarch64/android/libswift_Differentiation.a",
+      "sha256": "fce8990e723b717cf73bfaafdbb4a7da6714ae06ff1f1e8f938050053e572beb"
+    },
+    {
+      "path": "swift-android/swift-resources/usr/lib/swift_static-aarch64/android/libswift_RegexParser.a",
+      "sha256": "f5541bec5c4f9468122e5c546502b2c66bb860cd56f1d88eb6f0bd962ea8dc3c"
+    },
+    {
+      "path": "swift-android/swift-resources/usr/lib/swift_static-aarch64/android/libswift_StringProcessing.a",
+      "sha256": "5945b4ea4a27f37a123e599f24010a0dba32321659436cb262ccb5e9aece7c7e"
+    },
+    {
+      "path": "swift-android/swift-resources/usr/lib/swift_static-aarch64/android/libswift_Volatile.a",
+      "sha256": "6e5e941f2f2faa661e82a9e761fb1ed3ac2fc0e357b240bf786c6eaa4f292601"
+    },
+    {
+      "path": "swift-android/swift-resources/usr/lib/swift_static-aarch64/android/libswift_math.a",
+      "sha256": "bf0df62ad844b1bd9afe782e4403edbdb9ea91cbebe4e8e23d6b7865c4e8d7e1"
+    },
+    {
+      "path": "swift-android/swift-resources/usr/lib/swift_static-aarch64/android/libxml2.a",
+      "sha256": "c61b8a5a24334fecb198e8a1ff147528e195c75722f4fb36d7069aed129c5eb3"
+    },
+    {
+      "path": "swift-android/swift-resources/usr/lib/swift-aarch64/clang/lib/linux/aarch64/libunwind.a",
+      "sha256": "bfbe474acf75b59fd2f19f0b7210588aa662410d5d8d0996812fe50e9e0143ab"
+    },
+    {
+      "path": "swift-android/swift-resources/usr/lib/swift-aarch64/clang/lib/linux/libclang_rt.builtins-aarch64-android.a",
+      "sha256": "7e900bcdd0bb6f05824fd7e96c9309ee9c47c22751a1b3c98242d1f4902e4632"
+    }
+  ],
+  "observed_harness_linked_archives": [
+    "libBlocksRuntime.a",
+    "libCoreFoundation.a",
+    "libFoundation.a",
+    "libFoundationEssentials.a",
+    "libFoundationInternationalization.a",
+    "lib_FoundationCShims.a",
+    "lib_FoundationCollections.a",
+    "lib_FoundationICU.a",
+    "libclang_rt.builtins-aarch64-android.a",
+    "libdispatch.a",
+    "libggml-base.a",
+    "libggml-cpu.a",
+    "libggml.a",
+    "libswiftAndroid.a",
+    "libswiftCore.a",
+    "libswiftDispatch.a",
+    "libswiftSwiftOnoneSupport.a",
+    "libswiftSynchronization.a",
+    "libswift_Concurrency.a",
+    "libswift_RegexParser.a",
+    "libswift_StringProcessing.a",
+    "libunwind.a",
+    "libwhisper.a"
+  ],
+  "evidence_limits": [
+    "Archive hashes identify the installed SDK, not a reproduced compiler build.",
+    "SBOM records Swift, libxml2, curl and BoringSSL versions but no source commits.",
+    "Foundation and Dispatch notices match the Swift release; ICU header identifies76.1.",
+    "Collections1.1.6 is referenced by the matching Foundation manifest; the SDK does not identify its exact checkout.",
+    "Networking/XML/SSL archives are installed but absent from the observed harness link map."
+  ]
+}
