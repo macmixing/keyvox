@@ -52,13 +52,15 @@ require_pattern '"license": "BSD-3-Clause"' "$LOCK_FILE"
 require_pattern '"id": "openfst"' "$LOCK_FILE"
 require_pattern '"license": "Apache-2.0"' "$LOCK_FILE"
 
-# Verify attribution doc references all active upstream data/toolchain dependencies.
+# Verify attribution doc references incorporated data and optional regeneration tools.
 require_pattern 'CMU Pronouncing Dictionary' "$ATTRIBUTION_FILE"
 require_pattern 'SCOWL' "$ATTRIBUTION_FILE"
 require_pattern 'Phonetisaurus' "$ATTRIBUTION_FILE"
 require_pattern 'OpenFst' "$ATTRIBUTION_FILE"
-require_pattern 'IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY' "$ATTRIBUTION_FILE"
-require_pattern 'THE WORD LISTS, SCRIPTS, AND OUTPUT FILES ARE PROVIDED "AS IS"' "$ATTRIBUTION_FILE"
+require_pattern 'IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY' "$(dirname "$ATTRIBUTION_FILE")/CMUDICT-LICENSE.txt"
+require_pattern 'The collective work is Copyright' "$(dirname "$ATTRIBUTION_FILE")/SCOWL-COPYRIGHT.txt"
+
+python3 "$SCRIPT_DIR/verify_artifacts.py" "$REPO_ROOT"
 
 # Verify authoritative root notice index includes app-level shipped runtime obligations.
 require_pattern '^# Third-Party Notices' "$THIRD_PARTY_FILE"

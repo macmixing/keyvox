@@ -1,109 +1,65 @@
 # Pronunciation Data Attributions
 
-These package resources contain pronunciation artifacts and attribution metadata used by KeyVox's offline dictionary matcher:
+These are **modified KeyVox data files**, derived from the pinned sources in
+`sources.lock.json`. Preserve this document and both complete upstream notices
+when distributing the package resources or a binary containing them.
 
-- `lexicon-v1.tsv`
-- `common-words-v1.txt`
-- `LICENSES.md`
-- `sources.lock.json`
+**UK Advanced Cryptics Dictionary: Copyright (c) J Ross Beresford 1993-1999.
+All Rights Reserved.** Its complete permission notice is reproduced verbatim
+within [SCOWL-COPYRIGHT.txt](SCOWL-COPYRIGHT.txt).
 
-The build pipeline is maintainer-only and runs via:
+## CMU Pronouncing Dictionary
 
-- `Tools/Pronunciation/build_lexicon.sh`
-- `Tools/Pronunciation/train_g2p.sh`
-- `Tools/Pronunciation/verify_licenses.sh`
+The base pronunciations derive from `cmusphinx/cmudict` revision
+`74790861f652b15e4ac49015a90074ad62a27690`, under BSD-2-Clause.
+[CMUDICT-LICENSE.txt](CMUDICT-LICENSE.txt) is the exact full pinned upstream
+notice, including the source-code designation, funding acknowledgment, and
+original disclaimer. License file URLs and hashes are in `licenses.lock.json`.
 
-Runtime transcription remains fully offline. The app does not download pronunciation data.
+## SCOWL and its incorporated sources
 
-## Upstream Sources
+Word candidates and the common-word guard list derive from `en-wl/wordlist`
+revision `9829d649f007932ce672a1e8e13678a48be20d55`. Its combined output is
+published under permissive MIT-like SCOWL terms. The full, unedited
+[SCOWL-COPYRIGHT.txt](SCOWL-COPYRIGHT.txt) retains all incorporated notices:
 
-### 1) CMU Pronouncing Dictionary
-- Project: `cmusphinx/cmudict`
-- License: BSD-2-Clause
-- Use: base pronunciation lexicon for `lexicon-v1.tsv`
-- Snapshot pin + checksum: see `sources.lock.json`
+- Kevin Atkinson and Benjamin Titze permissions for SCOWL/VarCon.
+- Princeton WordNet permission, disclaimer, and nonendorsement requirement.
+- UKACD attribution and verbatim-notice requirement.
+- Modified BSD Ispell terms, including modification marking and nonendorsement.
+- ENABLE, Moby, 12Dicts, Brian Kelk, and Jargon public-domain declarations and credits.
 
-License notice (from upstream `LICENSE`):
+These permissions allow distribution alongside MIT-owned KeyVox code; they are
+retained as their own terms, rather than relicensed to MIT. Do not use upstream
+names as endorsements or restrict redistribution of the public-domain portions.
 
-```
-Copyright (C) 1993-2015 Carnegie Mellon University. All rights reserved.
+The pinned upstream notice says SCOWLv2 uses derived grammatical information
+from nonfree COCA 3-gram data under its publisher's purchased authorization.
+The distributed SCOWL work is expressly published with the permissive terms
+above. The raw COCA corpus is not incorporated into KeyVox; its private upstream
+agreement has not been independently inspected. This records the upstream
+provenance assertion without claiming to have audited that private agreement.
 
-Portions Copyright 2007-2009 Alan W Black, Kevin Lenzo, and
-Vishnu Pillai.
+## Artifact provenance and modifications
 
-All modifications made in this distribution are Copyright 2023
-Carnegie Mellon University.
+The pinned CMU and SCOWL downloads match their recorded SHA-256 values.
+Reconstruction reproduces the original 334,984-row lexicon byte for byte using
+the repository's deterministic signature encoder. Four subsequent KeyVox-owned
+pronunciation additions are identified by commit in `sources.lock.json`.
 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions
-are met:
+The current common-word list reconstructs from the same pinned SCOWL export,
+normalization, and evenly spaced sampling: 14,670 entries plus one later KeyVox
+curation entry. All 14,671 current entries occur in the pinned SCOWL vocabulary.
+The original generation lock became stale after these repository edits; current
+hashes, original hashes, and modification commits are now recorded separately.
+This audit does not alter either runtime data file.
 
-1. Redistributions of source code must retain the above copyright
-   notice, this list of conditions and the following disclaimer.
-2. Redistributions in binary form must reproduce the above copyright
-   notice, this list of conditions and the following disclaimer in
-   the documentation and/or other materials provided with the
-   distribution.
+Phonetisaurus (BSD-3-Clause) and OpenFst (Apache-2.0) are optional historical
+regeneration tools. They were not used for the reproduced artifacts and are not
+shipped runtime dependencies. A future regeneration using them must pin and
+verify the actual toolchain and its transitive notices before adopting output.
 
-THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY "AS IS" AND
-ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY
-NOR OTHER CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-```
-
-### 2) SCOWL (Spell Checker Oriented Word Lists)
-- Project: `en-wl/wordlist` (SCOWL data/tooling)
-- License: MIT-like SCOWL copyright terms
-- Use: common-word guard list + OOV vocabulary candidates
-- Snapshot pin + checksum: see `sources.lock.json`
-
-Permission notice (from upstream `Copyright`):
-
-```
-Copyright 2000-2025 by Kevin Atkinson
-
-Permission to use, copy, modify, distribute and sell these word
-lists, the associated scripts, the output created from the scripts,
-and its documentation for any purpose is hereby granted without fee,
-provided that the above copyright notice appears in all copies and
-that both that copyright notice and this permission notice appear in
-supporting documentation.
-
-THE WORD LISTS, SCRIPTS, AND OUTPUT FILES ARE PROVIDED "AS IS",
-WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT
-LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
-PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL THE COPYRIGHT HOLDER
-BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY, WHETHER IN AN
-ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING FROM, OUT OF, OR IN
-CONNECTION WITH THE WORD LISTS, SCRIPTS, OR OUTPUT FILES OR THE USE OR
-OTHER DEALINGS IN THEM.
-```
-
-Upstream SCOWL copyright/source notice file:
-- `https://github.com/en-wl/wordlist/blob/9829d649f007932ce672a1e8e13678a48be20d55/Copyright`
-
-### 3) Phonetisaurus
-- Project: `AdolfVonKleist/Phonetisaurus`
-- License: BSD-3-Clause
-- Use: build-time grapheme-to-phoneme generation for OOV words
-- Not shipped as runtime dependency in KeyVox app binary
-
-### 4) OpenFst
-- Project: OpenFst
-- License: Apache-2.0
-- Use: build-time dependency used by Phonetisaurus
-- Not shipped as runtime dependency in KeyVox app binary
-
-## Compliance Notes
-
-1. `sources.lock.json` is the source-of-truth for pinned source revisions, output paths, and checksums.
-2. Regeneration must pass `Tools/Pronunciation/verify_licenses.sh` before commit.
-3. If source snapshots are updated, this file and the package resource metadata must be updated in the same change.
-4. App-level notices for non-package dependencies remain in `THIRD_PARTY_NOTICES.md`; package-owned pronunciation notices live here.
+`Tools/Pronunciation/verify_licenses.sh` checks current artifacts and complete
+notice hashes. It verifies recorded identity, not an optional regeneration
+toolchain's provenance or approval. Root `THIRD_PARTY_NOTICES.md` indexes other
+runtime obligations.
