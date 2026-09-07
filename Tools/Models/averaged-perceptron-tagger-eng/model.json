@@ -1,0 +1,10 @@
+{
+  "schema": "nltk-perceptron-v1",
+  "tagSet": "penn-treebank",
+  "languages": [
+    "en"
+  ],
+  "weights": "averaged_perceptron_tagger_eng.weights.json",
+  "classes": "averaged_perceptron_tagger_eng.classes.json",
+  "tagDictionary": "averaged_perceptron_tagger_eng.tagdict.json"
+}

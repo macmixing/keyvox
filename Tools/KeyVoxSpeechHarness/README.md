@@ -30,7 +30,8 @@ module is selected by destination platform, not the build host. Its regular C
 target also lets Xcode resolve the dependency graph when building Apple apps.
 
 Deploy the executable, `KeyVoxVoiceActivity_KeyVoxVoiceActivity.resources`, and
-`KeyVoxCore_KeyVoxCore.resources` directories from the Android build output together.
+`KeyVoxCore_KeyVoxCore.resources` and `KeyVoxLinguistics_KeyVoxLinguistics.resources`
+directories from the Android build output together.
 Preserve the bundled resource notices. Also deploy `libc++_shared.so`
 from the NDK's `toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/aarch64-linux-android`
 directory and put its location on `LD_LIBRARY_PATH`. The Swift standard library
@@ -52,6 +53,16 @@ language; it does not change speech inference. Without it, `pipeline` forwards
 detected metadata, including any model metadata anomaly. The harness does not
 create or change the user's dictionary or model installation state.
 
+Set `KEYVOX_LINGUISTIC_MODEL` to an external model directory to explicitly select
+the optional statistical analyzer. See `Tools/Models/averaged-perceptron-tagger-eng`
+for its MIT license, provenance, supported language, and accuracy limitations.
+Reports include token ranges and semantic roles for inspection. The default
+non-Apple analyzer provides Unicode word boundaries without grammatical roles;
+Apple retains its existing analyzer. Neither analyzer selection introduces a
+shared engine language default. Preserve the bundled `PERCEPTRON-LICENSE.txt`
+when distributing the predictor, and the model's `LICENSE.txt` when including
+its optional assets.
+
 ## Engineering record
 
 | Capability | Android status | Evidence |
@@ -64,6 +75,9 @@ create or change the user's dictionary or model installation state.
 | Portable WAV/sample loading | COMPILING | Android compiled the new audio sources; generated PCM and resampling fixtures pass on macOS; device execution pending |
 | Core package graph | COMPILING | Full Android build with static Swift standard library and real Whisper native dependencies passes |
 | Core text processing execution | FUNCTIONAL | Real Whisper transcript passed through production Core on the Android phone; linguistic features remain incomplete |
+| Unicode word boundaries | FUNCTIONAL | Real transcript yielded matching UTF-16 token ranges on Android and macOS |
+| Optional statistical grammatical roles | FUNCTIONAL | Explicitly selected MIT model: 22 word tokens, 20 supported roles; Android/macOS reports identical; pinned reference predictor matched all 23 context tokens |
+| Portable names / lemmas | UNRESOLVED | Optional predictor reports both unavailable; Apple implementation remains available |
 | Date/address numeric protection | STUBBED | Semantic availability is explicit; non-Apple prose is conservatively preserved |
 
 There are no placeholder inference implementations. Compilation is not execution
@@ -82,6 +96,13 @@ The `pipeline` command subsequently passed this actual inferred text through
 Core on the same phone and produced the transcript with its leading whitespace
 removed. This proves execution of the real processing path, not linguistic
 parity: the JSON report explicitly showed all four linguistic features unavailable.
+The later Unicode boundary implementation and explicitly selected optional
+perceptron model provide real boundaries and partial grammatical roles. On the
+same transcript, Android and macOS produced identical token ranges, supported
+roles, and processed output. A diagnostic compared the Swift predictor with the
+pinned upstream Python implementation using identical tokens; all 23 predictions
+matched. Tokenization and sentence-context limitations remain as documented with
+the model. This does not establish general linguistic accuracy or Apple parity.
 Microphone capture is not yet demonstrated.
 The model's automatic language metadata reported an unexpected language for this
 English-only model; transcript generation succeeded, but language metadata needs
