@@ -14,6 +14,10 @@ enum CoreProcessing {
         let output: String
         let processingLanguageCode: String?
         let detectedLanguageCode: String?
+        let dictionaryEntryCount: Int
+        let dictionaryLoadWarning: String?
+        let dictionarySaveError: String?
+        let dictionaryDegradedDurability: Bool
         let linguisticFeatures: [String: Bool]
         let linguisticTokenCount: Int
         let lexicalRoleCount: Int
@@ -30,12 +34,16 @@ enum CoreProcessing {
         }
         let analysis = analyzer.analyze(text, range: nil, languageCode: languageCode,
                                         features: [.roles, .lemmas, .names, .wordBoundaries], grouping: .words)
+        let dictionary = await HarnessDictionary.load()
         let output = await TranscriptionPostProcessor(linguisticAnalyzer: analyzer).processAsync(
-            text, dictionaryEntries: [], renderMode: .multiline,
+            text, dictionaryEntries: dictionary.entries, renderMode: .multiline,
             listFormattingEnabled: true, forceAllCaps: false, languageCode: languageCode
         )
         let report = Report(input: text, output: output, processingLanguageCode: languageCode,
-                            detectedLanguageCode: detectedLanguageCode, linguisticFeatures: [
+                            detectedLanguageCode: detectedLanguageCode, dictionaryEntryCount: dictionary.entries.count,
+                            dictionaryLoadWarning: dictionary.loadWarning, dictionarySaveError: dictionary.saveError,
+                            dictionaryDegradedDurability: dictionary.degradedDurability,
+                            linguisticFeatures: [
                                 "roles": analysis.availableFeatures.contains(.roles),
                                 "lemmas": analysis.availableFeatures.contains(.lemmas),
                                 "names": analysis.availableFeatures.contains(.names),
