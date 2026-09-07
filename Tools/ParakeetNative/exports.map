@@ -1,0 +1,4 @@
+{
+    global: parakeet_capi_*;
+    local: *;
+};
