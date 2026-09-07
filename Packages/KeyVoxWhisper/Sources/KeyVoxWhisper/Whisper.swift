@@ -226,9 +226,12 @@ public final class Whisper {
         #if os(iOS)
         let shouldDisableGPU = true
         let shouldRetryWithCPUFallback = false
-        #else
+        #elseif os(macOS)
         let shouldDisableGPU = isVentura
         let shouldRetryWithCPUFallback = isVentura
+        #else
+        let shouldDisableGPU = true
+        let shouldRetryWithCPUFallback = false
         #endif
 
         var contextParams = runtime.contextDefaultParams()
