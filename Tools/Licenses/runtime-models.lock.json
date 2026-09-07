@@ -36,6 +36,6 @@
     "license_source": "https://raw.githubusercontent.com/openai/whisper/31243bad24cc746f07d4c8bfdd2d974872cb1803/LICENSE",
     "conversion": "Published GGML conversion of OpenAI Whisper weights; published model repository declares MIT. Exact historical conversion invocation is not independently reproduced.",
     "license_declaration": "https://huggingface.co/ggerganov/whisper.cpp/raw/90a64d80ea254cf67575b41a5971f972c79f7b45/README.md",
-    "product_source_of_truth": "iOS/KeyVox iOS/Core/ModelDownloader/DictationModelCatalog.swift and ModelInstallManifest.swift; this record mirrors the existing iOS artifact, not a separate product catalog."
+    "product_source_of_truth": "Packages/KeyVoxCore/Sources/KeyVoxCore/Models/WhisperBaseModelArtifact.swift; extracted unchanged from the existing iOS catalog and consumed by Apple app catalogs. This lock is a provenance record, not a separate product catalog."
   }
 }

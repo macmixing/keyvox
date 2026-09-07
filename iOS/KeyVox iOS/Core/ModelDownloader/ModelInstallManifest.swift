@@ -1,4 +1,5 @@
 import Foundation
+import KeyVoxCore
 
 struct DictationModelInstallManifest: Codable, Equatable, Sendable {
     static let currentVersion = 1
@@ -55,7 +56,7 @@ struct DictationModelInstallManifest: Codable, Equatable, Sendable {
 typealias ModelInstallManifest = DictationModelInstallManifest
 
 enum ModelArtifacts {
-    nonisolated static let ggmlBaseSHA256 = "60ed5bc3dd14eea856493d334349b405782ddcaf0028d4b5df4088345fba2efe"
+    nonisolated static let ggmlBaseSHA256 = WhisperBaseModelArtifact.sha256
     nonisolated static let coreMLZipSHA256 = "7e6ab77041942572f239b5b602f8aaa1c3ed29d73e3d8f20abea03a773541089"
     nonisolated static let minGGMLBytes: Int64 = 90_000_000
 }
