@@ -111,7 +111,9 @@ The Core ML backend under `Sources/KeyVoxParakeet/ParakeetCoreML/` is responsibl
 - running encoder and decoder inference
 - applying decoding logic to produce transcription output
 
-The package hides that implementation behind the internal runtime backend protocol so the public API remains stable.
+The package hides that implementation behind `ParakeetRuntimeBackend`. Platform
+adapters can implement this public speech-inference contract and supply a
+`backendFactory` to `Parakeet` without exposing their model runtime to callers.
 
 ### `ParakeetVocabulary`
 
@@ -173,6 +175,18 @@ swift test --package-path Packages/KeyVoxParakeet
 ```
 
 ## Platform Support
+
+The shared API compiles for Android with Swift 6.3.3. The default Core ML backend
+remains Apple-only. On other platforms, selecting a model directory without an
+injected backend throws `ParakeetError.runtimeUnavailable`; Parakeet inference
+there is **UNRESOLVED**, not functional or a placeholder transcription.
+
+The runtime boundary also applies to future Linux and Windows adapters. It owns
+transcription, cancellation, and unloading, with no UI dependency. A real
+non-Apple model runtime and compatible model assets still need to be connected.
+Validation: Android package build passed; all 32 macOS package tests passed,
+including an external-import backend integration test and the existing Core ML
+tensor/decoder regression coverage.
 
 The package currently declares:
 

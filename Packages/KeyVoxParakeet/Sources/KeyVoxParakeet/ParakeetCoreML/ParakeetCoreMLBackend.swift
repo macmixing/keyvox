@@ -1,3 +1,4 @@
+#if canImport(CoreML)
 import Foundation
 import CoreML
 
@@ -156,3 +157,5 @@ internal final class ParakeetCoreMLBackend: ParakeetRuntimeBackend {
 #endif
     }
 }
+
+#endif

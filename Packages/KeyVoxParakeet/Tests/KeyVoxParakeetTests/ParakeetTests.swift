@@ -1,5 +1,7 @@
 import XCTest
+#if canImport(CoreML)
 import CoreML
+#endif
 @testable import KeyVoxParakeet
 
 final class ParakeetTests: XCTestCase {
@@ -129,6 +131,7 @@ final class ParakeetTests: XCTestCase {
         wait(for: [secondExpectation], timeout: 1.0)
     }
 
+    #if canImport(CoreML)
     func testEncoderFrameAccessorCopiesFrameFromChannelMajorEncoderOutput() throws {
         let source = try MLMultiArray(
             shape: [1, NSNumber(value: ParakeetCoreMLBackend.Constants.encoderChannelCount), 3],
@@ -541,6 +544,8 @@ final class ParakeetTests: XCTestCase {
         XCTAssertEqual(merged.map(\.tokenID), [10, 20, 30, 40])
     }
 
+    #endif
+
     func testUtteranceGateRejectsShortLowConfidenceResult() {
         let result = ParakeetTranscriptionResult(
             segments: [
@@ -752,6 +757,7 @@ final class ParakeetTests: XCTestCase {
         return directoryURL
     }
 
+    #if canImport(CoreML)
     private func emittedToken(
         _ tokenID: Int32,
         startFrame: Int,
@@ -765,6 +771,7 @@ final class ParakeetTests: XCTestCase {
             endFrame: endFrame
         )
     }
+    #endif
 }
 
 private final class MockParakeetRuntimeBackend: ParakeetRuntimeBackend {

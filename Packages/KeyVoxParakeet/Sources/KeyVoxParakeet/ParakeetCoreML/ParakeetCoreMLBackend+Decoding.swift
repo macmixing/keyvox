@@ -1,3 +1,4 @@
+#if canImport(CoreML)
 import Foundation
 import CoreML
 
@@ -222,3 +223,5 @@ extension ParakeetCoreMLBackend {
         )
     }
 }
+
+#endif
