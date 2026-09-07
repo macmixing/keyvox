@@ -27,12 +27,6 @@ public struct ThousandsGroupingNormalizer {
         pattern: #"\b(?:\d{4}[/-]\d{1,2}[/-]\d{1,2}|\d{1,2}[/-]\d{1,2}[/-]\d{2,4})\b"#,
         options: []
     )
-    private static let dateDetector: NSDataDetector? = try? NSDataDetector(
-        types: NSTextCheckingResult.CheckingType.date.rawValue
-    )
-    private static let addressDetector: NSDataDetector? = try? NSDataDetector(
-        types: NSTextCheckingResult.CheckingType.address.rawValue
-    )
     private static let calendarMonthTokens: Set<String> = {
         let monthFormatter = DateFormatter()
         monthFormatter.locale = Locale(identifier: "en_US_POSIX")
@@ -109,7 +103,13 @@ public struct ThousandsGroupingNormalizer {
             .joined(separator: " ")
     }
 
-    public init() {}
+    private let protectionAnalyzer: any NumericTextProtectionAnalyzing
+
+    public init() { self.init(protectionAnalyzer: PlatformNumericTextProtection()) }
+
+    init(protectionAnalyzer: any NumericTextProtectionAnalyzing) {
+        self.protectionAnalyzer = protectionAnalyzer
+    }
 
     public func normalizeSpokenQuantities(in text: String) -> String {
         guard !text.isEmpty else { return text }
@@ -260,7 +260,8 @@ public struct ThousandsGroupingNormalizer {
         let matches = candidateRegex.matches(in: line, options: [], range: fullRange)
         guard !matches.isEmpty else { return line }
 
-        let protectedRanges = protectedRanges(in: line, fullRange: fullRange)
+        let protection = protectionAnalyzer.analyze(line)
+        let protectedRanges = protectedRanges(in: line, fullRange: fullRange) + protection.ranges
         let lexicalTokens = lexicalTokens(in: line, range: fullRange)
         let mutable = NSMutableString(string: line)
 
@@ -269,6 +270,11 @@ public struct ThousandsGroupingNormalizer {
             guard !protectedRanges.contains(where: { NSIntersectionRange($0, range).length > 0 }) else { continue }
 
             let digits = nsLine.substring(with: range)
+            // Without semantic protection, only a standalone quantity is safe.
+            // A successful detector with zero ranges still permits ordinary prose.
+            guard protection.isComplete || line.trimmingCharacters(in: .whitespacesAndNewlines) == digits else {
+                continue
+            }
             guard let value = Int(digits) else { continue }
             guard shouldGroup(value: value, range: range, tokens: lexicalTokens) else { continue }
             guard let replacement = groupingFormatter.string(from: NSNumber(value: value)) else { continue }
@@ -395,14 +401,7 @@ public struct ThousandsGroupingNormalizer {
         .compactMap { $0 }
         .flatMap { $0.matches(in: line, options: [], range: fullRange).map(\.range) }
 
-        let detectorRanges = [
-            Self.dateDetector,
-            Self.addressDetector,
-        ]
-        .compactMap { $0 }
-        .flatMap { $0.matches(in: line, options: [], range: fullRange).map(\.range) }
-
-        return regexRanges + detectorRanges
+        return regexRanges
     }
 
     private func lexicalTokens(in line: String, range: NSRange) -> [LexicalToken] {

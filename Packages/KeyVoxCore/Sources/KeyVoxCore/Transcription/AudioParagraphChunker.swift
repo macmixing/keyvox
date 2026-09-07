@@ -179,7 +179,7 @@ public struct AudioParagraphChunker {
             for sample in window {
                 sumSquares += sample * sample
             }
-            let rms = sqrt(sumSquares / Float(window.count))
+            let rms = (sumSquares / Float(window.count)).squareRoot()
             result.append(rms)
             frameStart += windowSize
         }

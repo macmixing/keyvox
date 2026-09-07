@@ -63,7 +63,7 @@ public enum AudioPostProcessing {
                     peak = magnitude
                 }
             }
-            let rms = sqrt(sumSquares / Float(frameCount))
+            let rms = (sumSquares / Float(frameCount)).squareRoot()
             if rms > threshold {
                 speechWindowCount += 1
                 speechRMSSum += rms
