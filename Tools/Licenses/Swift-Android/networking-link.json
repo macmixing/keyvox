@@ -1,0 +1,156 @@
+{
+  "scope": "KeyVoxSpeechHarness with foreground model download; separate from the initial speech-only link map in provenance.json",
+  "sdk": "swift-6.3.3-RELEASE_android.artifactbundle",
+  "binary_sha256": "a0eabb526a12b10644a7d42fc4976f7438140a99fd8b3d096d93a1c7a641ce45",
+  "linked_sdk_archives": [
+    {
+      "path": "swift-android/swift-resources/usr/lib/swift-aarch64/clang/lib/linux/aarch64/libunwind.a",
+      "sha256": "bfbe474acf75b59fd2f19f0b7210588aa662410d5d8d0996812fe50e9e0143ab"
+    },
+    {
+      "path": "swift-android/swift-resources/usr/lib/swift-aarch64/clang/lib/linux/libclang_rt.builtins-aarch64-android.a",
+      "sha256": "7e900bcdd0bb6f05824fd7e96c9309ee9c47c22751a1b3c98242d1f4902e4632"
+    },
+    {
+      "path": "swift-android/swift-resources/usr/lib/swift_static-aarch64/android/libBlocksRuntime.a",
+      "sha256": "4386f1b12baff0cc56234bc2df9eb15e527a66da3fd627c5bbab6b48a813789e"
+    },
+    {
+      "path": "swift-android/swift-resources/usr/lib/swift_static-aarch64/android/libCoreFoundation.a",
+      "sha256": "86968f8018e9545d397b2fffa35d72566b620d547401b396375667cffe56190b"
+    },
+    {
+      "path": "swift-android/swift-resources/usr/lib/swift_static-aarch64/android/libFoundation.a",
+      "sha256": "80039b62e3d2a4767e67c3f7a554fe38ba4a1b6f9b74bab5be6e78ec8567e867"
+    },
+    {
+      "path": "swift-android/swift-resources/usr/lib/swift_static-aarch64/android/libFoundationEssentials.a",
+      "sha256": "4629cd2a9212733c8b9898986982f6817a6a3e4f1ae9feebe77dbf47fa01d3ee"
+    },
+    {
+      "path": "swift-android/swift-resources/usr/lib/swift_static-aarch64/android/libFoundationInternationalization.a",
+      "sha256": "c9a1d1addaf94161b0aaaf3c7c9e6c9e380de7040f12db51eec45fa5739f3e22"
+    },
+    {
+      "path": "swift-android/swift-resources/usr/lib/swift_static-aarch64/android/libFoundationNetworking.a",
+      "sha256": "d77e6527e39c387af6e4e5fb077557152ce6e050ba7b824f2c1023354bbe6c22"
+    },
+    {
+      "path": "swift-android/swift-resources/usr/lib/swift_static-aarch64/android/lib_CFURLSessionInterface.a",
+      "sha256": "5d02e45c7820078e7a570966cf30ca0c625d32aaddaa3ccb8d8bf10f5f642382"
+    },
+    {
+      "path": "swift-android/swift-resources/usr/lib/swift_static-aarch64/android/lib_FoundationCShims.a",
+      "sha256": "c553549e803cd4bb659c0a06af4654822637b1ad75d4eb25f57a4aa9451b2d81"
+    },
+    {
+      "path": "swift-android/swift-resources/usr/lib/swift_static-aarch64/android/lib_FoundationCollections.a",
+      "sha256": "3b75278c9dd0d8286eba7ccaa4dd491dd1f00092eda598510be8184f3ba28a9f"
+    },
+    {
+      "path": "swift-android/swift-resources/usr/lib/swift_static-aarch64/android/lib_FoundationICU.a",
+      "sha256": "ced1f11f66146ec6a0b20d60951a4cb1400c74d7c536b005659888f422dc2c3f"
+    },
+    {
+      "path": "swift-android/swift-resources/usr/lib/swift_static-aarch64/android/libcrypto.a",
+      "sha256": "3ffb515cca2ee7415d400b359edd51ab4fead9f5ab67efd352c371b79819fa24"
+    },
+    {
+      "path": "swift-android/swift-resources/usr/lib/swift_static-aarch64/android/libcurl.a",
+      "sha256": "b3e925a0d1d1cd5e7b057ae1931102bafed1736bbb890ffea70d46add7a62b9e"
+    },
+    {
+      "path": "swift-android/swift-resources/usr/lib/swift_static-aarch64/android/libdispatch.a",
+      "sha256": "ba1493485ca04bcc84e6d04fb3a87461d75a25cc7a98e843881914b90ed82aca"
+    },
+    {
+      "path": "swift-android/swift-resources/usr/lib/swift_static-aarch64/android/libssl.a",
+      "sha256": "03ce0faa548aed9603a4b5ecc37eb407e36019f67e4bd3aba1d8f7056ea72e75"
+    },
+    {
+      "path": "swift-android/swift-resources/usr/lib/swift_static-aarch64/android/libswiftAndroid.a",
+      "sha256": "20a1d82ff19485cb26b016066d1fcdad8ca948742ee110f6047093dc87836ca6"
+    },
+    {
+      "path": "swift-android/swift-resources/usr/lib/swift_static-aarch64/android/libswiftCore.a",
+      "sha256": "95958a67830645a03b12fc8fd1fc1743510628e9e2c906026e034be3a5372ef2"
+    },
+    {
+      "path": "swift-android/swift-resources/usr/lib/swift_static-aarch64/android/libswiftDispatch.a",
+      "sha256": "343cd0da193e32e0f9755765d9e5139737d438ee186e4b0439094a01da190db8"
+    },
+    {
+      "path": "swift-android/swift-resources/usr/lib/swift_static-aarch64/android/libswiftSwiftOnoneSupport.a",
+      "sha256": "9b0d849e2a28af83f976e7503a1d5e4587c9775d6349a223baf3b89521236813"
+    },
+    {
+      "path": "swift-android/swift-resources/usr/lib/swift_static-aarch64/android/libswiftSynchronization.a",
+      "sha256": "70ca5e8ef0288e9a31c05ea3a81ccbcb76377f037eb8823e0d95c3b66a06aea2"
+    },
+    {
+      "path": "swift-android/swift-resources/usr/lib/swift_static-aarch64/android/libswift_Concurrency.a",
+      "sha256": "a044547466abf77c57e386320a918c897f37c90fcd71e0614cf8b1799348c80b"
+    },
+    {
+      "path": "swift-android/swift-resources/usr/lib/swift_static-aarch64/android/libswift_RegexParser.a",
+      "sha256": "f5541bec5c4f9468122e5c546502b2c66bb860cd56f1d88eb6f0bd962ea8dc3c"
+    },
+    {
+      "path": "swift-android/swift-resources/usr/lib/swift_static-aarch64/android/libswift_StringProcessing.a",
+      "sha256": "5945b4ea4a27f37a123e599f24010a0dba32321659436cb262ccb5e9aece7c7e"
+    }
+  ],
+  "linked_whisper_archives": [
+    {
+      "filename": "libggml-base.a",
+      "sha256": "17f63bdb776eea713b26c3a6afdafa271528843f74cda8fb9727192f228f1330"
+    },
+    {
+      "filename": "libggml-cpu.a",
+      "sha256": "1760069d9b2182aa0b1314e5a35dab29838d65ebd54913e4abef63e923055a22"
+    },
+    {
+      "filename": "libggml.a",
+      "sha256": "4eb2fdf99bc2817806db74b3f71d0765b3aeae0383d126592006dd385dc447a6"
+    },
+    {
+      "filename": "libwhisper.a",
+      "sha256": "cc5a2f68cf118fbd3a2dbcef16e17af167516cbe15c23a87b1c2ae5d509b7e76"
+    }
+  ],
+  "elf_needed": [
+    "libm.so",
+    "libdl.so",
+    "liblog.so",
+    "libc++_shared.so",
+    "libz.so",
+    "libparakeet.so",
+    "libc.so"
+  ],
+  "os_provided_libraries": [
+    "libc.so",
+    "libm.so",
+    "libdl.so",
+    "liblog.so",
+    "libz.so"
+  ],
+  "packaged_libraries": {
+    "libc++_shared.so": "Existing NDK runtime, retain the full NDK notices installed by Tools/build-portable-whisper.sh.",
+    "libparakeet.so": "Existing optional native backend; retain Tools/ParakeetNative installed notices and provenance."
+  },
+  "networking_license_coverage": {
+    "FoundationNetworking and _CFURLSessionInterface": "FOUNDATION-LICENSE.txt; Apache-2.0 with Swift Runtime Library Exception",
+    "curl": "CURL-COPYING.txt; curl permissive license",
+    "BoringSSL ssl and crypto": "BORINGSSL-LICENSE.txt; OpenSSL/SSLeay, ISC, fiat MIT; retain acknowledgments and applicable advertising/nonendorsement conditions",
+    "Android system zlib": "Zlib license; platform-provided shared library, no zlib binary copied into distribution"
+  },
+  "zlib_notice_provenance": {
+    "source": "Installed Android NDK 30.0.16138531 sysroot/usr/include/zlib.h opening license block",
+    "header_sha256": "2dbc0661f6005551b3cfff931c113c2f782aa1b75605b2cf3ccf4737d9143e4c",
+    "notice_path": "ZLIB-NDK-NOTICE.txt",
+    "notice_sha256": "33fd641c9f3b0e0be64bc78fea9e94807674cdd70c48477599226cb8956565fe",
+    "limit": "Header version is not evidence of the connected phone OS zlib implementation version."
+  },
+  "certificate_material": "Standard URLSession TLS configuration; no additional CA certificate bundle was copied or embedded by this change.",
+  "evidence_limits": "SDK source-to-binary reproducibility limits in provenance.json still apply. Transport execution and external SHA verification do not establish model installation or resume/recovery parity."
+}
