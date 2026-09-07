@@ -149,6 +149,7 @@ final class WhisperCoreTests: XCTestCase {
         XCTAssertNil(result.detectedLanguageName)
     }
 
+    #if os(macOS)
     func testVenturaRetriesContextCreationOnceWhenFirstAttemptFails() {
         let recorder = WhisperRuntimeRecorder(contextsToReturn: [nil, Self.dummyContext], segments: [])
         _ = makeWhisper(recorder: recorder, osMajorVersion: 13)
@@ -163,6 +164,17 @@ final class WhisperCoreTests: XCTestCase {
 
         XCTAssertEqual(recorder.contextParamsHistory.count, 1)
     }
+    #else
+    func testCPUBackendDoesNotApplyMacOSVersionWorkaround() {
+        for version in [13, 14] {
+            let recorder = WhisperRuntimeRecorder(contextsToReturn: [nil, Self.dummyContext], segments: [])
+            _ = makeWhisper(recorder: recorder, osMajorVersion: version)
+
+            XCTAssertEqual(recorder.contextParamsHistory.count, 1)
+            XCTAssertTrue(recorder.contextParamsHistory.allSatisfy { !$0.use_gpu && !$0.flash_attn })
+        }
+    }
+    #endif
 
     func testNonVenturaDoesNotRetryContextCreationWhenFirstAttemptFails() {
         let recorder = WhisperRuntimeRecorder(contextsToReturn: [nil, Self.dummyContext], segments: [])
