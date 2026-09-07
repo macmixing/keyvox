@@ -33,6 +33,7 @@ link detailed commands and limitations rather than duplicating them here.
 | --- | --- | --- |
 | Core package graph | COMPILING | Android arm64 API 28, static Swift standard library; successful builds are distinct from runtime coverage |
 | Whisper native runtime and Swift service | FUNCTIONAL | Real model inference, VAD, and microphone transcript through Core |
+| Whisper cancel/restart lifecycle | FUNCTIONAL | Cancellation after native encoder entry followed immediately by replacement dictation completed on the same service; canceled output suppressed and replacement published once |
 | Optional Parakeet native runtime and Swift service | FUNCTIONAL | Real microphone audio through VAD and Core; coexists with Whisper; limitations below |
 | WAV decoding and sample conversion | FUNCTIONAL | Mono 16 kHz and stereo 48 kHz speech, silence handling, malformed-input rejection |
 | Microphone capture | FUNCTIONAL | Device WAV capture and adb-orchestrated engine handoff; no in-app engine bridge yet |
@@ -72,6 +73,15 @@ link detailed commands and limitations rather than duplicating them here.
       behind their existing owners before claiming device model management.
 - [ ] Extend audio/runtime evidence to repeated sessions, cancellation, resource
       release, varied sample formats, and longer utterances where feasible.
+
+Whisper lifecycle evidence now includes an immediate cancel/restart with the exact
+Base model on Android. The original concurrent use of one native context crashed
+inside GGML; per-context serialization and owned request strings close that
+reproduction. Native work already underway still finishes before its replacement
+can run. This does not implement immediate native abort or background capture.
+The existing shared chunker also processed a 53-second local audio sequence with
+four nonempty chunks and three silence boundaries; that diagnostic audio is not
+included in the repository or distribution.
 
 Parakeet is optional. Keep it only while integration remains practical; a
 Whisper-only release remains viable. The native adapter currently loads lazily,
