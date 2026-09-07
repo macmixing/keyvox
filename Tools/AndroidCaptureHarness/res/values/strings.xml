@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">KeyVox Capture Lab</string>
+    <string name="record">Record</string>
+    <string name="stop">Stop</string>
+    <string name="ready">Record a short sample, then stop. Audio stays on this device.</string>
+    <string name="recording">Recording…</string>
+    <string name="saved">Saved: %1$s</string>
+    <string name="failed">Recording failed: %1$s</string>
+    <string name="failed_saved">Recording failed: %1$s\nPreserved file (may be incomplete): %2$s</string>
+    <string name="permission_needed">Microphone permission is needed to record.</string>
+</resources>
