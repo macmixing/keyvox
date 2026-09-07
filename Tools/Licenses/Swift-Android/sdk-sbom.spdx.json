@@ -1,0 +1,95 @@
+{
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "SBOM-SPDX-ab8f4748-ec2c-4938-9217-f9277d54f003",
+  "spdxVersion": "SPDX-2.3",
+  "creationInfo": {
+    "created": "2026-06-26T08:56:30+00:00",
+    "creators": [
+      "Organization: Apple, Inc."
+    ]
+  },
+  "dataLicense": "Apache-2.0",
+  "documentNamespace": "urn:uuid:ac9c1d74-1e10-426a-8188-6d049f5c773b",
+  "documentDescribes": [
+    "SPDXRef-Package-swift-android-sdk"
+  ],
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Package-swift-android-sdk",
+      "name": "Swift SDK for Android",
+      "versionInfo": "",
+      "filesAnalyzed": false,
+      "licenseDeclared": "Apache-2.0",
+      "licenseConcluded": "Apache-2.0",
+      "downloadLocation": "https://swift.org/install",
+      "copyrightText": "NOASSERTION",
+      "checksums": []
+    },
+    {
+      "SPDXID": "SPDXRef-Package-swift",
+      "name": "swift",
+      "versionInfo": "6.3.3-RELEASE",
+      "filesAnalyzed": false,
+      "licenseDeclared": "Apache-2.0",
+      "licenseConcluded": "Apache-2.0",
+      "downloadLocation": "https://swift.org",
+      "copyrightText": "NOASSERTION",
+      "checksums": []
+    },
+    {
+      "SPDXID": "SPDXRef-Package-libxml2",
+      "name": "libxml2",
+      "versionInfo": "2.11.5",
+      "filesAnalyzed": false,
+      "licenseDeclared": "MIT",
+      "licenseConcluded": "MIT",
+      "downloadLocation": "https://github.com/GNOME/libxml2",
+      "copyrightText": "NOASSERTION",
+      "checksums": []
+    },
+    {
+      "SPDXID": "SPDXRef-Package-curl",
+      "name": "curl",
+      "versionInfo": "8.9.1",
+      "filesAnalyzed": false,
+      "licenseDeclared": "MIT",
+      "licenseConcluded": "MIT",
+      "downloadLocation": "https://curl.se",
+      "copyrightText": "NOASSERTION",
+      "checksums": []
+    },
+    {
+      "SPDXID": "SPDXRef-Package-boringssl",
+      "name": "boringssl",
+      "versionInfo": "fips-20220613",
+      "filesAnalyzed": false,
+      "licenseDeclared": "OpenSSL AND ISC AND MIT",
+      "licenseConcluded": "OpenSSL AND ISC AND MIT",
+      "downloadLocation": "https://boringssl.googlesource.com/boringssl/",
+      "copyrightText": "NOASSERTION",
+      "checksums": []
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-Package-swift-android-sdk",
+      "relationshipType": "GENERATED_FROM",
+      "relatedSpdxElement": "SPDXRef-Package-swift"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-swift-android-sdk",
+      "relationshipType": "GENERATED_FROM",
+      "relatedSpdxElement": "SPDXRef-Package-libxml2"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-swift-android-sdk",
+      "relationshipType": "GENERATED_FROM",
+      "relatedSpdxElement": "SPDXRef-Package-curl"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-swift-android-sdk",
+      "relationshipType": "GENERATED_FROM",
+      "relatedSpdxElement": "SPDXRef-Package-boringssl"
+    }
+  ]
+}

@@ -28,6 +28,26 @@ Copyright (c) The ggml authors
 
 Copyright (c) 2022 OpenAI
 
+The Android verification model's immutable identity and full MIT notice are
+recorded in `Tools/Licenses/runtime-models.lock.json` and
+`Tools/Licenses/WHISPER-MODEL-LICENSE.txt`. This experiment does not bundle that
+downloaded Whisper model.
+
+### Bundled Silero VAD model
+- Upstream: <https://github.com/snakers4/silero-vad>
+- License: MIT, Copyright (c) 2020-present Silero Team.
+- The exact published GGML v5.1.2 conversion is pinned in `Tools/Licenses/runtime-models.lock.json`.
+- The complete notice ships beside the model as `Packages/KeyVoxVoiceActivity/Sources/KeyVoxVoiceActivity/Resources/SILERO-LICENSE.txt`.
+
+### Swift Android runtime
+
+Full runtime and incorporated-data notices, the installed SDK SBOM, and verified
+archive identities are retained in `Tools/Licenses/Swift-Android`. Its README
+distinguishes the observed executable's linked components from the wider SDK,
+records required cryptography acknowledgments where applicable, and explains
+the limits of available source-build provenance. Include those notices with
+redistributed Android binaries in addition to native and model notices.
+
 ### NVIDIA Parakeet TDT v3 (downloaded model artifacts)
 - Upstream model: <https://huggingface.co/nvidia/parakeet-tdt-0.6b-v3>
 - Apple-platform Core ML distribution: <https://huggingface.co/FluidInference/parakeet-tdt-0.6b-v3-coreml>
