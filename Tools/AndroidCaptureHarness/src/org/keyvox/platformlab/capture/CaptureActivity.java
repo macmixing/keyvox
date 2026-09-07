@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.WindowManager;
 import android.view.View;
+import android.view.WindowInsets;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -24,12 +25,20 @@ public final class CaptureActivity extends Activity {
         super.onCreate(state);
         LinearLayout layout = new LinearLayout(this);
         layout.setOrientation(LinearLayout.VERTICAL);
+        layout.setOnApplyWindowInsetsListener(new View.OnApplyWindowInsetsListener() {
+            @Override public WindowInsets onApplyWindowInsets(View view, WindowInsets insets) {
+                view.setPadding(insets.getSystemWindowInsetLeft(), insets.getSystemWindowInsetTop(),
+                                insets.getSystemWindowInsetRight(), insets.getSystemWindowInsetBottom());
+                return insets;
+            }
+        });
         status = new TextView(this);
         status.setText(R.string.ready);
         record = new Button(this); record.setText(R.string.record);
         stop = new Button(this); stop.setText(R.string.stop); stop.setEnabled(false);
         layout.addView(status); layout.addView(record); layout.addView(stop);
         setContentView(layout);
+        layout.requestApplyInsets();
         record.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View view) { requestCapture(); }
         });

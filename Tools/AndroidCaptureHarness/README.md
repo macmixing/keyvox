@@ -72,5 +72,11 @@ sample limits, multiple writes, several sample rates, and immediate-stop empty
 files. Deterministic first-party JVM doubles verify stop-before-start, repeated
 start, normal stop, read failure, release failure, single completion/release, and
 preserved partial/completed files. These doubles are excluded from APK sources
-and establish control-flow behavior, not hardware functionality. Actual microphone
-recording and its Swift inference result remain pending device interaction.
+and establish control-flow behavior independently of hardware.
+
+Actual microphone capture and Swift inference executed on the SM-S948U1:
+89,600 mono samples (5.6 seconds), one VAD speech segment selecting 73,600 samples,
+and a real transcript passed through Core with 11 word tokens and eight supported
+grammatical roles. The audio stayed on the phone; adb orchestrated the existing
+Swift executable. The capture view applies platform system-bar insets and uses no
+overlapping action bar, verified from the device hierarchy before recording.
