@@ -37,6 +37,7 @@ struct WhisperRuntime {
     var fullGetSegmentT1: (_ context: OpaquePointer, _ index: Int32) -> Int64
     var fullGetSegmentNoSpeechProb: (_ context: OpaquePointer, _ index: Int32) -> Float
     var fullLangId: (_ context: OpaquePointer) -> Int32
+    var fixedModelLanguageId: (_ context: OpaquePointer) -> Int32?
     var langStr: (_ id: Int32) -> UnsafePointer<CChar>?
     var langStrFull: (_ id: Int32) -> UnsafePointer<CChar>?
 
@@ -69,6 +70,7 @@ struct WhisperRuntime {
         fullLangId: { context in
             whisper_full_lang_id(context)
         },
+        fixedModelLanguageId: WhisperModelLanguage.fixedLanguageID,
         langStr: { id in
             whisper_lang_str(id)
         },
@@ -151,7 +153,16 @@ public final class Whisper {
 
         return try await withCheckedThrowingContinuation { continuation in
             inferenceQueue.async {
-                let localParams = paramsSnapshot.raw
+                var localParams = paramsSnapshot.raw
+                let fixedLanguageID = runtime.fixedModelLanguageId(context.raw)
+                if let fixedLanguageID {
+                    guard fixedLanguageID >= 0, let language = runtime.langStr(fixedLanguageID) else {
+                        continuation.resume(throwing: WhisperError.initializationFailed)
+                        return
+                    }
+                    localParams.language = language
+                    localParams.detect_language = false
+                }
 
                 let status = framesForInference.withUnsafeBufferPointer { buffer in
                     runtime.full(
@@ -193,7 +204,11 @@ public final class Whisper {
                     }
                 }
 
-                let langId = runtime.fullLangId(context.raw)
+                let reportedLanguageID = runtime.fullLangId(context.raw)
+                let langId = fixedLanguageID ?? reportedLanguageID
+                #if DEBUG
+                print("Whisper language diagnostic: fixedModelId=\(String(describing: fixedLanguageID)) reportedId=\(reportedLanguageID) effectiveId=\(langId)")
+                #endif
                 let langCode: String?
                 let langName: String?
 
