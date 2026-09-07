@@ -17,10 +17,6 @@ private struct WhisperContextHandle: @unchecked Sendable {
     let raw: OpaquePointer
 }
 
-private struct WhisperParamsHandle: @unchecked Sendable {
-    let raw: whisper_full_params
-}
-
 struct WhisperRuntime {
     var contextDefaultParams: () -> whisper_context_params
     var initFromFileWithParams: (_ path: UnsafePointer<CChar>, _ params: whisper_context_params) -> OpaquePointer?
@@ -87,12 +83,17 @@ public final class Whisper {
     private let runtime: WhisperRuntime
     private let inferenceQueue: DispatchQueue
     private let whisperContext: OpaquePointer?
-    public var params: WhisperParams
+    private let paramsLock = NSLock()
+    private var storedParams: WhisperParams
+    public var params: WhisperParams {
+        get { paramsLock.withLock { storedParams } }
+        set { paramsLock.withLock { storedParams = newValue } }
+    }
 
     public init(fromFileURL fileURL: URL, withParams params: WhisperParams = .default) {
         self.runtime = .live
-        self.inferenceQueue = DispatchQueue.global(qos: .userInitiated)
-        self.params = params
+        self.inferenceQueue = Self.makeInferenceQueue()
+        self.storedParams = params
         self.whisperContext = Self.makeContext(
             fileURL: fileURL,
             runtime: runtime,
@@ -108,8 +109,8 @@ public final class Whisper {
         inferenceQueue: DispatchQueue
     ) {
         self.runtime = runtime
-        self.inferenceQueue = inferenceQueue
-        self.params = params
+        self.inferenceQueue = Self.makeInferenceQueue(target: inferenceQueue)
+        self.storedParams = params
         self.whisperContext = Self.makeContext(
             fileURL: fileURL,
             runtime: runtime,
@@ -146,13 +147,18 @@ public final class Whisper {
             framesForInference = audioFrames
         }
 
-        let paramsSnapshot = WhisperParamsHandle(raw: params.whisperParams)
+        let paramsSnapshot = params.snapshot()
         let context = WhisperContextHandle(raw: whisperContext)
         let runtime = self.runtime
         let inferenceQueue = self.inferenceQueue
 
         return try await withCheckedThrowingContinuation { continuation in
-            inferenceQueue.async {
+            inferenceQueue.async { [self] in
+                // Keep the native context and owned request strings alive through result extraction.
+                defer {
+                    withExtendedLifetime(self) {}
+                    withExtendedLifetime(paramsSnapshot) {}
+                }
                 var localParams = paramsSnapshot.raw
                 let fixedLanguageID = runtime.fixedModelLanguageId(context.raw)
                 if let fixedLanguageID {
@@ -229,6 +235,10 @@ public final class Whisper {
                 continuation.resume(returning: result)
             }
         }
+    }
+
+    private static func makeInferenceQueue(target: DispatchQueue? = nil) -> DispatchQueue {
+        DispatchQueue(label: "KeyVoxWhisper.inference", qos: .userInitiated, target: target)
     }
 
     private static func makeContext(
