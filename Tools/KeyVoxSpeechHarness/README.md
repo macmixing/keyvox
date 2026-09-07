@@ -86,6 +86,7 @@ its optional assets.
 | Unicode word boundaries | FUNCTIONAL | Real transcript yielded matching UTF-16 token ranges on Android and macOS |
 | Optional statistical grammatical roles | FUNCTIONAL | Explicitly selected MIT model: 22 word tokens, 20 supported roles; Android/macOS reports identical; pinned reference predictor matched all 23 context tokens |
 | Portable names / lemmas | UNRESOLVED | Optional predictor reports both unavailable; Apple implementation remains available |
+| Android microphone host | COMPILING | Separate `Tools/AndroidCaptureHarness` APK builds, installs, and launches; WAV and lifecycle checks pass; microphone-to-engine execution pending |
 | Date/address numeric protection | STUBBED | Semantic availability is explicit; non-Apple prose is conservatively preserved |
 
 There are no placeholder inference implementations. Compilation is not execution
@@ -111,7 +112,9 @@ roles, and processed output. A diagnostic compared the Swift predictor with the
 pinned upstream Python implementation using identical tokens; all 23 predictions
 matched. Tokenization and sentence-context limitations remain as documented with
 the model. This does not establish general linguistic accuracy or Apple parity.
-Microphone capture is not yet demonstrated.
+Microphone capture is not yet demonstrated. The separate capture host produces
+WAV input for `file-pipeline` without an in-app Swift bridge or frontend decision;
+its README records build, lifecycle checks, and the remaining hardware check.
 The initial monolingual run exposed invalid automatic language metadata in the
 pinned Whisper runtime. The native adapter now uses that model family's fixed
 runtime language and disables unsupported detection on request-local parameters.
