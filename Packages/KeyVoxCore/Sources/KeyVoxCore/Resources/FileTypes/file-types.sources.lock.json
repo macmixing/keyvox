@@ -1,0 +1,41 @@
+{
+  "component": "mime-db",
+  "version": "1.54.0",
+  "commit": "5207a32f76e77ed2f63421641449f8addeacb0a5",
+  "license": "MIT",
+  "artifacts": [
+    {
+      "file": "mime-db.json",
+      "url": "https://raw.githubusercontent.com/jshttp/mime-db/5207a32f76e77ed2f63421641449f8addeacb0a5/db.json",
+      "sha256": "96b8a5746867c832ab56743c05e46e73c9facb04879677df0b356f20496cb6cd"
+    },
+    {
+      "file": "MIME-DB-LICENSE.txt",
+      "url": "https://raw.githubusercontent.com/jshttp/mime-db/5207a32f76e77ed2f63421641449f8addeacb0a5/LICENSE",
+      "sha256": "cc1dfd4dafa27271e8212cd3b274eeb3f262e40a6fdab36ddc3f9696f706f58b"
+    },
+    {
+      "file": "NGINX-LICENSE.txt",
+      "url": "https://nginx.org/LICENSE",
+      "sha256": "84d5d5e86a65567c8310a6798ed9110c665f715b586905cdbe28f857511ae261"
+    }
+  ],
+  "upstream_sources": [
+    {
+      "name": "IANA registry factual data",
+      "license": "CC0-1.0",
+      "terms": "https://www.iana.org/help/licensing-terms"
+    },
+    {
+      "name": "Apache mime.types mapping",
+      "license": "public domain",
+      "terms": "https://raw.githubusercontent.com/apache/httpd/trunk/docs/conf/mime.types"
+    },
+    {
+      "name": "nginx mime.types mapping",
+      "license": "BSD-2-Clause",
+      "terms": "https://nginx.org/LICENSE"
+    }
+  ],
+  "provenance_limit": "The pinned mime-db release identifies source families but does not record exact revisions of its upstream snapshots."
+}

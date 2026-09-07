@@ -239,6 +239,16 @@ END OF TERMS AND CONDITIONS
 
 ## Package-Owned Data Notices
 
+### mime-db file-extension registry
+
+- Upstream: <https://github.com/jshttp/mime-db>
+- Adopted version: 1.54.0, commit `5207a32f76e77ed2f63421641449f8addeacb0a5`.
+- License: MIT, copyright 2014 Jonathan Ong and 2015–2022 Douglas Christopher Wilson.
+- Use: non-Apple recognition of known filename extensions in text processing. Only the JSON data is bundled; no JavaScript runtime or npm dependencies are used.
+- Source families: IANA registry factual data (CC0), Apache's public-domain `mime.types` mapping, and nginx mapping data (BSD-2-Clause). The release does not identify the exact upstream snapshot revisions.
+- Full MIT and nginx notices, the unchanged JSON and checksummed provenance are bundled in `Packages/KeyVoxCore/Sources/KeyVoxCore/Resources/FileTypes`.
+- Source terms: [IANA](https://www.iana.org/help/licensing-terms), [Apache mapping header](https://raw.githubusercontent.com/apache/httpd/trunk/docs/conf/mime.types), [nginx](https://nginx.org/LICENSE).
+
 Pronunciation-data notices for `KeyVoxCore` are bundled with the package resources:
 
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Resources/Pronunciation/LICENSES.md`
