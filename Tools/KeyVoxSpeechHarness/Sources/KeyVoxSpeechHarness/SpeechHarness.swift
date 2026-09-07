@@ -10,7 +10,7 @@ struct SpeechHarness {
     static func main() async throws {
         let arguments = Array(CommandLine.arguments.dropFirst())
         guard (2...4).contains(arguments.count) else {
-            print("Usage: KeyVoxSpeechHarness vad <audio.f32le> | transcribe <model.bin> <audio.f32le> | pipeline <model.bin> <audio.f32le> [language-code] | file-pipeline <model.bin> <audio-file> [language-code] | process <text-file> [language-code]")
+            print("Usage: KeyVoxSpeechHarness vad <audio.f32le> | transcribe <model.bin> <audio.f32le> | pipeline <model.bin> <audio.f32le> [language-code] | file-pipeline <model.bin> <audio-file> [language-code] | parakeet-file-pipeline <model.gguf> <audio-file> [language-code] | process <text-file> [language-code]")
             throw HarnessError.usage
         }
         switch arguments[0] {
@@ -40,6 +40,9 @@ struct SpeechHarness {
         case "file-pipeline" where arguments.count == 3 || arguments.count == 4:
             try await AudioFilePipeline.run(modelPath: arguments[1], audioPath: arguments[2],
                                             languageCode: arguments.count == 4 ? arguments[3] : nil)
+        case "parakeet-file-pipeline" where arguments.count == 3 || arguments.count == 4:
+            try await ParakeetFilePipeline.run(modelPath: arguments[1], audioPath: arguments[2],
+                                               languageCode: arguments.count == 4 ? arguments[3] : nil)
         case "process" where arguments.count == 2 || arguments.count == 3:
             let text = try String(contentsOfFile: arguments[1], encoding: .utf8)
             try await CoreProcessing.run(text: text, languageCode: arguments.count == 3 ? arguments[2] : nil)

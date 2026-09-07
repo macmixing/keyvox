@@ -51,7 +51,10 @@ The pinned CPU runner executed on SM-S948U1 and transcribed the existing
 11-second speech fixture with word timestamps. It also transcribed the existing
 5.6-second device microphone capture in 1.016 seconds wall time, including model
 loading (one measured run, not a benchmark). User audio remains on the device.
-These are native-runner results; the Swift backend connection remains unresolved.
+These timings are native-runner results. The optional `KeyVoxParakeetNative`
+Swift backend subsequently executed the same microphone file through the shared
+loader, ParakeetService/VAD, native inference, and Core. The service factory is
+explicitly sendable because model loading occurs outside the main actor.
 
 The trial used `tdt-0.6b-v3-q8_0.gguf`, 940,663,680 bytes, SHA-256
 `4d69a4a6683f4f2d952bad794c1357ca6eb628027695b4699c5a9ad4cd07d757`, from

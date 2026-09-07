@@ -1,6 +1,7 @@
 # Portable speech harness
 
-This command-line host exercises real KeyVox Whisper, Silero VAD, and Core processing. It makes no
+This command-line host exercises real KeyVox Whisper, optional native Parakeet,
+Silero VAD, and Core processing. It makes no
 frontend decision. Input is mono, 16 kHz, little-endian float32 PCM with samples
 in [-1, 1]. Convert an audio fixture using:
 
@@ -14,13 +15,16 @@ From the repository root, set `ANDROID_NDK_ROOT` to the installed NDK, then:
 
 ```sh
 bash Tools/build-portable-whisper.sh android /tmp/keyvox-whisper-android
+bash Tools/ParakeetNative/build-android.sh /tmp/keyvox-parakeet-android
 cd Tools/KeyVoxSpeechHarness
 swift build \
   --swift-sdk aarch64-unknown-linux-android28 \
   --static-swift-stdlib \
   --scratch-path /tmp/keyvox-port-speech-harness-android \
   -Xcc -I/tmp/keyvox-whisper-android/include \
+  -Xcc -I/tmp/keyvox-parakeet-android/include \
   -Xlinker -L/tmp/keyvox-whisper-android/lib \
+  -Xlinker -L/tmp/keyvox-parakeet-android/lib \
   -Xlinker -lc++_shared
 ```
 
@@ -38,11 +42,16 @@ directory and put its location on `LD_LIBRARY_PATH`. The Swift standard library
 is linked statically. Any additional runtime dependencies must be verified on
 the execution target.
 
+This combined diagnostic executable also links `libparakeet.so`; deploy it with
+the installed `share/licenses/keyvox-parakeet` notices. Core and the shipping Apple
+apps do not acquire this dependency. Its GGML symbols remain private to that library.
+
 ```sh
 ./KeyVoxSpeechHarness vad audio.f32le
 ./KeyVoxSpeechHarness transcribe ggml-tiny.en.bin audio.f32le
 ./KeyVoxSpeechHarness pipeline model.bin audio.f32le
 ./KeyVoxSpeechHarness file-pipeline model.bin audio.wav
+./KeyVoxSpeechHarness parakeet-file-pipeline model.gguf audio.wav
 ./KeyVoxSpeechHarness process input.txt
 ```
 
@@ -61,6 +70,12 @@ existing audio converter. Its optional final language-code argument selects text
 processing only. A missing model or failed decode/transcription exits with an
 error; detected silence succeeds with empty output.
 
+`parakeet-file-pipeline` uses the same shared audio decoder, ParakeetService/VAD,
+the optional native backend, and Core. An optional final processing-language
+argument supplies host knowledge; the native backend reports no detected language.
+See `Packages/KeyVoxParakeetNative/README.md` for lifecycle and metadata limitations
+and `Tools/ParakeetNative/README.md` for native/model provenance and licenses.
+
 Set `KEYVOX_LINGUISTIC_MODEL` to an external model directory to explicitly select
 the optional statistical analyzer. See `Tools/Models/averaged-perceptron-tagger-eng`
 for its MIT license, provenance, supported language, and accuracy limitations.
@@ -77,6 +92,7 @@ its optional assets.
 | --- | --- | --- |
 | Whisper / GGML CPU libraries | FUNCTIONAL | NDK arm64-v8a API 28 build executed on an SM-S948U1 device |
 | KeyVoxWhisper wrapper | FUNCTIONAL | Real tiny.en model produced a transcript through the Swift wrapper |
+| Optional native Parakeet / Swift backend / Core service | FUNCTIONAL | Actual 5.6-second phone microphone WAV passed through shared decoding, VAD, ParakeetService, native inference, and Core; host supplied processing language |
 | Silero VAD wrapper and resource | FUNCTIONAL | Silence: 32 probabilities, no speech; spoken audio: 344 probabilities, five speech segments |
 | Speech harness | FUNCTIONAL | Executed both commands on the connected Android device |
 | Android speech inference / VAD execution | FUNCTIONAL | Public upstream JFK fixture: 176,000 samples, two transcript segments |

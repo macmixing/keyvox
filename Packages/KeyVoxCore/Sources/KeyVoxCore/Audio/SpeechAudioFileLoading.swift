@@ -5,8 +5,8 @@ protocol SpeechAudioFileLoading {
     func load(url: URL) throws -> [Float]
 }
 
-enum SpeechAudioFileLoader {
-    static func load(url: URL) throws -> [Float] {
+public enum SpeechAudioFileLoader {
+    public static func load(url: URL) throws -> [Float] {
         #if canImport(AVFoundation)
         return try AppleSpeechAudioFileLoader().load(url: url)
         #else
