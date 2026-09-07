@@ -48,9 +48,9 @@ apps do not acquire this dependency. Its GGML symbols remain private to that lib
 
 ```sh
 ./KeyVoxSpeechHarness vad audio.f32le
-./KeyVoxSpeechHarness transcribe ggml-tiny.en.bin audio.f32le
+./KeyVoxSpeechHarness transcribe ggml-base.bin audio.f32le
 ./KeyVoxSpeechHarness pipeline model.bin audio.f32le
-./KeyVoxSpeechHarness file-pipeline model.bin audio.wav
+./KeyVoxSpeechHarness file-pipeline ggml-base.bin audio.wav
 ./KeyVoxSpeechHarness parakeet-file-pipeline model.gguf audio.wav
 ./KeyVoxSpeechHarness process input.txt
 ./KeyVoxSpeechHarness dictionary-add /path/to/diagnostic-storage phrase.txt
@@ -103,7 +103,7 @@ its optional assets.
 | Capability | Android status | Evidence |
 | --- | --- | --- |
 | Whisper / GGML CPU libraries | FUNCTIONAL | NDK arm64-v8a API 28 build executed on an SM-S948U1 device |
-| KeyVoxWhisper wrapper | FUNCTIONAL | Real tiny.en model produced a transcript through the Swift wrapper |
+| KeyVoxWhisper wrapper | FUNCTIONAL | Exact iOS Base weights executed through the shared production service on Android |
 | Optional native Parakeet / Swift backend / Core service | FUNCTIONAL | Actual 5.6-second phone microphone WAV passed through shared decoding, VAD, ParakeetService, native inference, and Core; host supplied processing language |
 | Silero VAD wrapper and resource | FUNCTIONAL | Silence: 32 probabilities, no speech; spoken audio: 344 probabilities, five speech segments |
 | Speech harness | FUNCTIONAL | Executed both commands on the connected Android device |
@@ -112,6 +112,8 @@ its optional assets.
 | Core package graph | COMPILING | Full Android build with static Swift standard library and real Whisper native dependencies passes |
 | Core text processing execution | FUNCTIONAL | Real Whisper transcript passed through production Core on the Android phone; linguistic features remain incomplete |
 | Dictionary persistence and Core connection | FUNCTIONAL | Android/macOS separate-process canonical output matched; duplicate rejection preserved entries; backup recovery and pre-mutation warnings verified; speech pipeline loaded persisted entries |
+| Spanish/French Core text fixtures | FUNCTIONAL | Existing spoken-list fixtures produced identical formatted output on Android and macOS; no optional grammatical-role model selected |
+| iOS Whisper Base model and service | FUNCTIONAL | Exact iOS GGML artifact checksum matched; existing microphone recording passed through shared service/VAD/Core with automatic language metadata and persisted dictionary correction |
 | Unicode word boundaries | FUNCTIONAL | Real transcript yielded matching UTF-16 token ranges on Android and macOS |
 | Optional statistical grammatical roles | FUNCTIONAL | Explicitly selected MIT model: 22 word tokens, 20 supported roles; Android/macOS reports identical; pinned reference predictor matched all 23 context tokens |
 | Portable names / lemmas | UNRESOLVED | Optional predictor reports both unavailable; Apple implementation remains available |
@@ -124,6 +126,40 @@ Android executable was rebuilt and Whisper/VAD execution repeated successfully.
 Local Xcode validation: 381 iOS app tests and 401 macOS app tests passed. All ten
 package suites passed; LocalInference retained nine model-dependent skips.
 
+Multilingual text evidence reuses the existing first-party
+`testDetectsSpanishSpokenMarkers` and `testDetectsFrenchSpokenMarkers` inputs from
+Core's `ListPatternDetectorTests`. Both full processing runs produced the same
+three-item lists as macOS. This establishes those formatting scenarios, not general
+language or NLP parity. No fixture vocabulary was added to the engine.
+
+The Android baseline is the existing iOS **Whisper Base** model, `ggml-base.bin`,
+from revision `90a64d80ea254cf67575b41a5971f972c79f7b45`. Its 147,951,465 bytes
+match iOS's SHA-256 `60ed5bc3dd14eea856493d334349b405782ddcaf0028d4b5df4088345fba2efe`.
+The source of truth is `iOS/KeyVox iOS/Core/ModelDownloader/DictationModelCatalog.swift`
+and `ModelInstallManifest.swift`; the license lock records that existing artifact.
+The model is MIT-licensed, with the retained OpenAI notice and pinned model-card
+license declaration recorded in `Tools/Licenses/runtime-models.lock.json`.
+
+Using `file-pipeline`, the existing 5.6-second microphone recording passed through
+production `WhisperService`, Silero VAD, Base inference, and Core. Automatic
+language metadata reached Core without an override, and the existing persisted
+dictionary corrected the recognized name. The existing 48 kHz silence fixture
+returned empty output. These checks use shared service parameters, not new
+Android decoding settings. Bare `transcribe`/`pipeline` commands are lower-level
+probes and do not establish iOS service-configuration parity.
+
+Android uses the same GGML weights on CPU. iOS additionally installs its cataloged
+Core ML Base encoder; accelerator execution is platform-specific. Supported
+language selection remains owned by `WhisperBaseLanguageCatalog` and
+`WhisperService.updateLanguage`. The harness's final language argument only selects
+text processing; it does not exercise the iOS language-selection flow.
+Cross-language recognition accuracy is outside this experiment.
+
+The optional native Parakeet result demonstrates a backend capability, not exact
+iOS model parity: its experimental GGUF Q8 weights differ from iOS's cataloged
+Core ML EncoderInt4 artifacts. It is not an Android product model selection.
+
+Earlier Tiny runs below are historical runtime checks, not the product baseline.
 The Android speech fixture was `samples/jfk.wav` from Whisper v1.7.6, converted
 from mono 16 kHz signed PCM16 to float32. Model: `ggml-tiny.en.bin` from
 `ggerganov/whisper.cpp` on Hugging Face. Observed output:
