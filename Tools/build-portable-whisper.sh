@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
+script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 
 # Build the exact runtime version used by the Apple XCFramework. The install
 # prefix is explicit so Android headers/libraries cannot replace host libraries.
@@ -53,4 +54,13 @@ cmake -S "$work/whisper.cpp-1.7.6" -B "$work/build" "${options[@]}"
 cmake --build "$work/build" --parallel
 cmake --install "$work/build"
 install -m 644 "$work/whisper.cpp-1.7.6/LICENSE" "$prefix/WHISPER-LICENSE"
+mkdir -p "$prefix/share/licenses/keyvox-speech"
+install -m 644 "$script_dir/Licenses/Whisper-CPU-NOTICES.txt" \
+    "$prefix/share/licenses/keyvox-speech/Whisper-CPU-NOTICES.txt"
+if [[ "$target" == android ]]; then
+    install -m 644 "$ANDROID_NDK_ROOT/NOTICE" \
+        "$prefix/share/licenses/keyvox-speech/ANDROID-NDK-NOTICE"
+    install -m 644 "$ANDROID_NDK_ROOT/NOTICE.toolchain" \
+        "$prefix/share/licenses/keyvox-speech/ANDROID-NDK-TOOLCHAIN-NOTICE"
+fi
 echo "Installed Whisper v1.7.6 CPU runtime in $prefix"

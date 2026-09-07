@@ -5,12 +5,21 @@ Third-party components, data, and fonts remain under their original licenses.
 
 ## Runtime Components
 
-### whisper.cpp (binary XCFramework)
+### whisper.cpp / GGML (Apple XCFramework and portable CPU libraries)
 - Upstream: <https://github.com/ggml-org/whisper.cpp>
 - License: MIT
 - Note: bundled through `Packages/KeyVoxWhisper`
+- Portable source version: v1.7.6, archive SHA-256 `166140e9a6d8a36f787a2bd77f8f44dd64874f12dd8359ff7c1f4f9acb86202e`.
+- Bundled CPU code also includes Mozilla Foundation's MIT-licensed llamafile matrix multiplication, MIT-licensed attention code by Jeffrey Quesnelle and Bowen Peng, and adapted Arm optimized routines (MIT OR Apache-2.0 WITH LLVM-exception). Full notices are in `Tools/Licenses/Whisper-CPU-NOTICES.txt` and installed alongside the portable libraries.
+- Arm provenance: the exponential routine's constants and reduction sequence match [this pinned upstream source](https://android.googlesource.com/platform/external/arm-optimized-routines/+/0a6ab6d1f600a2fba6509440f455300a606024e6/math/aarch64/advsimd/v_expf_inline.h). This identifies the routine family, not the exact historical import commit. The full upstream Arm license is retained.
 
 Copyright (c) The ggml authors
+
+### Android C++ runtime
+- Source: the Android NDK selected by `ANDROID_NDK_ROOT`; the verified device build used NDK `30.0.16138531`.
+- Redistributed runtime: `libc++_shared.so`, with LLVM libc++/libc++abi support; Apache-2.0 WITH LLVM-exception and retained legacy permissive notices.
+- The portable build installs the selected NDK's complete `NOTICE` and `NOTICE.toolchain` under `share/licenses/keyvox-speech`. Keep these with distributed native binaries; these aggregate notices also describe build tools that are not shipped in KeyVox.
+- KeyVox's original source remains MIT. Third-party license texts and attribution obligations remain applicable to their respective components.
 
 ### OpenAI Whisper (code + model weights)
 - Upstream: <https://github.com/openai/whisper>
