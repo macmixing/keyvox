@@ -21,7 +21,7 @@ public enum AudioSignalMetrics {
         for sample in samples {
             sumSquares += sample * sample
         }
-        return sqrt(sumSquares / Float(samples.count))
+        return (sumSquares / Float(samples.count)).squareRoot()
     }
 
     public static func trueSilenceWindowRatio(

@@ -51,7 +51,9 @@ the execution target.
 | Speech harness | FUNCTIONAL | Executed both commands on the connected Android device |
 | Android speech inference / VAD execution | FUNCTIONAL | Public upstream JFK fixture: 176,000 samples, two transcript segments |
 | Portable WAV/sample loading | COMPILING | Android compiled the new audio sources; generated PCM and resampling fixtures pass on macOS; device execution pending |
-| Core text processing | UNRESOLVED | Apple framework dependencies still need portability work |
+| Core package graph | COMPILING | Full Android build with static Swift standard library and real Whisper native dependencies passes |
+| Core text processing execution | UNRESOLVED | Runtime harness integration pending; linguistic features remain incomplete |
+| Date/address numeric protection | STUBBED | Semantic availability is explicit; non-Apple prose is conservatively preserved |
 
 There are no placeholder inference implementations. Compilation is not execution
 evidence. After correcting Xcode's conditional-target graph failure, the final
@@ -79,6 +81,14 @@ samples are rejected. Generated fixtures cover decoding, malformed input,
 channel mixing, rate conversion, and alias suppression. No third-party code or
 recordings were introduced for this capability. The same implementation is
 available to future Windows and Linux hosts.
+
+Date/address spans now have a semantic capability boundary. Apple retains its
+detectors. On other platforms, unavailable detection permits only isolated
+numeric-line candidates after existing structural protections; prose remains
+unchanged. Standalone values in the plausible-year range still depend on lexical
+analysis and may remain unchanged. This is a temporary limitation, not portable
+date/address recognition. Float audio RMS uses Swift's native square-root
+operation, retaining its original precision without platform-specific overloads.
 
 The existing `VoiceActivityAnalyzing` semantic boundary remains intact. The
 Whisper C packaging boundary can also accept Linux/Windows native libraries;
