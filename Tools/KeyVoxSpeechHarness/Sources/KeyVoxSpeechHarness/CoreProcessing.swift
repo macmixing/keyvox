@@ -3,18 +3,34 @@ import KeyVoxCore
 import KeyVoxLinguistics
 
 enum CoreProcessing {
+    private struct TokenReport: Encodable {
+        let location: Int
+        let length: Int
+        let role: String?
+    }
+
     private struct Report: Encodable {
         let input: String
         let output: String
         let processingLanguageCode: String?
         let detectedLanguageCode: String?
         let linguisticFeatures: [String: Bool]
+        let linguisticTokenCount: Int
+        let lexicalRoleCount: Int
+        let linguisticTokens: [TokenReport]
     }
 
     static func run(text: String, languageCode: String?, detectedLanguageCode: String? = nil) async throws {
-        let analysis = TextLinguistics.analyze(text, languageCode: languageCode,
-                                             features: [.roles, .lemmas, .names, .wordBoundaries])
-        let output = await TranscriptionPostProcessor().processAsync(
+        let analyzer: any LinguisticAnalyzing
+        if let modelPath = ProcessInfo.processInfo.environment["KEYVOX_LINGUISTIC_MODEL"] {
+            analyzer = try PerceptronLinguisticAnalyzer(modelDirectory: URL(fileURLWithPath: modelPath),
+                                                        languageCode: languageCode)
+        } else {
+            analyzer = TextLinguistics.provider
+        }
+        let analysis = analyzer.analyze(text, range: nil, languageCode: languageCode,
+                                        features: [.roles, .lemmas, .names, .wordBoundaries], grouping: .words)
+        let output = await TranscriptionPostProcessor(linguisticAnalyzer: analyzer).processAsync(
             text, dictionaryEntries: [], renderMode: .multiline,
             listFormattingEnabled: true, forceAllCaps: false, languageCode: languageCode
         )
@@ -24,7 +40,12 @@ enum CoreProcessing {
                                 "lemmas": analysis.availableFeatures.contains(.lemmas),
                                 "names": analysis.availableFeatures.contains(.names),
                                 "wordBoundaries": analysis.availableFeatures.contains(.wordBoundaries),
-                            ])
+                            ], linguisticTokenCount: analysis.tokens.count,
+                            lexicalRoleCount: analysis.tokens.filter { $0.role != nil }.count,
+                            linguisticTokens: analysis.tokens.map {
+                                TokenReport(location: $0.range.location, length: $0.range.length,
+                                            role: $0.role.map { String(describing: $0) })
+                            })
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.sortedKeys]
         print(String(decoding: try encoder.encode(report), as: UTF8.self))

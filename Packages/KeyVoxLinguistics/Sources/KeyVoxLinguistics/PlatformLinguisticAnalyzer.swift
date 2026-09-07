@@ -16,9 +16,9 @@ struct PlatformLinguisticAnalyzer: LinguisticAnalyzing {
             text, range: range, languageCode: languageCode, features: features, grouping: grouping
         )
         #else
-        // Explicitly unavailable until a host supplies a verified portable model.
-        // No grammatical roles, lemmas or names are inferred from surface spelling.
-        return LinguisticAnalysis(tokens: [], availableFeatures: [])
+        return UnicodeLinguisticAnalyzer().analyze(
+            text, range: range, languageCode: languageCode, features: features, grouping: grouping
+        )
         #endif
     }
 }

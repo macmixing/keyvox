@@ -3,6 +3,18 @@
 This project is primarily licensed under MIT for source code (see [our license](https://github.com/macmixing/keyvox/blob/main/LICENSE.md)).
 Third-party components, data, and fonts remain under their original licenses.
 
+### Optional perceptron linguistic inference
+
+- The Swift inference feature schema adapts the specifically MIT-licensed
+  `nltk/tag/perceptron.py` from NLTK 3.9.1, attributed to Matthew Honnibal and
+  the NLTK Project. Full terms are in
+  `Packages/KeyVoxLinguistics/THIRD_PARTY_NOTICES.md` and the package resource
+  `PERCEPTRON-LICENSE.txt`; retain that notice with distributed binaries.
+- Optional model JSON assets in `Tools/Models/averaged-perceptron-tagger-eng`
+  are MIT-licensed. That directory retains the full license, immutable upstream
+  license declaration, and artifact hashes. Retain its license when distributing
+  the model. These assets are not embedded in shared Swift packages.
+
 ## Runtime Components
 
 ### whisper.cpp / GGML (Apple XCFramework and portable CPU libraries)

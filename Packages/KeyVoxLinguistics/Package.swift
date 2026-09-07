@@ -6,7 +6,7 @@ let package = Package(
     platforms: [.macOS(.v13), .iOS(.v18)],
     products: [.library(name: "KeyVoxLinguistics", targets: ["KeyVoxLinguistics"])],
     targets: [
-        .target(name: "KeyVoxLinguistics"),
+        .target(name: "KeyVoxLinguistics", resources: [.copy("Resources/PERCEPTRON-LICENSE.txt")]),
         .testTarget(name: "KeyVoxLinguisticsTests", dependencies: ["KeyVoxLinguistics"]),
     ]
 )

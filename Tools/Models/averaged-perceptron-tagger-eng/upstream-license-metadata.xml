@@ -1,0 +1,7 @@
+<package id='averaged_perceptron_tagger_eng' 
+         name='Averaged Perceptron Tagger (JSON)'
+         languages="English"
+         license="MIT License"
+         webpage="https://github.com/sloria/textblob-aptagger"
+         unzip="1"
+         />
