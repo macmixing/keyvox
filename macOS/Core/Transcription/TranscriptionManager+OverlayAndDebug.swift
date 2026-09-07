@@ -1,4 +1,3 @@
-import AppKit
 import Foundation
 import KeyVoxCore
 
@@ -15,10 +14,10 @@ extension TranscriptionManager {
 
     func playSound(named name: String) {
         guard appSettings.isSoundEnabled else { return }
-        if let sound = NSSound(named: name) {
-            sound.volume = Float(appSettings.soundVolume)
-            sound.play()
-        }
+        soundCuePlayer.play(
+            named: name,
+            volume: Float(appSettings.soundVolume)
+        )
     }
 
     #if DEBUG
