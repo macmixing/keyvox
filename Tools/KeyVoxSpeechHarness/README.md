@@ -48,6 +48,7 @@ apps do not acquire this dependency. Its GGML symbols remain private to that lib
 
 ```sh
 ./KeyVoxSpeechHarness whisper-model
+./KeyVoxSpeechHarness probe-base-download /path/to/download-check
 ./KeyVoxSpeechHarness vad audio.f32le
 ./KeyVoxSpeechHarness transcribe ggml-base.bin audio.f32le
 ./KeyVoxSpeechHarness pipeline model.bin audio.f32le
@@ -60,6 +61,19 @@ apps do not acquire this dependency. Its GGML symbols remain private to that lib
 `whisper-model` prints the shared Base filename, pinned URL/revision, and SHA-256
 for host download/integrity checks. Apple catalogs use this same definition.
 It performs no download and does not select or change an installed model.
+
+`probe-base-download` exercises a foreground `URLSession` transfer of that exact
+Base artifact into a dedicated diagnostic directory. It reports the downloaded
+path, size, and expected SHA-256 with `integrityVerified: false`. Verify the file
+against that checksum before passing it to inference. It refuses an already
+existing destination file; use a dedicated directory without concurrent writers.
+This is transport evidence, not model installation, resume/recovery, background
+transfer, or onboarding implementation.
+
+On Android, the harness links the official SDK's existing SSL/crypto archives and
+OS-provided zlib for FoundationNetworking. Preserve the full notices in
+`Tools/Licenses/Swift-Android`, including BoringSSL's acknowledgments and conditions.
+Apple continues using its existing Foundation networking implementation.
 
 `pipeline` feeds actual Whisper segments to `TranscriptionPostProcessor`.
 `process` accepts a UTF-8 text file. Both emit a JSON
@@ -119,6 +133,7 @@ its optional assets.
 | Dictionary persistence and Core connection | FUNCTIONAL | Android/macOS separate-process canonical output matched; duplicate rejection preserved entries; backup recovery and pre-mutation warnings verified; speech pipeline loaded persisted entries |
 | Spanish/French Core text fixtures | FUNCTIONAL | Existing spoken-list fixtures produced identical formatted output on Android and macOS; no optional grammatical-role model selected |
 | iOS Whisper Base model and service | FUNCTIONAL | Exact iOS GGML artifact checksum matched; existing microphone recording passed through shared service/VAD/Core with automatic language metadata and persisted dictionary correction |
+| Foreground Base download transport | FUNCTIONAL | Swift URLSession downloaded exact Base on Android and macOS; external SHA-256 checks matched iOS; Android then ran downloaded weights through real VAD/inference/dictionary/Core; repeated destination rejected with file preserved |
 | Unicode word boundaries | FUNCTIONAL | Real transcript yielded matching UTF-16 token ranges on Android and macOS |
 | Optional statistical grammatical roles | FUNCTIONAL | Explicitly selected MIT model: 22 word tokens, 20 supported roles; Android/macOS reports identical; pinned reference predictor matched all 23 context tokens |
 | Portable names / lemmas | UNRESOLVED | Optional predictor reports both unavailable; Apple implementation remains available |

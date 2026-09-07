@@ -17,11 +17,20 @@ inventory. `sdk-sbom.spdx.json` is copied verbatim from the installed artifact.
 | curl 8.9.1 | Full curl permissive copying notice |
 | BoringSSL fips-20220613 | Full OpenSSL/SSLeay, ISC, and incorporated fiat MIT notices |
 
-The observed harness links Swift, Foundation, Collections, ICU, Dispatch,
+The initial speech/Core harness links Swift, Foundation, Collections, ICU, Dispatch,
 BlocksRuntime, compiler builtins, and unwind. Networking/XML/SSL libraries are
-installed in the SDK but absent from that link map. Their notices are retained
+installed in the SDK but absent from that initial link map. Their notices are retained
 for hosts that use those capabilities. NDK `libc++_shared.so` and native Whisper
 notices are installed separately by `Tools/build-portable-whisper.sh`.
+
+`networking-link.json` records the later speech harness with its foreground Base
+download probe. Its 24 linked SDK archives match the installed hashes in
+`provenance.json`, including FoundationNetworking, the URL-session C interface,
+curl, and BoringSSL SSL/crypto. The remaining static archives are the existing
+Whisper/GGML build. Its ELF dependencies include Android-provided `libz.so` and
+`liblog.so`; no zlib runtime or CA certificate bundle is copied into the harness.
+`ZLIB-NDK-NOTICE.txt` retains the installed NDK header's permissive zlib notice;
+that header is not evidence of the phone's zlib version.
 
 For binaries including BoringSSL, retain these required acknowledgments:
 

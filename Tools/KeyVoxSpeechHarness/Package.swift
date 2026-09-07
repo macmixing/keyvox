@@ -20,6 +20,11 @@ let package = Package(
                 .product(name: "KeyVoxWhisper", package: "KeyVoxWhisper"),
                 .product(name: "KeyVoxVoiceActivity", package: "KeyVoxVoiceActivity"),
                 .product(name: "KeyVoxParakeetNative", package: "KeyVoxParakeetNative"),
+            ],
+            linkerSettings: [
+                .linkedLibrary("ssl", .when(platforms: [.android])),
+                .linkedLibrary("crypto", .when(platforms: [.android])),
+                .linkedLibrary("z", .when(platforms: [.android])),
             ]
         ),
     ]
