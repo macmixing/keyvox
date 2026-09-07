@@ -36,6 +36,7 @@ class TranscriptionManager: ObservableObject {
     let weeklyWordStatsStore: WeeklyWordStatsStore
     let postProcessor: TranscriptionPostProcessor
     let vibesCoordinator: MacVibesCoordinator
+    let soundCuePlayer = MacSoundCuePlayer()
     lazy var dictationChangeController = MacDictationChangeController(
         vibesCoordinator: vibesCoordinator
     )
