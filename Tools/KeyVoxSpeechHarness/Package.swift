@@ -9,6 +9,7 @@ let package = Package(
         .package(path: "../../Packages/KeyVoxLinguistics"),
         .package(path: "../../Packages/KeyVoxWhisper"),
         .package(path: "../../Packages/KeyVoxVoiceActivity"),
+        .package(path: "../../Packages/KeyVoxParakeetNative"),
     ],
     targets: [
         .executableTarget(
@@ -18,6 +19,7 @@ let package = Package(
                 .product(name: "KeyVoxLinguistics", package: "KeyVoxLinguistics"),
                 .product(name: "KeyVoxWhisper", package: "KeyVoxWhisper"),
                 .product(name: "KeyVoxVoiceActivity", package: "KeyVoxVoiceActivity"),
+                .product(name: "KeyVoxParakeetNative", package: "KeyVoxParakeetNative"),
             ]
         ),
     ]
