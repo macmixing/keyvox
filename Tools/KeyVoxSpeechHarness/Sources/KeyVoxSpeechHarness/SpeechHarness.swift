@@ -9,11 +9,13 @@ struct SpeechHarness {
 
     static func main() async throws {
         let arguments = Array(CommandLine.arguments.dropFirst())
-        guard (2...4).contains(arguments.count) else {
-            print("Usage: KeyVoxSpeechHarness vad <audio.f32le> | transcribe <model.bin> <audio.f32le> | pipeline <model.bin> <audio.f32le> [language-code] | file-pipeline <model.bin> <audio-file> [language-code] | parakeet-file-pipeline <model.gguf> <audio-file> [language-code] | process <text-file> [language-code] | dictionary-add <storage-directory> <phrase-file>")
+        guard (1...4).contains(arguments.count) else {
+            print("Usage: KeyVoxSpeechHarness whisper-model | vad <audio.f32le> | transcribe <model.bin> <audio.f32le> | pipeline <model.bin> <audio.f32le> [language-code] | file-pipeline <model.bin> <audio-file> [language-code] | parakeet-file-pipeline <model.gguf> <audio-file> [language-code] | process <text-file> [language-code] | dictionary-add <storage-directory> <phrase-file>")
             throw HarnessError.usage
         }
         switch arguments[0] {
+        case "whisper-model" where arguments.count == 1:
+            try WhisperModelReport.printArtifact()
         case "dictionary-add" where arguments.count == 3:
             try await HarnessDictionary.add(directory: arguments[1], phrasePath: arguments[2])
         case "vad" where arguments.count == 2:

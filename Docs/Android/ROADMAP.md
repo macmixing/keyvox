@@ -56,6 +56,10 @@ link detailed commands and limitations rather than duplicating them here.
       correction path on Android using host-supplied entries.
 - [x] Verify the exact iOS Base model and language metadata routing, and
       reuse language-specific text fixtures. Spanish/French outputs match macOS.
+- [x] Exercise the existing shared language catalog and service selection on
+      Android: automatic, explicit supported selection, and unsupported-language
+      fallback. Isolated instrumentation used the saved recording; no recognition
+      accuracy claim is made for other languages.
 - [ ] Verify supported-language availability and selection through the eventual
       host. Language exposure and routing are required; evaluating recognition
       accuracy across languages is outside this experiment. Do not introduce
@@ -144,8 +148,10 @@ package checks, Apple app checks, and Android device execution in future records
 
 ## Model parity source of truth
 
-Use the existing iOS `DictationModelCatalog` and `ModelArtifacts` values for model
-identity, revision, and integrity, and shared `WhisperService` for decoding settings.
+The existing iOS Base identity, revision, and integrity values are shared through
+Core's `WhisperBaseModelArtifact`; Apple catalogs consume that definition. The
+harness exposes it with `whisper-model` for Android host verification. Use shared
+`WhisperService` for decoding settings.
 The Base artifact is identical on Android; its CPU backend replaces Apple's
 Core ML acceleration. Earlier Tiny runs are historical diagnostics only.
 

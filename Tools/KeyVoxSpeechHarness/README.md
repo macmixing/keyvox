@@ -47,6 +47,7 @@ the installed `share/licenses/keyvox-parakeet` notices. Core and the shipping Ap
 apps do not acquire this dependency. Its GGML symbols remain private to that library.
 
 ```sh
+./KeyVoxSpeechHarness whisper-model
 ./KeyVoxSpeechHarness vad audio.f32le
 ./KeyVoxSpeechHarness transcribe ggml-base.bin audio.f32le
 ./KeyVoxSpeechHarness pipeline model.bin audio.f32le
@@ -55,6 +56,10 @@ apps do not acquire this dependency. Its GGML symbols remain private to that lib
 ./KeyVoxSpeechHarness process input.txt
 ./KeyVoxSpeechHarness dictionary-add /path/to/diagnostic-storage phrase.txt
 ```
+
+`whisper-model` prints the shared Base filename, pinned URL/revision, and SHA-256
+for host download/integrity checks. Apple catalogs use this same definition.
+It performs no download and does not select or change an installed model.
 
 `pipeline` feeds actual Whisper segments to `TranscriptionPostProcessor`.
 `process` accepts a UTF-8 text file. Both emit a JSON
@@ -135,8 +140,10 @@ language or NLP parity. No fixture vocabulary was added to the engine.
 The Android baseline is the existing iOS **Whisper Base** model, `ggml-base.bin`,
 from revision `90a64d80ea254cf67575b41a5971f972c79f7b45`. Its 147,951,465 bytes
 match iOS's SHA-256 `60ed5bc3dd14eea856493d334349b405782ddcaf0028d4b5df4088345fba2efe`.
-The source of truth is `iOS/KeyVox iOS/Core/ModelDownloader/DictationModelCatalog.swift`
-and `ModelInstallManifest.swift`; the license lock records that existing artifact.
+These existing iOS values now live in Core's `WhisperBaseModelArtifact`, consumed
+by the Apple catalogs and available to Android; the license lock records that
+existing artifact. Apple-specific accelerator assets and install flows remain
+owned by their existing app catalogs.
 The model is MIT-licensed, with the retained OpenAI notice and pinned model-card
 license declaration recorded in `Tools/Licenses/runtime-models.lock.json`.
 
