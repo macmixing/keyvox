@@ -24,3 +24,10 @@ The model record identifies published conversion artifacts, their licenses, and
 the exact verified bytes. It does not claim independent reproduction of their
 historical conversion commands. No additional NLP model or corpus has yet been
 adopted by the experiment. Existing manually edited pronunciation data is unchanged.
+
+## Model file integrity
+
+`KeyVoxModels` uses the pinned Swift Crypto product for file hashing. Its direct
+and bundled/transitive licensing record is in [SwiftCrypto](SwiftCrypto/README.md),
+including Apache-2.0, XKCP CC0, Fiat attribution, and Gladman permissive notices.
+Keep those notices with distributions that include the corresponding code.

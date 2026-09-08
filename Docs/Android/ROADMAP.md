@@ -48,7 +48,8 @@ link detailed commands and limitations rather than duplicating them here.
 | Complete spoken-number parsing | FUNCTIONAL | Shared parser rejects partial candidates; existing Android math-equation, compound-exponent, and spoken-year fixtures now match Apple |
 | Names and lemmas outside Apple | UNRESOLVED | Current portable analyzer explicitly reports them unavailable |
 | Semantic date/address protection | STUBBED | Conservative fallback preserves prose; not equivalent to Apple's detection |
-| Foreground model download transport | FUNCTIONAL | Swift downloaded exact Base directly on the phone; external checksum verified before real inference/Core execution |
+| Foreground model download transport | FUNCTIONAL | Swift downloaded exact Base on the phone; KeyVoxModels verified SHA-256 before publication; independent device checksum matched and verified weights ran through real inference/Core |
+| Shared model file integrity | FUNCTIONAL | Streaming SHA-256 and progress/error fixtures pass on Apple and Android; existing iOS file hashing delegates to KeyVoxModels; integrity does not imply completed installation |
 | Whisper model failure and reload | FUNCTIONAL | Absent selection and invalid-file paths exercised; explicit unload followed by exact Base load and a second reload produced speech on device; file availability is not integrity verification |
 | Model installation and management on Android | UNRESOLVED | Foreground transfer is demonstrated; complete verified installation, resumability, recovery, and app-owned management are not |
 | Background dictation | UNRESOLVED | Required for parity; intentionally deferred to Android host integration |

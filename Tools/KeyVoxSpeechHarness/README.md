@@ -42,6 +42,12 @@ directory and put its location on `LD_LIBRARY_PATH`. The Swift standard library
 is linked statically. Any additional runtime dependencies must be verified on
 the execution target.
 
+Include `Tools/Licenses/SwiftCrypto` with distributions of the model integrity
+capability, alongside the existing SDK/NDK and native runtime notices. Copy all
+SwiftPM-generated resource directories beside the diagnostic executable; the
+cross-compiled Crypto targets also emit privacy resources. See the exact source
+and measured native linkage record in `Tools/Licenses/SwiftCrypto`.
+
 This combined diagnostic executable also links `libparakeet.so`; deploy it with
 the installed `share/licenses/keyvox-parakeet` notices. Core and the shipping Apple
 apps do not acquire this dependency. Its GGML symbols remain private to that library.
@@ -64,12 +70,13 @@ for host download/integrity checks. Apple catalogs use this same definition.
 It performs no download and does not select or change an installed model.
 
 `probe-base-download` exercises a foreground `URLSession` transfer of that exact
-Base artifact into a dedicated diagnostic directory. It reports the downloaded
-path, size, and expected SHA-256 with `integrityVerified: false`. Verify the file
-against that checksum before passing it to inference. It refuses an already
-existing destination file; use a dedicated directory without concurrent writers.
-This is transport evidence, not model installation, resume/recovery, background
-transfer, or onboarding implementation.
+Base artifact into a dedicated diagnostic directory. `KeyVoxModels` streams the
+temporary file through SHA-256 and checks the shared pinned digest before moving
+it to the destination. The report includes actual and expected digests and
+`integrityVerified: true` only after a match. Mismatch fails without publishing the
+file. It refuses an already existing destination; use a dedicated directory
+without concurrent writers. This proves foreground transfer and integrity, not
+complete model installation, resumability, background transfer, or onboarding.
 
 `probe-model-recovery` exercises the existing shared service using caller-supplied
 speech audio, a verified Base model, and a separate invalid diagnostic model file
@@ -150,7 +157,7 @@ its optional assets.
 | Dictionary persistence and Core connection | FUNCTIONAL | Android/macOS separate-process canonical output matched; duplicate rejection preserved entries; backup recovery and pre-mutation warnings verified; speech pipeline loaded persisted entries |
 | Spanish/French Core text fixtures | FUNCTIONAL | Existing spoken-list fixtures produced identical formatted output on Android and macOS; no optional grammatical-role model selected |
 | iOS Whisper Base model and service | FUNCTIONAL | Exact iOS GGML artifact checksum matched; existing microphone recording passed through shared service/VAD/Core with automatic language metadata and persisted dictionary correction |
-| Foreground Base download transport | FUNCTIONAL | Swift URLSession downloaded exact Base on Android and macOS; external SHA-256 checks matched iOS; Android then ran downloaded weights through real VAD/inference/dictionary/Core; repeated destination rejected with file preserved |
+| Foreground Base download transport | FUNCTIONAL | Android Swift download now verifies exact Base internally before publishing it, then runs real VAD/inference/Core; independent device checksum matched; earlier Apple transport and external-checksum evidence remains applicable |
 | Unicode word boundaries | FUNCTIONAL | Real transcript yielded matching UTF-16 token ranges on Android and macOS |
 | Optional statistical grammatical roles | FUNCTIONAL | Explicitly selected MIT model: 22 word tokens, 20 supported roles; Android/macOS reports identical; pinned reference predictor matched all 23 context tokens |
 | Portable names / lemmas | UNRESOLVED | Optional predictor reports both unavailable; Apple implementation remains available |

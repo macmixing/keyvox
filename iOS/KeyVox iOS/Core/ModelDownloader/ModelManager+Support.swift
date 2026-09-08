@@ -1,4 +1,5 @@
 import CryptoKit
+import KeyVoxModels
 import Foundation
 import ZIPFoundation
 
@@ -109,25 +110,7 @@ extension ModelManager {
         forFileAt url: URL,
         progress: ((Int64, Int64) -> Void)? = nil
     ) throws -> String {
-        let handle = try FileHandle(forReadingFrom: url)
-        defer { try? handle.close() }
-
-        let totalBytes = Int64((try? FileManager.default.attributesOfItem(atPath: url.path)[.size] as? NSNumber)?.int64Value ?? 0)
-        var completedBytes: Int64 = 0
-        progress?(0, totalBytes)
-        var hasher = SHA256()
-        while autoreleasepool(invoking: {
-            let data = handle.readData(ofLength: 1_048_576)
-            if data.isEmpty {
-                return false
-            }
-            hasher.update(data: data)
-            completedBytes += Int64(data.count)
-            progress?(completedBytes, totalBytes)
-            return true
-        }) {}
-
-        return hasher.finalize().map { String(format: "%02x", $0) }.joined()
+        try ModelFileIntegrity.sha256Hex(forFileAt: url, progress: progress)
     }
 
     nonisolated static func validateExtractedCoreMLBundle(at rootURL: URL, fileManager: FileManager) -> String? {

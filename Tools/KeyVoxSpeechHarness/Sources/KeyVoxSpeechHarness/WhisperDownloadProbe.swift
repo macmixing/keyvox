@@ -4,15 +4,16 @@ import FoundationNetworking
 #endif
 import KeyVoxModels
 
-/// Verifies foreground transport only; the caller must verify integrity before use.
+/// Verifies foreground transport and pinned model integrity before publishing the diagnostic file.
 enum WhisperDownloadProbe {
-    enum Failure: Error { case unexpectedResponse }
+    enum Failure: Error { case unexpectedResponse, integrityMismatch }
 
     private struct Report: Encodable {
         let downloadedPath: String
         let expectedSHA256: String
         let bytes: UInt64
-        let integrityVerified = false
+        let actualSHA256: String
+        let integrityVerified = true
     }
 
     static func run(directoryPath: String) async throws {
@@ -29,6 +30,8 @@ enum WhisperDownloadProbe {
         guard let response = response as? HTTPURLResponse, response.statusCode == 200 else {
             throw Failure.unexpectedResponse
         }
+        let actualSHA256 = try ModelFileIntegrity.sha256Hex(forFileAt: temporaryURL)
+        guard actualSHA256 == WhisperBaseModelArtifact.sha256 else { throw Failure.integrityMismatch }
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         try FileManager.default.moveItem(at: temporaryURL, to: destination)
         let attributes = try FileManager.default.attributesOfItem(atPath: destination.path)
@@ -37,7 +40,7 @@ enum WhisperDownloadProbe {
         }
         let report = Report(downloadedPath: destination.path,
                             expectedSHA256: WhisperBaseModelArtifact.sha256,
-                            bytes: size.uint64Value)
+                            bytes: size.uint64Value, actualSHA256: actualSHA256)
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.sortedKeys, .withoutEscapingSlashes]
         print(String(decoding: try encoder.encode(report), as: UTF8.self))
