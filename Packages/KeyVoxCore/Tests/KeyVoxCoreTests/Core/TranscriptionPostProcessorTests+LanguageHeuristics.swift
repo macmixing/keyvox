@@ -4,7 +4,7 @@ import XCTest
 
 @MainActor
 extension TranscriptionPostProcessorTests {
-    func testPostProcessorDoesNotRewriteMismatchedSpelledUppercaseSequences() {
+    func testPostProcessorDoesNotRewriteMismatchedSpelledUppercaseSequences() async {
         let processor = TranscriptionPostProcessor()
         let entries = [
             DictionaryEntry(phrase: "ChatGPT"),
@@ -33,7 +33,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(phoneticUppercaseOutput, "But as ChatGPT got better, this got worse.")
     }
 
-    func testRewritesMergedDictionaryTokenToCanonicalTwoTokenPhrase() {
+    func testRewritesMergedDictionaryTokenToCanonicalTwoTokenPhrase() async {
         let processor = TranscriptionPostProcessor()
         let entries = [DictionaryEntry(phrase: "Mister PinupCA")]
 
@@ -46,7 +46,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "MrBeast went to McDonald's to get some McNuggets with Mister PinupCA.")
     }
 
-    func testPreservesLeadingMrBeastClauseWithDictionaryBrand() {
+    func testPreservesLeadingMrBeastClauseWithDictionaryBrand() async {
         let processor = TranscriptionPostProcessor()
         let entries = [DictionaryEntry(phrase: "Mister PinupCA")]
 
@@ -59,7 +59,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "MrBeast went to McDonald's to get some McNuggets with Mister PinupCA.")
     }
 
-    func testDoesNotLowercaseLeadingInitialismTokenThatIsNotWebsite() {
+    func testDoesNotLowercaseLeadingInitialismTokenThatIsNotWebsite() async {
         let processor = TranscriptionPostProcessor()
         let entries = [DictionaryEntry(phrase: "Mister PinupCA")]
 
@@ -72,7 +72,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "B.D.MrBeast went to McDonald's to get some McNuggets with Mister PinupCA.")
     }
 
-    func testStillLowercasesKnownWebsiteDomainsInSentence() {
+    func testStillLowercasesKnownWebsiteDomainsInSentence() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -84,7 +84,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "Please visit www.keyvox.app for updates.")
     }
 
-    func testLowercasesBareWebsiteWithLongTopLevelDomain() {
+    func testLowercasesBareWebsiteWithLongTopLevelDomain() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -96,7 +96,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "Please visit keyvox.photography for updates.")
     }
 
-    func testCollapsesSingleCharacterSpamRun() {
+    func testCollapsesSingleCharacterSpamRun() async {
         let processor = TranscriptionPostProcessor()
         let spam = String(repeating: "j", count: 140)
 
@@ -108,7 +108,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "J")
     }
-    func testCollapsesUnicodeCircleCharacterSpamRun() {
+    func testCollapsesUnicodeCircleCharacterSpamRun() async {
         let processor = TranscriptionPostProcessor()
         let spam = String(repeating: "◯", count: 120)
 
@@ -120,7 +120,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "◯")
     }
-    func testRandomizedCharacterSpamRunsAreCollapsed() {
+    func testRandomizedCharacterSpamRunsAreCollapsed() async {
         let processor = TranscriptionPostProcessor()
         var rng = SeededGenerator(state: 0xC0FFEE123456789)
         let characters = Array("abcdefghijklmnopqrstuvwxyz0123456789@#$_-+=*")
@@ -146,7 +146,7 @@ extension TranscriptionPostProcessorTests {
             XCTAssertTrue(normalizedOutput.contains("suffix"))
         }
     }
-    func testCollapsesExcessiveLaughterSpamRuns() {
+    func testCollapsesExcessiveLaughterSpamRuns() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -157,7 +157,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "Haha haha haha haha")
     }
-    func testPreservesShortLaughterRunsWithoutSpamCollapse() {
+    func testPreservesShortLaughterRunsWithoutSpamCollapse() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -168,7 +168,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "Haha haha haha")
     }
-    func testExpandsHahaHaTripletShorthand() {
+    func testExpandsHahaHaTripletShorthand() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -179,7 +179,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "Ha ha ha")
     }
-    func testNormalizesHaHaToHaha() {
+    func testNormalizesHaHaToHaha() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -190,7 +190,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "Haha that was funny.")
     }
-    func testLowercasesUppercaseReactionTokens() {
+    func testLowercasesUppercaseReactionTokens() async {
         let normalizer = LaughterNormalizer()
 
         XCTAssertEqual(
@@ -210,7 +210,7 @@ extension TranscriptionPostProcessorTests {
             "wtf happened here? omg this is crazy."
         )
     }
-    func testKeepsBetweenColonPhraseLiteral() {
+    func testKeepsBetweenColonPhraseLiteral() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -221,7 +221,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "Let's pick between colon McDonalds or Burger King.")
     }
-    func testKeepsBetweenColinPhraseLiteral() {
+    func testKeepsBetweenColinPhraseLiteral() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -232,7 +232,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "Let's pick between Colin McDonalds or Burger King.")
     }
-    func testNormalizesCommaDelimitedColonPhraseToPunctuation() {
+    func testNormalizesCommaDelimitedColonPhraseToPunctuation() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -243,7 +243,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "I'm going to the store: To buy some groceries.")
     }
-    func testNormalizesCommaDelimitedLowercaseColinPhraseToPunctuation() {
+    func testNormalizesCommaDelimitedLowercaseColinPhraseToPunctuation() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -254,7 +254,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "Example: Exhibit A")
     }
-    func testRemovesTerminalPeriodForShortStandaloneColonAssociation() {
+    func testRemovesTerminalPeriodForShortStandaloneColonAssociation() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -265,7 +265,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "Example: Exhibit A")
     }
-    func testKeepsCommaDelimitedCapitalizedColinPhraseLiteral() {
+    func testKeepsCommaDelimitedCapitalizedColinPhraseLiteral() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -276,7 +276,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "I'm going to the store, Colin, to buy some groceries.")
     }
-    func testKeepsCommaDelimitedCollinNameLiteral() {
+    func testKeepsCommaDelimitedCollinNameLiteral() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -287,7 +287,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "I met, Collin, yesterday at lunch.")
     }
-    func testColonNormalizationStaysCompatibleWithWebsiteNormalization() {
+    func testColonNormalizationStaysCompatibleWithWebsiteNormalization() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -298,7 +298,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "Please visit www.keyvox.app: Support docs")
     }
-    func testColonNormalizationStaysCompatibleWithDictionaryBrandWords() {
+    func testColonNormalizationStaysCompatibleWithDictionaryBrandWords() async {
         let processor = TranscriptionPostProcessor()
         let entries = [DictionaryEntry(phrase: "Cueboard")]
 
@@ -310,7 +310,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "Brand update: Cueboard roadmap")
     }
-    func testColonNormalizationStaysCompatibleWithListFormatting() {
+    func testColonNormalizationStaysCompatibleWithListFormatting() async {
         let processor = TranscriptionPostProcessor()
         let entries = [DictionaryEntry(phrase: "Cueboard")]
 
@@ -324,7 +324,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertTrue(output.contains("1. Cueboard design"))
         XCTAssertTrue(output.contains("2. Website launch"))
     }
-    func testKeepsStandaloneColonWordWithoutContext() {
+    func testKeepsStandaloneColonWordWithoutContext() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -335,7 +335,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "The word colon appears here.")
     }
-    func testKeepsTerminalCommaDelimitedColinPhraseLiteral() {
+    func testKeepsTerminalCommaDelimitedColinPhraseLiteral() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -346,7 +346,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "Next task, Colin.")
     }
-    func testNormalizesBareColonAssociationLabel() {
+    func testNormalizesBareColonAssociationLabel() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -357,7 +357,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "Event: Wedding reception")
     }
-    func testNormalizesCapitalizedColinAssociationLabel() {
+    func testNormalizesCapitalizedColinAssociationLabel() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -368,7 +368,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "Announcement: New baby")
     }
-    func testKeepsLiteralColonPunctuationAssociation() {
+    func testKeepsLiteralColonPunctuationAssociation() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -379,7 +379,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "Big announcement: New baby")
     }
-    func testNormalizesCapitalizedColonAssociationWithoutCommas() {
+    func testNormalizesCapitalizedColonAssociationWithoutCommas() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -390,7 +390,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "Jumping Jacks: An amusement park")
     }
-    func testNormalizesCapitalizedColinAssociationWithTrailingComma() {
+    func testNormalizesCapitalizedColinAssociationWithTrailingComma() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -401,7 +401,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "Jumping Jacks: An amusement park")
     }
-    func testNormalizesCapitalizedColonAssociationWithTrailingPeriod() {
+    func testNormalizesCapitalizedColonAssociationWithTrailingPeriod() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -412,7 +412,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "Wild Ride: Nature's Adventures")
     }
-    func testKeepsLiteralColonAssociationTitle() {
+    func testKeepsLiteralColonAssociationTitle() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -423,7 +423,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "Disneyland: A new adventure")
     }
-    func testNormalizesCommaDelimitedCapitalizedColinAssociationLabel() {
+    func testNormalizesCommaDelimitedCapitalizedColinAssociationLabel() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -434,7 +434,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "Fantastic Saturdays: Another day")
     }
-    func testDoesNotRewriteSingleWordGreetingColin() {
+    func testDoesNotRewriteSingleWordGreetingColin() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -445,7 +445,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "Hi, Colin.")
     }
-    func testNormalizesHoleInOneIdiom() {
+    func testNormalizesHoleInOneIdiom() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -456,7 +456,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "I was golfing last week and I got a hole-in-one because there were opponents ahead of me.")
     }
-    func testHoleInOneWithTwoInProseDoesNotTriggerListFormatting() {
+    func testHoleInOneWithTwoInProseDoesNotTriggerListFormatting() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(

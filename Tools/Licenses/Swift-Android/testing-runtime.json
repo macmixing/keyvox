@@ -1,0 +1,366 @@
+{
+  "purpose": "Local Android XCTest execution only; not added to the shipping engine or capture APK",
+  "licenses": [
+    {
+      "project": "swift-corelibs-xctest",
+      "source": "https://raw.githubusercontent.com/swiftlang/swift-corelibs-xctest/swift-6.3.3-RELEASE/LICENSE",
+      "license": "Apache-2.0 with Swift Runtime Library Exception",
+      "notice": "XCTEST-LICENSE.txt",
+      "notice_sha256": "0ca84095d1de77cad1a866ebbad28f8db98a0826c6055d92b0608c5baa1643e2"
+    },
+    {
+      "project": "swift-testing",
+      "source": "https://raw.githubusercontent.com/swiftlang/swift-testing/swift-6.3.3-RELEASE/LICENSE.txt",
+      "license": "Apache-2.0 with Swift Runtime Library Exception",
+      "notice": "TESTING-LICENSE.txt",
+      "notice_sha256": "11875c32f8de06e40b25b9e1dc78776baad9810032601c5325db6234c86d71e9"
+    }
+  ],
+  "libraries": [
+    {
+      "name": "libc++_shared.so",
+      "sha256": "7466ed097631a564ed6bff0b47768caa76bf03270d2047b5a65c03f497b824df",
+      "needed": [
+        "libc.so",
+        "libm.so",
+        "libdl.so"
+      ],
+      "provider": "Android NDK 30.0.16138531"
+    },
+    {
+      "name": "lib_Testing_Foundation.so",
+      "sha256": "1ba3e927fc2d6b6dfcb8a6b20509b4894c23368a016c73f29267bdf84d653ef6",
+      "needed": [
+        "libTesting.so",
+        "libswiftCore.so",
+        "libswift_Concurrency.so",
+        "libswift_StringProcessing.so",
+        "libswift_RegexParser.so",
+        "libswift_Builtin_float.so",
+        "libswift_math.so",
+        "libswiftAndroid.so",
+        "libBlocksRuntime.so",
+        "libdispatch.so",
+        "libswiftDispatch.so",
+        "libFoundation.so",
+        "libFoundationEssentials.so",
+        "libFoundationInternationalization.so",
+        "libm.so",
+        "libdl.so",
+        "libc.so"
+      ],
+      "provider": "Swift Android SDK 6.3.3 arm64"
+    },
+    {
+      "name": "libFoundationInternationalization.so",
+      "sha256": "e08b7f28a1c0b6e9423c41618c74a2d365de9d353442d6b02ca4a0bea9e66b84",
+      "needed": [
+        "libFoundationEssentials.so",
+        "lib_FoundationICU.so",
+        "libswiftCore.so",
+        "libswift_Concurrency.so",
+        "libswift_StringProcessing.so",
+        "libswift_RegexParser.so",
+        "libswift_Builtin_float.so",
+        "libswift_math.so",
+        "libswiftAndroid.so",
+        "libm.so",
+        "libdl.so",
+        "libc.so"
+      ],
+      "provider": "Swift Android SDK 6.3.3 arm64"
+    },
+    {
+      "name": "libswiftAndroid.so",
+      "sha256": "d03948059c799f40295e3c40dbd389e8a9cef192c993e597da33944912699d6c",
+      "needed": [
+        "libm.so",
+        "libdl.so",
+        "liblog.so",
+        "libc++_shared.so",
+        "libswiftCore.so",
+        "libc.so"
+      ],
+      "provider": "Swift Android SDK 6.3.3 arm64"
+    },
+    {
+      "name": "libswiftCore.so",
+      "sha256": "eb637d7b7697537916a8d628d322d44e8142b9e1cb87110e37edf4ac00faa675",
+      "needed": [
+        "libm.so",
+        "libdl.so",
+        "liblog.so",
+        "libc++_shared.so",
+        "libc.so"
+      ],
+      "provider": "Swift Android SDK 6.3.3 arm64"
+    },
+    {
+      "name": "libswift_math.so",
+      "sha256": "112517d73f3ecedcb255122c67b651aa7885221898522d83bdc4387bf6e1de8d",
+      "needed": [
+        "libm.so",
+        "libdl.so",
+        "liblog.so",
+        "libc++_shared.so",
+        "libswift_Builtin_float.so",
+        "libswiftCore.so",
+        "libc.so"
+      ],
+      "provider": "Swift Android SDK 6.3.3 arm64"
+    },
+    {
+      "name": "libswift_Builtin_float.so",
+      "sha256": "b6ca77d5f20f766d355b156d8f5a6f2b0a8afcf334458688ae3434eb86f31e80",
+      "needed": [
+        "libm.so",
+        "libdl.so",
+        "liblog.so",
+        "libc++_shared.so",
+        "libswiftCore.so",
+        "libc.so"
+      ],
+      "provider": "Swift Android SDK 6.3.3 arm64"
+    },
+    {
+      "name": "libswift_RegexParser.so",
+      "sha256": "108c70e9d374bc70b36d3bad39754592ae96828be8b87ec3367eddb29645fe85",
+      "needed": [
+        "libm.so",
+        "libdl.so",
+        "liblog.so",
+        "libc++_shared.so",
+        "libswiftCore.so",
+        "libc.so"
+      ],
+      "provider": "Swift Android SDK 6.3.3 arm64"
+    },
+    {
+      "name": "libswift_StringProcessing.so",
+      "sha256": "eafe9c7856f4f3ba9692b822dc8da2b9efa986b24153d104abbb7ca1296613fc",
+      "needed": [
+        "libm.so",
+        "libdl.so",
+        "liblog.so",
+        "libc++_shared.so",
+        "libswift_RegexParser.so",
+        "libswiftAndroid.so",
+        "libswiftCore.so",
+        "libc.so"
+      ],
+      "provider": "Swift Android SDK 6.3.3 arm64"
+    },
+    {
+      "name": "libswift_Concurrency.so",
+      "sha256": "ccd77155cbf7763fa542f2ce77f293b90796e704d4f9d5a9de10c4b0ca780b3c",
+      "needed": [
+        "libm.so",
+        "libdispatch.so",
+        "libdl.so",
+        "liblog.so",
+        "libc++_shared.so",
+        "libswift_Builtin_float.so",
+        "libswiftAndroid.so",
+        "libswiftCore.so",
+        "libc.so"
+      ],
+      "provider": "Swift Android SDK 6.3.3 arm64"
+    },
+    {
+      "name": "libdispatch.so",
+      "sha256": "6bca45f53a57a9197a1ec74147c639c6b2b1027dc2c5525d6700cc40fd7127f5",
+      "needed": [
+        "libBlocksRuntime.so",
+        "libm.so",
+        "libdl.so",
+        "libc.so"
+      ],
+      "provider": "Swift Android SDK 6.3.3 arm64"
+    },
+    {
+      "name": "libBlocksRuntime.so",
+      "sha256": "d919ca7ab3c94154108de61120cd9157610d9ee688f90d4737ef7ef1bbb644f8",
+      "needed": [
+        "libm.so",
+        "libdl.so",
+        "libc.so"
+      ],
+      "provider": "Swift Android SDK 6.3.3 arm64"
+    },
+    {
+      "name": "lib_FoundationICU.so",
+      "sha256": "41171d3eed0f99b2057b9b528c14a4ad27d07f1e102d106facfcd0db8faf2a4a",
+      "needed": [
+        "libm.so",
+        "libdl.so",
+        "libc.so"
+      ],
+      "provider": "Swift Android SDK 6.3.3 arm64"
+    },
+    {
+      "name": "libFoundationEssentials.so",
+      "sha256": "ff46f573d6f7fdafec5e9074fd37e20129ef7ef1168bd4c0d1fa32c392c4cca5",
+      "needed": [
+        "libswiftCore.so",
+        "libswift_Concurrency.so",
+        "libswift_StringProcessing.so",
+        "libswift_RegexParser.so",
+        "libswift_Builtin_float.so",
+        "libswift_math.so",
+        "libswiftSynchronization.so",
+        "libswiftAndroid.so",
+        "libm.so",
+        "libdl.so",
+        "libc.so"
+      ],
+      "provider": "Swift Android SDK 6.3.3 arm64"
+    },
+    {
+      "name": "libswiftSynchronization.so",
+      "sha256": "a5fc892b3ec23cf4535d0e210e521bc21323b59bc7c6a6b88f9c122524453e96",
+      "needed": [
+        "libm.so",
+        "libdl.so",
+        "liblog.so",
+        "libc++_shared.so",
+        "libswiftAndroid.so",
+        "libswiftCore.so",
+        "libc.so"
+      ],
+      "provider": "Swift Android SDK 6.3.3 arm64"
+    },
+    {
+      "name": "libFoundation.so",
+      "sha256": "9750989c4eba5101a1f9d036c36bf41020e76d449084ec200a4b3fbe54e2dd82",
+      "needed": [
+        "libFoundationInternationalization.so",
+        "libswiftDispatch.so",
+        "libFoundationEssentials.so",
+        "lib_FoundationICU.so",
+        "libdispatch.so",
+        "libBlocksRuntime.so",
+        "libswiftCore.so",
+        "libswift_Concurrency.so",
+        "libswift_StringProcessing.so",
+        "libswift_RegexParser.so",
+        "libswift_Builtin_float.so",
+        "libswift_math.so",
+        "libswiftSynchronization.so",
+        "libswiftAndroid.so",
+        "libm.so",
+        "libdl.so",
+        "libc.so"
+      ],
+      "provider": "Swift Android SDK 6.3.3 arm64"
+    },
+    {
+      "name": "libswiftDispatch.so",
+      "sha256": "06e6d2e7ba79833e5cac698b7147ee2ae4a8e0ab57ae95dd07218cc95c260600",
+      "needed": [
+        "libdispatch.so",
+        "libBlocksRuntime.so",
+        "libswiftCore.so",
+        "libswift_Concurrency.so",
+        "libswift_StringProcessing.so",
+        "libswift_RegexParser.so",
+        "libswift_Builtin_float.so",
+        "libdl.so",
+        "libc.so"
+      ],
+      "provider": "Swift Android SDK 6.3.3 arm64"
+    },
+    {
+      "name": "libTesting.so",
+      "sha256": "92737eb6af5b0d8a97ce36879845bc6d3420d27629bd4bd1aac9306521960c61",
+      "needed": [
+        "lib_TestingInterop.so",
+        "libswiftCore.so",
+        "libswift_Concurrency.so",
+        "libswift_StringProcessing.so",
+        "libswift_RegexParser.so",
+        "libswift_Builtin_float.so",
+        "libswift_math.so",
+        "libswiftSynchronization.so",
+        "libswiftAndroid.so",
+        "libBlocksRuntime.so",
+        "libdispatch.so",
+        "libswiftDispatch.so",
+        "libFoundation.so",
+        "libFoundationEssentials.so",
+        "libFoundationInternationalization.so",
+        "libm.so",
+        "libc++_shared.so",
+        "libdl.so",
+        "libc.so"
+      ],
+      "provider": "Swift Android SDK 6.3.3 arm64"
+    },
+    {
+      "name": "lib_TestingInterop.so",
+      "sha256": "18b551ab07786e25ca57fe7fb6999b3c55616b85f95932216aa84b24e66536d1",
+      "needed": [
+        "libswiftCore.so",
+        "libswift_Concurrency.so",
+        "libswift_StringProcessing.so",
+        "libswift_RegexParser.so",
+        "libswift_Builtin_float.so",
+        "libswift_math.so",
+        "libswiftSynchronization.so",
+        "libswiftAndroid.so",
+        "libm.so",
+        "libc++_shared.so",
+        "libdl.so",
+        "libc.so"
+      ],
+      "provider": "Swift Android SDK 6.3.3 arm64"
+    },
+    {
+      "name": "libXCTest.so",
+      "sha256": "50ba0f62383d185ccfaad924b811b8a06a8b522483f5889b65469dfcef20e280",
+      "needed": [
+        "libFoundation.so",
+        "libFoundationInternationalization.so",
+        "libFoundationEssentials.so",
+        "lib_FoundationICU.so",
+        "libswiftDispatch.so",
+        "libdispatch.so",
+        "libBlocksRuntime.so",
+        "libswiftCore.so",
+        "libswift_Concurrency.so",
+        "libswift_StringProcessing.so",
+        "libswift_RegexParser.so",
+        "libswift_Builtin_float.so",
+        "libswift_math.so",
+        "libswiftAndroid.so",
+        "libm.so",
+        "libdl.so",
+        "libc.so"
+      ],
+      "provider": "Swift Android SDK 6.3.3 arm64"
+    },
+    {
+      "name": "libswiftSwiftOnoneSupport.so",
+      "sha256": "25c08b429050ae8a88bdde338655d006cc280ee60c8f5138c4f7cbff6bcf6b8b",
+      "needed": [
+        "libm.so",
+        "libdl.so",
+        "liblog.so",
+        "libc++_shared.so",
+        "libswiftCore.so",
+        "libc.so"
+      ],
+      "provider": "Swift Android SDK 6.3.3 arm64"
+    }
+  ],
+  "system_provided": [
+    "libc.so",
+    "libdl.so",
+    "liblog.so",
+    "libm.so"
+  ],
+  "transitive_scope": [
+    "XCTest and Swift Testing use the existing Swift, Foundation, Dispatch, ICU and Android C++ runtime capabilities; actual ELF dependency closure is listed here.",
+    "Swift Testing manifest also declares Swift Syntax for compiler macros on the build host. That compiler dependency is not part of the Android ELF dependency closure.",
+    "Existing runtime notices and source reconstruction limitations in README.md still apply. These hashes identify the installed SDK binaries, not an independently reproduced source build."
+  ]
+}

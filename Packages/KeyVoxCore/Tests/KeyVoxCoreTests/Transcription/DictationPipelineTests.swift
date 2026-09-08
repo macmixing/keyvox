@@ -647,10 +647,12 @@ final class DictationPipelineTests: XCTestCase {
     private var recorded: [String] = []
     private var pasted: [String] = []
 
-    override func setUp() {
-        super.setUp()
-        recorded = []
-        pasted = []
+    override func setUp() async throws {
+        try await super.setUp()
+        await MainActor.run {
+            recorded = []
+            pasted = []
+        }
     }
 
     private func runPipeline(

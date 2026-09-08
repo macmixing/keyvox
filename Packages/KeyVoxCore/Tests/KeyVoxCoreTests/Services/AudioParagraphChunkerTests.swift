@@ -108,7 +108,7 @@ final class AudioParagraphChunkerTests: XCTestCase {
     private func makeSpeech(_ frameCount: Int, amplitude: Float = 0.04) -> [Float] {
         guard frameCount > 0 else { return [] }
         return (0..<frameCount).map { index in
-            sin(Float(index) * 0.05) * amplitude
+            Float(sin(Double(Float(index) * 0.05))) * amplitude
         }
     }
 

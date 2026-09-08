@@ -4,7 +4,7 @@ import KeyVoxWhisper
 
 @MainActor
 final class WhisperServiceLanguageTests: XCTestCase {
-    func testUpdateLanguageStoresSupportedSelection() {
+    func testUpdateLanguageStoresSupportedSelection() async {
         let service = WhisperService()
         let spanish = DictationLanguage(rawValue: "es")
 
@@ -16,7 +16,7 @@ final class WhisperServiceLanguageTests: XCTestCase {
         XCTAssertEqual(params.language, .spanish)
     }
 
-    func testUpdateLanguageAppliesAutomaticSelectionToRuntimeParameters() {
+    func testUpdateLanguageAppliesAutomaticSelectionToRuntimeParameters() async {
         let service = WhisperService()
         let params = WhisperParams.default
 
@@ -26,7 +26,7 @@ final class WhisperServiceLanguageTests: XCTestCase {
         XCTAssertEqual(params.language, .auto)
     }
 
-    func testUpdateLanguageFallsBackToAutomaticForUnsupportedSelection() {
+    func testUpdateLanguageFallsBackToAutomaticForUnsupportedSelection() async {
         let service = WhisperService()
 
         service.updateLanguage(DictationLanguage(rawValue: "unknown"))

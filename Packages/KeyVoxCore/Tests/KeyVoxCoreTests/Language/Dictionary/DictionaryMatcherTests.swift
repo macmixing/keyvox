@@ -4,7 +4,7 @@ import XCTest
 
 @MainActor
 final class DictionaryMatcherTests: XCTestCase {
-    func testDoesNotMatchSixDictationsToBigDictation() {
+    func testDoesNotMatchSixDictationsToBigDictation() async {
         let matcher = makeRuntimeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Big Dictation")])
         let input = "Did you try six dictations?"
@@ -12,7 +12,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(matcher.apply(to: input).text, input)
     }
 
-    func testDoesNotMatchNumericDictionaryEntryToUnrelatedPluralTail() {
+    func testDoesNotMatchNumericDictionaryEntryToUnrelatedPluralTail() async {
         let matcher = makeRuntimeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "7-Eleven")])
 
@@ -21,7 +21,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(matcher.apply(to: input).text, input)
     }
 
-    func testMatchesNumericShapeForHyphenatedDictionaryEntry() {
+    func testMatchesNumericShapeForHyphenatedDictionaryEntry() async {
         let matcher = makeRuntimeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "7-Eleven")])
 
@@ -30,7 +30,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "The storefront is next to 7-Eleven.")
     }
 
-    func testMatchesCardinalAndOrdinalNumericShapesForSpokenDictionaryPhrase() {
+    func testMatchesCardinalAndOrdinalNumericShapesForSpokenDictionaryPhrase() async {
         let matcher = makeRuntimeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Leven Time")])
 
@@ -44,7 +44,7 @@ final class DictionaryMatcherTests: XCTestCase {
         )
     }
 
-    func testDoesNotMatchUnrelatedPronunciationInMultiwordDictionaryEntry() {
+    func testDoesNotMatchUnrelatedPronunciationInMultiwordDictionaryEntry() async {
         let matcher = makeRuntimeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Leven Time")])
 
@@ -53,7 +53,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(matcher.apply(to: input).text, input)
     }
 
-    func testMatchesNumericShapeWhenDictionaryEntryIsJoined() {
+    func testMatchesNumericShapeWhenDictionaryEntryIsJoined() async {
         let matcher = makeRuntimeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "LevenTime")])
 
@@ -67,7 +67,7 @@ final class DictionaryMatcherTests: XCTestCase {
         )
     }
 
-    func testMatchesMultiwordCardinalForNumericDictionaryEntry() {
+    func testMatchesMultiwordCardinalForNumericDictionaryEntry() async {
         let matcher = makeRuntimeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "21 Time")])
 
@@ -77,7 +77,7 @@ final class DictionaryMatcherTests: XCTestCase {
         )
     }
 
-    func testDoesNotMatchDifferentMultiwordCardinalForNumericDictionaryEntry() {
+    func testDoesNotMatchDifferentMultiwordCardinalForNumericDictionaryEntry() async {
         let matcher = makeRuntimeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "21 Time")])
 
@@ -86,7 +86,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(matcher.apply(to: input).text, input)
     }
 
-    func testDoesNotMatchOrdinalSingularToNumericPluralDictionaryEntry() {
+    func testDoesNotMatchOrdinalSingularToNumericPluralDictionaryEntry() async {
         let matcher = makeRuntimeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "21 Pilots")])
 
@@ -95,7 +95,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(matcher.apply(to: input).text, input)
     }
 
-    func testMatchesNumericPluralToSpelledOutDictionaryEntry() {
+    func testMatchesNumericPluralToSpelledOutDictionaryEntry() async {
         let matcher = makeRuntimeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Twenty One Pilots")])
 
@@ -105,7 +105,7 @@ final class DictionaryMatcherTests: XCTestCase {
         )
     }
 
-    func testMatchesNumericAndSpokenShapesToStylizedJoinedCardinalEntries() {
+    func testMatchesNumericAndSpokenShapesToStylizedJoinedCardinalEntries() async {
         let cases = [
             (
                 entry: "EightyEight Pilots",
@@ -142,7 +142,7 @@ final class DictionaryMatcherTests: XCTestCase {
         }
     }
 
-    func testDoesNotMatchOrdinalSingularToNumericPluralDictionaryEntryWithSyntheticPhrase() {
+    func testDoesNotMatchOrdinalSingularToNumericPluralDictionaryEntryWithSyntheticPhrase() async {
         let cases = [
             (entry: "42 Comets", input: "The 42nd comet passed overhead."),
             (entry: "53 Runners", input: "The 53rd runner crossed the finish line."),
@@ -157,7 +157,7 @@ final class DictionaryMatcherTests: XCTestCase {
         }
     }
 
-    func testMatchesCardinalPluralToNumericPluralDictionaryEntryWithSyntheticPhrase() {
+    func testMatchesCardinalPluralToNumericPluralDictionaryEntryWithSyntheticPhrase() async {
         let matcher = makeRuntimeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "42 Comets")])
 
@@ -167,7 +167,7 @@ final class DictionaryMatcherTests: XCTestCase {
         )
     }
 
-    func testExactPhraseIsPreserved() {
+    func testExactPhraseIsPreserved() async {
         let matcher = makeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Dom Esposito")])
 
@@ -175,7 +175,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertTrue(result.text == "Dom Esposito")
     }
 
-    func testPhoneticMissIsCorrectedForCustomName() {
+    func testPhoneticMissIsCorrectedForCustomName() async {
         let matcher = makeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Dom Esposito")])
 
@@ -183,7 +183,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertTrue(result.text == "Dom Esposito")
     }
 
-    func testCorrectsIdentitySentenceForTwoTokenNameNearMissWithA() {
+    func testCorrectsIdentitySentenceForTwoTokenNameNearMissWithA() async {
         let matcher = makeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Dom Esposito")])
 
@@ -191,7 +191,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "My name is Dom Esposito.")
     }
 
-    func testCorrectsIdentitySentenceForTwoTokenNameNearMissWithO() {
+    func testCorrectsIdentitySentenceForTwoTokenNameNearMissWithO() async {
         let matcher = makeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Dom Esposito")])
 
@@ -199,7 +199,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "My name is Dom Esposito.")
     }
 
-    func testCorrectsSingleTokenBrandNearMissWithoutPromptHinting() {
+    func testCorrectsSingleTokenBrandNearMissWithoutPromptHinting() async {
         let matcher = makeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "TaskVox")])
 
@@ -207,7 +207,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "Have you heard of TaskVox?")
     }
 
-    func testCorrectsStylizedSingleTokenBrandNearMissInSentence() {
+    func testCorrectsStylizedSingleTokenBrandNearMissInSentence() async {
         let matcher = makeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "KeyVox")])
 
@@ -215,7 +215,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "My app is called KeyVox.")
     }
 
-    func testCorrectsStylizedSingleTokenBrandWhenWhisperSplitsToken() {
+    func testCorrectsStylizedSingleTokenBrandWhenWhisperSplitsToken() async {
         let matcher = makeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "KeyVox")])
 
@@ -223,7 +223,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "My app is called KeyVox.")
     }
 
-    func testSplitStylizedBrandDoesNotInferPossessionFromIntrinsicEnding() {
+    func testSplitStylizedBrandDoesNotInferPossessionFromIntrinsicEnding() async {
         let matcher = makeRuntimeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "KeyVox")])
 
@@ -231,7 +231,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "Just put it inside of the KeyVox repository.")
     }
 
-    func testDoesNotCollapseOrdinaryTwoWordPhraseIntoAnchoredStylizedSplitJoinMatch() {
+    func testDoesNotCollapseOrdinaryTwoWordPhraseIntoAnchoredStylizedSplitJoinMatch() async {
         let matcher = makeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "KeyVox")])
 
@@ -239,7 +239,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "I added key value storage.")
     }
 
-    func testDoesNotCollapseShortPhoneticallyUnrelatedTailIntoAnchoredStylizedSplitJoinMatch() {
+    func testDoesNotCollapseShortPhoneticallyUnrelatedTailIntoAnchoredStylizedSplitJoinMatch() async {
         let matcher = makeRuntimeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "LinkTrak")])
 
@@ -248,7 +248,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(matcher.apply(to: input).text, input)
     }
 
-    func testCorrectsStylizedSingleTokenBrandNearMissWithRuntimeLexicon() {
+    func testCorrectsStylizedSingleTokenBrandNearMissWithRuntimeLexicon() async {
         let matcher = makeRuntimeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "KeyVox")])
 
@@ -256,7 +256,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "My app is called KeyVox.")
     }
 
-    func testCorrectsLowercaseStylizedBrandNearMissAfterConjunction() {
+    func testCorrectsLowercaseStylizedBrandNearMissAfterConjunction() async {
         let matcher = makeRuntimeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "KeyVox")])
 
@@ -264,7 +264,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "Have you ever heard of keyboard or KeyVox?")
     }
 
-    func testCorrectsStylizedSingleTokenBrandNearMissBeforeTitlecaseProductContext() {
+    func testCorrectsStylizedSingleTokenBrandNearMissBeforeTitlecaseProductContext() async {
         let matcher = makeRuntimeMatcher()
         let entries = [DictionaryInitialEntries.keyVox]
         matcher.rebuildIndex(entries: entries)
@@ -274,7 +274,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "Yeah, the KeyVox Core package.")
     }
 
-    func testCorrectsStylizedSingleTokenBrandPhoneticNearMissBeforeUnlistedTitlecaseWords() {
+    func testCorrectsStylizedSingleTokenBrandPhoneticNearMissBeforeUnlistedTitlecaseWords() async {
         let matcher = makeRuntimeMatcher()
         let entries = [DictionaryInitialEntries.keyVox]
         matcher.rebuildIndex(entries: entries)
@@ -289,7 +289,7 @@ final class DictionaryMatcherTests: XCTestCase {
         )
     }
 
-    func testRuntimeMatcherDoesNotRewriteOrdinaryMergedTokenPrefixIntoStylizedSingleTokenBrand() {
+    func testRuntimeMatcherDoesNotRewriteOrdinaryMergedTokenPrefixIntoStylizedSingleTokenBrand() async {
         let matcher = makeRuntimeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "KeyVox")])
 
@@ -297,7 +297,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "KeyValue Storage")
     }
 
-    func testCorrectsTwoTokenNameNearMissWithRuntimeLexicon() {
+    func testCorrectsTwoTokenNameNearMissWithRuntimeLexicon() async {
         let matcher = makeRuntimeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Dom Esposito")])
 
@@ -305,7 +305,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "My name is Dom Esposito.")
     }
 
-    func testCorrectsTwoTokenNameNearMissVariantWithRuntimeLexicon() {
+    func testCorrectsTwoTokenNameNearMissVariantWithRuntimeLexicon() async {
         let matcher = makeRuntimeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Dom Esposito")])
 
@@ -313,7 +313,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "Dom Esposito.")
     }
 
-    func testDoesNotRewriteChatGotVariantsAsChatGPT() {
+    func testDoesNotRewriteChatGotVariantsAsChatGPT() async {
         let matcher = makeRuntimeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "ChatGPT")])
 
@@ -335,7 +335,7 @@ final class DictionaryMatcherTests: XCTestCase {
         )
     }
 
-    func testSpelledUppercaseSequencesRequireMatchingPronunciation() {
+    func testSpelledUppercaseSequencesRequireMatchingPronunciation() async {
         let matcher = makeRuntimeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "DataAPI")])
 
@@ -360,7 +360,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(matcher.apply(to: "I worked with nasa.").text, "I worked with NASA.")
     }
 
-    func testCompressedTailFallbackDoesNotRewriteUnrelatedThreeTokenSpan() {
+    func testCompressedTailFallbackDoesNotRewriteUnrelatedThreeTokenSpan() async {
         let matcher = makeRuntimeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Dom Esposito")])
 
@@ -368,7 +368,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "Do not respond to me.")
     }
 
-    func testCorrectsStylizedSingleTokenNameNearMissWithRuntimeLexicon() {
+    func testCorrectsStylizedSingleTokenNameNearMissWithRuntimeLexicon() async {
         let matcher = makeRuntimeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "AirRack")])
 
@@ -376,7 +376,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "My name is AirRack.")
     }
 
-    func testCorrectsStylizedSingleTokenCommonNameNearMissWithRuntimeLexicon() {
+    func testCorrectsStylizedSingleTokenCommonNameNearMissWithRuntimeLexicon() async {
         let matcher = makeRuntimeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "AirRack")])
 
@@ -384,7 +384,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "My name is AirRack.")
     }
 
-    func testDoesNotReplaceCommonProseWordWithStylizedDictionaryEntry() {
+    func testDoesNotReplaceCommonProseWordWithStylizedDictionaryEntry() async {
         let matcher = DictionaryMatcher(
             lexicon: PronunciationLexicon.shared,
             encoder: PhoneticEncoder(),
@@ -396,7 +396,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "This kind of thing does work pretty good to an extent.")
     }
 
-    func testDoesNotRewriteTitlecasePlaceNameTailIntoStylizedDictionaryEntry() {
+    func testDoesNotRewriteTitlecasePlaceNameTailIntoStylizedDictionaryEntry() async {
         let matcher = DictionaryMatcher(
             lexicon: PronunciationLexicon.shared,
             encoder: PhoneticEncoder(),
@@ -408,7 +408,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "Have you ever been to New York?")
     }
 
-    func testCorrectsStylizedSingleTokenNearMissAndInfersPossessiveSuffix() {
+    func testCorrectsStylizedSingleTokenNearMissAndInfersPossessiveSuffix() async {
         let matcher = DictionaryMatcher(
             lexicon: PronunciationLexicon.shared,
             encoder: PhoneticEncoder(),
@@ -420,7 +420,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "AirRack's YouTube channel is big.")
     }
 
-    func testCorrectsCandidateRelativeTrailingPossessiveForm() {
+    func testCorrectsCandidateRelativeTrailingPossessiveForm() async {
         let matcher = DictionaryMatcher(
             lexicon: PronunciationLexicon.shared,
             encoder: PhoneticEncoder(),
@@ -432,7 +432,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "KeyVox's lemonade")
     }
 
-    func testCandidateRelativeTrailingFormHonorsStricterConfiguredPhoneticThreshold() {
+    func testCandidateRelativeTrailingFormHonorsStricterConfiguredPhoneticThreshold() async {
         let scorer = ReplacementScorer(
             textWeight: 0.50,
             phoneticWeight: 0.40,
@@ -451,7 +451,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(matcher.apply(to: "abcdex").text, "abcdex")
     }
 
-    func testPreservesCandidateRelativeTrailingPluralBeforeVerb() {
+    func testPreservesCandidateRelativeTrailingPluralBeforeVerb() async {
         let matcher = DictionaryMatcher(
             lexicon: PronunciationLexicon.shared,
             encoder: PhoneticEncoder(),
@@ -463,7 +463,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "KeyVoxes are useful")
     }
 
-    func testPreservesCandidateRelativeTrailingPluralBeforeConjunction() {
+    func testPreservesCandidateRelativeTrailingPluralBeforeConjunction() async {
         let matcher = DictionaryMatcher(
             lexicon: PronunciationLexicon.shared,
             encoder: PhoneticEncoder(),
@@ -475,7 +475,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "KeyVoxes and similar tools")
     }
 
-    func testPrefersDirectExactEntryOverCandidateRelativeTrailingAlternative() {
+    func testPrefersDirectExactEntryOverCandidateRelativeTrailingAlternative() async {
         let matcher = DictionaryMatcher(
             lexicon: PronunciationLexicon.shared,
             encoder: PhoneticEncoder(),
@@ -490,7 +490,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "KeyVoxes lemonade")
     }
 
-    func testCorrectsStylizedSplitJoinPossessiveNearMiss() {
+    func testCorrectsStylizedSplitJoinPossessiveNearMiss() async {
         let matcher = DictionaryMatcher(
             lexicon: PronunciationLexicon.shared,
             encoder: PhoneticEncoder(),
@@ -502,7 +502,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "Have you been to AirRack's apartment in downtown LA?")
     }
 
-    func testDoesNotCollapseWebsiteDomainsIntoStylizedDictionaryEntries() {
+    func testDoesNotCollapseWebsiteDomainsIntoStylizedDictionaryEntries() async {
         let matcher = DictionaryMatcher(
             lexicon: PronunciationLexicon.shared,
             encoder: PhoneticEncoder(),
@@ -523,7 +523,7 @@ final class DictionaryMatcherTests: XCTestCase {
         }
     }
 
-    func testCorrectsTwoTokenNameNearMissWithImplicitPossessiveSuffix() {
+    func testCorrectsTwoTokenNameNearMissWithImplicitPossessiveSuffix() async {
         let matcher = DictionaryMatcher(
             lexicon: PronunciationLexicon.shared,
             encoder: PhoneticEncoder(),
@@ -535,7 +535,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "Hey, that's Dom Esposito's House.")
     }
 
-    func testCorrectsMiddleInitialThreeTokenPossessiveNearMiss() {
+    func testCorrectsMiddleInitialThreeTokenPossessiveNearMiss() async {
         let matcher = DictionaryMatcher(
             lexicon: PronunciationLexicon.shared,
             encoder: PhoneticEncoder(),
@@ -547,7 +547,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "That's Dom Esposito's house.")
     }
 
-    func testCorrectsCompressedTailThreeTokenNearMissForTwoTokenEntry() {
+    func testCorrectsCompressedTailThreeTokenNearMissForTwoTokenEntry() async {
         let matcher = DictionaryMatcher(
             lexicon: PronunciationLexicon.shared,
             encoder: PhoneticEncoder(),
@@ -559,7 +559,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "He lives right next door to Mister PinupCA.")
     }
 
-    func testCorrectsBothThreeTokenNamePatternsInSameParagraph() {
+    func testCorrectsBothThreeTokenNamePatternsInSameParagraph() async {
         let matcher = DictionaryMatcher(
             lexicon: PronunciationLexicon.shared,
             encoder: PhoneticEncoder(),
@@ -579,7 +579,7 @@ final class DictionaryMatcherTests: XCTestCase {
         )
     }
 
-    func testCorrectsBrandAndNameNearMissesInSameSentenceWithRuntimeLexicon() {
+    func testCorrectsBrandAndNameNearMissesInSameSentenceWithRuntimeLexicon() async {
         let matcher = DictionaryMatcher(
             lexicon: PronunciationLexicon.shared,
             encoder: PhoneticEncoder(),
@@ -594,7 +594,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "My app is called KeyVox and my name is Dom Esposito.")
     }
 
-    func testDoesNotConsumeConjunctionAfterExactSingleTokenBrandInSplitJoinPath() {
+    func testDoesNotConsumeConjunctionAfterExactSingleTokenBrandInSplitJoinPath() async {
         let matcher = DictionaryMatcher(
             lexicon: PronunciationLexicon.shared,
             encoder: PhoneticEncoder(),
@@ -616,7 +616,7 @@ final class DictionaryMatcherTests: XCTestCase {
         )
     }
 
-    func testDoesNotConsumeNounAfterExactSingleTokenBrandInSplitJoinPath() {
+    func testDoesNotConsumeNounAfterExactSingleTokenBrandInSplitJoinPath() async {
         let matcher = DictionaryMatcher(
             lexicon: PronunciationLexicon.shared,
             encoder: PhoneticEncoder(),
@@ -631,7 +631,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "I'm going to catch a KeyVox bug here or there.")
     }
 
-    func testDisambiguatesCommonWordBrandTailToCorrectDictionaryEntryWithRuntimeLexicon() {
+    func testDisambiguatesCommonWordBrandTailToCorrectDictionaryEntryWithRuntimeLexicon() async {
         let matcher = DictionaryMatcher(
             lexicon: PronunciationLexicon.shared,
             encoder: PhoneticEncoder(),
@@ -652,7 +652,7 @@ final class DictionaryMatcherTests: XCTestCase {
         )
     }
 
-    func testPreservesFromBeforeExactTwoTokenNameWhileNormalizingOtherBrand() {
+    func testPreservesFromBeforeExactTwoTokenNameWhileNormalizingOtherBrand() async {
         let matcher = DictionaryMatcher(
             lexicon: PronunciationLexicon.shared,
             encoder: PhoneticEncoder(),
@@ -673,7 +673,7 @@ final class DictionaryMatcherTests: XCTestCase {
         )
     }
 
-    func testCorrectsHyphenatedSingleLetterBrandTailAlongsideNameCorrection() {
+    func testCorrectsHyphenatedSingleLetterBrandTailAlongsideNameCorrection() async {
         let matcher = DictionaryMatcher(
             lexicon: PronunciationLexicon.shared,
             encoder: PhoneticEncoder(),
@@ -693,7 +693,7 @@ final class DictionaryMatcherTests: XCTestCase {
         )
     }
 
-    func testCorrectsSpacedSingleLetterPronunciationToSingleDictionaryTerm() {
+    func testCorrectsSpacedSingleLetterPronunciationToSingleDictionaryTerm() async {
         let matcher = DictionaryMatcher(
             lexicon: PronunciationLexicon.shared,
             encoder: PhoneticEncoder(),
@@ -706,7 +706,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "Have you ever heard of Cueboard?")
     }
 
-    func testDoesNotReplaceKeyboardWithDictionaryBrandWhenWordAlreadyLexiconKnown() {
+    func testDoesNotReplaceKeyboardWithDictionaryBrandWhenWordAlreadyLexiconKnown() async {
         let matcher = DictionaryMatcher(
             lexicon: PronunciationLexicon.shared,
             encoder: PhoneticEncoder(),
@@ -718,7 +718,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "I love typing on this keyboard.")
     }
 
-    func testDoesNotReplaceUnrelatedKnownWordWithStylizedDictionaryEntry() {
+    func testDoesNotReplaceUnrelatedKnownWordWithStylizedDictionaryEntry() async {
         let matcher = makeRuntimeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Cueboard")])
 
@@ -726,7 +726,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(matcher.apply(to: input).text, input)
     }
 
-    func testDoesNotReplaceKeyboardPluralInGenericProse() {
+    func testDoesNotReplaceKeyboardPluralInGenericProse() async {
         let matcher = DictionaryMatcher(
             lexicon: PronunciationLexicon.shared,
             encoder: PhoneticEncoder(),
@@ -738,7 +738,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "These new MacBooks have great keyboards.")
     }
 
-    func testDoesNotReplaceKnownNameWithStylizedDictionaryEntry() {
+    func testDoesNotReplaceKnownNameWithStylizedDictionaryEntry() async {
         let matcher = DictionaryMatcher(
             lexicon: PronunciationLexicon.shared,
             encoder: PhoneticEncoder(),
@@ -750,7 +750,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "Spot check something like Monique.")
     }
 
-    func testDoesNotReplaceUnrelatedWordsWithStylizedPluralEntry() {
+    func testDoesNotReplaceUnrelatedWordsWithStylizedPluralEntry() async {
         let matcher = DictionaryMatcher(
             lexicon: PronunciationLexicon.shared,
             encoder: PhoneticEncoder(),
@@ -763,7 +763,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "Everything on main goes through another.")
     }
 
-    func testCorrectsStylizedEntryInNounIntroducedTitlecaseContext() {
+    func testCorrectsStylizedEntryInNounIntroducedTitlecaseContext() async {
         let matcher = DictionaryMatcher(
             lexicon: PronunciationLexicon.shared,
             encoder: PhoneticEncoder(),
@@ -776,7 +776,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "Have you checked out my app MiGo lately? It's pretty cool.")
     }
 
-    func testCorrectsStylizedEntrySplitIntoShortTokensInNounIntroducedContext() {
+    func testCorrectsStylizedEntrySplitIntoShortTokensInNounIntroducedContext() async {
         let matcher = DictionaryMatcher(
             lexicon: PronunciationLexicon.shared,
             encoder: PhoneticEncoder(),
@@ -789,7 +789,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "Have you checked out my app MiGo lately? It's pretty cool.")
     }
 
-    func testCorrectsStylizedEntrySplitIntoShortTokensAfterParticle() {
+    func testCorrectsStylizedEntrySplitIntoShortTokensAfterParticle() async {
         let matcher = DictionaryMatcher(
             lexicon: PronunciationLexicon.shared,
             encoder: PhoneticEncoder(),
@@ -802,7 +802,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "Have you checked out MiGo lately?")
     }
 
-    func testContextualShortTokenSplitRejectsCommonObservedWords() {
+    func testContextualShortTokenSplitRejectsCommonObservedWords() async {
         let lexicon = FakeLexicon(
             pronunciations: [
                 "me": "M",
@@ -825,7 +825,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, input)
     }
 
-    func testCorrectsStylizedTitlecaseListItemWithIndependentPeerSupport() {
+    func testCorrectsStylizedTitlecaseListItemWithIndependentPeerSupport() async {
         let matcher = DictionaryMatcher(
             lexicon: PronunciationLexicon.shared,
             encoder: PhoneticEncoder(),
@@ -847,7 +847,7 @@ final class DictionaryMatcherTests: XCTestCase {
         )
     }
 
-    func testTitlecaseKnownWordsResistRandomStylizedDictionaryEntries() {
+    func testTitlecaseKnownWordsResistRandomStylizedDictionaryEntries() async {
         let matcher = DictionaryMatcher(
             lexicon: PronunciationLexicon.shared,
             encoder: PhoneticEncoder(),
@@ -882,7 +882,7 @@ final class DictionaryMatcherTests: XCTestCase {
         }
     }
 
-    func testReplacesCommonWordInOwnershipPredicateContextForStylizedEntry() {
+    func testReplacesCommonWordInOwnershipPredicateContextForStylizedEntry() async {
         let matcher = DictionaryMatcher(
             lexicon: PronunciationLexicon.shared,
             encoder: PhoneticEncoder(),
@@ -894,7 +894,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "My new iPhone has Cueboard installed on it.")
     }
 
-    func testKeepsTitlecaseCommonWordInStructuralContextWithoutPeerSupport() {
+    func testKeepsTitlecaseCommonWordInStructuralContextWithoutPeerSupport() async {
         let matcher = DictionaryMatcher(
             lexicon: PronunciationLexicon.shared,
             encoder: PhoneticEncoder(),
@@ -906,7 +906,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "My new iPhone has Keyboard installed on it.")
     }
 
-    func testKeepsCommonWordKeyboardInProseWhenBrandMentionAlsoExists() {
+    func testKeepsCommonWordKeyboardInProseWhenBrandMentionAlsoExists() async {
         let matcher = DictionaryMatcher(
             lexicon: PronunciationLexicon.shared,
             encoder: PhoneticEncoder(),
@@ -926,7 +926,7 @@ final class DictionaryMatcherTests: XCTestCase {
         )
     }
 
-    func testKeepsCommonWordKeyboardInProseWhenBrandMentionIsSecondClause() {
+    func testKeepsCommonWordKeyboardInProseWhenBrandMentionIsSecondClause() async {
         let matcher = DictionaryMatcher(
             lexicon: PronunciationLexicon.shared,
             encoder: PhoneticEncoder(),
@@ -946,7 +946,7 @@ final class DictionaryMatcherTests: XCTestCase {
         )
     }
 
-    func testKeepsCommonWordKeyboardTypoInProseWhenBrandMentionIsSecondClause() {
+    func testKeepsCommonWordKeyboardTypoInProseWhenBrandMentionIsSecondClause() async {
         let matcher = DictionaryMatcher(
             lexicon: PronunciationLexicon.shared,
             encoder: PhoneticEncoder(),
@@ -966,7 +966,7 @@ final class DictionaryMatcherTests: XCTestCase {
         )
     }
 
-    func testCommonWordGuardPreventsAggressiveReplacement() {
+    func testCommonWordGuardPreventsAggressiveReplacement() async {
         let lexicon = FakeLexicon(
             pronunciations: [
                 "cueboard": "KBRD",
@@ -981,7 +981,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertTrue(result.text == "keyboard shortcuts")
     }
 
-    func testOverlapResolutionKeepsBestNonOverlappingReplacement() {
+    func testOverlapResolutionKeepsBestNonOverlappingReplacement() async {
         let matcher = makeMatcher()
         matcher.rebuildIndex(entries: [
             DictionaryEntry(phrase: "MiGo Platform"),
@@ -992,7 +992,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertTrue(result.text == "MiGo Platform is live")
     }
 
-    func testSplitTwoTokensJoinToSingleBrand() {
+    func testSplitTwoTokensJoinToSingleBrand() async {
         let matcher = makeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Cueboard")])
 
@@ -1000,7 +1000,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertTrue(result.text == "open Cueboard now")
     }
 
-    func testSplitJoinAllowsShortTokenWhenJoinExactlyMatchesDictionaryEntry() {
+    func testSplitJoinAllowsShortTokenWhenJoinExactlyMatchesDictionaryEntry() async {
         let matcher = makeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "MrBeast")])
 
@@ -1008,7 +1008,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "Is that MrBeast over there?")
     }
 
-    func testDoesNotReplaceUnrelatedMixedCaseTokenWithStylizedDictionaryEntry() {
+    func testDoesNotReplaceUnrelatedMixedCaseTokenWithStylizedDictionaryEntry() async {
         let matcher = makeRuntimeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "MrBeast")])
 
@@ -1017,7 +1017,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(matcher.apply(to: input).text, input)
     }
 
-    func testSplitJoinAllowsShortTokenExactJoinForInitialedBrand() {
+    func testSplitJoinAllowsShortTokenExactJoinForInitialedBrand() async {
         let matcher = makeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "MrD")])
 
@@ -1025,7 +1025,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "Is that MrD over there?")
     }
 
-    func testMergedTokenReplacesWithTwoTokenDictionaryPhrase() {
+    func testMergedTokenReplacesWithTwoTokenDictionaryPhrase() async {
         let matcher = makeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Mister PinupCA")])
 
@@ -1033,7 +1033,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "MrBeast went to McDonald's to get some McNuggets with Mister PinupCA.")
     }
 
-    func testMergedTokenDoesNotReplaceWhenPrefixIsNotSimilar() {
+    func testMergedTokenDoesNotReplaceWhenPrefixIsNotSimilar() async {
         let matcher = makeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Mister PinupCA")])
 
@@ -1041,7 +1041,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "MrBeast went to McDonald's to get some McNuggets with MapPinupCA.")
     }
 
-    func testPluralSecondTokenCanJoinForBrand() {
+    func testPluralSecondTokenCanJoinForBrand() async {
         let matcher = makeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Cueboard")])
 
@@ -1049,7 +1049,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertTrue(result.text == "this is Cueboards")
     }
 
-    func testSplitJoinInfersPossessive() {
+    func testSplitJoinInfersPossessive() async {
         let matcher = makeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Cueboard")])
 
@@ -1057,7 +1057,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertTrue(result.text == "this is a test of Cueboard's abilities")
     }
 
-    func testSplitJoinInfersPossessiveBeforeAdjectiveNounPhrase() {
+    func testSplitJoinInfersPossessiveBeforeAdjectiveNounPhrase() async {
         let matcher = makeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Cueboard")])
 
@@ -1065,7 +1065,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "Have you seen Cueboard's latest update?")
     }
 
-    func testSplitJoinPreservesPluralForSingularDictionaryEntry() {
+    func testSplitJoinPreservesPluralForSingularDictionaryEntry() async {
         let lexicon = FakeLexicon(pronunciations: [
             "sub": "SB",
             "cue": "K",
@@ -1080,7 +1080,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "you make subcues.")
     }
 
-    func testCorrectsQueueHomophonesForCueAndSubcueEntries() {
+    func testCorrectsQueueHomophonesForCueAndSubcueEntries() async {
         let matcher = DictionaryMatcher(
             lexicon: PronunciationLexicon.shared,
             encoder: PhoneticEncoder(),
@@ -1096,7 +1096,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "Inside of the app Cueboard, you can make cues and subcues.")
     }
 
-    func testDoesNotReplaceUnrelatedPluralWordWithSingularCueEntry() {
+    func testDoesNotReplaceUnrelatedPluralWordWithSingularCueEntry() async {
         let matcher = makeRuntimeMatcher()
         let entries = [
             DictionaryEntry(phrase: "cue"),
@@ -1110,7 +1110,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, input)
     }
 
-    func testPossessiveSingleTokenKeepsSuffixWhileCorrectingWord() {
+    func testPossessiveSingleTokenKeepsSuffixWhileCorrectingWord() async {
         let matcher = makeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Cueboard")])
 
@@ -1118,7 +1118,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertTrue(result.text == "show Cueboard's abilities")
     }
 
-    func testSplitJoinPossessiveKeepsSuffixWhileCorrectingWord() {
+    func testSplitJoinPossessiveKeepsSuffixWhileCorrectingWord() async {
         let matcher = makeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Cueboard")])
 
@@ -1126,7 +1126,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertTrue(result.text == "show Cueboard's abilities")
     }
 
-    func testDoesNotOvercorrectCommonPhrase() {
+    func testDoesNotOvercorrectCommonPhrase() async {
         let matcher = makeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Cueboard")])
 
@@ -1134,7 +1134,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertTrue(result.text == "we use cue cards often")
     }
 
-    func testMatcherNormalizesSpokenEmailAddress() {
+    func testMatcherNormalizesSpokenEmailAddress() async {
         let matcher = makeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "dom@example.com")])
 
@@ -1142,7 +1142,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "dom@example.com")
     }
 
-    func testMatcherNormalizesMultipleEmailAddressesInSentence() {
+    func testMatcherNormalizesMultipleEmailAddressesInSentence() async {
         let matcher = makeMatcher()
         matcher.rebuildIndex(entries: [
             DictionaryEntry(phrase: "dom@example.com"),
@@ -1155,7 +1155,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "You can reach me at dom@example.com or kathy@example.com, either of those are fine.")
     }
 
-    func testMatcherNormalizesTwoSpokenEmailAddressesInSentence() {
+    func testMatcherNormalizesTwoSpokenEmailAddressesInSentence() async {
         let matcher = makeMatcher()
         matcher.rebuildIndex(entries: [
             DictionaryEntry(phrase: "dom@example.com"),
@@ -1168,7 +1168,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "You can reach me at dom@example.com or kathy@example.com, either of those are fine.")
     }
 
-    func testMatcherNormalizesOvercapturedSpokenDomainWithPronounOverflow() {
+    func testMatcherNormalizesOvercapturedSpokenDomainWithPronounOverflow() async {
         let matcher = makeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "kathy@example.com")])
 
@@ -1178,7 +1178,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "Please email kathy@example.com you can reach me there anytime.")
     }
 
-    func testMatcherNormalizesOvercapturedSpokenDomainWithNumberWordOverflow() {
+    func testMatcherNormalizesOvercapturedSpokenDomainWithNumberWordOverflow() async {
         let matcher = makeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "dom@example.com")])
 
@@ -1188,7 +1188,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "Send it to dom@example.com thirteen people should receive it.")
     }
 
-    func testMatcherPreservesSentencePeriodAfterSpokenEmailWithOverflow() {
+    func testMatcherPreservesSentencePeriodAfterSpokenEmailWithOverflow() async {
         let matcher = makeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "person@example.com")])
 
@@ -1201,7 +1201,7 @@ final class DictionaryMatcherTests: XCTestCase {
         )
     }
 
-    func testMatcherNormalizesSpokenEmailWhenDomainHostIsNearDictionaryMatch() {
+    func testMatcherNormalizesSpokenEmailWhenDomainHostIsNearDictionaryMatch() async {
         let matcher = makeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "zackmorbi@rider.com")])
 
@@ -1209,7 +1209,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "zackmorbi@rider.com")
     }
 
-    func testMatcherNormalizesSpokenEmailWhenDomainIncludesSpacedDot() {
+    func testMatcherNormalizesSpokenEmailWhenDomainIncludesSpacedDot() async {
         let matcher = makeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "zackmorbi@rider.com")])
 
@@ -1217,7 +1217,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "zackmorbi@rider.com")
     }
 
-    func testMatcherNormalizesSpokenEmailWhenDomainUsesWordDot() {
+    func testMatcherNormalizesSpokenEmailWhenDomainUsesWordDot() async {
         let matcher = makeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "person@example.com")])
 
@@ -1225,7 +1225,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "person@example.com")
     }
 
-    func testMatcherPrefersExactSpokenDomainWhenItExistsInDictionary() {
+    func testMatcherPrefersExactSpokenDomainWhenItExistsInDictionary() async {
         let matcher = makeMatcher()
         matcher.rebuildIndex(entries: [
             DictionaryEntry(phrase: "zackmorbi@rider.com"),
@@ -1236,7 +1236,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "zackmorby@writer.com")
     }
 
-    func testMatcherNormalizesStandaloneUrlLikeUtteranceToDictionaryEmail() {
+    func testMatcherNormalizesStandaloneUrlLikeUtteranceToDictionaryEmail() async {
         let matcher = makeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "zackmorbi@rider.com")])
 
@@ -1244,7 +1244,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "zackmorbi@rider.com")
     }
 
-    func testMatcherDoesNotNormalizeStandaloneUrlLikeUtteranceWhenAmbiguous() {
+    func testMatcherDoesNotNormalizeStandaloneUrlLikeUtteranceWhenAmbiguous() async {
         let matcher = makeMatcher()
         matcher.rebuildIndex(entries: [
             DictionaryEntry(phrase: "zackmorbi@rider.com"),
@@ -1255,7 +1255,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "www. Zackmorb. Com")
     }
 
-    func testMatcherStripsTerminalPunctuationForStandaloneLiteralEmail() {
+    func testMatcherStripsTerminalPunctuationForStandaloneLiteralEmail() async {
         let matcher = makeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "dom@example.com")])
 
@@ -1263,7 +1263,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "dom@example.com")
     }
 
-    func testMatcherStripsTerminalPunctuationForStandaloneWebsiteWithoutDictionaryMatch() {
+    func testMatcherStripsTerminalPunctuationForStandaloneWebsiteWithoutDictionaryMatch() async {
         let matcher = makeMatcher()
         matcher.rebuildIndex(entries: [])
 
@@ -1271,7 +1271,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "www.example.com")
     }
 
-    func testMatcherConsumesTrailingSuffixTokenWhenFinalDictionaryTokenIsSplit() {
+    func testMatcherConsumesTrailingSuffixTokenWhenFinalDictionaryTokenIsSplit() async {
         let matcher = makeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Mister PinupCA")])
 
@@ -1279,7 +1279,7 @@ final class DictionaryMatcherTests: XCTestCase {
         XCTAssertEqual(result.text, "What happened to Mister PinupCA? Did he leave early?")
     }
 
-    func testMatcherPreservesTerminalPunctuationForShortProseWithAtDomainPattern() {
+    func testMatcherPreservesTerminalPunctuationForShortProseWithAtDomainPattern() async {
         let matcher = makeMatcher()
         matcher.rebuildIndex(entries: [])
 

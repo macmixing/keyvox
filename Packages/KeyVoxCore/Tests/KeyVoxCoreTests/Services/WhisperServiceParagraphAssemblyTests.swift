@@ -3,7 +3,7 @@ import XCTest
 
 @MainActor
 final class WhisperServiceParagraphAssemblyTests: XCTestCase {
-    func testAssembleTranscriptionInsertsParagraphAfterSilenceBoundaryAndTerminalPunctuation() {
+    func testAssembleTranscriptionInsertsParagraphAfterSilenceBoundaryAndTerminalPunctuation() async {
         let service = WhisperService()
         let text = service.assembleTranscription(
             from: [
@@ -17,7 +17,7 @@ final class WhisperServiceParagraphAssemblyTests: XCTestCase {
         XCTAssertEqual(text, "First paragraph.\n\nSecond paragraph.")
     }
 
-    func testAssembleTranscriptionCanRenderInlineAndParagraphFormsFromSameBoundaries() {
+    func testAssembleTranscriptionCanRenderInlineAndParagraphFormsFromSameBoundaries() async {
         let service = WhisperService()
         let chunks: [WhisperService.TranscribedChunk] = [
             .init(text: "First paragraph.", trailingBoundaryFrame: 32_000),
@@ -39,7 +39,7 @@ final class WhisperServiceParagraphAssemblyTests: XCTestCase {
         XCTAssertEqual(inlineText, "First paragraph. Second paragraph.")
     }
 
-    func testAssembleTranscriptionKeepsMidSentenceSilenceBoundaryInline() {
+    func testAssembleTranscriptionKeepsMidSentenceSilenceBoundaryInline() async {
         let service = WhisperService()
         let text = service.assembleTranscription(
             from: [
@@ -53,7 +53,7 @@ final class WhisperServiceParagraphAssemblyTests: XCTestCase {
         XCTAssertEqual(text, "This sentence keeps going until it actually ends.")
     }
 
-    func testAssembleTranscriptionIgnoresFallbackOnlyBoundaryEvenWithTerminalPunctuation() {
+    func testAssembleTranscriptionIgnoresFallbackOnlyBoundaryEvenWithTerminalPunctuation() async {
         let service = WhisperService()
         let text = service.assembleTranscription(
             from: [
@@ -67,7 +67,7 @@ final class WhisperServiceParagraphAssemblyTests: XCTestCase {
         XCTAssertEqual(text, "Sentence one. Sentence two.")
     }
 
-    func testAssembleTranscriptionPreservesParagraphAcrossEmptyChunkGap() {
+    func testAssembleTranscriptionPreservesParagraphAcrossEmptyChunkGap() async {
         let service = WhisperService()
         let text = service.assembleTranscription(
             from: [

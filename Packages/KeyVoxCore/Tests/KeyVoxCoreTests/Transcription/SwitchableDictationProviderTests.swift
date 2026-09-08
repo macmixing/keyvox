@@ -3,7 +3,7 @@ import XCTest
 
 @MainActor
 final class SwitchableDictationProviderTests: XCTestCase {
-    func testReplaceActiveProviderDelegatesFutureCallsToNewProvider() {
+    func testReplaceActiveProviderDelegatesFutureCallsToNewProvider() async {
         let whisper = RecordingDictationProvider()
         whisper.isModelReadyValue = true
         let parakeet = RecordingDictationProvider()
@@ -25,7 +25,7 @@ final class SwitchableDictationProviderTests: XCTestCase {
         XCTAssertEqual(parakeet.cancelCalls, 1)
     }
 
-    func testLastNoSpeechAndReadinessTrackActiveProvider() {
+    func testLastNoSpeechAndReadinessTrackActiveProvider() async {
         let whisper = RecordingDictationProvider()
         whisper.isModelReadyValue = true
         whisper.lastResultWasLikelyNoSpeechValue = false
@@ -43,7 +43,7 @@ final class SwitchableDictationProviderTests: XCTestCase {
         XCTAssertTrue(provider.lastResultWasLikelyNoSpeech)
     }
 
-    func testReplaceActiveProviderCanSkipCancelUnloadAndWarmup() {
+    func testReplaceActiveProviderCanSkipCancelUnloadAndWarmup() async {
         let whisper = RecordingDictationProvider()
         whisper.isModelReadyValue = true
 

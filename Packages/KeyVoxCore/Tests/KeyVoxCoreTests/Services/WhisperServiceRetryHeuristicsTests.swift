@@ -4,7 +4,7 @@ import KeyVoxWhisper
 
 @MainActor
 final class WhisperServiceRetryHeuristicsTests: XCTestCase {
-    func testTreatsThreeWordResultAsSuspiciousForLongChunk() {
+    func testTreatsThreeWordResultAsSuspiciousForLongChunk() async {
         let service = WhisperService()
 
         let suspicious = service.isSuspiciouslyShortResult(words: 3, chunkSeconds: 23.85)
@@ -12,7 +12,7 @@ final class WhisperServiceRetryHeuristicsTests: XCTestCase {
         XCTAssertTrue(suspicious)
     }
 
-    func testDoesNotTreatThreeWordResultAsSuspiciousForShortChunk() {
+    func testDoesNotTreatThreeWordResultAsSuspiciousForShortChunk() async {
         let service = WhisperService()
 
         let suspicious = service.isSuspiciouslyShortResult(words: 3, chunkSeconds: 2.0)
@@ -20,7 +20,7 @@ final class WhisperServiceRetryHeuristicsTests: XCTestCase {
         XCTAssertFalse(suspicious)
     }
 
-    func testDoesNotTreatNormalWordDensityAsSuspiciousOnLongChunk() {
+    func testDoesNotTreatNormalWordDensityAsSuspiciousOnLongChunk() async {
         let service = WhisperService()
 
         let suspicious = service.isSuspiciouslyShortResult(words: 15, chunkSeconds: 20.0)
@@ -28,7 +28,7 @@ final class WhisperServiceRetryHeuristicsTests: XCTestCase {
         XCTAssertFalse(suspicious)
     }
 
-    func testRetriesEmptyResultForLongChunk() {
+    func testRetriesEmptyResultForLongChunk() async {
         let service = WhisperService()
 
         let shouldRetry = service.shouldRetryEmptyChunkResult(segmentCount: 0, chunkSeconds: 16.36)
@@ -36,7 +36,7 @@ final class WhisperServiceRetryHeuristicsTests: XCTestCase {
         XCTAssertTrue(shouldRetry)
     }
 
-    func testDoesNotRetryEmptyResultForShortChunk() {
+    func testDoesNotRetryEmptyResultForShortChunk() async {
         let service = WhisperService()
 
         let shouldRetry = service.shouldRetryEmptyChunkResult(segmentCount: 0, chunkSeconds: 2.5)
@@ -44,7 +44,7 @@ final class WhisperServiceRetryHeuristicsTests: XCTestCase {
         XCTAssertFalse(shouldRetry)
     }
 
-    func testDoesNotRetryNonEmptyResultAsEmptyChunk() {
+    func testDoesNotRetryNonEmptyResultAsEmptyChunk() async {
         let service = WhisperService()
 
         let shouldRetry = service.shouldRetryEmptyChunkResult(segmentCount: 1, chunkSeconds: 16.36)
@@ -52,7 +52,7 @@ final class WhisperServiceRetryHeuristicsTests: XCTestCase {
         XCTAssertFalse(shouldRetry)
     }
 
-    func testRetriesLowNoSpeechResultWhenTrailingAudioIsUnrepresented() {
+    func testRetriesLowNoSpeechResultWhenTrailingAudioIsUnrepresented() async {
         let service = WhisperService()
         let segments = [
             Segment(
@@ -72,7 +72,7 @@ final class WhisperServiceRetryHeuristicsTests: XCTestCase {
         XCTAssertTrue(shouldRetry)
     }
 
-    func testDoesNotRetryWhenTrailingAudioIsSilent() {
+    func testDoesNotRetryWhenTrailingAudioIsSilent() async {
         let service = WhisperService()
         let segments = [
             Segment(
@@ -92,7 +92,7 @@ final class WhisperServiceRetryHeuristicsTests: XCTestCase {
         XCTAssertFalse(shouldRetry)
     }
 
-    func testDoesNotRetryTrailingCutoffWhenDecoderReportsLikelyNoSpeech() {
+    func testDoesNotRetryTrailingCutoffWhenDecoderReportsLikelyNoSpeech() async {
         let service = WhisperService()
         let segments = [
             Segment(
@@ -112,7 +112,7 @@ final class WhisperServiceRetryHeuristicsTests: XCTestCase {
         XCTAssertFalse(shouldRetry)
     }
 
-    func testTrailingCutoffSelectionKeepsSingleRecoveredWord() {
+    func testTrailingCutoffSelectionKeepsSingleRecoveredWord() async {
         let service = WhisperService()
         let primary = [
             Segment(startTime: 0, endTime: 100, text: "x")
@@ -131,7 +131,7 @@ final class WhisperServiceRetryHeuristicsTests: XCTestCase {
         XCTAssertEqual(selection.segments.first?.text, retry.first?.text)
     }
 
-    func testNonTrailingSelectionKeepsExistingTwoWordImprovementThreshold() {
+    func testNonTrailingSelectionKeepsExistingTwoWordImprovementThreshold() async {
         let service = WhisperService()
         let primary = [
             Segment(startTime: 0, endTime: 100, text: "x")
