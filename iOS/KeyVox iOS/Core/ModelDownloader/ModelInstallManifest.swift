@@ -1,5 +1,5 @@
 import Foundation
-import KeyVoxCore
+import KeyVoxModels
 
 struct DictationModelInstallManifest: Codable, Equatable, Sendable {
     static let currentVersion = 1

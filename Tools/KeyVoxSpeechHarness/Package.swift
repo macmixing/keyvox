@@ -5,6 +5,7 @@ let package = Package(
     name: "KeyVoxSpeechHarness",
     platforms: [.macOS(.v13)],
     dependencies: [
+        .package(path: "../../Packages/KeyVoxModels"),
         .package(path: "../../Packages/KeyVoxCore"),
         .package(path: "../../Packages/KeyVoxLinguistics"),
         .package(path: "../../Packages/KeyVoxWhisper"),
@@ -15,6 +16,7 @@ let package = Package(
         .executableTarget(
             name: "KeyVoxSpeechHarness",
             dependencies: [
+                .product(name: "KeyVoxModels", package: "KeyVoxModels"),
                 .product(name: "KeyVoxCore", package: "KeyVoxCore"),
                 .product(name: "KeyVoxLinguistics", package: "KeyVoxLinguistics"),
                 .product(name: "KeyVoxWhisper", package: "KeyVoxWhisper"),

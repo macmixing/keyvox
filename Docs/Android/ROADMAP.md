@@ -131,6 +131,11 @@ implementations. Keep capture, inference, linguistic analysis, model storage,
 persistence, and state separate from UI. Preserve existing Apple implementations
 until replacements have demonstrated equivalent behavior.
 
+`KeyVoxModels` owns shared model metadata and is the boundary for new model
+storage, download, and integrity work. Apps and diagnostic hosts depend on it
+directly. Core's existing Whisper and Parakeet services remain in Core; model
+management must not be added there or made a Core dependency.
+
 The manually maintained pronunciation lexicon and common-word resource remain
 their existing source of truth. Dictionary correction stays downstream of speech
 recognition. Model misrecognitions are not grounds for hard-coded package fixes.
@@ -164,7 +169,7 @@ package checks, Apple app checks, and Android device execution in future records
 ## Model parity source of truth
 
 The existing iOS Base identity, revision, and integrity values are shared through
-Core's `WhisperBaseModelArtifact`; Apple catalogs consume that definition. The
+`KeyVoxModels.WhisperBaseModelArtifact`; Apple catalogs consume that definition. The
 harness exposes it with `whisper-model` for Android host verification. Use shared
 `WhisperService` for decoding settings.
 The Base artifact is identical on Android; its CPU backend replaces Apple's
