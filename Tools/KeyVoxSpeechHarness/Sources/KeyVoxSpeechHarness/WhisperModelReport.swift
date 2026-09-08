@@ -1,5 +1,5 @@
 import Foundation
-import KeyVoxCore
+import KeyVoxModels
 
 /// Exposes the shared artifact definition for host download/integrity checks.
 enum WhisperModelReport {

@@ -2,7 +2,7 @@ import Foundation
 #if canImport(FoundationNetworking)
 import FoundationNetworking
 #endif
-import KeyVoxCore
+import KeyVoxModels
 
 /// Verifies foreground transport only; the caller must verify integrity before use.
 enum WhisperDownloadProbe {
