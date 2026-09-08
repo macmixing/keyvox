@@ -34,6 +34,15 @@ curl --fail --location --retry 3 \
 echo "166140e9a6d8a36f787a2bd77f8f44dd64874f12dd8359ff7c1f4f9acb86202e  $work/source.tar.gz" \
     | shasum -a 256 --check
 tar -xzf "$work/source.tar.gz" -C "$work"
+patch --batch --forward -p1 -d "$work/whisper.cpp-1.7.6" \
+    < "$script_dir/Patches/whisper-external-encoder.patch"
+cp "$script_dir/WhisperEncoder/ExternalEncoder.cpp" "$script_dir/WhisperEncoder/ExternalEncoder.h" \
+    "$script_dir/WhisperEncoder/include/keyvox-whisper-encoder.h" "$work/whisper.cpp-1.7.6/src/"
+cat >> "$work/whisper.cpp-1.7.6/src/CMakeLists.txt" <<'CMAKE'
+
+target_sources(whisper PRIVATE ExternalEncoder.cpp)
+target_link_libraries(whisper PRIVATE ${CMAKE_DL_LIBS})
+CMAKE
 
 options=(
     -DCMAKE_BUILD_TYPE=Release
@@ -83,6 +92,7 @@ fi
 cmake -S "$work/whisper.cpp-1.7.6" -B "$work/build" "${options[@]}"
 cmake --build "$work/build" --parallel
 cmake --install "$work/build"
+install -m 644 "$script_dir/WhisperEncoder/include/keyvox-whisper-encoder.h" "$prefix/include/"
 install -m 644 "$work/whisper.cpp-1.7.6/LICENSE" "$prefix/WHISPER-LICENSE"
 mkdir -p "$prefix/share/licenses/keyvox-speech"
 install -m 644 "$script_dir/Licenses/Whisper-CPU-NOTICES.txt" \
