@@ -16,4 +16,13 @@ final class DictionaryNumericMatchingTests: XCTestCase {
             ["1000", "one thousand"]
         )
     }
+
+    func testEmbeddedNumericSegmentsExpandWithoutLosingTheirSources() {
+        let variants = DictionaryNumericMatching.phraseVariants(for: ["3d2"])
+
+        XCTAssertTrue(variants.contains { variant in
+            variant.normalized == "three d two"
+                && variant.numericSourceTokens == ["3", nil, "2"]
+        })
+    }
 }

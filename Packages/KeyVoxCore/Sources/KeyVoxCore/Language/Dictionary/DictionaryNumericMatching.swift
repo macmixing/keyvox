@@ -59,23 +59,79 @@ enum DictionaryNumericMatching {
 
         var variants = [PhraseVariant(normalized: "", tokens: [], numericSourceTokens: [])]
         for token in normalizedTokens {
-            let tokenVariants = tokenVariants(for: token)
-            let numericSourceToken = numericSourceToken(for: token)
+            let tokenVariants = phraseTokenVariants(for: token)
             variants = variants.flatMap { prefix in
                 tokenVariants.map { tokenVariant in
-                    let variantTokens = tokenVariant.split(separator: " ").map(String.init)
-                    let variantSourceTokens = variantTokens.map { _ in numericSourceToken }
-                    let combinedTokens = prefix.tokens + variantTokens
+                    let combinedTokens = prefix.tokens + tokenVariant.tokens
                     return PhraseVariant(
                         normalized: combinedTokens.joined(separator: " "),
                         tokens: combinedTokens,
-                        numericSourceTokens: prefix.numericSourceTokens + variantSourceTokens
+                        numericSourceTokens: prefix.numericSourceTokens + tokenVariant.numericSourceTokens
                     )
                 }
             }
         }
 
         return unique(variants.flatMap(variantsWithCardinalAliases))
+    }
+
+    private static func phraseTokenVariants(for normalizedToken: String) -> [PhraseVariant] {
+        let numericSourceToken = numericSourceToken(for: normalizedToken)
+        var variants = tokenVariants(for: normalizedToken).map { tokenVariant in
+            let tokens = tokenVariant.split(separator: " ").map(String.init)
+            return PhraseVariant(
+                normalized: tokenVariant,
+                tokens: tokens,
+                numericSourceTokens: tokens.map { _ in numericSourceToken }
+            )
+        }
+
+        if let embeddedVariant = embeddedNumericVariant(for: normalizedToken) {
+            variants.append(embeddedVariant)
+        }
+        return variants
+    }
+
+    private static func embeddedNumericVariant(for normalizedToken: String) -> PhraseVariant? {
+        guard normalizedToken.contains(where: \Character.isNumber),
+              normalizedToken.contains(where: \Character.isLetter),
+              normalizedToken.allSatisfy({ $0.isNumber || $0.isLetter }) else {
+            return nil
+        }
+
+        let characters = Array(normalizedToken)
+        var runs: [String] = []
+        var runStart = 0
+
+        for index in 1..<characters.count where characters[index].isNumber != characters[index - 1].isNumber {
+            runs.append(String(characters[runStart..<index]))
+            runStart = index
+        }
+        runs.append(String(characters[runStart...]))
+
+        var tokens: [String] = []
+        var numericSourceTokens: [String?] = []
+        for run in runs {
+            guard run.first?.isNumber == true else {
+                tokens.append(run)
+                numericSourceTokens.append(nil)
+                continue
+            }
+
+            guard let source = numericToken(for: run),
+                  let spelling = cardinalSpelling(for: source) else {
+                return nil
+            }
+            let spellingTokens = spelling.split(separator: " ").map(String.init)
+            tokens.append(contentsOf: spellingTokens)
+            numericSourceTokens.append(contentsOf: spellingTokens.map { _ in source })
+        }
+
+        return PhraseVariant(
+            normalized: tokens.joined(separator: " "),
+            tokens: tokens,
+            numericSourceTokens: numericSourceTokens
+        )
     }
 
     private static func variantsWithCardinalAliases(_ variant: PhraseVariant) -> [PhraseVariant] {
