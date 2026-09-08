@@ -1,48 +1,53 @@
 import Foundation
 import AVFoundation
+import CoreMedia
 
-extension AudioRecorder {
+extension AudioRecorder: AVCaptureAudioDataOutputSampleBufferDelegate {
+    func captureOutput(
+        _ output: AVCaptureOutput,
+        didOutput sampleBuffer: CMSampleBuffer,
+        from connection: AVCaptureConnection
+    ) {
+        let frameCount = CMSampleBufferGetNumSamples(sampleBuffer)
+        guard frameCount > 0,
+              let formatDescription = CMSampleBufferGetFormatDescription(sampleBuffer),
+              let streamDescription = CMAudioFormatDescriptionGetStreamBasicDescription(formatDescription),
+              let sourceFormat = AVAudioFormat(streamDescription: streamDescription),
+              let sourceBuffer = AVAudioPCMBuffer(
+                  pcmFormat: sourceFormat,
+                  frameCapacity: AVAudioFrameCount(frameCount)
+              ) else {
+            return
+        }
+
+        sourceBuffer.frameLength = AVAudioFrameCount(frameCount)
+        let copyStatus = CMSampleBufferCopyPCMDataIntoAudioBufferList(
+            sampleBuffer,
+            at: 0,
+            frameCount: Int32(frameCount),
+            into: sourceBuffer.mutableAudioBufferList
+        )
+        guard copyStatus == noErr else { return }
+        processCapturedBuffer(sourceBuffer)
+    }
+
     func processCapturedBuffer(_ sourceBuffer: AVAudioPCMBuffer) {
         let frameCount = Int(sourceBuffer.frameLength)
         let channelCount = Int(sourceBuffer.format.channelCount)
         guard frameCount > 0,
               channelCount > 0,
-              sourceBuffer.format.commonFormat == .pcmFormatFloat32,
-              !sourceBuffer.format.isInterleaved,
-              let sourceChannels = sourceBuffer.floatChannelData,
-              let monoFormat = AVAudioFormat(
-                  commonFormat: .pcmFormatFloat32,
-                  sampleRate: sourceBuffer.format.sampleRate,
-                  channels: 1,
-                  interleaved: false
-              ),
-              let monoBuffer = AVAudioPCMBuffer(
-                  pcmFormat: monoFormat,
-                  frameCapacity: sourceBuffer.frameLength
-              ),
-              let monoChannel = monoBuffer.floatChannelData?[0] else {
+              let conversionInput = monoConversionInput(from: sourceBuffer) else {
             return
         }
 
-        monoBuffer.frameLength = sourceBuffer.frameLength
-        for frameIndex in 0..<frameCount {
-            var mixedSample: Float = 0
-            for channelIndex in 0..<channelCount {
-                let sample = sourceChannels[channelIndex][frameIndex]
-                if sample.isFinite {
-                    mixedSample += sample
-                }
-            }
-            monoChannel[frameIndex] = min(max(mixedSample, -1), 1)
-        }
-
-        if converter == nil || shouldRebuildConverter(for: monoFormat) {
-            converter = AVAudioConverter(from: monoFormat, to: outputFormat)
+        let inputFormat = conversionInput.format
+        if converter == nil || shouldRebuildConverter(for: inputFormat) {
+            converter = AVAudioConverter(from: inputFormat, to: outputFormat)
         }
 
         guard let converter else { return }
 
-        let outputCapacity = AVAudioFrameCount(Double(monoBuffer.frameLength) * outputFormat.sampleRate / monoFormat.sampleRate) + 1
+        let outputCapacity = AVAudioFrameCount(Double(conversionInput.frameLength) * outputFormat.sampleRate / inputFormat.sampleRate) + 1
         guard let convertedBuffer = AVAudioPCMBuffer(pcmFormat: outputFormat, frameCapacity: outputCapacity) else { return }
 
         var conversionError: NSError?
@@ -54,7 +59,7 @@ extension AudioRecorder {
             }
             providedInput = true
             outStatus.pointee = .haveData
-            return monoBuffer
+            return conversionInput
         }
 
         guard conversionStatus != .error, convertedBuffer.frameLength > 0,
@@ -135,6 +140,44 @@ extension AudioRecorder {
                 self.liveInputSignalState = signalState
             }
         }
+    }
+
+    private func monoConversionInput(from sourceBuffer: AVAudioPCMBuffer) -> AVAudioPCMBuffer? {
+        let frameCount = Int(sourceBuffer.frameLength)
+        let channelCount = Int(sourceBuffer.format.channelCount)
+        if channelCount == 1 {
+            return sourceBuffer
+        }
+
+        guard sourceBuffer.format.commonFormat == .pcmFormatFloat32,
+              !sourceBuffer.format.isInterleaved,
+              let sourceChannels = sourceBuffer.floatChannelData,
+              let monoFormat = AVAudioFormat(
+                  commonFormat: .pcmFormatFloat32,
+                  sampleRate: sourceBuffer.format.sampleRate,
+                  channels: 1,
+                  interleaved: false
+              ),
+              let monoBuffer = AVAudioPCMBuffer(
+                  pcmFormat: monoFormat,
+                  frameCapacity: sourceBuffer.frameLength
+              ),
+              let monoChannel = monoBuffer.floatChannelData?[0] else {
+            return nil
+        }
+
+        monoBuffer.frameLength = sourceBuffer.frameLength
+        for frameIndex in 0..<frameCount {
+            var mixedSample: Float = 0
+            for channelIndex in 0..<channelCount {
+                let sample = sourceChannels[channelIndex][frameIndex]
+                if sample.isFinite {
+                    mixedSample += sample
+                }
+            }
+            monoChannel[frameIndex] = min(max(mixedSample, -1), 1)
+        }
+        return monoBuffer
     }
 
     private func shouldRebuildConverter(for inputFormat: AVAudioFormat) -> Bool {

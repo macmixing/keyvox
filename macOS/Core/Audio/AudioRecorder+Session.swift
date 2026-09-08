@@ -6,6 +6,8 @@ extension AudioRecorder {
     func prepareRecordingSession() {
         guard AVCaptureDevice.authorizationStatus(for: .audio) == .authorized else { return }
         guard let device = resolvedRecordingDevice() else { return }
+        let deviceKind = AudioDeviceManager.shared.availableMicrophones.first(where: { $0.id == device.uniqueID })?.kind ?? .builtIn
+        guard deviceKind == .wiredOrOther else { return }
 
         captureQueue.async { [weak self] in
             self?.prepareInputCapture(for: device)
@@ -66,19 +68,13 @@ extension AudioRecorder {
             self.liveInputSignalState = .dead
         }
 
-        let didStartCapture = captureQueue.sync {
-            let inputCapture = audioInputCapture ?? AudioEngineInputCapture()
-            do {
-                try inputCapture.start(
-                    deviceUID: device.uniqueID,
-                    deliveryQueue: captureQueue
-                ) { [weak self] buffer in
-                    self?.processCapturedBuffer(buffer)
-                }
-                audioInputCapture = inputCapture
-                return true
-            } catch {
-                return false
+        let didStartCapture: Bool
+        switch currentDeviceKind {
+        case .builtIn, .airPods, .bluetooth:
+            didStartCapture = startAVCaptureSession(device: device)
+        case .wiredOrOther:
+            didStartCapture = captureQueue.sync {
+                startAudioEngineCapture(device: device)
             }
         }
         guard didStartCapture else {
@@ -97,13 +93,33 @@ extension AudioRecorder {
         guard !isStopFinalizationPending else { return }
 
         isStopFinalizationPending = true
-        audioInputCapture?.stop()
+        if captureSession == nil {
+            audioInputCapture?.stop()
+        }
         captureQueue.async { [weak self] in
             self?.finalizeStopRecordingSession(completion: completion)
         }
     }
 
     private func finalizeStopRecordingSession(completion: @escaping ([Float]) -> Void) {
+        if let captureSession {
+            audioCaptureOutput?.setSampleBufferDelegate(nil, queue: nil)
+            captureSession.beginConfiguration()
+            if let captureInput {
+                captureSession.removeInput(captureInput)
+            }
+            if let audioCaptureOutput {
+                captureSession.removeOutput(audioCaptureOutput)
+            }
+            captureSession.commitConfiguration()
+            captureSession.stopRunning()
+            self.captureSession = nil
+            captureInput = nil
+            audioCaptureOutput = nil
+        }
+
+        drainPendingCaptureQueueWork()
+
         converter = nil
         isRecording = false
         isStopFinalizationPending = false
@@ -114,10 +130,69 @@ extension AudioRecorder {
         }
     }
 
+    private func drainPendingCaptureQueueWork() {
+        guard DispatchQueue.getSpecific(key: captureQueueSpecificKey) != captureQueueSpecificValue else {
+            return
+        }
+        captureQueue.sync {}
+    }
+
     private func resolvedRecordingDevice() -> AVCaptureDevice? {
         AudioDeviceManager.shared.resolvedCaptureDevice()
             ?? AudioDeviceManager.shared.builtInCaptureDevice()
             ?? AVCaptureDevice.default(for: .audio)
             ?? Self.captureAudioDevices().first
+    }
+
+    private func startAVCaptureSession(device: AVCaptureDevice) -> Bool {
+        audioInputCapture?.stop()
+        audioInputCapture = nil
+
+        let session = AVCaptureSession()
+        session.beginConfiguration()
+
+        do {
+            let input = try AVCaptureDeviceInput(device: device)
+            guard session.canAddInput(input) else {
+                session.commitConfiguration()
+                return false
+            }
+            session.addInput(input)
+
+            let output = AVCaptureAudioDataOutput()
+            output.setSampleBufferDelegate(self, queue: captureQueue)
+            guard session.canAddOutput(output) else {
+                output.setSampleBufferDelegate(nil, queue: nil)
+                session.commitConfiguration()
+                return false
+            }
+            session.addOutput(output)
+            session.commitConfiguration()
+
+            captureSession = session
+            captureInput = input
+            audioCaptureOutput = output
+            session.startRunning()
+            return true
+        } catch {
+            session.commitConfiguration()
+            return false
+        }
+    }
+
+    private func startAudioEngineCapture(device: AVCaptureDevice) -> Bool {
+        let inputCapture = audioInputCapture ?? AudioEngineInputCapture()
+        do {
+            try inputCapture.start(
+                deviceUID: device.uniqueID,
+                deliveryQueue: captureQueue
+            ) { [weak self] buffer in
+                self?.processCapturedBuffer(buffer)
+            }
+            audioInputCapture = inputCapture
+            return true
+        } catch {
+            return false
+        }
     }
 }

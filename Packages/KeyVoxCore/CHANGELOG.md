@@ -6,6 +6,22 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.2.9] - 2026-09-07
+
+Dictionary entries with embedded numbers now match their naturally spoken forms.
+
+### Includes
+
+- Expanded digit runs inside alphanumeric dictionary terms into spoken-number phrase variants while preserving surrounding text segments.
+- Retained numeric source alignment for each expanded digit run so unrelated spoken numbers remain ineligible.
+- Added regression coverage for spoken matching of an alphanumeric brand and structural coverage for multiple embedded number segments.
+
+### Notes
+
+- `1.2.9` tracks embedded-number dictionary matching in the shared Core engine.
+
+---
+
 ## [1.2.8] - 2026-09-06
 
 Split stylized dictionary terms now remain singular when their own ending resembles a possessive sound, and sentence-start capitalization no longer makes ordinary text look like a stylized dictionary match.

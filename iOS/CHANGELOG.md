@@ -6,6 +6,45 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.4.1] - 2026-09-06
+
+Keeps model downloads moving across app transitions and relaunches while improving download visibility, dictated capitalization, number and time preservation, and custom-dictionary accuracy.
+
+### Added
+
+- Added live Vibes AI download status, percentage, and progress to the Style tab card.
+- Added live Speak model download and installation percentage to the Home tab card.
+
+### Changed
+
+- Updated Dictation, Speak, and Vibes AI model downloads to continue through foreground and background transitions, recover after relaunching the app, and retain progress without replacing an installed model until its new download is ready.
+- Moved the Speak Timeout setting directly above the Speak download card so related controls stay together.
+
+### Fixed
+
+- Fixed interrupted or failed model downloads losing their recovery state, reporting stale progress, or hiding Speak installation failures before they could be resolved.
+- Fixed dictation after numbered hyphen sequences beginning with lowercase text instead of preserving sentence-start capitalization.
+- Fixed singular stylized dictionary entries being changed to possessives without suffix evidence and ordinary sentence-start capitalization being mistaken for stylized-word evidence.
+- Fixed years in counterfactual phrases being reformatted as grouped quantities.
+- Fixed Vibes rewrites leaving dotted times formatted like decimals while preserving actual version numbers, measurements, and percentages.
+- Fixed warning icons on the Home tab aligning to the middle of wrapped warning text instead of its first line.
+
+### Package versions
+
+KeyVox iOS 1.4.1
+  KeyVoxCore            1.2.8
+  KeyVoxLocalInference  1.0.4
+  KeyVoxParakeet        1.0.4
+  KeyVoxPromotions      1.0.0
+  KeyVoxStyleRewrite    1.0.13
+  KeyVoxTTS             1.0.3
+  KeyVoxTextComposition 1.0.4
+  KeyVoxVibesAdapters   1.0.4
+  KeyVoxVoiceActivity   1.0.0
+  KeyVoxWhisper         1.1.0
+
+---
+
 ## [1.4.0] - 2026-09-02
 
 Adds Compact Keys, background dictation through Shortcuts and the Action Button, guided setup, and dynamic campaign cards while improving spoken numbers, list formatting, and dictionary accuracy.
