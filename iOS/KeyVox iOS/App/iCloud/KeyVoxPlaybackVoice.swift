@@ -1,6 +1,6 @@
 import Foundation
 
-enum KeyVoxPlaybackVoice: String, CaseIterable, Identifiable, Codable {
+enum KeyVoxPlaybackVoice: String, CaseIterable, Identifiable, Codable, Sendable {
     case alba
     case azelma
     case cosette
