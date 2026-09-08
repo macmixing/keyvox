@@ -23,7 +23,7 @@ public final class PronunciationLexicon: PronunciationLexiconProviding {
     nonisolated let pronunciationLookup: PronunciationLookup
     private(set) var commonWords: Set<String> = []
 
-    private init(bundle: Bundle = .module) {
+    private init(bundle: Bundle = KeyVoxCoreResources.bundle) {
         let pronunciationLookup = Self.loadPronunciations(from: bundle)
         self.pronunciationLookup = pronunciationLookup
         loadCommonWords(from: bundle)

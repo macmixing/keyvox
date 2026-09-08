@@ -24,6 +24,11 @@ final class EditorConnectionOwner {
         return destination == generation && connection != null && connection.commitText(text, 1);
     }
 
+    boolean commitDictation(long destination, CharSequence text) {
+        // A no-speech completion must not erase the editor's current selection.
+        return text.length() == 0 || commit(destination, text);
+    }
+
     void deletePreviousCodePoint() {
         if (connection == null) return;
         CharSequence selected = connection.getSelectedText(0);

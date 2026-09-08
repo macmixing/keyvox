@@ -15,4 +15,20 @@ android {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
+    sourceSets.main {
+        jniLibs.srcDir 'build/generated/engine/jniLibs'
+        assets.srcDir 'build/generated/engine/assets'
+    }
 }
+
+tasks.register('verifyEngine') {
+    doLast {
+        def root = layout.buildDirectory.dir('generated/engine').get().asFile
+        if (!new File(root, 'jniLibs/arm64-v8a/libKeyVoxAndroidEngine.so').isFile()
+            || !new File(root, 'assets/engine-resources-id').isFile()
+            || !new File(root, 'assets/native-libraries.json').isFile()) {
+            throw new GradleException('Native engine is missing. Run Android/build-engine.py as described in Android/README.md before building the app.')
+        }
+    }
+}
+tasks.named('preBuild').configure { dependsOn 'verifyEngine' }

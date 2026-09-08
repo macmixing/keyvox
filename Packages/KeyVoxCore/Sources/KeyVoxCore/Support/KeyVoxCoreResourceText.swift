@@ -39,14 +39,14 @@ public enum KeyVoxCoreResourceText {
         subdirectory: String?
     ) -> URL? {
         if let subdirectory {
-            return Bundle.module.url(
+            return KeyVoxCoreResources.bundle.url(
                 forResource: fileName,
                 withExtension: fileExtension,
                 subdirectory: subdirectory
             )
         }
 
-        return Bundle.module.url(
+        return KeyVoxCoreResources.bundle.url(
             forResource: fileName,
             withExtension: fileExtension
         )

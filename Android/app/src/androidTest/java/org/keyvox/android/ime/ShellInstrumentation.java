@@ -7,14 +7,15 @@ import android.view.inputmethod.InputConnection;
 import java.lang.reflect.Proxy;
 
 /** Platform instrumentation runner: no third-party test runtime is packaged. */
-public final class ShellInstrumentation extends Instrumentation {
-    @Override public void onCreate(Bundle arguments) { super.onCreate(arguments); start(); }
+public final class ShellInstrumentation extends org.keyvox.android.engine.EngineInstrumentation {
 
     @Override public void onStart() {
+        if (fixture != null) { super.onStart(); return; }
         Bundle result = new Bundle();
         try {
+            if (captureChecks) org.keyvox.android.engine.CaptureInstrumentationChecks.run(this);
             verifyEditorLifetime();
-            result.putString("stream", "Editor lifetime checks passed\n");
+            result.putString("stream", captureChecks ? "Capture and editor lifetime checks passed\n" : "Editor lifetime checks passed\n");
             finish(Activity.RESULT_OK, result);
         } catch (Throwable failure) {
             result.putString("stream", failure.toString());
@@ -47,6 +48,8 @@ public final class ShellInstrumentation extends Instrumentation {
         owner.deletePreviousCodePoint();
         check(deletes[0] == 1);
         selected[0] = new String(Character.toChars(0x1F642));
+        check(owner.commitDictation(second, ""));
+        check(commits[0] == 2);
         owner.deletePreviousCodePoint();
         check(deletes[0] == 1 && commits[0] == 3);
         owner.detach();
