@@ -17,10 +17,14 @@ import org.keyvox.android.dictation.DictationSession;
 public class EngineInstrumentation extends Instrumentation {
     protected String fixture;
     protected boolean captureChecks;
+    private int rounds;
+    private long leadInMilliseconds;
     @Override public void onCreate(Bundle arguments) {
         super.onCreate(arguments);
         fixture = arguments == null ? null : arguments.getString("fixture");
         captureChecks = arguments != null && "true".equals(arguments.getString("capture"));
+        rounds = arguments == null ? 1 : Integer.parseInt(arguments.getString("rounds", "1"));
+        leadInMilliseconds = arguments == null ? 0 : Long.parseLong(arguments.getString("leadInMilliseconds", "0"));
         start();
     }
 
@@ -38,21 +42,39 @@ public class EngineInstrumentation extends Instrumentation {
             boolean available = ready.await(30, TimeUnit.SECONDS);
             runOnMainSync(() -> session.removeObserver(initialized));
             if (!available) throw new AssertionError("Installed model was not ready");
-            CountDownLatch completed = new CountDownLatch(1);
-            AtomicReference<JSONObject> response = new AtomicReference<>();
-            runOnMainSync(() -> NativeEngine.setListener(json -> {
-                try {
-                    JSONObject event = new JSONObject(json);
-                    if (event.optLong("request", -1) == 101) { response.set(event); completed.countDown(); }
-                } catch (Exception error) { throw new AssertionError(error); }
-            }));
-            runOnMainSync(() -> NativeEngine.transcribe(input.getPath(), 101));
-            if (!completed.await(90, TimeUnit.SECONDS)) throw new AssertionError("Engine completion timed out");
-            JSONObject event = response.get();
-            if (!event.getString("kind").equals("result") || event.optString("text").trim().isEmpty()) {
-                throw new AssertionError("Expected processed speech output: " + event);
+            if (rounds < 1 || rounds > 10) throw new AssertionError("Invalid benchmark repeat count");
+            if (leadInMilliseconds < 0 || leadInMilliseconds > 30_000) throw new AssertionError("Invalid benchmark lead-in");
+            // Models setup/recording time without including that delay in processing measurements.
+            Thread.sleep(leadInMilliseconds);
+            StringBuilder timings = new StringBuilder();
+            String expectedText = null;
+            for (int round = 0; round < rounds; round++) {
+                final int request = 101 + round;
+                CountDownLatch completed = new CountDownLatch(1);
+                AtomicReference<JSONObject> response = new AtomicReference<>();
+                runOnMainSync(() -> NativeEngine.setListener(json -> {
+                    try {
+                        JSONObject event = new JSONObject(json);
+                        if (event.optLong("request", -1) == request) { response.set(event); completed.countDown(); }
+                    } catch (Exception error) { throw new AssertionError(error); }
+                }));
+                runOnMainSync(() -> NativeEngine.transcribe(input.getPath(), request));
+                if (!completed.await(90, TimeUnit.SECONDS)) throw new AssertionError("Engine completion timed out");
+                JSONObject event = response.get();
+                if (!event.getString("kind").equals("result") || event.optString("text").trim().isEmpty()) {
+                    throw new AssertionError("Expected processed speech output");
+                }
+                if (expectedText == null) expectedText = event.getString("text");
+                else if (!expectedText.equals(event.getString("text"))) throw new AssertionError("Repeated output changed");
+                for (String field : new String[] { "audioReadMilliseconds", "modelWarmupMilliseconds",
+                        "inferenceMilliseconds", "pipelineMilliseconds", "postProcessorPreparationWaitMilliseconds" }) {
+                    double value = event.getDouble(field);
+                    if (!Double.isFinite(value) || value < 0) throw new AssertionError("Invalid timing: " + field);
+                }
+                event.remove("text");
+                timings.append("KV_PIPELINE ").append(event).append('\n');
             }
-            result.putString("stream", "Installed Swift engine fixture passed; output characters=" + event.getString("text").length());
+            result.putString("stream", timings + "Installed Swift engine fixture passed; output characters=" + expectedText.length());
             finish(Activity.RESULT_OK, result);
         } catch (Exception | AssertionError error) {
             result.putString("stream", "Engine fixture failed: " + error);

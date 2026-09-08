@@ -23,6 +23,11 @@ python3 build-engine.py --swift "$SWIFT_COMPILER" \
 ./gradlew :app:assembleDebug
 ```
 
+Use `--configuration release` when staging optimized Swift code for performance
+measurement; the default remains `debug`. Gradle's APK variant does not change
+the already staged Swift optimization level. See the
+[performance record](../Docs/Android/PERFORMANCE.md) for repeated pipeline probes.
+
 The script follows actual ELF dependencies, copies unchanged SwiftPM resource
 bundles and their notices, and stages the result under `app/build/generated/engine`.
 Repeat staging after engine/package changes or `gradlew clean`. Gradle fails if

@@ -8,6 +8,7 @@ final class EngineSession {
     let installer: ModelArtifactInstaller
     let dictionary: DictionaryStore
     let service: WhisperService
+    private let postProcessorPreparation: Task<TranscriptionPostProcessor, Never>
     var pipeline: DictationPipeline?
     var request: Int64?
     var downloading = false
@@ -26,6 +27,9 @@ final class EngineSession {
         dictionary = DictionaryStore(baseDirectoryURL: dictionaryDirectory)
         service = WhisperService(modelPathResolver: { installer.modelURL.path },
             voiceActivityDetectorFactory: { VoiceActivityDetector(modelURL: vadURL) })
+        postProcessorPreparation = Task.detached(priority: .userInitiated) {
+            TranscriptionPostProcessor()
+        }
     }
 
     func refreshModel() {
@@ -60,10 +64,19 @@ final class EngineSession {
         request = id
         Task {
             do {
+                let audioReadStart = ContinuousClock.now
                 let frames = try await Task.detached { try CapturedAudio.read(path: path) }.value
+                let audioReadMilliseconds = audioReadStart.duration(to: .now).milliseconds
+                guard request == id else { return }
+                let warmupStart = ContinuousClock.now
+                service.warmup()
+                let modelWarmupMilliseconds = warmupStart.duration(to: .now).milliseconds
+                let pipelineStart = ContinuousClock.now
+                let postProcessor = await postProcessorPreparation.value
+                let postProcessorPreparationWaitMilliseconds = pipelineStart.duration(to: .now).milliseconds
                 guard request == id else { return }
                 let pipeline = DictationPipeline(transcriptionProvider: service,
-                    postProcessor: TranscriptionPostProcessor(),
+                    postProcessor: postProcessor,
                     dictionaryEntriesProvider: { self.dictionary.entries },
                     autoParagraphsEnabledProvider: { true }, listFormattingEnabledProvider: { true },
                     listRenderModeProvider: { .multiline }, recordSpokenWords: { _ in }, pasteText: { _ in })
@@ -75,7 +88,11 @@ final class EngineSession {
                     if result.finalText.isEmpty && !result.wasLikelyNoSpeech {
                         EngineEvent(kind: .failed, request: id).send()
                     } else {
-                        EngineEvent(kind: .result, request: id, text: result.finalText, noSpeech: result.wasLikelyNoSpeech).send()
+                        EngineEvent(kind: .result, request: id, text: result.finalText, noSpeech: result.wasLikelyNoSpeech,
+                            audioReadMilliseconds: audioReadMilliseconds, modelWarmupMilliseconds: modelWarmupMilliseconds,
+                            inferenceMilliseconds: result.inferenceDuration * 1_000,
+                            pipelineMilliseconds: pipelineStart.duration(to: .now).milliseconds,
+                            postProcessorPreparationWaitMilliseconds: postProcessorPreparationWaitMilliseconds).send()
                     }
                 }
             } catch {
