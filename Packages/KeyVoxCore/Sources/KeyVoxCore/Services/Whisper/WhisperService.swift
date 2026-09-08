@@ -9,6 +9,7 @@ public class WhisperService: StatePublishing, DictationProvider {
     @StateValue public internal(set) var transcriptionText = ""
     @StateValue public internal(set) var lastResultWasLikelyNoSpeech = false
 
+    let voiceActivityDetectorFactory: () -> VoiceActivityDetector?
     private let modelPathResolver: () -> String?
     private var activeTranscriptionRequestID = UUID()
 
@@ -31,8 +32,12 @@ public class WhisperService: StatePublishing, DictationProvider {
     var transcriptionTask: Task<Void, Never>?
     var voiceActivityDetector: VoiceActivityDetector?
 
-    public init(modelPathResolver: @escaping () -> String? = { nil }) {
+    public init(
+        modelPathResolver: @escaping () -> String? = { nil },
+        voiceActivityDetectorFactory: @escaping () -> VoiceActivityDetector? = { VoiceActivityDetector() }
+    ) {
         self.modelPathResolver = modelPathResolver
+        self.voiceActivityDetectorFactory = voiceActivityDetectorFactory
     }
 
     public var isModelReady: Bool {

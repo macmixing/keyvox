@@ -17,7 +17,7 @@ struct FileExtensionRegistry {
     }
 
     static let bundled: Result<FileExtensionRegistry, Error> = Result {
-        guard let url = Bundle.module.url(forResource: "mime-db", withExtension: "json") else {
+        guard let url = KeyVoxCoreResources.bundle.url(forResource: "mime-db", withExtension: "json") else {
             throw CocoaError(.fileNoSuchFile)
         }
         return try FileExtensionRegistry(data: Data(contentsOf: url))

@@ -7,4 +7,18 @@
     <string name="delete_key">Delete</string>
     <string name="space_key">Space</string>
     <string name="enter_key">Enter</string>
+    <string name="start_dictation">Start dictation</string>
+    <string name="stop_dictation">Stop dictation</string>
+    <string name="cancel_dictation">Cancel</string>
+    <string name="processing_dictation">Processing…</string>
+    <string name="dictation_channel">Dictation</string>
+    <string name="microphone_active">Microphone in use</string>
+    <string name="allow_microphone">Allow microphone</string>
+    <string name="download_model">Download speech model</string>
+    <string name="model_checking">Checking speech model…</string>
+    <string name="model_missing">Speech model required</string>
+    <string name="model_downloading">Downloading speech model…</string>
+    <string name="model_ready">Speech model ready</string>
+    <string name="model_failed">Speech model download failed</string>
+    <string name="engine_failed">Dictation unavailable</string>
 </resources>

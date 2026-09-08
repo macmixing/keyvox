@@ -6,7 +6,7 @@ extension WhisperService {
     /// Pre-loads the model into memory to eliminate cold-start latency.
     public func warmup() {
         if voiceActivityDetector == nil {
-            voiceActivityDetector = VoiceActivityDetector()
+            voiceActivityDetector = voiceActivityDetectorFactory()
         }
         guard whisper == nil else {
             #if DEBUG

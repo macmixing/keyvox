@@ -6,8 +6,9 @@ Bring KeyVox's existing iOS dictation behavior to Android, preserving the shared
 engine and leaving clean capability boundaries for Windows and Linux. TTS and
 Vibes are outside this phase; retain extension points for later work.
 
-Current work is package portability and real engine execution. The capture APK
-is a diagnostic host, not the future app or a frontend architecture decision.
+Current work includes the minimal real application/IME foundation in `Android/`,
+alongside package portability and real engine execution. The older capture APK
+under `Tools/` remains a separate diagnostic host.
 Production UI, onboarding, billing, and keyboard UX come later. Native platform
 presentation remains free to use whichever technology best supports the app.
 
@@ -36,7 +37,7 @@ link detailed commands and limitations rather than duplicating them here.
 | Whisper cancel/restart lifecycle | FUNCTIONAL | Cancellation after native encoder entry followed immediately by replacement dictation completed on the same service; canceled output suppressed and replacement published once |
 | Optional Parakeet native runtime and Swift service | FUNCTIONAL | Real microphone audio through VAD and Core; coexists with Whisper; limitations below |
 | WAV decoding and sample conversion | FUNCTIONAL | Mono 16 kHz and stereo 48 kHz speech, silence handling, malformed-input rejection |
-| Microphone capture | FUNCTIONAL | Device WAV capture and adb-orchestrated engine handoff; no in-app engine bridge yet |
+| Microphone capture | FUNCTIONAL | Real Android IME starts capture in another app; installed Swift bridge consumes captured PCM; view visibility does not stop recording |
 | Text post-processing | FUNCTIONAL | Real speech output processed by Core; incomplete semantic capabilities limit parity |
 | Dictionary and persistence | FUNCTIONAL | Android/macOS persisted canonical output matched across process restart; duplicate rejection, backup recovery diagnostics, and speech-path loading verified; fuzzy correction parity is not established |
 | Semantic state publication | FUNCTIONAL | Portable state channel executed on Android; Apple publication retained |
@@ -51,8 +52,8 @@ link detailed commands and limitations rather than duplicating them here.
 | Foreground model download transport | FUNCTIONAL | Swift downloaded exact Base on the phone; KeyVoxModels verified SHA-256 before publication; independent device checksum matched and verified weights ran through real inference/Core |
 | Shared model file integrity | FUNCTIONAL | Streaming SHA-256 and progress/error fixtures pass on Apple and Android; existing iOS file hashing delegates to KeyVoxModels; integrity does not imply completed installation |
 | Whisper model failure and reload | FUNCTIONAL | Absent selection and invalid-file paths exercised; explicit unload followed by exact Base load and a second reload produced speech on device; file availability is not integrity verification |
-| Model installation and management on Android | UNRESOLVED | Foreground transfer is demonstrated; complete verified installation, resumability, recovery, and app-owned management are not |
-| Background dictation | UNRESOLVED | Required for parity; intentionally deferred to Android host integration |
+| Model installation and management on Android | FUNCTIONAL | Containing app downloads exact Base and verifies it before readiness; resumability, onboarding journey, cancellation and recovery remain unresolved |
+| Background dictation | FUNCTIONAL | Physical-device capture continues after Home and keyboard cancellation releases it; lock-screen, interruptions, process death and warm-session parity remain unresolved |
 | Windows/Linux execution | UNRESOLVED | Capability boundaries exist; actual builds and runtime checks remain necessary |
 
 ## Next: complete the engine evidence
@@ -93,9 +94,9 @@ call returns. Word timestamps, confidence, no-speech probabilities, language
 detection, and alternatives are not exposed by this adapter. Its tested model
 ignores language hints. These limitations must remain visible to host developers.
 
-## Later: Android host integration and iOS dictation parity
+## Android host integration and remaining iOS dictation parity
 
-- [ ] Connect capture to the engine inside an Android process without adb.
+- [x] Connect capture to the engine inside an Android process without adb.
 - [ ] Preserve the distinction between an enabled microphone session, an active
       utterance, processing, cancellation, and session shutdown.
 - [ ] Continue an active recording when leaving the app or locking the screen.
@@ -121,9 +122,9 @@ ignores language hints. These limitations must remain visible to host developers
 The iOS reference is explicit: background entry in
 `TranscriptionManager.handleAppDidEnterBackground()` dismisses return-to-host
 presentation; it does not stop recording. `AudioRecorder` keeps monitoring separate
-from the current utterance and uses the background audio session. The current
-diagnostic APK stops on Home and does not satisfy this requirement. That harness
-limitation must not become engine policy.
+from the current utterance and uses the background audio session. The older
+diagnostic APK stops on Home. The real `Android/` host now keeps capture alive
+after Home; interruption and warm-session parity remain open.
 
 ## Architecture and distribution boundaries
 
@@ -152,6 +153,8 @@ Parakeet's current symbol isolation is ELF-specific; Windows needs an appropriat
 export boundary. No current Android success constitutes Windows/Linux validation.
 
 ## Evidence and implementation references
+
+- [Real Android application, IME, build and capability boundaries](../../Android/README.md)
 
 - [Direct Android package tests and measured parity failures](TESTING.md)
 
