@@ -3,7 +3,7 @@ import XCTest
 
 @MainActor
 final class ParakeetServiceParagraphAssemblyTests: XCTestCase {
-    func testAssembleTranscriptionCanRenderInlineAndParagraphFormsFromSameBoundaries() {
+    func testAssembleTranscriptionCanRenderInlineAndParagraphFormsFromSameBoundaries() async {
         let service = ParakeetService()
         let chunks: [ParakeetService.TranscribedChunk] = [
             .init(text: "First paragraph.", trailingBoundaryFrame: 32_000),
@@ -25,7 +25,7 @@ final class ParakeetServiceParagraphAssemblyTests: XCTestCase {
         XCTAssertEqual(inlineText, "First paragraph. Second paragraph.")
     }
 
-    func testAssembleTranscriptionKeepsMidSentenceBoundaryInline() {
+    func testAssembleTranscriptionKeepsMidSentenceBoundaryInline() async {
         let service = ParakeetService()
         let chunks: [ParakeetService.TranscribedChunk] = [
             .init(text: "This sentence keeps going", trailingBoundaryFrame: 32_000),
@@ -47,7 +47,7 @@ final class ParakeetServiceParagraphAssemblyTests: XCTestCase {
         XCTAssertEqual(inlineText, "This sentence keeps going until it actually ends.")
     }
 
-    func testAssembleTranscriptionIgnoresFallbackOnlyBoundaries() {
+    func testAssembleTranscriptionIgnoresFallbackOnlyBoundaries() async {
         let service = ParakeetService()
         let chunks: [ParakeetService.TranscribedChunk] = [
             .init(text: "Sentence one.", trailingBoundaryFrame: 32_000),
@@ -69,7 +69,7 @@ final class ParakeetServiceParagraphAssemblyTests: XCTestCase {
         XCTAssertEqual(inlineText, "Sentence one. Sentence two.")
     }
 
-    func testAssembleTranscriptionPreservesParagraphAcrossEmptyChunkGaps() {
+    func testAssembleTranscriptionPreservesParagraphAcrossEmptyChunkGaps() async {
         let service = ParakeetService()
         let chunks: [ParakeetService.TranscribedChunk] = [
             .init(text: "Quoted sentence!\"", trailingBoundaryFrame: 16_000),

@@ -4,7 +4,7 @@ import XCTest
 
 @MainActor
 final class DictionaryStoreTests: XCTestCase {
-    func testAddUpdateDeleteAndReloadPersistence() throws {
+    func testAddUpdateDeleteAndReloadPersistence() async throws {
         try withTemporaryDirectory { root in
             let base = root.appendingPathComponent("KeyVox", isDirectory: true)
             let store = DictionaryStore(fileManager: .default, baseDirectoryURL: base)
@@ -30,7 +30,7 @@ final class DictionaryStoreTests: XCTestCase {
         }
     }
 
-    func testLoadFromPrimaryCapturesPersistedSnapshotModifiedAt() throws {
+    func testLoadFromPrimaryCapturesPersistedSnapshotModifiedAt() async throws {
         try withTemporaryDirectory { root in
             let base = root.appendingPathComponent("KeyVox", isDirectory: true)
             let dictionaryDir = base.appendingPathComponent("Dictionary", isDirectory: true)
@@ -47,7 +47,7 @@ final class DictionaryStoreTests: XCTestCase {
         }
     }
 
-    func testDuplicateAndEmptyValidation() throws {
+    func testDuplicateAndEmptyValidation() async throws {
         try withTemporaryDirectory { root in
             let store = DictionaryStore(
                 fileManager: .default,
@@ -72,7 +72,7 @@ final class DictionaryStoreTests: XCTestCase {
         }
     }
 
-    func testWhisperHintPromptRespectsCaps() throws {
+    func testWhisperHintPromptRespectsCaps() async throws {
         try withTemporaryDirectory { root in
             let store = DictionaryStore(
                 fileManager: .default,
@@ -91,7 +91,7 @@ final class DictionaryStoreTests: XCTestCase {
         }
     }
 
-    func testEmptyDictionaryHasNoHintPrompt() throws {
+    func testEmptyDictionaryHasNoHintPrompt() async throws {
         try withTemporaryDirectory { root in
             let base = root.appendingPathComponent("KeyVox", isDirectory: true)
             let store = DictionaryStore(fileManager: .default, baseDirectoryURL: base)
@@ -105,7 +105,7 @@ final class DictionaryStoreTests: XCTestCase {
         }
     }
 
-    func testFailedSaveDoesNotWipeExistingDictionaryFile() throws {
+    func testFailedSaveDoesNotWipeExistingDictionaryFile() async throws {
         try withTemporaryDirectory { root in
             let base = root.appendingPathComponent("KeyVox", isDirectory: true)
             let writer = DictionaryStore(fileManager: .default, baseDirectoryURL: base)
@@ -149,7 +149,7 @@ final class DictionaryStoreTests: XCTestCase {
         }
     }
 
-    func testCorruptPrimaryRecoversFromBackup() throws {
+    func testCorruptPrimaryRecoversFromBackup() async throws {
         try withTemporaryDirectory { root in
             let base = root.appendingPathComponent("KeyVox", isDirectory: true)
             let dictionaryDir = base.appendingPathComponent("Dictionary", isDirectory: true)
@@ -169,7 +169,7 @@ final class DictionaryStoreTests: XCTestCase {
         }
     }
 
-    func testMissingPersistedDictionaryLeavesSnapshotModifiedAtNil() throws {
+    func testMissingPersistedDictionaryLeavesSnapshotModifiedAtNil() async throws {
         try withTemporaryDirectory { root in
             let base = root.appendingPathComponent("KeyVox", isDirectory: true)
             let store = DictionaryStore(fileManager: .default, baseDirectoryURL: base)
@@ -179,7 +179,7 @@ final class DictionaryStoreTests: XCTestCase {
         }
     }
 
-    func testBackupWriteFailureDoesNotFailPrimaryPersistence() throws {
+    func testBackupWriteFailureDoesNotFailPrimaryPersistence() async throws {
         try withTemporaryDirectory { root in
             let base = root.appendingPathComponent("KeyVox", isDirectory: true)
             let dictionaryDir = base.appendingPathComponent("Dictionary", isDirectory: true)
@@ -215,7 +215,7 @@ final class DictionaryStoreTests: XCTestCase {
         }
     }
 
-    func testReplaceAllPersistsCleanSnapshot() throws {
+    func testReplaceAllPersistsCleanSnapshot() async throws {
         try withTemporaryDirectory { root in
             let base = root.appendingPathComponent("KeyVox", isDirectory: true)
             let store = DictionaryStore(fileManager: .default, baseDirectoryURL: base)
@@ -239,7 +239,7 @@ final class DictionaryStoreTests: XCTestCase {
         }
     }
 
-    func testReplaceAllRejectsLossySnapshot() throws {
+    func testReplaceAllRejectsLossySnapshot() async throws {
         try withTemporaryDirectory { root in
             let base = root.appendingPathComponent("KeyVox", isDirectory: true)
             let store = DictionaryStore(fileManager: .default, baseDirectoryURL: base)
@@ -259,7 +259,7 @@ final class DictionaryStoreTests: XCTestCase {
         }
     }
 
-    func testReplaceAllFailedSaveLeavesExistingEntriesUntouched() throws {
+    func testReplaceAllFailedSaveLeavesExistingEntriesUntouched() async throws {
         try withTemporaryDirectory { root in
             let base = root.appendingPathComponent("KeyVox", isDirectory: true)
             let writer = DictionaryStore(fileManager: .default, baseDirectoryURL: base)
@@ -283,7 +283,7 @@ final class DictionaryStoreTests: XCTestCase {
         }
     }
 
-    func testCorruptBothFilesTriggersQuarantineAndReset() throws {
+    func testCorruptBothFilesTriggersQuarantineAndReset() async throws {
         try withTemporaryDirectory { root in
             let base = root.appendingPathComponent("KeyVox", isDirectory: true)
             let dictionaryDir = base.appendingPathComponent("Dictionary", isDirectory: true)

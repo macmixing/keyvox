@@ -3,7 +3,7 @@ import XCTest
 
 @MainActor
 extension TranscriptionPostProcessorTests {
-    func testRepairsLeadingFDoubleAsteriskModelCensorshipBeforeK() {
+    func testRepairsLeadingFDoubleAsteriskModelCensorshipBeforeK() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -15,7 +15,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "I swear to fucking god!")
     }
 
-    func testRepairsLeadingFTripleAsteriskModelCensorshipAsWord() {
+    func testRepairsLeadingFTripleAsteriskModelCensorshipAsWord() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(

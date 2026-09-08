@@ -55,3 +55,12 @@ attestation of upstream source-to-binary correspondence.
 Full notices preserve incorporated data obligations as well as code licenses.
 Include this directory with redistributed binaries; do not apply Swift's runtime
 exception to unrelated third-party components.
+
+## Local package test runtime
+
+`testing-runtime.json` records the exact shared-library closure used to execute
+existing XCTest suites on Android. XCTest and Swift Testing notices are retained
+as `XCTEST-LICENSE.txt` and `TESTING-LICENSE.txt`, both Apache-2.0 with the Swift
+Runtime Library Exception. The existing runtime notices above also apply. These
+libraries are local test infrastructure; they are not added to the shipping engine
+or capture APK. See [test execution and parity results](../../../Docs/Android/TESTING.md).

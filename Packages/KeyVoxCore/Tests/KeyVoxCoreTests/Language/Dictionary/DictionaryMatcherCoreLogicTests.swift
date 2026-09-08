@@ -4,7 +4,7 @@ import XCTest
 
 @MainActor
 final class DictionaryMatcherCoreLogicTests: XCTestCase {
-    func testStylizedFallbackRequiresActualInternalUppercase() {
+    func testStylizedFallbackRequiresActualInternalUppercase() async {
         let matcher = makeMatcher()
         let punctuationOnly = DictionaryMatcher.Token(
             raw: "Α'α",
@@ -33,7 +33,7 @@ final class DictionaryMatcherCoreLogicTests: XCTestCase {
         )
     }
 
-    func testStylizedFallbackRejectsOrdinaryTitlecaseAtLaterSentenceStart() {
+    func testStylizedFallbackRejectsOrdinaryTitlecaseAtLaterSentenceStart() async {
         let matcher = makeMatcher()
         let sentenceText = "Ζαζ. Α'α βαβ"
         let tokens = [
@@ -96,7 +96,7 @@ final class DictionaryMatcherCoreLogicTests: XCTestCase {
         )
     }
 
-    func testOverlapResolverPrefersHigherScoreThenLongerSpanThenEarlierStart() {
+    func testOverlapResolverPrefersHigherScoreThenLongerSpanThenEarlierStart() async {
         let matcher = makeMatcher()
 
         let proposed: [DictionaryMatcher.ProposedReplacement] = [
@@ -116,7 +116,7 @@ final class DictionaryMatcherCoreLogicTests: XCTestCase {
         XCTAssertTrue(rejected == 2)
     }
 
-    func testSplitJoinFormsIncludeDirectPluralAndPossessiveVariants() {
+    func testSplitJoinFormsIncludeDirectPluralAndPossessiveVariants() async {
         let matcher = makeMatcher()
 
         let pluralWindow: [DictionaryMatcher.Token] = [
@@ -137,7 +137,7 @@ final class DictionaryMatcherCoreLogicTests: XCTestCase {
         XCTAssertTrue(possessiveForms.contains(where: { $0.normalized == "cueboard" && !$0.singularizedSecondToken && $0.replacementSuffix == "'s" }))
     }
 
-    func testSingleTokenPossessiveObservedFormsIncludeStemVariant() {
+    func testSingleTokenPossessiveObservedFormsIncludeStemVariant() async {
         let matcher = makeMatcher()
 
         let window: [DictionaryMatcher.Token] = [
@@ -154,7 +154,7 @@ final class DictionaryMatcherCoreLogicTests: XCTestCase {
         XCTAssertTrue(forms.contains(where: { $0.normalized == "cueboard" && $0.replacementSuffix == "'s" }))
     }
 
-    func testStandardCandidateSelectionRanksOnlyPhoneticallyEligibleCandidates() throws {
+    func testStandardCandidateSelectionRanksOnlyPhoneticallyEligibleCandidates() async throws {
         let observed = "abcdefghij"
         let ineligibleCandidate = "abcdefzhij"
         let eligibleCandidate = "abcdzzzzij"
@@ -189,7 +189,7 @@ final class DictionaryMatcherCoreLogicTests: XCTestCase {
         XCTAssertEqual(selection?.candidate.entry.normalizedPhrase, eligibleCandidate)
     }
 
-    func testTextNormalizationMatchesExistingBehavior() {
+    func testTextNormalizationMatchesExistingBehavior() async {
         XCTAssertTrue(DictionaryTextNormalization.normalizedPhrase("  Cue—Board!!! ") == "cue board")
         XCTAssertTrue(DictionaryTextNormalization.normalizedPhrase("Crème Brûlée") == "creme brulee")
         XCTAssertTrue(DictionaryTextNormalization.normalizedToken("Cue Board") == "cueboard")

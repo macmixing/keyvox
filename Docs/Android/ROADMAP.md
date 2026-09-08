@@ -145,6 +145,8 @@ export boundary. No current Android success constitutes Windows/Linux validation
 
 ## Evidence and implementation references
 
+- [Direct Android package tests and measured parity failures](TESTING.md)
+
 - [Speech engine commands and detailed execution record](../../Tools/KeyVoxSpeechHarness/README.md)
 - [Diagnostic microphone host](../../Tools/AndroidCaptureHarness/README.md)
 - [Native Parakeet build and provenance](../../Tools/ParakeetNative/README.md)

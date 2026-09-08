@@ -4,7 +4,7 @@ import XCTest
 
 @MainActor
 extension TranscriptionPostProcessorTests {
-    func testNormalizesCompactAndDottedTimesWithMeridiem() {
+    func testNormalizesCompactAndDottedTimesWithMeridiem() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -15,7 +15,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertTrue(output == "3:15 AM 3:17 AM 4:19 PM")
     }
-    func testNormalizesCompactTimesWithoutRenormalizingMinutesAsHours() {
+    func testNormalizesCompactTimesWithoutRenormalizingMinutesAsHours() async {
         let normalizer = TimeExpressionNormalizer()
         let cases = [
             (input: "1012 AM.", expected: "10:12 AM."),
@@ -31,7 +31,7 @@ extension TranscriptionPostProcessorTests {
             XCTAssertEqual(normalizer.normalize(in: testCase.input), testCase.expected)
         }
     }
-    func testNormalizesHourOnlyMeridiemVariantsToFullTime() {
+    func testNormalizesHourOnlyMeridiemVariantsToFullTime() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -42,7 +42,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "10:00 AM 10:00 AM 10:00 AM 10:00 PM 10:00 PM 10:00 PM")
     }
-    func testRemovesDottedMeridiemPeriodBeforeCapitalizedContinuation() {
+    func testRemovesDottedMeridiemPeriodBeforeCapitalizedContinuation() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -53,7 +53,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "I told him that I'd be there at 11:00 AM Eastern.")
     }
-    func testNormalizesHyphenSeparatedTimesWithSplitMeridiemAndMathSpacedVariant() {
+    func testNormalizesHyphenSeparatedTimesWithSplitMeridiemAndMathSpacedVariant() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -64,7 +64,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "10:01 AM 10:03 AM 10:04 AM 10:05 PM")
     }
-    func testPreservesDaypartPhrasingWhileFixingTimeShape() {
+    func testPreservesDaypartPhrasingWhileFixingTimeShape() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -75,7 +75,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertTrue(output == "I got there at 4:18 in the morning and left at 4:19 in the evening.")
     }
-    func testAddsPeriodWhenSentenceEndsWithFormattedTime() {
+    func testAddsPeriodWhenSentenceEndsWithFormattedTime() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -86,7 +86,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "Go ahead and send me an email next week at 2:35 PM.")
     }
-    func testAddsPeriodToOrdinaryProseWithoutTerminalPunctuation() {
+    func testAddsPeriodToOrdinaryProseWithoutTerminalPunctuation() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -97,7 +97,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "Please send the notes tomorrow.")
     }
-    func testStripsASRTerminalPeriodFromOneWordDictation() {
+    func testStripsASRTerminalPeriodFromOneWordDictation() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -108,7 +108,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "Reminder")
     }
-    func testPreservesSpokenQuestionAndExclamationPunctuationForOneWordDictation() {
+    func testPreservesSpokenQuestionAndExclamationPunctuationForOneWordDictation() async {
         let processor = TranscriptionPostProcessor()
 
         let questionOutput = processor.process(
@@ -125,7 +125,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(questionOutput, "Reminder?")
         XCTAssertEqual(exclamationOutput, "Reminder!")
     }
-    func testConvertsUnpunctuatedExclamationCommandAfterDeterminerPhrase() {
+    func testConvertsUnpunctuatedExclamationCommandAfterDeterminerPhrase() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -136,7 +136,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "I'm a fan of that!")
     }
-    func testCapitalizesFollowingLetterAfterSpokenQuestionMark() {
+    func testCapitalizesFollowingLetterAfterSpokenQuestionMark() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -147,7 +147,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "So we're in good shape, right? There's nothing brittle here.")
     }
-    func testCapitalizesFollowingLetterAfterSpokenExclamationPoint() {
+    func testCapitalizesFollowingLetterAfterSpokenExclamationPoint() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -158,7 +158,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "So we're in good shape, right! There's nothing brittle here.")
     }
-    func testNormalizesSpokenHourMinuteTimesWithMeridiemInSentences() {
+    func testNormalizesSpokenHourMinuteTimesWithMeridiemInSentences() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -169,7 +169,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "Meet me there at 2:15 PM. Yeah, I'll probably get there around I don't know, 3:15 PM.")
     }
-    func testNormalizesSpokenHourOnlyAndHourMinuteTimesWithMeridiemAcrossQuestionsAndStatements() {
+    func testNormalizesSpokenHourOnlyAndHourMinuteTimesWithMeridiemAcrossQuestionsAndStatements() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -183,7 +183,7 @@ extension TranscriptionPostProcessorTests {
             "Do you think we can go next week around 5:00 PM? How about we pick her up at 2:15 AM? Yeah, I think the restaurant closes at 6:00 PM. We really need to make sure that we pick up my dog from the vet at 3:15 PM."
         )
     }
-    func testNormalizesSpokenHyphenatedAndSpacedMinuteTimesWithMeridiem() {
+    func testNormalizesSpokenHyphenatedAndSpacedMinuteTimesWithMeridiem() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -197,7 +197,7 @@ extension TranscriptionPostProcessorTests {
             "Let's meet at 2:25 PM, swing by again at 2:05 PM, and keep the backup for 2:25 PM."
         )
     }
-    func testCapitalizesLowercaseWordAfterSentenceBoundaryPunctuation() {
+    func testCapitalizesLowercaseWordAfterSentenceBoundaryPunctuation() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -208,7 +208,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "Can you send me the notes? And then follow up tomorrow! Then cc the team.")
     }
-    func testCapitalizesAndAfterPeriodInUserPhrase() {
+    func testCapitalizesAndAfterPeriodInUserPhrase() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -219,7 +219,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "I think you're so cool. And honestly, I wish I could be like you.")
     }
-    func testCapitalizesAndAfterPeriodInFollowUpUserPhrase() {
+    func testCapitalizesAndAfterPeriodInFollowUpUserPhrase() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -230,7 +230,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "I think you're so cool. And honestly, we should hang out.")
     }
-    func testCapitalizesLeadingAndAtChunkStart() {
+    func testCapitalizesLeadingAndAtChunkStart() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -241,7 +241,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "And honestly, we should hang out.")
     }
-    func testCapitalizesAndAfterPeriodWhenRestartHasNoSpace() {
+    func testCapitalizesAndAfterPeriodWhenRestartHasNoSpace() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -252,7 +252,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "I think you're so cool. And honestly, I wish I could be like you.")
     }
-    func testPreservesExistingMixedCaseAtTextStartAndSentenceBoundary() {
+    func testPreservesExistingMixedCaseAtTextStartAndSentenceBoundary() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -263,7 +263,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "eBay is awesome. eBay is useful.")
     }
-    func testCapitalizesAfterEmojiOnlyAtSentenceOrLineBoundary() {
+    func testCapitalizesAfterEmojiOnlyAtSentenceOrLineBoundary() async {
         let normalizer = SentenceCapitalizationNormalizer()
         let cases = [
             (input: "😎 emoji", expected: "😎 Emoji"),
@@ -278,7 +278,7 @@ extension TranscriptionPostProcessorTests {
             XCTAssertEqual(normalizer.normalizeSentenceStarts(in: testCase.input), testCase.expected)
         }
     }
-    func testPreservesReadmeFilenameExtensionWithoutSentenceSplit() {
+    func testPreservesReadmeFilenameExtensionWithoutSentenceSplit() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -289,7 +289,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "Can you open the readme.md file?")
     }
-    func testPreservesExecutableFilenameExtensionAcrossSentenceBoundary() {
+    func testPreservesExecutableFilenameExtensionAcrossSentenceBoundary() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -300,7 +300,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "Can you open up that application? I think it's called junk.exe.")
     }
-    func testCapitalizesStandaloneLowercasePronounIInProse() {
+    func testCapitalizesStandaloneLowercasePronounIInProse() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -311,7 +311,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "I'm sorry I love you.")
     }
-    func testCapitalizesMultipleStandaloneLowercasePronounIWithPunctuation() {
+    func testCapitalizesMultipleStandaloneLowercasePronounIWithPunctuation() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -322,7 +322,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "I, then I; finally I.")
     }
-    func testCapitalizesStandalonePronounIWithoutTouchingEmbeddedWords() {
+    func testCapitalizesStandalonePronounIWithoutTouchingEmbeddedWords() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -333,7 +333,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "Inside bit I am.")
     }
-    func testKeepsEmailLocalPartLowercaseIAndCapitalizesStandalonePronounI() {
+    func testKeepsEmailLocalPartLowercaseIAndCapitalizesStandalonePronounI() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -344,7 +344,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "Reach me at i@example.com and I will reply.")
     }
-    func testKeepsURLSubdomainLowercaseIAndCapitalizesStandalonePronounI() {
+    func testKeepsURLSubdomainLowercaseIAndCapitalizesStandalonePronounI() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -356,7 +356,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "Visit https://i.example.com and I can explain.")
     }
 
-    func testAppendsPeriodAfterProseContainingDomain() {
+    func testAppendsPeriodAfterProseContainingDomain() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -368,7 +368,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "Please visit dom.tech and share it.")
     }
 
-    func testPreservesDaypartPhrasingForHyphenSeparatedTimes() {
+    func testPreservesDaypartPhrasingForHyphenSeparatedTimes() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -379,7 +379,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertTrue(output == "I think maybe 3:15 in the evening?")
     }
-    func testNormalizesTerminalAndAsFuzzyAm() {
+    func testNormalizesTerminalAndAsFuzzyAm() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -390,7 +390,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertTrue(output == "4:15 AM. 3:15 AM")
     }
-    func testDoesNotTreatConjunctionAndAsMeridiem() {
+    func testDoesNotTreatConjunctionAndAsMeridiem() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -402,7 +402,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertTrue(output == "I said 415 and 5:30 in the afternoon.")
     }
 
-    func testForceAllCapsAppliesAfterNormalizationPipeline() {
+    func testForceAllCapsAppliesAfterNormalizationPipeline() async {
         let processor = TranscriptionPostProcessor()
         let entries = [
             DictionaryEntry(phrase: "Cueboard"),
@@ -431,7 +431,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, output.uppercased())
     }
 
-    func testForceAllCapsKeepsExistingNumericListShapeAndUppercasesContent() {
+    func testForceAllCapsKeepsExistingNumericListShapeAndUppercasesContent() async {
         let processor = TranscriptionPostProcessor()
         let input = "1. dom@example.com\n2. www.example.com"
 
@@ -446,7 +446,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, input.uppercased())
     }
 
-    func testForceAllCapsFormatsUppercaseSpokenNumberMarkers() {
+    func testForceAllCapsFormatsUppercaseSpokenNumberMarkers() async {
         let processor = TranscriptionPostProcessor()
         let input = "THINGS TO DO ONE EMAIL DOM AT EXAMPLE.COM TWO VISIT WWW.EXAMPLE.COM"
 

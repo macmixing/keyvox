@@ -4,7 +4,7 @@ import XCTest
 
 @MainActor
 extension TranscriptionPostProcessorTests {
-    func testFormatsStandaloneFourDigitQuantitiesBelowTenThousand() {
+    func testFormatsStandaloneFourDigitQuantitiesBelowTenThousand() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -16,7 +16,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "5,600 2,000 4,000 9,300 2,100")
     }
 
-    func testFormatsFourDigitQuantitiesInSentenceWhilePreservingYearReferences() {
+    func testFormatsFourDigitQuantitiesInSentenceWhilePreservingYearReferences() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -28,7 +28,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "I shipped 5,600 units in 2025 and 9,300 units in 2026.")
     }
 
-    func testPreservesYearModifiersWhileFormattingFourDigitQuantities() {
+    func testPreservesYearModifiersWhileFormattingFourDigitQuantities() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -40,7 +40,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "The 2025 roadmap replaced the 2026 plan after 2,100 tickets came in.")
     }
 
-    func testFormatsPartitiveFourDigitQuantitiesWithoutTreatingThemAsYears() {
+    func testFormatsPartitiveFourDigitQuantitiesWithoutTreatingThemAsYears() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -52,7 +52,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "Can you give me about 2,000 of them? I need 1,000 of them.")
     }
 
-    func testPreservesYearAfterPartitivePrepositionWithoutGroupingSeparator() {
+    func testPreservesYearAfterPartitivePrepositionWithoutGroupingSeparator() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -64,7 +64,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "I spent most of 2020 by myself.")
     }
 
-    func testPreservesYearInQuestionBeforeTerminalPrepositionalPhrase() {
+    func testPreservesYearInQuestionBeforeTerminalPrepositionalPhrase() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -76,7 +76,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "Did you spend 2020 by yourself?")
     }
 
-    func testPreservesYearReferenceBeforeConfirmationPhrase() {
+    func testPreservesYearReferenceBeforeConfirmationPhrase() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -88,7 +88,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "Yeah, that came out in 2001, right?")
     }
 
-    func testPreservesYearInCounterfactualTemporalClause() {
+    func testPreservesYearInCounterfactualTemporalClause() async {
         let processor = TranscriptionPostProcessor()
         let expected = "If somebody had told me back in 2001 that this would happen, I wouldn't have believed them."
         let samples = [
@@ -108,7 +108,7 @@ extension TranscriptionPostProcessorTests {
         }
     }
 
-    func testPreservesYearAfterSimplePrepositionWithoutGroupingSeparator() {
+    func testPreservesYearAfterSimplePrepositionWithoutGroupingSeparator() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -120,7 +120,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "I met her in 2015.")
     }
 
-    func testPreservesSpokenSinceYearWithoutGroupingSeparator() {
+    func testPreservesSpokenSinceYearWithoutGroupingSeparator() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -132,7 +132,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "Yo, I haven't seen her since 2012.")
     }
 
-    func testPreservesSpokenSinceLikeYearWithoutGroupingSeparator() {
+    func testPreservesSpokenSinceLikeYearWithoutGroupingSeparator() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -144,7 +144,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "I haven't seen her since like 2012.")
     }
 
-    func testPreservesSentenceFinalYearAfterAdjectiveModifier() {
+    func testPreservesSentenceFinalYearAfterAdjectiveModifier() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -156,7 +156,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "I haven't done that since at least 2012.")
     }
 
-    func testPreservesYearAfterLikeAndAtLeastWithoutGroupingSeparator() {
+    func testPreservesYearAfterLikeAndAtLeastWithoutGroupingSeparator() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -168,7 +168,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "Since like at least 2005.")
     }
 
-    func testPreservesYearAfterSinceLikeAndAtLeastWithoutGroupingSeparator() {
+    func testPreservesYearAfterSinceLikeAndAtLeastWithoutGroupingSeparator() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -180,7 +180,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "I haven't been there since like at least 2018.")
     }
 
-    func testPreservesCoordinatedYearsAfterFromWithoutGroupingSeparators() {
+    func testPreservesCoordinatedYearsAfterFromWithoutGroupingSeparators() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -195,7 +195,7 @@ extension TranscriptionPostProcessorTests {
         )
     }
 
-    func testPreservesCoordinatedYearsBeforeSentenceFinalLocationPhrase() {
+    func testPreservesCoordinatedYearsBeforeSentenceFinalLocationPhrase() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -210,7 +210,7 @@ extension TranscriptionPostProcessorTests {
         )
     }
 
-    func testPreservesYearReferencesBeforeTerminalQualifiersAcrossNumericPaths() {
+    func testPreservesYearReferencesBeforeTerminalQualifiersAcrossNumericPaths() async {
         let processor = TranscriptionPostProcessor()
         let samples = [
             ("Do you think that happened in 2012 maybe?", "Do you think that happened in 2012 maybe?"),
@@ -232,7 +232,7 @@ extension TranscriptionPostProcessorTests {
         }
     }
 
-    func testFormatsSentenceFinalDigitQuantitiesAfterAdjectiveModifiers() {
+    func testFormatsSentenceFinalDigitQuantitiesAfterAdjectiveModifiers() async {
         let processor = TranscriptionPostProcessor()
         let samples = [
             "I need at least 2000.",
@@ -250,7 +250,7 @@ extension TranscriptionPostProcessorTests {
         }
     }
 
-    func testFormatsSentenceFinalSpokenQuantitiesAfterAdjectiveModifiers() {
+    func testFormatsSentenceFinalSpokenQuantitiesAfterAdjectiveModifiers() async {
         let processor = TranscriptionPostProcessor()
         let samples = [
             "I need at least two thousand.",
@@ -268,7 +268,7 @@ extension TranscriptionPostProcessorTests {
         }
     }
 
-    func testPreservesSpokenYearBeforeConfirmationPhrase() {
+    func testPreservesSpokenYearBeforeConfirmationPhrase() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -280,7 +280,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "I'm pretty sure that movie came out in 2012. What do you think?")
     }
 
-    func testPreservesAdjacentSpokenYearsWithoutGroupingSeparators() {
+    func testPreservesAdjacentSpokenYearsWithoutGroupingSeparators() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -292,7 +292,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "The audit started in 2018 and wrapped up in 2019.")
     }
 
-    func testFormatsQuantityBeforeConfirmationPhrase() {
+    func testFormatsQuantityBeforeConfirmationPhrase() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -304,7 +304,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "I need 1,000, right?")
     }
 
-    func testFormatsQuantityBeforeImmediateTimeQualifier() {
+    func testFormatsQuantityBeforeImmediateTimeQualifier() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -316,7 +316,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "I have about 2,000 right now.")
     }
 
-    func testPreservesPinNumberWithoutGroupingSeparator() {
+    func testPreservesPinNumberWithoutGroupingSeparator() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -328,7 +328,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "My pin number is 5786.")
     }
 
-    func testPreservesExplicitYearBeyondCommonRangeWithoutGroupingSeparator() {
+    func testPreservesExplicitYearBeyondCommonRangeWithoutGroupingSeparator() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -343,7 +343,7 @@ extension TranscriptionPostProcessorTests {
         )
     }
 
-    func testFormatsUnqualifiedQuantityBeyondCommonYearRange() {
+    func testFormatsUnqualifiedQuantityBeyondCommonYearRange() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -355,7 +355,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "I love you 3,000.")
     }
 
-    func testFormatsNounBasedCountQuantityBeyondCommonYearRange() {
+    func testFormatsNounBasedCountQuantityBeyondCommonYearRange() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -367,7 +367,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "The count 5,786 is too high.")
     }
 
-    func testFormatsTotalNumberQuantityBeyondCommonYearRange() {
+    func testFormatsTotalNumberQuantityBeyondCommonYearRange() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -379,7 +379,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "The total number 5,786 is too high.")
     }
 
-    func testPreservesYearsQuantitiesAndPinNumberAcrossLongNumericGauntlet() {
+    func testPreservesYearsQuantitiesAndPinNumberAcrossLongNumericGauntlet() async {
         let processor = TranscriptionPostProcessor()
         let input = "I started collecting Ninja Turtle Action figures in 2018 and I thought it was pretty cool, but I never knew that I would have over 2000 of them by 2026. It's just crazy because if you think about it, I was born about 1985 and I wanted to get everything as a child growing up. I had about 1000 action figures and about 3500 more that looked like tiny little turtles. So it just goes to show you that by 2017 I was thoroughly into the hobby. Oh, by the way, I love you, 3000, but if you want to see how much money I've made from selling my Ninja Turtles, my pin number is 5786. Look at how much money is in there. Check it around the year 3000."
         let expected = "I started collecting Ninja Turtle Action figures in 2018 and I thought it was pretty cool, but I never knew that I would have over 2,000 of them by 2026. It's just crazy because if you think about it, I was born about 1985 and I wanted to get everything as a child growing up. I had about 1,000 action figures and about 3,500 more that looked like tiny little turtles. So it just goes to show you that by 2017 I was thoroughly into the hobby. Oh, by the way, I love you, 3,000, but if you want to see how much money I've made from selling my Ninja Turtles, my pin number is 5786. Look at how much money is in there. Check it around the year 3000."
@@ -393,7 +393,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, expected)
     }
 
-    func testFormatsSpokenQuantityWithYearLikeValueWhenContextIsQuantity() {
+    func testFormatsSpokenQuantityWithYearLikeValueWhenContextIsQuantity() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -405,7 +405,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "I need 2,012 tickets and 1,005 labels.")
     }
 
-    func testFormatsSpokenQuantityAfterFillerLikeWhenContextIsQuantity() {
+    func testFormatsSpokenQuantityAfterFillerLikeWhenContextIsQuantity() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -417,7 +417,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "I need like 2,012 tickets.")
     }
 
-    func testPreservesSpokenYearWhileFormattingNearbySpokenQuantity() {
+    func testPreservesSpokenYearWhileFormattingNearbySpokenQuantity() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -429,7 +429,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "I haven't seen her since 2012, but I still need 5,000 tickets.")
     }
 
-    func testPreservesUncertainSentenceFinalYearReference() {
+    func testPreservesUncertainSentenceFinalYearReference() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -441,7 +441,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "I can't remember when that was. I think it was maybe 1993.")
     }
 
-    func testPreservesYearFirstSlashedDatesWhileFormattingQuantities() {
+    func testPreservesYearFirstSlashedDatesWhileFormattingQuantities() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -453,7 +453,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "The deadline is 2026/02/19 and we shipped 5,600 units.")
     }
 
-    func testFormatsQuantityLikePluralNounPhrasesAtSentenceStartAndAfterDeterminer() {
+    func testFormatsQuantityLikePluralNounPhrasesAtSentenceStartAndAfterDeterminer() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -468,7 +468,7 @@ extension TranscriptionPostProcessorTests {
         )
     }
 
-    func testDoesNotGroupLocalPhoneNumberTailAfterHyphenSpacing() {
+    func testDoesNotGroupLocalPhoneNumberTailAfterHyphenSpacing() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -480,7 +480,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "555-1234")
     }
 
-    func testPreservesMonthLedDatesAfterDateNormalization() {
+    func testPreservesMonthLedDatesAfterDateNormalization() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -492,7 +492,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "May 15, 1992 and 5,000 units.")
     }
 
-    func testPreservesMonthYearReferencesWhileFormattingFourDigitQuantities() {
+    func testPreservesMonthYearReferencesWhileFormattingFourDigitQuantities() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -504,7 +504,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "November 2025 had 5,000 signups.")
     }
 
-    func testPreservesFourDigitAddressNumbersWithoutGroupingSeparators() {
+    func testPreservesFourDigitAddressNumbersWithoutGroupingSeparators() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -519,7 +519,7 @@ extension TranscriptionPostProcessorTests {
         )
     }
 
-    func testPreservesAddressNumbersWhileFormattingNearbyQuantities() {
+    func testPreservesAddressNumbersWhileFormattingNearbyQuantities() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -531,7 +531,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "Send 5,600 flyers to 1034 West General Street by 3:30.")
     }
 
-    func testNormalizesStandaloneSpokenThousandsQuantity() {
+    func testNormalizesStandaloneSpokenThousandsQuantity() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -543,7 +543,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "5,791")
     }
 
-    func testNormalizesSpokenThousandsAndHundredsWithoutTriggeringListFormatting() {
+    func testNormalizesSpokenThousandsAndHundredsWithoutTriggeringListFormatting() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -555,7 +555,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "3,071")
     }
 
-    func testNormalizesSpokenThousandsWithConjunctionAndTeenTailWithoutLeavingResidualWords() {
+    func testNormalizesSpokenThousandsWithConjunctionAndTeenTailWithoutLeavingResidualWords() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -567,7 +567,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "3,071")
     }
 
-    func testNormalizesSpokenThousandsWithConjunctionAndUnitTailWithoutLeavingResidualWords() {
+    func testNormalizesSpokenThousandsWithConjunctionAndUnitTailWithoutLeavingResidualWords() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -579,7 +579,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "3,072")
     }
 
-    func testNormalizesLowercasedSpokenThousandsWithoutLeavingResidualWords() {
+    func testNormalizesLowercasedSpokenThousandsWithoutLeavingResidualWords() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -591,7 +591,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "3,071")
     }
 
-    func testNormalizesSpokenThousandsWithFiftyOneTailWithoutLeavingResidualWords() {
+    func testNormalizesSpokenThousandsWithFiftyOneTailWithoutLeavingResidualWords() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -603,7 +603,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "5,051")
     }
 
-    func testNormalizesSpokenHundredsOverOneThousand() {
+    func testNormalizesSpokenHundredsOverOneThousand() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -615,7 +615,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "3,500")
     }
 
-    func testNormalizesSpokenThousandsWithArticleLedHundreds() {
+    func testNormalizesSpokenThousandsWithArticleLedHundreds() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -627,7 +627,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "Yeah, that was like 105,000 dollars.")
     }
 
-    func testNormalizesCompleteSpokenThousandsWithoutTruncatingTheRemainder() {
+    func testNormalizesCompleteSpokenThousandsWithoutTruncatingTheRemainder() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -639,7 +639,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "That's like 788,952 dollars, man.")
     }
 
-    func testNormalizesSpokenThousandWithAndRemainder() {
+    func testNormalizesSpokenThousandWithAndRemainder() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -651,7 +651,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "1,005")
     }
 
-    func testNormalizesSpokenThousandsInsideSentenceWithoutTouchingDates() {
+    func testNormalizesSpokenThousandsInsideSentenceWithoutTouchingDates() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
