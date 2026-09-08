@@ -51,8 +51,8 @@ asynchronously. Test assertions and fixtures remain shared with Apple.
 
 - Whisper: **27 tests passed on Android**; the Apple suite has 28 because its
   platform-specific context initialization coverage differs.
-- Core: **565 tests executed on both platforms**. Apple passed all 565. Android
-  passed 484 and failed 81, with 127 failed assertions and zero unexpected failures.
+- Core: **567 tests executed on both platforms**. Apple passed all 567. Android
+  passed 491 and failed 76, with 122 failed assertions and zero unexpected failures.
 - All Core assertions remain enabled. The Android run uses the default portable
   analyzer, not the optional host-selected grammatical model.
 
@@ -68,8 +68,7 @@ asynchronously. Test assertions and fixtures remain shared with Apple.
 | TranscriptionPostProcessorTests+CapitalizationAndTime | 7 |
 | TranscriptionPostProcessorTests+LanguageHeuristics | 5 |
 | TranscriptionPostProcessorTests+NumericGrouping | 42 |
-| TranscriptionPostProcessorTests+MathNormalization | 4 |
-| TranscriptionPostProcessorTests+DateNormalization | 2 |
+| TranscriptionPostProcessorTests+DateNormalization | 1 |
 | WhisperSegmentTextAssemblerTests | 3 |
 
 These are assertion counts, not distinct root causes. Several pipeline failures
@@ -77,6 +76,11 @@ reflect the same downstream list behavior. Missing semantic detection and roles
 are known gaps; each remaining difference still needs its own causal check before
 changing engine behavior. Passing these package tests would not establish full
 Android app or background-dictation parity.
+
+The initial executable baseline had 127 failed assertions across 81 cases.
+Requiring complete consumption of spelled-out number candidates closed four math
+cases and one spoken-date case without changing their expectations. Two additional
+parser tests cover generated number phrases and rejection of unparsed suffixes.
 
 ## Test runtime licensing
 

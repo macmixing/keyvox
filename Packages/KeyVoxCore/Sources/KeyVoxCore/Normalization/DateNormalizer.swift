@@ -5,7 +5,7 @@ public struct DateNormalizer {
     private let monthIndexByToken: [String: Int]
     private let monthPattern: String
     private let outputFormatter: DateFormatter
-    private let spellOutFormatter: NumberFormatter
+    private let spellOutParser: SpelledOutNumberParser
 
     public init(locale: Locale = Locale(identifier: "en_US_POSIX")) {
         var calendar = Calendar(identifier: .gregorian)
@@ -42,10 +42,7 @@ public struct DateNormalizer {
         outputFormatter.dateFormat = "MMMM d, yyyy"
         self.outputFormatter = outputFormatter
 
-        let spellOutFormatter = NumberFormatter()
-        spellOutFormatter.locale = locale
-        spellOutFormatter.numberStyle = .spellOut
-        self.spellOutFormatter = spellOutFormatter
+        self.spellOutParser = SpelledOutNumberParser(locale: locale)
     }
 
     public func normalize(in text: String) -> String {
@@ -126,7 +123,7 @@ public struct DateNormalizer {
         guard !normalized.isEmpty else { return nil }
 
         for candidate in spokenNumberCandidates(for: normalized) {
-            if let number = spellOutFormatter.number(from: candidate)?.intValue {
+            if let number = spellOutParser.number(from: candidate)?.intValue {
                 return number
             }
         }
