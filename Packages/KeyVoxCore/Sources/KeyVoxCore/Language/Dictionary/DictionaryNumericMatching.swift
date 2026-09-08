@@ -5,6 +5,7 @@ enum DictionaryNumericMatching {
         let normalized: String
         let tokens: [String]
         let numericSourceTokens: [String?]
+        let cardinalAliasEligibleTokens: [Bool]
     }
 
     private static let numericTokenRegex = try! NSRegularExpression(
@@ -57,7 +58,12 @@ enum DictionaryNumericMatching {
     static func phraseVariants(for normalizedTokens: [String]) -> [PhraseVariant] {
         guard !normalizedTokens.isEmpty else { return [] }
 
-        var variants = [PhraseVariant(normalized: "", tokens: [], numericSourceTokens: [])]
+        var variants = [PhraseVariant(
+            normalized: "",
+            tokens: [],
+            numericSourceTokens: [],
+            cardinalAliasEligibleTokens: []
+        )]
         for token in normalizedTokens {
             let tokenVariants = phraseTokenVariants(for: token)
             variants = variants.flatMap { prefix in
@@ -66,7 +72,9 @@ enum DictionaryNumericMatching {
                     return PhraseVariant(
                         normalized: combinedTokens.joined(separator: " "),
                         tokens: combinedTokens,
-                        numericSourceTokens: prefix.numericSourceTokens + tokenVariant.numericSourceTokens
+                        numericSourceTokens: prefix.numericSourceTokens + tokenVariant.numericSourceTokens,
+                        cardinalAliasEligibleTokens: prefix.cardinalAliasEligibleTokens
+                            + tokenVariant.cardinalAliasEligibleTokens
                     )
                 }
             }
@@ -82,7 +90,8 @@ enum DictionaryNumericMatching {
             return PhraseVariant(
                 normalized: tokenVariant,
                 tokens: tokens,
-                numericSourceTokens: tokens.map { _ in numericSourceToken }
+                numericSourceTokens: tokens.map { _ in numericSourceToken },
+                cardinalAliasEligibleTokens: tokens.map { _ in true }
             )
         }
 
@@ -111,10 +120,12 @@ enum DictionaryNumericMatching {
 
         var tokens: [String] = []
         var numericSourceTokens: [String?] = []
+        var cardinalAliasEligibleTokens: [Bool] = []
         for run in runs {
             guard run.first?.isNumber == true else {
                 tokens.append(run)
                 numericSourceTokens.append(nil)
+                cardinalAliasEligibleTokens.append(false)
                 continue
             }
 
@@ -125,12 +136,14 @@ enum DictionaryNumericMatching {
             let spellingTokens = spelling.split(separator: " ").map(String.init)
             tokens.append(contentsOf: spellingTokens)
             numericSourceTokens.append(contentsOf: spellingTokens.map { _ in source })
+            cardinalAliasEligibleTokens.append(contentsOf: spellingTokens.map { _ in false })
         }
 
         return PhraseVariant(
             normalized: tokens.joined(separator: " "),
             tokens: tokens,
-            numericSourceTokens: numericSourceTokens
+            numericSourceTokens: numericSourceTokens,
+            cardinalAliasEligibleTokens: cardinalAliasEligibleTokens
         )
     }
 
@@ -142,13 +155,15 @@ enum DictionaryNumericMatching {
             spanIndex: Int,
             tokenIndex: Int,
             tokens: [String],
-            numericSourceTokens: [String?]
+            numericSourceTokens: [String?],
+            cardinalAliasEligibleTokens: [Bool]
         ) -> [PhraseVariant] {
             guard tokenIndex < variant.tokens.count else {
                 return [PhraseVariant(
                     normalized: tokens.joined(separator: " "),
                     tokens: tokens,
-                    numericSourceTokens: numericSourceTokens
+                    numericSourceTokens: numericSourceTokens,
+                    cardinalAliasEligibleTokens: cardinalAliasEligibleTokens
                 )]
             }
 
@@ -157,29 +172,40 @@ enum DictionaryNumericMatching {
                     spanIndex: spanIndex,
                     tokenIndex: tokenIndex + 1,
                     tokens: tokens + [variant.tokens[tokenIndex]],
-                    numericSourceTokens: numericSourceTokens + [variant.numericSourceTokens[tokenIndex]]
+                    numericSourceTokens: numericSourceTokens + [variant.numericSourceTokens[tokenIndex]],
+                    cardinalAliasEligibleTokens: cardinalAliasEligibleTokens
+                        + [variant.cardinalAliasEligibleTokens[tokenIndex]]
                 )
             }
 
             let span = spans[spanIndex]
             let originalTokens = Array(variant.tokens[span.start..<span.end])
             let originalSources = Array(variant.numericSourceTokens[span.start..<span.end])
+            let originalAliasEligibility = Array(variant.cardinalAliasEligibleTokens[span.start..<span.end])
             let kept = build(
                 spanIndex: spanIndex + 1,
                 tokenIndex: span.end,
                 tokens: tokens + originalTokens,
-                numericSourceTokens: numericSourceTokens + originalSources
+                numericSourceTokens: numericSourceTokens + originalSources,
+                cardinalAliasEligibleTokens: cardinalAliasEligibleTokens + originalAliasEligibility
             )
             let collapsed = build(
                 spanIndex: spanIndex + 1,
                 tokenIndex: span.end,
                 tokens: tokens + [span.source],
-                numericSourceTokens: numericSourceTokens + [span.source]
+                numericSourceTokens: numericSourceTokens + [span.source],
+                cardinalAliasEligibleTokens: cardinalAliasEligibleTokens + [false]
             )
             return kept + collapsed
         }
 
-        return build(spanIndex: 0, tokenIndex: 0, tokens: [], numericSourceTokens: [])
+        return build(
+            spanIndex: 0,
+            tokenIndex: 0,
+            tokens: [],
+            numericSourceTokens: [],
+            cardinalAliasEligibleTokens: []
+        )
     }
 
     private static func cardinalSpans(
@@ -189,7 +215,8 @@ enum DictionaryNumericMatching {
         var index = 0
 
         while index < variant.tokens.count {
-            guard variant.numericSourceTokens[index] == nil else {
+            guard variant.numericSourceTokens[index] == nil,
+                  variant.cardinalAliasEligibleTokens[index] else {
                 index += 1
                 continue
             }
@@ -197,6 +224,10 @@ enum DictionaryNumericMatching {
             var phrase = ""
             var best: (start: Int, end: Int, source: String)?
             for end in index..<variant.tokens.count {
+                guard variant.numericSourceTokens[end] == nil,
+                      variant.cardinalAliasEligibleTokens[end] else {
+                    break
+                }
                 phrase = phrase.isEmpty
                     ? variant.tokens[end]
                     : "\(phrase) \(variant.tokens[end])"

@@ -25,4 +25,11 @@ final class DictionaryNumericMatchingTests: XCTestCase {
                 && variant.numericSourceTokens == ["3", nil, "2"]
         })
     }
+
+    func testEmbeddedLetterRunsAreNotReinterpretedAsCardinals() {
+        let variants = DictionaryNumericMatching.phraseVariants(for: ["one", "3one2"])
+
+        XCTAssertTrue(variants.contains { $0.normalized == "1 three one two" })
+        XCTAssertFalse(variants.contains { $0.normalized.contains("three 1 two") })
+    }
 }
