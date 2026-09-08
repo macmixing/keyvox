@@ -71,6 +71,8 @@ if [[ "$backend" == vulkan ]]; then
     ndk_host=${ndk_hosts[0]##*/}
     patch --batch --forward -p1 -d "$work/whisper.cpp-1.7.6" \
         < "$script_dir/Patches/whisper-vulkan-query-reset.patch"
+    patch --batch --forward -p1 -d "$work/whisper.cpp-1.7.6" \
+        < "$script_dir/Patches/whisper-vulkan-adreno-matmul.patch"
     options+=(
         -DGGML_VULKAN=ON
         "-DVulkan_INCLUDE_DIR=$headers/include"
@@ -96,5 +98,7 @@ if [[ "$backend" == vulkan ]]; then
         "$prefix/share/licenses/keyvox-speech/Vulkan-Headers-Apache-2.0.txt"
     install -m 644 "$script_dir/Licenses/Vulkan-Headers-NOTICES.txt" \
         "$prefix/share/licenses/keyvox-speech/Vulkan-Headers-NOTICES.txt"
+    install -m 644 "$script_dir/Licenses/Whisper-Vulkan-Backport-NOTICES.txt" \
+        "$prefix/share/licenses/keyvox-speech/Whisper-Vulkan-Backport-NOTICES.txt"
 fi
 echo "Installed Whisper v1.7.6 $backend runtime (CPU retained) in $prefix"

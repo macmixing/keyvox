@@ -46,7 +46,7 @@ Whisper 1.7.6, Release native code, same audio and Base model, three runs per ca
 | CPU, 4 threads | 2.498–2.542 s |
 | CPU, 6 threads | 2.057–2.085 s |
 | CPU, 8 threads | 2.188–2.212 s |
-| Vulkan, default FP16 | UNRESOLVED: device-lost exception during inference |
+| Vulkan, original default FP16 | Device-lost exception; addressed by the backport below |
 | Vulkan, `GGML_VK_DISABLE_F16=1` | 2.414 s first; 1.994–1.997 s repeated |
 | Vulkan, only matrix accumulation forced to FP32 | 9.089 s first; 8.068–8.096 s repeated |
 
@@ -64,7 +64,7 @@ slows execution; the table excludes those diagnostic timings.
 
 - CPU remains FUNCTIONAL in the installed app. No GPU-only requirement is added.
 - GPU is FUNCTIONAL in the native probe and real Swift service/VAD/Core diagnostic
-  pipeline in FP32 mode on this device. Selection based on measured performance,
+  pipeline in FP32 and patched FP16 modes on this device. Selection based on measured performance,
   driver-error recovery, other devices, and installed GPU app integration remain
   UNRESOLVED. A device-lost crash is not a working CPU fallback.
 - The initial probe needed API 35 because upstream directly references
@@ -132,6 +132,61 @@ chunking, and speech inference. Preparation is reported separately, not removed
 from the total cost. These are diagnostic-host measurements, not keyboard latency.
 Whisper package assertions passed on Apple (29) and Android (28), including
 platform-specific initialization and explicit GPU-disabled coverage.
+
+## FP16 failure investigation and upstream backport
+
+Measured September 8, 2026 (America/Phoenix), on the same device, model, audio,
+and automatic language setting. Default FP16 failed even with one operation per
+submission. Synchronized diagnostics observed failures in both large FP16/FP16
+and FP16/FP32 matrix kernels; the first failing operation varied across runs.
+Changing only FP16/FP16 accumulation to FP32 did not prevent the other variant
+from failing. Forcing medium or small tiles completed all three diagnostic runs
+per variant. These overrides remain outside the repository runtime.
+
+Upstream [llama.cpp PR #24877](https://github.com/ggml-org/llama.cpp/pull/24877)
+reports the same device-lost symptom on Adreno 840 and contains an approved,
+merged workaround routing large matrix operations to medium tiles. Its exact
+commit `76f2798059575a96a12e4d34342165a4b6a6a312` is backported by the optional
+Vulkan builder; the only adaptation adds the existing upstream Qualcomm vendor
+identifier. Small tiles and later shared-memory capability checks are retained.
+The driver/compiler root cause is not established; insufficient shared memory is
+not a proven explanation.
+
+The pinned upstream license is MIT, Copyright (c) 2023–2026 The ggml authors.
+The complete notice and provenance are retained in
+`Tools/Licenses/Whisper-Vulkan-Backport-NOTICES.txt` and the installed native
+prefix. Android's existing notice staging copies this source notice directory.
+The upstream commit changes only matrix routing; no additional dependencies,
+models, shader assets, or generated data are adopted. Independent license review
+verified the actual pinned license and one-file patch.
+
+Clean packaged runtime, with no diagnostic overrides:
+
+| Backend | First call | Warm calls |
+| --- | --- | --- |
+| Patched FP16, 10 runs | 2.410 s | 1.977–1.992 s |
+| CPU, 3 runs | 2.346 s | 2.402–2.508 s |
+| No-visible-GPU fallback, 3 runs | 2.572 s | 2.521–2.557 s |
+| FP32 control, 3 runs | 2.437 s | 2.004–2.007 s |
+
+All 19 native outputs matched. The real Swift service/VAD/Core pipeline also
+completed three FP16 runs with identical processed output: provider 2.505 s first,
+2.019–2.021 s warm; Core 12–24 ms. Model/VAD warmup was 360 ms and text preparation
+2.751 s, reported separately. API 28 linking and clean source build passed.
+
+This fixes the observed FP16 crash in these trials, but provides no material
+additional speedup over FP32. It does not prove general driver reliability,
+other-device behavior, sustained thermal performance, or installed keyboard GPU
+latency. The installed app continues using CPU while GPU selection and recovery
+remain under investigation.
+
+Related upstream reports were checked: [#8743](https://github.com/ggml-org/llama.cpp/issues/8743)
+and [#12139](https://github.com/ggml-org/llama.cpp/issues/12139) describe older Adreno
+device-lost failures but closed as stale without a fix. The distinct
+[subgroup-size-128 issue](https://github.com/ggml-org/llama.cpp/issues/25734) does
+not match this device's reported subgroup size of 64. The
+[Whisper Adreno 830 report](https://github.com/ggml-org/whisper.cpp/issues/3551)
+describes a pipeline-binding crash rather than our measured execution failure.
 
 ## Repeat the installed measurement
 

@@ -19,7 +19,9 @@ contain private transcript text; keep raw logs outside the repository.
 
 To exercise the optional Vulkan build, use its separate Whisper prefix and add
 `-Xlinker -lggml-vulkan -Xlinker -lvulkan` to the build below. The tested GPU
-requires `GGML_VK_DISABLE_F16=1`; `GGML_VK_VISIBLE_DEVICES=''` exercises CPU fallback.
+runs FP16 with the builder's Adreno matrix-routing backport;
+`GGML_VK_DISABLE_F16=1` provides the FP32 control and
+`GGML_VK_VISIBLE_DEVICES=''` exercises CPU fallback.
 Confirm actual backend activation in native logs. See the
 [performance record](../../Docs/Android/PERFORMANCE.md) for evidence and limitations.
 
@@ -206,7 +208,8 @@ returned empty output. These checks use shared service parameters, not new
 Android decoding settings. Bare `transcribe`/`pipeline` commands are lower-level
 probes and do not establish iOS service-configuration parity.
 
-Android uses the same GGML weights on CPU. iOS additionally installs its cataloged
+Android uses the same GGML weights on CPU or the optional Vulkan backend.
+iOS additionally installs its cataloged
 Core ML Base encoder; accelerator execution is platform-specific. Supported
 language selection remains owned by `WhisperBaseLanguageCatalog` and
 `WhisperService.updateLanguage`. The harness's final language argument only selects
@@ -270,4 +273,5 @@ The existing `VoiceActivityAnalyzing` semantic boundary remains intact. The
 Whisper C packaging boundary can also accept Linux/Windows native libraries;
 the script's `native` mode uses the host CMake toolchain. Those destinations are
 not yet validated, and Windows tooling/linking still needs its own verification.
-Non-Apple builds use CPU inference; GPU integration remains future work.
+CPU remains the default non-Apple build. The optional Vulkan build executes on
+Android; Windows/Linux acceleration and Android app GPU integration remain unverified.

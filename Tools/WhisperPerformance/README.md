@@ -54,9 +54,10 @@ linkage against Android API 28 without removing optional timestamp diagnostics.
 Apple XCFramework packaging is unaffected.
 
 Compile the probe as above against this prefix, adding `libggml-vulkan.a` inside
-the linker group and `-lvulkan` after it. GPU request 0 still selects CPU. For the
-tested device, use `GGML_VK_DISABLE_F16=1` when requesting GPU; its default FP16
-path failed. Setting `GGML_VK_VISIBLE_DEVICES=''` exercises absent-GPU CPU fallback
+the linker group and `-lvulkan` after it. GPU request 0 still selects CPU.
+The builder includes the MIT-licensed upstream Adreno matrix-routing backport;
+FP16 passes on the tested device. Use `GGML_VK_DISABLE_F16=1` for an FP32 control.
+Setting `GGML_VK_VISIBLE_DEVICES=''` exercises absent-GPU CPU fallback
 even with request 1. This does not simulate a mid-inference driver failure.
 
 The Android app's standard engine staging remains CPU-only. This optional build
