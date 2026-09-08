@@ -49,6 +49,7 @@ link detailed commands and limitations rather than duplicating them here.
 | Names and lemmas outside Apple | UNRESOLVED | Current portable analyzer explicitly reports them unavailable |
 | Semantic date/address protection | STUBBED | Conservative fallback preserves prose; not equivalent to Apple's detection |
 | Foreground model download transport | FUNCTIONAL | Swift downloaded exact Base directly on the phone; external checksum verified before real inference/Core execution |
+| Whisper model failure and reload | FUNCTIONAL | Absent selection and invalid-file paths exercised; explicit unload followed by exact Base load and a second reload produced speech on device; file availability is not integrity verification |
 | Model installation and management on Android | UNRESOLVED | Foreground transfer is demonstrated; complete verified installation, resumability, recovery, and app-owned management are not |
 | Background dictation | UNRESOLVED | Required for parity; intentionally deferred to Android host integration |
 | Windows/Linux execution | UNRESOLVED | Capability boundaries exist; actual builds and runtime checks remain necessary |

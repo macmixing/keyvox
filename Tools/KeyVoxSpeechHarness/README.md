@@ -48,6 +48,7 @@ apps do not acquire this dependency. Its GGML symbols remain private to that lib
 
 ```sh
 ./KeyVoxSpeechHarness whisper-model
+./KeyVoxSpeechHarness probe-model-recovery ggml-base.bin invalid-model.bin speech.wav
 ./KeyVoxSpeechHarness probe-base-download /path/to/download-check
 ./KeyVoxSpeechHarness vad audio.f32le
 ./KeyVoxSpeechHarness transcribe ggml-base.bin audio.f32le
@@ -69,6 +70,22 @@ against that checksum before passing it to inference. It refuses an already
 existing destination file; use a dedicated directory without concurrent writers.
 This is transport evidence, not model installation, resume/recovery, background
 transfer, or onboarding implementation.
+
+`probe-model-recovery` exercises the existing shared service using caller-supplied
+speech audio, a verified Base model, and a separate invalid diagnostic model file
+(the measured fixture contains four zero bytes). It does not write or delete any
+of these files. It tries an absent model selection, the invalid file, then Base,
+then unloads and reloads Base again. Each stage reports file availability, result
+presence, nonempty speech, and processing state. A failed expectation exits
+nonzero. Supply known speech, not silence, for the recovery checks.
+
+The device run rejected the invalid model and produced speech after both recovery
+and reload. An absent selection currently produces an empty result; the invalid
+file produces a failure result. `WhisperService.isModelReady` checks file existence,
+so it is reported as `fileAvailable` here and is true even for the invalid file.
+This is service lifecycle evidence, not verified installation or checksum checking.
+Preserve the existing iOS install owner's integrity checks when connecting Android
+model management. No inference settings or automatic language selection change.
 
 On Android, the harness links the official SDK's existing SSL/crypto archives and
 OS-provided zlib for FoundationNetworking. Preserve the full notices in
