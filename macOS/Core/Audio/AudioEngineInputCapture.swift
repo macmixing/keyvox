@@ -46,7 +46,6 @@ final class AudioEngineInputCapture {
     private var engine: AVAudioEngine?
     private var inputNode: AVAudioInputNode?
     private let callbackGate = AudioInputCallbackGate()
-    private(set) var deviceUID: String?
 
     func start(
         deviceUID: String,
@@ -74,11 +73,6 @@ final class AudioEngineInputCapture {
         deliveryQueue: DispatchQueue,
         bufferHandler: @escaping (AVAudioPCMBuffer) -> Void
     ) throws {
-        if let engine, self.deviceUID == deviceUID {
-            engine.prepare()
-            return
-        }
-
         guard var deviceID = Self.audioDeviceID(forUID: deviceUID) else {
             throw CaptureError.deviceNotFound
         }
@@ -89,7 +83,6 @@ final class AudioEngineInputCapture {
             retainedEngine.stop()
             retainedInputNode.removeTap(onBus: 0)
             retainedEngine.reset()
-            self.deviceUID = nil
             engine = retainedEngine
             inputNode = retainedInputNode
         } else {
@@ -142,7 +135,6 @@ final class AudioEngineInputCapture {
 
         self.engine = engine
         self.inputNode = inputNode
-        self.deviceUID = deviceUID
         engine.prepare()
     }
 
