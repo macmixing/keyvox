@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">KeyVox</string>
+    <string name="enable_keyboard">Enable keyboard</string>
+    <string name="select_keyboard">Select keyboard</string>
+    <string name="open_app">Open KeyVox</string>
+    <string name="next_keyboard">Switch keyboard</string>
+    <string name="delete_key">Delete</string>
+    <string name="space_key">Space</string>
+    <string name="enter_key">Enter</string>
+</resources>
