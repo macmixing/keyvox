@@ -14,6 +14,7 @@ parser.add_argument('--sdk-libraries', required=True, type=pathlib.Path)
 parser.add_argument('--ndk', required=True, type=pathlib.Path)
 parser.add_argument('--whisper-prefix', required=True, type=pathlib.Path)
 parser.add_argument('--scratch', required=True, type=pathlib.Path)
+parser.add_argument('--configuration', choices=['debug', 'release'], default='debug')
 args = parser.parse_args()
 root = pathlib.Path(__file__).resolve().parent
 version = subprocess.check_output([str(args.swift), '--version'], text=True)
@@ -21,6 +22,7 @@ if 'Swift version 6.3.3' not in version:
     raise SystemExit('The Android main-loop adapter requires Swift 6.3.3')
 command = [str(args.swift), 'build', '--package-path', str(root / 'EngineBridge'),
     '--swift-sdk', 'aarch64-unknown-linux-android28', '--scratch-path', str(args.scratch),
+    '--configuration', args.configuration,
     '-Xcc', '-I' + str(args.whisper_prefix / 'include'),
     '-Xlinker', '-L' + str(args.whisper_prefix / 'lib'), '-Xlinker', '-lc++_shared']
 subprocess.run(command, check=True)
