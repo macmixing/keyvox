@@ -49,6 +49,9 @@ asynchronously. Test assertions and fixtures remain shared with Apple.
 
 ## Measured checkpoint
 
+- KeyVoxModels: **2 tests passed on both Apple and Android**, covering locally
+  generated empty, short, and multi-chunk file digests, progress, input preservation,
+  and missing-file/directory errors.
 - Whisper: **27 tests passed on Android**; the Apple suite has 28 because its
   platform-specific context initialization coverage differs.
 - Core: **567 tests executed on both platforms**. Apple passed all 567. Android
