@@ -63,9 +63,10 @@ slows execution; the table excludes those diagnostic timings.
 ## Acceleration status and provenance
 
 - CPU remains FUNCTIONAL in the installed app. No GPU-only requirement is added.
-- GPU is FUNCTIONAL only in the isolated FP32-mode probe on this device. Automatic
-  selection, reliable error recovery, other devices, and installed-app integration
-  remain UNRESOLVED. A device-lost crash is not a working CPU fallback.
+- GPU is FUNCTIONAL in the native probe and real Swift service/VAD/Core diagnostic
+  pipeline in FP32 mode on this device. Selection based on measured performance,
+  driver-error recovery, other devices, and installed GPU app integration remain
+  UNRESOLVED. A device-lost crash is not a working CPU fallback.
 - The initial probe needed API 35 because upstream directly references
   `vkResetQueryPool`. The optional builder now applies a small patch using
   `vkCmdResetQueryPool` before timestamp writes. API 28 linkage, GPU execution,
@@ -98,6 +99,39 @@ The query-reset change follows the Vulkan 1.0
 [command-buffer reset contract](https://docs.vulkan.org/refpages/latest/refpages/source/vkCmdResetQueryPool.html).
 It resets the timestamp queries before subsequent writes in submission order;
 it does not change inference precision, weights, or device selection.
+
+## Shared Swift service checkpoint
+
+The wrapper previously disabled GPU for every non-Apple platform, including a
+Vulkan-linked runtime. `WhisperComputePolicy.automatic` now allows the native
+runtime to select available acceleration outside Apple and retries context
+initialization once with GPU disabled if GPU initialization returns failure.
+`.gpuDisabled` explicitly selects the CPU backend. It does not disable independent
+Apple model accelerators such as Core ML. Existing iOS Metal restrictions and
+macOS Ventura initialization behavior remain intact.
+
+With `GGML_VK_DISABLE_F16=1`, native logs confirm Base weights in Vulkan buffers
+and selection of the Vulkan backend through the real `WhisperService`. Silero VAD
+remains on CPU. Hiding GPU devices exercises the same executable through CPU.
+Both complete `file-pipeline` reports matched, including processed output and
+language metadata. These fresh-process runs took about 5.6 seconds including
+startup; they are not evidence of lower cold latency.
+
+The repeated `benchmark-file-pipeline` probe separates preparation and processing:
+
+| Stage | GPU | CPU fallback |
+| --- | --- | --- |
+| Model/VAD warmup | 340 ms | 102 ms |
+| Text processor/dictionary preparation | 2,833 ms | 2,779 ms |
+| First provider call | 2,511 ms | 2,475 ms |
+| Subsequent provider calls | 2,024–2,027 ms | 2,539–2,547 ms |
+| Core processing per result | 11–22 ms | 5–7 ms |
+
+All six outputs matched exactly. Provider timing includes file decoding, VAD,
+chunking, and speech inference. Preparation is reported separately, not removed
+from the total cost. These are diagnostic-host measurements, not keyboard latency.
+Whisper package assertions passed on Apple (29) and Android (28), including
+platform-specific initialization and explicit GPU-disabled coverage.
 
 ## Repeat the installed measurement
 

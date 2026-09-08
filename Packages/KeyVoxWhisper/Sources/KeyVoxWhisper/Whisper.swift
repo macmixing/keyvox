@@ -90,12 +90,14 @@ public final class Whisper {
         set { paramsLock.withLock { storedParams = newValue } }
     }
 
-    public init(fromFileURL fileURL: URL, withParams params: WhisperParams = .default) {
+    public init(fromFileURL fileURL: URL, withParams params: WhisperParams = .default,
+                computePolicy: WhisperComputePolicy = .automatic) {
         self.runtime = .live
         self.inferenceQueue = Self.makeInferenceQueue()
         self.storedParams = params
         self.whisperContext = Self.makeContext(
             fileURL: fileURL,
+            computePolicy: computePolicy,
             runtime: runtime,
             osVersionProvider: { ProcessInfo.processInfo.operatingSystemVersion }
         )
@@ -104,6 +106,7 @@ public final class Whisper {
     init(
         fromFileURL fileURL: URL,
         withParams params: WhisperParams = .default,
+        computePolicy: WhisperComputePolicy = .automatic,
         runtime: WhisperRuntime,
         osVersionProvider: @escaping () -> OperatingSystemVersion,
         inferenceQueue: DispatchQueue
@@ -113,6 +116,7 @@ public final class Whisper {
         self.storedParams = params
         self.whisperContext = Self.makeContext(
             fileURL: fileURL,
+            computePolicy: computePolicy,
             runtime: runtime,
             osVersionProvider: osVersionProvider
         )
@@ -243,11 +247,13 @@ public final class Whisper {
 
     private static func makeContext(
         fileURL: URL,
+        computePolicy: WhisperComputePolicy,
         runtime: WhisperRuntime,
         osVersionProvider: () -> OperatingSystemVersion
     ) -> OpaquePointer? {
         let osVersion = osVersionProvider()
         let isVentura = osVersion.majorVersion == venturaMajorVersion
+        var contextParams = runtime.contextDefaultParams()
         #if os(iOS)
         let shouldDisableGPU = true
         let shouldRetryWithCPUFallback = false
@@ -255,12 +261,11 @@ public final class Whisper {
         let shouldDisableGPU = isVentura
         let shouldRetryWithCPUFallback = isVentura
         #else
-        let shouldDisableGPU = true
-        let shouldRetryWithCPUFallback = false
+        let shouldDisableGPU = false
+        let shouldRetryWithCPUFallback = contextParams.use_gpu
         #endif
 
-        var contextParams = runtime.contextDefaultParams()
-        if shouldDisableGPU {
+        if shouldDisableGPU || computePolicy == .gpuDisabled {
             // iOS background transcription cannot submit Metal work reliably, and Ventura has
             // a known upstream crash path during Metal init, so both paths force CPU for now.
             contextParams.use_gpu = false
@@ -271,11 +276,12 @@ public final class Whisper {
             runtime.initFromFileWithParams(path, contextParams)
         }
 
-        if context != nil || shouldRetryWithCPUFallback == false {
+        if context != nil || shouldRetryWithCPUFallback == false || computePolicy == .gpuDisabled {
             return context
         }
 
-        // Retry once on Ventura with explicit CPU settings.
+        // Retry context initialization with explicit CPU settings. This cannot recover
+        // from a driver crash or an error after inference has started.
         var fallbackParams = runtime.contextDefaultParams()
         fallbackParams.use_gpu = false
         fallbackParams.flash_attn = false

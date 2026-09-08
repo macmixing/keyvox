@@ -11,6 +11,18 @@ ffmpeg -i input.wav -ar 16000 -ac 1 -f f32le audio.f32le
 
 ## Android build
 
+For repeated service/Core timing, use
+`benchmark-file-pipeline <model.bin> <audio-file> <repeats>` with 1–10 repetitions.
+It reports model/VAD warmup, text/dictionary preparation, provider execution, and
+Core processing separately, and rejects inconsistent repeated output. Reports
+contain private transcript text; keep raw logs outside the repository.
+
+To exercise the optional Vulkan build, use its separate Whisper prefix and add
+`-Xlinker -lggml-vulkan -Xlinker -lvulkan` to the build below. The tested GPU
+requires `GGML_VK_DISABLE_F16=1`; `GGML_VK_VISIBLE_DEVICES=''` exercises CPU fallback.
+Confirm actual backend activation in native logs. See the
+[performance record](../../Docs/Android/PERFORMANCE.md) for evidence and limitations.
+
 From the repository root, set `ANDROID_NDK_ROOT` to the installed NDK, then:
 
 ```sh

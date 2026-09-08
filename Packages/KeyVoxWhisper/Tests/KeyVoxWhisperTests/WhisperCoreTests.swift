@@ -215,7 +215,7 @@ final class WhisperCoreTests: XCTestCase {
 
         XCTAssertEqual(recorder.contextParamsHistory.count, 1)
     }
-    #else
+    #elseif os(iOS)
     func testCPUBackendDoesNotApplyMacOSVersionWorkaround() {
         for version in [13, 14] {
             let recorder = WhisperRuntimeRecorder(contextsToReturn: [nil, Self.dummyContext], segments: [])
@@ -227,11 +227,35 @@ final class WhisperCoreTests: XCTestCase {
     }
     #endif
 
+    #if os(macOS) || os(iOS)
     func testNonVenturaDoesNotRetryContextCreationWhenFirstAttemptFails() {
         let recorder = WhisperRuntimeRecorder(contextsToReturn: [nil, Self.dummyContext], segments: [])
         _ = makeWhisper(recorder: recorder, osMajorVersion: 14)
 
         XCTAssertEqual(recorder.contextParamsHistory.count, 1)
+    }
+    #else
+    func testAutomaticRetriesFailedGPUInitializationOnCPU() async throws {
+        let recorder = WhisperRuntimeRecorder(contextsToReturn: [nil, Self.dummyContext], segments: [])
+        let whisper = makeWhisper(recorder: recorder, osMajorVersion: 13)
+        XCTAssertEqual(recorder.contextParamsHistory.map(\.use_gpu), [true, false])
+        XCTAssertFalse(try XCTUnwrap(recorder.contextParamsHistory.last).flash_attn)
+        _ = try await whisper.transcribe(audioFrames: [0.25])
+        XCTAssertEqual(recorder.capturedBuffers.count, 1)
+    }
+
+    func testAutomaticKeepsSuccessfulGPUContext() {
+        let recorder = WhisperRuntimeRecorder(contextsToReturn: [Self.dummyContext], segments: [])
+        _ = makeWhisper(recorder: recorder, osMajorVersion: 13)
+        XCTAssertEqual(recorder.contextParamsHistory.map(\.use_gpu), [true])
+    }
+    #endif
+
+    func testGPUDisabledUsesCPUWithoutRetry() {
+        let recorder = WhisperRuntimeRecorder(contextsToReturn: [nil, Self.dummyContext], segments: [])
+        _ = makeWhisper(recorder: recorder, osMajorVersion: 13, computePolicy: .gpuDisabled)
+        XCTAssertEqual(recorder.contextParamsHistory.count, 1)
+        XCTAssertTrue(recorder.contextParamsHistory.allSatisfy { !$0.use_gpu && !$0.flash_attn })
     }
 
     func testDeinitFreesContextWhenAvailable() {
@@ -279,11 +303,13 @@ final class WhisperCoreTests: XCTestCase {
 
     private func makeWhisper(
         recorder: WhisperRuntimeRecorder,
-        osMajorVersion: Int
+        osMajorVersion: Int,
+        computePolicy: WhisperComputePolicy = .automatic
     ) -> Whisper {
         Whisper(
             fromFileURL: URL(fileURLWithPath: "/tmp/keyvox-whisper-\(UUID().uuidString).bin"),
             withParams: .default,
+            computePolicy: computePolicy,
             runtime: recorder.makeRuntime(),
             osVersionProvider: {
                 OperatingSystemVersion(
