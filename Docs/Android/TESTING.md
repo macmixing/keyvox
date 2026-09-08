@@ -82,6 +82,54 @@ Requiring complete consumption of spelled-out number candidates closed four math
 cases and one spoken-date case without changing their expectations. Two additional
 parser tests cover generated number phrases and rejection of unparsed suffixes.
 
+## Optional analyzer comparison
+
+The same Core suite can run with an explicitly selected grammatical model. This
+is a separate diagnostic configuration; it does not change the engine default.
+The first-party runner in
+[`ModelSelectedTestRunner.swift`](../../Tools/AndroidCoreTests/ModelSelectedTestRunner.swift)
+uses SwiftPM's generated test discovery and supplies the analyzer through the
+existing task-local capability. No assertions, fixtures, or exclusions change.
+
+Add this option to the build command above, using a separate scratch directory:
+
+```sh
+--experimental-test-entry-point-path "$REPOSITORY_ROOT/Tools/AndroidCoreTests/ModelSelectedTestRunner.swift"
+```
+
+Deploy this build under a distinct executable name, such as
+`KeyVoxCoreRolesTests.xctest`, beside the same test libraries and resources. Set
+`KEYVOX_LINGUISTIC_MODEL` to the device model directory and
+`KEYVOX_LINGUISTIC_LANGUAGE` to the explicit language identifier, in addition to
+`LD_LIBRARY_PATH` and `TMPDIR`. Both model settings are required. The runner emits
+`Explicit model analyzer invoked` on its first analysis call to verify that the
+selected provider reaches the tests. The entry-point option is experimental and
+was exercised with Swift 6.3.3.
+
+With the existing optional averaged-perceptron model and explicit `en` selection,
+**567 tests executed: 520 passed and 47 failed**, with 54 failed assertions and
+zero unexpected failures. Relative to the default analyzer, 34 failing cases
+passed and five previously passing cases failed:
+
+- `DictionaryMatcherTests.testCorrectsCandidateRelativeTrailingPossessiveForm`
+- `TerminalPunctuationNormalizerTests.testConvertsTerminalExclamationCommandAfterClauseEndingInThat`
+- `TerminalPunctuationNormalizerTests.testConvertsTerminalQuestionCommandAfterDeterminerPhrase`
+- `TranscriptionPostProcessorTests.testConvertsUnpunctuatedExclamationCommandAfterDeterminerPhrase`
+- `TranscriptionPostProcessorTests.testNormalizesBareColonAssociationLabel`
+
+Device token traces show that the optional model leaves preposition/infinitive
+roles unavailable and can classify contracted pronouns as nouns. Existing
+punctuation rules consume those roles. This explains observed decision paths,
+not every remaining failure. The model also does not provide lemmas or named
+entities. Do not treat the increased passing count as Apple linguistic parity or
+make this configuration an automatic default. This comparison exercises existing
+text fixtures; it is not a multilingual speech-accuracy evaluation.
+
+The model is the already inventoried optional asset under
+`Tools/Models/averaged-perceptron-tagger-eng`; no dependency or third-party material
+is added by this runner. Its existing license and provenance requirements still
+apply when deploying the diagnostic model.
+
 ## Test runtime licensing
 
 XCTest and Swift Testing use Apache-2.0 with the Swift Runtime Library Exception.
