@@ -66,9 +66,11 @@ slows execution; the table excludes those diagnostic timings.
 - GPU is FUNCTIONAL only in the isolated FP32-mode probe on this device. Automatic
   selection, reliable error recovery, other devices, and installed-app integration
   remain UNRESOLVED. A device-lost crash is not a working CPU fallback.
-- The probe linked with API 35 because this Vulkan backend directly references
-  `vkResetQueryPool`; the API 28 stub cannot satisfy it. Resolve the optional API
-  boundary before app adoption. The application's minimum API remains 28.
+- The initial probe needed API 35 because upstream directly references
+  `vkResetQueryPool`. The optional builder now applies a small patch using
+  `vkCmdResetQueryPool` before timestamp writes. API 28 linkage, GPU execution,
+  explicit CPU, no-visible-GPU CPU fallback, and timestamp queries pass on the
+  connected Android 16 device. Execution on Android 9 remains unverified.
 - The GPU build uses the existing MIT Whisper 1.7.6 source/archive, checksum
   `166140e9a6d8a36f787a2bd77f8f44dd64874f12dd8359ff7c1f4f9acb86202e`.
 - Investigated build-only Vulkan-Headers revision
@@ -80,8 +82,9 @@ slows execution; the table excludes those diagnostic timings.
   An independent license review examined these actual header files.
 - NDK 30.0.16138531 `glslc` generated shaders from existing MIT runtime sources;
   compiler and device GPU drivers are not bundled. This compiler did not support
-  the tested cooperative-matrix shader extensions. No new GPU dependency is
-  incorporated into the application by this checkpoint.
+  the tested cooperative-matrix shader extensions. The optional native package
+  includes the header dependency with its verified complete license and notices;
+  the application continues linking the CPU package by default.
 - Qualcomm QNN requires separately licensed SDK/runtime material; a permissive
   wrapper does not establish permissive backend redistribution. NPU integration
   remains UNRESOLVED and no QNN material is adopted.
@@ -90,6 +93,11 @@ Primary references: [pinned Vulkan build](https://github.com/ggml-org/whisper.cp
 [Vulkan-Headers license files](https://github.com/KhronosGroup/Vulkan-Headers/tree/409c16be502e39fe70dd6fe2d9ad4842ef2c9a53/LICENSES),
 [QNN runtime requirements](https://onnxruntime.ai/docs/execution-providers/QNN-ExecutionProvider.html),
 [Qualcomm third-party notices](https://github.com/qualcomm/geniex-qairt-plugin/blob/main/THIRD_PARTY_NOTICES.md).
+
+The query-reset change follows the Vulkan 1.0
+[command-buffer reset contract](https://docs.vulkan.org/refpages/latest/refpages/source/vkCmdResetQueryPool.html).
+It resets the timestamp queries before subsequent writes in submission order;
+it does not change inference precision, weights, or device selection.
 
 ## Repeat the installed measurement
 
