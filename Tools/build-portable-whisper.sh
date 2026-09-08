@@ -4,12 +4,18 @@ script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 
 # Build the exact runtime version used by the Apple XCFramework. The install
 # prefix is explicit so Android headers/libraries cannot replace host libraries.
-if [[ $# -ne 2 ]]; then
-    echo "Usage: $0 <android|native> <install-prefix>" >&2
+if [[ $# -lt 2 || $# -gt 3 ]]; then
+    echo "Usage: $0 <android|native> <install-prefix> [cpu|vulkan]" >&2
     exit 2
 fi
 target=$1
 prefix=$2
+backend=${3:-cpu}
+case "$backend" in
+    cpu) ;;
+    vulkan) [[ "$target" == android ]] || { echo "Vulkan packaging currently requires the Android NDK" >&2; exit 2; } ;;
+    *) echo "Unsupported backend: $backend" >&2; exit 2 ;;
+esac
 case "$prefix" in
     /*) ;;
     *) echo "install-prefix must be absolute" >&2; exit 2 ;;
@@ -50,6 +56,28 @@ if [[ "$target" == android ]]; then
         -DANDROID_STL=c++_shared
     )
 fi
+if [[ "$backend" == vulkan ]]; then
+    headers_revision=409c16be502e39fe70dd6fe2d9ad4842ef2c9a53
+    curl --fail --location --retry 3 \
+        "https://codeload.github.com/KhronosGroup/Vulkan-Headers/tar.gz/$headers_revision" \
+        --output "$work/vulkan-headers.tar.gz"
+    echo "dc96688e8cf01f2f0a8f31a41fa76a7f8d1e27f022e31bbd3a59ff40a24da9d6  $work/vulkan-headers.tar.gz" \
+        | shasum -a 256 --check
+    tar -xzf "$work/vulkan-headers.tar.gz" -C "$work"
+    headers="$work/Vulkan-Headers-$headers_revision"
+    cmp "$headers/LICENSES/Apache-2.0.txt" "$script_dir/Licenses/Vulkan-Headers-Apache-2.0.txt"
+    ndk_hosts=("$ANDROID_NDK_ROOT"/toolchains/llvm/prebuilt/*)
+    [[ ${#ndk_hosts[@]} -eq 1 ]] || { echo "Expected one NDK host toolchain" >&2; exit 2; }
+    ndk_host=${ndk_hosts[0]##*/}
+    patch --batch --forward -p1 -d "$work/whisper.cpp-1.7.6" \
+        < "$script_dir/Patches/whisper-vulkan-query-reset.patch"
+    options+=(
+        -DGGML_VULKAN=ON
+        "-DVulkan_INCLUDE_DIR=$headers/include"
+        "-DVulkan_LIBRARY=${ndk_hosts[0]}/sysroot/usr/lib/aarch64-linux-android/28/libvulkan.so"
+        "-DVulkan_GLSLC_EXECUTABLE=$ANDROID_NDK_ROOT/shader-tools/$ndk_host/glslc"
+    )
+fi
 cmake -S "$work/whisper.cpp-1.7.6" -B "$work/build" "${options[@]}"
 cmake --build "$work/build" --parallel
 cmake --install "$work/build"
@@ -63,4 +91,10 @@ if [[ "$target" == android ]]; then
     install -m 644 "$ANDROID_NDK_ROOT/NOTICE.toolchain" \
         "$prefix/share/licenses/keyvox-speech/ANDROID-NDK-TOOLCHAIN-NOTICE"
 fi
-echo "Installed Whisper v1.7.6 CPU runtime in $prefix"
+if [[ "$backend" == vulkan ]]; then
+    install -m 644 "$script_dir/Licenses/Vulkan-Headers-Apache-2.0.txt" \
+        "$prefix/share/licenses/keyvox-speech/Vulkan-Headers-Apache-2.0.txt"
+    install -m 644 "$script_dir/Licenses/Vulkan-Headers-NOTICES.txt" \
+        "$prefix/share/licenses/keyvox-speech/Vulkan-Headers-NOTICES.txt"
+fi
+echo "Installed Whisper v1.7.6 $backend runtime (CPU retained) in $prefix"
