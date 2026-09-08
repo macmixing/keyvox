@@ -225,8 +225,9 @@ audio accuracy, and other Qualcomm generations are not established.
 
 The SDK binary closure is pinned in `Native/WhisperQNN/runtime.lock.json`.
 [Artifact and license provenance](../../Tools/Licenses/Whisper-QNN/PROVENANCE.md)
-records the remaining SDK component/source-obligation evidence gap. Local device
-success does not establish redistribution clearance.
+records the SDK distribution grant and retained Eigen license/source-access notice.
+Qualcomm identifies the exact Eigen revision and MPL-only scope in QNN_NOTICE;
+the earlier claim that a separate component mapping was missing was incorrect.
 
 ## Repeat the installed measurement
 

@@ -14,4 +14,12 @@ The externally supplied QAIRT 2.45.0.260326 SDK and headers use the Qualcomm AI 
 
 The independently written KeyVox native adapter is MIT licensed. No Qualcomm SDK headers or sample implementation are copied into its sources.
 
-**Distribution verification remains unresolved:** the SDK-wide QNN_NOTICE references Eigen and MPL/LGPL material without mapping it to individual runtime binaries. Inclusion of LGPL in this selected subset has not been established. The selected subset's exact component versions, covered files, and corresponding-source obligations still require version-specific evidence before distribution is declared cleared. The SDK object-code redistribution grant does not eliminate third-party obligations.
+## Distribution requirements verified
+
+QAIRT's own QNN_NOTICE identifies the Eigen source used to build the libraries as revision `7db0ac977acf276fb0817cfb89e490cdbae0ab56`, within `EIGEN_MPL2_ONLY`. The earlier assessment missed this specific statement and incorrectly required a separate per-binary component attestation. The generic upstream LGPL warning preceding it is not evidence that LGPL code was included.
+
+The exact source archive and its MPL-2.0 license were retrieved and verified. `Eigen-SOURCE-NOTICE.txt` gives recipients direct source access; `Eigen-MPL-2.0.txt` retains the license. The original full QNN_NOTICE and SDK license are also retained in Qualcomm-containing builds.
+
+The AI Stack license section 1(iv) permits distribution and sublicensing of object code incorporated in an application, subject to its terms; it does not permit standalone SDK redistribution. MPL sections 3.2 and 3.3 permit distribution alongside independently licensed KeyVox code while preserving the covered source's availability and recipients' rights. Commercial distribution is permitted; the Qualcomm runtime and covered Eigen material are not relicensed as MIT.
+
+This conclusion concerns the pinned runtime/model artifacts and retained notices described here. Updating a dependency or distributing modified covered source requires checking the resulting obligations again.

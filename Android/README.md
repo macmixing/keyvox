@@ -59,8 +59,8 @@ other hardware. DSP library setup belongs to the Android host; models and downlo
 ownership remain outside Core.
 
 See [provenance and distribution status](../Tools/Licenses/Whisper-QNN/PROVENANCE.md)
-before redistributing Qualcomm-containing builds. Successful local evaluation does
-not resolve the SDK's outstanding third-party component/source-obligation mapping.
+before redistributing Qualcomm-containing builds. The retained SDK notices, Eigen MPL license, and pinned source-access notice must
+accompany Qualcomm-containing distributions.
 
 ## Current capability
 
