@@ -10,10 +10,13 @@ struct SpeechHarness {
     static func main() async throws {
         let arguments = Array(CommandLine.arguments.dropFirst())
         guard (1...4).contains(arguments.count) else {
-            print("Usage: KeyVoxSpeechHarness whisper-model | probe-model-recovery <model.bin> <invalid-model.bin> <speech-audio> | probe-base-download <directory> | vad <audio.f32le> | transcribe <model.bin> <audio.f32le> | pipeline <model.bin> <audio.f32le> [language-code] | file-pipeline <model.bin> <audio-file> [language-code] | parakeet-file-pipeline <model.gguf> <audio-file> [language-code] | process <text-file> [language-code] | dictionary-add <storage-directory> <phrase-file>")
+            print("Usage: KeyVoxSpeechHarness benchmark-file-pipeline <model.bin> <audio-file> <repeats> | whisper-model | probe-model-recovery <model.bin> <invalid-model.bin> <speech-audio> | probe-base-download <directory> | vad <audio.f32le> | transcribe <model.bin> <audio.f32le> | pipeline <model.bin> <audio.f32le> [language-code] | file-pipeline <model.bin> <audio-file> [language-code] | parakeet-file-pipeline <model.gguf> <audio-file> [language-code] | process <text-file> [language-code] | dictionary-add <storage-directory> <phrase-file>")
             throw HarnessError.usage
         }
         switch arguments[0] {
+        case "benchmark-file-pipeline" where arguments.count == 4:
+            guard let repeats = Int(arguments[3]) else { throw HarnessError.usage }
+            try await SpeechPerformanceProbe.run(modelPath: arguments[1], audioPath: arguments[2], repeats: repeats)
         case "whisper-model" where arguments.count == 1:
             try WhisperModelReport.printArtifact()
         case "probe-model-recovery" where arguments.count == 4:

@@ -54,7 +54,7 @@ link detailed commands and limitations rather than duplicating them here.
 | Whisper model failure and reload | FUNCTIONAL | Absent selection and invalid-file paths exercised; explicit unload followed by exact Base load and a second reload produced speech on device; file availability is not integrity verification |
 | Model installation and management on Android | FUNCTIONAL | Containing app downloads exact Base and verifies it before readiness; resumability, onboarding journey, cancellation and recovery remain unresolved |
 | Background dictation | FUNCTIONAL | Physical-device capture continues after Home and keyboard cancellation releases it; lock-screen, interruptions, process death and warm-session parity remain unresolved |
-| Dictation performance | FUNCTIONAL / UNRESOLVED | CPU pipeline measured; text processor prepares asynchronously before Stop. Vulkan probe works with FP16 disabled on one device; safe app integration and automatic CPU/GPU selection remain unresolved. See [measurements](PERFORMANCE.md) |
+| Dictation performance | FUNCTIONAL / UNRESOLVED | CPU pipeline measured; text processor prepares asynchronously before Stop. GPU runs through the real Swift service/VAD/Core with FP16 disabled on one device; safe GPU app integration and selection based on performance remain unresolved. See [measurements](PERFORMANCE.md) |
 | Windows/Linux execution | UNRESOLVED | Capability boundaries exist; actual builds and runtime checks remain necessary |
 
 ## Next: complete the engine evidence
