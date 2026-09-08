@@ -45,6 +45,7 @@ link detailed commands and limitations rather than duplicating them here.
 | Optional grammatical roles | FUNCTIONAL | Explicitly selected permissively licensed model executed; accuracy and language coverage are limited |
 | iOS Whisper Base baseline | FUNCTIONAL | Exact iOS GGML artifact/revision/checksum; existing microphone audio passed through shared service, automatic language metadata, VAD, and dictionary/Core processing |
 | Language-specific text groundwork | FUNCTIONAL | Existing Spanish/French list fixtures matched macOS output; speech-accuracy evaluation is outside this experiment |
+| Complete spoken-number parsing | FUNCTIONAL | Shared parser rejects partial candidates; existing Android math-equation, compound-exponent, and spoken-year fixtures now match Apple |
 | Names and lemmas outside Apple | UNRESOLVED | Current portable analyzer explicitly reports them unavailable |
 | Semantic date/address protection | STUBBED | Conservative fallback preserves prose; not equivalent to Apple's detection |
 | Foreground model download transport | FUNCTIONAL | Swift downloaded exact Base directly on the phone; external checksum verified before real inference/Core execution |
