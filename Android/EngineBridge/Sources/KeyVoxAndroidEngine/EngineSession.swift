@@ -5,6 +5,7 @@ import KeyVoxVoiceActivity
 @MainActor
 final class EngineSession {
     static var shared: EngineSession?
+    let acceleration: WhisperAcceleration
     let installer: ModelArtifactInstaller
     let dictionary: DictionaryStore
     let service: WhisperService
@@ -14,8 +15,9 @@ final class EngineSession {
     var downloading = false
     var ready = false
     var configured = false
+    var optionalModelAvailable = false
 
-    init(resources: URL, models: URL, dictionaryDirectory: URL) throws {
+    init(resources: URL, models: URL, dictionaryDirectory: URL, runtimeDirectory: URL, socIdentifier: String) throws {
         try KeyVoxCoreResources.configure(bundleURL: resources.appendingPathComponent("KeyVoxCore_KeyVoxCore.resources"))
         let vadDirectory = resources.appendingPathComponent("KeyVoxVoiceActivity_KeyVoxVoiceActivity.resources")
         let vadModels = try FileManager.default.contentsOfDirectory(at: vadDirectory, includingPropertiesForKeys: nil)
@@ -24,9 +26,12 @@ final class EngineSession {
         let vadURL = vadModels[0]
         let installer = ModelArtifactInstaller(directory: models)
         self.installer = installer
+        let acceleration = WhisperAcceleration(models: models, runtimeDirectory: runtimeDirectory, socIdentifier: socIdentifier)
+        self.acceleration = acceleration
         dictionary = DictionaryStore(baseDirectoryURL: dictionaryDirectory)
         service = WhisperService(modelPathResolver: { installer.modelURL.path },
-            voiceActivityDetectorFactory: { VoiceActivityDetector(modelURL: vadURL) })
+            voiceActivityDetectorFactory: { VoiceActivityDetector(modelURL: vadURL) },
+            whisperFactory: { acceleration.makeWhisper(model: $0, params: $1) })
         postProcessorPreparation = Task.detached(priority: .userInitiated) {
             TranscriptionPostProcessor()
         }
@@ -34,11 +39,13 @@ final class EngineSession {
 
     func refreshModel() {
         let installer = installer
+        let encoder = acceleration.installer
         Task {
             let verified = await Task.detached { installer.isReady() }.value
+            optionalModelAvailable = await Task.detached { encoder.map { !$0.isReady() } ?? false }.value
             ready = verified
             configured = true
-            EngineEvent(kind: .configured, modelReady: verified).send()
+            EngineEvent(kind: .configured, modelReady: verified, optionalModelAvailable: optionalModelAvailable).send()
         }
     }
 
@@ -50,17 +57,24 @@ final class EngineSession {
         Task {
             do {
                 try await Task.detached { try await installer.install() }.value
+                if let encoder = acceleration.installer {
+                    do { try await Task.detached { try await encoder.install() }.value }
+                    catch { print("KeyVox optional encoder installation unavailable: \(error)") }
+                }
+                let encoder = acceleration.installer
+                optionalModelAvailable = await Task.detached { encoder.map { !$0.isReady() } ?? false }.value
+                service.unloadModel()
                 ready = true
-                EngineEvent(kind: .modelReady, modelReady: true).send()
+                EngineEvent(kind: .modelReady, modelReady: true, optionalModelAvailable: optionalModelAvailable).send()
             } catch {
-                EngineEvent(kind: .modelFailed, modelReady: ready).send()
+                EngineEvent(kind: .modelFailed, modelReady: ready, optionalModelAvailable: optionalModelAvailable).send()
             }
             downloading = false
         }
     }
 
     func transcribe(path: String, id: Int64) {
-        guard ready, request == nil else { EngineEvent(kind: .failed, request: id).send(); return }
+        guard ready, !downloading, request == nil else { EngineEvent(kind: .failed, request: id).send(); return }
         request = id
         Task {
             do {

@@ -1,0 +1,22 @@
+Eigen source availability
+
+Qualcomm QAIRT 2.45.0.260326 QNN_NOTICE.txt identifies the MPL-licensed Eigen
+source used to build its libraries as revision:
+7db0ac977acf276fb0817cfb89e490cdbae0ab56
+It identifies the code within the EIGEN_MPL2_ONLY flag.
+
+Source, including its copyright and license notices:
+https://gitlab.com/libeigen/eigen/-/tree/7db0ac977acf276fb0817cfb89e490cdbae0ab56
+
+Direct source archive:
+https://gitlab.com/libeigen/eigen/-/archive/7db0ac977acf276fb0817cfb89e490cdbae0ab56/eigen-7db0ac977acf276fb0817cfb89e490cdbae0ab56.tar.gz
+
+The covered Eigen source is available under Mozilla Public License 2.0.
+A copy is included as Eigen-MPL-2.0.txt. The source archive preserves the
+upstream notices and separately licensed optional files; its availability
+does not mean every file in that archive is incorporated in the runtime.
+KeyVox makes no changes to this Eigen source. Recipients retain their rights
+under the MPL. KeyVox's own independently written source remains MIT licensed.
+
+Qualcomm's complete original QNN_NOTICE.txt and SDK license are retained in
+../Qualcomm-QAIRT when the optional runtime is packaged.

@@ -27,12 +27,17 @@ public final class DictationSession {
     private File audio;
     private String result;
     private boolean initialized;
+    private boolean optionalModelAvailable;
     private boolean captureActive;
     private boolean awaitingEngineCancellation;
 
     public DictationSession(Context context) { this.context = context.getApplicationContext(); }
     public Phase phase() { return phase; }
     public Model model() { return model; }
+    public boolean canDownloadModel() {
+        return initialized && (phase == Phase.IDLE || phase == Phase.FAILED)
+            && (model == Model.MISSING || model == Model.FAILED || (model == Model.READY && optionalModelAvailable));
+    }
     public long request() { return request; }
     public String result() { return result; }
     public void observe(Runnable observer) { observers.add(observer); observer.run(); }
@@ -42,12 +47,15 @@ public final class DictationSession {
         new Thread(() -> {
             try {
                 File resources = EngineResources.prepare(context);
+                org.keyvox.android.engine.AccelerationRuntime.prepare(resources);
                 main.post(() -> {
                     try {
                         NativeEngine.setListener(this::receive);
                         if (!NativeEngine.initialize(resources.getPath(),
                                 new File(context.getFilesDir(), "models").getPath(),
-                                new File(context.getFilesDir(), "dictionary").getPath())) fail();
+                                new File(context.getFilesDir(), "dictionary").getPath(),
+                                context.getApplicationInfo().nativeLibraryDir,
+                                android.os.Build.VERSION.SDK_INT >= 31 ? android.os.Build.SOC_MODEL : "")) fail();
                     } catch (LinkageError | RuntimeException error) { Log.e("KeyVoxEngine", "Initialization failed", error); fail(); }
                 });
             } catch (Exception error) { Log.e("KeyVoxEngine", "Resource installation failed", error); main.post(this::fail); }
@@ -130,6 +138,7 @@ public final class DictationSession {
         try {
             JSONObject event = new JSONObject(json);
             String kind = event.getString("kind");
+            if (event.has("optionalModelAvailable")) optionalModelAvailable = event.getBoolean("optionalModelAvailable");
             switch (kind) {
                 case "configured":
                     initialized = true;

@@ -15,6 +15,7 @@ android {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
+    packaging { jniLibs { useLegacyPackaging = true } }
     sourceSets.main {
         jniLibs.srcDir 'build/generated/engine/jniLibs'
         assets.srcDir 'build/generated/engine/assets'

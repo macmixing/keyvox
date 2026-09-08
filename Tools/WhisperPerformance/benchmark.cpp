@@ -1,4 +1,5 @@
 #include <whisper.h>
+#include "../WhisperEncoder/include/keyvox-whisper-encoder.h"
 #include <chrono>
 #include <fstream>
 #include <iostream>
@@ -13,7 +14,7 @@ static double milliseconds(Clock::time_point start) {
 
 // Caller-provided audio only: mono 16 kHz little-endian Float32 PCM.
 int main(int argc, char **argv) {
-    if (argc != 7) return 2;
+    if (argc != 7 && argc != 10) return 2;
     const int threads = std::atoi(argv[3]);
     const bool gpu = std::atoi(argv[4]) != 0;
     const int repeats = std::atoi(argv[5]);
@@ -32,6 +33,11 @@ int main(int argc, char **argv) {
     if (!context) return 4;
     std::cout << "KV_LOAD ms=" << milliseconds(start) << " threads=" << threads
               << " gpu_requested=" << gpu << " frames=" << frames.size() << std::endl;
+    if (argc == 10) {
+        start = Clock::now();
+        const bool configured = keyvox_whisper_load_encoder(context, argv[7], argv[8], argv[9]);
+        std::cout << "KV_ENCODER configured=" << configured << " setup_ms=" << milliseconds(start) << std::endl;
+    }
     auto params = whisper_full_default_params(WHISPER_SAMPLING_GREEDY);
     params.n_threads = threads;
     // Explicit caller choice, including Whisper's automatic detection mode.

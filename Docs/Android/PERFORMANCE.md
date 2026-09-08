@@ -188,6 +188,47 @@ not match this device's reported subgroup size of 64. The
 [Whisper Adreno 830 report](https://github.com/ggml-org/whisper.cpp/issues/3551)
 describes a pipeline-binding crash rather than our measured execution failure.
 
+## Installed Qualcomm encoder implementation — 2026-09-08
+
+The optional first-party native plugin in `Native/WhisperQNN` now runs inside the
+real Android shell. It replaces only the encoder computation; multilingual Base,
+the original Whisper decoder, automatic language handling, VAD, and Core remain
+in the real pipeline. Host-owned installation checks archive and encoder hashes
+and uses the existing download action. Base remains usable without this asset.
+
+On SM8850, three final installed-app runs with the same private fixture and a
+4-second preparation lead-in produced identical processed-output SHA-256 values
+between NPU and CPU fallback:
+
+| Path | Provider inference | Pipeline including Core | Initial model warmup |
+| --- | --- | --- | --- |
+| Qualcomm encoder | 438 / 421 / 388 ms | 455 / 436 / 402 ms | 315 ms |
+| CPU fallback, optional encoder absent | 2394 / 2458 / 2489 ms | 2412 / 2474 / 2505 ms | 102 ms |
+
+Native Android log records independently confirm successful NPU execution. Each
+Whisper request may encode more than once. Setup cost is separate from inference;
+an immediate-start run still waited 1.94 seconds for existing Core preparation.
+The speedup does not eliminate that cold text-preparation cost.
+
+The actual app downloaded and verified the encoder before inference. Optional
+download/retry availability is separate from Base readiness. Missing acceleration
+assets retain CPU operation, and the test restored the installed encoder afterward.
+Native checks cover invalid configuration, mismatched tensor shapes, cancellation,
+repeated construction/destruction, cache layout/scaling, and nonfinite rejection.
+Cancellation cannot interrupt an already-running synchronous QNN graph call.
+
+Debug/release APKs and lint pass locally (release packaging used a 4 GiB Gradle
+heap). Only the validated SM8850 artifact is selected today; the runtime boundary
+is not tied to a phone identifier. Other targets retain native inference until
+their corresponding artifacts are validated. Sustained thermal behavior, broader
+audio accuracy, and other Qualcomm generations are not established.
+
+The SDK binary closure is pinned in `Native/WhisperQNN/runtime.lock.json`.
+[Artifact and license provenance](../../Tools/Licenses/Whisper-QNN/PROVENANCE.md)
+records the SDK distribution grant and retained Eigen license/source-access notice.
+Qualcomm identifies the exact Eigen revision and MPL-only scope in QNN_NOTICE;
+the earlier claim that a separate component mapping was missing was incorrect.
+
 ## Repeat the installed measurement
 
 Stage the engine with `build-engine.py --configuration release` (or `debug` for

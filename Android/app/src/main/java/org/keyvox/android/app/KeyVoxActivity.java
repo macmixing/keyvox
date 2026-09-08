@@ -59,6 +59,6 @@ public final class KeyVoxActivity extends Activity {
             case FAILED -> R.string.model_failed;
         };
         status.setText(session.phase() == DictationSession.Phase.FAILED ? R.string.engine_failed : label);
-        download.setEnabled(session.model() == DictationSession.Model.MISSING || session.model() == DictationSession.Model.FAILED);
+        download.setEnabled(session.canDownloadModel());
     }
 }
