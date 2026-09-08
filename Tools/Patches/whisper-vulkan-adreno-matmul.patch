@@ -1,0 +1,25 @@
+--- a/ggml/src/ggml-vulkan/ggml-vulkan.cpp
++++ b/ggml/src/ggml-vulkan/ggml-vulkan.cpp
+@@ -77,6 +77,7 @@
+ #define VK_VENDOR_ID_APPLE 0x106b
+ #define VK_VENDOR_ID_INTEL 0x8086
+ #define VK_VENDOR_ID_NVIDIA 0x10de
++#define VK_VENDOR_ID_QUALCOMM 0x5143
+ 
+ #define VK_DEVICE_DESCRIPTOR_POOL_SIZE 256
+ 
+@@ -3365,6 +3366,14 @@
+                 device->mul_mat_id_l[i] = false;
+                 device->mul_mat_id_m[i] = true;
+                 device->mul_mat_id_s[i] = false;
++                break;
++            case VK_VENDOR_ID_QUALCOMM:
++                device->mul_mat_l[i] = false;
++                device->mul_mat_m[i] = true;
++                device->mul_mat_s[i] = true;
++                device->mul_mat_id_l[i] = false;
++                device->mul_mat_id_m[i] = true;
++                device->mul_mat_id_s[i] = true;
+                 break;
+ #endif
+             default:
