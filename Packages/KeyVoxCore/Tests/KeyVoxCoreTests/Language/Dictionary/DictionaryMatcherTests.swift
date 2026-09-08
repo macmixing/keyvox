@@ -4,6 +4,16 @@ import XCTest
 
 @MainActor
 final class DictionaryMatcherTests: XCTestCase {
+    func testMatchesSpokenNumbersInsideAlphanumericDictionaryEntry() {
+        let matcher = makeRuntimeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "9to5Mac")])
+
+        XCTAssertEqual(
+            matcher.apply(to: "The report came from nine to five Mac yesterday.").text,
+            "The report came from 9to5Mac yesterday."
+        )
+    }
+
     func testDoesNotMatchSixDictationsToBigDictation() {
         let matcher = makeRuntimeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Big Dictation")])
