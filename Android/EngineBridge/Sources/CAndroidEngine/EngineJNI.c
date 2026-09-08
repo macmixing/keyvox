@@ -4,6 +4,7 @@
 #include <limits.h>
 
 extern int keyvox_install_main_loop(void);
+extern int keyvox_archive_bridge_initialize(JNIEnv *, JavaVM *, jclass);
 static JavaVM *vm;
 static jclass listener_class;
 static jmethodID event_method;
@@ -14,21 +15,26 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *value, void *reserved) {
 }
 
 JNIEXPORT jboolean JNICALL Java_org_keyvox_android_engine_NativeEngine_initialize(
-    JNIEnv *env, jclass type, jstring resources, jstring models, jstring dictionary) {
+    JNIEnv *env, jclass type, jstring resources, jstring models, jstring dictionary, jstring runtime, jstring soc) {
     if (!keyvox_install_main_loop()) return JNI_FALSE;
+    if (!keyvox_archive_bridge_initialize(env, vm, type)) return JNI_FALSE;
     if (!listener_class) {
         listener_class = (*env)->NewGlobalRef(env, type);
         event_method = (*env)->GetStaticMethodID(env, type, "receive", "([B)V");
         if (!listener_class || !event_method) return JNI_FALSE;
     }
     const char *r = (*env)->GetStringUTFChars(env, resources, 0);
-    const char *m = (*env)->GetStringUTFChars(env, models, 0);
-    const char *d = (*env)->GetStringUTFChars(env, dictionary, 0);
-    if (r && m && d) keyvox_engine_configure(r, m, d);
+    const char *m = r ? (*env)->GetStringUTFChars(env, models, 0) : 0;
+    const char *d = m ? (*env)->GetStringUTFChars(env, dictionary, 0) : 0;
+    const char *n = d ? (*env)->GetStringUTFChars(env, runtime, 0) : 0;
+    const char *s = n ? (*env)->GetStringUTFChars(env, soc, 0) : 0;
+    if (s) keyvox_engine_configure(r, m, d, n, s);
     if (r) (*env)->ReleaseStringUTFChars(env, resources, r);
     if (m) (*env)->ReleaseStringUTFChars(env, models, m);
     if (d) (*env)->ReleaseStringUTFChars(env, dictionary, d);
-    return !(*env)->ExceptionCheck(env);
+    if (n) (*env)->ReleaseStringUTFChars(env, runtime, n);
+    if (s) (*env)->ReleaseStringUTFChars(env, soc, s);
+    return s && !(*env)->ExceptionCheck(env);
 }
 
 JNIEXPORT void JNICALL Java_org_keyvox_android_engine_NativeEngine_transcribe(

@@ -1,0 +1,16 @@
+cmake_minimum_required(VERSION 3.22)
+project(KeyVoxWhisperQnn LANGUAGES CXX)
+if(NOT ANDROID)
+    message(FATAL_ERROR "This runtime integration currently targets Android")
+endif()
+if(NOT EXISTS "${QAIRT_ROOT}/include/QNN/QnnInterface.h")
+    message(FATAL_ERROR "Set QAIRT_ROOT to the separately installed Qualcomm AI Runtime SDK")
+endif()
+add_library(KeyVoxWhisperQnn SHARED DynamicLibrary.cpp QnnRuntime.cpp QnnGraph.cpp
+    CrossAttentionCache.cpp WhisperQnnEncoder.cpp EncoderPlugin.cpp)
+target_compile_features(KeyVoxWhisperQnn PRIVATE cxx_std_17)
+target_include_directories(KeyVoxWhisperQnn PRIVATE "${QAIRT_ROOT}/include/QNN"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../../Tools/WhisperEncoder/include")
+set_target_properties(KeyVoxWhisperQnn PROPERTIES CXX_VISIBILITY_PRESET hidden VISIBILITY_INLINES_HIDDEN YES)
+target_link_libraries(KeyVoxWhisperQnn PRIVATE ${CMAKE_DL_LIBS} log)
+target_link_options(KeyVoxWhisperQnn PRIVATE "-Wl,--no-undefined")

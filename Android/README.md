@@ -34,6 +34,34 @@ Repeat staging after engine/package changes or `gradlew clean`. Gradle fails if
 the staged engine is missing. Only arm64 is currently packaged. The generated
 native inventory records pre-packaging hashes; Android packaging can strip symbols.
 
+### Optional Qualcomm encoder
+
+Build the first-party plugin against a separately installed QAIRT 2.45.0.260326 SDK:
+
+```sh
+cmake -S ../Native/WhisperQNN -B /tmp/keyvox-qnn-build \
+  -DCMAKE_TOOLCHAIN_FILE="$ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake" \
+  -DANDROID_ABI=arm64-v8a -DANDROID_PLATFORM=android-28 \
+  -DANDROID_STL=c++_shared -DCMAKE_BUILD_TYPE=Release -DQAIRT_ROOT="$QAIRT_ROOT"
+cmake --build /tmp/keyvox-qnn-build --parallel
+```
+
+Add `--qairt-root "$QAIRT_ROOT" --qnn-plugin /tmp/keyvox-qnn-build/libKeyVoxWhisperQnn.so`
+to the engine staging command. The builder verifies the pinned runtime and notice
+hashes before packaging. Omitting both flags preserves CPU-only packaging. For
+release packaging, use `./gradlew -Dorg.gradle.jvmargs=-Xmx4g assembleRelease` if
+the default Gradle heap is insufficient.
+
+The existing Download action installs the verified optional encoder on supported
+hardware, including when Base is already present. Failure preserves Base readiness
+and exposes retry. This is currently validated for SM8850, with CPU fallback on
+other hardware. DSP library setup belongs to the Android host; models and download
+ownership remain outside Core.
+
+See [provenance and distribution status](../Tools/Licenses/Whisper-QNN/PROVENANCE.md)
+before redistributing Qualcomm-containing builds. Successful local evaluation does
+not resolve the SDK's outstanding third-party component/source-obligation mapping.
+
 ## Current capability
 
 - FUNCTIONAL: installable containing app, keyboard setup links, system IME

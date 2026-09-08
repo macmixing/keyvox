@@ -54,7 +54,7 @@ link detailed commands and limitations rather than duplicating them here.
 | Whisper model failure and reload | FUNCTIONAL | Absent selection and invalid-file paths exercised; explicit unload followed by exact Base load and a second reload produced speech on device; file availability is not integrity verification |
 | Model installation and management on Android | FUNCTIONAL | Containing app downloads exact Base and verifies it before readiness; resumability, onboarding journey, cancellation and recovery remain unresolved |
 | Background dictation | FUNCTIONAL | Physical-device capture continues after Home and keyboard cancellation releases it; lock-screen, interruptions, process death and warm-session parity remain unresolved |
-| Dictation performance | FUNCTIONAL / UNRESOLVED | CPU pipeline measured; text processor prepares asynchronously before Stop. GPU runs through the real Swift service/VAD/Core in FP32 and FP16 with the upstream Adreno matrix-routing backport on one device; safe GPU app integration and selection based on performance remain unresolved. See [measurements](PERFORMANCE.md) |
+| Dictation performance | FUNCTIONAL / UNRESOLVED | Optional Qualcomm NPU encoder now executes in the installed shell with the existing Base decoder, VAD, and Core: 388–438 ms provider versus 2.394–2.489 s CPU with identical processed-output hashes. CPU fallback verified. Only SM8850 artifact validated; broader devices, thermal/reliability coverage, and SDK transitive distribution evidence remain unresolved. See [measurements](PERFORMANCE.md) |
 | Windows/Linux execution | UNRESOLVED | Capability boundaries exist; actual builds and runtime checks remain necessary |
 
 ## Next: complete the engine evidence

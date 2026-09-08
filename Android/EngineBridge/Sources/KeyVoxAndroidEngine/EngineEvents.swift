@@ -8,6 +8,7 @@ struct EngineEvent: Encodable {
     var text: String? = nil
     var noSpeech: Bool? = nil
     var modelReady: Bool? = nil
+    var optionalModelAvailable: Bool? = nil
     var audioReadMilliseconds: Double? = nil
     var modelWarmupMilliseconds: Double? = nil
     var inferenceMilliseconds: Double? = nil

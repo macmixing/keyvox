@@ -1,0 +1,14 @@
+{
+  "version": "2.45.0.260326",
+  "source": "https://softwarecenter.qualcomm.com/api/download/software/sdks/Qualcomm_AI_Runtime_Community/All/2.45.0.260326/v2.45.0.260326.zip",
+  "license": "Qualcomm AI Stack Software License Agreement",
+  "files": {
+    "LICENSE.pdf": "ec1dccfdcba5c6e64126e84199b8362bf4999107bfa567ebe831dbb4c461692b",
+    "QNN_NOTICE.txt": "c8a22fa8b9ed3e9266c4a3366965474cef5cb147ee2a1f33e488bbb24a071c09",
+    "lib/aarch64-android/libQnnHtp.so": "b5b36b2d5e0cc352b5e5f468f6f668b1585d515854fc1c5890b1365047a36be1",
+    "lib/aarch64-android/libQnnSystem.so": "f08e9ddc18a40719839cce8bbfb3afd3aef06f5ad486b21934a1c4568c9a6a48",
+    "lib/aarch64-android/libQnnHtpV81Stub.so": "e97898d6772288e202e9cf988b80b39b8336f3dca8b99ee3075d234093582e3c",
+    "lib/hexagon-v81/unsigned/libQnnHtpV81Skel.so": "57330ed3f7846b94181b25b7a87bc3fe5dc71033766f2d5630520a1400477c97",
+    "lib/hexagon-v81/unsigned/libqnnhtpv81.cat": "2fb4995672de839eed973eeadb75c47518d858259972fc0724fc5eb11917256f"
+  }
+}

@@ -19,10 +19,12 @@ public class EngineInstrumentation extends Instrumentation {
     protected boolean captureChecks;
     private int rounds;
     private long leadInMilliseconds;
+    private boolean installModel;
     @Override public void onCreate(Bundle arguments) {
         super.onCreate(arguments);
         fixture = arguments == null ? null : arguments.getString("fixture");
         captureChecks = arguments != null && "true".equals(arguments.getString("capture"));
+        installModel = arguments != null && "true".equals(arguments.getString("installModel"));
         rounds = arguments == null ? 1 : Integer.parseInt(arguments.getString("rounds", "1"));
         leadInMilliseconds = arguments == null ? 0 : Long.parseLong(arguments.getString("leadInMilliseconds", "0"));
         start();
@@ -42,6 +44,16 @@ public class EngineInstrumentation extends Instrumentation {
             boolean available = ready.await(30, TimeUnit.SECONDS);
             runOnMainSync(() -> session.removeObserver(initialized));
             if (!available) throw new AssertionError("Installed model was not ready");
+            if (installModel) {
+                CountDownLatch installed = new CountDownLatch(1);
+                Runnable installation = () -> {
+                    if (session.model() != DictationSession.Model.DOWNLOADING) installed.countDown();
+                };
+                runOnMainSync(() -> { session.downloadModel(); session.observe(installation); });
+                boolean finished = installed.await(300, TimeUnit.SECONDS);
+                runOnMainSync(() -> session.removeObserver(installation));
+                if (!finished) throw new AssertionError("Model installation timed out");
+            }
             if (rounds < 1 || rounds > 10) throw new AssertionError("Invalid benchmark repeat count");
             if (leadInMilliseconds < 0 || leadInMilliseconds > 30_000) throw new AssertionError("Invalid benchmark lead-in");
             // Models setup/recording time without including that delay in processing measurements.
@@ -75,6 +87,9 @@ public class EngineInstrumentation extends Instrumentation {
                 timings.append("KV_PIPELINE ").append(event).append('\n');
             }
             result.putString("stream", timings + "Installed Swift engine fixture passed; output characters=" + expectedText.length());
+            result.putString("outputSHA256", android.util.Base64.encodeToString(
+                java.security.MessageDigest.getInstance("SHA-256").digest(expectedText.getBytes(java.nio.charset.StandardCharsets.UTF_8)),
+                android.util.Base64.NO_WRAP));
             finish(Activity.RESULT_OK, result);
         } catch (Exception | AssertionError error) {
             result.putString("stream", "Engine fixture failed: " + error);

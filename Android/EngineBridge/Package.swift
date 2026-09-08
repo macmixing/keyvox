@@ -7,12 +7,14 @@ let package = Package(
     dependencies: [
         .package(path: "../../Packages/KeyVoxCore"),
         .package(path: "../../Packages/KeyVoxModels"),
+        .package(path: "../../Packages/KeyVoxWhisper"),
         .package(path: "../../Packages/KeyVoxVoiceActivity")
     ],
     targets: [
         .target(name: "KeyVoxAndroidEngine", dependencies: ["CAndroidEngine",
             .product(name: "KeyVoxCore", package: "KeyVoxCore"),
             .product(name: "KeyVoxModels", package: "KeyVoxModels"),
+            .product(name: "KeyVoxWhisper", package: "KeyVoxWhisper"),
             .product(name: "KeyVoxVoiceActivity", package: "KeyVoxVoiceActivity")]),
         .target(name: "CAndroidEngine", linkerSettings: [.linkedLibrary("android"), .linkedLibrary("log")])
     ])
