@@ -18,6 +18,7 @@ private struct WhisperContextHandle: @unchecked Sendable {
 }
 
 struct WhisperRuntime {
+    var configureEncoder: (OpaquePointer, WhisperEncoderConfiguration) -> Bool = WhisperEncoderConfiguration.configure
     var contextDefaultParams: () -> whisper_context_params
     var initFromFileWithParams: (_ path: UnsafePointer<CChar>, _ params: whisper_context_params) -> OpaquePointer?
     var freeContext: (_ context: OpaquePointer) -> Void
@@ -85,13 +86,17 @@ public final class Whisper {
     private let whisperContext: OpaquePointer?
     private let paramsLock = NSLock()
     private var storedParams: WhisperParams
+    /// Whether the optional encoder attached successfully during initialization.
+    /// A subsequent runtime failure can fall back to native encoding.
+    public let isExternalEncoderConfigured: Bool
     public var params: WhisperParams {
         get { paramsLock.withLock { storedParams } }
         set { paramsLock.withLock { storedParams = newValue } }
     }
 
     public init(fromFileURL fileURL: URL, withParams params: WhisperParams = .default,
-                computePolicy: WhisperComputePolicy = .automatic) {
+                computePolicy: WhisperComputePolicy = .automatic,
+                encoderConfiguration: WhisperEncoderConfiguration? = nil) {
         self.runtime = .live
         self.inferenceQueue = Self.makeInferenceQueue()
         self.storedParams = params
@@ -101,12 +106,18 @@ public final class Whisper {
             runtime: runtime,
             osVersionProvider: { ProcessInfo.processInfo.operatingSystemVersion }
         )
+        if let whisperContext, let encoderConfiguration {
+            self.isExternalEncoderConfigured = runtime.configureEncoder(whisperContext, encoderConfiguration)
+        } else {
+            self.isExternalEncoderConfigured = false
+        }
     }
 
     init(
         fromFileURL fileURL: URL,
         withParams params: WhisperParams = .default,
         computePolicy: WhisperComputePolicy = .automatic,
+        encoderConfiguration: WhisperEncoderConfiguration? = nil,
         runtime: WhisperRuntime,
         osVersionProvider: @escaping () -> OperatingSystemVersion,
         inferenceQueue: DispatchQueue
@@ -120,6 +131,11 @@ public final class Whisper {
             runtime: runtime,
             osVersionProvider: osVersionProvider
         )
+        if let whisperContext, let encoderConfiguration {
+            self.isExternalEncoderConfigured = runtime.configureEncoder(whisperContext, encoderConfiguration)
+        } else {
+            self.isExternalEncoderConfigured = false
+        }
     }
 
     deinit {

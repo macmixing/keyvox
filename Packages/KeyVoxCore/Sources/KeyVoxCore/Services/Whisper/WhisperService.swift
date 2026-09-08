@@ -10,6 +10,7 @@ public class WhisperService: StatePublishing, DictationProvider {
     @StateValue public internal(set) var lastResultWasLikelyNoSpeech = false
 
     let voiceActivityDetectorFactory: () -> VoiceActivityDetector?
+    let whisperFactory: (URL, WhisperParams) -> Whisper
     private let modelPathResolver: () -> String?
     private var activeTranscriptionRequestID = UUID()
 
@@ -34,10 +35,12 @@ public class WhisperService: StatePublishing, DictationProvider {
 
     public init(
         modelPathResolver: @escaping () -> String? = { nil },
-        voiceActivityDetectorFactory: @escaping () -> VoiceActivityDetector? = { VoiceActivityDetector() }
+        voiceActivityDetectorFactory: @escaping () -> VoiceActivityDetector? = { VoiceActivityDetector() },
+        whisperFactory: @escaping (URL, WhisperParams) -> Whisper = { Whisper(fromFileURL: $0, withParams: $1) }
     ) {
         self.modelPathResolver = modelPathResolver
         self.voiceActivityDetectorFactory = voiceActivityDetectorFactory
+        self.whisperFactory = whisperFactory
     }
 
     public var isModelReady: Bool {

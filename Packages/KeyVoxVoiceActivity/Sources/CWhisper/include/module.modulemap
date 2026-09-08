@@ -4,5 +4,6 @@ module CWhisper {
     link "ggml"
     link "ggml-cpu"
     link "ggml-base"
+    link "dl"
     export *
 }
