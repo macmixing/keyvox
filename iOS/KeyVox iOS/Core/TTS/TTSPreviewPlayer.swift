@@ -14,6 +14,7 @@ final class TTSPreviewPlayer: NSObject, ObservableObject {
     private var player: AVAudioPlayer?
     private var hasActivatedAudioSession = false
     private var shouldDeactivateAudioSessionOnStop = false
+    private var audioSessionDeactivationTask: Task<Void, Never>?
 
     init(
         appHaptics: AppHapticsEmitting,
@@ -136,6 +137,7 @@ final class TTSPreviewPlayer: NSObject, ObservableObject {
     }
 
     private func configureAudioSession() async throws {
+        await awaitPendingAudioSessionDeactivation()
         if isRecordingSessionActiveProvider() {
             let bluetoothRoutePolicy = AudioBluetoothRoutePolicy(
                 preferBuiltInMicrophone: preferBuiltInMicrophoneProvider()
@@ -164,12 +166,19 @@ final class TTSPreviewPlayer: NSObject, ObservableObject {
     }
 
     private func deactivateAudioSessionIfNeeded() {
-        Task { @MainActor [weak self] in
+        guard audioSessionDeactivationTask == nil else { return }
+        audioSessionDeactivationTask = Task { @MainActor [weak self] in
             guard let self else { return }
             try? await self.deactivateAudioSession(notifyOthers: true)
             self.hasActivatedAudioSession = false
             self.shouldDeactivateAudioSessionOnStop = false
         }
+    }
+
+    private func awaitPendingAudioSessionDeactivation() async {
+        guard let audioSessionDeactivationTask else { return }
+        await audioSessionDeactivationTask.value
+        self.audioSessionDeactivationTask = nil
     }
 
     private func activateAudioSession() async throws {
