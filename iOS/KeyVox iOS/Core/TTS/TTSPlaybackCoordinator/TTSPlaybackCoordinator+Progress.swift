@@ -60,6 +60,7 @@ extension TTSPlaybackCoordinator {
             remainingEstimatedSamples: lastObservedRemainingEstimatedSamples
         )
         guard queuedSampleCount >= requiredSamples || (isFinishing && queuedSampleCount > 0) else { return }
+        isWaitingForResumeBuffer = false
         let sessionID = playbackSessionID
 
         Task { @MainActor [weak self] in
@@ -76,7 +77,6 @@ extension TTSPlaybackCoordinator {
 
             self.playerNode.play()
             self.isPaused = false
-            self.isWaitingForResumeBuffer = false
             if self.isReplayingCachedAudio {
                 self.replayPausedSampleOffset = 0
             }
