@@ -35,7 +35,7 @@ final class EditorConnectionOwner {
         if (selected != null && selected.length() > 0) return connection.commitText("", 1);
 
         CharSequence preceding = connection.getTextBeforeCursor(2, 0);
-        if (preceding == null || preceding.length() == 0) return false;
+        if (preceding != null && preceding.length() == 0) return false;
         return connection.deleteSurroundingTextInCodePoints(1, 0);
     }
 }
