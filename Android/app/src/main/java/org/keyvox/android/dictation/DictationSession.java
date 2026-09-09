@@ -30,6 +30,7 @@ public final class DictationSession {
     private boolean optionalModelAvailable;
     private boolean captureActive;
     private boolean awaitingEngineCancellation;
+    private float audioLevel;
 
     public DictationSession(Context context) { this.context = context.getApplicationContext(); }
     public Phase phase() { return phase; }
@@ -40,6 +41,7 @@ public final class DictationSession {
     }
     public long request() { return request; }
     public String result() { return result; }
+    public float audioLevel() { return audioLevel; }
     public void observe(Runnable observer) { observers.add(observer); observer.run(); }
     public void removeObserver(Runnable observer) { observers.remove(observer); }
 
@@ -71,6 +73,7 @@ public final class DictationSession {
         if (!canStart()) return -1;
         request++;
         result = null;
+        audioLevel = 0;
         phase = Phase.STARTING;
         captureActive = true;
         publish();
@@ -112,8 +115,15 @@ public final class DictationSession {
         publish();
     }
 
+    void audioLevel(long id, float level) {
+        if (id != request || (phase != Phase.STARTING && phase != Phase.RECORDING)) return;
+        audioLevel = Math.min(Math.max(level, 0), 1);
+        publish();
+    }
+
     void captured(long id, File file) {
         if (id == request) captureActive = false;
+        if (id == request) audioLevel = 0;
         if (id == request && phase == Phase.CANCELLING) {
             if (file != null) file.delete();
             finishCancellation();
@@ -179,7 +189,7 @@ public final class DictationSession {
         phase = Phase.IDLE;
         publish();
     }
-    private void fail() { clearAudio(); phase = Phase.FAILED; publish(); }
+    private void fail() { clearAudio(); audioLevel = 0; phase = Phase.FAILED; publish(); }
     private void publish() {
         Log.i("KeyVoxSession", "request=" + request + " phase=" + phase + " capture=" + captureActive);
         for (Runnable observer : new ArrayList<>(observers)) observer.run();

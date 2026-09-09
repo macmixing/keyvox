@@ -4,6 +4,9 @@
     <string name="select_keyboard">Select keyboard</string>
     <string name="open_app">Open KeyVox</string>
     <string name="next_keyboard">Switch keyboard</string>
+    <string name="alternate_symbols">Alternate symbols</string>
+    <string name="number_symbols">Number symbols</string>
+    <string name="restore_full_keyboard">Full keyboard</string>
     <string name="delete_key">Delete</string>
     <string name="space_key">Space</string>
     <string name="enter_key">Enter</string>
@@ -21,4 +24,11 @@
     <string name="model_ready">Speech model ready</string>
     <string name="model_failed">Speech model download failed</string>
     <string name="engine_failed">Dictation unavailable</string>
+    <string name="keyboard_settings">Settings</string>
+    <string name="keyboard_dictionary">Dictionary</string>
+    <string name="keyboard_paragraphs">Paragraphs</string>
+    <string name="keyboard_lists">Lists</string>
+    <string name="keyboard_caps_lock">Caps Lock</string>
+    <string name="keyboard_speak">Speak</string>
+    <string name="keyboard_vibes">KeyVox Vibes</string>
 </resources>
