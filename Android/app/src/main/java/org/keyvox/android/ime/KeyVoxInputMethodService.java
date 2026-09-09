@@ -1,6 +1,7 @@
 package org.keyvox.android.ime;
 
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.inputmethodservice.InputMethodService;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -64,13 +65,18 @@ public final class KeyVoxInputMethodService extends InputMethodService {
 
     @Override public boolean onEvaluateFullscreenMode() { return false; }
 
+    @Override public void onConfigurationChanged(Configuration configuration) {
+        super.onConfigurationChanged(configuration);
+        if (shell != null) shell.refreshAppearance();
+    }
+
     @Override public View onCreateInputView() {
         shell = new KeyboardShellView(this,
-            this::openApp,
             () -> switchToNextInputMethod(false),
-            () -> editor.deletePreviousCodePoint(),
-            () -> editor.commit(editor.generation(), " "),
-            () -> editor.commit(editor.generation(), "\n"), this::toggleDictation, () -> session.cancel());
+            editor::deletePreviousCodePoint,
+            text -> editor.commit(editor.generation(), text),
+            this::toggleDictation,
+            () -> session.cancel());
         render();
         return shell;
     }

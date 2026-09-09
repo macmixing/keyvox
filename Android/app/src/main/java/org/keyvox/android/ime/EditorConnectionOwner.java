@@ -29,10 +29,13 @@ final class EditorConnectionOwner {
         return text.length() == 0 || commit(destination, text);
     }
 
-    void deletePreviousCodePoint() {
-        if (connection == null) return;
+    boolean deletePreviousCodePoint() {
+        if (connection == null) return false;
         CharSequence selected = connection.getSelectedText(0);
-        if (selected != null && selected.length() > 0) connection.commitText("", 1);
-        else connection.deleteSurroundingTextInCodePoints(1, 0);
+        if (selected != null && selected.length() > 0) return connection.commitText("", 1);
+
+        CharSequence preceding = connection.getTextBeforeCursor(2, 0);
+        if (preceding == null || preceding.length() == 0) return false;
+        return connection.deleteSurroundingTextInCodePoints(1, 0);
     }
 }
