@@ -126,6 +126,7 @@ extension AudioRecorder {
     }
 
     func ensureEngineRunning() async throws {
+        await awaitRouteRecoveryAudioSessionDeactivation()
         guard !isMonitoring || audioEngine == nil || !audioEngine!.isRunning else { return }
 
         let routeInputPorts = audioSession.currentRoute.inputs
@@ -382,11 +383,22 @@ extension AudioRecorder {
             "handleMonitoringInterruption routeInputs=\(String(audioSession.currentRoute.inputs.count)) engineRunning=\(String(audioEngine?.isRunning == true))"
         )
         invalidateAudioEngine(clearSessionActive: true)
-        Task { [weak self] in
-            await self?.deactivateAudioSessionForRouteRecovery()
-        }
+        scheduleAudioSessionDeactivationForRouteRecovery()
         refreshCurrentCaptureDeviceName()
         audioSessionInterruptedHandler?()
+    }
+
+    func scheduleAudioSessionDeactivationForRouteRecovery() {
+        guard routeRecoveryAudioSessionDeactivationTask == nil else { return }
+        routeRecoveryAudioSessionDeactivationTask = Task { @MainActor [weak self] in
+            await self?.deactivateAudioSessionForRouteRecovery()
+        }
+    }
+
+    func awaitRouteRecoveryAudioSessionDeactivation() async {
+        guard let routeRecoveryAudioSessionDeactivationTask else { return }
+        await routeRecoveryAudioSessionDeactivationTask.value
+        self.routeRecoveryAudioSessionDeactivationTask = nil
     }
 
     func deactivateAudioSessionForRouteRecovery() async {

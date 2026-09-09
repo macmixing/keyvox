@@ -106,9 +106,7 @@ extension AudioRecorder {
         )
 
         invalidateAudioEngine(clearSessionActive: true)
-        Task { [weak self] in
-            await self?.deactivateAudioSessionForRouteRecovery()
-        }
+        scheduleAudioSessionDeactivationForRouteRecovery()
         isRecording = false
         captureStartedAt = .distantPast
         apply(stopResult: interruptedCapture, hadNonDeadSignal: snapshot.hadNonDeadSignal)

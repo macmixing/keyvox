@@ -73,6 +73,7 @@ final class AudioRecorder: ObservableObject, AudioRecording {
     var audioSessionInterruptedHandler: (() -> Void)?
     var engineConfigurationObserver: NSObjectProtocol?
     var audioSessionInterruptionObserver: NSObjectProtocol?
+    var routeRecoveryAudioSessionDeactivationTask: Task<Void, Never>?
 
     init(
         audioSession: AVAudioSession = .sharedInstance(),
