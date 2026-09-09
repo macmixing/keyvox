@@ -65,7 +65,11 @@ public final class DictationCaptureService extends Service {
                     File directory = new File(getFilesDir(), "captures");
                     if (!directory.isDirectory() && !directory.mkdirs()) throw new java.io.IOException("Cannot create capture directory");
                     file = File.createTempFile("capture-", ".f32", directory);
-                    active.record(file, () -> main.post(() -> session.recording(id)));
+                    active.record(
+                        file,
+                        () -> main.post(() -> session.recording(id)),
+                        level -> main.post(() -> session.audioLevel(id, level))
+                    );
                 } catch (Exception error) {
                     Log.e("KeyVoxCapture", "Capture failed", error);
                     if (file != null) file.delete();
