@@ -45,6 +45,43 @@ JNIEXPORT void JNICALL Java_org_keyvox_android_engine_NativeEngine_transcribe(
 JNIEXPORT void JNICALL Java_org_keyvox_android_engine_NativeEngine_cancel(JNIEnv *env, jclass type) { keyvox_engine_cancel(); }
 JNIEXPORT void JNICALL Java_org_keyvox_android_engine_NativeEngine_download(JNIEnv *env, jclass type) { keyvox_engine_download(); }
 
+JNIEXPORT jbyteArray JNICALL Java_org_keyvox_android_engine_NativeEngine_composeUTF8(
+    JNIEnv *env, jclass type, jbyteArray transcript, jbyteArray preceding,
+    jboolean preceding_truncated, jbyteArray following, jboolean following_truncated) {
+    if (!transcript) return 0;
+    jsize transcript_length = (*env)->GetArrayLength(env, transcript);
+    jsize preceding_length = preceding ? (*env)->GetArrayLength(env, preceding) : 0;
+    jsize following_length = following ? (*env)->GetArrayLength(env, following) : 0;
+    jbyte *transcript_bytes = (*env)->GetByteArrayElements(env, transcript, 0);
+    jbyte *preceding_bytes = preceding ? (*env)->GetByteArrayElements(env, preceding, 0) : 0;
+    jbyte *following_bytes = following ? (*env)->GetByteArrayElements(env, following, 0) : 0;
+    if (!transcript_bytes || (preceding && !preceding_bytes) || (following && !following_bytes)) {
+        if (transcript_bytes) (*env)->ReleaseByteArrayElements(env, transcript, transcript_bytes, JNI_ABORT);
+        if (preceding_bytes) (*env)->ReleaseByteArrayElements(env, preceding, preceding_bytes, JNI_ABORT);
+        if (following_bytes) (*env)->ReleaseByteArrayElements(env, following, following_bytes, JNI_ABORT);
+        return 0;
+    }
+
+    int32_t output_length = 0;
+    uint8_t *output = keyvox_engine_compose(
+        (const uint8_t *) transcript_bytes, transcript_length,
+        (const uint8_t *) preceding_bytes, preceding_length, preceding_truncated == JNI_TRUE,
+        (const uint8_t *) following_bytes, following_length, following_truncated == JNI_TRUE,
+        &output_length);
+    (*env)->ReleaseByteArrayElements(env, transcript, transcript_bytes, JNI_ABORT);
+    if (preceding_bytes) (*env)->ReleaseByteArrayElements(env, preceding, preceding_bytes, JNI_ABORT);
+    if (following_bytes) (*env)->ReleaseByteArrayElements(env, following, following_bytes, JNI_ABORT);
+    if (!output || output_length < 0) {
+        keyvox_engine_free_bytes(output);
+        return 0;
+    }
+
+    jbyteArray result = (*env)->NewByteArray(env, output_length);
+    if (result) (*env)->SetByteArrayRegion(env, result, 0, output_length, (const jbyte *) output);
+    keyvox_engine_free_bytes(output);
+    return (*env)->ExceptionCheck(env) ? 0 : result;
+}
+
 // Swift sends events on MainActor, which the Android main Looper now drains.
 void keyvox_engine_event(const char *json) {
     JNIEnv *env = 0;

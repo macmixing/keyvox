@@ -14,8 +14,11 @@ public final class ShellInstrumentation extends org.keyvox.android.engine.Engine
         Bundle result = new Bundle();
         try {
             if (captureChecks) org.keyvox.android.engine.CaptureInstrumentationChecks.run(this);
+            String compositionTimings = CompositionInstrumentationChecks.run();
             verifyEditorLifetime();
-            result.putString("stream", captureChecks ? "Capture and editor lifetime checks passed\n" : "Editor lifetime checks passed\n");
+            result.putString("stream", captureChecks
+                ? "Capture, composition, and editor lifetime checks passed\n"
+                : "Composition and editor lifetime checks passed\n" + compositionTimings + "\n");
             finish(Activity.RESULT_OK, result);
         } catch (Throwable failure) {
             result.putString("stream", failure.toString());
@@ -37,6 +40,9 @@ public final class ShellInstrumentation extends org.keyvox.android.engine.Engine
                     case "getTextBeforeCursor":
                         check((int) args[0] == 2 && (int) args[1] == 0);
                         return preceding[0];
+                    case "getTextAfterCursor": return "";
+                    case "beginBatchEdit":
+                    case "endBatchEdit": return true;
                     case "deleteSurroundingTextInCodePoints":
                         check((int) args[0] == 1 && (int) args[1] == 0);
                         deletes[0]++; return true;
@@ -52,7 +58,7 @@ public final class ShellInstrumentation extends org.keyvox.android.engine.Engine
         check(owner.deletePreviousCodePoint());
         check(deletes[0] == 1);
         selected[0] = new String(Character.toChars(0x1F642));
-        check(owner.commitDictation(second, ""));
+        check(owner.commitDictation(second, 1, ""));
         check(commits[0] == 2);
         check(owner.deletePreviousCodePoint());
         check(deletes[0] == 1 && commits[0] == 3);

@@ -3,6 +3,8 @@ package org.keyvox.android.ime;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.inputmethodservice.InputMethodService;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import org.keyvox.android.app.KeyVoxActivity;
@@ -16,16 +18,22 @@ public final class KeyVoxInputMethodService extends InputMethodService {
     private KeyboardShellView shell;
     private long destination;
     private long request = -1;
+    private long scheduledRetryDestination = -1;
+    private long scheduledRetryRequest = -1;
+    private Handler mainHandler;
     private final Runnable changed = this::render;
+    private final Runnable retryPendingDeletion = this::retryPendingDeletion;
 
     @Override public void onCreate() {
         super.onCreate();
+        mainHandler = new Handler(Looper.getMainLooper());
         session = KeyVoxApplication.dictation(this);
         session.observe(changed);
     }
 
     @Override public void onDestroy() {
         session.removeObserver(changed);
+        mainHandler.removeCallbacks(retryPendingDeletion);
         super.onDestroy();
     }
 
@@ -45,12 +53,34 @@ public final class KeyVoxInputMethodService extends InputMethodService {
     private void render() {
         if (shell != null) shell.render(session);
         if (request == session.request() && session.result() != null) {
-            if (editor.commitDictation(destination, session.result())) {
+            if (editor.commitDictation(destination, request, session.result())) {
                 long completed = request;
                 request = -1;
+                scheduledRetryDestination = -1;
+                scheduledRetryRequest = -1;
                 session.acknowledgeResult(completed);
+            } else if (editor.hasPendingDictation(destination, request)
+                    && (scheduledRetryDestination != destination
+                        || scheduledRetryRequest != request)) {
+                scheduledRetryDestination = destination;
+                scheduledRetryRequest = request;
+                mainHandler.post(retryPendingDeletion);
             }
         }
+    }
+
+    private void retryPendingDeletion() {
+        if (request != scheduledRetryRequest || destination != scheduledRetryDestination) return;
+        if (editor.hasPendingDictation(destination, request)) {
+            render();
+            return;
+        }
+
+        long completed = request;
+        request = -1;
+        scheduledRetryDestination = -1;
+        scheduledRetryRequest = -1;
+        session.acknowledgeResult(completed);
     }
 
     @Override public void onStartInput(EditorInfo info, boolean restarting) {
