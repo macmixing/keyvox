@@ -19,20 +19,29 @@ directory, NDK, Whisper prefix, and an external scratch directory:
 ```sh
 python3 build-engine.py --swift "$SWIFT_COMPILER" \
   --sdk-libraries "$SWIFT_ANDROID_LIBRARIES" --ndk "$ANDROID_NDK_HOME" \
-  --whisper-prefix "$WHISPER_PREFIX" --scratch /tmp/keyvox-android-engine-build
+  --whisper-prefix "$WHISPER_PREFIX" --scratch /tmp/keyvox-android-engine-build \
+  --profile npu-device --configuration release \
+  --qairt-root "$QAIRT_ROOT" --qnn-plugin /tmp/keyvox-qnn-build/libKeyVoxWhisperQnn.so
 ./gradlew :app:assembleDebug
 ```
 
-Use `--configuration release` when staging optimized Swift code for performance
-measurement; the default remains `debug`. Gradle's APK variant does not change
-the already staged Swift optimization level. See the
-[performance record](../Docs/Android/PERFORMANCE.md) for repeated pipeline probes.
+Normal debug and release APKs require the explicit `npu-device` profile, optimized
+Swift code, and the verified QNN runtime. Gradle's APK variant does not change the
+already staged Swift optimization level. The build fails before packaging if that
+profile or any required NPU component is absent. See the [performance
+record](../Docs/Android/PERFORMANCE.md) for repeated pipeline probes.
 
 The script follows actual ELF dependencies, copies unchanged SwiftPM resource
 bundles and their notices, and stages the result under `app/build/generated/engine`.
 Repeat staging after engine/package changes or `gradlew clean`. Gradle fails if
 the staged engine is missing. Only arm64 is currently packaged. The generated
 native inventory records pre-packaging hashes; Android packaging can strip symbols.
+
+CPU-only testing is isolated from the device keyboard. Stage it explicitly with
+`--profile cpu-test`, then build `./gradlew :app:assembleCpuTest`. That APK uses
+the separate `org.keyvox.android.cputest` application ID, so installing it cannot
+replace the NPU keyboard or its data. CPU-only output is never accepted by normal
+debug or release APK variants.
 
 ### Optional Qualcomm encoder
 
@@ -46,11 +55,9 @@ cmake -S ../Native/WhisperQNN -B /tmp/keyvox-qnn-build \
 cmake --build /tmp/keyvox-qnn-build --parallel
 ```
 
-Add `--qairt-root "$QAIRT_ROOT" --qnn-plugin /tmp/keyvox-qnn-build/libKeyVoxWhisperQnn.so`
-to the engine staging command. The builder verifies the pinned runtime and notice
-hashes before packaging. Omitting both flags preserves CPU-only packaging. For
-release packaging, use `./gradlew -Dorg.gradle.jvmargs=-Xmx4g assembleRelease` if
-the default Gradle heap is insufficient.
+The engine staging command above verifies the pinned runtime and notice hashes
+before packaging. The checked-in Gradle heap setting accommodates the retained
+native runtime and notice payload during APK compression.
 
 The existing Download action installs the verified optional encoder on supported
 hardware, including when Base is already present. Failure preserves Base readiness
@@ -114,12 +121,20 @@ No iOS source is extracted or modified by this host.
 
 ```sh
 ./gradlew :app:assembleDebug :app:assembleRelease :app:assembleDebugAndroidTest :app:lintDebug
-adb install -r app/build/outputs/apk/debug/app-debug.apk
+python3 install-npu-device.py --adb "$ANDROID_HOME/platform-tools/adb" \
+  --java-home "$JAVA_HOME" --serial "$DEVICE_SERIAL"
 adb install -r app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
 adb shell am instrument -w org.keyvox.android.test/org.keyvox.android.ime.ShellInstrumentation
 adb shell am instrument -w -e capture true org.keyvox.android.test/org.keyvox.android.ime.ShellInstrumentation
 adb shell am instrument -w -e fixture fixture.f32 org.keyvox.android.test/org.keyvox.android.ime.ShellInstrumentation
 ```
+
+The NPU installer refuses APKs without the release NPU profile, required QNN/DSP
+payload hashes, retained notices, expected package identity, and a valid APK
+signature. It preserves immutable digest-named candidates under
+`.device-artifacts/`, outside disposable Gradle output, and only advances the
+current known-good marker after installation succeeds. Use this installer for the
+shared physical device.
 
 The platform instrumentation runner exercises editor replacement, detachment,
 and selection deletion without introducing a third-party test runtime.

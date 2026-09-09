@@ -16,11 +16,19 @@ parser.add_argument('--whisper-prefix', required=True, type=pathlib.Path)
 parser.add_argument('--scratch', required=True, type=pathlib.Path)
 parser.add_argument('--qairt-root', type=pathlib.Path)
 parser.add_argument('--qnn-plugin', type=pathlib.Path)
+parser.add_argument('--profile', choices=['npu-device', 'cpu-test'], required=True)
 parser.add_argument('--configuration', choices=['debug', 'release'], default='debug')
 args = parser.parse_args()
 root = pathlib.Path(__file__).resolve().parent
 if bool(args.qairt_root) != bool(args.qnn_plugin):
     raise SystemExit('--qairt-root and --qnn-plugin must be supplied together')
+if args.profile == 'npu-device':
+    if not args.qairt_root:
+        raise SystemExit('The npu-device profile requires --qairt-root and --qnn-plugin')
+    if args.configuration != 'release':
+        raise SystemExit('The npu-device profile requires --configuration release')
+elif args.qairt_root:
+    raise SystemExit('The cpu-test profile must not include QAIRT or the QNN plugin')
 qnn_libraries = []
 if args.qairt_root:
     runtime_lock = json.loads((root.parent / 'Native/WhisperQNN/runtime.lock.json').read_text())
@@ -73,7 +81,7 @@ while pending:
         if found is None:
             raise SystemExit('Unresolved native library: ' + name)
         pending.append(found)
-output = root / 'app/build/generated/engine'
+output = root / 'app/build/generated/engine' / args.profile
 # This directory contains only disposable output from this script.
 if output.exists():
     shutil.rmtree(output)
@@ -116,4 +124,9 @@ if args.qairt_root:
     for name in ['LICENSE.pdf', 'QNN_NOTICE.txt']:
         shutil.copy2(args.qairt_root / name, notices / name)
 (assets / 'native-libraries.json').write_text(json.dumps(inventory, indent=2) + '\n')
+(assets / 'engine-profile.json').write_text(json.dumps({
+    'profile': args.profile,
+    'configuration': args.configuration,
+    'qnn': bool(args.qairt_root),
+}, indent=2) + '\n')
 print('Staged', len(libraries), 'native libraries at', output)

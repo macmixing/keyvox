@@ -1,6 +1,45 @@
 import Foundation
 
 public enum TextCompositionPolicy {
+    public static func composeForInsertion(
+        text: String,
+        precedingContext: TextCompositionContext?,
+        followingText: String?,
+        preserveLeadingCapitalization: Bool
+    ) -> TextCompositionResult {
+        let preparedText: String
+        if let precedingContext {
+            let capitalizationNormalized = normalizeLeadingCapitalizationIfNeeded(
+                in: text,
+                context: precedingContext,
+                scope: .firstCharacter,
+                preserveLeadingCapitalization: preserveLeadingCapitalization
+            )
+            preparedText = applySmartLeadingSeparatorIfNeeded(
+                to: capitalizationNormalized,
+                context: precedingContext
+            )
+        } else {
+            preparedText = text
+        }
+
+        let followingCharacter = followingText?.first
+        let followingNonWhitespaceCharacter = followingText?.first { $0.isWhitespace == false }
+        let punctuation = TerminalPunctuationCompositionPolicy.resolve(
+            text: preparedText,
+            followingCharacter: followingCharacter,
+            followingNonWhitespaceCharacter: followingNonWhitespaceCharacter,
+            followingText: followingText
+        )
+        return TextCompositionResult(
+            text: TrailingSeparatorCompositionPolicy.applyIfNeeded(
+                to: punctuation.text,
+                followingCharacter: followingCharacter
+            ),
+            shouldDeleteFollowingCodePoint: punctuation.shouldReplaceFollowingPunctuation
+        )
+    }
+
     public static func normalizeLeadingCapitalizationIfNeeded(
         in text: String,
         context: TextCompositionContext,

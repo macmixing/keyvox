@@ -54,6 +54,7 @@ link detailed commands and limitations rather than duplicating them here.
 | Whisper model failure and reload | FUNCTIONAL | Absent selection and invalid-file paths exercised; explicit unload followed by exact Base load and a second reload produced speech on device; file availability is not integrity verification |
 | Model installation and management on Android | FUNCTIONAL | Containing app downloads exact Base and verifies it before readiness; resumability, onboarding journey, cancellation and recovery remain unresolved |
 | Background dictation | FUNCTIONAL | Physical-device capture continues after Home and keyboard cancellation releases it; lock-screen, interruptions, process death and warm-session parity remain unresolved |
+| Cursor-aware dictation composition | FUNCTIONAL | Installed Android 16 JNI/Swift checks cover empty fields, text on both cursor sides, punctuation replacement, selected-text replacement, non-BMP Unicode, unavailable/capped surrounding text, no speech, and stale editor generations. Real third-party editor behavior still needs human coverage; editors may withhold context, where insertion deliberately preserves the processed transcript rather than guessing boundary changes |
 | Dictation performance | FUNCTIONAL / UNRESOLVED | Optional Qualcomm NPU encoder now executes in the installed shell with the existing Base decoder, VAD, and Core: 388–438 ms provider versus 2.394–2.489 s CPU with identical processed-output hashes. CPU fallback verified. Only SM8850 artifact validated; broader devices and thermal/reliability coverage remain unresolved. SDK distribution terms and Eigen source-access requirements verified; notices retained. See [measurements](PERFORMANCE.md) |
 | Windows/Linux execution | UNRESOLVED | Capability boundaries exist; actual builds and runtime checks remain necessary |
 
@@ -108,9 +109,12 @@ ignores language hints. These limitations must remain visible to host developers
       and route changes. Preserve recoverable audio where the existing flow does.
 - [ ] Carry over existing idle-session policy and utterance safety behavior from
       their source of truth, without copying thresholds into Android UI code.
-- [ ] Connect dictation commands and processed output to the eventual input host,
-      preserving cancellation, capitalization, spacing, replacement, and insertion
-      semantics through real host tests.
+- [x] Connect dictation commands and processed output to the Android IME through
+      `KeyVoxTextComposition`, preserving cancellation/no-speech delivery,
+      capitalization, spacing, punctuation, selection replacement, Unicode, and
+      stale-editor rejection in installed device checks. Human testing across real
+      third-party editors remains required because Android editors can deny or cap
+      surrounding text; unavailable context uses an explicit conservative fallback.
 - [ ] Validate model/language selection, dictionary editing and persistence, and
       user-visible failures through the completed dictation flow.
 - [ ] Preserve the existing model-download journey, including downloading a

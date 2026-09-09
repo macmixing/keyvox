@@ -24,3 +24,6 @@ Tools/Marketing/
 # Model training artifacts
 /ModelTraining/artifacts/
 /ModelTraining/models/
+
+# Locally preserved verified Android device builds
+/Android/.device-artifacts/

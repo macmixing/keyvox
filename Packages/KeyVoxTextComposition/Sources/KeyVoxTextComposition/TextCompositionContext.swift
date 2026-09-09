@@ -34,7 +34,7 @@ public struct TextCompositionContext: Equatable, Sendable {
         self.isAfterNewline = isAfterNewline
     }
 
-    public init(precedingText: String) {
+    public init(precedingText: String, isAtDocumentStart: Bool? = nil) {
         let previousCharacter = precedingText.last
         let previousNonWhitespaceIndex = precedingText.lastIndex {
             $0.isWhitespace == false
@@ -46,7 +46,7 @@ public struct TextCompositionContext: Equatable, Sendable {
             }
         } ?? false
         self.init(
-            isAtDocumentStart: nonWhitespaceCharacters.isEmpty,
+            isAtDocumentStart: isAtDocumentStart ?? nonWhitespaceCharacters.isEmpty,
             previousCharacter: previousCharacter,
             characterBeforePreviousCharacter: precedingText.dropLast().last,
             previousNonWhitespaceCharacter: nonWhitespaceCharacters.first,
