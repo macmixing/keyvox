@@ -199,17 +199,21 @@ extension TTSPlaybackCoordinator {
         onPreparationProgress?(activeSilentStartSampleCount, activeSilentStartSampleCount, false)
         onPreparationCompleted?()
         notifyFastModeBackgroundSafetyChanged()
+        let sessionID = playbackSessionID
 
         let startPlayback = { [weak self] in
             guard let self else { return }
             Task { @MainActor [weak self] in
                 guard let self else { return }
+                guard self.playbackSessionID == sessionID else { return }
                 do {
                     try await self.ensureAudioEngineReadyForPlayback(context: "startupBuffer")
                 } catch {
+                    guard self.playbackSessionID == sessionID else { return }
                     self.handleFailure(error)
                     return
                 }
+                guard self.playbackSessionID == sessionID else { return }
                 self.playerNode.play()
                 self.startPlaybackProgressTimer()
                 self.onPreparationProgress?(self.activeSilentStartSampleCount, self.activeSilentStartSampleCount, true)

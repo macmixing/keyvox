@@ -60,15 +60,19 @@ extension TTSPlaybackCoordinator {
             remainingEstimatedSamples: lastObservedRemainingEstimatedSamples
         )
         guard queuedSampleCount >= requiredSamples || (isFinishing && queuedSampleCount > 0) else { return }
+        let sessionID = playbackSessionID
 
         Task { @MainActor [weak self] in
             guard let self else { return }
+            guard self.playbackSessionID == sessionID else { return }
             do {
                 try await self.ensureAudioEngineReadyForPlayback(context: "resumeIfBufferedEnough")
             } catch {
+                guard self.playbackSessionID == sessionID else { return }
                 self.handleFailure(error)
                 return
             }
+            guard self.playbackSessionID == sessionID else { return }
 
             self.playerNode.play()
             self.isPaused = false
