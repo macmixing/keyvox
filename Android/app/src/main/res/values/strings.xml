@@ -35,4 +35,9 @@
     <string name="tab_dictionary">Dictionary</string>
     <string name="tab_style">Style</string>
     <string name="tab_settings">Settings</string>
+    <string name="home_words_this_week">Words this week!</string>
+    <string name="home_latest_transcription">Latest Transcription</string>
+    <string name="home_empty_transcription">Your last transcription will appear here after you dictate on this device.</string>
+    <string name="copy">Copy</string>
+    <string name="share_campaign">Share %1$s</string>
 </resources>
