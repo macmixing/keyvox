@@ -18,6 +18,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import org.keyvox.android.R;
+import org.keyvox.android.app.presentation.AppTintedScrollView;
 
 /** Renders and copies the most recent successful transcription. */
 final class LastTranscriptionCard extends LinearLayout {
@@ -114,12 +115,16 @@ final class LastTranscriptionCard extends LinearLayout {
     }
 
     private View transcriptionView(String text) {
-        MaxHeightScrollView scroll = new MaxHeightScrollView(
+        int contentPadding = dp(16);
+        AppTintedScrollView scroll = new AppTintedScrollView(
             getContext(),
-            dimension(R.dimen.home_transcription_max_height)
+            contentPadding,
+            dp(64),
+            dimension(R.dimen.home_transcription_max_height),
+            getResources().getColor(R.color.app_primary_action, getContext().getTheme())
         );
-        scroll.setMinimumHeight(dp(64));
         scroll.setBackgroundResource(R.drawable.app_row_background);
+        scroll.setClipToOutline(true);
         TextView value = new TextView(getContext());
         value.setText(text);
         value.setTextColor(getResources().getColor(R.color.app_primary_text, getContext().getTheme()));
@@ -127,11 +132,7 @@ final class LastTranscriptionCard extends LinearLayout {
         value.setTypeface(getResources().getFont(R.font.kanit_light));
         value.setTextIsSelectable(true);
         value.setGravity(Gravity.START);
-        value.setPadding(dp(16), dp(16), dp(16), dp(16));
-        scroll.addView(value, new ViewGroup.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.WRAP_CONTENT
-        ));
+        scroll.setContent(value);
         return scroll;
     }
 
