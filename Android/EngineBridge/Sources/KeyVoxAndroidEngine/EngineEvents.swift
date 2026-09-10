@@ -1,8 +1,12 @@
 import Foundation
 import CAndroidEngine
+import KeyVoxPromotions
 
 struct EngineEvent: Encodable {
-    enum Kind: String, Encodable { case configured, modelDownloading, modelReady, modelFailed, result, failed, cancelled }
+    enum Kind: String, Encodable {
+        case configured, modelDownloading, modelReady, modelFailed, result, failed, cancelled
+        case promotionConfigured
+    }
     let kind: Kind
     var request: Int64? = nil
     var text: String? = nil
@@ -14,6 +18,7 @@ struct EngineEvent: Encodable {
     var inferenceMilliseconds: Double? = nil
     var pipelineMilliseconds: Double? = nil
     var postProcessorPreparationWaitMilliseconds: Double? = nil
+    var campaign: PromotionCampaign? = nil
 
     @MainActor func send() {
         guard let data = try? JSONEncoder().encode(self) else { return }

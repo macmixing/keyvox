@@ -12,4 +12,8 @@
     <color name="app_secondary_action_fill">#14FFFFFF</color>
     <color name="app_secondary_action_stroke">#1FFFFFFF</color>
     <color name="app_divider">#1AFFFFFF</color>
+    <color name="app_row_fill">#0AFFFFFF</color>
+    <color name="app_row_stroke">#14FFFFFF</color>
+    <color name="app_promotion_fill">#24FFD60A</color>
+    <color name="app_promotion_stroke">#52FFD60A</color>
 </resources>

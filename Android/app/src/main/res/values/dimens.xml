@@ -8,4 +8,7 @@
     <dimen name="app_tab_bar_height">64dp</dimen>
     <dimen name="app_tab_icon_size">24dp</dimen>
     <dimen name="app_regular_button_height">54dp</dimen>
+    <dimen name="app_compact_button_height">36dp</dimen>
+    <dimen name="app_row_corner_radius">10dp</dimen>
+    <dimen name="home_transcription_max_height">300dp</dimen>
 </resources>

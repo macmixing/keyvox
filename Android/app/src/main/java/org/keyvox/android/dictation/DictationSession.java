@@ -10,6 +10,7 @@ import android.util.Log;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 import org.json.JSONObject;
 import org.keyvox.android.engine.EngineResources;
 import org.keyvox.android.engine.NativeEngine;
@@ -20,6 +21,7 @@ public final class DictationSession {
     public enum Model { CHECKING, MISSING, DOWNLOADING, READY, FAILED }
     private final Context context;
     private final Handler main = new Handler(Looper.getMainLooper());
+    private final Consumer<String> successfulTranscription;
     private final List<Runnable> observers = new ArrayList<>();
     private Phase phase = Phase.INITIALIZING;
     private Model model = Model.CHECKING;
@@ -32,7 +34,10 @@ public final class DictationSession {
     private boolean awaitingEngineCancellation;
     private float audioLevel;
 
-    public DictationSession(Context context) { this.context = context.getApplicationContext(); }
+    public DictationSession(Context context, Consumer<String> successfulTranscription) {
+        this.context = context.getApplicationContext();
+        this.successfulTranscription = successfulTranscription;
+    }
     public Phase phase() { return phase; }
     public Model model() { return model; }
     public boolean canDownloadModel() {
@@ -52,12 +57,12 @@ public final class DictationSession {
                 org.keyvox.android.engine.AccelerationRuntime.prepare(resources);
                 main.post(() -> {
                     try {
-                        NativeEngine.setListener(this::receive);
                         if (!NativeEngine.initialize(resources.getPath(),
                                 new File(context.getFilesDir(), "models").getPath(),
                                 new File(context.getFilesDir(), "dictionary").getPath(),
                                 context.getApplicationInfo().nativeLibraryDir,
-                                android.os.Build.VERSION.SDK_INT >= 31 ? android.os.Build.SOC_MODEL : "")) fail();
+                                android.os.Build.VERSION.SDK_INT >= 31 ? android.os.Build.SOC_MODEL : "",
+                                org.keyvox.android.BuildConfig.VERSION_NAME)) fail();
                     } catch (LinkageError | RuntimeException error) { Log.e("KeyVoxEngine", "Initialization failed", error); fail(); }
                 });
             } catch (Exception error) { Log.e("KeyVoxEngine", "Resource installation failed", error); main.post(this::fail); }
@@ -144,7 +149,7 @@ public final class DictationSession {
         if (request == id) { result = null; publish(); }
     }
 
-    private void receive(String json) {
+    public void receive(String json) {
         try {
             JSONObject event = new JSONObject(json);
             String kind = event.getString("kind");
@@ -162,6 +167,9 @@ public final class DictationSession {
                     if (phase == Phase.CANCELLING) return;
                     if (event.optLong("request", -1) != request) return;
                     result = event.optString("text", "");
+                    if (!event.optBoolean("noSpeech") && !result.trim().isEmpty()) {
+                        successfulTranscription.accept(result);
+                    }
                     clearAudio();
                     phase = Phase.IDLE;
                     break;

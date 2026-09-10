@@ -1,6 +1,7 @@
 public enum PromotionPlatform: String, Codable, CaseIterable, Sendable {
     case iOS = "ios"
     case macOS = "macos"
+    case android
 }
 
 public struct PromotionTarget: Codable, Equatable, Sendable {
