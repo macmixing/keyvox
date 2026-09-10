@@ -106,7 +106,7 @@ extension AudioRecorder {
         )
 
         invalidateAudioEngine(clearSessionActive: true)
-        deactivateAudioSessionForRouteRecovery()
+        scheduleAudioSessionDeactivationForRouteRecovery()
         isRecording = false
         captureStartedAt = .distantPast
         apply(stopResult: interruptedCapture, hadNonDeadSignal: snapshot.hadNonDeadSignal)

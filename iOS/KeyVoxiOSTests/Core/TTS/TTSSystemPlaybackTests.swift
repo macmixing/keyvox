@@ -176,6 +176,75 @@ struct TTSSystemPlaybackTests {
         #expect(coordinator.hasHandedOffPausedPlaybackSession == false)
     }
 
+    @Test func stoppingBeforeBufferedResumeTaskRunsKeepsPlaybackStopped() async {
+        let audioSession = SpyPlaybackAudioSession()
+        let coordinator = TTSPlaybackCoordinator(audioSession: audioSession)
+        var resumedCallCount = 0
+
+        coordinator.didStartPlayback = true
+        coordinator.isPaused = true
+        coordinator.isWaitingForResumeBuffer = true
+        coordinator.isFinishing = true
+        coordinator.queuedSampleCount = 1
+        coordinator.onPlaybackResumed = {
+            resumedCallCount += 1
+        }
+
+        coordinator.resumeIfBufferedEnough()
+        coordinator.stop()
+        await Task.yield()
+        await Task.yield()
+
+        #expect(resumedCallCount == 0)
+        #expect(coordinator.didStartPlayback == false)
+        #expect(coordinator.audioEngine.isRunning == false)
+    }
+
+    @Test func repeatedBufferedResumeRequestsEmitSingleResumeCallback() async {
+        let audioSession = SpyPlaybackAudioSession()
+        let coordinator = TTSPlaybackCoordinator(audioSession: audioSession)
+        var resumedCallCount = 0
+
+        coordinator.didStartPlayback = true
+        coordinator.isPaused = true
+        coordinator.isWaitingForResumeBuffer = true
+        coordinator.isFinishing = true
+        coordinator.queuedSampleCount = 1
+        coordinator.onPlaybackResumed = {
+            resumedCallCount += 1
+        }
+
+        coordinator.resumeIfBufferedEnough()
+        coordinator.resumeIfBufferedEnough()
+        await Task.yield()
+        await Task.yield()
+
+        #expect(resumedCallCount == 1)
+    }
+
+    @Test func stoppingBeforeBufferedStartTaskRunsKeepsPlaybackStopped() async throws {
+        let audioSession = SpyPlaybackAudioSession()
+        let coordinator = TTSPlaybackCoordinator(audioSession: audioSession)
+        coordinator.configureAudioGraphIfNeeded()
+        let buffer = try #require(coordinator.makeBuffer(from: Array(repeating: 0.25, count: 2_400)))
+        var startedCallCount = 0
+
+        coordinator.pendingStartBuffers = [buffer]
+        coordinator.activeSilentStartSampleCount = Int(buffer.frameLength)
+        coordinator.onPlaybackStarted = {
+            startedCallCount += 1
+        }
+
+        coordinator.flushPendingStartBuffers()
+        coordinator.stop()
+        await Task.yield()
+        await Task.yield()
+
+        #expect(startedCallCount == 0)
+        #expect(coordinator.didStartPlayback == false)
+        #expect(coordinator.audioEngine.isRunning == false)
+    }
+
     @Test func pausingPlainPlaybackDoesNotDeactivateOrHandoffAudioSession() {
         let audioSession = SpyPlaybackAudioSession()
         let coordinator = TTSPlaybackCoordinator(audioSession: audioSession)
@@ -338,6 +407,8 @@ private final class SpyPlaybackAudioSession: TTSPlaybackAudioSessionControlling 
     func overrideOutputAudioPort(_ portOverride: AVAudioSession.PortOverride) throws {
         portOverrides.append(portOverride)
     }
+
+    func setAllowHapticsAndSystemSoundsDuringRecording(_ inValue: Bool) throws {}
 
     func setActive(_ active: Bool, options: AVAudioSession.SetActiveOptions) throws {
         activeCalls.append(.init(active: active, options: options))

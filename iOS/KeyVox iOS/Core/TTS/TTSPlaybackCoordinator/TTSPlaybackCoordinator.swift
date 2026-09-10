@@ -20,6 +20,7 @@ protocol TTSPlaybackAudioSessionControlling: AnyObject {
     ) throws
 
     func overrideOutputAudioPort(_ portOverride: AVAudioSession.PortOverride) throws
+    func setAllowHapticsAndSystemSoundsDuringRecording(_ inValue: Bool) throws
     func setActive(_ active: Bool, options: AVAudioSession.SetActiveOptions) throws
 }
 
@@ -92,6 +93,8 @@ final class TTSPlaybackCoordinator {
     var hasObservedFastModeBackgroundSafeCompute = false
     var hasConfiguredAudioGraph = false
     var hasHandedOffPausedPlaybackSession = false
+    var hasActivatedAudioSession = false
+    var configuredAudioSessionMode: AudioSessionMode?
     var overrideIsPlayerNodePlaying: Bool?
     let audioSession: any TTSPlaybackAudioSessionControlling
     let preferBuiltInMicrophoneProvider: () -> Bool

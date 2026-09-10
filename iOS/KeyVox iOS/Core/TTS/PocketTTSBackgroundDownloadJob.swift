@@ -98,7 +98,7 @@ struct PocketTTSBackgroundDownloadJob: Codable, Equatable, Sendable {
     }
 }
 
-extension PocketTTSInstallTarget: Codable, Sendable {
+extension PocketTTSInstallTarget: Codable {
     private enum CodingKeys: String, CodingKey {
         case kind
         case voice

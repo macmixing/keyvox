@@ -29,7 +29,7 @@ extension TTSManager {
     func refreshSystemPlaybackControls() {
         guard let systemPlaybackController else { return }
         guard state == .playing || shouldExposeFinishedReplaySystemPlayback else {
-            Self.log("System playback controls cleared because state=\(state.rawValue)")
+            clearSystemPlaybackControlsIfNeeded(reason: "state=\(state.rawValue)")
             systemPlaybackController.clear()
             return
         }
@@ -40,11 +40,12 @@ extension TTSManager {
             || shouldExposeFinishedReplaySystemPlayback
         guard let displayText = currentPlaybackDisplayText,
               displayText.isEmpty == false else {
-            Self.log("System playback controls cleared because no playback display text was available.")
+            clearSystemPlaybackControlsIfNeeded(reason: "no playback display text was available")
             systemPlaybackController.clear()
             return
         }
 
+        lastSystemPlaybackClearReason = nil
         let elapsedSeconds = currentSystemPlaybackElapsedSeconds(isReplayTransport: isReplayTransport)
         let durationSeconds = isReplayTransport ? currentSystemReplayDurationSeconds : nil
         systemPlaybackController.update(
@@ -55,6 +56,12 @@ extension TTSManager {
             elapsedSeconds: elapsedSeconds,
             durationSeconds: durationSeconds
         )
+    }
+
+    private func clearSystemPlaybackControlsIfNeeded(reason: String) {
+        guard lastSystemPlaybackClearReason != reason else { return }
+        lastSystemPlaybackClearReason = reason
+        Self.log("System playback controls cleared because \(reason)")
     }
 
     private var currentSystemPlaybackVoiceName: String? {

@@ -125,7 +125,7 @@ extension TranscriptionManager {
         cancelUtteranceSafetyWatchdog()
 
         do {
-            try recorder.stopMonitoring(keepAudioSessionActive: isTTSPlaybackActiveProvider())
+            try await recorder.stopMonitoring(keepAudioSessionActive: isTTSPlaybackActiveProvider())
             isSessionActive = false
             sessionDisablePending = false
             sessionExpirationDate = nil

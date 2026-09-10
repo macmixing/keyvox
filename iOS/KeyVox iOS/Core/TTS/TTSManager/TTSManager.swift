@@ -49,7 +49,9 @@ final class TTSManager: ObservableObject {
     var pendingRuntimeUnloadReason: TTSRuntimeUnloadReason?
     var pendingRuntimeUnloadStartedAt: Date?
     var hasRequestedFastModeBackgroundContinuation = false
+    var isProtectedDataLockTransitionActive = false
     var shouldExposeFinishedSystemPlayback = false
+    var lastSystemPlaybackClearReason: String?
     var onWillTeardownPlayback: (() async -> Void)?
     var cancellables = Set<AnyCancellable>()
 
