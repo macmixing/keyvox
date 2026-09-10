@@ -1,0 +1,15 @@
+<resources>
+    <color name="app_screen_background">#1A1740</color>
+    <color name="app_chrome_background">#F21A1740</color>
+    <color name="app_card_fill">#0DFFFFFF</color>
+    <color name="app_card_stroke">#1AFFFFFF</color>
+    <color name="app_primary_text">#FFFFFFFF</color>
+    <color name="app_secondary_text">#B3FFFFFF</color>
+    <color name="app_accent">#5E5CE6</color>
+    <color name="app_tab_unselected">#FF8E8E93</color>
+    <color name="app_primary_action">#FFFFD60A</color>
+    <color name="app_primary_action_text">#FF000000</color>
+    <color name="app_secondary_action_fill">#14FFFFFF</color>
+    <color name="app_secondary_action_stroke">#1FFFFFFF</color>
+    <color name="app_divider">#1AFFFFFF</color>
+</resources>

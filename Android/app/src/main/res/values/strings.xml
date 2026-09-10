@@ -31,4 +31,8 @@
     <string name="keyboard_caps_lock">Caps Lock</string>
     <string name="keyboard_speak">Speak</string>
     <string name="keyboard_vibes">KeyVox Vibes</string>
+    <string name="tab_home">Home</string>
+    <string name="tab_dictionary">Dictionary</string>
+    <string name="tab_style">Style</string>
+    <string name="tab_settings">Settings</string>
 </resources>

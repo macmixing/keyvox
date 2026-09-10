@@ -6,7 +6,8 @@
     <application android:name=".app.KeyVoxApplication" android:label="@string/app_name" android:allowBackup="false"
         android:supportsRtl="true" android:theme="@android:style/Theme.Material.Light.NoActionBar">
         <uses-native-library android:name="libcdsprpc.so" android:required="false" />
-        <activity android:name=".app.KeyVoxActivity" android:exported="true">
+        <activity android:name=".app.KeyVoxActivity" android:exported="true"
+            android:theme="@style/Theme.KeyVox">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

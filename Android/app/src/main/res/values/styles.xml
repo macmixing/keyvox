@@ -1,0 +1,11 @@
+<resources>
+    <style name="Theme.KeyVox" parent="android:style/Theme.Material.NoActionBar">
+        <item name="android:fontFamily">@font/kanit_medium</item>
+        <item name="android:windowBackground">@color/app_screen_background</item>
+        <item name="android:colorAccent">@color/app_accent</item>
+        <item name="android:statusBarColor">@color/app_chrome_background</item>
+        <item name="android:navigationBarColor">@color/app_chrome_background</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+    </style>
+</resources>
