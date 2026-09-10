@@ -106,6 +106,26 @@ final class PromotionSelectionTests: XCTestCase {
         XCTAssertEqual(selection.campaign?.id, "eligible")
     }
 
+    func testSelectsAndroidCampaignForAndroidAudience() {
+        let manifest = PromotionManifest(
+            selection: PromotionSelectionPolicy(mode: .static),
+            campaigns: [
+                makeCampaign(id: "ios", platform: .iOS),
+                makeCampaign(id: "android", platform: .android),
+            ]
+        )
+
+        let selection = PromotionSelector.select(
+            manifest: manifest,
+            audience: PromotionAudience(platform: .android, appVersion: "0.1"),
+            now: now,
+            previousState: nil,
+            previewCampaignID: nil
+        )
+
+        XCTAssertEqual(selection.campaign?.id, "android")
+    }
+
     private func makeManifest() -> PromotionManifest {
         PromotionManifest(
             selection: PromotionSelectionPolicy(mode: .rotating, intervalHours: 72),

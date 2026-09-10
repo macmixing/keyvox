@@ -64,7 +64,7 @@ public actor PromotionManifestRepository {
     }
 
     public static func bundledManifestData() throws -> Data {
-        guard let url = Bundle.module.url(forResource: "campaigns", withExtension: "json") else {
+        guard let url = PromotionResources.bundle.url(forResource: "campaigns", withExtension: "json") else {
             throw CocoaError(.fileNoSuchFile)
         }
         return try Data(contentsOf: url)
