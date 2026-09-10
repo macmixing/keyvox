@@ -15,13 +15,15 @@ public final class NativeEngine {
         if (Looper.myLooper() != Looper.getMainLooper()) throw new IllegalStateException("Engine initialization requires the main thread");
         listener = value;
     }
-    public static native boolean initialize(String resources, String models, String dictionary, String runtime, String soc);
+    public static native boolean initialize(String resources, String models, String dictionary, String runtime, String soc, String appVersion);
     public static boolean extractModelMember(String archive, String member, String destination, long size) {
         return ModelArchiveExtractor.extract(archive, member, destination, size);
     }
     public static native void transcribe(String path, long request);
     public static native void cancel();
     public static native void download();
+    public static native void configurePromotions(String appVersion, boolean usesBundledManifest, String previewCampaignID);
+    public static native void refreshPromotions();
 
     public static final class Composition {
         public final String text;

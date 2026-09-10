@@ -1,18 +1,20 @@
 import Foundation
 
 @_cdecl("keyvox_engine_configure")
-public func configure(_ resources: UnsafePointer<CChar>, _ models: UnsafePointer<CChar>, _ dictionary: UnsafePointer<CChar>, _ runtime: UnsafePointer<CChar>, _ soc: UnsafePointer<CChar>) {
+public func configure(_ resources: UnsafePointer<CChar>, _ models: UnsafePointer<CChar>, _ dictionary: UnsafePointer<CChar>, _ runtime: UnsafePointer<CChar>, _ soc: UnsafePointer<CChar>, _ appVersion: UnsafePointer<CChar>) {
     let resources = URL(fileURLWithPath: String(cString: resources), isDirectory: true)
     let models = URL(fileURLWithPath: String(cString: models), isDirectory: true)
     let dictionary = URL(fileURLWithPath: String(cString: dictionary), isDirectory: true)
     let runtime = URL(fileURLWithPath: String(cString: runtime), isDirectory: true)
     let soc = String(cString: soc)
+    let appVersion = String(cString: appVersion)
     AndroidDictionaryCasingStore.shared.configure(directory: dictionary)
     Task { @MainActor in
         do {
             if EngineSession.shared == nil {
                 EngineSession.shared = try EngineSession(resources: resources, models: models, dictionaryDirectory: dictionary, runtimeDirectory: runtime, socIdentifier: soc)
             }
+            try AndroidPromotionCoordinator.install(resources: resources, appVersion: appVersion)
             EngineSession.shared?.refreshModel()
         } catch { EngineEvent(kind: .failed).send() }
     }
@@ -32,6 +34,28 @@ public func cancel() { Task { @MainActor in EngineSession.shared?.cancel() } }
 
 @_cdecl("keyvox_engine_download")
 public func download() { Task { @MainActor in EngineSession.shared?.download() } }
+
+@_cdecl("keyvox_promotions_configure")
+public func configurePromotions(
+    _ appVersion: UnsafePointer<CChar>,
+    _ usesBundledManifest: Bool,
+    _ previewCampaignID: UnsafePointer<CChar>?
+) {
+    let appVersion = String(cString: appVersion)
+    let previewCampaignID = previewCampaignID.map(String.init(cString:))
+    Task { @MainActor in
+        AndroidPromotionCoordinator.configurePreview(
+            appVersion: appVersion,
+            usesBundledManifest: usesBundledManifest,
+            previewCampaignID: previewCampaignID
+        )
+    }
+}
+
+@_cdecl("keyvox_promotions_refresh")
+public func refreshPromotions() {
+    Task { @MainActor in AndroidPromotionCoordinator.shared?.refresh() }
+}
 
 @_cdecl("keyvox_engine_compose")
 public func compose(

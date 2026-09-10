@@ -8,6 +8,7 @@ let package = Package(
         .package(path: "../../Packages/KeyVoxCore"),
         .package(path: "../../Packages/KeyVoxTextComposition"),
         .package(path: "../../Packages/KeyVoxModels"),
+        .package(path: "../../Packages/KeyVoxPromotions"),
         .package(path: "../../Packages/KeyVoxWhisper"),
         .package(path: "../../Packages/KeyVoxVoiceActivity")
     ],
@@ -16,6 +17,7 @@ let package = Package(
             .product(name: "KeyVoxCore", package: "KeyVoxCore"),
             .product(name: "KeyVoxTextComposition", package: "KeyVoxTextComposition"),
             .product(name: "KeyVoxModels", package: "KeyVoxModels"),
+            .product(name: "KeyVoxPromotions", package: "KeyVoxPromotions"),
             .product(name: "KeyVoxWhisper", package: "KeyVoxWhisper"),
             .product(name: "KeyVoxVoiceActivity", package: "KeyVoxVoiceActivity")]),
         .target(name: "CAndroidEngine", linkerSettings: [.linkedLibrary("android"), .linkedLibrary("log")])
