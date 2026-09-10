@@ -5,6 +5,7 @@ import android.content.res.Configuration;
 import android.inputmethodservice.InputMethodService;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import org.keyvox.android.app.KeyVoxActivity;
@@ -14,10 +15,9 @@ import org.keyvox.android.dictation.DictationSession;
 /** Android editor lifecycle adapter; the view owns neither capture nor inference. */
 public final class KeyVoxInputMethodService extends InputMethodService {
     private final EditorConnectionOwner editor = new EditorConnectionOwner();
+    private final DictationDestination dictationDestination = new DictationDestination();
     private DictationSession session;
     private KeyboardShellView shell;
-    private long destination;
-    private long request = -1;
     private long scheduledRetryDestination = -1;
     private long scheduledRetryRequest = -1;
     private Handler mainHandler;
@@ -28,6 +28,10 @@ public final class KeyVoxInputMethodService extends InputMethodService {
         super.onCreate();
         mainHandler = new Handler(Looper.getMainLooper());
         session = KeyVoxApplication.dictation(this);
+        if (hasPendingInsertion()) {
+            dictationDestination.recover(session.request());
+            Log.i("KeyVoxIME", "Recovered dictation request=" + session.request());
+        }
         session.observe(changed);
     }
 
@@ -45,47 +49,64 @@ public final class KeyVoxInputMethodService extends InputMethodService {
         if (session.phase() == DictationSession.Phase.RECORDING || session.phase() == DictationSession.Phase.STARTING) {
             session.stop();
         } else if (session.canStart()) {
-            destination = editor.generation();
-            request = session.start();
+            long request = session.start();
+            dictationDestination.begin(request, editor.generation());
+            Log.i("KeyVoxIME", "Started dictation request=" + request
+                + " editor=" + editor.generation());
         } else openApp();
     }
 
     private void render() {
         if (shell != null) shell.render(session);
+        long request = dictationDestination.request();
+        long destination = dictationDestination.editorGeneration();
         if (request == session.request() && session.result() != null) {
             if (editor.commitDictation(destination, request, session.result())) {
                 long completed = request;
-                request = -1;
+                dictationDestination.clear();
                 scheduledRetryDestination = -1;
                 scheduledRetryRequest = -1;
+                Log.i("KeyVoxIME", "Inserted dictation request=" + completed
+                    + " editor=" + destination);
                 session.acknowledgeResult(completed);
             } else if (editor.hasPendingDictation(destination, request)
                     && (scheduledRetryDestination != destination
                         || scheduledRetryRequest != request)) {
                 scheduledRetryDestination = destination;
                 scheduledRetryRequest = request;
+                dictationDestination.clear();
+                Log.i("KeyVoxIME", "Inserted dictation request=" + request
+                    + " editor=" + destination + " with punctuation cleanup pending");
+                session.acknowledgeResult(request);
                 mainHandler.post(retryPendingDeletion);
+            } else {
+                Log.i("KeyVoxIME", "Waiting for editor for dictation request=" + request
+                    + " destination=" + destination + " current=" + editor.generation());
             }
         }
     }
 
     private void retryPendingDeletion() {
-        if (request != scheduledRetryRequest || destination != scheduledRetryDestination) return;
-        if (editor.hasPendingDictation(destination, request)) {
-            render();
-            return;
-        }
-
-        long completed = request;
-        request = -1;
+        long request = scheduledRetryRequest;
+        long destination = scheduledRetryDestination;
         scheduledRetryDestination = -1;
         scheduledRetryRequest = -1;
-        session.acknowledgeResult(completed);
+        if (!editor.retryPendingDictationDeletion(destination, request)) {
+            Log.i("KeyVoxIME", "Punctuation cleanup unavailable for dictation request="
+                + request + " editor=" + destination);
+        }
     }
 
     @Override public void onStartInput(EditorInfo info, boolean restarting) {
         super.onStartInput(info, restarting);
-        editor.attach(getCurrentInputConnection());
+        long generation = editor.attach(getCurrentInputConnection());
+        if (hasPendingInsertion()
+                && dictationDestination.request() == session.request()) {
+            dictationDestination.follow(session.request(), generation);
+            Log.i("KeyVoxIME", "Followed editor for dictation request=" + session.request()
+                + " editor=" + generation);
+            render();
+        }
     }
 
     @Override public void onFinishInput() {
@@ -94,6 +115,14 @@ public final class KeyVoxInputMethodService extends InputMethodService {
     }
 
     @Override public boolean onEvaluateFullscreenMode() { return false; }
+
+    private boolean hasPendingInsertion() {
+        DictationSession.Phase phase = session.phase();
+        return phase == DictationSession.Phase.STARTING
+            || phase == DictationSession.Phase.RECORDING
+            || phase == DictationSession.Phase.PROCESSING
+            || session.result() != null;
+    }
 
     @Override public void onConfigurationChanged(Configuration configuration) {
         super.onConfigurationChanged(configuration);

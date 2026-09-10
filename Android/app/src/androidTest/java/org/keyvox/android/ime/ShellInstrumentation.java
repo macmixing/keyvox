@@ -17,6 +17,7 @@ public final class ShellInstrumentation extends org.keyvox.android.engine.Engine
             org.keyvox.android.app.home.HomeInstrumentationChecks.run(this);
             String compositionTimings = CompositionInstrumentationChecks.run();
             verifyEditorLifetime();
+            verifyDictationDestination();
             result.putString("stream", captureChecks
                 ? "Capture, Home, composition, and editor lifetime checks passed\n"
                 : "Home, composition, and editor lifetime checks passed\n" + compositionTimings + "\n");
@@ -25,6 +26,25 @@ public final class ShellInstrumentation extends org.keyvox.android.engine.Engine
             result.putString("stream", failure.toString());
             finish(Activity.RESULT_CANCELED, result);
         }
+    }
+
+    private void verifyDictationDestination() {
+        DictationDestination destination = new DictationDestination();
+        destination.begin(7, 1);
+        check(destination.request() == 7 && destination.editorGeneration() == 1);
+
+        destination.follow(7, 3);
+        check(destination.editorGeneration() == 3);
+        destination.follow(8, 4);
+        check(destination.editorGeneration() == 3);
+
+        destination.recover(7);
+        check(destination.request() == 7 && destination.editorGeneration() == -1);
+        destination.follow(7, 5);
+        check(destination.editorGeneration() == 5);
+
+        destination.clear();
+        check(destination.request() == -1 && destination.editorGeneration() == -1);
     }
 
     private void verifyEditorLifetime() {

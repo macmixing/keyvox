@@ -107,6 +107,17 @@ final class EditorConnectionOwner {
         }
     }
 
+    boolean retryPendingDictationDeletion(long destination, long request) {
+        if (!hasPendingDictation(destination, request)) return true;
+        if (!pendingDeletionContextStillMatches()) {
+            clearPendingDeletion();
+            return true;
+        }
+        if (!deleteFollowingCodePoint(pendingFollowingCodePoint.length())) return false;
+        clearPendingDeletion();
+        return true;
+    }
+
     private EditorContext readEditorContext() {
         int requestedLength = SURROUNDING_TEXT_LIMIT + 1;
         CharSequence preceding = connection.getTextBeforeCursor(requestedLength, 0);

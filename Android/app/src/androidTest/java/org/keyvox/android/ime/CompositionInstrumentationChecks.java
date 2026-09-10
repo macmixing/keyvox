@@ -60,7 +60,7 @@ final class CompositionInstrumentationChecks {
         check(!owner.commitDictation(destination, 5, "Question?"));
         check(retry.text().equals("left question?.right"));
         retry.setUtf16DeletionAvailable(true);
-        check(owner.commitDictation(destination, 5, "Question?"));
+        check(owner.retryPendingDictationDeletion(destination, 5));
         check(retry.text().equals("left question?right"));
 
         stage = "punctuation retry moved caret";
@@ -71,8 +71,21 @@ final class CompositionInstrumentationChecks {
         check(!owner.commitDictation(destination, 6, "Question?"));
         String partiallyApplied = moved.text();
         moved.setSelection(0, 0);
-        check(owner.commitDictation(destination, 6, "Question?"));
+        check(owner.retryPendingDictationDeletion(destination, 6));
         check(moved.text().equals(partiallyApplied));
+
+        stage = "punctuation retry editor change";
+        EditorBufferConnection original = new EditorBufferConnection("left.right", 4, 4);
+        original.setCodePointDeletionAvailable(false);
+        original.setUtf16DeletionAvailable(false);
+        destination = owner.attach(original.connection);
+        check(!owner.commitDictation(destination, 7, "Question?"));
+        check(original.text().equals("left question?.right"));
+        EditorBufferConnection replacement = new EditorBufferConnection("second", 6, 6);
+        owner.attach(replacement.connection);
+        check(owner.retryPendingDictationDeletion(destination, 7));
+        check(original.text().equals("left question?.right"));
+        check(replacement.text().equals("second"));
     }
 
     private static void verifySelectionReplacement() {
@@ -80,7 +93,7 @@ final class CompositionInstrumentationChecks {
         EditorBufferConnection fixture = new EditorBufferConnection("left middle right", 5, 11);
         EditorConnectionOwner owner = new EditorConnectionOwner();
         long destination = owner.attach(fixture.connection);
-        check(owner.commitDictation(destination, 7, "Replacement."));
+        check(owner.commitDictation(destination, 8, "Replacement."));
         check(fixture.text().equals("left replacement right"));
     }
 
