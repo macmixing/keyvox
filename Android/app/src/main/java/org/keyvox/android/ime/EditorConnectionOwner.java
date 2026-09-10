@@ -188,6 +188,14 @@ final class EditorConnectionOwner {
 
         CharSequence preceding = connection.getTextBeforeCursor(2, 0);
         if (preceding != null && preceding.length() == 0) return false;
-        return connection.deleteSurroundingTextInCodePoints(1, 0);
+        if (preceding == null) return connection.deleteSurroundingTextInCodePoints(1, 0);
+
+        int lastIndex = preceding.length() - 1;
+        int utf16Units = Character.isLowSurrogate(preceding.charAt(lastIndex))
+                && lastIndex > 0
+                && Character.isHighSurrogate(preceding.charAt(lastIndex - 1))
+            ? 2
+            : 1;
+        return connection.deleteSurroundingText(utf16Units, 0);
     }
 }

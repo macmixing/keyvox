@@ -49,7 +49,8 @@ public final class ShellInstrumentation extends org.keyvox.android.engine.Engine
 
     private void verifyEditorLifetime() {
         final int[] commits = {0};
-        final int[] deletes = {0};
+        final int[] codePointDeletes = {0};
+        final int[] codeUnitDeletes = {0};
         final String[] selected = {null};
         final CharSequence[] preceding = {"x"};
         InputConnection connection = (InputConnection) Proxy.newProxyInstance(
@@ -66,7 +67,11 @@ public final class ShellInstrumentation extends org.keyvox.android.engine.Engine
                     case "endBatchEdit": return true;
                     case "deleteSurroundingTextInCodePoints":
                         check((int) args[0] == 1 && (int) args[1] == 0);
-                        deletes[0]++; return true;
+                        codePointDeletes[0]++; return true;
+                    case "deleteSurroundingText":
+                        check((int) args[0] == preceding[0].length());
+                        check((int) args[1] == 0);
+                        codeUnitDeletes[0]++; return true;
                     default: throw new AssertionError(method.getName());
                 }
             });
@@ -77,23 +82,26 @@ public final class ShellInstrumentation extends org.keyvox.android.engine.Engine
         check(!owner.commit(first, ""));
         check(owner.commit(second, ""));
         check(owner.deletePreviousCodePoint());
-        check(deletes[0] == 1);
+        check(codeUnitDeletes[0] == 1 && codePointDeletes[0] == 0);
+        preceding[0] = new String(Character.toChars(0x1F642));
+        check(owner.deletePreviousCodePoint());
+        check(codeUnitDeletes[0] == 2 && codePointDeletes[0] == 0);
         selected[0] = new String(Character.toChars(0x1F642));
         check(owner.commitDictation(second, 1, ""));
         check(commits[0] == 2);
         check(owner.deletePreviousCodePoint());
-        check(deletes[0] == 1 && commits[0] == 3);
+        check(codeUnitDeletes[0] == 2 && codePointDeletes[0] == 0 && commits[0] == 3);
         selected[0] = null;
         preceding[0] = "";
         check(!owner.deletePreviousCodePoint());
-        check(deletes[0] == 1);
+        check(codeUnitDeletes[0] == 2 && codePointDeletes[0] == 0);
         preceding[0] = null;
         check(owner.deletePreviousCodePoint());
-        check(deletes[0] == 2);
+        check(codeUnitDeletes[0] == 2 && codePointDeletes[0] == 1);
         owner.detach();
         check(!owner.commit(second, ""));
         check(!owner.deletePreviousCodePoint());
-        check(commits[0] == 3 && deletes[0] == 2);
+        check(commits[0] == 3 && codeUnitDeletes[0] == 2 && codePointDeletes[0] == 1);
     }
 
     private static void check(boolean condition) {
