@@ -49,7 +49,7 @@ public final class AppTintedScrollView extends FrameLayout {
         scrollView.setVerticalScrollBarEnabled(false);
         super.addView(scrollView, new LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.MATCH_PARENT
+            ViewGroup.LayoutParams.WRAP_CONTENT
         ));
 
         indicator = new IndicatorView(context);
@@ -73,8 +73,40 @@ public final class AppTintedScrollView extends FrameLayout {
     }
 
     @Override protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        int cappedHeight = MeasureSpec.makeMeasureSpec(maximumHeight, MeasureSpec.AT_MOST);
-        super.onMeasure(widthMeasureSpec, cappedHeight);
+        int widthMode = MeasureSpec.getMode(widthMeasureSpec);
+        int naturalWidthSpec = widthMode == MeasureSpec.UNSPECIFIED
+            ? widthMeasureSpec
+            : MeasureSpec.makeMeasureSpec(MeasureSpec.getSize(widthMeasureSpec), MeasureSpec.EXACTLY);
+
+        scrollView.measure(
+            naturalWidthSpec,
+            MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED)
+        );
+
+        int measuredWidth = resolveSize(
+            Math.max(getSuggestedMinimumWidth(), scrollView.getMeasuredWidth()),
+            widthMeasureSpec
+        );
+        scrollView.measure(
+            MeasureSpec.makeMeasureSpec(measuredWidth, MeasureSpec.EXACTLY),
+            MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED)
+        );
+
+        int desiredHeight = Math.min(
+            maximumHeight,
+            Math.max(getSuggestedMinimumHeight(), scrollView.getMeasuredHeight())
+        );
+        int measuredHeight = resolveSize(desiredHeight, heightMeasureSpec);
+        setMeasuredDimension(measuredWidth, measuredHeight);
+
+        scrollView.measure(
+            MeasureSpec.makeMeasureSpec(measuredWidth, MeasureSpec.EXACTLY),
+            MeasureSpec.makeMeasureSpec(measuredHeight, MeasureSpec.EXACTLY)
+        );
+        indicator.measure(
+            MeasureSpec.makeMeasureSpec(indicator.getLayoutParams().width, MeasureSpec.EXACTLY),
+            MeasureSpec.makeMeasureSpec(measuredHeight, MeasureSpec.EXACTLY)
+        );
     }
 
     private void drawTintedIndicator(Canvas canvas, int trackWidth, int trackHeight) {
