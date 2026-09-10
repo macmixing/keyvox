@@ -29,6 +29,11 @@ final class EngineSession {
         let acceleration = WhisperAcceleration(models: models, runtimeDirectory: runtimeDirectory, socIdentifier: socIdentifier)
         self.acceleration = acceleration
         dictionary = DictionaryStore(baseDirectoryURL: dictionaryDirectory)
+        AndroidDictionaryBootstrapper.bootstrap(
+            store: dictionary,
+            baseDirectoryURL: dictionaryDirectory
+        )
+        AndroidDictionaryCasingStore.shared.update(entries: dictionary.entries)
         service = WhisperService(modelPathResolver: { installer.modelURL.path },
             voiceActivityDetectorFactory: { VoiceActivityDetector(modelURL: vadURL) },
             whisperFactory: { acceleration.makeWhisper(model: $0, params: $1) })

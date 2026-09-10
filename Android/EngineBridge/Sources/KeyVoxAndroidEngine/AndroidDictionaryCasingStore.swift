@@ -1,4 +1,5 @@
 import Foundation
+import KeyVoxCore
 import KeyVoxTextComposition
 
 final class AndroidDictionaryCasingStore: @unchecked Sendable {
@@ -26,6 +27,15 @@ final class AndroidDictionaryCasingStore: @unchecked Sendable {
                 .appendingPathComponent("dictionary.json")
             cachedModificationDate = nil
             cachedPhrases = []
+        }
+    }
+
+    func update(entries: [DictionaryEntry]) {
+        lock.withLock {
+            cachedPhrases = entries.map(\.phrase).filter { $0.isEmpty == false }
+            cachedModificationDate = try? fileURL?.resourceValues(
+                forKeys: [.contentModificationDateKey]
+            ).contentModificationDate
         }
     }
 

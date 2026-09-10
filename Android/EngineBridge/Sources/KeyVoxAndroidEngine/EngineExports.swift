@@ -14,6 +14,7 @@ public func configure(_ resources: UnsafePointer<CChar>, _ models: UnsafePointer
             if EngineSession.shared == nil {
                 EngineSession.shared = try EngineSession(resources: resources, models: models, dictionaryDirectory: dictionary, runtimeDirectory: runtime, socIdentifier: soc)
             }
+            AndroidDictionaryBridge.publishSnapshot()
             try AndroidPromotionCoordinator.install(resources: resources, appVersion: appVersion)
             EngineSession.shared?.refreshModel()
         } catch { EngineEvent(kind: .failed).send() }
@@ -96,6 +97,44 @@ public func compose(
 @_cdecl("keyvox_engine_free_bytes")
 public func freeBytes(_ bytes: UnsafeMutablePointer<UInt8>?) {
     bytes?.deallocate()
+}
+
+@_cdecl("keyvox_dictionary_list")
+public func listDictionary(_ request: Int64) {
+    Task { @MainActor in AndroidDictionaryBridge.publishSnapshot(request: request) }
+}
+
+@_cdecl("keyvox_dictionary_add")
+public func addDictionaryEntry(
+    _ request: Int64,
+    _ phraseBytes: UnsafePointer<UInt8>,
+    _ phraseLength: Int32
+) {
+    guard let phrase = decodeUTF8(phraseBytes, count: phraseLength) else { return }
+    Task { @MainActor in AndroidDictionaryBridge.add(request: request, phrase: phrase) }
+}
+
+@_cdecl("keyvox_dictionary_update")
+public func updateDictionaryEntry(
+    _ request: Int64,
+    _ identifier: UnsafePointer<CChar>,
+    _ phraseBytes: UnsafePointer<UInt8>,
+    _ phraseLength: Int32
+) {
+    guard let id = UUID(uuidString: String(cString: identifier)),
+          let phrase = decodeUTF8(phraseBytes, count: phraseLength) else { return }
+    Task { @MainActor in AndroidDictionaryBridge.update(request: request, id: id, phrase: phrase) }
+}
+
+@_cdecl("keyvox_dictionary_delete")
+public func deleteDictionaryEntry(_ request: Int64, _ identifier: UnsafePointer<CChar>) {
+    guard let id = UUID(uuidString: String(cString: identifier)) else { return }
+    Task { @MainActor in AndroidDictionaryBridge.delete(request: request, id: id) }
+}
+
+@_cdecl("keyvox_dictionary_clear_warnings")
+public func clearDictionaryWarnings(_ request: Int64) {
+    Task { @MainActor in AndroidDictionaryBridge.clearWarnings(request: request) }
 }
 
 private func decodeUTF8(_ bytes: UnsafePointer<UInt8>, count: Int32) -> String? {

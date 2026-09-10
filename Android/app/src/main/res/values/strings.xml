@@ -40,4 +40,23 @@
     <string name="home_empty_transcription">Your last transcription will appear here after you dictate on this device.</string>
     <string name="copy">Copy</string>
     <string name="share_campaign">Share %1$s</string>
+    <string name="dictionary_sort_alphabetical">A–Z</string>
+    <string name="dictionary_sort_recent">Recently Added</string>
+    <string name="dictionary_empty_title">No custom words added yet.</string>
+    <string name="dictionary_empty_description">Tap the plus button to add your first custom word.</string>
+    <string name="dictionary_unavailable">Dictionary unavailable</string>
+    <string name="dictionary_english_only">Custom dictionary correction is currently supported for English dictation only.</string>
+    <string name="dictionary_add_accessibility">Add Word</string>
+    <string name="dictionary_add_title">Add Word</string>
+    <string name="dictionary_edit_title">Edit Word</string>
+    <string name="dictionary_placeholder">KeyVox</string>
+    <string name="dictionary_add_description">Add custom words, email addresses, and short phrases to improve transcription accuracy.</string>
+    <string name="dictionary_delete_title">Delete Entry?</string>
+    <string name="dictionary_delete_message">This dictionary entry will be removed from KeyVox.</string>
+    <string name="dictionary_delete_action">Delete Entry</string>
+    <string name="add">Add</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="edit">Edit</string>
+    <string name="delete">Delete</string>
 </resources>

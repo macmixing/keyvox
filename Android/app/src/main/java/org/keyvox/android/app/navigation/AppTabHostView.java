@@ -98,6 +98,10 @@ public final class AppTabHostView extends LinearLayout {
         return selectedTab;
     }
 
+    public void setTabBarHiddenForModal(boolean hidden) {
+        tabBar.setVisibility(hidden ? INVISIBLE : VISIBLE);
+    }
+
     private void selectPrevious(boolean crossesNavigationThreshold) {
         ContainingAppTab previous = selectedTab.previous();
         if (previous == null) {

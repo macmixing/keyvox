@@ -1,0 +1,4 @@
+<resources>
+    <item name="dictionary_accessibility_edit" type="id" />
+    <item name="dictionary_accessibility_delete" type="id" />
+</resources>
