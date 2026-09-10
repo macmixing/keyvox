@@ -88,7 +88,6 @@ struct DictionaryTabView: View {
                 DictionaryFloatingAddButton(action: presentAddWordEditor)
                     .scaleEffect(isFloatingAddButtonVisible ? 1 : 0.82)
                     .opacity(isFloatingAddButtonVisible ? 1 : 0)
-                    .animation(.spring(response: 0.26, dampingFraction: 0.72), value: isFloatingAddButtonVisible)
                     .frame(maxWidth: .infinity, alignment: .trailing)
                     .padding(.trailing, 20)
                     .padding(.top, 8)
@@ -132,11 +131,11 @@ struct DictionaryTabView: View {
         }
         .task(id: animationTriggerID) {
             guard isActive, dictionaryEditorMode == nil else {
-                isFloatingAddButtonVisible = false
+                hideFloatingAddButton()
                 return
             }
 
-            isFloatingAddButtonVisible = false
+            hideFloatingAddButton()
 
             if lastPresentedEditorID != nil {
                 try? await Task.sleep(for: .seconds(0.2))
@@ -152,7 +151,7 @@ struct DictionaryTabView: View {
             }
         }
         .onDisappear {
-            isFloatingAddButtonVisible = false
+            hideFloatingAddButton()
             lastPresentedEditorID = nil
             dictionaryStore.clearWarnings()
         }
@@ -161,6 +160,14 @@ struct DictionaryTabView: View {
     private func presentAddWordEditor() {
         appHaptics.light()
         dictionaryEditorMode = .add
+    }
+
+    private func hideFloatingAddButton() {
+        var transaction = Transaction()
+        transaction.disablesAnimations = true
+        withTransaction(transaction) {
+            isFloatingAddButtonVisible = false
+        }
     }
 
     private func rebuildDisplayedEntries() {
