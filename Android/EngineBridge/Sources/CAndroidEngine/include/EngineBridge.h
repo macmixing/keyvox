@@ -13,4 +13,11 @@ uint8_t *keyvox_engine_compose(const uint8_t *transcript, int32_t transcript_len
     const uint8_t *following, int32_t following_length, bool following_truncated,
     int32_t *output_length);
 void keyvox_engine_free_bytes(uint8_t *bytes);
+void keyvox_dictionary_event(const uint8_t *json, int32_t length);
+void keyvox_dictionary_list(int64_t request);
+void keyvox_dictionary_add(int64_t request, const uint8_t *phrase, int32_t phrase_length);
+void keyvox_dictionary_update(int64_t request, const char *identifier,
+    const uint8_t *phrase, int32_t phrase_length);
+void keyvox_dictionary_delete(int64_t request, const char *identifier);
+void keyvox_dictionary_clear_warnings(int64_t request);
 int keyvox_extract_model_member(const char *archive, const char *member, const char *destination, int64_t size);

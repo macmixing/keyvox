@@ -8,6 +8,7 @@ extern int keyvox_archive_bridge_initialize(JNIEnv *, JavaVM *, jclass);
 static JavaVM *vm;
 static jclass listener_class;
 static jmethodID event_method;
+static jmethodID dictionary_event_method;
 
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *value, void *reserved) {
     vm = value;
@@ -21,7 +22,8 @@ JNIEXPORT jboolean JNICALL Java_org_keyvox_android_engine_NativeEngine_initializ
     if (!listener_class) {
         listener_class = (*env)->NewGlobalRef(env, type);
         event_method = (*env)->GetStaticMethodID(env, type, "receive", "([B)V");
-        if (!listener_class || !event_method) return JNI_FALSE;
+        dictionary_event_method = (*env)->GetStaticMethodID(env, type, "receiveDictionary", "([B)V");
+        if (!listener_class || !event_method || !dictionary_event_method) return JNI_FALSE;
     }
     const char *r = (*env)->GetStringUTFChars(env, resources, 0);
     const char *m = r ? (*env)->GetStringUTFChars(env, models, 0) : 0;
@@ -57,6 +59,40 @@ JNIEXPORT void JNICALL Java_org_keyvox_android_engine_NativeEngine_configureProm
     if (campaign) (*env)->ReleaseStringUTFChars(env, preview_campaign_id, campaign);
 }
 JNIEXPORT void JNICALL Java_org_keyvox_android_engine_NativeEngine_refreshPromotions(JNIEnv *env, jclass type) { keyvox_promotions_refresh(); }
+
+JNIEXPORT void JNICALL Java_org_keyvox_android_engine_NativeEngine_dictionaryList(
+    JNIEnv *env, jclass type, jlong request) { keyvox_dictionary_list(request); }
+
+JNIEXPORT void JNICALL Java_org_keyvox_android_engine_NativeEngine_dictionaryAddUTF8(
+    JNIEnv *env, jclass type, jlong request, jbyteArray phrase) {
+    if (!phrase) return;
+    jsize length = (*env)->GetArrayLength(env, phrase);
+    jbyte *bytes = (*env)->GetByteArrayElements(env, phrase, 0);
+    if (bytes) keyvox_dictionary_add(request, (const uint8_t *) bytes, length);
+    if (bytes) (*env)->ReleaseByteArrayElements(env, phrase, bytes, JNI_ABORT);
+}
+
+JNIEXPORT void JNICALL Java_org_keyvox_android_engine_NativeEngine_dictionaryUpdateUTF8(
+    JNIEnv *env, jclass type, jlong request, jstring identifier, jbyteArray phrase) {
+    if (!identifier || !phrase) return;
+    const char *id = (*env)->GetStringUTFChars(env, identifier, 0);
+    jsize length = (*env)->GetArrayLength(env, phrase);
+    jbyte *bytes = (*env)->GetByteArrayElements(env, phrase, 0);
+    if (id && bytes) keyvox_dictionary_update(request, id, (const uint8_t *) bytes, length);
+    if (id) (*env)->ReleaseStringUTFChars(env, identifier, id);
+    if (bytes) (*env)->ReleaseByteArrayElements(env, phrase, bytes, JNI_ABORT);
+}
+
+JNIEXPORT void JNICALL Java_org_keyvox_android_engine_NativeEngine_dictionaryDelete(
+    JNIEnv *env, jclass type, jlong request, jstring identifier) {
+    if (!identifier) return;
+    const char *id = (*env)->GetStringUTFChars(env, identifier, 0);
+    if (id) keyvox_dictionary_delete(request, id);
+    if (id) (*env)->ReleaseStringUTFChars(env, identifier, id);
+}
+
+JNIEXPORT void JNICALL Java_org_keyvox_android_engine_NativeEngine_dictionaryClearWarnings(
+    JNIEnv *env, jclass type, jlong request) { keyvox_dictionary_clear_warnings(request); }
 
 JNIEXPORT jbyteArray JNICALL Java_org_keyvox_android_engine_NativeEngine_composeUTF8(
     JNIEnv *env, jclass type, jbyteArray transcript, jbyteArray preceding,
@@ -105,5 +141,18 @@ void keyvox_engine_event(const char *json) {
     if (!bytes) return;
     (*env)->SetByteArrayRegion(env, bytes, 0, (jsize) length, (const jbyte *) json);
     if (!(*env)->ExceptionCheck(env)) (*env)->CallStaticVoidMethod(env, listener_class, event_method, bytes);
+    (*env)->DeleteLocalRef(env, bytes);
+}
+
+void keyvox_dictionary_event(const uint8_t *json, int32_t length) {
+    JNIEnv *env = 0;
+    if (!listener_class || !dictionary_event_method || length < 0
+        || (*vm)->GetEnv(vm, (void **) &env, JNI_VERSION_1_6) != JNI_OK) return;
+    jbyteArray bytes = (*env)->NewByteArray(env, length);
+    if (!bytes) return;
+    (*env)->SetByteArrayRegion(env, bytes, 0, length, (const jbyte *) json);
+    if (!(*env)->ExceptionCheck(env)) {
+        (*env)->CallStaticVoidMethod(env, listener_class, dictionary_event_method, bytes);
+    }
     (*env)->DeleteLocalRef(env, bytes);
 }
