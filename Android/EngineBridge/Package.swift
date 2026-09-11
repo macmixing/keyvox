@@ -6,6 +6,7 @@ let package = Package(
     products: [.library(name: "KeyVoxAndroidEngine", type: .dynamic, targets: ["KeyVoxAndroidEngine"])],
     dependencies: [
         .package(path: "../../Packages/KeyVoxCore"),
+        .package(path: "../../Packages/KeyVoxLinguistics"),
         .package(path: "../../Packages/KeyVoxTextComposition"),
         .package(path: "../../Packages/KeyVoxModels"),
         .package(path: "../../Packages/KeyVoxPromotions"),
@@ -15,6 +16,7 @@ let package = Package(
     targets: [
         .target(name: "KeyVoxAndroidEngine", dependencies: ["CAndroidEngine",
             .product(name: "KeyVoxCore", package: "KeyVoxCore"),
+            .product(name: "KeyVoxLinguistics", package: "KeyVoxLinguistics"),
             .product(name: "KeyVoxTextComposition", package: "KeyVoxTextComposition"),
             .product(name: "KeyVoxModels", package: "KeyVoxModels"),
             .product(name: "KeyVoxPromotions", package: "KeyVoxPromotions"),

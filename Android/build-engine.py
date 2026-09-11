@@ -97,6 +97,13 @@ resources = assets / 'swift-resources'
 resources.mkdir()
 for source in sorted(binary.glob('*.resources')):
     shutil.copytree(source, resources / source.name)
+linguistic_resources = resources / 'KeyVoxAndroidLinguistics.resources'
+linguistic_resources.mkdir()
+for name in ['averaged-perceptron-tagger-eng', 'wordnet-3.0']:
+    source = root.parent / 'Tools/Models' / name
+    if not source.is_dir():
+        raise SystemExit('Linguistic model assets are required: ' + str(source))
+    shutil.copytree(source, linguistic_resources / name)
 if args.qairt_root:
     dsp = resources / 'KeyVoxQnnRuntime.resources'
     dsp.mkdir()

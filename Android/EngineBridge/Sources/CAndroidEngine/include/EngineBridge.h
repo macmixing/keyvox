@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 void keyvox_engine_event(const char *json);
+void keyvox_engine_log_info(const char *message);
 void keyvox_engine_configure(const char *resources, const char *models, const char *dictionary,
     const char *runtime, const char *soc, const char *app_version,
     bool auto_paragraphs_enabled, bool list_formatting_enabled);
