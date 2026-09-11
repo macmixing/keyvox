@@ -6,7 +6,7 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
-## [1.2.9] - 2026-09-07
+## [1.2.9] - 2026-09-10
 
 Dictionary entries with embedded numbers now match their naturally spoken forms.
 
@@ -15,6 +15,7 @@ Dictionary entries with embedded numbers now match their naturally spoken forms.
 - Expanded digit runs inside alphanumeric dictionary terms into spoken-number phrase variants while preserving surrounding text segments.
 - Retained numeric source alignment for each expanded digit run so unrelated spoken numbers remain ineligible.
 - Added regression coverage for spoken matching of an alphanumeric brand and structural coverage for multiple embedded number segments.
+- Required numbered lists to contain consecutive spoken markers instead of converting repeated `one` markers across paragraphs into a sequence.
 
 ### Notes
 
