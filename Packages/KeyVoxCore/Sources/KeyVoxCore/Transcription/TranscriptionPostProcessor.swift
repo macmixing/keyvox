@@ -122,16 +122,18 @@ public final class TranscriptionPostProcessor: @unchecked Sendable {
         languageCode: String?,
         debugLoggingEnabled: Bool
     ) -> String {
-        TextLinguistics.$provider.withValue(linguisticAnalyzer) {
-            withDebugLogging(debugLoggingEnabled) {
-                processSynchronously(
-                    text,
-                    dictionaryEntries: dictionaryEntries,
-                    renderMode: renderMode,
-                    listFormattingEnabled: listFormattingEnabled,
-                    forceAllCaps: forceAllCaps,
-                    languageCode: languageCode
-                )
+        TextLinguistics.$processingLanguageCode.withValue(languageCode) {
+            TextLinguistics.$provider.withValue(linguisticAnalyzer) {
+                withDebugLogging(debugLoggingEnabled) {
+                    processSynchronously(
+                        text,
+                        dictionaryEntries: dictionaryEntries,
+                        renderMode: renderMode,
+                        listFormattingEnabled: listFormattingEnabled,
+                        forceAllCaps: forceAllCaps,
+                        languageCode: languageCode
+                    )
+                }
             }
         }
     }

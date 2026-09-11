@@ -3,9 +3,14 @@ import KeyVoxLinguistics
 
 struct WhisperSegmentTextAssembler: Sendable {
     private let pronunciationLookup: PronunciationLookup
+    private let linguisticAnalyzer: any LinguisticAnalyzing
 
-    init(pronunciationLookup: PronunciationLookup) {
+    init(
+        pronunciationLookup: PronunciationLookup,
+        linguisticAnalyzer: any LinguisticAnalyzing = TextLinguistics.provider
+    ) {
         self.pronunciationLookup = pronunciationLookup
+        self.linguisticAnalyzer = linguisticAnalyzer
     }
 
     func assemble(
@@ -48,10 +53,12 @@ struct WhisperSegmentTextAssembler: Sendable {
     ) -> String {
         let combinedText = "\(precedingText) \(segmentText)"
         let segmentStart = combinedText.index(combinedText.endIndex, offsetBy: -segmentText.count)
-        let analysis = TextLinguistics.analyze(
+        let analysis = linguisticAnalyzer.analyze(
             combinedText,
             range: NSRange(segmentStart..<combinedText.endIndex, in: combinedText),
-            features: [.names]
+            languageCode: nil,
+            features: [.names],
+            grouping: .words
         )
         guard let candidate = analysis.tokens.first,
               candidate.identity == .ordinaryWord,

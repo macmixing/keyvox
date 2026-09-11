@@ -1,4 +1,5 @@
 import Foundation
+import KeyVoxLinguistics
 import KeyVoxWhisper
 import KeyVoxVoiceActivity
 import KeyVoxState
@@ -11,6 +12,7 @@ public class WhisperService: StatePublishing, DictationProvider {
 
     let voiceActivityDetectorFactory: () -> VoiceActivityDetector?
     let whisperFactory: (URL, WhisperParams) -> Whisper
+    let linguisticAnalyzer: any LinguisticAnalyzing
     private let modelPathResolver: () -> String?
     private var activeTranscriptionRequestID = UUID()
 
@@ -36,11 +38,13 @@ public class WhisperService: StatePublishing, DictationProvider {
     public init(
         modelPathResolver: @escaping () -> String? = { nil },
         voiceActivityDetectorFactory: @escaping () -> VoiceActivityDetector? = { VoiceActivityDetector() },
-        whisperFactory: @escaping (URL, WhisperParams) -> Whisper = { Whisper(fromFileURL: $0, withParams: $1) }
+        whisperFactory: @escaping (URL, WhisperParams) -> Whisper = { Whisper(fromFileURL: $0, withParams: $1) },
+        linguisticAnalyzer: any LinguisticAnalyzing = TextLinguistics.provider
     ) {
         self.modelPathResolver = modelPathResolver
         self.voiceActivityDetectorFactory = voiceActivityDetectorFactory
         self.whisperFactory = whisperFactory
+        self.linguisticAnalyzer = linguisticAnalyzer
     }
 
     public var isModelReady: Bool {

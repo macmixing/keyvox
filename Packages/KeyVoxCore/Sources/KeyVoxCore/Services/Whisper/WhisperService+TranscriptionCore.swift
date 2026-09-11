@@ -198,7 +198,8 @@ extension WhisperService {
                     #endif
                     transcribedSegments.append(contentsOf: segments)
                     let chunkText = await WhisperSegmentTextAssembler(
-                        pronunciationLookup: pronunciationLookup
+                        pronunciationLookup: pronunciationLookup,
+                        linguisticAnalyzer: self.linguisticAnalyzer
                     ).assemble(
                         segments.map(\.text),
                         after: precedingChunkText,
