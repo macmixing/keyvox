@@ -16,7 +16,9 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *value, void *reserved) {
 }
 
 JNIEXPORT jboolean JNICALL Java_org_keyvox_android_engine_NativeEngine_initialize(
-    JNIEnv *env, jclass type, jstring resources, jstring models, jstring dictionary, jstring runtime, jstring soc, jstring app_version) {
+    JNIEnv *env, jclass type, jstring resources, jstring models, jstring dictionary,
+    jstring runtime, jstring soc, jstring app_version, jboolean auto_paragraphs_enabled,
+    jboolean list_formatting_enabled) {
     if (!keyvox_install_main_loop()) return JNI_FALSE;
     if (!keyvox_archive_bridge_initialize(env, vm, type)) return JNI_FALSE;
     if (!listener_class) {
@@ -31,7 +33,10 @@ JNIEXPORT jboolean JNICALL Java_org_keyvox_android_engine_NativeEngine_initializ
     const char *n = d ? (*env)->GetStringUTFChars(env, runtime, 0) : 0;
     const char *s = n ? (*env)->GetStringUTFChars(env, soc, 0) : 0;
     const char *v = s ? (*env)->GetStringUTFChars(env, app_version, 0) : 0;
-    if (v) keyvox_engine_configure(r, m, d, n, s, v);
+    if (v) keyvox_engine_configure(
+        r, m, d, n, s, v,
+        auto_paragraphs_enabled == JNI_TRUE,
+        list_formatting_enabled == JNI_TRUE);
     if (r) (*env)->ReleaseStringUTFChars(env, resources, r);
     if (m) (*env)->ReleaseStringUTFChars(env, models, m);
     if (d) (*env)->ReleaseStringUTFChars(env, dictionary, d);
@@ -48,6 +53,12 @@ JNIEXPORT void JNICALL Java_org_keyvox_android_engine_NativeEngine_transcribe(
 }
 JNIEXPORT void JNICALL Java_org_keyvox_android_engine_NativeEngine_cancel(JNIEnv *env, jclass type) { keyvox_engine_cancel(); }
 JNIEXPORT void JNICALL Java_org_keyvox_android_engine_NativeEngine_download(JNIEnv *env, jclass type) { keyvox_engine_download(); }
+JNIEXPORT void JNICALL Java_org_keyvox_android_engine_NativeEngine_setAppSettings(
+    JNIEnv *env, jclass type, jboolean auto_paragraphs_enabled, jboolean list_formatting_enabled) {
+    keyvox_engine_set_app_settings(
+        auto_paragraphs_enabled == JNI_TRUE,
+        list_formatting_enabled == JNI_TRUE);
+}
 JNIEXPORT void JNICALL Java_org_keyvox_android_engine_NativeEngine_configurePromotions(
     JNIEnv *env, jclass type, jstring app_version, jboolean uses_bundled_manifest, jstring preview_campaign_id) {
     const char *version = (*env)->GetStringUTFChars(env, app_version, 0);

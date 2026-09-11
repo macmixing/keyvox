@@ -10,6 +10,7 @@ import android.util.Log;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import org.json.JSONObject;
 import org.keyvox.android.engine.EngineResources;
@@ -22,6 +23,8 @@ public final class DictationSession {
     private final Context context;
     private final Handler main = new Handler(Looper.getMainLooper());
     private final Consumer<String> successfulTranscription;
+    private final BooleanSupplier autoParagraphsEnabled;
+    private final BooleanSupplier listFormattingEnabled;
     private final List<Runnable> observers = new ArrayList<>();
     private Phase phase = Phase.INITIALIZING;
     private Model model = Model.CHECKING;
@@ -34,9 +37,16 @@ public final class DictationSession {
     private boolean awaitingEngineCancellation;
     private float audioLevel;
 
-    public DictationSession(Context context, Consumer<String> successfulTranscription) {
+    public DictationSession(
+        Context context,
+        Consumer<String> successfulTranscription,
+        BooleanSupplier autoParagraphsEnabled,
+        BooleanSupplier listFormattingEnabled
+    ) {
         this.context = context.getApplicationContext();
         this.successfulTranscription = successfulTranscription;
+        this.autoParagraphsEnabled = autoParagraphsEnabled;
+        this.listFormattingEnabled = listFormattingEnabled;
     }
     public Phase phase() { return phase; }
     public Model model() { return model; }
@@ -62,7 +72,9 @@ public final class DictationSession {
                                 new File(context.getFilesDir(), "dictionary").getPath(),
                                 context.getApplicationInfo().nativeLibraryDir,
                                 android.os.Build.VERSION.SDK_INT >= 31 ? android.os.Build.SOC_MODEL : "",
-                                org.keyvox.android.BuildConfig.VERSION_NAME)) fail();
+                                org.keyvox.android.BuildConfig.VERSION_NAME,
+                                autoParagraphsEnabled.getAsBoolean(),
+                                listFormattingEnabled.getAsBoolean())) fail();
                     } catch (LinkageError | RuntimeException error) { Log.e("KeyVoxEngine", "Initialization failed", error); fail(); }
                 });
             } catch (Exception error) { Log.e("KeyVoxEngine", "Resource installation failed", error); main.post(this::fail); }

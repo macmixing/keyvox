@@ -2,7 +2,10 @@
 #include <stdbool.h>
 #include <stdint.h>
 void keyvox_engine_event(const char *json);
-void keyvox_engine_configure(const char *resources, const char *models, const char *dictionary, const char *runtime, const char *soc, const char *app_version);
+void keyvox_engine_configure(const char *resources, const char *models, const char *dictionary,
+    const char *runtime, const char *soc, const char *app_version,
+    bool auto_paragraphs_enabled, bool list_formatting_enabled);
+void keyvox_engine_set_app_settings(bool auto_paragraphs_enabled, bool list_formatting_enabled);
 void keyvox_engine_transcribe(const char *path, int64_t request);
 void keyvox_engine_cancel(void);
 void keyvox_engine_download(void);

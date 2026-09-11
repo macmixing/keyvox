@@ -1,7 +1,16 @@
 import Foundation
 
 @_cdecl("keyvox_engine_configure")
-public func configure(_ resources: UnsafePointer<CChar>, _ models: UnsafePointer<CChar>, _ dictionary: UnsafePointer<CChar>, _ runtime: UnsafePointer<CChar>, _ soc: UnsafePointer<CChar>, _ appVersion: UnsafePointer<CChar>) {
+public func configure(
+    _ resources: UnsafePointer<CChar>,
+    _ models: UnsafePointer<CChar>,
+    _ dictionary: UnsafePointer<CChar>,
+    _ runtime: UnsafePointer<CChar>,
+    _ soc: UnsafePointer<CChar>,
+    _ appVersion: UnsafePointer<CChar>,
+    _ autoParagraphsEnabled: Bool,
+    _ listFormattingEnabled: Bool
+) {
     let resources = URL(fileURLWithPath: String(cString: resources), isDirectory: true)
     let models = URL(fileURLWithPath: String(cString: models), isDirectory: true)
     let dictionary = URL(fileURLWithPath: String(cString: dictionary), isDirectory: true)
@@ -12,12 +21,35 @@ public func configure(_ resources: UnsafePointer<CChar>, _ models: UnsafePointer
     Task { @MainActor in
         do {
             if EngineSession.shared == nil {
-                EngineSession.shared = try EngineSession(resources: resources, models: models, dictionaryDirectory: dictionary, runtimeDirectory: runtime, socIdentifier: soc)
+                EngineSession.shared = try EngineSession(
+                    resources: resources,
+                    models: models,
+                    dictionaryDirectory: dictionary,
+                    runtimeDirectory: runtime,
+                    socIdentifier: soc,
+                    autoParagraphsEnabled: autoParagraphsEnabled,
+                    listFormattingEnabled: listFormattingEnabled
+                )
+            } else {
+                EngineSession.shared?.setAppSettings(
+                    autoParagraphsEnabled: autoParagraphsEnabled,
+                    listFormattingEnabled: listFormattingEnabled
+                )
             }
             AndroidDictionaryBridge.publishSnapshot()
             try AndroidPromotionCoordinator.install(resources: resources, appVersion: appVersion)
             EngineSession.shared?.refreshModel()
         } catch { EngineEvent(kind: .failed).send() }
+    }
+}
+
+@_cdecl("keyvox_engine_set_app_settings")
+public func setAppSettings(_ paragraphsEnabled: Bool, _ listsEnabled: Bool) {
+    Task { @MainActor in
+        EngineSession.shared?.setAppSettings(
+            autoParagraphsEnabled: paragraphsEnabled,
+            listFormattingEnabled: listsEnabled
+        )
     }
 }
 
