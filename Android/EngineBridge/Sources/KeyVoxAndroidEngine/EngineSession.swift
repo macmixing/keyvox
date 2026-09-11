@@ -16,8 +16,20 @@ final class EngineSession {
     var ready = false
     var configured = false
     var optionalModelAvailable = false
+    private var autoParagraphsEnabled: Bool
+    private var listFormattingEnabled: Bool
 
-    init(resources: URL, models: URL, dictionaryDirectory: URL, runtimeDirectory: URL, socIdentifier: String) throws {
+    init(
+        resources: URL,
+        models: URL,
+        dictionaryDirectory: URL,
+        runtimeDirectory: URL,
+        socIdentifier: String,
+        autoParagraphsEnabled: Bool,
+        listFormattingEnabled: Bool
+    ) throws {
+        self.autoParagraphsEnabled = autoParagraphsEnabled
+        self.listFormattingEnabled = listFormattingEnabled
         try KeyVoxCoreResources.configure(bundleURL: resources.appendingPathComponent("KeyVoxCore_KeyVoxCore.resources"))
         let vadDirectory = resources.appendingPathComponent("KeyVoxVoiceActivity_KeyVoxVoiceActivity.resources")
         let vadModels = try FileManager.default.contentsOfDirectory(at: vadDirectory, includingPropertiesForKeys: nil)
@@ -97,7 +109,8 @@ final class EngineSession {
                 let pipeline = DictationPipeline(transcriptionProvider: service,
                     postProcessor: postProcessor,
                     dictionaryEntriesProvider: { self.dictionary.entries },
-                    autoParagraphsEnabledProvider: { true }, listFormattingEnabledProvider: { true },
+                    autoParagraphsEnabledProvider: { self.autoParagraphsEnabled },
+                    listFormattingEnabledProvider: { self.listFormattingEnabled },
                     listRenderModeProvider: { .multiline }, recordSpokenWords: { _ in }, pasteText: { _ in })
                 self.pipeline = pipeline
                 pipeline.run(audioFrames: frames, useDictionaryHintPrompt: false) { result in
@@ -128,5 +141,10 @@ final class EngineSession {
         service.cancelTranscription()
         pipeline = nil
         EngineEvent(kind: .cancelled, request: id).send()
+    }
+
+    func setAppSettings(autoParagraphsEnabled: Bool, listFormattingEnabled: Bool) {
+        self.autoParagraphsEnabled = autoParagraphsEnabled
+        self.listFormattingEnabled = listFormattingEnabled
     }
 }

@@ -20,7 +20,17 @@ public final class NativeEngine {
         if (Looper.myLooper() != Looper.getMainLooper()) throw new IllegalStateException("Dictionary initialization requires the main thread");
         dictionaryListener = value;
     }
-    public static native boolean initialize(String resources, String models, String dictionary, String runtime, String soc, String appVersion);
+    public static native boolean initialize(
+        String resources,
+        String models,
+        String dictionary,
+        String runtime,
+        String soc,
+        String appVersion,
+        boolean autoParagraphsEnabled,
+        boolean listFormattingEnabled
+    );
+    public static native void setAppSettings(boolean autoParagraphsEnabled, boolean listFormattingEnabled);
     public static boolean extractModelMember(String archive, String member, String destination, long size) {
         return ModelArchiveExtractor.extract(archive, member, destination, size);
     }
