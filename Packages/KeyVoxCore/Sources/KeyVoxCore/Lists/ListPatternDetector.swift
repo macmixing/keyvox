@@ -72,8 +72,7 @@ public struct ListPatternDetector {
                 }
                 content = cleanedItem
             }
-            let spokenIndex = detection.renumberSequentially ? (index + 1) : marker.number
-            items.append(DetectedListItem(spokenIndex: spokenIndex, content: content))
+            items.append(DetectedListItem(spokenIndex: marker.number, content: content))
         }
 
         guard items.count >= 2 else {
@@ -91,8 +90,7 @@ public struct ListPatternDetector {
             .map { "\($0.spokenIndex){chars=\($0.content.count),words=\($0.content.split(whereSeparator: \.isWhitespace).count)}" }
             .joined(separator: ",")
         logDetector(
-            "accept renumberSequentially=\(detection.renumberSequentially) " +
-            "leading=\(debugTextSummary(leadingText)) " +
+            "accept leading=\(debugTextSummary(leadingText)) " +
             "items=[\(itemSummary)] " +
             "trailing=\(debugTextSummary(trailingText))"
         )
