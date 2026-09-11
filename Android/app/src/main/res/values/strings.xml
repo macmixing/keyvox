@@ -28,6 +28,9 @@
     <string name="keyboard_dictionary">Dictionary</string>
     <string name="keyboard_paragraphs">Paragraphs</string>
     <string name="keyboard_lists">Lists</string>
+    <string name="keyboard_state_on">On</string>
+    <string name="keyboard_state_off">Off</string>
+    <string name="keyboard_toggle_accessibility">%1$s, %2$s</string>
     <string name="keyboard_caps_lock">Caps Lock</string>
     <string name="keyboard_speak">Speak</string>
     <string name="keyboard_vibes">KeyVox Vibes</string>

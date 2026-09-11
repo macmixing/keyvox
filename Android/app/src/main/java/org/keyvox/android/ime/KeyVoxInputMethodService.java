@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import org.keyvox.android.app.KeyVoxActivity;
 import org.keyvox.android.app.KeyVoxApplication;
+import org.keyvox.android.dictation.DictationResult;
 import org.keyvox.android.dictation.DictationSession;
 
 /** Android editor lifecycle adapter; the view owns neither capture nor inference. */
@@ -17,26 +18,34 @@ public final class KeyVoxInputMethodService extends InputMethodService {
     private final EditorConnectionOwner editor = new EditorConnectionOwner();
     private final DictationDestination dictationDestination = new DictationDestination();
     private DictationSession session;
+    private KeyboardDictationChangeController dictationChanges;
     private KeyboardShellView shell;
     private long scheduledRetryDestination = -1;
     private long scheduledRetryRequest = -1;
     private Handler mainHandler;
     private final Runnable changed = this::render;
+    private final Runnable settingsChanged = this::renderFormattingState;
     private final Runnable retryPendingDeletion = this::retryPendingDeletion;
 
     @Override public void onCreate() {
         super.onCreate();
         mainHandler = new Handler(Looper.getMainLooper());
         session = KeyVoxApplication.dictation(this);
+        dictationChanges = new KeyboardDictationChangeController(
+            editor,
+            KeyVoxApplication.settings(this)
+        );
         if (hasPendingInsertion()) {
             dictationDestination.recover(session.request());
             Log.i("KeyVoxIME", "Recovered dictation request=" + session.request());
         }
         session.observe(changed);
+        KeyVoxApplication.settings(this).observe(settingsChanged);
     }
 
     @Override public void onDestroy() {
         session.removeObserver(changed);
+        KeyVoxApplication.settings(this).removeObserver(settingsChanged);
         mainHandler.removeCallbacks(retryPendingDeletion);
         super.onDestroy();
     }
@@ -61,24 +70,31 @@ public final class KeyVoxInputMethodService extends InputMethodService {
         long request = dictationDestination.request();
         long destination = dictationDestination.editorGeneration();
         if (request == session.request() && session.result() != null) {
-            if (editor.commitDictation(destination, request, session.result())) {
+            DictationResult result = session.result();
+            KeyboardDictationInsertion insertion = editor.commitDictationResult(
+                destination,
+                request,
+                result
+            );
+            if (insertion != null) {
+                boolean hasPendingDeletion = editor.hasPendingDictation(destination, request);
+                dictationChanges.recordInsertedDictation(insertion);
                 long completed = request;
                 dictationDestination.clear();
                 scheduledRetryDestination = -1;
                 scheduledRetryRequest = -1;
-                Log.i("KeyVoxIME", "Inserted dictation request=" + completed
-                    + " editor=" + destination);
+                if (hasPendingDeletion) {
+                    scheduledRetryDestination = destination;
+                    scheduledRetryRequest = request;
+                    Log.i("KeyVoxIME", "Inserted dictation request=" + request
+                        + " editor=" + destination + " with punctuation cleanup pending");
+                    mainHandler.post(retryPendingDeletion);
+                } else {
+                    Log.i("KeyVoxIME", "Inserted dictation request=" + completed
+                        + " editor=" + destination);
+                }
                 session.acknowledgeResult(completed);
-            } else if (editor.hasPendingDictation(destination, request)
-                    && (scheduledRetryDestination != destination
-                        || scheduledRetryRequest != request)) {
-                scheduledRetryDestination = destination;
-                scheduledRetryRequest = request;
-                dictationDestination.clear();
-                Log.i("KeyVoxIME", "Inserted dictation request=" + request
-                    + " editor=" + destination + " with punctuation cleanup pending");
-                session.acknowledgeResult(request);
-                mainHandler.post(retryPendingDeletion);
+                renderFormattingState();
             } else {
                 Log.i("KeyVoxIME", "Waiting for editor for dictation request=" + request
                     + " destination=" + destination + " current=" + editor.generation());
@@ -97,6 +113,10 @@ public final class KeyVoxInputMethodService extends InputMethodService {
         }
     }
 
+    private void renderFormattingState() {
+        if (shell != null) shell.renderFormattingState();
+    }
+
     @Override public void onStartInput(EditorInfo info, boolean restarting) {
         super.onStartInput(info, restarting);
         long generation = editor.attach(getCurrentInputConnection());
@@ -112,6 +132,24 @@ public final class KeyVoxInputMethodService extends InputMethodService {
     @Override public void onFinishInput() {
         editor.detach();
         super.onFinishInput();
+    }
+
+    @Override public void onUpdateSelection(
+            int oldSelStart,
+            int oldSelEnd,
+            int newSelStart,
+            int newSelEnd,
+            int candidatesStart,
+            int candidatesEnd) {
+        super.onUpdateSelection(
+            oldSelStart,
+            oldSelEnd,
+            newSelStart,
+            newSelEnd,
+            candidatesStart,
+            candidatesEnd
+        );
+        renderFormattingState();
     }
 
     @Override public boolean onEvaluateFullscreenMode() { return false; }
@@ -135,7 +173,8 @@ public final class KeyVoxInputMethodService extends InputMethodService {
             editor::deletePreviousCodePoint,
             text -> editor.commit(editor.generation(), text),
             this::toggleDictation,
-            () -> session.cancel());
+            () -> session.cancel(),
+            dictationChanges);
         render();
         return shell;
     }

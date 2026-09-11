@@ -12,7 +12,10 @@ import org.keyvox.android.dictation.DictationSession;
 final class KeyboardToolbarView extends FrameLayout {
     private final KeyboardIconButton settings;
     private final KeyboardIconButton cancel;
+    private KeyboardIconButton paragraphs;
+    private KeyboardIconButton lists;
     private final KeyboardLogoBarView logo;
+    private final KeyboardDictationChangeController dictationChanges;
     private final KeyboardToolbarLayout.Plan slotPlan;
     private final List<AccessoryView> packedAccessories = new ArrayList<>();
 
@@ -26,8 +29,13 @@ final class KeyboardToolbarView extends FrameLayout {
         }
     }
 
-    KeyboardToolbarView(Context context, Runnable toggleDictation, Runnable cancelDictation) {
+    KeyboardToolbarView(
+            Context context,
+            Runnable toggleDictation,
+            Runnable cancelDictation,
+            KeyboardDictationChangeController dictationChanges) {
         super(context);
+        this.dictationChanges = dictationChanges;
         slotPlan = KeyboardToolbarLayout.plan(false, false);
         setClipChildren(false);
         setClipToPadding(false);
@@ -68,6 +76,7 @@ final class KeyboardToolbarView extends FrameLayout {
         settings.setVisibility(active ? GONE : VISIBLE);
         cancel.setVisibility(active ? VISIBLE : GONE);
         cancel.setEnabled(session.phase() != DictationSession.Phase.CANCELLING);
+        renderFormattingState();
         logo.render(session);
     }
 
@@ -158,17 +167,54 @@ final class KeyboardToolbarView extends FrameLayout {
         for (KeyboardToolbarLayout.Placement placement : placements) {
             KeyboardToolbarLayout.Accessory accessory = placement.accessory;
             if (accessory.iconResource == 0) continue;
-            KeyboardIconButton button = new KeyboardIconButton(
-                getContext(),
-                accessory.iconResource,
-                accessory == KeyboardToolbarLayout.Accessory.LISTS
-                    ? KeyboardIconButton.TintRole.ACTIVE
-                    : KeyboardIconButton.TintRole.FOREGROUND,
-                accessibilityLabel(accessory),
-                null
-            );
+            KeyboardIconButton button;
+            if (accessory == KeyboardToolbarLayout.Accessory.PARAGRAPHS) {
+                button = formatButton(accessory, KeyboardDictationChangeController.Kind.PARAGRAPHS);
+                paragraphs = button;
+            } else if (accessory == KeyboardToolbarLayout.Accessory.LISTS) {
+                button = formatButton(accessory, KeyboardDictationChangeController.Kind.LISTS);
+                lists = button;
+            } else {
+                button = new KeyboardIconButton(
+                    getContext(),
+                    accessory.iconResource,
+                    KeyboardIconButton.TintRole.FOREGROUND,
+                    accessibilityLabel(accessory),
+                    null
+                );
+            }
             packedAccessories.add(new AccessoryView(placement, button));
             addView(button);
+        }
+    }
+
+    private KeyboardIconButton formatButton(
+            KeyboardToolbarLayout.Accessory accessory,
+            KeyboardDictationChangeController.Kind kind) {
+        return new KeyboardIconButton(
+            getContext(),
+            accessory.iconResource,
+            KeyboardIconButton.TintRole.FOREGROUND,
+            accessibilityLabel(accessory),
+            () -> {
+                boolean changed = dictationChanges.togglePreference(kind);
+                renderFormattingState();
+                return changed;
+            },
+            () -> {
+                boolean changed = dictationChanges.applyLongPressChange(kind);
+                renderFormattingState();
+                return changed;
+            }
+        );
+    }
+
+    void renderFormattingState() {
+        if (paragraphs != null) {
+            paragraphs.setToggleState(dictationChanges.displayedAutoParagraphsEnabled());
+        }
+        if (lists != null) {
+            lists.setToggleState(dictationChanges.displayedListFormattingEnabled());
         }
     }
 

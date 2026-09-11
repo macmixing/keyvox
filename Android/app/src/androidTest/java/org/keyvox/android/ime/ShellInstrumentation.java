@@ -16,11 +16,13 @@ public final class ShellInstrumentation extends org.keyvox.android.engine.Engine
             if (captureChecks) org.keyvox.android.engine.CaptureInstrumentationChecks.run(this);
             org.keyvox.android.app.home.HomeInstrumentationChecks.run(this);
             String compositionTimings = CompositionInstrumentationChecks.run();
+            KeyboardDictationChangeInstrumentationChecks.run(this);
             verifyEditorLifetime();
             verifyDictationDestination();
             result.putString("stream", captureChecks
-                ? "Capture, Home, composition, and editor lifetime checks passed\n"
-                : "Home, composition, and editor lifetime checks passed\n" + compositionTimings + "\n");
+                ? "Capture, Home, composition, dictation change, and editor lifetime checks passed\n"
+                : "Home, composition, dictation change, and editor lifetime checks passed\n"
+                    + compositionTimings + "\n");
             finish(Activity.RESULT_OK, result);
         } catch (Throwable failure) {
             result.putString("stream", failure.toString());

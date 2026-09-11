@@ -14,6 +14,7 @@ final class EditorBufferConnection {
     private int surroundingTextCap = Integer.MAX_VALUE;
     private boolean codePointDeletionAvailable = true;
     private boolean utf16DeletionAvailable = true;
+    private boolean rejectNextCommit;
     final InputConnection connection;
 
     EditorBufferConnection(String text, int selectionStart, int selectionEnd) {
@@ -52,10 +53,19 @@ final class EditorBufferConnection {
                         return extracted;
                     }
                     case "commitText": {
+                        if (rejectNextCommit) {
+                            rejectNextCommit = false;
+                            return false;
+                        }
                         String replacement = args[0].toString();
                         this.text.replace(this.selectionStart, this.selectionEnd, replacement);
                         this.selectionStart += replacement.length();
                         this.selectionEnd = this.selectionStart;
+                        return true;
+                    }
+                    case "setSelection": {
+                        this.selectionStart = (int) args[0];
+                        this.selectionEnd = (int) args[1];
                         return true;
                     }
                     case "deleteSurroundingTextInCodePoints": {
@@ -110,6 +120,10 @@ final class EditorBufferConnection {
 
     void setUtf16DeletionAvailable(boolean available) {
         utf16DeletionAvailable = available;
+    }
+
+    void rejectNextCommit() {
+        rejectNextCommit = true;
     }
 
     String text() {

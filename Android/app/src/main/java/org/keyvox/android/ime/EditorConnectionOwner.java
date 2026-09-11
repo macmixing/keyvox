@@ -3,6 +3,9 @@ package org.keyvox.android.ime;
 import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.ExtractedText;
 import android.view.inputmethod.ExtractedTextRequest;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import org.keyvox.android.dictation.DictationResult;
 import org.keyvox.android.engine.NativeEngine;
 
 /** Only the IME owns editor access; an old destination cannot accept a late result. */
@@ -56,22 +59,37 @@ final class EditorConnectionOwner {
     }
 
     boolean commitDictation(long destination, long request, CharSequence text) {
+        KeyboardDictationInsertion insertion = commitDictationResult(
+            destination,
+            request,
+            DictationResult.textOnly(text.toString())
+        );
+        return insertion != null && !hasPendingDictation(destination, request);
+    }
+
+    KeyboardDictationInsertion commitDictationResult(
+            long destination,
+            long request,
+            DictationResult result) {
         // A no-speech completion must not erase the editor's current selection.
-        if (text.length() == 0) return true;
-        if (destination != generation || connection == null) return false;
-        String transcript = text.toString();
+        if (result.text().length() == 0) {
+            return new KeyboardDictationInsertion(
+                destination, null, "", null, new LinkedHashMap<>());
+        }
+        if (destination != generation || connection == null) return null;
+        String transcript = result.text();
         if (pendingDeletionGeneration == destination) {
             if (request != pendingDeletionRequest
                     || !transcript.equals(pendingDeletionTranscript)) {
                 clearPendingDeletion();
             } else if (!pendingDeletionContextStillMatches()) {
                 clearPendingDeletion();
-                return true;
+                return null;
             } else if (!deleteFollowingCodePoint(pendingFollowingCodePoint.length())) {
-                return false;
+                return null;
             } else {
                 clearPendingDeletion();
-                return true;
+                return null;
             }
         }
 
@@ -82,12 +100,32 @@ final class EditorConnectionOwner {
             context.precedingTextIsTruncated,
             context.followingText,
             context.followingTextIsTruncated);
-        if (composition == null) return false;
-        if (composition.text.isEmpty()) return true;
+        if (composition == null) return null;
+        if (composition.text.isEmpty()) {
+            return new KeyboardDictationInsertion(
+                destination, context.precedingText, "", null, new LinkedHashMap<>());
+        }
+
+        Map<DictationResult.FormatState, String> preparedVariants = preparedVariants(
+            result,
+            context
+        );
+        DictationResult.FormatState baseState = result.baseState();
+        if (baseState != null && !preparedVariants.containsKey(baseState)) {
+            baseState = null;
+        }
+        KeyboardDictationInsertion insertion = new KeyboardDictationInsertion(
+            destination,
+            context.precedingText,
+            composition.text,
+            baseState,
+            preparedVariants
+        );
 
         connection.beginBatchEdit();
         try {
             boolean inserted = connection.commitText(composition.text, 1);
+            if (!inserted) return null;
             if (inserted && composition.deleteFollowingCodePoint) {
                 int followingUtf16Units = Character.charCount(
                     Character.codePointAt(context.followingText, 0));
@@ -98,10 +136,58 @@ final class EditorConnectionOwner {
                     pendingInsertedText = composition.text;
                     pendingFollowingCodePoint = context.followingText.substring(
                         0, followingUtf16Units);
-                    return false;
+                    return insertion;
                 }
             }
-            return inserted;
+            return insertion;
+        } finally {
+            connection.endBatchEdit();
+        }
+    }
+
+    boolean currentTextMatchesUntouchedInsertion(KeyboardDictationInsertion insertion) {
+        if (insertion == null || insertion.currentText.isEmpty()
+                || insertion.editorGeneration != generation || connection == null
+                || pendingDeletionGeneration == generation) {
+            return false;
+        }
+        CharSequence selected = connection.getSelectedText(0);
+        if (selected != null && selected.length() > 0) return false;
+
+        int requestedLength = insertion.currentText.length() + SURROUNDING_TEXT_LIMIT;
+        CharSequence preceding = connection.getTextBeforeCursor(requestedLength, 0);
+        if (preceding == null) return false;
+        String currentContext = preceding.toString();
+        if (!currentContext.endsWith(insertion.currentText)) return false;
+
+        String visiblePrefix = currentContext.substring(
+            0,
+            currentContext.length() - insertion.currentText.length()
+        );
+        if (visiblePrefix.isEmpty()) {
+            return insertion.documentContextBeforeInput == null
+                || insertion.documentContextBeforeInput.isEmpty();
+        }
+        return insertion.documentContextBeforeInput != null
+            && insertion.documentContextBeforeInput.endsWith(visiblePrefix);
+    }
+
+    boolean replaceUntouchedInsertion(
+            KeyboardDictationInsertion insertion,
+            String replacementText) {
+        if (!currentTextMatchesUntouchedInsertion(insertion)) return false;
+        clearPendingDeletion();
+        ExtractedText extracted = connection.getExtractedText(new ExtractedTextRequest(), 0);
+        if (extracted == null || extracted.selectionStart != extracted.selectionEnd) return false;
+        int cursor = extracted.startOffset + extracted.selectionStart;
+        int insertionStart = cursor - insertion.currentText.length();
+        if (insertionStart < 0) return false;
+        connection.beginBatchEdit();
+        try {
+            if (!connection.setSelection(insertionStart, cursor)) return false;
+            if (connection.commitText(replacementText, 1)) return true;
+            connection.setSelection(cursor, cursor);
+            return false;
         } finally {
             connection.endBatchEdit();
         }
@@ -152,6 +238,26 @@ final class EditorConnectionOwner {
             precedingTruncated,
             followingText,
             followingTruncated);
+    }
+
+    private Map<DictationResult.FormatState, String> preparedVariants(
+            DictationResult result,
+            EditorContext context) {
+        Map<DictationResult.FormatState, String> prepared = new LinkedHashMap<>();
+        for (Map.Entry<DictationResult.FormatState, String> variant
+                : result.deterministicVariants().entrySet()) {
+            NativeEngine.Composition composition = NativeEngine.compose(
+                variant.getValue(),
+                context.precedingText,
+                context.precedingTextIsTruncated,
+                null,
+                false
+            );
+            if (composition != null && !composition.text.isEmpty()) {
+                prepared.put(variant.getKey(), composition.text);
+            }
+        }
+        return prepared;
     }
 
     private boolean deleteFollowingCodePoint(int utf16Units) {

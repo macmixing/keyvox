@@ -23,7 +23,8 @@ final class KeyboardShellView extends LinearLayout {
         BooleanSupplier delete,
         Consumer<String> insertText,
         Runnable toggleDictation,
-        Runnable cancelDictation
+        Runnable cancelDictation,
+        KeyboardDictationChangeController dictationChanges
     ) {
         super(context);
         setOrientation(VERTICAL);
@@ -61,15 +62,27 @@ final class KeyboardShellView extends LinearLayout {
         contentParams.gravity = Gravity.CENTER_HORIZONTAL;
         addView(content, contentParams);
 
-        toolbar = new KeyboardToolbarView(context, toggleDictation, cancelDictation);
+        toolbar = new KeyboardToolbarView(
+            context,
+            toggleDictation,
+            cancelDictation,
+            dictationChanges
+        );
         content.addView(toolbar, new LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
             KeyboardStyle.layoutDp(context, KeyboardStyle.TOOLBAR_HEIGHT_DP)
         ));
 
         keyGrid = new KeyboardKeyGridView(context, new KeyboardKeyGridView.Listener() {
-            @Override public void insertText(String text) { insertText.accept(text); }
-            @Override public boolean deleteBackward() { return delete.getAsBoolean(); }
+            @Override public void insertText(String text) {
+                insertText.accept(text);
+                toolbar.renderFormattingState();
+            }
+            @Override public boolean deleteBackward() {
+                boolean deleted = delete.getAsBoolean();
+                toolbar.renderFormattingState();
+                return deleted;
+            }
             @Override public void switchToNextKeyboard() { nextKeyboard.run(); }
         });
         LayoutParams keyGridParams = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -86,5 +99,9 @@ final class KeyboardShellView extends LinearLayout {
         toolbar.refreshAppearance();
         keyGrid.refreshAppearance();
         invalidate();
+    }
+
+    void renderFormattingState() {
+        toolbar.renderFormattingState();
     }
 }

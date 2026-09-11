@@ -106,4 +106,13 @@ final class KeyboardStyle {
         drawable.setStroke(Math.max(1, layoutDp(context, KEY_BORDER_DP)), border);
         return drawable;
     }
+
+    static GradientDrawable toolbarButtonBackground(Context context, boolean pressed) {
+        GradientDrawable drawable = keyBackground(context, false, pressed);
+        if (pressed) {
+            int border = isDark(context) ? Color.WHITE : Color.BLACK;
+            drawable.setStroke(Math.max(1, layoutDp(context, KEY_BORDER_DP)), border);
+        }
+        return drawable;
+    }
 }

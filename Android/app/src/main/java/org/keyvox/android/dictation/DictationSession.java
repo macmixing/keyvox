@@ -30,7 +30,7 @@ public final class DictationSession {
     private Model model = Model.CHECKING;
     private long request;
     private File audio;
-    private String result;
+    private DictationResult result;
     private boolean initialized;
     private boolean optionalModelAvailable;
     private boolean captureActive;
@@ -55,7 +55,7 @@ public final class DictationSession {
             && (model == Model.MISSING || model == Model.FAILED || (model == Model.READY && optionalModelAvailable));
     }
     public long request() { return request; }
-    public String result() { return result; }
+    public DictationResult result() { return result; }
     public float audioLevel() { return audioLevel; }
     public void observe(Runnable observer) { observers.add(observer); observer.run(); }
     public void removeObserver(Runnable observer) { observers.remove(observer); }
@@ -178,9 +178,9 @@ public final class DictationSession {
                 case "result":
                     if (phase == Phase.CANCELLING) return;
                     if (event.optLong("request", -1) != request) return;
-                    result = event.optString("text", "");
-                    if (!event.optBoolean("noSpeech") && !result.trim().isEmpty()) {
-                        successfulTranscription.accept(result);
+                    result = DictationResult.from(event);
+                    if (!event.optBoolean("noSpeech") && !result.text().trim().isEmpty()) {
+                        successfulTranscription.accept(result.text());
                     }
                     clearAudio();
                     phase = Phase.IDLE;

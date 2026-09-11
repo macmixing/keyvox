@@ -120,11 +120,25 @@ final class EngineSession {
                     if result.finalText.isEmpty && !result.wasLikelyNoSpeech {
                         EngineEvent(kind: .failed, request: id).send()
                     } else {
-                        EngineEvent(kind: .result, request: id, text: result.finalText, noSpeech: result.wasLikelyNoSpeech,
+                        EngineEvent(
+                            kind: .result,
+                            request: id,
+                            text: result.finalText,
+                            noSpeech: result.wasLikelyNoSpeech,
+                            baseParagraphsEnabled: result.baseParagraphsEnabled,
+                            baseListsEnabled: result.baseListsEnabled,
+                            deterministicVariants: result.deterministicVariants.map {
+                                EngineEvent.DeterministicVariant(
+                                    paragraphsEnabled: $0.paragraphsEnabled,
+                                    listsEnabled: $0.listsEnabled,
+                                    text: $0.text
+                                )
+                            },
                             audioReadMilliseconds: audioReadMilliseconds, modelWarmupMilliseconds: modelWarmupMilliseconds,
                             inferenceMilliseconds: result.inferenceDuration * 1_000,
                             pipelineMilliseconds: pipelineStart.duration(to: .now).milliseconds,
-                            postProcessorPreparationWaitMilliseconds: postProcessorPreparationWaitMilliseconds).send()
+                            postProcessorPreparationWaitMilliseconds: postProcessorPreparationWaitMilliseconds
+                        ).send()
                     }
                 }
             } catch {
