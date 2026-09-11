@@ -1,11 +1,10 @@
 package org.keyvox.android.app.presentation;
 
-import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.os.SystemClock;
 import android.view.HapticFeedbackConstants;
-import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.CompoundButton;
 import org.keyvox.android.R;
 
@@ -17,8 +16,22 @@ public final class AppToggleView extends CompoundButton {
     private static final long ANIMATION_DURATION_MS = 220;
 
     private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    private ValueAnimator thumbAnimator;
     private float thumbPosition;
+    private float animationStartPosition;
+    private float animationTargetPosition;
+    private long animationStartTime;
+    private final Runnable animationFrame = new Runnable() {
+        @Override
+        public void run() {
+            float elapsed = SystemClock.uptimeMillis() - animationStartTime;
+            float progress = Math.min(1f, elapsed / ANIMATION_DURATION_MS);
+            float easedProgress = 0.5f - (0.5f * (float) Math.cos(Math.PI * progress));
+            thumbPosition = animationStartPosition
+                + ((animationTargetPosition - animationStartPosition) * easedProgress);
+            invalidate();
+            if (progress < 1f && isAttachedToWindow()) postOnAnimation(this);
+        }
+    };
 
     public AppToggleView(Context context) {
         super(context);
@@ -65,21 +78,24 @@ public final class AppToggleView extends CompoundButton {
         if (!changed) return;
 
         float target = checked ? 1f : 0f;
-        if (!isLaidOut()) {
+        if (!isAttachedToWindow() || getWidth() == 0 || getHeight() == 0) {
             thumbPosition = target;
             invalidate();
             return;
         }
 
-        if (thumbAnimator != null) thumbAnimator.cancel();
-        thumbAnimator = ValueAnimator.ofFloat(thumbPosition, target);
-        thumbAnimator.setDuration(ANIMATION_DURATION_MS);
-        thumbAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
-        thumbAnimator.addUpdateListener(animation -> {
-            thumbPosition = (float) animation.getAnimatedValue();
-            invalidate();
-        });
-        thumbAnimator.start();
+        removeCallbacks(animationFrame);
+        animationStartPosition = thumbPosition;
+        animationTargetPosition = target;
+        animationStartTime = SystemClock.uptimeMillis();
+        postOnAnimation(animationFrame);
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        removeCallbacks(animationFrame);
+        thumbPosition = isChecked() ? 1f : 0f;
+        super.onDetachedFromWindow();
     }
 
     @Override
