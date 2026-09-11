@@ -145,15 +145,14 @@ argument supplies host knowledge; the native backend reports no detected languag
 See `Packages/KeyVoxParakeetNative/README.md` for lifecycle and metadata limitations
 and `Tools/ParakeetNative/README.md` for native/model provenance and licenses.
 
-Set `KEYVOX_LINGUISTIC_MODEL` to an external model directory to explicitly select
-the optional statistical analyzer. See `Tools/Models/averaged-perceptron-tagger-eng`
-for its MIT license, provenance, supported language, and accuracy limitations.
-Reports include token ranges and semantic roles for inspection. The default
-non-Apple analyzer provides Unicode word boundaries without grammatical roles;
-Apple retains its existing analyzer. Neither analyzer selection introduces a
-shared engine language default. Preserve the bundled `PERCEPTRON-LICENSE.txt`
-when distributing the predictor, and the model's `LICENSE.txt` when including
-its optional assets.
+Set `KEYVOX_LINGUISTIC_MODEL` to the averaged-perceptron directory and
+`KEYVOX_LEXICAL_DATABASE` to the WordNet 3.0 directory to select the same portable
+combination as the Android engine. See both model directories for exact licenses,
+provenance, supported language, hashes, and distribution obligations. Reports
+include the implementation identity, token ranges, and semantic roles. Apple
+retains its existing analyzer. An explicit unsupported language receives Unicode
+boundaries and unavailable semantic features. A caller that selects no language
+may provide its own documented host default, as Android does for English.
 
 ## Engineering record
 
@@ -166,21 +165,21 @@ its optional assets.
 | Speech harness | FUNCTIONAL | Executed both commands on the connected Android device |
 | Android speech inference / VAD execution | FUNCTIONAL | Public upstream JFK fixture: 176,000 samples, two transcript segments |
 | Portable WAV/sample loading | FUNCTIONAL | Android production service decoded mono 16 kHz speech and stereo 48 kHz speech; 48 kHz stereo silence produced empty output; malformed WAV failed |
-| Core package graph | COMPILING | Full Android build with static Swift standard library and real Whisper native dependencies passes |
-| Core text processing execution | FUNCTIONAL | Real Whisper transcript passed through production Core on the Android phone; linguistic features remain incomplete |
+| Core package graph | FUNCTIONAL | Clean Android build and the recorded 582-test shared Core bakeoff executed successfully on Android |
+| Core text processing execution | FUNCTIONAL | Real NPU Whisper transcript passed through production Core with the selected perceptron and WordNet capabilities |
 | Dictionary persistence and Core connection | FUNCTIONAL | Android/macOS separate-process canonical output matched; duplicate rejection preserved entries; backup recovery and pre-mutation warnings verified; speech pipeline loaded persisted entries |
 | Spanish/French Core text fixtures | FUNCTIONAL | Existing spoken-list fixtures produced identical formatted output on Android and macOS; no optional grammatical-role model selected |
 | iOS Whisper Base model and service | FUNCTIONAL | Exact iOS GGML artifact checksum matched; existing microphone recording passed through shared service/VAD/Core with automatic language metadata and persisted dictionary correction |
 | Foreground Base download transport | FUNCTIONAL | Android Swift download now verifies exact Base internally before publishing it, then runs real VAD/inference/Core; independent device checksum matched; earlier Apple transport and external-checksum evidence remains applicable |
 | Unicode word boundaries | FUNCTIONAL | Real transcript yielded matching UTF-16 token ranges on Android and macOS |
-| Optional statistical grammatical roles | FUNCTIONAL | Explicitly selected MIT model: 22 word tokens, 20 supported roles; Android/macOS reports identical; pinned reference predictor matched all 23 context tokens |
-| Portable names / lemmas | UNRESOLVED | Optional predictor reports both unavailable; Apple implementation remains available |
+| Portable grammatical roles | FUNCTIONAL | Focused perceptron and WordNet provider passes all shared Core expectations; Android logs the exact selected implementation |
+| Portable names / lemmas | FUNCTIONAL | Name identity and noun inflection cover Core's consumed behavior. General lemmas remain explicitly unavailable; Apple retains native lemmas |
 | Android microphone host | FUNCTIONAL | Real phone recording: 89,600 samples, 73,600 VAD-selected samples, speech inference and Core processing executed; adb orchestrates the WAV handoff |
-| Date/address numeric protection | STUBBED | Semantic availability is explicit; non-Apple prose is conservatively preserved |
+| Date/address numeric protection | FUNCTIONAL | Portable semantic protection matches all shared date, address, year, and quantity expectations |
 
 There are no placeholder inference implementations. Compilation is not execution
-evidence. After correcting Xcode's conditional-target graph failure, the final
-Android executable was rebuilt and Whisper/VAD execution repeated successfully.
+evidence. The recorded final Android executable passed 582 / 582 Core tests, and the
+protected NPU application repeated real Whisper/VAD/Core execution successfully.
 Local Xcode validation: 381 iOS app tests and 401 macOS app tests passed. All ten
 package suites passed; LocalInference retained nine model-dependent skips.
 
@@ -227,17 +226,15 @@ from mono 16 kHz signed PCM16 to float32. Model: `ggml-tiny.en.bin` from
 
 > And so my fellow Americans ask not what your country can do for you ask what you can do for your country.
 
-The `pipeline` command subsequently passed this actual inferred text through
-Core on the same phone and produced the transcript with its leading whitespace
-removed. This proves execution of the real processing path, not linguistic
-parity: the JSON report explicitly showed all four linguistic features unavailable.
-The later Unicode boundary implementation and explicitly selected optional
-perceptron model provide real boundaries and partial grammatical roles. On the
-same transcript, Android and macOS produced identical token ranges, supported
-roles, and processed output. A diagnostic compared the Swift predictor with the
-pinned upstream Python implementation using identical tokens; all 23 predictions
-matched. Tokenization and sentence-context limitations remain as documented with
-the model. This does not establish general linguistic accuracy or Apple parity.
+The initial `pipeline` command subsequently passed this actual inferred text
+through Core on the same phone and produced the transcript with its leading
+whitespace removed. Its historical JSON report showed all four linguistic
+features unavailable. A later diagnostic verified the Swift predictor matched
+the pinned upstream Python implementation on all 23 context tokens. The final
+Android host now combines that predictor with focused contextual resolution and
+WordNet lexical evidence; the recorded 582-test cross-platform bakeoff passed and
+the production NPU path logs that exact provider. This establishes measured Core text behavior, not
+general linguistic accuracy outside Core's consumed semantics.
 The separate capture host produced a real microphone WAV for `file-pipeline`:
 5.6 seconds of audio yielded a transcript through the actual VAD, WhisperService,
 and Core path on the phone. This uses an adb-orchestrated file handoff, without an
@@ -261,13 +258,12 @@ channel mixing, rate conversion, and alias suppression. No third-party code or
 recordings were introduced for this capability. The same implementation is
 available to future Windows and Linux hosts.
 
-Date/address spans now have a semantic capability boundary. Apple retains its
-detectors. On other platforms, unavailable detection permits only isolated
-numeric-line candidates after existing structural protections; prose remains
-unchanged. Standalone values in the plausible-year range still depend on lexical
-analysis and may remain unchanged. This is a temporary limitation, not portable
-date/address recognition. Float audio RMS uses Swift's native square-root
-operation, retaining its original precision without platform-specific overloads.
+Date/address spans retain their semantic capability boundary. Apple continues to
+use its native detectors. Android supplies focused portable numeric protection
+for the date, address, year, and quantity decisions Core consumes, including an
+explicit conservative missing-language fallback. Float audio RMS uses Swift's
+native square-root operation, retaining its original precision without
+platform-specific overloads.
 
 The existing `VoiceActivityAnalyzing` semantic boundary remains intact. The
 Whisper C packaging boundary can also accept Linux/Windows native libraries;

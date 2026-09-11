@@ -32,23 +32,23 @@ link detailed commands and limitations rather than duplicating them here.
 
 | Capability | Status | Verified scope / remaining gap |
 | --- | --- | --- |
-| Core package graph | COMPILING | Android arm64 API 28, static Swift standard library; successful builds are distinct from runtime coverage |
+| Core package graph | FUNCTIONAL | Clean Android arm64 API 28 build and recorded 582-test execution on Android; Apple-only binary dependencies are conditionally excluded |
 | Whisper native runtime and Swift service | FUNCTIONAL | Real model inference, VAD, and microphone transcript through Core |
 | Whisper cancel/restart lifecycle | FUNCTIONAL | Cancellation after native encoder entry followed immediately by replacement dictation completed on the same service; canceled output suppressed and replacement published once |
 | Optional Parakeet native runtime and Swift service | FUNCTIONAL | Real microphone audio through VAD and Core; coexists with Whisper; limitations below |
 | WAV decoding and sample conversion | FUNCTIONAL | Mono 16 kHz and stereo 48 kHz speech, silence handling, malformed-input rejection |
 | Microphone capture | FUNCTIONAL | Real Android IME starts capture in another app; installed Swift bridge consumes captured PCM; view visibility does not stop recording |
-| Text post-processing | FUNCTIONAL | Real speech output processed by Core; incomplete semantic capabilities limit parity |
-| Dictionary and persistence | FUNCTIONAL | Android/macOS persisted canonical output matched across process restart; duplicate rejection, backup recovery diagnostics, and speech-path loading verified; fuzzy correction parity is not established |
+| Text post-processing | FUNCTIONAL | The recorded 582-test shared Core bakeoff passed on Apple and Android; real NPU speech output used the selected portable capabilities |
+| Dictionary and persistence | FUNCTIONAL | Android/macOS persisted canonical output matched across process restart; duplicate rejection, backup recovery diagnostics, speech-path loading, and shared fuzzy-correction behavior are verified |
 | Semantic state publication | FUNCTIONAL | Portable state channel executed on Android; Apple publication retained |
 | URL-prefix and file-type handling | FUNCTIONAL | Portable implementations exercised with fixtures; Apple-specific detection retained where applicable |
 | Word boundaries | FUNCTIONAL | Unicode tokenization executed on Android and macOS |
-| Optional grammatical roles | FUNCTIONAL | Explicitly selected permissively licensed model executed; accuracy and language coverage are limited |
+| Portable grammatical roles | FUNCTIONAL | Android injects the focused perceptron and WordNet provider; exact selection and outputs are instrumented; English semantic coverage and missing-language behavior pass the shared suite |
 | iOS Whisper Base baseline | FUNCTIONAL | Exact iOS GGML artifact/revision/checksum; existing microphone audio passed through shared service, automatic language metadata, VAD, and dictionary/Core processing |
 | Language-specific text groundwork | FUNCTIONAL | Existing Spanish/French list fixtures matched macOS output; speech-accuracy evaluation is outside this experiment |
 | Complete spoken-number parsing | FUNCTIONAL | Shared parser rejects partial candidates; existing Android math-equation, compound-exponent, and spoken-year fixtures now match Apple |
-| Names and lemmas outside Apple | UNRESOLVED | Current portable analyzer explicitly reports them unavailable |
-| Semantic date/address protection | STUBBED | Conservative fallback preserves prose; not equivalent to Apple's detection |
+| Names and lemmas outside Apple | FUNCTIONAL | Portable name identity and noun inflection cover the behavior Core consumes. General lemmas remain explicitly unavailable; Apple retains its native lemma capability |
+| Semantic date/address protection | FUNCTIONAL | Apple retains native detection; Android uses portable numeric protection with shared year, date, address, quantity, Unicode, and missing-language expectations |
 | Foreground model download transport | FUNCTIONAL | Swift downloaded exact Base on the phone; KeyVoxModels verified SHA-256 before publication; independent device checksum matched and verified weights ran through real inference/Core |
 | Shared model file integrity | FUNCTIONAL | Streaming SHA-256 and progress/error fixtures pass on Apple and Android; existing iOS file hashing delegates to KeyVoxModels; integrity does not imply completed installation |
 | Whisper model failure and reload | FUNCTIONAL | Absent selection and invalid-file paths exercised; explicit unload followed by exact Base load and a second reload produced speech on device; file availability is not integrity verification |
@@ -72,9 +72,10 @@ link detailed commands and limitations rather than duplicating them here.
       host. Language exposure and routing are required; evaluating recognition
       accuracy across languages is outside this experiment. Do not introduce
       shared English defaults.
-- [ ] Audit the semantic NLP behavior consumed by Core and close practical gaps
-      with portable implementations or small platform adapters. Reuse the same
-      fixtures on Apple and Android; do not recreate an entire Apple framework.
+- [x] Audit the semantic NLP behavior consumed by Core and close practical gaps
+      with portable implementations behind existing capability boundaries. The
+      complete shared suite passes on Apple and Android; see the
+      [bakeoff record](CORE_LINGUISTIC_BAKEOFF.md).
 - [ ] Exercise model storage, availability, install failure, and reload paths
       behind their existing owners before claiming device model management.
 - [ ] Extend audio/runtime evidence to repeated sessions, cancellation, resource
@@ -168,6 +169,8 @@ export boundary. No current Android success constitutes Windows/Linux validation
 - [Native Parakeet build and provenance](../../Tools/ParakeetNative/README.md)
 - [Optional Swift Parakeet backend and limitations](../../Packages/KeyVoxParakeetNative/README.md)
 - [Portable linguistic model and accuracy limits](../../Tools/Models/averaged-perceptron-tagger-eng/README.md)
+- [Core linguistic bakeoff, failure ledger, performance, and licensing](CORE_LINGUISTIC_BAKEOFF.md)
+- [WordNet lexical indexes and distribution terms](../../Tools/Models/wordnet-3.0/README.md)
 - [Runtime/model licensing record](../../Tools/Licenses/README.md)
 
 Recent milestones: [native Parakeet packaging](https://github.com/macmixing/keyvox-platform-lab/pull/19)
