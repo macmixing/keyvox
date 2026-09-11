@@ -15,6 +15,7 @@ import org.keyvox.android.app.navigation.ContainingAppTab;
 import org.keyvox.android.app.home.HomeTabView;
 import org.keyvox.android.app.dictionary.DictionaryTabView;
 import org.keyvox.android.app.promotion.PromotionSession;
+import org.keyvox.android.app.style.StyleTabView;
 
 /** Minimal host surface. Dictation lifetime must never belong to this Activity. */
 public final class KeyVoxActivity extends Activity {
@@ -25,6 +26,7 @@ public final class KeyVoxActivity extends Activity {
     private KeyVoxSetupView setupView;
     private HomeTabView homeView;
     private DictionaryTabView dictionaryView;
+    private StyleTabView styleView;
     private PromotionSession promotions;
     private final Runnable changed = this::render;
 
@@ -42,6 +44,7 @@ public final class KeyVoxActivity extends Activity {
             ),
             () -> KeyVoxApplication.dictation(this).downloadModel()
         );
+        styleView = new StyleTabView(this, KeyVoxApplication.settings(this));
         tabHost = new AppTabHostView(this, this::pageForTab);
         dictionaryView = new DictionaryTabView(
             this,
@@ -107,6 +110,7 @@ public final class KeyVoxActivity extends Activity {
     private View pageForTab(ContainingAppTab tab) {
         if (tab == ContainingAppTab.HOME) return homeView;
         if (tab == ContainingAppTab.DICTIONARY) return dictionaryView;
+        if (tab == ContainingAppTab.STYLE) return styleView;
         if (tab == ContainingAppTab.SETTINGS) return setupView;
         FrameLayout page = new FrameLayout(this);
         page.setBackgroundColor(getColor(R.color.app_screen_background));
