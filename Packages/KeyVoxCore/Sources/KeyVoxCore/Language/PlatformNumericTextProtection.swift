@@ -21,8 +21,7 @@ struct PlatformNumericTextProtection: NumericTextProtectionAnalyzing {
         }
         return NumericTextProtection(ranges: ranges, availableCategories: available)
         #else
-        // Temporary capability gap, explicitly propagated to conservative callers.
-        return NumericTextProtection(ranges: [], availableCategories: [])
+        return PortableNumericTextProtection().analyze(text)
         #endif
     }
 }

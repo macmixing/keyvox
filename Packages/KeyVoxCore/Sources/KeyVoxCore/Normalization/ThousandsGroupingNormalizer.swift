@@ -7,6 +7,7 @@ public struct ThousandsGroupingNormalizer {
         let range: NSRange
         let tag: LexicalRole?
         let lemma: String?
+        let inflection: LinguisticToken.Inflection
     }
 
     private struct WordToken {
@@ -33,8 +34,8 @@ public struct ThousandsGroupingNormalizer {
         monthFormatter.calendar = Calendar(identifier: .gregorian)
 
         let tokenGroups = [
-            monthFormatter.monthSymbols ?? [],
-            monthFormatter.standaloneMonthSymbols ?? [],
+            monthFormatter.keyVoxMonthSymbols,
+            monthFormatter.keyVoxStandaloneMonthSymbols,
         ]
 
         return Set(tokenGroups.flatMap { $0 }.map(normalizedCalendarMonthToken).filter { !$0.isEmpty })
@@ -139,8 +140,14 @@ public struct ThousandsGroupingNormalizer {
         let lexicalTokens = lexicalTokens(in: line, range: fullRange)
         let words = wordRegex.matches(in: line, options: [], range: fullRange).map {
             let range = $0.range
-            let tag = lexicalTokens.first(where: { NSEqualRanges($0.range, range) })?.tag
-            return WordToken(text: nsLine.substring(with: range), range: range, tag: tag)
+            let text = nsLine.substring(with: range)
+            let analyzedRole = lexicalTokens.first(where: { NSEqualRanges($0.range, range) })?.tag
+            let normalized = Self.normalizeSpellOutPhrase(text)
+            let isNumericComponent = Self.subThousandSpellOutLookup[normalized] != nil
+                || normalized == Self.hundredMagnitudeToken
+                || normalized == Self.thousandMagnitudeToken
+            let tag: LexicalRole? = isNumericComponent ? .number : analyzedRole
+            return WordToken(text: text, range: range, tag: tag)
         }
         guard !words.isEmpty else { return line }
 
@@ -407,7 +414,13 @@ public struct ThousandsGroupingNormalizer {
     private func lexicalTokens(in line: String, range: NSRange) -> [LexicalToken] {
         TextLinguistics.analyze(line, range: range, features: [.roles, .lemmas]).tokens.compactMap { token in
             guard let stringRange = Range(token.range, in: line) else { return nil }
-            return LexicalToken(text: String(line[stringRange]), range: token.range, tag: token.role, lemma: token.lemma)
+            return LexicalToken(
+                text: String(line[stringRange]),
+                range: token.range,
+                tag: token.role,
+                lemma: token.lemma,
+                inflection: token.inflection
+            )
         }
     }
 
@@ -451,7 +464,7 @@ public struct ThousandsGroupingNormalizer {
         let context = lexicalContext(around: range, in: tokens)
         return context.previous?.tag == .verb
             && context.secondPrevious?.tag == .noun
-            && context.thirdPrevious?.tag == .noun
+            && [.noun, .adjective].contains(context.thirdPrevious?.tag)
             && context.fourthPrevious?.tag == .determiner
     }
 
@@ -463,6 +476,10 @@ public struct ThousandsGroupingNormalizer {
 
         if !Self.plausibleYearRange.contains(value) {
             return true
+        }
+
+        if tokens.allSatisfy({ $0.tag == nil }) {
+            return false
         }
 
         guard let tokenIndex = resolvedTokenIndex(for: range, in: tokens) else {
@@ -548,7 +565,21 @@ public struct ThousandsGroupingNormalizer {
             return false
         }
 
+        let hasPluralCompoundNounFollowing = [.noun, .adjective].contains(nextTag)
+            && secondNext?.tag == .noun
+            && isPluralInflectedNoun(secondNext)
+        if hasPluralCompoundNounFollowing {
+            return false
+        }
+
         if previousTag == .adverb, nextTag == .noun {
+            return false
+        }
+
+        if previousTag == .preposition,
+           secondPreviousTag == .verb,
+           nextTag == .adverb,
+           secondNext?.tag == .adverb {
             return false
         }
 
@@ -595,7 +626,9 @@ public struct ThousandsGroupingNormalizer {
     }
 
     private func isPluralInflectedNoun(_ token: LexicalToken?) -> Bool {
-        guard let token, token.tag == .noun, let lemma = token.lemma else { return false }
+        guard let token, token.tag == .noun else { return false }
+        if token.inflection == .plural { return true }
+        guard token.inflection == .unknown, let lemma = token.lemma else { return false }
         return token.text.compare(lemma, options: [.caseInsensitive, .diacriticInsensitive]) != .orderedSame
     }
 
