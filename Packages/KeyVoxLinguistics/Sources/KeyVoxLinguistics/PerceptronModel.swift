@@ -26,7 +26,7 @@ struct PerceptronModel: Sendable {
         var result: [String] = []
         for (index, word) in words.enumerated() {
             let tag: String
-            if let known = knownTags[word] {
+            if let known = structurallyKnownTag(for: word, at: index) {
                 tag = known
             } else {
                 var scores: [String: Double] = [:]
@@ -48,5 +48,31 @@ struct PerceptronModel: Sendable {
             previous = tag
         }
         return result
+    }
+
+    func knownTag(for word: String) -> String? {
+        knownTags[word]
+    }
+
+    private func structurallyKnownTag(for word: String, at index: Int) -> String? {
+        if let known = knownTags[word] { return known }
+
+        let leadingWordScalars = word.unicodeScalars.prefix {
+            CharacterSet.alphanumerics.contains($0)
+        }
+        if leadingWordScalars.count < word.unicodeScalars.count {
+            let leadingWord = String(String.UnicodeScalarView(leadingWordScalars))
+            if let known = knownTags[leadingWord] ?? knownTags[leadingWord.lowercased()] {
+                return known
+            }
+        }
+
+        guard index == 0,
+              word.first?.isUppercase == true,
+              let known = knownTags[word.lowercased()],
+              known.hasPrefix("VB") else {
+            return nil
+        }
+        return known
     }
 }

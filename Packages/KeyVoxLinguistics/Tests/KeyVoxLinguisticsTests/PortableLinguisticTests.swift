@@ -31,6 +31,14 @@ final class PortableLinguisticTests: XCTestCase {
         let context = try PerceptronModel(weights: ["i-1 tag " + noun: [verb: 2]],
                                           knownTags: [word: noun], classes: [noun, verb])
         XCTAssertEqual(context.tags(for: [word, word + word]), [noun, verb])
+
+        let sentenceCapital = word.uppercased()
+        let sentenceKnown = try PerceptronModel(
+            weights: [:],
+            knownTags: [word: verb],
+            classes: [noun, verb]
+        )
+        XCTAssertEqual(sentenceKnown.tags(for: [sentenceCapital]), [verb])
     }
 
     func testInvalidModelsAndOverflowNeverReportPredictions() throws {
@@ -55,6 +63,73 @@ final class PortableLinguisticTests: XCTestCase {
         XCTAssertNil(PennLexicalRole.role(for: "IN"))
         XCTAssertNil(PennLexicalRole.role(for: "TO"))
         XCTAssertEqual(PennLexicalRole.role(for: "NNP"), .noun)
+    }
+
+    func testAmbiguousModelLabelsResolveFromStructuralContext() {
+        XCTAssertEqual(PennContextualRoleResolver.role(for: "TO", at: 0, tags: ["TO", "VB"]), .particle)
+        XCTAssertEqual(PennContextualRoleResolver.role(for: "TO", at: 0, tags: ["TO", "NN"]), .preposition)
+        XCTAssertEqual(PennContextualRoleResolver.role(for: "IN", at: 0, tags: ["IN", "PRP", "VBD"]), .conjunction)
+        XCTAssertEqual(PennContextualRoleResolver.role(for: "IN", at: 0, tags: ["IN", "DT", "NN"]), .preposition)
+        XCTAssertEqual(PennContextualRoleResolver.role(for: "PRP$", at: 0, tags: ["PRP$", "NN"]), .determiner)
+        XCTAssertEqual(PennContextualRoleResolver.role(for: "VBG", at: 0, tags: ["VBG", "NN"]), .noun)
+    }
+
+    func testPennNounTagsExposeInflectionWithoutFabricatedLemmas() {
+        XCTAssertEqual(PennLexicalRole.inflection(for: "NN"), .singular)
+        XCTAssertEqual(PennLexicalRole.inflection(for: "NNP"), .singular)
+        XCTAssertEqual(PennLexicalRole.inflection(for: "NNS"), .plural)
+        XCTAssertEqual(PennLexicalRole.inflection(for: "NNPS"), .plural)
+        XCTAssertEqual(PennLexicalRole.inflection(for: "VB"), .unknown)
+    }
+
+    func testPerceptronDoesNotExposeUnrequestedRolesOrInflection() throws {
+        let lowercase = String(UnicodeScalar(0x03B1)!)
+        let word = lowercase.uppercased()
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        try Data(#"{"schema":"nltk-perceptron-v1","tagSet":"penn-treebank","languages":["en"],"weights":"weights.json","classes":"classes.json","tagDictionary":"tags.json"}"#.utf8)
+            .write(to: directory.appendingPathComponent("model.json"))
+        try Data(#"{}"#.utf8).write(to: directory.appendingPathComponent("weights.json"))
+        try Data(#"["NN"]"#.utf8).write(to: directory.appendingPathComponent("classes.json"))
+        try JSONEncoder().encode([lowercase: "NN"]).write(to: directory.appendingPathComponent("tags.json"))
+
+        let analyzer = try PerceptronLinguisticAnalyzer(modelDirectory: directory, languageCode: "en")
+        let result = analyzer.analyze(
+            word,
+            range: nil,
+            languageCode: "en",
+            features: [.names, .wordBoundaries],
+            grouping: .words
+        )
+        XCTAssertEqual(result.availableFeatures, [.names, .wordBoundaries])
+        XCTAssertEqual(result.tokens.first?.identity, .name)
+        XCTAssertNil(result.tokens.first?.role)
+        XCTAssertEqual(result.tokens.first?.inflection, .unknown)
+    }
+
+    func testPerceptronUsesHostSelectedDefaultLanguageWhenCallOmitsLanguage() throws {
+        let word = String(UnicodeScalar(0x03B1)!)
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        try Data(#"{"schema":"nltk-perceptron-v1","tagSet":"penn-treebank","languages":["en"],"weights":"weights.json","classes":"classes.json","tagDictionary":"tags.json"}"#.utf8)
+            .write(to: directory.appendingPathComponent("model.json"))
+        try Data(#"{}"#.utf8).write(to: directory.appendingPathComponent("weights.json"))
+        try Data(#"["NN"]"#.utf8).write(to: directory.appendingPathComponent("classes.json"))
+        try JSONEncoder().encode([word: "NN"]).write(to: directory.appendingPathComponent("tags.json"))
+
+        let analyzer = try PerceptronLinguisticAnalyzer(modelDirectory: directory, languageCode: "en")
+        let result = analyzer.analyze(
+            word,
+            range: nil,
+            languageCode: nil,
+            features: [.roles, .wordBoundaries],
+            grouping: .words
+        )
+
+        XCTAssertEqual(result.availableFeatures, [.roles, .wordBoundaries])
+        XCTAssertEqual(result.tokens.first?.role, .noun)
     }
 
     func testModelLanguageIdentifiersRequireStructuralLanguageTags() {
