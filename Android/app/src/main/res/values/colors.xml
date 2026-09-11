@@ -17,4 +17,5 @@
     <color name="app_error">#FFFF453A</color>
     <color name="app_promotion_fill">#24FFD60A</color>
     <color name="app_promotion_stroke">#52FFD60A</color>
+    <color name="launcher_icon_background">#FF27245D</color>
 </resources>
