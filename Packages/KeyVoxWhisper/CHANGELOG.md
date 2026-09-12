@@ -6,6 +6,24 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.2.0] - 2026-09-12
+
+Whisper now supports portable runtime initialization and optional external encoder acceleration.
+
+### Includes
+
+- Added an external encoder configuration and compute policy for clients that provide platform-specific acceleration.
+- Added CPU initialization fallback so transcription remains available when an optional accelerator cannot be prepared.
+- Serialized inference ownership and retained immutable request parameters for the lifetime of each transcription request.
+- Preserved the fixed language declared by a model instead of allowing request defaults to replace it during inference.
+- Added explicit parameter snapshots and model-language handling shared by native and portable runtimes.
+
+### Notes
+
+- `1.2.0` adds backward-compatible portable and accelerated inference capabilities while retaining the existing Apple runtime defaults.
+
+---
+
 ## [1.1.0] - 2026-07-27
 
 Complete language identifiers and bundled voice-activity detection for shared Whisper clients.

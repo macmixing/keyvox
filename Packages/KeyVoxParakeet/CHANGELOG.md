@@ -6,6 +6,22 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.1.0] - 2026-09-12
+
+Portable runtime ownership for Parakeet inference across supported KeyVox clients.
+
+### Includes
+
+- Added a public runtime-backend boundary so Parakeet decoding can use either the existing Core ML implementation or a client-supplied native implementation.
+- Preserved Core ML as the default Apple runtime while isolating platform-specific framework imports from portable package code.
+- Added explicit runtime injection and lifecycle ownership for clients that provide a native Parakeet backend.
+
+### Notes
+
+- `1.1.0` adds backward-compatible portable runtime support without changing the default Apple inference path.
+
+---
+
 ## [1.0.4] - 2026-07-14
 
 Compatibility support for the current Parakeet Core ML model artifacts.
