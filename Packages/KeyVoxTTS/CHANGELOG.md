@@ -6,6 +6,23 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.1.0] - 2026-09-12
+
+KeyVox Speak chunk planning now uses shared linguistic analysis without depending on dictation settings.
+
+### Includes
+
+- Added analyzer injection to the PocketTTS runtime so clients can use the appropriate native or portable linguistic provider.
+- Moved sentence, role, name, and word-boundary analysis behind the shared linguistic package while preserving existing chunk-size and synthesis behavior.
+- Defined English as a capability of the currently bundled PocketTTS model and used that model-owned language for routing.
+- Kept Speak language selection independent from the user’s dictation language preference.
+
+### Notes
+
+- `1.1.0` adds backward-compatible portable analysis for the current English-only Speak model.
+
+---
+
 ## [1.0.3] - 2026-08-27
 
 ### Fixed

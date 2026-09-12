@@ -6,6 +6,24 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.1.0] - 2026-09-12
+
+Vibes rewrite repair now uses shared, health-routed linguistic analysis across supported platforms.
+
+### Includes
+
+- Moved rewrite tokenization and lexical evidence behind the shared linguistic analyzer instead of directly depending on Apple language frameworks.
+- Added analyzer injection so Apple clients retain native analysis while portable clients can supply the bundled portable implementation.
+- Passed request language into the configured analyzer so a shared health router can select a matching portable provider when native evidence is unhealthy.
+- Carried dictation language context through rewrite requests and saved utterance artifacts so initial and later style changes use the same language-aware analysis.
+- Preserved currency-unit evidence when lemmas are unavailable and tightened ambiguous split-date handling without relying on example-specific vocabulary.
+
+### Notes
+
+- `1.1.0` adds backward-compatible portable linguistic routing while retaining the existing rewrite styles and model behavior.
+
+---
+
 ## [1.0.13] - 2026-09-06
 
 Deterministic dotted-time separator repair for Vibes rewrites.
