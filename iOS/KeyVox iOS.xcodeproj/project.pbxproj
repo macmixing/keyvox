@@ -18,13 +18,14 @@
 		8E97944D2F66B54A009A691D /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8E97944C2F66B54A009A691D /* SwiftUI.framework */; };
 		8E97945E2F66B54C009A691D /* KeyVox Widget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 8E9794482F66B549009A691D /* KeyVox Widget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		8E9E38962F5BF56600EAFA72 /* KeyVoxCore in Frameworks */ = {isa = PBXBuildFile; productRef = 8E9E38952F5BF56600EAFA72 /* KeyVoxCore */; };
-		928D300FF612F97300000003 /* KeyVoxModels in Frameworks */ = {isa = PBXBuildFile; productRef = 928D300FF612F97300000002 /* KeyVoxModels */; };
 		8EB365C62F9F220100EBD9A2 /* KeyVoxStyleRewrite in Frameworks */ = {isa = PBXBuildFile; productRef = 8EB365C82F9F20D300EBD9A2 /* KeyVoxStyleRewrite */; };
 		8EB365C72F9F20D300EBD9A2 /* KeyVoxStyleRewrite in Frameworks */ = {isa = PBXBuildFile; productRef = 8EB365C82F9F20D300EBD9A2 /* KeyVoxStyleRewrite */; };
 		8EB365C92F9F20D300EBD9A2 /* KeyVoxStyleRewrite in Frameworks */ = {isa = PBXBuildFile; productRef = 8EB365C82F9F20D300EBD9A2 /* KeyVoxStyleRewrite */; };
 		8ED2F10A2F7F4F1C00256F9E /* KeyVoxTTS in Frameworks */ = {isa = PBXBuildFile; productRef = 8ED2F1092F7F4F1C00256F9E /* KeyVoxTTS */; };
 		8EECE7332F64020900BECF17 /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 8EECE7322F64020900BECF17 /* Launch Screen.storyboard */; };
 		8EECE7342F64020900BECF17 /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 8EECE7322F64020900BECF17 /* Launch Screen.storyboard */; };
+		928D300FF612F97300000003 /* KeyVoxModels in Frameworks */ = {isa = PBXBuildFile; productRef = 928D300FF612F97300000002 /* KeyVoxModels */; };
+		928D300FF612F97300000004 /* KeyVoxModels in Frameworks */ = {isa = PBXBuildFile; productRef = 928D300FF612F97300000002 /* KeyVoxModels */; };
 		9A7000012FA6000100AA0001 /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = 9A7000022FA6000100AA0001 /* ZIPFoundation */; };
 		9B5100012FB1000100AA0001 /* KeyVoxLocalInference in Frameworks */ = {isa = PBXBuildFile; productRef = 9B5100032FB1000100AA0001 /* KeyVoxLocalInference */; };
 		9B5100042FB1000100AA0001 /* KeyVoxLocalInference in Frameworks */ = {isa = PBXBuildFile; productRef = 9B5100032FB1000100AA0001 /* KeyVoxLocalInference */; };
@@ -40,7 +41,6 @@
 		D10000032FF4000100AA0001 /* KeyVoxVoiceActivity in Frameworks */ = {isa = PBXBuildFile; productRef = D10000092FF4000100AA0001 /* KeyVoxVoiceActivity */; };
 		D20000012FF5000100AA0001 /* averaged-perceptron-tagger-eng in Resources */ = {isa = PBXBuildFile; fileRef = D20000032FF5000100AA0001 /* averaged-perceptron-tagger-eng */; };
 		D20000022FF5000100AA0001 /* wordnet-3.0 in Resources */ = {isa = PBXBuildFile; fileRef = D20000042FF5000100AA0001 /* wordnet-3.0 */; };
-		928D300FF612F97300000004 /* KeyVoxModels in Frameworks */ = {isa = PBXBuildFile; productRef = 928D300FF612F97300000002 /* KeyVoxModels */; };
 		F41000012FF3000100AA0001 /* KeyVoxPromotions in Frameworks */ = {isa = PBXBuildFile; productRef = F41000032FF3000100AA0001 /* KeyVoxPromotions */; };
 /* End PBXBuildFile section */
 
@@ -743,7 +743,7 @@
 				CODE_SIGN_ENTITLEMENTS = "KeyVox Share/KeyVoxShare.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = U7YT4DBC54;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "KeyVox Share/Info.plist";
@@ -755,7 +755,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.4.1;
+				MARKETING_VERSION = 1.4.2;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.cueit.keyvox.ios.KeyVox-Share";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -778,7 +778,7 @@
 				CODE_SIGN_ENTITLEMENTS = "KeyVox Share/KeyVoxShare.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = U7YT4DBC54;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "KeyVox Share/Info.plist";
@@ -790,7 +790,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.4.1;
+				MARKETING_VERSION = 1.4.2;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.cueit.keyvox.ios.KeyVox-Share";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -812,7 +812,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = "KeyVox Keyboard/KeyVoxKeyboard.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = U7YT4DBC54;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "KeyVox Keyboard/Info.plist";
@@ -824,7 +824,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.4.1;
+				MARKETING_VERSION = 1.4.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.cueit.keyvox.ios.keyboard;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -846,7 +846,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = "KeyVox Keyboard/KeyVoxKeyboard.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = U7YT4DBC54;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "KeyVox Keyboard/Info.plist";
@@ -858,7 +858,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.4.1;
+				MARKETING_VERSION = 1.4.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.cueit.keyvox.ios.keyboard;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -883,7 +883,7 @@
 				CODE_SIGN_ENTITLEMENTS = "KeyVox Widget/KeyVox Widget.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = U7YT4DBC54;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "KeyVox Widget/Info.plist";
@@ -895,7 +895,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.4.1;
+				MARKETING_VERSION = 1.4.2;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.cueit.keyvox.ios.KeyVox-Widget";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -920,7 +920,7 @@
 				CODE_SIGN_ENTITLEMENTS = "KeyVox Widget/KeyVox Widget.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = U7YT4DBC54;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "KeyVox Widget/Info.plist";
@@ -932,7 +932,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.4.1;
+				MARKETING_VERSION = 1.4.2;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.cueit.keyvox.ios.KeyVox-Widget";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -1080,17 +1080,17 @@
 				CODE_SIGN_ENTITLEMENTS = "KeyVox iOS/KeyVoxiOS.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = U7YT4DBC54;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "KeyVox iOS/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = KeyVox;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "KeyVox needs access to your microphone in order to transcribe your voice.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "KeyVox needs access to your microphone to transcribe your speech.";
+				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = NO;
 				INFOPLIST_KEY_UILaunchStoryboardName = "Launch Screen";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = UIInterfaceOrientationPortrait;
@@ -1099,7 +1099,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.4.1;
+				MARKETING_VERSION = 1.4.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.cueit.keyvox.ios;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1125,17 +1125,17 @@
 				CODE_SIGN_ENTITLEMENTS = "KeyVox iOS/KeyVoxiOS.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = U7YT4DBC54;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "KeyVox iOS/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = KeyVox;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "KeyVox needs access to your microphone in order to transcribe your voice.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "KeyVox needs access to your microphone to transcribe your speech.";
+				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = NO;
 				INFOPLIST_KEY_UILaunchStoryboardName = "Launch Screen";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = UIInterfaceOrientationPortrait;
@@ -1144,7 +1144,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.4.1;
+				MARKETING_VERSION = 1.4.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.cueit.keyvox.ios;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1278,18 +1278,6 @@
 			isa = XCLocalSwiftPackageReference;
 			relativePath = ../Packages/KeyVoxCore;
 		};
-		D10000042FF4000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxWhisper" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = ../Packages/KeyVoxWhisper;
-		};
-		D10000052FF4000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxLinguistics" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = ../Packages/KeyVoxLinguistics;
-		};
-		D10000062FF4000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxVoiceActivity" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = ../Packages/KeyVoxVoiceActivity;
-		};
 		8EB365C62F9F20D300EBD9A2 /* XCLocalSwiftPackageReference "../Packages/KeyVoxStyleRewrite" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = ../Packages/KeyVoxStyleRewrite;
@@ -1297,6 +1285,10 @@
 		8ED2F1082F7F4F1C00256F9E /* XCLocalSwiftPackageReference "../Packages/KeyVoxTTS" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = ../Packages/KeyVoxTTS;
+		};
+		928D300FF612F97300000001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxModels" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../Packages/KeyVoxModels;
 		};
 		9B5100022FB1000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxLocalInference" */ = {
 			isa = XCLocalSwiftPackageReference;
@@ -1310,13 +1302,21 @@
 			isa = XCLocalSwiftPackageReference;
 			relativePath = ../Packages/KeyVoxTextComposition;
 		};
+		D10000042FF4000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxWhisper" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../Packages/KeyVoxWhisper;
+		};
+		D10000052FF4000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxLinguistics" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../Packages/KeyVoxLinguistics;
+		};
+		D10000062FF4000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxVoiceActivity" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../Packages/KeyVoxVoiceActivity;
+		};
 		F41000022FF3000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxPromotions" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = ../Packages/KeyVoxPromotions;
-		};
-		928D300FF612F97300000001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxModels" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = ../Packages/KeyVoxModels;
 		};
 /* End XCLocalSwiftPackageReference section */
 
@@ -1349,21 +1349,6 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = KeyVoxCore;
 		};
-		D10000072FF4000100AA0001 /* KeyVoxWhisper */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = D10000042FF4000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxWhisper" */;
-			productName = KeyVoxWhisper;
-		};
-		D10000082FF4000100AA0001 /* KeyVoxLinguistics */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = D10000052FF4000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxLinguistics" */;
-			productName = KeyVoxLinguistics;
-		};
-		D10000092FF4000100AA0001 /* KeyVoxVoiceActivity */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = D10000062FF4000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxVoiceActivity" */;
-			productName = KeyVoxVoiceActivity;
-		};
 		8EB365C82F9F20D300EBD9A2 /* KeyVoxStyleRewrite */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 8EB365C62F9F20D300EBD9A2 /* XCLocalSwiftPackageReference "../Packages/KeyVoxStyleRewrite" */;
@@ -1373,6 +1358,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 8ED2F1082F7F4F1C00256F9E /* XCLocalSwiftPackageReference "../Packages/KeyVoxTTS" */;
 			productName = KeyVoxTTS;
+		};
+		928D300FF612F97300000002 /* KeyVoxModels */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 928D300FF612F97300000001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxModels" */;
+			productName = KeyVoxModels;
 		};
 		9A7000022FA6000100AA0001 /* ZIPFoundation */ = {
 			isa = XCSwiftPackageProductDependency;
@@ -1394,15 +1384,25 @@
 			package = B4C200042FF2000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxTextComposition" */;
 			productName = KeyVoxTextComposition;
 		};
+		D10000072FF4000100AA0001 /* KeyVoxWhisper */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D10000042FF4000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxWhisper" */;
+			productName = KeyVoxWhisper;
+		};
+		D10000082FF4000100AA0001 /* KeyVoxLinguistics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D10000052FF4000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxLinguistics" */;
+			productName = KeyVoxLinguistics;
+		};
+		D10000092FF4000100AA0001 /* KeyVoxVoiceActivity */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D10000062FF4000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxVoiceActivity" */;
+			productName = KeyVoxVoiceActivity;
+		};
 		F41000032FF3000100AA0001 /* KeyVoxPromotions */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = F41000022FF3000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxPromotions" */;
 			productName = KeyVoxPromotions;
-		};
-		928D300FF612F97300000002 /* KeyVoxModels */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 928D300FF612F97300000001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxModels" */;
-			productName = KeyVoxModels;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
