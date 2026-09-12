@@ -28,9 +28,14 @@ This policy applies to:
   - `iOS/KeyVox iOS/Resources/Onboarding/`
   - `iOS/KeyVox iOS/Resources/ReturnToHost.mov`
   - `iOS/LaunchLogo.png`
+  - `Android/app/src/main/res/drawable/`
+  - `Android/app/src/main/res/drawable-nodpi/`
+  - `Android/app/src/main/res/mipmap-anydpi-v26/`
   - `macOS/Views/Components/LogoBarView.swift`
   - `iOS/KeyVox iOS/Views/Components/LogoBarView.swift`
   - `iOS/KeyVox Keyboard/Views/Components/KeyboardLogoBarView.swift`
+  - `Android/app/src/main/java/org/keyvox/android/app/presentation/AppLogoView.java`
+  - `Android/app/src/main/java/org/keyvox/android/ime/KeyboardLogoBarView.java`
   - `macOS/Resources/keyvox.icon/`
   - `iOS/KeyVox iOS/Resources/keyvox.icon/`
   - `macOS/Resources/logo.png`

@@ -63,4 +63,4 @@ existing XCTest suites on Android. XCTest and Swift Testing notices are retained
 as `XCTEST-LICENSE.txt` and `TESTING-LICENSE.txt`, both Apache-2.0 with the Swift
 Runtime Library Exception. The existing runtime notices above also apply. These
 libraries are local test infrastructure; they are not added to the shipping engine
-or capture APK. See [test execution and parity results](../../../Docs/Android/TESTING.md).
+or capture APK.

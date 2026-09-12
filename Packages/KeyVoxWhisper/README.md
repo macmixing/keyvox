@@ -51,4 +51,4 @@ Initialization fallback cannot recover from a driver crash or an error after
 inference starts. The optional Android Vulkan backend still needs its documented
 device workaround; this API does not establish universal GPU reliability or
 select a backend by measured speed. See the
-[Android performance record](../../Docs/Android/PERFORMANCE.md).
+[Android performance record](../../Android/Docs/PERFORMANCE.md).

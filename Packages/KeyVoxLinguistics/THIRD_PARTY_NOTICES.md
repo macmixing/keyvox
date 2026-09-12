@@ -33,5 +33,5 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ```
 
-Optional model assets are separately attributed in `Tools/Models`. No model
-assets or language default are embedded in this package.
+Optional perceptron and WordNet model assets are separately attributed in
+`Tools/Models`. No model assets or language default are embedded in this package.

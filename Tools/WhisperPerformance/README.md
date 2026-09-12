@@ -35,7 +35,7 @@ decode; the individual timing fields are native **per-call averages**, not stage
 that can be summed. Native stderr includes call counts and cumulative times.
 `KV_TEXT` contains private recording content; keep raw logs outside the repository.
 
-See [Android measurements](../../Docs/Android/PERFORMANCE.md) for current evidence
+See [Android measurements](../../Android/Docs/PERFORMANCE.md) for current evidence
 and GPU limitations. This tool introduces no new runtime dependency.
 
 ## Optional Vulkan runtime

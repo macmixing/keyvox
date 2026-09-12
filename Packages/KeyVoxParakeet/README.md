@@ -184,9 +184,6 @@ there is **UNRESOLVED**, not functional or a placeholder transcription.
 The runtime boundary also applies to future Linux and Windows adapters. It owns
 transcription, cancellation, and unloading, with no UI dependency. A real
 non-Apple model runtime and compatible model assets still need to be connected.
-Validation: Android package build passed; all 32 macOS package tests passed,
-including an external-import backend integration test and the existing Core ML
-tensor/decoder regression coverage.
 
 The package currently declares:
 

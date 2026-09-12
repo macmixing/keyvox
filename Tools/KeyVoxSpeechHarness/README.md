@@ -23,7 +23,7 @@ runs FP16 with the builder's Adreno matrix-routing backport;
 `GGML_VK_DISABLE_F16=1` provides the FP32 control and
 `GGML_VK_VISIBLE_DEVICES=''` exercises CPU fallback.
 Confirm actual backend activation in native logs. See the
-[performance record](../../Docs/Android/PERFORMANCE.md) for evidence and limitations.
+[performance record](../../Android/Docs/PERFORMANCE.md) for evidence and limitations.
 
 From the repository root, set `ANDROID_NDK_ROOT` to the installed NDK, then:
 
@@ -165,7 +165,7 @@ may provide its own documented host default, as Android does for English.
 | Speech harness | FUNCTIONAL | Executed both commands on the connected Android device |
 | Android speech inference / VAD execution | FUNCTIONAL | Public upstream JFK fixture: 176,000 samples, two transcript segments |
 | Portable WAV/sample loading | FUNCTIONAL | Android production service decoded mono 16 kHz speech and stereo 48 kHz speech; 48 kHz stereo silence produced empty output; malformed WAV failed |
-| Core package graph | FUNCTIONAL | Clean Android build and the recorded 582-test shared Core bakeoff executed successfully on Android |
+| Core package graph | FUNCTIONAL | The portable package graph builds and executes on Android |
 | Core text processing execution | FUNCTIONAL | Real NPU Whisper transcript passed through production Core with the selected perceptron and WordNet capabilities |
 | Dictionary persistence and Core connection | FUNCTIONAL | Android/macOS separate-process canonical output matched; duplicate rejection preserved entries; backup recovery and pre-mutation warnings verified; speech pipeline loaded persisted entries |
 | Spanish/French Core text fixtures | FUNCTIONAL | Existing spoken-list fixtures produced identical formatted output on Android and macOS; no optional grammatical-role model selected |
@@ -178,10 +178,7 @@ may provide its own documented host default, as Android does for English.
 | Date/address numeric protection | FUNCTIONAL | Portable semantic protection matches all shared date, address, year, and quantity expectations |
 
 There are no placeholder inference implementations. Compilation is not execution
-evidence. The recorded final Android executable passed 582 / 582 Core tests, and the
-protected NPU application repeated real Whisper/VAD/Core execution successfully.
-Local Xcode validation: 381 iOS app tests and 401 macOS app tests passed. All ten
-package suites passed; LocalInference retained nine model-dependent skips.
+evidence. The protected NPU application executes the real Whisper/VAD/Core path.
 
 Multilingual text evidence reuses the existing first-party
 `testDetectsSpanishSpokenMarkers` and `testDetectsFrenchSpokenMarkers` inputs from
@@ -232,9 +229,9 @@ whitespace removed. Its historical JSON report showed all four linguistic
 features unavailable. A later diagnostic verified the Swift predictor matched
 the pinned upstream Python implementation on all 23 context tokens. The final
 Android host now combines that predictor with focused contextual resolution and
-WordNet lexical evidence; the recorded 582-test cross-platform bakeoff passed and
-the production NPU path logs that exact provider. This establishes measured Core text behavior, not
-general linguistic accuracy outside Core's consumed semantics.
+WordNet lexical evidence, and the production NPU path logs that exact provider.
+This establishes measured Core text behavior, not general linguistic accuracy
+outside Core's consumed semantics.
 The separate capture host produced a real microphone WAV for `file-pipeline`:
 5.6 seconds of audio yielded a transcript through the actual VAD, WhisperService,
 and Core path on the phone. This uses an adb-orchestrated file handoff, without an
