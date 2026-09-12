@@ -78,6 +78,14 @@ struct WhisperRuntime {
 }
 
 public final class Whisper {
+    private final class InferenceLifetime: @unchecked Sendable {
+        let owner: Whisper
+
+        init(owner: Whisper) {
+            self.owner = owner
+        }
+    }
+
     private static let minimumInferenceFrameCount = 16_800
     private static let venturaMajorVersion = 13
 
@@ -171,12 +179,13 @@ public final class Whisper {
         let context = WhisperContextHandle(raw: whisperContext)
         let runtime = self.runtime
         let inferenceQueue = self.inferenceQueue
+        let inferenceLifetime = InferenceLifetime(owner: self)
 
         return try await withCheckedThrowingContinuation { continuation in
-            inferenceQueue.async { [self] in
+            inferenceQueue.async {
                 // Keep the native context and owned request strings alive through result extraction.
                 defer {
-                    withExtendedLifetime(self) {}
+                    withExtendedLifetime(inferenceLifetime) {}
                     withExtendedLifetime(paramsSnapshot) {}
                 }
                 var localParams = paramsSnapshot.raw
