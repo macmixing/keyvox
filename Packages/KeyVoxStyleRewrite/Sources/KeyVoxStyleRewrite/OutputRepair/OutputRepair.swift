@@ -8,9 +8,15 @@ actor OutputRepairExecutor {
         self.linguisticAnalyzer = linguisticAnalyzer
     }
 
-    func repairModelOutput(original: String, rewritten: String) -> String {
+    func repairModelOutput(
+        original: String,
+        rewritten: String,
+        languageCode: String?
+    ) -> String {
         TextLinguistics.$provider.withValue(linguisticAnalyzer) {
-            OutputRepair.repairModelOutput(original: original, rewritten: rewritten)
+            TextLinguistics.$processingLanguageCode.withValue(languageCode) {
+                OutputRepair.repairModelOutput(original: original, rewritten: rewritten)
+            }
         }
     }
 }

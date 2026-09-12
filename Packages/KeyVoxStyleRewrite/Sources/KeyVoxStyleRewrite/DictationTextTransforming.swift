@@ -2,6 +2,7 @@ import Foundation
 
 public struct TextTransformRequest: Codable, Equatable, Sendable {
     public let baseText: String
+    public let languageCode: String?
     public let styleIdentifier: String
     public let instructions: String
     public let promptPrefix: String
@@ -14,6 +15,7 @@ public struct TextTransformRequest: Codable, Equatable, Sendable {
 
     public init(
         baseText: String,
+        languageCode: String? = nil,
         styleIdentifier: String,
         instructions: String,
         promptPrefix: String,
@@ -25,6 +27,7 @@ public struct TextTransformRequest: Codable, Equatable, Sendable {
         deterministicVariants: [StyleRewriteInputVariant] = []
     ) {
         self.baseText = baseText
+        self.languageCode = languageCode
         self.styleIdentifier = styleIdentifier
         self.instructions = instructions
         self.promptPrefix = promptPrefix
@@ -43,6 +46,7 @@ public struct TextTransformRequest: Codable, Equatable, Sendable {
     func replacingBaseText(_ baseText: String) -> TextTransformRequest {
         TextTransformRequest(
             baseText: baseText,
+            languageCode: languageCode,
             styleIdentifier: styleIdentifier,
             instructions: instructions,
             promptPrefix: promptPrefix,
@@ -198,6 +202,7 @@ public struct DictationDeterministicTextVariantArtifact: Codable, Equatable, Sen
 
 public struct DictationUtteranceArtifact: Codable, Equatable, Sendable {
     public let id: UUID
+    public let languageCode: String?
     public let rawText: String
     public let baseText: String
     public let selectedText: String
@@ -213,6 +218,7 @@ public struct DictationUtteranceArtifact: Codable, Equatable, Sendable {
 
     public init(
         id: UUID,
+        languageCode: String? = nil,
         rawText: String,
         baseText: String,
         selectedText: String,
@@ -227,6 +233,7 @@ public struct DictationUtteranceArtifact: Codable, Equatable, Sendable {
         createdAt: Date
     ) {
         self.id = id
+        self.languageCode = languageCode
         self.rawText = rawText
         self.baseText = baseText
         self.selectedText = selectedText
@@ -243,6 +250,7 @@ public struct DictationUtteranceArtifact: Codable, Equatable, Sendable {
 
     private enum CodingKeys: String, CodingKey {
         case id
+        case languageCode
         case rawText
         case baseText
         case selectedText
@@ -260,6 +268,7 @@ public struct DictationUtteranceArtifact: Codable, Equatable, Sendable {
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         id = try container.decode(UUID.self, forKey: .id)
+        languageCode = try container.decodeIfPresent(String.self, forKey: .languageCode)
         rawText = try container.decode(String.self, forKey: .rawText)
         baseText = try container.decode(String.self, forKey: .baseText)
         selectedText = try container.decode(String.self, forKey: .selectedText)
