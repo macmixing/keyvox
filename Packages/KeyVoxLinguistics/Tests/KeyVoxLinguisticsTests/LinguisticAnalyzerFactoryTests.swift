@@ -52,12 +52,42 @@ final class LinguisticAnalyzerFactoryTests: XCTestCase {
         let result = analyzer.analyze(
             word,
             range: nil,
-            languageCode: nil,
+            languageCode: "en-US",
             features: [.roles, .wordBoundaries],
             grouping: .words
         )
 
         XCTAssertEqual(result.tokens.first?.role, .noun)
+    }
+
+    func testConfiguredPortableLanguageIsUnavailableForDifferentRequestLanguage() {
+        let resourceRequests = FactoryLockedCounter()
+        let text = #function
+        let analyzer = LinguisticAnalyzerFactory.healthRouted(
+            preferred: FactoryFixedAnalyzer { text, features in
+                LinguisticAnalysis(
+                    tokens: [Self.token(in: text, role: .otherWord)],
+                    availableFeatures: features
+                )
+            },
+            portableResourceDirectory: {
+                resourceRequests.increment()
+                return nil
+            },
+            portableLanguageCode: "en_US",
+            diagnosticHandler: { _ in }
+        )
+
+        let result = analyzer.analyze(
+            text,
+            range: nil,
+            languageCode: "fr-CA",
+            features: [.roles, .wordBoundaries],
+            grouping: .words
+        )
+
+        XCTAssertEqual(result.tokens.first?.role, .otherWord)
+        XCTAssertEqual(resourceRequests.value, 0)
     }
 
     private static func token(in text: String, role: LexicalRole) -> LinguisticToken {

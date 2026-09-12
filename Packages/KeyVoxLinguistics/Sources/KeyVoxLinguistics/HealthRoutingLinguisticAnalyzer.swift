@@ -6,6 +6,8 @@ public final class HealthRoutingLinguisticAnalyzer: LinguisticAnalyzing, @unchec
 
     private let primary: any LinguisticAnalyzing
     private let fallbackFactory: FallbackFactory
+    private let fallbackLanguageCodeWasProvided: Bool
+    private let normalizedFallbackLanguageCode: String?
     private let diagnosticHandler: DiagnosticHandler
     private let stateLock = NSLock()
     private let fallbackLock = NSLock()
@@ -18,10 +20,13 @@ public final class HealthRoutingLinguisticAnalyzer: LinguisticAnalyzing, @unchec
     public init(
         primary: any LinguisticAnalyzing,
         fallbackFactory: @escaping FallbackFactory,
+        fallbackLanguageCode: String? = nil,
         diagnosticHandler: @escaping DiagnosticHandler = { print("[KVXLinguistics] \($0)") }
     ) {
         self.primary = primary
         self.fallbackFactory = fallbackFactory
+        fallbackLanguageCodeWasProvided = fallbackLanguageCode != nil
+        normalizedFallbackLanguageCode = fallbackLanguageCode.flatMap(ModelLanguageIdentifier.base)
         self.diagnosticHandler = diagnosticHandler
     }
 
@@ -33,7 +38,7 @@ public final class HealthRoutingLinguisticAnalyzer: LinguisticAnalyzing, @unchec
         grouping: LinguisticGrouping
     ) -> LinguisticAnalysis {
         let languageKey = LanguageKey(languageCode)
-        if usesFallback(for: languageKey), let fallback = resolvedFallback() {
+        if usesFallback(for: languageKey), let fallback = resolvedFallback(for: languageKey) {
             return fallback.analyze(
                 text,
                 range: range,
@@ -52,6 +57,7 @@ public final class HealthRoutingLinguisticAnalyzer: LinguisticAnalyzing, @unchec
         )
         switch LinguisticAnalysisHealth.evaluate(
             text: text,
+            requestedRange: range,
             requestedFeatures: features,
             analysis: primaryResult
         ) {
@@ -61,7 +67,7 @@ public final class HealthRoutingLinguisticAnalyzer: LinguisticAnalyzing, @unchec
         case .inconclusive:
             return primaryResult
         case .unhealthy(let reason):
-            guard let fallback = resolvedFallback() else {
+            guard let fallback = resolvedFallback(for: languageKey) else {
                 reportUnavailableFallbackIfNeeded(for: languageKey, reason: reason)
                 return primaryResult
             }
@@ -76,14 +82,21 @@ public final class HealthRoutingLinguisticAnalyzer: LinguisticAnalyzing, @unchec
         }
     }
 
-    private func resolvedFallback() -> (any LinguisticAnalyzing)? {
-        fallbackLock.withLock {
+    private func resolvedFallback(for language: LanguageKey) -> (any LinguisticAnalyzing)? {
+        guard fallbackIsAvailable(for: language) else { return nil }
+        return fallbackLock.withLock {
             if didResolveFallback { return fallback }
             let resolved = fallbackFactory()
             fallback = resolved
             didResolveFallback = true
             return resolved
         }
+    }
+
+    private func fallbackIsAvailable(for language: LanguageKey) -> Bool {
+        guard fallbackLanguageCodeWasProvided else { return true }
+        guard let normalizedFallbackLanguageCode else { return false }
+        return language.normalizedValue == normalizedFallbackLanguageCode
     }
 
     private func usesFallback(for language: LanguageKey) -> Bool {
@@ -125,5 +138,6 @@ private struct LanguageKey: Hashable {
         value = languageCode.flatMap(ModelLanguageIdentifier.base)
     }
 
+    var normalizedValue: String? { value }
     var description: String { value ?? "undetermined" }
 }

@@ -36,6 +36,7 @@ public enum LinguisticAnalyzerFactory {
                     return nil
                 }
             },
+            fallbackLanguageCode: portableLanguageCode,
             diagnosticHandler: diagnosticHandler
         )
     }
