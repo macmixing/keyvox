@@ -9,6 +9,7 @@ extension KeyboardDictationChangeController {
         guard let artifact = artifactStore.latestArtifact() else {
             activeSession = KeyboardDictationChangeSession(
                 sourceText: insertion.sourceText,
+                languageCode: nil,
                 originalText: insertion.insertedText,
                 documentContextBeforeInput: insertion.documentContextBeforeInput,
                 preparesAsDictationInsertion: true,
@@ -89,6 +90,7 @@ extension KeyboardDictationChangeController {
 
         activeSession = KeyboardDictationChangeSession(
             sourceText: originalText,
+            languageCode: artifact.languageCode,
             originalText: originalText,
             documentContextBeforeInput: insertion.documentContextBeforeInput,
             preparesAsDictationInsertion: true,
