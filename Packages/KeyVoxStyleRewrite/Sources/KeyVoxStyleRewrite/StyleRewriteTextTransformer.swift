@@ -66,7 +66,8 @@ public final class StyleRewriteTextTransformer: DictationTextTransforming {
 
         let finalText = await outputRepairExecutor.repairModelOutput(
             original: modelRequest.baseText,
-            rewritten: result.finalText
+            rewritten: result.finalText,
+            languageCode: request.languageCode
         )
         let repairedResult = result.withOriginalText(request.baseText).withProcessingMode(
             "local-model",
@@ -95,7 +96,8 @@ public final class StyleRewriteTextTransformer: DictationTextTransforming {
         if cleanupSucceeded {
             punctuationRepairedCleanup = await outputRepairExecutor.repairModelOutput(
                 original: modelRequest.baseText,
-                rewritten: runnerResult.finalText
+                rewritten: runnerResult.finalText,
+                languageCode: request.languageCode
             )
         } else {
             punctuationRepairedCleanup = nil
@@ -140,7 +142,8 @@ public final class StyleRewriteTextTransformer: DictationTextTransforming {
         let formattedText = ChillHeuristicFormatter().format(sourceText)
         let finalText = await outputRepairExecutor.repairModelOutput(
             original: sourceText,
-            rewritten: formattedText
+            rewritten: formattedText,
+            languageCode: request.languageCode
         )
         return TextTransformResult(
             originalText: request.baseText,
@@ -165,7 +168,8 @@ public final class StyleRewriteTextTransformer: DictationTextTransforming {
         )
         let finalText = await outputRepairExecutor.repairModelOutput(
             original: repairOriginalText,
-            rewritten: result.finalText
+            rewritten: result.finalText,
+            languageCode: request.languageCode
         )
         log("repairedOutput style=\(request.styleIdentifier) final=\(debugText(finalText))")
         let processingMode = result.errors.isEmpty
