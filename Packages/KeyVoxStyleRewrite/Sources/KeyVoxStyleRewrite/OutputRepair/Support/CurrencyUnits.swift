@@ -90,4 +90,8 @@ enum CurrencyUnits {
         guard normalizedLemma.hasSuffix("s") else { return nil }
         return unitsByLemma[String(normalizedLemma.dropLast())]
     }
+
+    static func unit(for token: RepairTaggedToken) -> Unit? {
+        unit(for: token.lemma) ?? unit(for: token.token.text)
+    }
 }

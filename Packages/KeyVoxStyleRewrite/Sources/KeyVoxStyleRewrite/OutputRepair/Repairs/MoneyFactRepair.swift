@@ -505,7 +505,7 @@ struct MoneyFactRepair {
             guard let majorRun = numericRunBeforeUnit(startingAt: index, in: tokens, sourceText: text),
                   majorRun.endIndex < tokens.endIndex,
                   let moneyValues = moneyValues(in: Array(tokens[majorRun.range].map(\.token))),
-                  let majorUnit = CurrencyUnits.unit(for: tokens[majorRun.endIndex].lemma),
+                  let majorUnit = CurrencyUnits.unit(for: tokens[majorRun.endIndex]),
                   majorUnit.scale == .major else {
                 index += 1
                 continue
@@ -521,7 +521,7 @@ struct MoneyFactRepair {
                minorRun.endIndex < tokens.endIndex,
                let parsedMinorValue = NumberEvidence.parsedValue(in: Array(tokens[minorRun.range].map(\.token))),
                parsedMinorValue < 100,
-               let minorUnit = CurrencyUnits.unit(for: tokens[minorRun.endIndex].lemma),
+               let minorUnit = CurrencyUnits.unit(for: tokens[minorRun.endIndex]),
                minorUnit.scale == .minor {
                 minorValue = parsedMinorValue
                 nextIndex = minorRun.endIndex + 1
@@ -573,7 +573,7 @@ struct MoneyFactRepair {
             if let majorRun = numericRunBeforeUnit(startingAt: index, in: tokens, sourceText: text),
                majorRun.endIndex < tokens.endIndex,
                let majorValue = NumberEvidence.parsedValue(in: Array(tokens[majorRun.range].map(\.token))),
-               let majorUnit = CurrencyUnits.unit(for: tokens[majorRun.endIndex].lemma),
+               let majorUnit = CurrencyUnits.unit(for: tokens[majorRun.endIndex]),
                majorUnit.scale == .major {
                 activeSymbol = majorUnit.symbol
                 spans.append(SourceMoneySpan(
@@ -614,7 +614,7 @@ struct MoneyFactRepair {
             if RepairNumberParsing.isNumericToken(tokens[index]) {
                 return index
             }
-            if CurrencyUnits.unit(for: tokens[index].lemma) != nil {
+            if CurrencyUnits.unit(for: tokens[index]) != nil {
                 return nil
             }
             guard skippedTokens < maximumSkippedTokens else {
@@ -665,7 +665,7 @@ struct MoneyFactRepair {
         var bestRun: (range: Range<Int>, endIndex: Int)?
         var endIndex = index + 1
         while endIndex < tokens.endIndex {
-            if CurrencyUnits.unit(for: tokens[endIndex].lemma) != nil,
+            if CurrencyUnits.unit(for: tokens[endIndex]) != nil,
                moneyValues(in: Array(tokens[index..<endIndex].map(\.token))) != nil {
                 bestRun = (index..<endIndex, endIndex)
             }
