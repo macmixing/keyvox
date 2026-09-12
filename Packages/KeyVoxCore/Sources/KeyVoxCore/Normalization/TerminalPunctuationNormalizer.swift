@@ -27,7 +27,7 @@ public struct TerminalPunctuationNormalizer {
         pattern: #"[.!?…][\"'”’\)\]\}]*\s*$"#
     )
     private static let literalEllipsisRegex = try? NSRegularExpression(
-        pattern: #"\.{3}"#
+        pattern: #"\.{3,}(?:[ \t]+\.)?"#
     )
 
     public init() {}

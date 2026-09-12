@@ -13,19 +13,18 @@ struct EllipsisContinuationNormalizer {
         let matches = regex.matches(in: text, options: [], range: fullRange)
         guard !matches.isEmpty else { return text }
 
-        let stylizedEntries = Set(
-            dictionaryEntries
-                .map(\.phrase)
-                .filter(isStylizedSingleToken)
-        )
         let mutable = NSMutableString(string: text)
 
         for match in matches.reversed() {
             let tokenRange = match.range(at: 1)
             let token = nsText.substring(with: tokenRange)
             guard token.first?.isUppercase == true,
-                  token != "I",
-                  !stylizedEntries.contains(token),
+                  !shouldPreserveCasing(
+                      of: token,
+                      at: tokenRange,
+                      in: text,
+                      dictionaryEntries: dictionaryEntries
+                  ),
                   let firstScalar = token.unicodeScalars.first else {
                 continue
             }
@@ -39,10 +38,51 @@ struct EllipsisContinuationNormalizer {
         return mutable as String
     }
 
-    private func isStylizedSingleToken(_ phrase: String) -> Bool {
-        guard !phrase.contains(where: \.isWhitespace) else { return false }
-        let scalars = Array(phrase.unicodeScalars)
-        guard scalars.count > 1 else { return false }
-        return scalars.dropFirst().contains { $0.properties.isUppercase }
+    private func shouldPreserveCasing(
+        of token: String,
+        at tokenRange: NSRange,
+        in text: String,
+        dictionaryEntries: [DictionaryEntry]
+    ) -> Bool {
+        token == "I"
+            || token.unicodeScalars.dropFirst().contains { $0.properties.isUppercase }
+            || isDottedAcronym(startingAt: tokenRange, in: text)
+            || beginsDictionaryEntry(at: tokenRange, in: text, dictionaryEntries: dictionaryEntries)
+    }
+
+    private func isDottedAcronym(startingAt tokenRange: NSRange, in text: String) -> Bool {
+        guard let tokenStringRange = Range(tokenRange, in: text) else { return false }
+        return text[tokenStringRange.lowerBound...].range(
+            of: #"^(?:\p{Lu}\.){2,}"#,
+            options: .regularExpression
+        ) != nil
+    }
+
+    private func beginsDictionaryEntry(
+        at tokenRange: NSRange,
+        in text: String,
+        dictionaryEntries: [DictionaryEntry]
+    ) -> Bool {
+        guard let tokenStringRange = Range(tokenRange, in: text) else { return false }
+        let suffix = text[tokenStringRange.lowerBound...]
+
+        for entry in dictionaryEntries {
+            let phrase = entry.phrase.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !phrase.isEmpty,
+                  let match = suffix.range(
+                      of: phrase,
+                      options: [.anchored, .caseInsensitive, .diacriticInsensitive]
+                  ) else {
+                continue
+            }
+
+            guard match.upperBound < suffix.endIndex else { return true }
+            let nextCharacter = suffix[match.upperBound]
+            if !nextCharacter.isLetter, !nextCharacter.isNumber, nextCharacter != "_" {
+                return true
+            }
+        }
+
+        return false
     }
 }
