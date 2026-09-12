@@ -4,6 +4,25 @@ import XCTest
 
 @MainActor
 extension TranscriptionPostProcessorTests {
+    func testFormatsFourDigitQuantitiesBeforeFollowingWords() async {
+        let processor = TranscriptionPostProcessor()
+        let samples = [
+            ("We've played 1000 games.", "We've played 1,000 games."),
+            ("They completed 2400 matches.", "They completed 2,400 matches."),
+            ("The volunteers counted 2999 ballots.", "The volunteers counted 2,999 ballots."),
+        ]
+
+        for (input, expected) in samples {
+            let output = processor.process(
+                input,
+                dictionaryEntries: [],
+                renderMode: .singleLineInline
+            )
+
+            XCTAssertEqual(output, expected)
+        }
+    }
+
     func testFormatsStandaloneFourDigitQuantitiesBelowTenThousand() async {
         let processor = TranscriptionPostProcessor()
 
