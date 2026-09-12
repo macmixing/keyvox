@@ -29,7 +29,7 @@ Normal debug and release APKs require the explicit `npu-device` profile, optimiz
 Swift code, and the verified QNN runtime. Gradle's APK variant does not change the
 already staged Swift optimization level. The build fails before packaging if that
 profile or any required NPU component is absent. See the [performance
-record](../Docs/Android/PERFORMANCE.md) for repeated pipeline probes.
+record](Docs/PERFORMANCE.md) for repeated pipeline probes.
 
 The script follows actual ELF dependencies, copies unchanged SwiftPM resource
 bundles and their notices, and stages the result under `app/build/generated/engine`.
@@ -79,17 +79,25 @@ accompany Qualcomm-containing distributions.
 - FUNCTIONAL: installed JNI/Swift bridge, shared Whisper service, Silero VAD,
   and real Core processing of a caller-provided speech recording.
 - FUNCTIONAL: Android-owned perceptron and WordNet linguistic capabilities are
-  injected into Core and Whisper segment assembly; the recorded 582-test
-  cross-platform bakeoff passed with Apple-identical expectations, and the engine
-  logs its exact selected implementation.
+  injected into Core and Whisper segment assembly, and the engine logs its exact
+  selected implementation.
 - FUNCTIONAL: app-owned download and SHA-256 verification of the exact shared
   iOS Whisper Base artifact. Weights are downloaded, not bundled in the APK.
 - FUNCTIONAL: microphone start from the keyboard in another app; capture continues
   after Home. Keyboard cancellation releases capture, and a subsequent recording
   starts. Stop runs captured samples through the engine and returns to idle.
-- UNRESOLVED: full iOS insertion/composition parity, warm idle microphone sessions,
-  lock-screen/interruption recovery, process-death recovery, language/settings UI,
-  dictionary editing, statistics, and resumable onboarding download behavior.
+- FUNCTIONAL: Home, Dictionary, and Style tabs backed by Android-owned state and
+  shared engine boundaries.
+- FUNCTIONAL: dictionary list, sort, add, edit, delete, persistence, recovery, and
+  casing-cache refresh through the shared dictionary owner.
+- FUNCTIONAL: persisted paragraph/list settings and keyboard controls for safe
+  deterministic variants of the latest untouched dictation.
+- FUNCTIONAL: KeyVox keyboard presentation, editor-aware insertion, selection
+  replacement, Unicode handling, stale-editor rejection, and text-preserving
+  failure behavior.
+- UNRESOLVED: warm idle microphone sessions, lock-screen/interruption recovery,
+  process-death recovery, language/model presentation, onboarding, billing, and
+  resumable download behavior.
 
 The containing app has no dictation controls. Start/stop/cancel belong to the
 keyboard. A process-owned `DictationSession` publishes semantic state; the Android
@@ -151,16 +159,8 @@ Base weights. The fixture check requires a caller-provided mono 16 kHz Float32
 little-endian PCM file in app-private files. Recordings are not distributed as test
 assets. It verifies real nonempty processed output, not recognition accuracy.
 
-Foundation validation: the recorded 582-test Core bakeoff passed on both Apple
-and Android. Android
-debug and release APKs build, lint passes, and physical Android 16 instrumentation passes
-editor lifetime/no-speech selection checks, repeated microphone cancel/restart,
-Stop through processing, and real speech-fixture inference. The device also
-demonstrated external-app keyboard start and continued capture after Home.
 The protected package includes its staged native libraries with retained
 dependency/resource notices; their ELF load segments satisfy 16 KB alignment.
-Other Android versions,
-lock-screen behavior, and complete iOS dictation parity remain unverified.
 
 ## Distribution
 

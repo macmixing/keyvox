@@ -40,6 +40,9 @@ Notable third-party items include:
 - KeyVox-trained Vibes LoRA adapter artifacts bundled in `Packages/KeyVoxVibesAdapters`; these are product-specific model adapter assets for Qwen-based local Vibes rewriting and are excluded from this repository's MIT source-code license
 - Pronunciation data derived from CMUdict (BSD-2-Clause style notice/disclaimer)
 - Pronunciation data derived from SCOWL (custom permissive notice text)
+- Swift perceptron inference adapted from NLTK 3.9.1 and its optional English
+  model assets (MIT)
+- Princeton WordNet 3.0 lexical indexes (WordNet 3.0 License)
 - Kanit font (`OFL-1.1`)
 
 For full third-party notices, see `THIRD_PARTY_NOTICES.md` and
@@ -62,6 +65,9 @@ The following files and assets are **NOT licensed under the MIT License** and re
    - `iOS/KeyVox iOS/Resources/Onboarding/`
    - `iOS/KeyVox iOS/Resources/ReturnToHost.mov`
    - `iOS/LaunchLogo.png`
+   - `Android/app/src/main/res/drawable/`
+   - `Android/app/src/main/res/drawable-nodpi/`
+   - `Android/app/src/main/res/mipmap-anydpi-v26/`
 
    Includes all App Icons, onboarding and Shortcut/Action Button instructional videos, the KeyVox logo, and related brand imagery.
    The current covered onboarding video inventory is `DictationShortcutSetup/ShortcutHero.mov`, `DictationShortcutSetup/AddShortcutPage.mov`, `DictationShortcutSetup/ActionButtonIntro.mov`, `DictationShortcutSetup/ActionButtonSettings.mov`, `DictationShortcutSetup/ActionButtonShortcutOption.mov`, `DictationShortcutSetup/ActionButtonShortcutSelection.mov`, `DictationShortcutSetup/ActionButtonDemoPaste.mov`, `DictationShortcutSetup/ActionButtonDemoHandoff.mov`, `Onboarding/EnableKeyboard.mov`, and `Onboarding/KeyVoxKeyboardSelection.mov`.
@@ -69,6 +75,8 @@ The following files and assets are **NOT licensed under the MIT License** and re
 2. `macOS/Views/Components/LogoBarView.swift`  
    `iOS/KeyVox iOS/Views/Components/LogoBarView.swift`
    `iOS/KeyVox Keyboard/Views/Components/KeyboardLogoBarView.swift`
+   `Android/app/src/main/java/org/keyvox/android/app/presentation/AppLogoView.java`
+   `Android/app/src/main/java/org/keyvox/android/ime/KeyboardLogoBarView.java`
    The proprietary KeyVox logo system implementation, including the standalone logo treatment and the recording-overlay audio-reactive visual identity.
 
 3. `macOS/Resources/keyvox.icon/`  
