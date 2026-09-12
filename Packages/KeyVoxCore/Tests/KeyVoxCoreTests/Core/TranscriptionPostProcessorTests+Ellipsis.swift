@@ -7,10 +7,11 @@ extension TranscriptionPostProcessorTests {
         let processor = TranscriptionPostProcessor()
         let stylizedToken = "KvX"
         let cases: [(String, [DictionaryEntry], String)] = [
-            ("A... B.", [], "A... b."),
+            ("A... B.", [], "A… b."),
             ("C… D.", [], "C… d."),
-            ("E... \(stylizedToken).", [DictionaryEntry(phrase: stylizedToken)], "E... \(stylizedToken)."),
-            ("F...\n\ng.", [], "F...\n\nG."),
+            ("E... \(stylizedToken).", [DictionaryEntry(phrase: stylizedToken)], "E… \(stylizedToken)."),
+            ("F...\n\ng.", [], "F…\n\nG."),
+            ("Well... I agree.", [], "Well… I agree."),
         ]
 
         for (input, dictionaryEntries, expected) in cases {

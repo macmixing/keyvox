@@ -24,6 +24,7 @@ struct EllipsisContinuationNormalizer {
             let tokenRange = match.range(at: 1)
             let token = nsText.substring(with: tokenRange)
             guard token.first?.isUppercase == true,
+                  token != "I",
                   !stylizedEntries.contains(token),
                   let firstScalar = token.unicodeScalars.first else {
                 continue

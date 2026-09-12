@@ -26,24 +26,75 @@ public struct TerminalPunctuationNormalizer {
     private static let terminalSentencePunctuationRegex = try? NSRegularExpression(
         pattern: #"[.!?…][\"'”’\)\]\}]*\s*$"#
     )
+    private static let literalEllipsisRegex = try? NSRegularExpression(
+        pattern: #"\.{3}"#
+    )
 
     public init() {}
 
     public func normalizeSpokenTerminalPunctuation(in text: String) -> String {
         guard !text.isEmpty else { return text }
 
-        let words = wordTokens(in: text)
-        guard !words.isEmpty else { return text }
-        let commandMatches = terminalCommandMatches(in: words, text: text)
-            .filter { isEligibleCommand(match: $0, words: words, text: text) }
-        guard !commandMatches.isEmpty else { return text }
+        var normalized = normalizeSpokenEllipses(in: normalizeLiteralEllipses(in: text))
+        let words = wordTokens(in: normalized)
+        guard !words.isEmpty else { return normalized }
+        let commandMatches = terminalCommandMatches(in: words, text: normalized)
+            .filter { isEligibleCommand(match: $0, words: words, text: normalized) }
+        guard !commandMatches.isEmpty else { return normalized }
 
-        var normalized = text
         for commandMatch in commandMatches.reversed() {
             let replacementRange = replacementRange(for: commandMatch, words: words, text: normalized)
             normalized.replaceSubrange(replacementRange, with: commandMatch.symbols)
         }
         return normalized
+    }
+
+    private func normalizeLiteralEllipses(in text: String) -> String {
+        guard let regex = Self.literalEllipsisRegex else { return text }
+        let range = NSRange(location: 0, length: (text as NSString).length)
+        return regex.stringByReplacingMatches(in: text, options: [], range: range, withTemplate: "…")
+    }
+
+    private func normalizeSpokenEllipses(in text: String) -> String {
+        let words = wordTokens(in: text)
+        guard words.count >= 3 else { return text }
+
+        var matches: [CommandMatch] = []
+        var index = words.startIndex
+
+        while index + 2 < words.endIndex {
+            let nextIndex = index + 1
+            let finalIndex = index + 2
+
+            guard isSpokenDot(words[index]),
+                  isSpokenDot(words[nextIndex]),
+                  isSpokenDot(words[finalIndex]),
+                  isPunctuationOnly(text[words[index].range.upperBound..<words[nextIndex].range.lowerBound]),
+                  isPunctuationOnly(text[words[nextIndex].range.upperBound..<words[finalIndex].range.lowerBound]) else {
+                index += 1
+                continue
+            }
+
+            matches.append(CommandMatch(firstWordIndex: index, nextWordIndex: finalIndex + 1, symbols: "…"))
+            index = finalIndex + 1
+        }
+
+        guard !matches.isEmpty else { return text }
+
+        var normalized = text
+        for match in matches.reversed() {
+            let range = replacementRange(for: match, words: words, text: normalized)
+            normalized.replaceSubrange(range, with: match.symbols)
+        }
+        return normalized
+    }
+
+    private func isSpokenDot(_ word: WordToken) -> Bool {
+        word.text.caseInsensitiveCompare("dot") == .orderedSame
+    }
+
+    private func isPunctuationOnly(_ text: Substring) -> Bool {
+        text.allSatisfy { $0.isWhitespace || $0.isPunctuation }
     }
 
     func hasTerminalSentencePunctuation(_ text: String) -> Bool {
