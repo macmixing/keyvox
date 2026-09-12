@@ -3,7 +3,7 @@ import KeyVoxLinguistics
 import XCTest
 @testable import KeyVoxCore
 
-final class PortableNumericTextProtectionTests: XCTestCase {
+final class PortableNumericTextProtectionTests: LinguisticAnalyzerTestCase {
     func testReportsBothCapabilitiesWhenNoSpanMatches() {
         let result = PortableNumericTextProtection().analyze(String(UnicodeScalar(0x03B1)!))
         XCTAssertTrue(result.ranges.isEmpty)

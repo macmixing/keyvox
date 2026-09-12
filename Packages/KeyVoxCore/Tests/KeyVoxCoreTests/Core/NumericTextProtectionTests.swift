@@ -3,7 +3,7 @@ import KeyVoxLinguistics
 import XCTest
 @testable import KeyVoxCore
 
-final class NumericTextProtectionTests: XCTestCase {
+final class NumericTextProtectionTests: LinguisticAnalyzerTestCase {
     private struct Analyzer: NumericTextProtectionAnalyzing {
         let ranges: [NSRange]
         let available: Set<NumericTextProtection.Category>

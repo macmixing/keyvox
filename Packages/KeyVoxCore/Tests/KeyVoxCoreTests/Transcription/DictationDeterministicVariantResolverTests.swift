@@ -1,7 +1,7 @@
 import XCTest
 @testable import KeyVoxCore
 
-final class DictationDeterministicVariantResolverTests: XCTestCase {
+final class DictationDeterministicVariantResolverTests: LinguisticAnalyzerTestCase {
     private let resolver = DictationDeterministicVariantResolver()
     private let formatter = DictationDeterministicTextFormatter()
 

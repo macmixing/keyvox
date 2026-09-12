@@ -2,7 +2,7 @@ import Foundation
 import XCTest
 @testable import KeyVoxCore
 
-final class SpelledOutNumberParserTests: XCTestCase {
+final class SpelledOutNumberParserTests: LinguisticAnalyzerTestCase {
     func testConsumesCompleteGeneratedNumberPhrases() throws {
         let locale = Locale.current
         let formatter = NumberFormatter()

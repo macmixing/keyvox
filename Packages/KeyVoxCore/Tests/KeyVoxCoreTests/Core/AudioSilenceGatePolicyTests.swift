@@ -2,7 +2,7 @@ import Foundation
 import XCTest
 @testable import KeyVoxCore
 
-final class AudioSilenceGatePolicyTests: XCTestCase {
+final class AudioSilenceGatePolicyTests: LinguisticAnalyzerTestCase {
     func testRejectsLongCaptureWithoutActiveSignalWhenRMSIsLow() {
         XCTAssertTrue(
             AudioSilenceGatePolicy.shouldRejectLikelySilence(

@@ -2,7 +2,7 @@ import XCTest
 @testable import KeyVoxCore
 
 @MainActor
-final class ParakeetServiceParagraphAssemblyTests: XCTestCase {
+final class ParakeetServiceParagraphAssemblyTests: LinguisticAnalyzerTestCase {
     func testAssembleTranscriptionCanRenderInlineAndParagraphFormsFromSameBoundaries() async {
         let service = ParakeetService()
         let chunks: [ParakeetService.TranscribedChunk] = [

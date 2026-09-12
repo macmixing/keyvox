@@ -4,7 +4,7 @@ import KeyVoxVoiceActivity
 @testable import KeyVoxCore
 
 @MainActor
-final class ParakeetServiceTests: XCTestCase {
+final class ParakeetServiceTests: LinguisticAnalyzerTestCase {
     func testStaleRequestCannotOverwriteCurrentTranscriptionState() async {
         let service = ParakeetService()
         let staleRequestID = service.beginTranscriptionRequest()

@@ -2,7 +2,7 @@ import Foundation
 import XCTest
 @testable import KeyVoxCore
 
-final class AudioCaptureClassificationTests: XCTestCase {
+final class AudioCaptureClassificationTests: LinguisticAnalyzerTestCase {
     func testClassifyMarksAbsoluteSilenceLikelySilenceAndLongTrueSilenceAtThreshold() {
         let snapshot = Array(repeating: Float(0), count: 16_000 * 3)
         let speechOnly = snapshot

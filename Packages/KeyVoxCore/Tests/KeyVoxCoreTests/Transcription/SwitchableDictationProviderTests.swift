@@ -2,7 +2,7 @@ import XCTest
 @testable import KeyVoxCore
 
 @MainActor
-final class SwitchableDictationProviderTests: XCTestCase {
+final class SwitchableDictationProviderTests: LinguisticAnalyzerTestCase {
     func testReplaceActiveProviderDelegatesFutureCallsToNewProvider() async {
         let whisper = RecordingDictationProvider()
         whisper.isModelReadyValue = true

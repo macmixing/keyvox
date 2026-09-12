@@ -2,7 +2,7 @@ import Foundation
 import XCTest
 @testable import KeyVoxCore
 
-final class ListFormattingEngineTests: XCTestCase {
+final class ListFormattingEngineTests: LinguisticAnalyzerTestCase {
     func testFormatsDetectedList() {
         let engine = ListFormattingEngine()
         let text = "Need to do this one buy groceries two walk dog"

@@ -2,7 +2,7 @@ import XCTest
 @testable import KeyVoxCore
 
 @MainActor
-final class WhisperServiceParagraphAssemblyTests: XCTestCase {
+final class WhisperServiceParagraphAssemblyTests: LinguisticAnalyzerTestCase {
     func testAssembleTranscriptionInsertsParagraphAfterSilenceBoundaryAndTerminalPunctuation() async {
         let service = WhisperService()
         let text = service.assembleTranscription(

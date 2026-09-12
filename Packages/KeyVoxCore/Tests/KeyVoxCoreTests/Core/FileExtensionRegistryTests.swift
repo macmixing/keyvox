@@ -2,7 +2,7 @@ import Foundation
 import XCTest
 @testable import KeyVoxCore
 
-final class FileExtensionRegistryTests: XCTestCase {
+final class FileExtensionRegistryTests: LinguisticAnalyzerTestCase {
     func testRegistryUsesDeclaredExtensionsAndInvariantCase() throws {
         let declared = UUID().uuidString.lowercased()
         let unknown = UUID().uuidString.lowercased()
