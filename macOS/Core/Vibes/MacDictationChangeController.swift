@@ -59,6 +59,7 @@ final class MacDictationChangeController {
 
         activeSession = MacDictationChangeSession(
             sourceText: result.baseText,
+            languageCode: result.languageCode,
             originalText: result.baseText,
             currentText: result.finalText,
             currentStyle: selectedStyle,
@@ -189,7 +190,11 @@ final class MacDictationChangeController {
         }
 
         onProcessingStart()
-        let result = await vibesCoordinator.transform(session.sourceText, style: targetStyle)
+        let result = await vibesCoordinator.transform(
+            session.sourceText,
+            style: targetStyle,
+            languageCode: session.languageCode
+        )
         await vibesCoordinator.releasePrewarmSession(reason: "mac-vibe-change")
         onProcessingEnd()
         logTextTransformationResult(result)
