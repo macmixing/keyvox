@@ -74,6 +74,7 @@ final class MacVibesCoordinator {
         let result = await transform(
             context.baseText,
             style: style,
+            languageCode: context.languageCode,
             deterministicVariants: styleRewriteVariants(from: context.deterministicVariants)
         )
         await releasePrewarmSession(reason: "mac-dictation-transform")
@@ -90,18 +91,28 @@ final class MacVibesCoordinator {
     }
 
     func transform(_ text: String, style: StyleRewriteStyle) async -> TextTransformResult {
-        await transform(text, style: style, deterministicVariants: [])
+        await transform(text, style: style, languageCode: nil, deterministicVariants: [])
+    }
+
+    func transform(
+        _ text: String,
+        style: StyleRewriteStyle,
+        languageCode: String?
+    ) async -> TextTransformResult {
+        await transform(text, style: style, languageCode: languageCode, deterministicVariants: [])
     }
 
     private func transform(
         _ text: String,
         style: StyleRewriteStyle,
+        languageCode: String?,
         deterministicVariants: [StyleRewriteInputVariant]
     ) async -> TextTransformResult {
         let resolvedStyle = resolvedStyle(style)
         guard let request = StyleRewriteDictationConfiguration.request(
             for: resolvedStyle,
             baseText: text,
+            languageCode: languageCode,
             deterministicVariants: deterministicVariants
         ) else {
             return TextTransformResult(

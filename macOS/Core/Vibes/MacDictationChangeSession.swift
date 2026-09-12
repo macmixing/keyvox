@@ -3,6 +3,7 @@ import KeyVoxStyleRewrite
 
 struct MacDictationChangeSession {
     var sourceText: String
+    var languageCode: String? = nil
     var originalText: String
     var currentText: String
     var currentStyle: StyleRewriteStyle
