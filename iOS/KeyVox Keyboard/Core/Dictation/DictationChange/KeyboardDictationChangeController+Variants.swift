@@ -83,7 +83,8 @@ extension KeyboardDictationChangeController {
 
         guard let request = StyleRewriteDictationConfiguration.request(
             for: targetStyle,
-            baseText: session.sourceText
+            baseText: session.sourceText,
+            languageCode: session.languageCode
         ) else {
             return session.originalText
         }
@@ -132,7 +133,8 @@ extension KeyboardDictationChangeController {
 
         guard let request = StyleRewriteDictationConfiguration.request(
             for: session.currentStyle,
-            baseText: sourceText
+            baseText: sourceText,
+            languageCode: session.languageCode
         ) else {
             session.renderedDeterministicVariants[key] = sourceText
             return sourceText

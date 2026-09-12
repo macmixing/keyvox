@@ -14,6 +14,7 @@ enum KeyboardDictationChangeDisplaySource {
 
 struct KeyboardDictationChangeSession {
     var sourceText: String
+    var languageCode: String? = nil
     var originalText: String
     let documentContextBeforeInput: String?
     let preparesAsDictationInsertion: Bool

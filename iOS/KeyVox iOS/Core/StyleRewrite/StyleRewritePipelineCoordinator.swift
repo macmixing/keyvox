@@ -28,7 +28,7 @@ final class StyleRewritePipelineCoordinator {
             return
         }
 
-        guard let request = transformRequest(for: "", deterministicVariants: []) else {
+        guard let request = transformRequest(for: "", languageCode: nil, deterministicVariants: []) else {
             log("prewarm skipped reason=no-request style=\(style.styleIdentifier)")
             return
         }
@@ -37,7 +37,7 @@ final class StyleRewritePipelineCoordinator {
     }
 
     func processOutputText(_ baseText: String) async -> DictationPipelineTextProcessingResult {
-        guard let request = transformRequest(for: baseText, deterministicVariants: []) else {
+        guard let request = transformRequest(for: baseText, languageCode: nil, deterministicVariants: []) else {
             return .unchanged(baseText)
         }
 
@@ -58,6 +58,7 @@ final class StyleRewritePipelineCoordinator {
     func processOutputText(_ context: DictationPipelineTextProcessingContext) async -> DictationPipelineTextProcessingResult {
         guard let request = transformRequest(
             for: context.baseText,
+            languageCode: context.languageCode,
             deterministicVariants: styleRewriteVariants(from: context.deterministicVariants)
         ) else {
             return .unchanged(context.baseText)
@@ -103,6 +104,7 @@ final class StyleRewritePipelineCoordinator {
         guard let transformRequest = StyleRewriteDictationConfiguration.request(
             for: style,
             baseText: request.baseText,
+            languageCode: request.languageCode,
             deterministicVariants: []
         ) else {
             KeyVoxIPCBridge.writeStyleRewriteResponse(
@@ -160,6 +162,7 @@ final class StyleRewritePipelineCoordinator {
         artifactStore.save(
             DictationUtteranceArtifact(
                 id: result.id,
+                languageCode: result.languageCode,
                 rawText: result.rawText,
                 baseText: result.baseText,
                 selectedText: selectedText,
@@ -184,11 +187,13 @@ final class StyleRewritePipelineCoordinator {
 
     private func transformRequest(
         for baseText: String,
+        languageCode: String?,
         deterministicVariants: [StyleRewriteInputVariant]
     ) -> TextTransformRequest? {
         StyleRewriteDictationConfiguration.request(
             for: selectedStyleProvider(),
             baseText: baseText,
+            languageCode: languageCode,
             deterministicVariants: deterministicVariants
         )
     }

@@ -27,7 +27,22 @@ struct KeyVoxStyleRewriteIPCRequest: Codable, Equatable {
     let id: UUID
     let styleIdentifier: String
     let baseText: String
+    let languageCode: String?
     let createdAt: Date
+
+    init(
+        id: UUID,
+        styleIdentifier: String,
+        baseText: String,
+        languageCode: String? = nil,
+        createdAt: Date
+    ) {
+        self.id = id
+        self.styleIdentifier = styleIdentifier
+        self.baseText = baseText
+        self.languageCode = languageCode
+        self.createdAt = createdAt
+    }
 }
 
 struct KeyVoxStyleRewriteIPCResponse: Codable, Equatable {
