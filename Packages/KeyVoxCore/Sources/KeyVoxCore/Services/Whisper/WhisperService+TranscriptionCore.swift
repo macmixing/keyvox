@@ -203,6 +203,7 @@ extension WhisperService {
                     ).assemble(
                         segments.map(\.text),
                         after: precedingChunkText,
+                        languageCode: result.detectedLanguageCode,
                         normalizesContinuationCasing: result.detectedLanguageCode == WhisperLanguage.english.rawValue
                     )
                     let normalizedChunkText = self.normalizeWhitespace(chunkText)

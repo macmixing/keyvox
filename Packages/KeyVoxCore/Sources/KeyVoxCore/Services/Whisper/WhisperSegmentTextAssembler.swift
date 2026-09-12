@@ -16,6 +16,7 @@ struct WhisperSegmentTextAssembler: Sendable {
     func assemble(
         _ segmentTexts: [String],
         after precedingText: String = "",
+        languageCode: String? = nil,
         normalizesContinuationCasing: Bool
     ) async -> String {
         let punctuationNormalizer = TerminalPunctuationNormalizer()
@@ -32,7 +33,8 @@ struct WhisperSegmentTextAssembler: Sendable {
                !punctuationNormalizer.hasTerminalSentencePunctuation(continuationContext) {
                 normalizedSegmentText = normalizeContinuationStart(
                     segmentText,
-                    after: continuationContext
+                    after: continuationContext,
+                    languageCode: languageCode
                 )
             } else {
                 normalizedSegmentText = segmentText
@@ -49,14 +51,15 @@ struct WhisperSegmentTextAssembler: Sendable {
 
     private func normalizeContinuationStart(
         _ segmentText: String,
-        after precedingText: String
+        after precedingText: String,
+        languageCode: String?
     ) -> String {
         let combinedText = "\(precedingText) \(segmentText)"
         let segmentStart = combinedText.index(combinedText.endIndex, offsetBy: -segmentText.count)
         let analysis = linguisticAnalyzer.analyze(
             combinedText,
             range: NSRange(segmentStart..<combinedText.endIndex, in: combinedText),
-            languageCode: nil,
+            languageCode: languageCode,
             features: [.names],
             grouping: .words
         )
