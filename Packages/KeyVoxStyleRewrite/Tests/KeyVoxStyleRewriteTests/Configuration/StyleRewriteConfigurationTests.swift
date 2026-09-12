@@ -2,7 +2,7 @@ import Foundation
 import XCTest
 @testable import KeyVoxStyleRewrite
 
-final class StyleRewriteConfigurationTests: XCTestCase {
+final class StyleRewriteConfigurationTests: LinguisticAnalyzerTestCase {
     func testNoneStyleReturnsNoRequest() {
         let request = StyleRewriteDictationConfiguration.request(
             for: .none,

@@ -2,7 +2,7 @@ import Foundation
 import XCTest
 @testable import KeyVoxStyleRewrite
 
-final class NumberSeparatorEvidenceRepairTests: XCTestCase {
+final class NumberSeparatorEvidenceRepairTests: LinguisticAnalyzerTestCase {
     func testRewriteRepairRepairsDotSeparatedTimeShape() {
         let output = OutputRepair.repairModelOutput(
             original: "Tell John, uh, like, immediately, it starts at 5.30 and it's 10 bucks.",

@@ -2,7 +2,7 @@ import Foundation
 import XCTest
 @testable import KeyVoxStyleRewrite
 
-final class ChillHeuristicFormatterTests: XCTestCase {
+final class ChillHeuristicFormatterTests: LinguisticAnalyzerTestCase {
     func testChillHeuristicFormatsSentenceSeparatorsWithoutEndingPeriod() {
         let output = ChillHeuristicFormatter().format(
             "Hey, this is really crazy. What are you doing tomorrow? I don't even know what I'm doing tonight, but I think this is cool."

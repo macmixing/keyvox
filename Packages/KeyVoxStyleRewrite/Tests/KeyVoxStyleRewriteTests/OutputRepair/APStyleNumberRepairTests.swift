@@ -2,7 +2,7 @@ import Foundation
 import XCTest
 @testable import KeyVoxStyleRewrite
 
-final class APStyleNumberRepairTests: XCTestCase {
+final class APStyleNumberRepairTests: LinguisticAnalyzerTestCase {
     func testRewriteRepairAppliesAPStyleToOrdinaryLowNumbersFromSpokenInput() {
         let output = OutputRepair.repairModelOutput(
             original: "I went there two days ago. She wanted five lobsters for dinner.",

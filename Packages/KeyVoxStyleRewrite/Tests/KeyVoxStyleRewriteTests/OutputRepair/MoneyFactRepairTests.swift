@@ -2,7 +2,7 @@ import Foundation
 import XCTest
 @testable import KeyVoxStyleRewrite
 
-final class MoneyFactRepairTests: XCTestCase {
+final class MoneyFactRepairTests: LinguisticAnalyzerTestCase {
     func testRewriteRepairRepairsSplitDollarsAndCentsAmount() {
         let output = OutputRepair.repairModelOutput(
             original: "I think it was fifty seven dollars and fifty cents.",

@@ -2,7 +2,7 @@ import Foundation
 import XCTest
 @testable import KeyVoxStyleRewrite
 
-final class DecimalNumberEvidenceRepairTests: XCTestCase {
+final class DecimalNumberEvidenceRepairTests: LinguisticAnalyzerTestCase {
     func testRewriteRepairFormatsSpokenDecimalRun() {
         let output = OutputRepair.repairModelOutput(
             original: "I'm shipping version two point zero tomorrow.",

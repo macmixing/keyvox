@@ -2,7 +2,7 @@ import Foundation
 import XCTest
 @testable import KeyVoxStyleRewrite
 
-final class TextTransformCodableTests: XCTestCase {
+final class TextTransformCodableTests: LinguisticAnalyzerTestCase {
     func testTextTransformRequestRoundTripsThroughJSON() throws {
         let request = TextTransformRequest(
             baseText: "base",
