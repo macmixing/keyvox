@@ -2,7 +2,7 @@ import Foundation
 import XCTest
 @testable import KeyVoxCore
 
-final class AudioParagraphChunkerTests: XCTestCase {
+final class AudioParagraphChunkerTests: LinguisticAnalyzerTestCase {
     func testSplitCreatesBoundaryAtLongSilence() {
         let chunker = AudioParagraphChunker()
         let audio = makeSpeech(32_000) + makeSilence(24_000) + makeSpeech(32_000)

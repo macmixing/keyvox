@@ -2,7 +2,7 @@ import XCTest
 import KeyVoxVoiceActivity
 @testable import KeyVoxCore
 
-final class WhisperSpeechRangePlannerTests: XCTestCase {
+final class WhisperSpeechRangePlannerTests: LinguisticAnalyzerTestCase {
     private let planner = WhisperSpeechRangePlanner()
 
     func testRangesClipSpeechToChunkAndDropSpeechOutsideChunk() {

@@ -1,7 +1,7 @@
 import XCTest
 @testable import KeyVoxCore
 
-final class TerminalPunctuationNormalizerTests: XCTestCase {
+final class TerminalPunctuationNormalizerTests: LinguisticAnalyzerTestCase {
     func testConvertsTerminalQuestionMarkCommand() {
         let normalizer = TerminalPunctuationNormalizer()
 

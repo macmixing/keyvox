@@ -1,7 +1,7 @@
 import XCTest
 @testable import KeyVoxCore
 
-final class WhisperLanguageCatalogTests: XCTestCase {
+final class WhisperLanguageCatalogTests: LinguisticAnalyzerTestCase {
     func testCatalogIncludesAutomaticAndWhisperBaseLanguages() {
         XCTAssertTrue(WhisperBaseLanguageCatalog.supports(.automatic))
         XCTAssertTrue(WhisperBaseLanguageCatalog.supports(DictationLanguage(rawValue: "en")))

@@ -2,7 +2,7 @@ import Foundation
 import XCTest
 @testable import KeyVoxCore
 
-final class ResourceBundleStorageTests: XCTestCase {
+final class ResourceBundleStorageTests: LinguisticAnalyzerTestCase {
     func testOverrideDoesNotEvaluateDefaultAndCannotChangeAfterAccess() throws {
         let storage = ResourceBundleStorage()
         let bundle = Bundle.main

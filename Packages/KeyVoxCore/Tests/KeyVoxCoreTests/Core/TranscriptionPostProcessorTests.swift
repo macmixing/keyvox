@@ -3,7 +3,7 @@ import XCTest
 @testable import KeyVoxCore
 
 @MainActor
-final class TranscriptionPostProcessorTests: XCTestCase {
+final class TranscriptionPostProcessorTests: LinguisticAnalyzerTestCase {
     func testAppliesDictionaryCasingBeforeListFormatting() async {
         let processor = TranscriptionPostProcessor()
         let entries = [

@@ -2,7 +2,7 @@ import Foundation
 import XCTest
 @testable import KeyVoxCore
 
-final class ListPatternDetectorTests: XCTestCase {
+final class ListPatternDetectorTests: LinguisticAnalyzerTestCase {
     func testDetectsNumberedListWithLeadIn() {
         let detector = ListPatternDetector()
         let text = "We need three things one get dog food two charge phone three call mom"

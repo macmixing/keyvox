@@ -2,7 +2,7 @@ import XCTest
 @testable import KeyVoxCore
 
 @MainActor
-final class DictationPipelineTests: XCTestCase {
+final class DictationPipelineTests: LinguisticAnalyzerTestCase {
     func testPipelineProcessesAndPastesFormattedText() async throws {
         let provider = StubTranscriptionProvider(
             result: .init(text: "project notes one cue board two cue board", languageCode: "en", paragraphsText: nil, inlineText: nil)

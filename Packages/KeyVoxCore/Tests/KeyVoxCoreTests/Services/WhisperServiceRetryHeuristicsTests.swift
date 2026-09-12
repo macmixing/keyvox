@@ -3,7 +3,7 @@ import XCTest
 import KeyVoxWhisper
 
 @MainActor
-final class WhisperServiceRetryHeuristicsTests: XCTestCase {
+final class WhisperServiceRetryHeuristicsTests: LinguisticAnalyzerTestCase {
     func testTreatsThreeWordResultAsSuspiciousForLongChunk() async {
         let service = WhisperService()
 

@@ -3,7 +3,7 @@ import KeyVoxLinguistics
 import XCTest
 @testable import KeyVoxCore
 
-final class LinguisticProviderIntegrationTests: XCTestCase {
+final class LinguisticProviderIntegrationTests: LinguisticAnalyzerTestCase {
     func testSelectedProviderSurvivesAsyncProcessingQueue() async {
         let provider = RecordingLinguisticAnalyzer(base: TextLinguistics.provider)
         let processor = TranscriptionPostProcessor(linguisticAnalyzer: provider)

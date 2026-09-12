@@ -1,7 +1,7 @@
 import XCTest
 @testable import KeyVoxCore
 
-final class DictionaryNumericMatchingTests: XCTestCase {
+final class DictionaryNumericMatchingTests: LinguisticAnalyzerTestCase {
     func testLeadingZeroTokenUsesCanonicalIntegerSpellingAndSource() {
         let variants = DictionaryNumericMatching.phraseVariants(for: ["001"])
 

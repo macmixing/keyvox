@@ -3,7 +3,7 @@ import KeyVoxWhisper
 @testable import KeyVoxCore
 
 @MainActor
-final class WhisperServiceLanguageTests: XCTestCase {
+final class WhisperServiceLanguageTests: LinguisticAnalyzerTestCase {
     func testUpdateLanguageStoresSupportedSelection() async {
         let service = WhisperService()
         let spanish = DictationLanguage(rawValue: "es")

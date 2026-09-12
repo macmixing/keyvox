@@ -38,6 +38,7 @@ let package = Package(
             name: "KeyVoxCoreTests",
             dependencies: [
                 "KeyVoxCore",
+                .product(name: "KeyVoxLinguistics", package: "KeyVoxLinguistics"),
                 .product(name: "KeyVoxVoiceActivity", package: "KeyVoxVoiceActivity"),
             ]
         ),

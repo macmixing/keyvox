@@ -2,7 +2,7 @@ import Foundation
 import XCTest
 @testable import KeyVoxCore
 
-final class ListRendererTests: XCTestCase {
+final class ListRendererTests: LinguisticAnalyzerTestCase {
     func testRendersMultilineWithLeadInColonAndTrailingText() {
         let renderer = ListRenderer()
         let list = DetectedList(

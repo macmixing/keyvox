@@ -3,7 +3,7 @@ import XCTest
 @testable import KeyVoxCore
 
 @MainActor
-final class PhoneticEncoderTests: XCTestCase {
+final class PhoneticEncoderTests: LinguisticAnalyzerTestCase {
     func testUsesLexiconSignatureWhenAvailable() async {
         let lexicon = FakeLexicon(pronunciations: ["cueboard": "KBRD"])
         let encoder = PhoneticEncoder()
