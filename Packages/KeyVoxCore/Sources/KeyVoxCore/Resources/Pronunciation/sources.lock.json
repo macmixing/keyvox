@@ -1,10 +1,15 @@
 {
   "version": 1,
-  "generated_at": "2026-02-14T13:54:33Z",
   "targets": {
     "lexicon_target_rows": 240000,
-    "lexicon_row_range": [235000, 450000],
-    "common_word_row_range": [10000, 15000]
+    "lexicon_row_range": [
+      235000,
+      450000
+    ],
+    "common_word_row_range": [
+      10000,
+      15000
+    ]
   },
   "sources": [
     {
@@ -20,32 +25,65 @@
       "revision": "9829d649f007932ce672a1e8e13678a48be20d55",
       "license": "MIT-like (SCOWL Copyright)",
       "sha256": "82f844f5d95481e5806836bd935970315c06422f00dd2928c8c7c5a4b90d22af"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "Packages/KeyVoxCore/Sources/KeyVoxCore/Resources/Pronunciation/lexicon-v1.tsv",
+      "rows": 334988,
+      "sha256": "3377abd77c79215b3fff7994258953c4f857f11ca2749220b70d4635b784050b"
     },
+    {
+      "path": "Packages/KeyVoxCore/Sources/KeyVoxCore/Resources/Pronunciation/common-words-v1.txt",
+      "rows": 14671,
+      "sha256": "28debbc3a8b1bd1211a1e491dd81e94130e540d97341aa6dc663c5c9dcfb7804"
+    }
+  ],
+  "initial_generation_recorded_at": "2026-02-14T13:54:33Z",
+  "artifact_provenance": {
+    "base_generation_commit": "99a334e7",
+    "lexicon": {
+      "reproduced_base_sha256": "6dfb74cc65a24c2b6d19629516df08dfa3dbb029930cbd7fc5bf38120933b7e0",
+      "generator": "Tools/Pronunciation/train_g2p.sh deterministic signature fallback",
+      "keyvox_addition_commits": [
+        "e672f4059b414ca3b4618cd403772deadae4fc50",
+        "8bb7b7f6feed806481fd674b56b36657ef76189e"
+      ],
+      "added_rows": 4
+    },
+    "common_words": {
+      "reproduced_base_sha256": "534e67428e452289b1d75958dc3d35a4cdeb8efe126d9efcddd5dca99cca3582",
+      "scowl_arguments": [
+        "word-list",
+        "95",
+        "A",
+        "2",
+        "--deaccent"
+      ],
+      "selection": "existing build_lexicon.sh normalization and evenly spaced sampling",
+      "base_rows": 14670,
+      "keyvox_curation_commit": "88bd8535710200d12494b02a052730753e402cc4",
+      "added_rows": 1,
+      "all_current_words_present_in_pinned_scowl": true
+    },
+    "resource_move_commit": "7ab2c060"
+  },
+  "optional_regeneration_tools": [
     {
       "id": "phonetisaurus",
       "url": "https://github.com/AdolfVonKleist/Phonetisaurus",
       "revision": "build-time-tool",
       "license": "BSD-3-Clause",
-      "sha256": "n/a"
+      "sha256": "n/a",
+      "used_for_current_artifacts": false
     },
     {
       "id": "openfst",
       "url": "https://openfst.org",
       "revision": "build-time-tool",
       "license": "Apache-2.0",
-      "sha256": "n/a"
-    }
-  ],
-  "artifacts": [
-    {
-      "path": "Packages/KeyVoxCore/Sources/KeyVoxCore/Resources/Pronunciation/lexicon-v1.tsv",
-      "rows": 334984,
-      "sha256": "6dfb74cc65a24c2b6d19629516df08dfa3dbb029930cbd7fc5bf38120933b7e0"
-    },
-    {
-      "path": "Packages/KeyVoxCore/Sources/KeyVoxCore/Resources/Pronunciation/common-words-v1.txt",
-      "rows": 15000,
-      "sha256": "45ad22b4c44d74af6ea0203e551775b499edc2c423d057415cf2a817b279c3f7"
+      "sha256": "n/a",
+      "used_for_current_artifacts": false
     }
   ]
 }

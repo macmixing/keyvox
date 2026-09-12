@@ -4,7 +4,7 @@ import XCTest
 
 @MainActor
 final class PhoneticEncoderTests: XCTestCase {
-    func testUsesLexiconSignatureWhenAvailable() {
+    func testUsesLexiconSignatureWhenAvailable() async {
         let lexicon = FakeLexicon(pronunciations: ["cueboard": "KBRD"])
         let encoder = PhoneticEncoder()
 
@@ -12,7 +12,7 @@ final class PhoneticEncoderTests: XCTestCase {
         XCTAssertTrue(signature == "KBRD")
     }
 
-    func testFallbackSignatureIsDeterministic() {
+    func testFallbackSignatureIsDeterministic() async {
         let lexicon = FakeLexicon()
         let encoder = PhoneticEncoder()
 
@@ -23,7 +23,7 @@ final class PhoneticEncoderTests: XCTestCase {
         XCTAssertTrue(one == two)
     }
 
-    func testPhraseSignatureJoinsTokenSignatures() {
+    func testPhraseSignatureJoinsTokenSignatures() async {
         let lexicon = FakeLexicon(pronunciations: ["migo": "MGO", "platform": "PLTRM"])
         let encoder = PhoneticEncoder()
 
@@ -31,7 +31,7 @@ final class PhoneticEncoderTests: XCTestCase {
         XCTAssertTrue(signature == "MGO PLTRM")
     }
 
-    func testNumericAndOrdinalTokensUseCardinalPronunciation() {
+    func testNumericAndOrdinalTokensUseCardinalPronunciation() async {
         let lexicon = FakeLexicon(pronunciations: ["eleven": "IH-L-EH-V-AH-N"])
         let encoder = PhoneticEncoder()
 

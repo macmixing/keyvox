@@ -9,10 +9,10 @@ public final class Parakeet {
         self.runtime = try ParakeetRuntime(modelURL: modelURL)
     }
 
-    internal init(
+    public init(
         fromModelURL modelURL: URL,
         withParams params: ParakeetParams = .default,
-        backendFactory: ParakeetRuntime.BackendFactory?
+        backendFactory: ((URL) throws -> (any ParakeetRuntimeBackend)?)?
     ) throws {
         self.params = params
         self.runtime = try ParakeetRuntime(modelURL: modelURL, backendFactory: backendFactory)

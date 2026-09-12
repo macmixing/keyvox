@@ -6,7 +6,7 @@ extension WhisperService {
     /// Pre-loads the model into memory to eliminate cold-start latency.
     public func warmup() {
         if voiceActivityDetector == nil {
-            voiceActivityDetector = VoiceActivityDetector()
+            voiceActivityDetector = voiceActivityDetectorFactory()
         }
         guard whisper == nil else {
             #if DEBUG
@@ -39,7 +39,7 @@ extension WhisperService {
         params.initialPrompt = isPromptHintingEnabled ? dictionaryHintPrompt : ""
         // CoreML is automatic if the model files are present
 
-        whisper = Whisper(fromFileURL: URL(fileURLWithPath: modelPath), withParams: params)
+        whisper = whisperFactory(URL(fileURLWithPath: modelPath), params)
     }
 
     /// Unloads the currently cached model instance.

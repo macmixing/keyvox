@@ -1,0 +1,26 @@
+Vulkan-Headers v1.4.313
+https://github.com/KhronosGroup/Vulkan-Headers
+Revision: 409c16be502e39fe70dd6fe2d9ad4842ef2c9a53
+Archive SHA-256: dc96688e8cf01f2f0a8f31a41fa76a7f8d1e27f022e31bbd3a59ff40a24da9d6
+
+Copyright 2014-2025 The Khronos Group Inc.
+Copyright 2015-2025 The Khronos Group Inc.
+Copyright 2021-2025 The Khronos Group Inc.
+Copyright 2015-2023 The Khronos Group Inc.
+Copyright 2015-2023 LunarG, Inc.
+Copyright 2015-2023 Valve Corporation
+
+The optional Vulkan build uses the pinned include/vulkan and include/vk_video
+headers. The C headers use Apache-2.0; generated C++ headers offer Apache-2.0 OR
+MIT. This distribution selects Apache-2.0 for those headers. The complete license
+is retained alongside this notice as Vulkan-Headers-Apache-2.0.txt.
+
+No separate Vulkan-Hpp dependency, header generators, validation layers, sample
+programs, or vendor GPU drivers are incorporated. NDK glslc is a build tool and
+is not distributed. Embedded shaders are generated from the existing MIT-licensed
+Whisper/ggml source, whose notices are retained separately.
+
+The optional Vulkan runtime retains the CPU backend. A local query-reset patch
+uses the Vulkan 1.0 command-buffer operation instead of the Vulkan 1.2 host
+operation to avoid requiring an unavailable API 28 import. The patch does not
+change model weights or inference precision policy.

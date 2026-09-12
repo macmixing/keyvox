@@ -1,0 +1,92 @@
+plugins { id 'com.android.application' }
+
+android {
+    namespace 'org.keyvox.android'
+    compileSdk 36
+    defaultConfig {
+        applicationId 'org.keyvox.android'
+        minSdk 28
+        targetSdk 36
+        versionCode 1
+        versionName '0.1'
+        testInstrumentationRunner 'org.keyvox.android.ime.ShellInstrumentation'
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    buildFeatures { buildConfig = true }
+    buildTypes {
+        cpuTest {
+            initWith debug
+            applicationIdSuffix '.cputest'
+            versionNameSuffix '-cpu-test'
+            matchingFallbacks = ['debug']
+        }
+    }
+    packaging {
+        jniLibs {
+            useLegacyPackaging = true
+            keepDebugSymbols += ['**/*.so']
+        }
+    }
+    sourceSets.debug {
+        jniLibs.srcDir 'build/generated/engine/npu-device/jniLibs'
+        assets.srcDir 'build/generated/engine/npu-device/assets'
+    }
+    sourceSets.release {
+        jniLibs.srcDir 'build/generated/engine/npu-device/jniLibs'
+        assets.srcDir 'build/generated/engine/npu-device/assets'
+    }
+    sourceSets.cpuTest {
+        jniLibs.srcDir 'build/generated/engine/cpu-test/jniLibs'
+        assets.srcDir 'build/generated/engine/cpu-test/assets'
+    }
+}
+
+tasks.register('verifyNpuEngine') {
+    doLast {
+        def root = layout.buildDirectory.dir('generated/engine/npu-device').get().asFile
+        def profileFile = new File(root, 'assets/engine-profile.json')
+        if (!new File(root, 'jniLibs/arm64-v8a/libKeyVoxAndroidEngine.so').isFile()
+            || !new File(root, 'jniLibs/arm64-v8a/libKeyVoxWhisperQnn.so').isFile()
+            || !new File(root, 'jniLibs/arm64-v8a/libQnnHtp.so').isFile()
+            || !new File(root, 'jniLibs/arm64-v8a/libQnnSystem.so').isFile()
+            || !new File(root, 'jniLibs/arm64-v8a/libQnnHtpV81Stub.so').isFile()
+            || !new File(root, 'assets/swift-resources/KeyVoxQnnRuntime.resources/libQnnHtpV81Skel.so').isFile()
+            || !new File(root, 'assets/swift-resources/KeyVoxQnnRuntime.resources/libqnnhtpv81.cat').isFile()
+            || !new File(root, 'assets/engine-resources-id').isFile()
+            || !new File(root, 'assets/native-libraries.json').isFile()
+            || !profileFile.isFile()) {
+            throw new GradleException('Release NPU engine is missing. Stage the npu-device profile as described in Android/README.md.')
+        }
+        def profile = new groovy.json.JsonSlurper().parse(profileFile)
+        if (profile.profile != 'npu-device' || profile.configuration != 'release' || profile.qnn != true) {
+            throw new GradleException('Normal APK variants require the release npu-device engine profile.')
+        }
+    }
+}
+
+tasks.register('verifyCpuTestEngine') {
+    doLast {
+        def root = layout.buildDirectory.dir('generated/engine/cpu-test').get().asFile
+        def profileFile = new File(root, 'assets/engine-profile.json')
+        if (!new File(root, 'jniLibs/arm64-v8a/libKeyVoxAndroidEngine.so').isFile()
+            || !new File(root, 'assets/engine-resources-id').isFile()
+            || !new File(root, 'assets/native-libraries.json').isFile()
+            || !profileFile.isFile()) {
+            throw new GradleException('CPU test engine is missing. Stage the explicit cpu-test profile as described in Android/README.md.')
+        }
+        def profile = new groovy.json.JsonSlurper().parse(profileFile)
+        if (profile.profile != 'cpu-test' || profile.qnn != false) {
+            throw new GradleException('The cpuTest APK requires the isolated cpu-test engine profile.')
+        }
+    }
+}
+tasks.configureEach {
+    if (name == 'preDebugBuild' || name == 'preReleaseBuild') {
+        dependsOn 'verifyNpuEngine'
+    } else if (name == 'preCpuTestBuild') {
+        dependsOn 'verifyCpuTestEngine'
+    }
+}

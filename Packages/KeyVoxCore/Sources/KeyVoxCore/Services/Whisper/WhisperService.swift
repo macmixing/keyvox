@@ -1,14 +1,18 @@
 import Foundation
+import KeyVoxLinguistics
 import KeyVoxWhisper
 import KeyVoxVoiceActivity
-import Combine
+import KeyVoxState
 
 @MainActor
-public class WhisperService: ObservableObject, DictationProvider {
-    @Published public internal(set) var isTranscribing = false
-    @Published public internal(set) var transcriptionText = ""
-    @Published public internal(set) var lastResultWasLikelyNoSpeech = false
+public class WhisperService: StatePublishing, DictationProvider {
+    @StateValue public internal(set) var isTranscribing = false
+    @StateValue public internal(set) var transcriptionText = ""
+    @StateValue public internal(set) var lastResultWasLikelyNoSpeech = false
 
+    let voiceActivityDetectorFactory: () -> VoiceActivityDetector?
+    let whisperFactory: (URL, WhisperParams) -> Whisper
+    let linguisticAnalyzer: any LinguisticAnalyzing
     private let modelPathResolver: () -> String?
     private var activeTranscriptionRequestID = UUID()
 
@@ -31,8 +35,16 @@ public class WhisperService: ObservableObject, DictationProvider {
     var transcriptionTask: Task<Void, Never>?
     var voiceActivityDetector: VoiceActivityDetector?
 
-    public init(modelPathResolver: @escaping () -> String? = { nil }) {
+    public init(
+        modelPathResolver: @escaping () -> String? = { nil },
+        voiceActivityDetectorFactory: @escaping () -> VoiceActivityDetector? = { VoiceActivityDetector() },
+        whisperFactory: @escaping (URL, WhisperParams) -> Whisper = { Whisper(fromFileURL: $0, withParams: $1) },
+        linguisticAnalyzer: any LinguisticAnalyzing = TextLinguistics.provider
+    ) {
         self.modelPathResolver = modelPathResolver
+        self.voiceActivityDetectorFactory = voiceActivityDetectorFactory
+        self.whisperFactory = whisperFactory
+        self.linguisticAnalyzer = linguisticAnalyzer
     }
 
     public var isModelReady: Bool {

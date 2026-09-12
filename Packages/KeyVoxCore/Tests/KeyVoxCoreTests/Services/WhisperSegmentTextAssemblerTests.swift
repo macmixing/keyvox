@@ -1,4 +1,5 @@
 import XCTest
+import KeyVoxLinguistics
 @testable import KeyVoxCore
 
 @MainActor
@@ -57,6 +58,23 @@ final class WhisperSegmentTextAssemblerTests: XCTestCase {
         XCTAssertEqual(commaText, "like, everybody just wants to talk very slowly.")
     }
 
+    func testUsesInjectedAnalyzerForContinuationIdentity() async {
+        let lowercaseToken = String(UnicodeScalar(0x0061)!) + String(UnicodeScalar(0x0062)!)
+        let capitalizedToken = lowercaseToken.prefix(1).uppercased() + lowercaseToken.dropFirst()
+        let assembler = WhisperSegmentTextAssembler(
+            pronunciationLookup: PronunciationLookup(pronunciationsByWord: [lowercaseToken: "X"]),
+            linguisticAnalyzer: FixedIdentityAnalyzer(identity: .ordinaryWord)
+        )
+
+        let text = await assembler.assemble(
+            [capitalizedToken],
+            after: lowercaseToken,
+            normalizesContinuationCasing: true
+        )
+
+        XCTAssertEqual(text, lowercaseToken)
+    }
+
     private func makeAssembler() -> WhisperSegmentTextAssembler {
         WhisperSegmentTextAssembler(
             pronunciationLookup: PronunciationLookup(
@@ -68,6 +86,24 @@ final class WhisperSegmentTextAssemblerTests: XCTestCase {
                     "talking": "T-AO-K-IH-NG",
                 ]
             )
+        )
+    }
+}
+
+private struct FixedIdentityAnalyzer: LinguisticAnalyzing {
+    let identity: LinguisticToken.Identity
+
+    func analyze(
+        _ text: String,
+        range: NSRange?,
+        languageCode: String?,
+        features: LinguisticFeatures,
+        grouping: LinguisticGrouping
+    ) -> LinguisticAnalysis {
+        let tokenRange = range ?? NSRange(text.startIndex..<text.endIndex, in: text)
+        return LinguisticAnalysis(
+            tokens: [LinguisticToken(range: tokenRange, identity: identity)],
+            availableFeatures: [.names, .wordBoundaries]
         )
     }
 }

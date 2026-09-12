@@ -1,0 +1,16 @@
+--- a/ggml/src/ggml-vulkan/ggml-vulkan.cpp
++++ b/ggml/src/ggml-vulkan/ggml-vulkan.cpp
+@@ -9696,12 +9696,11 @@
+             ctx->device->num_queries = query_create_info.queryCount;
+         }
+ 
+-        ctx->device->device.resetQueryPool(ctx->device->query_pool, 0, cgraph->n_nodes+1);
+-
+         GGML_ASSERT(ctx->compute_ctx.expired());
+         compute_ctx = ggml_vk_create_context(ctx, ctx->compute_cmd_pool);
+         ctx->compute_ctx = compute_ctx;
+         ggml_vk_ctx_begin(ctx->device, compute_ctx);
++        compute_ctx->s->buffer.resetQueryPool(ctx->device->query_pool, 0, cgraph->n_nodes+1);
+         compute_ctx->s->buffer.writeTimestamp(vk::PipelineStageFlagBits::eAllCommands, ctx->device->query_pool, 0);
+     }
+ 

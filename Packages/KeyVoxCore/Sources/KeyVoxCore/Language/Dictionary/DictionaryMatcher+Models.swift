@@ -1,5 +1,5 @@
 import Foundation
-import NaturalLanguage
+import KeyVoxLinguistics
 
 extension DictionaryMatcher {
     struct Token {
@@ -7,14 +7,14 @@ extension DictionaryMatcher {
         let normalized: String
         let range: NSRange
         let phonetic: String
-        let lexicalClass: NLTag?
+        let lexicalClass: LexicalRole?
 
         init(
             raw: String,
             normalized: String,
             range: NSRange,
             phonetic: String,
-            lexicalClass: NLTag? = nil
+            lexicalClass: LexicalRole? = nil
         ) {
             self.raw = raw
             self.normalized = normalized

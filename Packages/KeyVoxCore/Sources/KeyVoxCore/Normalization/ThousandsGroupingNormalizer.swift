@@ -1,18 +1,19 @@
 import Foundation
-import NaturalLanguage
+import KeyVoxLinguistics
 
 public struct ThousandsGroupingNormalizer {
     private struct LexicalToken {
         let text: String
         let range: NSRange
-        let tag: NLTag?
+        let tag: LexicalRole?
         let lemma: String?
+        let inflection: LinguisticToken.Inflection
     }
 
     private struct WordToken {
         let text: String
         let range: NSRange
-        let tag: NLTag?
+        let tag: LexicalRole?
     }
 
     private static let candidateRegex: NSRegularExpression? = try? NSRegularExpression(
@@ -27,20 +28,14 @@ public struct ThousandsGroupingNormalizer {
         pattern: #"\b(?:\d{4}[/-]\d{1,2}[/-]\d{1,2}|\d{1,2}[/-]\d{1,2}[/-]\d{2,4})\b"#,
         options: []
     )
-    private static let dateDetector: NSDataDetector? = try? NSDataDetector(
-        types: NSTextCheckingResult.CheckingType.date.rawValue
-    )
-    private static let addressDetector: NSDataDetector? = try? NSDataDetector(
-        types: NSTextCheckingResult.CheckingType.address.rawValue
-    )
     private static let calendarMonthTokens: Set<String> = {
         let monthFormatter = DateFormatter()
         monthFormatter.locale = Locale(identifier: "en_US_POSIX")
         monthFormatter.calendar = Calendar(identifier: .gregorian)
 
         let tokenGroups = [
-            monthFormatter.monthSymbols ?? [],
-            monthFormatter.standaloneMonthSymbols ?? [],
+            monthFormatter.keyVoxMonthSymbols,
+            monthFormatter.keyVoxStandaloneMonthSymbols,
         ]
 
         return Set(tokenGroups.flatMap { $0 }.map(normalizedCalendarMonthToken).filter { !$0.isEmpty })
@@ -109,7 +104,13 @@ public struct ThousandsGroupingNormalizer {
             .joined(separator: " ")
     }
 
-    public init() {}
+    private let protectionAnalyzer: any NumericTextProtectionAnalyzing
+
+    public init() { self.init(protectionAnalyzer: PlatformNumericTextProtection()) }
+
+    init(protectionAnalyzer: any NumericTextProtectionAnalyzing) {
+        self.protectionAnalyzer = protectionAnalyzer
+    }
 
     public func normalizeSpokenQuantities(in text: String) -> String {
         guard !text.isEmpty else { return text }
@@ -139,8 +140,14 @@ public struct ThousandsGroupingNormalizer {
         let lexicalTokens = lexicalTokens(in: line, range: fullRange)
         let words = wordRegex.matches(in: line, options: [], range: fullRange).map {
             let range = $0.range
-            let tag = lexicalTokens.first(where: { NSEqualRanges($0.range, range) })?.tag
-            return WordToken(text: nsLine.substring(with: range), range: range, tag: tag)
+            let text = nsLine.substring(with: range)
+            let analyzedRole = lexicalTokens.first(where: { NSEqualRanges($0.range, range) })?.tag
+            let normalized = Self.normalizeSpellOutPhrase(text)
+            let isNumericComponent = Self.subThousandSpellOutLookup[normalized] != nil
+                || normalized == Self.hundredMagnitudeToken
+                || normalized == Self.thousandMagnitudeToken
+            let tag: LexicalRole? = isNumericComponent ? .number : analyzedRole
+            return WordToken(text: text, range: range, tag: tag)
         }
         guard !words.isEmpty else { return line }
 
@@ -260,7 +267,8 @@ public struct ThousandsGroupingNormalizer {
         let matches = candidateRegex.matches(in: line, options: [], range: fullRange)
         guard !matches.isEmpty else { return line }
 
-        let protectedRanges = protectedRanges(in: line, fullRange: fullRange)
+        let protection = protectionAnalyzer.analyze(line)
+        let protectedRanges = protectedRanges(in: line, fullRange: fullRange) + protection.ranges
         let lexicalTokens = lexicalTokens(in: line, range: fullRange)
         let mutable = NSMutableString(string: line)
 
@@ -269,6 +277,11 @@ public struct ThousandsGroupingNormalizer {
             guard !protectedRanges.contains(where: { NSIntersectionRange($0, range).length > 0 }) else { continue }
 
             let digits = nsLine.substring(with: range)
+            // Without semantic protection, only a standalone quantity is safe.
+            // A successful detector with zero ranges still permits ordinary prose.
+            guard protection.isComplete || line.trimmingCharacters(in: .whitespacesAndNewlines) == digits else {
+                continue
+            }
             guard let value = Int(digits) else { continue }
             guard shouldGroup(value: value, range: range, tokens: lexicalTokens) else { continue }
             guard let replacement = groupingFormatter.string(from: NSNumber(value: value)) else { continue }
@@ -395,36 +408,20 @@ public struct ThousandsGroupingNormalizer {
         .compactMap { $0 }
         .flatMap { $0.matches(in: line, options: [], range: fullRange).map(\.range) }
 
-        let detectorRanges = [
-            Self.dateDetector,
-            Self.addressDetector,
-        ]
-        .compactMap { $0 }
-        .flatMap { $0.matches(in: line, options: [], range: fullRange).map(\.range) }
-
-        return regexRanges + detectorRanges
+        return regexRanges
     }
 
     private func lexicalTokens(in line: String, range: NSRange) -> [LexicalToken] {
-        guard let stringRange = Range(range, in: line) else { return [] }
-
-        let tagger = NLTagger(tagSchemes: [.lexicalClass, .lemma])
-        tagger.string = line
-
-        var tokens: [LexicalToken] = []
-        tagger.enumerateTags(
-            in: stringRange,
-            unit: .word,
-            scheme: .lexicalClass,
-            options: [.omitWhitespace, .omitPunctuation]
-        ) { tag, tokenRange in
-            let token = String(line[tokenRange])
-            let nsTokenRange = NSRange(tokenRange, in: line)
-            let lemma = tagger.tag(at: tokenRange.lowerBound, unit: .word, scheme: .lemma).0?.rawValue
-            tokens.append(LexicalToken(text: token, range: nsTokenRange, tag: tag, lemma: lemma))
-            return true
+        TextLinguistics.analyze(line, range: range, features: [.roles, .lemmas]).tokens.compactMap { token in
+            guard let stringRange = Range(token.range, in: line) else { return nil }
+            return LexicalToken(
+                text: String(line[stringRange]),
+                range: token.range,
+                tag: token.role,
+                lemma: token.lemma,
+                inflection: token.inflection
+            )
         }
-        return tokens
     }
 
     private func lexicalContext(
@@ -467,7 +464,7 @@ public struct ThousandsGroupingNormalizer {
         let context = lexicalContext(around: range, in: tokens)
         return context.previous?.tag == .verb
             && context.secondPrevious?.tag == .noun
-            && context.thirdPrevious?.tag == .noun
+            && [.noun, .adjective].contains(context.thirdPrevious?.tag)
             && context.fourthPrevious?.tag == .determiner
     }
 
@@ -479,6 +476,10 @@ public struct ThousandsGroupingNormalizer {
 
         if !Self.plausibleYearRange.contains(value) {
             return true
+        }
+
+        if tokens.allSatisfy({ $0.tag == nil }) {
+            return false
         }
 
         guard let tokenIndex = resolvedTokenIndex(for: range, in: tokens) else {
@@ -564,7 +565,21 @@ public struct ThousandsGroupingNormalizer {
             return false
         }
 
+        let hasPluralCompoundNounFollowing = [.noun, .adjective].contains(nextTag)
+            && secondNext?.tag == .noun
+            && isPluralInflectedNoun(secondNext)
+        if hasPluralCompoundNounFollowing {
+            return false
+        }
+
         if previousTag == .adverb, nextTag == .noun {
+            return false
+        }
+
+        if previousTag == .preposition,
+           secondPreviousTag == .verb,
+           nextTag == .adverb,
+           secondNext?.tag == .adverb {
             return false
         }
 
@@ -611,7 +626,9 @@ public struct ThousandsGroupingNormalizer {
     }
 
     private func isPluralInflectedNoun(_ token: LexicalToken?) -> Bool {
-        guard let token, token.tag == .noun, let lemma = token.lemma else { return false }
+        guard let token, token.tag == .noun else { return false }
+        if token.inflection == .plural { return true }
+        guard token.inflection == .unknown, let lemma = token.lemma else { return false }
         return token.text.compare(lemma, options: [.caseInsensitive, .diacriticInsensitive]) != .orderedSame
     }
 

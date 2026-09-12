@@ -4,7 +4,7 @@ import XCTest
 
 @MainActor
 final class TranscriptionPostProcessorTests: XCTestCase {
-    func testAppliesDictionaryCasingBeforeListFormatting() {
+    func testAppliesDictionaryCasingBeforeListFormatting() async {
         let processor = TranscriptionPostProcessor()
         let entries = [
             DictionaryEntry(phrase: "Cueboard"),
@@ -20,7 +20,7 @@ final class TranscriptionPostProcessorTests: XCTestCase {
         XCTAssertTrue(output.contains("2. Cueboard"))
     }
 
-    func testAppliesInitialAppNameDictionaryEntry() {
+    func testAppliesInitialAppNameDictionaryEntry() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -32,7 +32,7 @@ final class TranscriptionPostProcessorTests: XCTestCase {
         XCTAssertEqual(output, "My app is called KeyVox.")
     }
 
-    func testAppliesInitialBrandNameNearMisses() {
+    func testAppliesInitialBrandNameNearMisses() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -44,7 +44,7 @@ final class TranscriptionPostProcessorTests: XCTestCase {
         XCTAssertEqual(output, "Have you heard of KeyVox? KeyVox works.")
     }
 
-    func testDoesNotApplyInitialBrandNameToFuzzyPluralSplit() {
+    func testDoesNotApplyInitialBrandNameToFuzzyPluralSplit() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -56,7 +56,7 @@ final class TranscriptionPostProcessorTests: XCTestCase {
         XCTAssertEqual(output, "I said key vocals.")
     }
 
-    func testAppliesInitialBrandNameFromSplitPossessive() {
+    func testAppliesInitialBrandNameFromSplitPossessive() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -68,7 +68,7 @@ final class TranscriptionPostProcessorTests: XCTestCase {
         XCTAssertEqual(output, "I use KeyVox's shortcuts.")
     }
 
-    func testAppliesInitialBrandNameBeforeTitlecaseSentenceBoundary() {
+    func testAppliesInitialBrandNameBeforeTitlecaseSentenceBoundary() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -83,7 +83,7 @@ final class TranscriptionPostProcessorTests: XCTestCase {
         )
     }
 
-    func testDoesNotApplySpeakProductNameWithoutDictionaryEntry() {
+    func testDoesNotApplySpeakProductNameWithoutDictionaryEntry() async {
         let processor = TranscriptionPostProcessor()
 
         let kivokOutput = processor.process(
@@ -107,7 +107,7 @@ final class TranscriptionPostProcessorTests: XCTestCase {
         XCTAssertEqual(keyvoxOutput, "I am using Keyvox Speak.")
     }
 
-    func testDoesNotApplyVibesProductNameWithoutDictionaryEntry() {
+    func testDoesNotApplyVibesProductNameWithoutDictionaryEntry() async {
         let processor = TranscriptionPostProcessor()
 
         let kivoxOutput = processor.process(
@@ -125,7 +125,7 @@ final class TranscriptionPostProcessorTests: XCTestCase {
         XCTAssertEqual(keyvoxOutput, "I am using Keyvox Vibes.")
     }
 
-    func testDictionaryEntryCasingRemainsTheCanonicalReplacement() {
+    func testDictionaryEntryCasingRemainsTheCanonicalReplacement() async {
         let processor = TranscriptionPostProcessor()
         let entries = [
             DictionaryInitialEntries.keyVox,
@@ -140,7 +140,7 @@ final class TranscriptionPostProcessorTests: XCTestCase {
         XCTAssertEqual(output, "My app is called KeyVox.")
     }
 
-    func testListFormattingDisabledKeepsProseAndOtherNormalizations() {
+    func testListFormattingDisabledKeepsProseAndOtherNormalizations() async {
         let processor = TranscriptionPostProcessor()
         let entries = [DictionaryEntry(phrase: "Cueboard")]
 
@@ -153,7 +153,7 @@ final class TranscriptionPostProcessorTests: XCTestCase {
 
         XCTAssertEqual(output, "Need to do this one Cueboard two Cueboard haha 4:15 PM.")
     }
-    func testListFormattingEnabledStillFormatsWhenExplicitlyTrue() {
+    func testListFormattingEnabledStillFormatsWhenExplicitlyTrue() async {
         let processor = TranscriptionPostProcessor()
         let entries = [DictionaryEntry(phrase: "Cueboard")]
 
@@ -167,7 +167,7 @@ final class TranscriptionPostProcessorTests: XCTestCase {
         XCTAssertTrue(output.contains("1. Cueboard"))
         XCTAssertTrue(output.contains("2. Cueboard"))
     }
-    func testSingleLineModeCollapsesWhitespace() {
+    func testSingleLineModeCollapsesWhitespace() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -178,7 +178,7 @@ final class TranscriptionPostProcessorTests: XCTestCase {
 
         XCTAssertTrue(output == "Hello world.")
     }
-    func testMultilineModePreservesSingleParagraphBreak() {
+    func testMultilineModePreservesSingleParagraphBreak() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -189,7 +189,7 @@ final class TranscriptionPostProcessorTests: XCTestCase {
 
         XCTAssertEqual(output, "First paragraph.\n\nSecond paragraph.")
     }
-    func testMultilineModeCollapsesExtraBlankLines() {
+    func testMultilineModeCollapsesExtraBlankLines() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -200,7 +200,7 @@ final class TranscriptionPostProcessorTests: XCTestCase {
 
         XCTAssertEqual(output, "First paragraph.\n\nSecond paragraph.\n\nThird paragraph.")
     }
-    func testMultilineModeTrimsLeadingAndTrailingBlankLines() {
+    func testMultilineModeTrimsLeadingAndTrailingBlankLines() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -211,7 +211,7 @@ final class TranscriptionPostProcessorTests: XCTestCase {
 
         XCTAssertEqual(output, "First paragraph.\n\nSecond paragraph.")
     }
-    func testSingleLineModeFlattensParagraphBreaks() {
+    func testSingleLineModeFlattensParagraphBreaks() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -222,12 +222,12 @@ final class TranscriptionPostProcessorTests: XCTestCase {
 
         XCTAssertEqual(output, "First paragraph. Second paragraph.")
     }
-    func testEmptyInputReturnsEmpty() {
+    func testEmptyInputReturnsEmpty() async {
         let processor = TranscriptionPostProcessor()
         let output = processor.process("", dictionaryEntries: [], renderMode: .multiline)
         XCTAssertTrue(output.isEmpty)
     }
-    func testDoesNotFormatQuestionWithStepNumberAsListWhenTwoIsTranscribedAsDigit() {
+    func testDoesNotFormatQuestionWithStepNumberAsListWhenTwoIsTranscribedAsDigit() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -239,7 +239,7 @@ final class TranscriptionPostProcessorTests: XCTestCase {
         XCTAssertEqual(output, "Where did you say 2. pause in step 3. where you talked about it?")
     }
 
-    func testDoesNotFormatShortSpokenVersionDecimalAsList() {
+    func testDoesNotFormatShortSpokenVersionDecimalAsList() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -251,7 +251,7 @@ final class TranscriptionPostProcessorTests: XCTestCase {
         XCTAssertEqual(output, "I'm probably going to release version one point two next week.")
     }
 
-    func testDoesNotFormatCompoundSpokenQuantityAsList() {
+    func testDoesNotFormatCompoundSpokenQuantityAsList() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -263,7 +263,7 @@ final class TranscriptionPostProcessorTests: XCTestCase {
         XCTAssertEqual(output, "Essentially I'm able to pull one month every thirty two hours.")
     }
 
-    func testDoesNotFormatMultiTokenSpokenQuantityAsList() {
+    func testDoesNotFormatMultiTokenSpokenQuantityAsList() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -275,7 +275,7 @@ final class TranscriptionPostProcessorTests: XCTestCase {
         XCTAssertEqual(output, "Essentially I'm able to pull one hundred two hours.")
     }
 
-    func testStillFormatsRealListsWhenUsingInOneInTwoPattern() {
+    func testStillFormatsRealListsWhenUsingInOneInTwoPattern() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -288,7 +288,7 @@ final class TranscriptionPostProcessorTests: XCTestCase {
         XCTAssertTrue(output.contains("2. Second item"))
     }
 
-    func testDoesNotFormatQuantifiedChoiceSentenceAsList() {
+    func testDoesNotFormatQuantifiedChoiceSentenceAsList() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -300,7 +300,7 @@ final class TranscriptionPostProcessorTests: XCTestCase {
         XCTAssertEqual(output, "It's only one of those two choices and you're not allowed to have it.")
     }
 
-    func testSplitsShortNominalListItemFromTrailingCommentary() {
+    func testSplitsShortNominalListItemFromTrailingCommentary() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(

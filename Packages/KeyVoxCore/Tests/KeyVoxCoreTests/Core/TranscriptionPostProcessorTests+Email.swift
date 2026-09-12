@@ -4,7 +4,7 @@ import XCTest
 
 @MainActor
 extension TranscriptionPostProcessorTests {
-    func testNormalizesSpokenEmailAddressToLowercaseLiteral() {
+    func testNormalizesSpokenEmailAddressToLowercaseLiteral() async {
         let processor = TranscriptionPostProcessor()
         let entries = [DictionaryEntry(phrase: "kathy@example.com")]
 
@@ -16,7 +16,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "kathy@example.com")
     }
-    func testNormalizesSpokenEmailAndRespectsDictionaryMatch() {
+    func testNormalizesSpokenEmailAndRespectsDictionaryMatch() async {
         let processor = TranscriptionPostProcessor()
         let entries = [DictionaryEntry(phrase: "dom@example.com")]
 
@@ -28,7 +28,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "dom@example.com")
     }
-    func testNormalizesStandaloneUrlLikeUtteranceToDictionaryEmail() {
+    func testNormalizesStandaloneUrlLikeUtteranceToDictionaryEmail() async {
         let processor = TranscriptionPostProcessor()
         let entries = [DictionaryEntry(phrase: "dom.esposito@example.net")]
 
@@ -40,7 +40,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "dom.esposito@example.net")
     }
-    func testStripsTerminalPunctuationForStandaloneLiteralEmailUtterance() {
+    func testStripsTerminalPunctuationForStandaloneLiteralEmailUtterance() async {
         let processor = TranscriptionPostProcessor()
         let entries = [DictionaryEntry(phrase: "dom@example.com")]
 
@@ -52,7 +52,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "dom@example.com")
     }
-    func testStripsTerminalPunctuationForStandaloneWebsiteUtterance() {
+    func testStripsTerminalPunctuationForStandaloneWebsiteUtterance() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -63,7 +63,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "www.example.com")
     }
-    func testNormalizesSpokenEmailInsideSentence() {
+    func testNormalizesSpokenEmailInsideSentence() async {
         let processor = TranscriptionPostProcessor()
         let entries = [DictionaryEntry(phrase: "kathy@example.com")]
 
@@ -75,7 +75,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "Yeah, my name is Dom Esposito and my email address is kathy@example.com.")
     }
-    func testNormalizesCompactSpokenEmailAndAppliesDictionaryLikelyMatch() {
+    func testNormalizesCompactSpokenEmailAndAppliesDictionaryLikelyMatch() async {
         let processor = TranscriptionPostProcessor()
         let entries = [DictionaryEntry(phrase: "anthony@example.com")]
 
@@ -87,7 +87,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "Yeah, my name is Dom Esposito and my email address is anthony@example.com.")
     }
-    func testNormalizesSpokenEmailInsideSentenceWithMixedCasingDomain() {
+    func testNormalizesSpokenEmailInsideSentenceWithMixedCasingDomain() async {
         let processor = TranscriptionPostProcessor()
         let entries = [DictionaryEntry(phrase: "dom@example.com")]
 
@@ -99,7 +99,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "Yeah, my name is Dom Esposito and my email address is dom@example.com.")
     }
-    func testNormalizesSpokenEmailWhenDomainUsesWordDot() {
+    func testNormalizesSpokenEmailWhenDomainUsesWordDot() async {
         let processor = TranscriptionPostProcessor()
         let entries = [DictionaryEntry(phrase: "person@example.com")]
 
@@ -111,7 +111,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "Please email person@example.com.")
     }
-    func testNormalizesMultipleEmailAddressesInSingleSentence() {
+    func testNormalizesMultipleEmailAddressesInSingleSentence() async {
         let processor = TranscriptionPostProcessor()
         let entries = [
             DictionaryEntry(phrase: "dom@example.com"),
@@ -126,7 +126,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "You can reach me at dom@example.com or kathy@example.com, either of those are fine.")
     }
-    func testNormalizesTwoSpokenEmailAddressesInSingleSentence() {
+    func testNormalizesTwoSpokenEmailAddressesInSingleSentence() async {
         let processor = TranscriptionPostProcessor()
         let entries = [
             DictionaryEntry(phrase: "dom@example.com"),
@@ -141,7 +141,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "You can reach me at dom@example.com or kathy@example.com, either of those are fine.")
     }
-    func testPreservesLiteralEmailWithDotLocalPartWithoutInjectedSpace() {
+    func testPreservesLiteralEmailWithDotLocalPartWithoutInjectedSpace() async {
         let processor = TranscriptionPostProcessor()
         let email = "dom.esposito@example.com"
         let entries = [DictionaryEntry(phrase: email)]
@@ -154,7 +154,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "My email is \(email).")
     }
-    func testNormalizesSpokenEmailAddressesInsideNumberedList() {
+    func testNormalizesSpokenEmailAddressesInsideNumberedList() async {
         let processor = TranscriptionPostProcessor()
         let entries = [
             DictionaryEntry(phrase: "dom@example.com"),
@@ -182,7 +182,7 @@ extension TranscriptionPostProcessorTests {
             """
         )
     }
-    func testNormalizesSpokenEmailAddressesInsideNumberedListWithTrailingParagraph() {
+    func testNormalizesSpokenEmailAddressesInsideNumberedListWithTrailingParagraph() async {
         let processor = TranscriptionPostProcessor()
         let entries = [
             DictionaryEntry(phrase: "dom@example.com"),
@@ -215,7 +215,7 @@ extension TranscriptionPostProcessorTests {
         )
     }
     
-    func testNormalizesSpokenEmailAddressesInsideNumberedListWithTrailingParagraphUserPhrase() {
+    func testNormalizesSpokenEmailAddressesInsideNumberedListWithTrailingParagraphUserPhrase() async {
         let processor = TranscriptionPostProcessor()
         let entries = [
             DictionaryEntry(phrase: "dom@example.com"),
@@ -247,7 +247,7 @@ extension TranscriptionPostProcessorTests {
             """
         )
     }
-    func testNormalizesSpokenEmailsWhenNumberedMarkersHaveNoPostMarkerSpace() {
+    func testNormalizesSpokenEmailsWhenNumberedMarkersHaveNoPostMarkerSpace() async {
         let processor = TranscriptionPostProcessor()
         let entries = [
             DictionaryEntry(phrase: "dom@example.com"),
@@ -279,7 +279,7 @@ extension TranscriptionPostProcessorTests {
             """
         )
     }
-    func testNormalizesSpokenEmailAddressesInsideNumberedListWithCommaTrailingSentence() {
+    func testNormalizesSpokenEmailAddressesInsideNumberedListWithCommaTrailingSentence() async {
         let processor = TranscriptionPostProcessor()
         let entries = [
             DictionaryEntry(phrase: "dom@example.com"),
@@ -311,7 +311,7 @@ extension TranscriptionPostProcessorTests {
             """
         )
     }
-    func testNormalizesSpokenEmailAddressesWithOhYeahLeadInAndTrailingSentence() {
+    func testNormalizesSpokenEmailAddressesWithOhYeahLeadInAndTrailingSentence() async {
         let processor = TranscriptionPostProcessor()
         let entries = [
             DictionaryEntry(phrase: "dom@example.com"),
@@ -336,7 +336,7 @@ extension TranscriptionPostProcessorTests {
             """
         )
     }
-    func testFormatsLongEmailListWhenSecondMarkerUsesToHomophone() {
+    func testFormatsLongEmailListWhenSecondMarkerUsesToHomophone() async {
         let processor = TranscriptionPostProcessor()
         let entries = [
             DictionaryEntry(phrase: "dom@example.net"),
@@ -361,7 +361,7 @@ extension TranscriptionPostProcessorTests {
             """
         )
     }
-    func testNormalizesCompactEmailWithNearMatchDomainInsideNumberedList() {
+    func testNormalizesCompactEmailWithNearMatchDomainInsideNumberedList() async {
         let processor = TranscriptionPostProcessor()
         let entries = [
             DictionaryEntry(phrase: "dom@example.net"),
@@ -397,7 +397,7 @@ extension TranscriptionPostProcessorTests {
             """
         )
     }
-    func testSplitsTrailingSentenceAfterLiteralEmailListItemWithoutPunctuation() {
+    func testSplitsTrailingSentenceAfterLiteralEmailListItemWithoutPunctuation() async {
         let processor = TranscriptionPostProcessor()
         let entries = [
             DictionaryEntry(phrase: "dom@example.com"),
@@ -427,7 +427,7 @@ extension TranscriptionPostProcessorTests {
             """
         )
     }
-    func testSplitsTrailingSentenceAfterLiteralEmailListItemWithCommaContinuation() {
+    func testSplitsTrailingSentenceAfterLiteralEmailListItemWithCommaContinuation() async {
         let processor = TranscriptionPostProcessor()
         let entries = [
             DictionaryEntry(phrase: "dom@example.com"),
@@ -460,7 +460,7 @@ extension TranscriptionPostProcessorTests {
             """
         )
     }
-    func testEmailListTrailingSplitWithDictionaryNoiseDeterministic() {
+    func testEmailListTrailingSplitWithDictionaryNoiseDeterministic() async {
         let processor = TranscriptionPostProcessor()
         let firstEmail = "dom@example.com"
         let secondEmail = "kathy@example.com"
@@ -497,7 +497,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, expected)
     }
-    func testAddsSpacingAndCapitalizationAfterCollapsedEmailSentenceBoundary() {
+    func testAddsSpacingAndCapitalizationAfterCollapsedEmailSentenceBoundary() async {
         let processor = TranscriptionPostProcessor()
         let entries = [DictionaryEntry(phrase: "kathy@example.com")]
 
@@ -509,7 +509,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "Oh yeah, its kathy@example.com. You can email me there.")
     }
-    func testDoesNotAttachLeadingWordsToEmailAndFixesFollowingSentenceBoundary() {
+    func testDoesNotAttachLeadingWordsToEmailAndFixesFollowingSentenceBoundary() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -520,7 +520,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "Oh yeah, itsuh... dom@example.com. That's my email address.")
     }
-    func testSeparatesCollapsedPrefixFromKnownDictionaryEmail() {
+    func testSeparatesCollapsedPrefixFromKnownDictionaryEmail() async {
         let processor = TranscriptionPostProcessor()
         let entries = [DictionaryEntry(phrase: "kathy@example.com")]
 
@@ -532,7 +532,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "Oh yeah, myemailaddressis kathy@example.com. You can email me there.")
     }
-    func testCapitalizesLowercaseTextStartAndAfterBlankLineInEmailSentence() {
+    func testCapitalizesLowercaseTextStartAndAfterBlankLineInEmailSentence() async {
         let processor = TranscriptionPostProcessor()
         let entries = [DictionaryEntry(phrase: "zackmorbi@rider.com")]
 
@@ -547,7 +547,7 @@ extension TranscriptionPostProcessorTests {
             "Please contact me at zackmorbi@rider.com, please.\n\nContact me at zackmorbi@rider.com, please."
         )
     }
-    func testDoesNotCapitalizeLowercaseEmailAtLineStart() {
+    func testDoesNotCapitalizeLowercaseEmailAtLineStart() async {
         let processor = TranscriptionPostProcessor()
         let entries = [DictionaryEntry(phrase: "dom@example.com")]
 
@@ -559,7 +559,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "Reach me here:\ndom@example.com")
     }
-    func testDoesNotCapitalizeLowercaseWebsiteAtLineStart() {
+    func testDoesNotCapitalizeLowercaseWebsiteAtLineStart() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -570,7 +570,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "Use this site:\nwww.example.com")
     }
-    func testPreservesSecondLevelCountryCodeEmailLiteralWithoutSentenceSplit() {
+    func testPreservesSecondLevelCountryCodeEmailLiteralWithoutSentenceSplit() async {
         let processor = TranscriptionPostProcessor()
         let entries = [DictionaryEntry(phrase: "dom@example.co.uk")]
 
@@ -583,7 +583,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "dom@example.co.uk")
     }
 
-    func testNormalizesWebsiteDomainCasingWithDictionaryBrandEntriesKeyVoxAndCueboard() {
+    func testNormalizesWebsiteDomainCasingWithDictionaryBrandEntriesKeyVoxAndCueboard() async {
         let processor = TranscriptionPostProcessor()
         let entries = [
             DictionaryEntry(phrase: "KeyVox"),
@@ -602,7 +602,7 @@ extension TranscriptionPostProcessorTests {
         )
     }
 
-    func testFormatsAttachedNumericDomainMarkersAsList() {
+    func testFormatsAttachedNumericDomainMarkersAsList() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -620,7 +620,7 @@ extension TranscriptionPostProcessorTests {
         )
     }
 
-    func testLowercasesDomainItemsInExplicitNumberedList() {
+    func testLowercasesDomainItemsInExplicitNumberedList() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -643,7 +643,7 @@ extension TranscriptionPostProcessorTests {
         )
     }
 
-    func testFormatsAttachedWebsiteMarkersUsingToHomophoneAndSpokenThree() {
+    func testFormatsAttachedWebsiteMarkersUsingToHomophoneAndSpokenThree() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(

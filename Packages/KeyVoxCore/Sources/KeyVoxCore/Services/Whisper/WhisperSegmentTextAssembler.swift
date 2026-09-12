@@ -1,11 +1,16 @@
 import Foundation
-import NaturalLanguage
+import KeyVoxLinguistics
 
 struct WhisperSegmentTextAssembler: Sendable {
     private let pronunciationLookup: PronunciationLookup
+    private let linguisticAnalyzer: any LinguisticAnalyzing
 
-    init(pronunciationLookup: PronunciationLookup) {
+    init(
+        pronunciationLookup: PronunciationLookup,
+        linguisticAnalyzer: any LinguisticAnalyzing = TextLinguistics.provider
+    ) {
         self.pronunciationLookup = pronunciationLookup
+        self.linguisticAnalyzer = linguisticAnalyzer
     }
 
     func assemble(
@@ -48,23 +53,18 @@ struct WhisperSegmentTextAssembler: Sendable {
     ) -> String {
         let combinedText = "\(precedingText) \(segmentText)"
         let segmentStart = combinedText.index(combinedText.endIndex, offsetBy: -segmentText.count)
-        let tagger = NLTagger(tagSchemes: [.nameType])
-        tagger.string = combinedText
+        let analysis = linguisticAnalyzer.analyze(
+            combinedText,
+            range: NSRange(segmentStart..<combinedText.endIndex, in: combinedText),
+            languageCode: nil,
+            features: [.names],
+            grouping: .words
+        )
+        guard let candidate = analysis.tokens.first,
+              candidate.identity == .ordinaryWord,
+              let candidateRange = Range(candidate.range, in: combinedText) else { return segmentText }
 
-        var candidate: (range: Range<String.Index>, tag: NLTag?)?
-        tagger.enumerateTags(
-            in: segmentStart..<combinedText.endIndex,
-            unit: .word,
-            scheme: .nameType,
-            options: [.omitWhitespace, .omitPunctuation]
-        ) { tag, range in
-            candidate = (range, tag)
-            return false
-        }
-
-        guard let candidate, candidate.tag == .otherWord else { return segmentText }
-
-        let token = String(combinedText[candidate.range])
+        let token = String(combinedText[candidateRange])
         guard token.count > 1,
               token.first?.isUppercase == true,
               token.dropFirst().allSatisfy({ !$0.isLetter || $0.isLowercase }) else {
@@ -76,8 +76,8 @@ struct WhisperSegmentTextAssembler: Sendable {
             return segmentText
         }
 
-        let lowerOffset = combinedText.distance(from: segmentStart, to: candidate.range.lowerBound)
-        let upperOffset = combinedText.distance(from: segmentStart, to: candidate.range.upperBound)
+        let lowerOffset = combinedText.distance(from: segmentStart, to: candidateRange.lowerBound)
+        let upperOffset = combinedText.distance(from: segmentStart, to: candidateRange.upperBound)
         let localLowerBound = segmentText.index(segmentText.startIndex, offsetBy: lowerOffset)
         let localUpperBound = segmentText.index(segmentText.startIndex, offsetBy: upperOffset)
 

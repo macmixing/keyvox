@@ -1,0 +1,36 @@
+{
+  "configuration": "Swift 6.3.3; aarch64-unknown-linux-android28; debug harness with static Swift standard library",
+  "binary_sha256": "0a8a3cb85cdd11562343cef35b9bad8b128dca601d6471617cd91939713dd770",
+  "map_sha256": "47612dc71da58fb3d6535bb01957ae4ac32d1accb06a1087165278c7f6bf7e39",
+  "linked_object_paths_by_target": {
+    "CCryptoBoringSSL": 366,
+    "CCryptoBoringSSLShims": 1,
+    "CryptoBoringWrapper": 9,
+    "CXKCP": 4,
+    "CXKCPShims": 1,
+    "Crypto": 96,
+    "SwiftASN1": 0
+  },
+  "dynamic_dependencies": [
+    "libm.so",
+    "libdl.so",
+    "liblog.so",
+    "libc++_shared.so",
+    "libz.so",
+    "libparakeet.so",
+    "libc.so"
+  ],
+  "sdk_tls_archives_present": [
+    "libcrypto.a",
+    "libssl.a"
+  ],
+  "crypto_sha256_symbols": [
+    "CCryptoBoringSSL_SHA256",
+    "CCryptoBoringSSL_SHA256_Final",
+    "CCryptoBoringSSL_SHA256_Init",
+    "CCryptoBoringSSL_SHA256_Transform",
+    "CCryptoBoringSSL_SHA256_TransformBlocks",
+    "CCryptoBoringSSL_SHA256_Update"
+  ],
+  "scope": "Measured combined diagnostic harness; counts identify unique input object paths in LLD map, not retained release code size. Crypto native SHA256 symbols are prefixed independently of existing SDK TLS archives. SwiftASN1 absent from this link map. Existing SDK/NDK and Parakeet distribution notices still apply."
+}

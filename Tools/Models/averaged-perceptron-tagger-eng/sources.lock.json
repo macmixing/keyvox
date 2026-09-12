@@ -1,0 +1,35 @@
+{
+  "license": "MIT",
+  "archive_url": "https://raw.githubusercontent.com/nltk/nltk_data/329f92961f6b73027e4b5c975554df7094b2b29e/packages/taggers/averaged_perceptron_tagger_eng.zip",
+  "archive_sha256": "6025f530624335c67d6547d44757b357b4e79bae030a0383e9887a92c1718f0b",
+  "license_metadata_url": "https://raw.githubusercontent.com/nltk/nltk_data/329f92961f6b73027e4b5c975554df7094b2b29e/packages/taggers/averaged_perceptron_tagger_eng.xml",
+  "license_url": "https://raw.githubusercontent.com/sloria/textblob-aptagger/1a7539cc27ce7e38bddfeb4f91086051dc59e8b2/LICENSE",
+  "files": [
+    {
+      "path": "averaged_perceptron_tagger_eng.weights.json",
+      "sha256": "789e8e35f6fac656d9b7eccea29ba4e8a137cbb5b525dd31f39e4291a9e80832",
+      "size": 5677744
+    },
+    {
+      "path": "averaged_perceptron_tagger_eng.classes.json",
+      "sha256": "d152ffa69d45b8357276341a3d592c6c025911d52ec0d9068d4f382560dd48b6",
+      "size": 285
+    },
+    {
+      "path": "averaged_perceptron_tagger_eng.tagdict.json",
+      "sha256": "4c713731cb06727736962bc8cd94ad919217a040e76691059af99bc0c2c9c246",
+      "size": 25788
+    },
+    {
+      "path": "LICENSE.txt",
+      "sha256": "784e293a0fe04840da43704af3c9d8b117f11945613c7e798bfad705adcf1e2e",
+      "size": 1055
+    },
+    {
+      "path": "upstream-license-metadata.xml",
+      "sha256": "9a847e79421639109d6408c8ea8d14658ba2724094e702418ff458ff9af32bbb",
+      "size": 250
+    }
+  ],
+  "provenance": "Published NLTK JSON averaged-perceptron weights and unambiguous-tag map, unchanged from upstream. Original model publication describes WSJ training. No training corpus, Python runtime, or training code incorporated."
+}

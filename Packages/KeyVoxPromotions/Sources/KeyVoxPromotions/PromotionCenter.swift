@@ -1,9 +1,9 @@
-import Combine
+import KeyVoxState
 import Foundation
 
 @MainActor
-public final class PromotionCenter: ObservableObject {
-    @Published public private(set) var currentCampaign: PromotionCampaign?
+public final class PromotionCenter: StatePublishing {
+    @StateValue public private(set) var currentCampaign: PromotionCampaign?
 
     private let repository: PromotionManifestRepository
     private let stateStore: PromotionStateStore

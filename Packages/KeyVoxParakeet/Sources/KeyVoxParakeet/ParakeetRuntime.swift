@@ -1,11 +1,5 @@
 import Foundation
 
-internal protocol ParakeetRuntimeBackend: AnyObject {
-    func transcribe(audioFrames: [Float], params: ParakeetParams) async throws -> ParakeetTranscriptionResult
-    func cancelCurrentTranscription()
-    func unload()
-}
-
 internal final class ParakeetRuntime {
     typealias BackendFactory = (URL) throws -> (any ParakeetRuntimeBackend)?
 
@@ -110,6 +104,10 @@ internal final class ParakeetRuntime {
             return nil
         }
 
+        #if canImport(CoreML)
         return try ParakeetCoreMLBackend(modelDirectoryURL: modelURL)
+        #else
+        throw ParakeetError.runtimeUnavailable
+        #endif
     }
 }

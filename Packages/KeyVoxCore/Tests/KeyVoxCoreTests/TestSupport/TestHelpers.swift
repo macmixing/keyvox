@@ -48,7 +48,7 @@ final class FakeLexicon: PronunciationLexiconProviding {
     }
 }
 
-final class FailingDirectoryFileManager: FileManager {
+final class FailingDirectoryFileManager: FileManager, @unchecked Sendable {
     var shouldFailCreateDirectory = false
 
     override func createDirectory(

@@ -4,7 +4,7 @@ import XCTest
 
 @MainActor
 extension TranscriptionPostProcessorTests {
-    func testNormalizesBasicSpokenAddition() {
+    func testNormalizesBasicSpokenAddition() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -16,7 +16,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "12 + 8")
     }
 
-    func testNormalizesFullySpelledOutAdditionEquation() {
+    func testNormalizesFullySpelledOutAdditionEquation() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -28,7 +28,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "2 + 2 = 4")
     }
 
-    func testNormalizesSpelledOutEqualsOperandAfterBinaryNormalization() {
+    func testNormalizesSpelledOutEqualsOperandAfterBinaryNormalization() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -40,7 +40,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "2 + 2 = 4")
     }
 
-    func testNormalizesFullySpelledOutMultiwordMathEquation() {
+    func testNormalizesFullySpelledOutMultiwordMathEquation() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -52,7 +52,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "42 - 7 = 35")
     }
 
-    func testNormalizesFullySpelledOutMultiplicationEquationWithCompoundResult() {
+    func testNormalizesFullySpelledOutMultiplicationEquationWithCompoundResult() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -64,7 +64,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "9 * 5 = 45")
     }
 
-    func testNormalizesPercentEqualsAndExponentPhrases() {
+    func testNormalizesPercentEqualsAndExponentPhrases() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -76,7 +76,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "3^2 = 9 and 50%")
     }
 
-    func testNormalizesCubedToExponent() {
+    func testNormalizesCubedToExponent() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -88,7 +88,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "4^3")
     }
 
-    func testNormalizesToThePowerOfPhrase() {
+    func testNormalizesToThePowerOfPhrase() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -100,7 +100,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "2^5")
     }
 
-    func testNormalizesToTheOrdinalPowerPhrase() {
+    func testNormalizesToTheOrdinalPowerPhrase() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -112,7 +112,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "7^4")
     }
 
-    func testNormalizesRaisedToPhrase() {
+    func testNormalizesRaisedToPhrase() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -124,7 +124,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "9^3")
     }
 
-    func testNormalizesRaisedToOrdinalPhrase() {
+    func testNormalizesRaisedToOrdinalPhrase() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -136,7 +136,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "9^3")
     }
 
-    func testNormalizesCompoundOrdinalPowerPhrase() {
+    func testNormalizesCompoundOrdinalPowerPhrase() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -148,7 +148,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "2^21")
     }
 
-    func testNormalizesXMultiplicationThenPlusForStandaloneMath() {
+    func testNormalizesXMultiplicationThenPlusForStandaloneMath() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -160,7 +160,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "2 * 2 + 6")
     }
 
-    func testNormalizesXMultiplicationThenDivisionForStandaloneMath() {
+    func testNormalizesXMultiplicationThenDivisionForStandaloneMath() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -172,7 +172,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "4 * 5 / 2")
     }
 
-    func testNormalizesCombinedOperatorPhrasesInSingleUtterance() {
+    func testNormalizesCombinedOperatorPhrasesInSingleUtterance() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -184,7 +184,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "2 * 2 + 6 / 3")
     }
 
-    func testPreservesCompactHyphenatedNumericSequences() {
+    func testPreservesCompactHyphenatedNumericSequences() async {
         let processor = TranscriptionPostProcessor()
 
         XCTAssertEqual(
@@ -215,7 +215,7 @@ extension TranscriptionPostProcessorTests {
         )
     }
 
-    func testPreservesTerminalPunctuationForSentenceContainingCombinedMathPhrase() {
+    func testPreservesTerminalPunctuationForSentenceContainingCombinedMathPhrase() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -227,7 +227,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "Please compute 2 * 2 + 6.")
     }
 
-    func testNormalizesSubtractWordingInStandaloneMath() {
+    func testNormalizesSubtractWordingInStandaloneMath() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -239,7 +239,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "10 - 3")
     }
 
-    func testNormalizesSubtractedByWordingInStandaloneMath() {
+    func testNormalizesSubtractedByWordingInStandaloneMath() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -251,7 +251,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "10 - 3")
     }
 
-    func testNormalizesSymbolicDivisionFollowedByMultipliedByPhrase() {
+    func testNormalizesSymbolicDivisionFollowedByMultipliedByPhrase() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -263,7 +263,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "50 / 2 * 6")
     }
 
-    func testNormalizesMathInsideParagraphsWithoutChangingStructure() {
+    func testNormalizesMathInsideParagraphsWithoutChangingStructure() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -288,7 +288,7 @@ extension TranscriptionPostProcessorTests {
         )
     }
 
-    func testNormalizesMathInsideNumberedListsWithoutBreakingMarkers() {
+    func testNormalizesMathInsideNumberedListsWithoutBreakingMarkers() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -311,7 +311,7 @@ extension TranscriptionPostProcessorTests {
         )
     }
 
-    func testSkipsUrlAndEmailTokensWhileStillNormalizingMathInSentence() {
+    func testSkipsUrlAndEmailTokensWhileStillNormalizingMathInSentence() async {
         let processor = TranscriptionPostProcessor()
         let entries = [DictionaryEntry(phrase: "dom@example.com")]
 
@@ -325,7 +325,7 @@ extension TranscriptionPostProcessorTests {
     }
 
 
-    func testSkipsTimeDateAndVersionShapes() {
+    func testSkipsTimeDateAndVersionShapes() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -337,7 +337,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "Meet at 4:15 PM on 2026-02-19 and version 1.2.3 while we do 12 + 8.")
     }
 
-    func testTreatsHyphenAsSubtractionOnlyBetweenNumbers() {
+    func testTreatsHyphenAsSubtractionOnlyBetweenNumbers() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -349,7 +349,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "Date 2026-02-19 but 12 - 8 is subtraction.")
     }
 
-    func testPreservesCompactHyphenatedPhoneNumber() {
+    func testPreservesCompactHyphenatedPhoneNumber() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -361,7 +361,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "Call me at 480-555-5555.")
     }
 
-    func testPreservesLocalHyphenatedPhoneNumber() {
+    func testPreservesLocalHyphenatedPhoneNumber() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -373,7 +373,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "555-1234")
     }
 
-    func testPreservesCompactHyphenatedDateWithShortLeadingSegment() {
+    func testPreservesCompactHyphenatedDateWithShortLeadingSegment() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -385,7 +385,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "2-15-2026")
     }
 
-    func testMathNormalizationIsIdempotentAcrossPipeline() {
+    func testMathNormalizationIsIdempotentAcrossPipeline() async {
         let processor = TranscriptionPostProcessor()
         let first = processor.process(
             "12 plus 8 and 3 squared equals 9 and 50 percent",
@@ -401,7 +401,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(first, second)
     }
 
-    func testStripsTerminalPunctuationForStandaloneMathUtterance() {
+    func testStripsTerminalPunctuationForStandaloneMathUtterance() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -413,7 +413,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "12 + 8")
     }
 
-    func testPreservesTerminalPunctuationWhenMathIsInSentence() {
+    func testPreservesTerminalPunctuationWhenMathIsInSentence() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -425,7 +425,7 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "Please compute 12 + 8.")
     }
 
-    func testStripsQuestionMarkForStandaloneMathUtterance() {
+    func testStripsQuestionMarkForStandaloneMathUtterance() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(

@@ -16,9 +16,11 @@ let package = Package(
     ],
     targets: [
         .target(name: "KeyVoxTextComposition"),
+        .target(name: "CompositionVerification", dependencies: ["KeyVoxTextComposition"], path: "Verification"),
+        .executableTarget(name: "CompositionProbe", dependencies: ["CompositionVerification"], path: "Probe"),
         .testTarget(
             name: "KeyVoxTextCompositionTests",
-            dependencies: ["KeyVoxTextComposition"]
+            dependencies: ["KeyVoxTextComposition", "CompositionVerification"]
         ),
     ]
 )

@@ -1,0 +1,3 @@
+<input-method xmlns:android="http://schemas.android.com/apk/res/android"
+    android:settingsActivity="org.keyvox.android.app.KeyVoxActivity"
+    android:supportsSwitchingToNextInputMethod="true" />

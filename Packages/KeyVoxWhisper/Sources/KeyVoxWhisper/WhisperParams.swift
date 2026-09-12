@@ -12,7 +12,17 @@ public final class WhisperParams {
         WhisperParams(strategy: .greedy)
     }
 
-    var whisperParams: whisper_full_params
+    private let storageLock = NSLock()
+    private var storedParams: whisper_full_params
+
+    var whisperParams: whisper_full_params {
+        get { storageLock.withLock { storedParams } }
+        set { storageLock.withLock { storedParams = newValue } }
+    }
+
+    func snapshot() -> WhisperParamsSnapshot {
+        storageLock.withLock { WhisperParamsSnapshot(raw: storedParams) }
+    }
     private var languageCString: UnsafeMutablePointer<CChar>?
     private var initialPromptCString: UnsafeMutablePointer<CChar>?
 
@@ -21,7 +31,7 @@ public final class WhisperParams {
             ? WHISPER_SAMPLING_GREEDY
             : WHISPER_SAMPLING_BEAM_SEARCH
 
-        self.whisperParams = whisper_full_default_params(cStrategy)
+        self.storedParams = whisper_full_default_params(cStrategy)
         self.language = .auto
     }
 
@@ -35,13 +45,15 @@ public final class WhisperParams {
     }
 
     public subscript<T>(dynamicMember keyPath: WritableKeyPath<whisper_full_params, T>) -> T {
-        get { whisperParams[keyPath: keyPath] }
-        set { whisperParams[keyPath: keyPath] = newValue }
+        get { storageLock.withLock { storedParams[keyPath: keyPath] } }
+        set { storageLock.withLock { storedParams[keyPath: keyPath] = newValue } }
     }
 
     public var language: WhisperLanguage {
         get {
-            guard let cLanguage = whisperParams.language else {
+            storageLock.lock()
+            defer { storageLock.unlock() }
+            guard let cLanguage = storedParams.language else {
                 return .auto
             }
 
@@ -49,46 +61,47 @@ public final class WhisperParams {
             return WhisperLanguage(rawValue: raw) ?? .auto
         }
         set {
+            storageLock.lock()
+            defer { storageLock.unlock() }
+            guard let duplicated = strdup(newValue.rawValue) else { return }
             if let languageCString {
                 free(languageCString)
             }
 
-            guard let duplicated = strdup(newValue.rawValue) else { return }
             languageCString = duplicated
-            whisperParams.language = UnsafePointer(duplicated)
+            storedParams.language = UnsafePointer(duplicated)
         }
     }
 
     public var initialPrompt: String {
         get {
-            guard let cPrompt = whisperParams.initial_prompt else {
-                return ""
-            }
+            storageLock.lock()
+            defer { storageLock.unlock() }
+            guard let cPrompt = storedParams.initial_prompt else { return "" }
             return String(cString: cPrompt)
         }
         set {
+            storageLock.lock()
+            defer { storageLock.unlock() }
+            let cleaned = newValue.trimmingCharacters(in: .whitespacesAndNewlines)
+            let duplicated: UnsafeMutablePointer<CChar>?
+            if cleaned.isEmpty {
+                duplicated = nil
+            } else {
+                guard let copy = strdup(cleaned) else { return }
+                duplicated = copy
+            }
             if let initialPromptCString {
                 free(initialPromptCString)
-                self.initialPromptCString = nil
             }
-
-            let cleaned = newValue
-                .trimmingCharacters(in: .whitespacesAndNewlines)
-
-            guard !cleaned.isEmpty else {
-                whisperParams.initial_prompt = nil
-                return
-            }
-
-            guard let duplicated = strdup(cleaned) else { return }
             initialPromptCString = duplicated
-            whisperParams.initial_prompt = UnsafePointer(duplicated)
+            storedParams.initial_prompt = duplicated.map { UnsafePointer($0) }
         }
     }
 
     // Backward-compatible alias for older whisper.cpp headers.
     public var suppress_non_speech_tokens: Bool {
-        get { whisperParams.suppress_nst }
-        set { whisperParams.suppress_nst = newValue }
+        get { storageLock.withLock { storedParams.suppress_nst } }
+        set { storageLock.withLock { storedParams.suppress_nst = newValue } }
     }
 }

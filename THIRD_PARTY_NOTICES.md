@@ -3,14 +3,70 @@
 This project is primarily licensed under MIT for source code (see [our license](https://github.com/macmixing/keyvox/blob/main/LICENSE.md)).
 Third-party components, data, and fonts remain under their original licenses.
 
+### Optional perceptron linguistic inference
+
+- The Swift inference feature schema adapts the specifically MIT-licensed
+  `nltk/tag/perceptron.py` from NLTK 3.9.1, attributed to Matthew Honnibal and
+  the NLTK Project. Full terms are in
+  `Packages/KeyVoxLinguistics/THIRD_PARTY_NOTICES.md` and the package resource
+  `PERCEPTRON-LICENSE.txt`; retain that notice with distributed binaries.
+- Optional model JSON assets in `Tools/Models/averaged-perceptron-tagger-eng`
+  are MIT-licensed. That directory retains the full license, immutable upstream
+  license declaration, and artifact hashes. Retain its license when distributing
+  the model. These assets are not embedded in shared Swift packages.
+
+### Princeton WordNet 3.0 lexical indexes
+
+- Source: <https://wordnet.princeton.edu/>
+- License: WordNet 3.0 License
+- Bundled subset: unchanged noun, verb, adjective, and adverb index files retained
+  in `Tools/Models/wordnet-3.0` for portable lexical-role resolution.
+
+WordNet Release 3.0
+
+This software and database is being provided to you, the LICENSEE, by Princeton
+University under the following license. By obtaining, using and/or copying this
+software and database, you agree that you have read, understood, and will comply
+with these terms and conditions.:
+
+Permission to use, copy, modify and distribute this software and database and its
+documentation for any purpose and without fee or royalty is hereby granted,
+provided that you agree to comply with the following copyright notice and
+statements, including the disclaimer, and that the same appear on ALL copies of
+the software, database and documentation, including modifications that you make
+for internal use or for distribution.
+
+WordNet 3.0 Copyright 2006 by Princeton University. All rights reserved.
+
+THIS SOFTWARE AND DATABASE IS PROVIDED "AS IS" AND PRINCETON UNIVERSITY MAKES NO
+REPRESENTATIONS OR WARRANTIES, EXPRESS OR IMPLIED. BY WAY OF EXAMPLE, BUT NOT
+LIMITATION, PRINCETON UNIVERSITY MAKES NO REPRESENTATIONS OR WARRANTIES OF
+MERCHANTABILITY OR FITNESS FOR ANY PARTICULAR PURPOSE OR THAT THE USE OF THE
+LICENSED SOFTWARE, DATABASE OR DOCUMENTATION WILL NOT INFRINGE ANY THIRD PARTY
+PATENTS, COPYRIGHTS, TRADEMARKS OR OTHER RIGHTS.
+
+The name of Princeton University or Princeton may not be used in advertising or
+publicity pertaining to distribution of the software and/or database. Title to
+copyright in this software, database and any associated documentation shall at
+all times remain with Princeton University and LICENSEE agrees to preserve same.
+
 ## Runtime Components
 
-### whisper.cpp (binary XCFramework)
+### whisper.cpp / GGML (Apple XCFramework and portable CPU libraries)
 - Upstream: <https://github.com/ggml-org/whisper.cpp>
 - License: MIT
 - Note: bundled through `Packages/KeyVoxWhisper`
+- Portable source version: v1.7.6, archive SHA-256 `166140e9a6d8a36f787a2bd77f8f44dd64874f12dd8359ff7c1f4f9acb86202e`.
+- Bundled CPU code also includes Mozilla Foundation's MIT-licensed llamafile matrix multiplication, MIT-licensed attention code by Jeffrey Quesnelle and Bowen Peng, and adapted Arm optimized routines (MIT OR Apache-2.0 WITH LLVM-exception). Full notices are in `Tools/Licenses/Whisper-CPU-NOTICES.txt` and installed alongside the portable libraries.
+- Arm provenance: the exponential routine's constants and reduction sequence match [this pinned upstream source](https://android.googlesource.com/platform/external/arm-optimized-routines/+/0a6ab6d1f600a2fba6509440f455300a606024e6/math/aarch64/advsimd/v_expf_inline.h). This identifies the routine family, not the exact historical import commit. The full upstream Arm license is retained.
 
 Copyright (c) The ggml authors
+
+### Android C++ runtime
+- Source: the Android NDK selected by `ANDROID_NDK_ROOT`; the verified device build used NDK `30.0.16138531`.
+- Redistributed runtime: `libc++_shared.so`, with LLVM libc++/libc++abi support; Apache-2.0 WITH LLVM-exception and retained legacy permissive notices.
+- The portable build installs the selected NDK's complete `NOTICE` and `NOTICE.toolchain` under `share/licenses/keyvox-speech`. Keep these with distributed native binaries; these aggregate notices also describe build tools that are not shipped in KeyVox.
+- KeyVox's original source remains MIT. Third-party license texts and attribution obligations remain applicable to their respective components.
 
 ### OpenAI Whisper (code + model weights)
 - Upstream: <https://github.com/openai/whisper>
@@ -18,6 +74,26 @@ Copyright (c) The ggml authors
 - Note: model artifacts are downloaded by the app at runtime
 
 Copyright (c) 2022 OpenAI
+
+The Android verification model's immutable identity and full MIT notice are
+recorded in `Tools/Licenses/runtime-models.lock.json` and
+`Tools/Licenses/WHISPER-MODEL-LICENSE.txt`. This experiment does not bundle that
+downloaded Whisper model.
+
+### Bundled Silero VAD model
+- Upstream: <https://github.com/snakers4/silero-vad>
+- License: MIT, Copyright (c) 2020-present Silero Team.
+- The exact published GGML v5.1.2 conversion is pinned in `Tools/Licenses/runtime-models.lock.json`.
+- The complete notice ships beside the model as `Packages/KeyVoxVoiceActivity/Sources/KeyVoxVoiceActivity/Resources/SILERO-LICENSE.txt`.
+
+### Swift Android runtime
+
+Full runtime and incorporated-data notices, the installed SDK SBOM, and verified
+archive identities are retained in `Tools/Licenses/Swift-Android`. Its README
+distinguishes the observed executable's linked components from the wider SDK,
+records required cryptography acknowledgments where applicable, and explains
+the limits of available source-build provenance. Include those notices with
+redistributed Android binaries in addition to native and model notices.
 
 ### NVIDIA Parakeet TDT v3 (downloaded model artifacts)
 - Upstream model: <https://huggingface.co/nvidia/parakeet-tdt-0.6b-v3>
@@ -229,6 +305,16 @@ such warranty or additional liability.
 END OF TERMS AND CONDITIONS
 
 ## Package-Owned Data Notices
+
+### mime-db file-extension registry
+
+- Upstream: <https://github.com/jshttp/mime-db>
+- Adopted version: 1.54.0, commit `5207a32f76e77ed2f63421641449f8addeacb0a5`.
+- License: MIT, copyright 2014 Jonathan Ong and 2015–2022 Douglas Christopher Wilson.
+- Use: non-Apple recognition of known filename extensions in text processing. Only the JSON data is bundled; no JavaScript runtime or npm dependencies are used.
+- Source families: IANA registry factual data (CC0), Apache's public-domain `mime.types` mapping, and nginx mapping data (BSD-2-Clause). The release does not identify the exact upstream snapshot revisions.
+- Full MIT and nginx notices, the unchanged JSON and checksummed provenance are bundled in `Packages/KeyVoxCore/Sources/KeyVoxCore/Resources/FileTypes`.
+- Source terms: [IANA](https://www.iana.org/help/licensing-terms), [Apache mapping header](https://raw.githubusercontent.com/apache/httpd/trunk/docs/conf/mime.types), [nginx](https://nginx.org/LICENSE).
 
 Pronunciation-data notices for `KeyVoxCore` are bundled with the package resources:
 

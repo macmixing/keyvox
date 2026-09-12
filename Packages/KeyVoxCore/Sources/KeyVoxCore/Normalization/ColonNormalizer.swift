@@ -1,3 +1,4 @@
+import KeyVoxLinguistics
 import Foundation
 
 public struct ColonNormalizer {
@@ -276,27 +277,12 @@ public struct ColonNormalizer {
         return true
     }
 
-    private func lexicalTags(in text: String) -> [NSLinguisticTag] {
+    private func lexicalTags(in text: String) -> [LexicalRole] {
         let nsText = text as NSString
-        let fullRange = NSRange(location: 0, length: nsText.length)
-        let tagger = NSLinguisticTagger(tagSchemes: [.lexicalClass], options: 0)
-        tagger.string = text
-
-        var tags: [NSLinguisticTag] = []
-        tagger.enumerateTags(
-            in: fullRange,
-            unit: .word,
-            scheme: .lexicalClass,
-            options: [.omitWhitespace, .omitPunctuation, .joinNames]
-        ) { tag, tokenRange, _ in
-            let token = nsText.substring(with: tokenRange)
-            guard token.rangeOfCharacter(from: .letters) != nil else { return }
-            if let tag {
-                tags.append(tag)
-            }
+        return TextLinguistics.analyze(text, grouping: .namedPhrases).tokens.compactMap { token in
+            guard nsText.substring(with: token.range).rangeOfCharacter(from: .letters) != nil else { return nil }
+            return token.role
         }
-
-        return tags
     }
 
     private func wordCount(in text: String) -> Int {

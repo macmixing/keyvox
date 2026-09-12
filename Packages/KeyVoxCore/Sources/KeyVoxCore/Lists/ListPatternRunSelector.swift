@@ -1,5 +1,5 @@
 import Foundation
-import NaturalLanguage
+import KeyVoxLinguistics
 
 public struct ListPatternDetection {
     public let run: [ListPatternMarker]
@@ -153,35 +153,15 @@ public struct ListPatternRunSelector {
         }
 
         let nsText = text as NSString
-        let tagger = NSLinguisticTagger(tagSchemes: [.lexicalClass], options: 0)
-        tagger.string = text
-
         var inspectedTokenCount = 0
-        var sawContentToken = false
-        let fullRange = NSRange(location: 0, length: nsText.length)
-
-        tagger.enumerateTags(
-            in: fullRange,
-            unit: .word,
-            scheme: .lexicalClass,
-            options: [.omitWhitespace, .omitPunctuation, .joinNames]
-        ) { tag, tokenRange, stop in
-            let token = nsText.substring(with: tokenRange)
-            guard token.rangeOfCharacter(from: .letters) != nil else { return }
-
+        for token in TextLinguistics.analyze(text, grouping: .namedPhrases).tokens {
+            let word = nsText.substring(with: token.range)
+            guard word.rangeOfCharacter(from: .letters) != nil else { continue }
             inspectedTokenCount += 1
-            if lexicalClassCountsAsContent(tag) {
-                sawContentToken = true
-                stop.pointee = true
-                return
-            }
-
-            if inspectedTokenCount >= CadenceGuard.ambiguousOpeningTokenCheckLimit {
-                stop.pointee = true
-            }
+            if lexicalClassCountsAsContent(token.role) { return true }
+            if inspectedTokenCount >= CadenceGuard.ambiguousOpeningTokenCheckLimit { break }
         }
-
-        return sawContentToken
+        return false
     }
 
     private func hasCredibleAmbiguousTwoItemPhraseShape(_ text: String) -> Bool {
@@ -190,23 +170,9 @@ public struct ListPatternRunSelector {
         }
 
         let nsText = text as NSString
-        let tagger = NSLinguisticTagger(tagSchemes: [.lexicalClass], options: 0)
-        tagger.string = text
-
-        var lexicalTags: [NSLinguisticTag] = []
-        let fullRange = NSRange(location: 0, length: nsText.length)
-
-        tagger.enumerateTags(
-            in: fullRange,
-            unit: .word,
-            scheme: .lexicalClass,
-            options: [.omitWhitespace, .omitPunctuation, .joinNames]
-        ) { tag, tokenRange, _ in
-            let token = nsText.substring(with: tokenRange)
-            guard token.rangeOfCharacter(from: .letters) != nil else { return }
-            if let tag {
-                lexicalTags.append(tag)
-            }
+        let lexicalTags = TextLinguistics.analyze(text, grouping: .namedPhrases).tokens.compactMap { token -> LexicalRole? in
+            guard nsText.substring(with: token.range).rangeOfCharacter(from: .letters) != nil else { return nil }
+            return token.role
         }
 
         guard lexicalTags.count > 1 else { return true }
@@ -241,7 +207,7 @@ public struct ListPatternRunSelector {
         return text.range(of: sentenceBoundaryPattern, options: [.regularExpression, .caseInsensitive]) != nil
     }
 
-    private func lexicalClassCountsAsContent(_ tag: NSLinguisticTag?) -> Bool {
+    private func lexicalClassCountsAsContent(_ tag: LexicalRole?) -> Bool {
         switch tag {
         case .noun, .verb, .adjective, .adverb, .otherWord, .classifier, .idiom:
             return true
@@ -344,15 +310,7 @@ public struct ListPatternRunSelector {
         let tokenMatches = tokenRegex?.matches(in: gapText, options: [], range: fullRange) ?? []
         guard tokenMatches.count >= 3 else { return false }
 
-        let tagger = NLTagger(tagSchemes: [.lexicalClass, .language])
-        tagger.string = gapText
-        if let languageCode {
-            let normalizedLanguageCode = languageCode.replacingOccurrences(of: "_", with: "-")
-            if !normalizedLanguageCode.isEmpty,
-               let fullStringRange = Range(fullRange, in: gapText) {
-                tagger.setLanguage(NLLanguage(rawValue: normalizedLanguageCode), range: fullStringRange)
-            }
-        }
+        let analysis = TextLinguistics.analyze(gapText, languageCode: languageCode)
 
         struct VersionGapToken {
             let text: String
@@ -363,12 +321,12 @@ public struct ListPatternRunSelector {
         let tokens: [VersionGapToken] = tokenMatches.compactMap { match -> VersionGapToken? in
             let tokenRange = match.range
             guard tokenRange.location != NSNotFound else { return nil }
-            guard let stringRange = Range(tokenRange, in: gapText) else { return nil }
+            guard Range(tokenRange, in: gapText) != nil else { return nil }
             let tokenText = (gapText as NSString).substring(with: tokenRange)
-            let lexicalTag = tagger.tag(at: stringRange.lowerBound, unit: .word, scheme: .lexicalClass).0
+            let lexicalTag = analysis.token(atUTF16Offset: tokenRange.location)?.role
             let isNumeric =
                 lexicalTag == .number ||
-                lexicalTag?.rawValue == "Ordinal" ||
+                lexicalTag == .ordinal ||
                 Int(tokenText) != nil ||
                 ListPatternMarkerParser.parseLocalizedNumberValue(tokenText, languageCode: languageCode) != nil
             let isConnectorSymbol = tokenText == "." || tokenText == "·"

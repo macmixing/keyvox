@@ -17,7 +17,9 @@
 		8E4B08672FD0000400C5DB85 /* TranscriptionManager+RecordingSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E4B08662FD0000400C5DB85 /* TranscriptionManager+RecordingSession.swift */; };
 		8E4B08692FD0000500C5DB85 /* TranscriptionManager+OverlayAndDebug.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E4B08682FD0000500C5DB85 /* TranscriptionManager+OverlayAndDebug.swift */; };
 		8E4CE8532F6CE8FD009C7CE8 /* KeyVoxCore in Frameworks */ = {isa = PBXBuildFile; productRef = A10000012FD1000100AA0001 /* KeyVoxCore */; };
+		3869970148AF8C3D00000003 /* KeyVoxModels in Frameworks */ = {isa = PBXBuildFile; productRef = 3869970148AF8C3D00000002 /* KeyVoxModels */; };
 		8E4CE8542F6CE8FD009C7CE8 /* KeyVoxCore in Frameworks */ = {isa = PBXBuildFile; productRef = A10000022FD1000100AA0001 /* KeyVoxCore */; };
+		3869970148AF8C3D00000004 /* KeyVoxModels in Frameworks */ = {isa = PBXBuildFile; productRef = 3869970148AF8C3D00000002 /* KeyVoxModels */; };
 		8E57FB8A2F3C9B6100935A26 /* UserDefaultsKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E57FB892F3C9B6100935A26 /* UserDefaultsKeys.swift */; };
 		8E57FB9C2F3E444B00935A26 /* SettingsView+Home.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E57FB972F3E444B00935A26 /* SettingsView+Home.swift */; };
 		8E57FB9D2F3E444B00935A26 /* SettingsComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E57FB952F3E444B00935A26 /* SettingsComponents.swift */; };
@@ -174,6 +176,9 @@
 		E90000052FE1000100AA0001 /* MacTriggerTapClassifierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90000152FE1000100AA0001 /* MacTriggerTapClassifierTests.swift */; };
 		E90000062FE1000100AA0001 /* KeyVoxStyleRewrite in Frameworks */ = {isa = PBXBuildFile; productRef = E90000212FE1000100AA0001 /* KeyVoxStyleRewrite */; };
 		E90000072FE1000100AA0001 /* KeyVoxStyleRewrite in Frameworks */ = {isa = PBXBuildFile; productRef = E90000222FE1000100AA0001 /* KeyVoxStyleRewrite */; };
+		D22000032FF6000100AA0001 /* KeyVoxLinguistics in Frameworks */ = {isa = PBXBuildFile; productRef = D22000072FF6000100AA0001 /* KeyVoxLinguistics */; };
+		D23000012FF7000100AA0001 /* KeyVoxWhisper in Frameworks */ = {isa = PBXBuildFile; productRef = D23000042FF7000100AA0001 /* KeyVoxWhisper */; };
+		D23000022FF7000100AA0001 /* KeyVoxVoiceActivity in Frameworks */ = {isa = PBXBuildFile; productRef = D23000052FF7000100AA0001 /* KeyVoxVoiceActivity */; };
 		E90000082FE1000100AA0001 /* SelectedVibeLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90000162FE1000100AA0001 /* SelectedVibeLabel.swift */; };
 		E90000092FE1000100AA0001 /* MacVibesTriggerActionController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90000172FE1000100AA0001 /* MacVibesTriggerActionController.swift */; };
 		E900000A2FE1000100AA0001 /* SettingsVibesCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90000182FE1000100AA0001 /* SettingsVibesCard.swift */; };
@@ -498,9 +503,13 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D22000032FF6000100AA0001 /* KeyVoxLinguistics in Frameworks */,
+				D23000012FF7000100AA0001 /* KeyVoxWhisper in Frameworks */,
+				D23000022FF7000100AA0001 /* KeyVoxVoiceActivity in Frameworks */,
 				F41010012FF3000100AA0001 /* KeyVoxPromotions in Frameworks */,
 				B4C100012FF1000100AA0001 /* KeyVoxTextComposition in Frameworks */,
 				8E4CE8532F6CE8FD009C7CE8 /* KeyVoxCore in Frameworks */,
+				3869970148AF8C3D00000003 /* KeyVoxModels in Frameworks */,
 				E90000062FE1000100AA0001 /* KeyVoxStyleRewrite in Frameworks */,
 				E910000B2FE2000100AA0001 /* KeyVoxLocalInference in Frameworks */,
 				E910000D2FE2000100AA0001 /* KeyVoxVibesAdapters in Frameworks */,
@@ -512,6 +521,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				8E4CE8542F6CE8FD009C7CE8 /* KeyVoxCore in Frameworks */,
+				3869970148AF8C3D00000004 /* KeyVoxModels in Frameworks */,
 				E90000072FE1000100AA0001 /* KeyVoxStyleRewrite in Frameworks */,
 				E910000C2FE2000100AA0001 /* KeyVoxLocalInference in Frameworks */,
 				E910000E2FE2000100AA0001 /* KeyVoxVibesAdapters in Frameworks */,
@@ -1056,6 +1066,10 @@
 			);
 			name = KeyVox;
 			packageProductDependencies = (
+				3869970148AF8C3D00000002 /* KeyVoxModels */,
+				D22000072FF6000100AA0001 /* KeyVoxLinguistics */,
+				D23000042FF7000100AA0001 /* KeyVoxWhisper */,
+				D23000052FF7000100AA0001 /* KeyVoxVoiceActivity */,
 				F41010032FF3000100AA0001 /* KeyVoxPromotions */,
 				B4C100022FF1000100AA0001 /* KeyVoxTextComposition */,
 				A10000012FD1000100AA0001 /* KeyVoxCore */,
@@ -1082,6 +1096,7 @@
 			);
 			name = KeyVoxTests;
 			packageProductDependencies = (
+				3869970148AF8C3D00000002 /* KeyVoxModels */,
 				A10000022FD1000100AA0001 /* KeyVoxCore */,
 				E90000222FE1000100AA0001 /* KeyVoxStyleRewrite */,
 				E91000222FE2000100AA0001 /* KeyVoxLocalInference */,
@@ -1120,6 +1135,9 @@
 			);
 			mainGroup = 8EE004512F3BA59900BBAB30;
 			packageReferences = (
+				3869970148AF8C3D00000001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxModels" */,
+				D22000062FF6000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxLinguistics" */,
+				D23000032FF7000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxVoiceActivity" */,
 				F41010022FF3000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxPromotions" */,
 				B4C100032FF1000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxTextComposition" */,
 				8E9540072F6AA8AA00B1F3B5 /* XCLocalSwiftPackageReference "../Packages/KeyVoxWhisper" */,
@@ -1722,6 +1740,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
+		D22000062FF6000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxLinguistics" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../Packages/KeyVoxLinguistics;
+		};
+		D23000032FF7000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxVoiceActivity" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../Packages/KeyVoxVoiceActivity;
+		};
 		8E0D0A3A2F79D7F10097A0A3 /* XCLocalSwiftPackageReference "../Packages/KeyVoxParakeet" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = ../Packages/KeyVoxParakeet;
@@ -1754,9 +1780,28 @@
 			isa = XCLocalSwiftPackageReference;
 			relativePath = ../Packages/KeyVoxPromotions;
 		};
+		3869970148AF8C3D00000001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxModels" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../Packages/KeyVoxModels;
+		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		D22000072FF6000100AA0001 /* KeyVoxLinguistics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D22000062FF6000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxLinguistics" */;
+			productName = KeyVoxLinguistics;
+		};
+		D23000042FF7000100AA0001 /* KeyVoxWhisper */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8E9540072F6AA8AA00B1F3B5 /* XCLocalSwiftPackageReference "../Packages/KeyVoxWhisper" */;
+			productName = KeyVoxWhisper;
+		};
+		D23000052FF7000100AA0001 /* KeyVoxVoiceActivity */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D23000032FF7000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxVoiceActivity" */;
+			productName = KeyVoxVoiceActivity;
+		};
 		A10000012FD1000100AA0001 /* KeyVoxCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = KeyVoxCore;
@@ -1802,6 +1847,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = F41010022FF3000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxPromotions" */;
 			productName = KeyVoxPromotions;
+		};
+		3869970148AF8C3D00000002 /* KeyVoxModels */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3869970148AF8C3D00000001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxModels" */;
+			productName = KeyVoxModels;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

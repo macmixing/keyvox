@@ -1,0 +1,41 @@
+{
+  "silero": {
+    "path": "Packages/KeyVoxVoiceActivity/Sources/KeyVoxVoiceActivity/Resources/ggml-silero-v5.1.2.bin",
+    "sha256": "29940d98d42b91fbd05ce489f3ecf7c72f0a42f027e4875919a28fb4c04ea2cf",
+    "size": 885098,
+    "artifact_url": "https://huggingface.co/ggml-org/whisper-vad/resolve/e5614ed76a5dd4b03fad5068c89efcd2617a9d1e/ggml-silero-v5.1.2.bin",
+    "license": "MIT",
+    "license_path": "Packages/KeyVoxVoiceActivity/Sources/KeyVoxVoiceActivity/Resources/SILERO-LICENSE.txt",
+    "license_sha256": "2e63e9a38b6e8fc0c7bc37ce174caca1862870856c6daf5697cfb785e925520b",
+    "license_source": "https://raw.githubusercontent.com/snakers4/silero-vad/6478567951ae5c9979ad7b234185b5515f4be7a1/LICENSE",
+    "conversion": "Published GGML conversion for whisper.cpp; exact historical conversion invocation is not independently reproduced.",
+    "license_declaration": "https://huggingface.co/ggml-org/whisper-vad/raw/e5614ed76a5dd4b03fad5068c89efcd2617a9d1e/README.md"
+  },
+  "whisper_verification_model": {
+    "filename": "ggml-tiny.en.bin",
+    "bundled": false,
+    "sha256": "921e4cf8686fdd993dcd081a5da5b6c365bfde1162e72b08d75ac75289920b1f",
+    "size": 77704715,
+    "artifact_url": "https://huggingface.co/ggerganov/whisper.cpp/resolve/5359861c739e955e79d9a303bcbc70fb988958b1/ggml-tiny.en.bin",
+    "license": "MIT",
+    "license_path": "Tools/Licenses/WHISPER-MODEL-LICENSE.txt",
+    "license_sha256": "b5d65a59060e68c4ff940e1eddfa6f94b2d68fdf58ed7f4dd57721c997e35e9d",
+    "license_source": "https://raw.githubusercontent.com/openai/whisper/31243bad24cc746f07d4c8bfdd2d974872cb1803/LICENSE",
+    "conversion": "Published GGML conversion of OpenAI Whisper weights; published model repository declares MIT. Exact historical conversion invocation is not independently reproduced.",
+    "license_declaration": "https://huggingface.co/ggerganov/whisper.cpp/raw/5359861c739e955e79d9a303bcbc70fb988958b1/README.md"
+  },
+  "whisper_ios_baseline_model": {
+    "filename": "ggml-base.bin",
+    "bundled": false,
+    "sha256": "60ed5bc3dd14eea856493d334349b405782ddcaf0028d4b5df4088345fba2efe",
+    "size": 147951465,
+    "artifact_url": "https://huggingface.co/ggerganov/whisper.cpp/resolve/90a64d80ea254cf67575b41a5971f972c79f7b45/ggml-base.bin",
+    "license": "MIT",
+    "license_path": "Tools/Licenses/WHISPER-MODEL-LICENSE.txt",
+    "license_sha256": "b5d65a59060e68c4ff940e1eddfa6f94b2d68fdf58ed7f4dd57721c997e35e9d",
+    "license_source": "https://raw.githubusercontent.com/openai/whisper/31243bad24cc746f07d4c8bfdd2d974872cb1803/LICENSE",
+    "conversion": "Published GGML conversion of OpenAI Whisper weights; published model repository declares MIT. Exact historical conversion invocation is not independently reproduced.",
+    "license_declaration": "https://huggingface.co/ggerganov/whisper.cpp/raw/90a64d80ea254cf67575b41a5971f972c79f7b45/README.md",
+    "product_source_of_truth": "Packages/KeyVoxModels/Sources/KeyVoxModels/WhisperBaseModelArtifact.swift; extracted unchanged from the existing iOS catalog and consumed by Apple app catalogs. This lock is a provenance record, not a separate product catalog."
+  }
+}

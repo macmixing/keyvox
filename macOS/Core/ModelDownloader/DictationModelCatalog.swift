@@ -1,4 +1,6 @@
+import KeyVoxModels
 import Foundation
+import KeyVoxCore
 
 enum DictationModelID: String, CaseIterable, Identifiable, Sendable {
     case whisperBase = "whisper-base"
@@ -37,7 +39,6 @@ struct DictationModelInstallState: Equatable {
 
 enum DictationModelCatalog {
     static let manifestFilename = "install-manifest.json"
-    private static let whisperRevision = "90a64d80ea254cf67575b41a5971f972c79f7b45"
     private static let parakeetRevision = "aed02740059203c4a87495924f685de3722ae9ce"
 
     static func descriptor(for modelID: DictationModelID) -> DictationModelDescriptor {
@@ -49,14 +50,14 @@ enum DictationModelCatalog {
                 installLayout: .legacyWhisperBase,
                 artifacts: [
                     DictationModelArtifact(
-                        relativePath: "ggml-base.bin",
-                        remoteURL: URL(string: "https://huggingface.co/ggerganov/whisper.cpp/resolve/\(whisperRevision)/ggml-base.bin")!,
+                        relativePath: WhisperBaseModelArtifact.filename,
+                        remoteURL: WhisperBaseModelArtifact.downloadURL,
                         expectedSHA256: "",
                         progressTotalBytes: 140_000_000
                     ),
                     DictationModelArtifact(
                         relativePath: "ggml-base-encoder.mlmodelc.zip",
-                        remoteURL: URL(string: "https://huggingface.co/ggerganov/whisper.cpp/resolve/\(whisperRevision)/ggml-base-encoder.mlmodelc.zip")!,
+                        remoteURL: URL(string: "https://huggingface.co/ggerganov/whisper.cpp/resolve/\(WhisperBaseModelArtifact.revision)/ggml-base-encoder.mlmodelc.zip")!,
                         expectedSHA256: "",
                         progressTotalBytes: 50_000_000
                     )

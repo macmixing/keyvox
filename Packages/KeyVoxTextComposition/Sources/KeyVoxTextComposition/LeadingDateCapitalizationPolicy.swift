@@ -1,10 +1,6 @@
 import Foundation
 
 enum LeadingDateCapitalizationPolicy {
-    private static let detector = try? NSDataDetector(
-        types: NSTextCheckingResult.CheckingType.date.rawValue
-    )
-
     static func shouldPreserveCapitalization(
         in text: String,
         startingAt capitalizationIndex: String.Index,
@@ -19,13 +15,9 @@ enum LeadingDateCapitalizationPolicy {
         }
         guard calendarSymbols.months.contains(leadingWord) == false else { return true }
 
-        let nsText = text as NSString
-        let fullRange = NSRange(location: 0, length: nsText.length)
-        let expectedLocation = NSRange(
-            capitalizationIndex..<capitalizationIndex,
-            in: text
-        ).location
-        if detector?.firstMatch(in: text, range: fullRange)?.range.location == expectedLocation {
+        if CalendarDatePrefixDetector.startsWithDate(
+            text, at: capitalizationIndex, locale: locale
+        ) {
             return true
         }
 

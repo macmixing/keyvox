@@ -5,7 +5,7 @@ import KeyVoxVoiceActivity
 
 @MainActor
 final class ParakeetServiceTests: XCTestCase {
-    func testStaleRequestCannotOverwriteCurrentTranscriptionState() {
+    func testStaleRequestCannotOverwriteCurrentTranscriptionState() async {
         let service = ParakeetService()
         let staleRequestID = service.beginTranscriptionRequest()
         let currentRequestID = service.beginTranscriptionRequest()
@@ -38,13 +38,13 @@ final class ParakeetServiceTests: XCTestCase {
         XCTAssertEqual(service.transcriptionText, "current")
     }
 
-    func testIsModelReadyIsFalseWhenResolverReturnsNil() {
+    func testIsModelReadyIsFalseWhenResolverReturnsNil() async {
         let service = ParakeetService()
 
         XCTAssertFalse(service.isModelReady)
     }
 
-    func testTranscribeReturnsEmptyResultForEmptyFrames() {
+    func testTranscribeReturnsEmptyResultForEmptyFrames() async {
         let service = ParakeetService()
         let expectation = expectation(description: "empty frames complete")
 
@@ -58,7 +58,7 @@ final class ParakeetServiceTests: XCTestCase {
             expectation.fulfill()
         }
 
-        wait(for: [expectation], timeout: 1.0)
+        await fulfillment(of: [expectation], timeout: 1.0)
     }
 
     func testTranscribeRejectsSilentFramesBeforeLoadingParakeet() async throws {
@@ -88,7 +88,7 @@ final class ParakeetServiceTests: XCTestCase {
         XCTAssertFalse(loaderWasCalled)
     }
 
-    func testWarmupLoadsParakeetOffMainThread() throws {
+    func testWarmupLoadsParakeetOffMainThread() async throws {
         let modelURL = try makeModelDirectory()
         let expectation = expectation(description: "warmup loader invoked")
         let service = ParakeetService(
@@ -102,10 +102,10 @@ final class ParakeetServiceTests: XCTestCase {
 
         service.warmup()
 
-        wait(for: [expectation], timeout: 1.0)
+        await fulfillment(of: [expectation], timeout: 1.0)
     }
 
-    func testTranscribeRejectsVeryShortNonSpeechBeforeRuntimeBackend() throws {
+    func testTranscribeRejectsVeryShortNonSpeechBeforeRuntimeBackend() async throws {
         let modelURL = try makeModelFile()
         let service = ParakeetService(modelURLResolver: { modelURL })
         let expectation = expectation(description: "very short non-speech completes")
@@ -120,10 +120,10 @@ final class ParakeetServiceTests: XCTestCase {
             expectation.fulfill()
         }
 
-        wait(for: [expectation], timeout: 1.0)
+        await fulfillment(of: [expectation], timeout: 1.0)
     }
 
-    func testIsLikelyNoSpeechRejectsShortLowConfidenceParakeetOutput() {
+    func testIsLikelyNoSpeechRejectsShortLowConfidenceParakeetOutput() async {
         let service = ParakeetService()
         let segments = [
             ParakeetSegment(
@@ -143,7 +143,7 @@ final class ParakeetServiceTests: XCTestCase {
         )
     }
 
-    func testIsLikelyNoSpeechKeepsHigherConfidenceShortSpeech() {
+    func testIsLikelyNoSpeechKeepsHigherConfidenceShortSpeech() async {
         let service = ParakeetService()
         let segments = [
             ParakeetSegment(
@@ -163,7 +163,7 @@ final class ParakeetServiceTests: XCTestCase {
         )
     }
 
-    func testIsLikelyNoSpeechRejectsShortLowConfidenceSegmentWhenCaptureIncludesPadding() {
+    func testIsLikelyNoSpeechRejectsShortLowConfidenceSegmentWhenCaptureIncludesPadding() async {
         let service = ParakeetService()
         let segments = [
             ParakeetSegment(
@@ -183,7 +183,7 @@ final class ParakeetServiceTests: XCTestCase {
         )
     }
 
-    func testIsLikelyNoSpeechKeepsShortLowConfidenceMultiwordSegment() {
+    func testIsLikelyNoSpeechKeepsShortLowConfidenceMultiwordSegment() async {
         let service = ParakeetService()
         let segments = [
             ParakeetSegment(
@@ -203,7 +203,7 @@ final class ParakeetServiceTests: XCTestCase {
         )
     }
 
-    func testIsLikelyNoSpeechKeepsSingleWordSpeechAboveFallbackThreshold() {
+    func testIsLikelyNoSpeechKeepsSingleWordSpeechAboveFallbackThreshold() async {
         let service = ParakeetService()
         let segments = [
             ParakeetSegment(
@@ -223,7 +223,7 @@ final class ParakeetServiceTests: XCTestCase {
         )
     }
 
-    func testIsLikelyNoSpeechRejectsShortSingleWordNearThreshold() {
+    func testIsLikelyNoSpeechRejectsShortSingleWordNearThreshold() async {
         let service = ParakeetService()
         let segments = [
             ParakeetSegment(
@@ -243,7 +243,7 @@ final class ParakeetServiceTests: XCTestCase {
         )
     }
 
-    func testIsLikelyNoSpeechRejectsLowConfidenceSingleWordLeak() {
+    func testIsLikelyNoSpeechRejectsLowConfidenceSingleWordLeak() async {
         let service = ParakeetService()
         let segments = [
             ParakeetSegment(
@@ -263,7 +263,7 @@ final class ParakeetServiceTests: XCTestCase {
         )
     }
 
-    func testTrailingLikelyNoSpeechSegmentIsDroppedAfterValidSpeech() {
+    func testTrailingLikelyNoSpeechSegmentIsDroppedAfterValidSpeech() async {
         let validSegment = ParakeetSegment(
             startTime: 0,
             endTime: 16_000,

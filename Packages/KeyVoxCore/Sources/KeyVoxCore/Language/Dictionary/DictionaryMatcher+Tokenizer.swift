@@ -1,12 +1,11 @@
 import Foundation
-import NaturalLanguage
+import KeyVoxLinguistics
 
 extension DictionaryMatcher {
     func tokenize(_ text: String) -> [Token] {
         let nsText = text as NSString
         let fullRange = NSRange(location: 0, length: nsText.length)
-        let tagger = NLTagger(tagSchemes: [.lexicalClass])
-        tagger.string = text
+        let analysis = TextLinguistics.analyze(text)
 
         guard let regex = try? NSRegularExpression(pattern: "\\b[\\p{L}\\p{N}']+\\b") else {
             return []
@@ -18,14 +17,14 @@ extension DictionaryMatcher {
                 let raw = nsText.substring(with: match.range)
                 let normalized = DictionaryTextNormalization.normalizedToken(raw)
                 guard !normalized.isEmpty else { return nil }
-                guard let range = Range(match.range, in: text) else { return nil }
+                guard Range(match.range, in: text) != nil else { return nil }
 
                 return Token(
                     raw: raw,
                     normalized: normalized,
                     range: match.range,
                     phonetic: encoder.scoringSignature(for: normalized, lexicon: lexicon),
-                    lexicalClass: tagger.tag(at: range.lowerBound, unit: .word, scheme: .lexicalClass).0
+                    lexicalClass: analysis.token(atUTF16Offset: match.range.location)?.role
                 )
             }
     }

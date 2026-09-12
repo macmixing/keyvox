@@ -17,11 +17,8 @@ private struct WhisperContextHandle: @unchecked Sendable {
     let raw: OpaquePointer
 }
 
-private struct WhisperParamsHandle: @unchecked Sendable {
-    let raw: whisper_full_params
-}
-
 struct WhisperRuntime {
+    var configureEncoder: (OpaquePointer, WhisperEncoderConfiguration) -> Bool = WhisperEncoderConfiguration.configure
     var contextDefaultParams: () -> whisper_context_params
     var initFromFileWithParams: (_ path: UnsafePointer<CChar>, _ params: whisper_context_params) -> OpaquePointer?
     var freeContext: (_ context: OpaquePointer) -> Void
@@ -37,6 +34,7 @@ struct WhisperRuntime {
     var fullGetSegmentT1: (_ context: OpaquePointer, _ index: Int32) -> Int64
     var fullGetSegmentNoSpeechProb: (_ context: OpaquePointer, _ index: Int32) -> Float
     var fullLangId: (_ context: OpaquePointer) -> Int32
+    var fixedModelLanguageId: (_ context: OpaquePointer) -> Int32?
     var langStr: (_ id: Int32) -> UnsafePointer<CChar>?
     var langStrFull: (_ id: Int32) -> UnsafePointer<CChar>?
 
@@ -69,6 +67,7 @@ struct WhisperRuntime {
         fullLangId: { context in
             whisper_full_lang_id(context)
         },
+        fixedModelLanguageId: WhisperModelLanguage.fixedLanguageID,
         langStr: { id in
             whisper_lang_str(id)
         },
@@ -79,40 +78,72 @@ struct WhisperRuntime {
 }
 
 public final class Whisper {
+    private final class InferenceLifetime: @unchecked Sendable {
+        let owner: Whisper
+
+        init(owner: Whisper) {
+            self.owner = owner
+        }
+    }
+
     private static let minimumInferenceFrameCount = 16_800
     private static let venturaMajorVersion = 13
 
     private let runtime: WhisperRuntime
     private let inferenceQueue: DispatchQueue
     private let whisperContext: OpaquePointer?
-    public var params: WhisperParams
+    private let paramsLock = NSLock()
+    private var storedParams: WhisperParams
+    /// Whether the optional encoder attached successfully during initialization.
+    /// A subsequent runtime failure can fall back to native encoding.
+    public let isExternalEncoderConfigured: Bool
+    public var params: WhisperParams {
+        get { paramsLock.withLock { storedParams } }
+        set { paramsLock.withLock { storedParams = newValue } }
+    }
 
-    public init(fromFileURL fileURL: URL, withParams params: WhisperParams = .default) {
+    public init(fromFileURL fileURL: URL, withParams params: WhisperParams = .default,
+                computePolicy: WhisperComputePolicy = .automatic,
+                encoderConfiguration: WhisperEncoderConfiguration? = nil) {
         self.runtime = .live
-        self.inferenceQueue = DispatchQueue.global(qos: .userInitiated)
-        self.params = params
+        self.inferenceQueue = Self.makeInferenceQueue()
+        self.storedParams = params
         self.whisperContext = Self.makeContext(
             fileURL: fileURL,
+            computePolicy: computePolicy,
             runtime: runtime,
             osVersionProvider: { ProcessInfo.processInfo.operatingSystemVersion }
         )
+        if let whisperContext, let encoderConfiguration {
+            self.isExternalEncoderConfigured = runtime.configureEncoder(whisperContext, encoderConfiguration)
+        } else {
+            self.isExternalEncoderConfigured = false
+        }
     }
 
     init(
         fromFileURL fileURL: URL,
         withParams params: WhisperParams = .default,
+        computePolicy: WhisperComputePolicy = .automatic,
+        encoderConfiguration: WhisperEncoderConfiguration? = nil,
         runtime: WhisperRuntime,
         osVersionProvider: @escaping () -> OperatingSystemVersion,
         inferenceQueue: DispatchQueue
     ) {
         self.runtime = runtime
-        self.inferenceQueue = inferenceQueue
-        self.params = params
+        self.inferenceQueue = Self.makeInferenceQueue(target: inferenceQueue)
+        self.storedParams = params
         self.whisperContext = Self.makeContext(
             fileURL: fileURL,
+            computePolicy: computePolicy,
             runtime: runtime,
             osVersionProvider: osVersionProvider
         )
+        if let whisperContext, let encoderConfiguration {
+            self.isExternalEncoderConfigured = runtime.configureEncoder(whisperContext, encoderConfiguration)
+        } else {
+            self.isExternalEncoderConfigured = false
+        }
     }
 
     deinit {
@@ -144,14 +175,29 @@ public final class Whisper {
             framesForInference = audioFrames
         }
 
-        let paramsSnapshot = WhisperParamsHandle(raw: params.whisperParams)
+        let paramsSnapshot = params.snapshot()
         let context = WhisperContextHandle(raw: whisperContext)
         let runtime = self.runtime
         let inferenceQueue = self.inferenceQueue
+        let inferenceLifetime = InferenceLifetime(owner: self)
 
         return try await withCheckedThrowingContinuation { continuation in
             inferenceQueue.async {
-                let localParams = paramsSnapshot.raw
+                // Keep the native context and owned request strings alive through result extraction.
+                defer {
+                    withExtendedLifetime(inferenceLifetime) {}
+                    withExtendedLifetime(paramsSnapshot) {}
+                }
+                var localParams = paramsSnapshot.raw
+                let fixedLanguageID = runtime.fixedModelLanguageId(context.raw)
+                if let fixedLanguageID {
+                    guard fixedLanguageID >= 0, let language = runtime.langStr(fixedLanguageID) else {
+                        continuation.resume(throwing: WhisperError.initializationFailed)
+                        return
+                    }
+                    localParams.language = language
+                    localParams.detect_language = false
+                }
 
                 let status = framesForInference.withUnsafeBufferPointer { buffer in
                     runtime.full(
@@ -193,7 +239,11 @@ public final class Whisper {
                     }
                 }
 
-                let langId = runtime.fullLangId(context.raw)
+                let reportedLanguageID = runtime.fullLangId(context.raw)
+                let langId = fixedLanguageID ?? reportedLanguageID
+                #if DEBUG
+                print("Whisper language diagnostic: fixedModelId=\(String(describing: fixedLanguageID)) reportedId=\(reportedLanguageID) effectiveId=\(langId)")
+                #endif
                 let langCode: String?
                 let langName: String?
 
@@ -216,23 +266,31 @@ public final class Whisper {
         }
     }
 
+    private static func makeInferenceQueue(target: DispatchQueue? = nil) -> DispatchQueue {
+        DispatchQueue(label: "KeyVoxWhisper.inference", qos: .userInitiated, target: target)
+    }
+
     private static func makeContext(
         fileURL: URL,
+        computePolicy: WhisperComputePolicy,
         runtime: WhisperRuntime,
         osVersionProvider: () -> OperatingSystemVersion
     ) -> OpaquePointer? {
         let osVersion = osVersionProvider()
         let isVentura = osVersion.majorVersion == venturaMajorVersion
+        var contextParams = runtime.contextDefaultParams()
         #if os(iOS)
         let shouldDisableGPU = true
         let shouldRetryWithCPUFallback = false
-        #else
+        #elseif os(macOS)
         let shouldDisableGPU = isVentura
         let shouldRetryWithCPUFallback = isVentura
+        #else
+        let shouldDisableGPU = false
+        let shouldRetryWithCPUFallback = contextParams.use_gpu
         #endif
 
-        var contextParams = runtime.contextDefaultParams()
-        if shouldDisableGPU {
+        if shouldDisableGPU || computePolicy == .gpuDisabled {
             // iOS background transcription cannot submit Metal work reliably, and Ventura has
             // a known upstream crash path during Metal init, so both paths force CPU for now.
             contextParams.use_gpu = false
@@ -243,11 +301,12 @@ public final class Whisper {
             runtime.initFromFileWithParams(path, contextParams)
         }
 
-        if context != nil || shouldRetryWithCPUFallback == false {
+        if context != nil || shouldRetryWithCPUFallback == false || computePolicy == .gpuDisabled {
             return context
         }
 
-        // Retry once on Ventura with explicit CPU settings.
+        // Retry context initialization with explicit CPU settings. This cannot recover
+        // from a driver crash or an error after inference has started.
         var fallbackParams = runtime.contextDefaultParams()
         fallbackParams.use_gpu = false
         fallbackParams.flash_attn = false

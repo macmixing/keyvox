@@ -1,10 +1,10 @@
 import Foundation
-import Combine
+import KeyVoxState
 import KeyVoxParakeet
 import KeyVoxVoiceActivity
 
 @MainActor
-public final class ParakeetService: ObservableObject, DictationProvider {
+public final class ParakeetService: StatePublishing, DictationProvider {
     typealias ParakeetLoader = (_ modelURL: URL) throws -> Parakeet?
     typealias VoiceActivityAnalyzerFactory = () -> (any VoiceActivityAnalyzing)?
 
@@ -13,9 +13,9 @@ public final class ParakeetService: ObservableObject, DictationProvider {
         let task: Task<Parakeet?, Never>
     }
 
-    @Published public internal(set) var isTranscribing = false
-    @Published public internal(set) var transcriptionText = ""
-    @Published public internal(set) var lastResultWasLikelyNoSpeech = false
+    @StateValue public internal(set) var isTranscribing = false
+    @StateValue public internal(set) var transcriptionText = ""
+    @StateValue public internal(set) var lastResultWasLikelyNoSpeech = false
 
     private let modelURLResolver: () -> URL?
     let parakeetLoader: ParakeetLoader

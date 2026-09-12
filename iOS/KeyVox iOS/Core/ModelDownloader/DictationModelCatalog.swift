@@ -1,4 +1,6 @@
+import KeyVoxModels
 import Foundation
+import KeyVoxCore
 
 enum DictationModelID: String, CaseIterable, Identifiable, Codable, Sendable {
     case whisperBase = "whisper-base"
@@ -56,14 +58,10 @@ struct DictationModelDescriptor: Equatable, Sendable {
 
 enum DictationModelCatalog {
     nonisolated static let manifestFilename = "install-manifest.json"
-    nonisolated private static let whisperRevision = "90a64d80ea254cf67575b41a5971f972c79f7b45"
     nonisolated private static let parakeetRevision = "aed02740059203c4a87495924f685de3722ae9ce"
 
-    nonisolated private static let whisperGGMLBaseURL = URL(
-        string: "https://huggingface.co/ggerganov/whisper.cpp/resolve/\(whisperRevision)/ggml-base.bin"
-    )!
     nonisolated private static let whisperCoreMLZipURL = URL(
-        string: "https://huggingface.co/ggerganov/whisper.cpp/resolve/\(whisperRevision)/ggml-base-encoder.mlmodelc.zip"
+        string: "https://huggingface.co/ggerganov/whisper.cpp/resolve/\(WhisperBaseModelArtifact.revision)/ggml-base-encoder.mlmodelc.zip"
     )!
 
     nonisolated static func descriptor(for modelID: DictationModelID) -> DictationModelDescriptor {
@@ -75,8 +73,8 @@ enum DictationModelCatalog {
                 installLayout: .subdirectory("whisper"),
                 artifacts: [
                     DictationModelArtifact(
-                        relativePath: "ggml-base.bin",
-                        remoteURL: whisperGGMLBaseURL,
+                        relativePath: WhisperBaseModelArtifact.filename,
+                        remoteURL: WhisperBaseModelArtifact.downloadURL,
                         expectedSHA256: ModelArtifacts.ggmlBaseSHA256,
                         progressTotalBytes: 140_000_000,
                         retainedAfterInstall: true

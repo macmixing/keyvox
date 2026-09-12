@@ -30,12 +30,7 @@ extension MathExpressionNormalizer {
             .joined(separator: "|")
     }()
 
-    static let spellOutNumberParser: NumberFormatter = {
-        let formatter = NumberFormatter()
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.numberStyle = .spellOut
-        return formatter
-    }()
+    static let spellOutNumberParser = SpelledOutNumberParser(locale: Locale(identifier: "en_US_POSIX"))
 
     static let wordTokenRegex: NSRegularExpression? = try? NSRegularExpression(
         pattern: #"\b[\p{L}]+(?:-[\p{L}]+)*\b"#,

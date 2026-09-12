@@ -3,7 +3,7 @@ import XCTest
 
 @MainActor
 final class WhisperServiceRequestStateTests: XCTestCase {
-    func testStaleRequestCannotOverwriteCurrentTranscriptionState() {
+    func testStaleRequestCannotOverwriteCurrentTranscriptionState() async {
         let service = WhisperService()
         let staleRequestID = service.beginTranscriptionRequest()
         let currentRequestID = service.beginTranscriptionRequest()

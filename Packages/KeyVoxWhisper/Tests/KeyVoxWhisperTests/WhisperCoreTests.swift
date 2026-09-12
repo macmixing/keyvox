@@ -149,6 +149,58 @@ final class WhisperCoreTests: XCTestCase {
         XCTAssertNil(result.detectedLanguageName)
     }
 
+    func testFixedModelLanguageOverridesDetectionWithoutChangingCallerSettings() async throws {
+        let supported = try XCTUnwrap(WhisperLanguage.allCases.first { $0 != .auto })
+        let foreign = try XCTUnwrap(WhisperLanguage.allCases.last { $0 != .auto && $0 != supported })
+        for requested in [WhisperLanguage.auto, foreign] {
+            let recorder = WhisperRuntimeRecorder(contextsToReturn: [Self.dummyContext], segments: [])
+            recorder.stubFixedLanguageId = 0
+            recorder.stubLangId = 58
+            recorder.stubLangCode = supported.rawValue
+            recorder.stubLangName = supported.rawValue
+            let whisper = makeWhisper(recorder: recorder, osMajorVersion: 14)
+            whisper.params.language = requested
+            whisper.params.detect_language = true
+
+            let result = try await whisper.transcribeWithMetadata(audioFrames: [0.1])
+
+            XCTAssertEqual(recorder.capturedLanguages, [supported.rawValue])
+            XCTAssertEqual(recorder.capturedDetectionFlags, [false])
+            XCTAssertEqual(result.detectedLanguageCode, supported.rawValue)
+            XCTAssertEqual(result.detectedLanguageName, supported.rawValue)
+            XCTAssertFalse(recorder.resolvedLanguageIDs.contains(recorder.stubLangId))
+            XCTAssertEqual(whisper.params.language, requested)
+            XCTAssertTrue(whisper.params.detect_language)
+        }
+    }
+
+    func testMultilingualModelPreservesRequestedDetection() async throws {
+        let recorder = WhisperRuntimeRecorder(contextsToReturn: [Self.dummyContext], segments: [])
+        let whisper = makeWhisper(recorder: recorder, osMajorVersion: 14)
+        whisper.params.detect_language = true
+        _ = try await whisper.transcribeWithMetadata(audioFrames: [0.1])
+        XCTAssertEqual(recorder.capturedLanguages, [WhisperLanguage.auto.rawValue])
+        XCTAssertEqual(recorder.capturedDetectionFlags, [true])
+    }
+
+    func testInvalidFixedModelLanguageFailsBeforeInference() async {
+        for invalidID: Int32 in [-1, 0] {
+            let recorder = WhisperRuntimeRecorder(contextsToReturn: [Self.dummyContext], segments: [])
+            recorder.stubFixedLanguageId = invalidID
+            let whisper = makeWhisper(recorder: recorder, osMajorVersion: 14)
+            do {
+                _ = try await whisper.transcribeWithMetadata(audioFrames: [0.1])
+                XCTFail("Expected initialization failure")
+            } catch let error as WhisperError {
+                XCTAssertEqual(error, .initializationFailed)
+            } catch {
+                XCTFail("Unexpected error: \(error)")
+            }
+            XCTAssertTrue(recorder.capturedBuffers.isEmpty)
+        }
+    }
+
+    #if os(macOS)
     func testVenturaRetriesContextCreationOnceWhenFirstAttemptFails() {
         let recorder = WhisperRuntimeRecorder(contextsToReturn: [nil, Self.dummyContext], segments: [])
         _ = makeWhisper(recorder: recorder, osMajorVersion: 13)
@@ -163,12 +215,47 @@ final class WhisperCoreTests: XCTestCase {
 
         XCTAssertEqual(recorder.contextParamsHistory.count, 1)
     }
+    #elseif os(iOS)
+    func testCPUBackendDoesNotApplyMacOSVersionWorkaround() {
+        for version in [13, 14] {
+            let recorder = WhisperRuntimeRecorder(contextsToReturn: [nil, Self.dummyContext], segments: [])
+            _ = makeWhisper(recorder: recorder, osMajorVersion: version)
 
+            XCTAssertEqual(recorder.contextParamsHistory.count, 1)
+            XCTAssertTrue(recorder.contextParamsHistory.allSatisfy { !$0.use_gpu && !$0.flash_attn })
+        }
+    }
+    #endif
+
+    #if os(macOS) || os(iOS)
     func testNonVenturaDoesNotRetryContextCreationWhenFirstAttemptFails() {
         let recorder = WhisperRuntimeRecorder(contextsToReturn: [nil, Self.dummyContext], segments: [])
         _ = makeWhisper(recorder: recorder, osMajorVersion: 14)
 
         XCTAssertEqual(recorder.contextParamsHistory.count, 1)
+    }
+    #else
+    func testAutomaticRetriesFailedGPUInitializationOnCPU() async throws {
+        let recorder = WhisperRuntimeRecorder(contextsToReturn: [nil, Self.dummyContext], segments: [])
+        let whisper = makeWhisper(recorder: recorder, osMajorVersion: 13)
+        XCTAssertEqual(recorder.contextParamsHistory.map(\.use_gpu), [true, false])
+        XCTAssertFalse(try XCTUnwrap(recorder.contextParamsHistory.last).flash_attn)
+        _ = try await whisper.transcribe(audioFrames: [0.25])
+        XCTAssertEqual(recorder.capturedBuffers.count, 1)
+    }
+
+    func testAutomaticKeepsSuccessfulGPUContext() {
+        let recorder = WhisperRuntimeRecorder(contextsToReturn: [Self.dummyContext], segments: [])
+        _ = makeWhisper(recorder: recorder, osMajorVersion: 13)
+        XCTAssertEqual(recorder.contextParamsHistory.map(\.use_gpu), [true])
+    }
+    #endif
+
+    func testGPUDisabledUsesCPUWithoutRetry() {
+        let recorder = WhisperRuntimeRecorder(contextsToReturn: [nil, Self.dummyContext], segments: [])
+        _ = makeWhisper(recorder: recorder, osMajorVersion: 13, computePolicy: .gpuDisabled)
+        XCTAssertEqual(recorder.contextParamsHistory.count, 1)
+        XCTAssertTrue(recorder.contextParamsHistory.allSatisfy { !$0.use_gpu && !$0.flash_attn })
     }
 
     func testDeinitFreesContextWhenAvailable() {
@@ -216,11 +303,13 @@ final class WhisperCoreTests: XCTestCase {
 
     private func makeWhisper(
         recorder: WhisperRuntimeRecorder,
-        osMajorVersion: Int
+        osMajorVersion: Int,
+        computePolicy: WhisperComputePolicy = .automatic
     ) -> Whisper {
         Whisper(
             fromFileURL: URL(fileURLWithPath: "/tmp/keyvox-whisper-\(UUID().uuidString).bin"),
             withParams: .default,
+            computePolicy: computePolicy,
             runtime: recorder.makeRuntime(),
             osVersionProvider: {
                 OperatingSystemVersion(
@@ -273,6 +362,10 @@ private final class WhisperRuntimeRecorder {
     var segments: [StubSegment]
 
     var stubLangId: Int32 = -1
+    var stubFixedLanguageId: Int32?
+    var capturedLanguages: [String?] = []
+    var capturedDetectionFlags: [Bool] = []
+    var resolvedLanguageIDs: [Int32] = []
     var stubLangCode: String?
     var stubLangName: String?
     private var langCodePointer: UnsafeMutablePointer<CChar>?
@@ -315,7 +408,9 @@ private final class WhisperRuntimeRecorder {
             freeContext: { [self] context in
                 freedContexts.append(context)
             },
-            full: { [self] _, _, samples, sampleCount in
+            full: { [self] _, params, samples, sampleCount in
+                capturedLanguages.append(params.language.map { String(cString: $0) })
+                capturedDetectionFlags.append(params.detect_language)
                 if let samples {
                     let buffer = UnsafeBufferPointer(start: samples, count: Int(sampleCount))
                     capturedBuffers.append(Array(buffer))
@@ -347,15 +442,17 @@ private final class WhisperRuntimeRecorder {
             fullLangId: { [self] _ in
                 stubLangId
             },
+            fixedModelLanguageId: { [self] _ in stubFixedLanguageId },
             langStr: { [self] id in
-                guard id == stubLangId else { return nil }
+                resolvedLanguageIDs.append(id)
+                guard id == stubLangId || id == stubFixedLanguageId else { return nil }
                 if let stubLangCode, langCodePointer == nil {
                     langCodePointer = strdup(stubLangCode)
                 }
                 return UnsafePointer(langCodePointer)
             },
             langStrFull: { [self] id in
-                guard id == stubLangId else { return nil }
+                guard id == stubLangId || id == stubFixedLanguageId else { return nil }
                 if let stubLangName, langNamePointer == nil {
                     langNamePointer = strdup(stubLangName)
                 }

@@ -4,7 +4,7 @@ import XCTest
 
 @MainActor
 extension TranscriptionPostProcessorTests {
-    func testNormalizesSpokenMonthOrdinalAndYearDateForms() {
+    func testNormalizesSpokenMonthOrdinalAndYearDateForms() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -33,7 +33,7 @@ extension TranscriptionPostProcessorTests {
         )
     }
 
-    func testNormalizesMonthDayYearNumericAndOrdinalDateForms() {
+    func testNormalizesMonthDayYearNumericAndOrdinalDateForms() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -62,7 +62,7 @@ extension TranscriptionPostProcessorTests {
         )
     }
 
-    func testPreservesQuantitiesWhileNormalizingMonthLedDates() {
+    func testPreservesQuantitiesWhileNormalizingMonthLedDates() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(

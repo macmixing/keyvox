@@ -1,5 +1,4 @@
 import Foundation
-import UniformTypeIdentifiers
 
 public struct SentenceCapitalizationNormalizer {
     private static let domainLikeTokenRegex: NSRegularExpression? = try? NSRegularExpression(
@@ -469,10 +468,6 @@ public struct SentenceCapitalizationNormalizer {
             return false
         }
 
-        guard let type = UTType(filenameExtension: extensionToken) else {
-            return false
-        }
-
-        return !type.identifier.hasPrefix("dyn.")
+        return FileExtensionRecognition.status(for: extensionToken) == .known
     }
 }

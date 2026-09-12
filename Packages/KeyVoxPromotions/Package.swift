@@ -14,9 +14,11 @@ let package = Package(
             targets: ["KeyVoxPromotions"]
         ),
     ],
+    dependencies: [.package(path: "../KeyVoxState")],
     targets: [
         .target(
             name: "KeyVoxPromotions",
+            dependencies: [.product(name: "KeyVoxState", package: "KeyVoxState")],
             resources: [.process("Resources")]
         ),
         .testTarget(

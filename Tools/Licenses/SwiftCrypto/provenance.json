@@ -1,0 +1,62 @@
+{
+  "swift_crypto": {
+    "version": "4.5.2",
+    "revision": "da9d28d69ebe3894b18376c8f2395c2f37b8448f",
+    "repository": "https://github.com/apple/swift-crypto",
+    "license": "Apache-2.0",
+    "product": "Crypto"
+  },
+  "swift_asn1": {
+    "version": "1.7.2",
+    "revision": "d9a5b37470adc940d22c3bcd5ca6953a516b727f",
+    "repository": "https://github.com/apple/swift-asn1",
+    "license": "Apache-2.0",
+    "scope": "Resolved package dependency; CryptoExtras only, outside Crypto target runtime closure"
+  },
+  "boringssl": {
+    "revision": "0226f30467f540a3f62ef48d453f93927da199b6",
+    "repository": "https://boringssl.googlesource.com/boringssl",
+    "license": "Apache-2.0",
+    "license_url": "https://boringssl.googlesource.com/boringssl/+/0226f30467f540a3f62ef48d453f93927da199b6/LICENSE",
+    "integration": "Swift Crypto vendored and symbol-prefixed source, not the separate Swift Android SDK TLS archive"
+  },
+  "fiat": {
+    "revision": "6ccc6638716d4632304baf1adbb5c47c3a12ea6f",
+    "bedrock_source_revision": "6e22d333861d51c7f6baa0826648a2215d0c333f",
+    "repository": "https://github.com/mit-plv/fiat-crypto",
+    "license": "Apache-2.0",
+    "provenance": "Pinned BoringSSL third_party/fiat README and license cover generated arithmetic templates; Bedrock source reference retained. Historical generation is not independently reproduced. METADATA still names LICENSE-MIT; actual bundled LICENSE and README.chromium select Apache-2.0. Both referenced Fiat revisions provide Apache and MIT alternatives."
+  },
+  "xkcp": {
+    "revision_as_recorded_upstream": "11297f5",
+    "repository": "https://github.com/XKCP/XKCP",
+    "license": "CC0-1.0; brg_endian.h uses Brian Gladman BSD-like permissive terms",
+    "provenance": "Swift Crypto Sources/CXKCP/vendored-sources.txt; verbatim individual source notices retained"
+  },
+  "other_attribution": {
+    "swiftnio": "Apache-2.0 derivations; upstream NOTICE retained",
+    "wycheproof": "Apache-2.0 upstream test vectors; outside Crypto runtime target graph, not incorporated into KeyVox fixtures"
+  },
+  "android_target_closure": [
+    "Crypto",
+    "CCryptoBoringSSL",
+    "CCryptoBoringSSLShims",
+    "CryptoBoringWrapper",
+    "CXKCP",
+    "CXKCPShims"
+  ],
+  "apple_backend": "Crypto reexports Apple CryptoKit in production",
+  "notice_sha256": {
+    "BoringSSL-LICENSE.txt": "827c8d8fc207c2392794eef9e00fe246f9f61fdcc132556c275be3dd8c3cd97f",
+    "Fiat-AUTHORS.txt": "ad74c036a6afaedc418fed65f171c877c2f74a4c70938a03930aa11c98a20508",
+    "Fiat-LICENSE.txt": "9eacbcb81be660840c714a560a9d65ba07913db98dd4baf969f78dd499fdd60f",
+    "Fiat-METADATA.txt": "d563e3931e00982741d6bf065385bca046ce5959b2f6a9f98cfd9896f9e9cde2",
+    "Fiat-README.chromium": "d3d3c831f7db617448fdc141ec854bad560afae8be778bec048c353b5cd7e447",
+    "Fiat-README.md": "d635eb4ba48f008bef532519e555c96124ecfaa1a586c7093693d7c18a6b3393",
+    "LICENSE.txt": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+    "NOTICE.txt": "b3ddc2ae068e76b3beb71be03c0400f90090f9469aa491bf7b1ac42320af37b8",
+    "SwiftASN1-LICENSE.txt": "8c6db340475136df3c1201d458fa5755698eace76e510471ecc9d857d6083dac",
+    "SwiftASN1-NOTICE.txt": "11dd3b3b783e6ec26098dd38ebc962986ea109b85447e28e62867b83bd0f8c5b",
+    "XKCP-NOTICES.txt": "7aa54808a0ac25016641d72786d33fec7988e88c9dc8b321e2ced899d2217cee"
+  }
+}

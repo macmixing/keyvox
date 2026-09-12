@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "notices": [
+    {
+      "source_id": "cmudict",
+      "path": "Packages/KeyVoxCore/Sources/KeyVoxCore/Resources/Pronunciation/CMUDICT-LICENSE.txt",
+      "url": "https://raw.githubusercontent.com/cmusphinx/cmudict/74790861f652b15e4ac49015a90074ad62a27690/LICENSE",
+      "sha256": "bd4ce8e44170a5f9f481310ca85c51de3c4f851a65e679b40e603b143bd3542a"
+    },
+    {
+      "source_id": "scowl",
+      "path": "Packages/KeyVoxCore/Sources/KeyVoxCore/Resources/Pronunciation/SCOWL-COPYRIGHT.txt",
+      "url": "https://raw.githubusercontent.com/en-wl/wordlist/9829d649f007932ce672a1e8e13678a48be20d55/Copyright",
+      "sha256": "2d2501d2ad5d65ad16885b19f3f0278f11dc6cb6ff0776db4374330025339fc1"
+    }
+  ]
+}

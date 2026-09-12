@@ -1,0 +1,76 @@
+--- a/src/whisper.cpp
++++ b/src/whisper.cpp
+@@ -1,4 +1,5 @@
+ #include "whisper.h"
++#include "ExternalEncoder.h"
+ #include "whisper-arch.h"
+ 
+ #include "ggml.h"
+@@ -965,6 +966,7 @@
+ };
+ 
+ struct whisper_context {
++    std::unique_ptr<keyvox::ExternalEncoder> external_encoder;
+     int64_t t_load_us  = 0;
+     int64_t t_start_us = 0;
+ 
+@@ -2382,6 +2384,35 @@
+                    void * abort_callback_data) {
+     const int64_t t_start_us = ggml_time_us();
+ 
++    if (wctx.external_encoder && !wctx.params.flash_attn && !wstate.exp_n_audio_ctx) {
++        if (abort_callback && abort_callback(abort_callback_data)) return false;
++        const auto &hp = wctx.model.hparams;
++        const size_t frames = hp.n_audio_ctx;
++        const size_t mel_frames = frames * 2;
++        std::vector<float> features(size_t(hp.n_mels) * mel_frames, 0.0f);
++        for (int row = 0; row < hp.n_mels; ++row) {
++            const int remaining = std::max(0, wstate.mel.n_len - mel_offset);
++            const size_t count = std::min(mel_frames, size_t(remaining));
++            if (count) std::copy_n(wstate.mel.data.data() + size_t(row) * wstate.mel.n_len + mel_offset,
++                                   count, features.data() + size_t(row) * mel_frames);
++        }
++        const size_t elements = size_t(hp.n_text_layer) * hp.n_text_state * frames;
++        std::vector<uint16_t> key(elements), value(elements);
++        if (wstate.kv_cross.k->type == GGML_TYPE_F16 && wstate.kv_cross.v->type == GGML_TYPE_F16 &&
++            elements * sizeof(uint16_t) <= ggml_nbytes(wstate.kv_cross.k) &&
++            elements * sizeof(uint16_t) <= ggml_nbytes(wstate.kv_cross.v) &&
++            wctx.external_encoder->encode(features.data(), features.size(), key.data(), value.data(),
++                                           elements, abort_callback, abort_callback_data)) {
++            if (abort_callback && abort_callback(abort_callback_data)) return false;
++            ggml_backend_tensor_set(wstate.kv_cross.k, key.data(), 0, elements * sizeof(uint16_t));
++            ggml_backend_tensor_set(wstate.kv_cross.v, value.data(), 0, elements * sizeof(uint16_t));
++            wstate.t_encode_us += ggml_time_us() - t_start_us;
++            wstate.n_encode++;
++            return true;
++        }
++        if (abort_callback && abort_callback(abort_callback_data)) return false;
++    }
++
+     // conv
+     {
+         auto & sched = wstate.sched_conv.sched;
+@@ -8967,3 +8998,23 @@
+     fputs(text, stderr);
+     fflush(stderr);
+ }
++
++extern "C" bool keyvox_whisper_load_encoder(void *context, const char *plugin_path,
++                                            const char *model_path, const char *runtime_directory) {
++    if (!context) return false;
++    auto &ctx = *static_cast<whisper_context *>(context);
++    if (ctx.params.flash_attn) return false;
++    const auto &hp = ctx.model.hparams;
++    const kv_whisper_encoder_dimensions dimensions = {
++        uint32_t(hp.n_mels), uint32_t(hp.n_audio_ctx), uint32_t(hp.n_text_state),
++        uint32_t(hp.n_text_head), uint32_t(hp.n_text_layer)
++    };
++    try {
++        auto encoder = keyvox::ExternalEncoder::load(plugin_path, model_path, runtime_directory, dimensions);
++        if (!encoder) return false;
++        ctx.external_encoder = std::move(encoder);
++        return true;
++    } catch (...) {
++        return false;
++    }
++}
