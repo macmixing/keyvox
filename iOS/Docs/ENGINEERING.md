@@ -2,7 +2,7 @@
 
 This document captures the current implementation rules and maintainer-facing architecture for the iOS app, keyboard extension, and widget extension.
 
-**Last Updated: 2026-09-04**
+**Last Updated: 2026-09-12**
 
 ## Design Philosophy
 
@@ -38,6 +38,9 @@ The containing app owns:
 - microphone capture and session warmth
 - interrupted-capture recovery
 - dictation pipeline ownership
+- shared linguistic analyzer composition and portable fallback resource ownership
+- shared model artifact metadata and file-integrity consumption
+- promotion campaign composition and refresh ownership
 - KeyVox Vibes style rewrite coordination
 - keyboard-originated Vibes rewrite IPC handling
 - copied-text TTS request ownership
@@ -72,6 +75,7 @@ The keyboard extension does **not** own:
 - dictionary logic
 - transcription post-processing policy
 - KeyVox Vibes style rewrite policy
+- linguistic model loading or fallback resource ownership
 - onboarding progression
 
 ### Widget Extension
@@ -138,6 +142,7 @@ It builds and wires:
 - `AppHaptics`
 - `WhisperService`
 - `ParakeetService`
+- the shared health-routed linguistic analyzer
 - `SwitchableDictationProvider`
 - `TranscriptionPostProcessor`
 - `ModelManager`
@@ -164,6 +169,7 @@ It builds and wires:
 - `WeeklyWordStatsCloudSync`
 - `KeyVoxSessionLiveActivityCoordinator`
 - `KeyVoxURLRouter`
+- `PromotionCenter`
 
 Service ownership rules:
 
@@ -174,6 +180,21 @@ Service ownership rules:
 - `AppServiceRegistry` wires KeyVox Vibes into `TranscriptionManager` through narrow callbacks for output transformation, latest-artifact recording, prewarm, and prewarm release. It also wires keyboard style rewrite IPC into the same app-owned local inference path. The app owns branded feature lifecycle and model runtime ownership; the packages own reusable transform and local inference mechanics.
 - `AppServiceRegistry` wires PocketTTS services and normalizes voice selection, but it must not proactively prewarm the PocketTTS runtime; playback owns runtime load and unload.
 - `AppServiceRegistry` applies `AppSettingsStore.whisperDictationLanguage` when creating `WhisperService` and keeps later device-local selection changes synchronized with the service.
+- `AppServiceRegistry` creates one health-routed linguistic analyzer and injects that same instance into Whisper continuation analysis, transcription post-processing, KeyVox Vibes output repair, and PocketTTS chunk planning.
+- `AppServiceRegistry` creates `PromotionCenter` with the iOS audience, current app version, App Group defaults, and the runtime-selected bundled or remote manifest source.
+
+### Linguistic Analysis Routing Contract
+
+- `LinguisticAnalyzerFactory.healthRouted` composes the native analyzer as the primary provider and resolves the portable analyzer lazily from the containing app bundle only after native analysis is proven unhealthy.
+- Health evaluation is based on the caller's requested UTF-16 range and requested features. Invalid token ranges, missing requested word boundaries, unavailable semantic features, missing grammatical-role evidence, and missing lemma evidence are unhealthy results.
+- A valid result for a punctuation-only requested range is inconclusive, not unhealthy; lexical content elsewhere in the same string must not force fallback for that subrange.
+- Healthy native results stay on the native path. Inconclusive results are returned unchanged. Once a language produces an unhealthy result and a matching fallback is available, that analyzer instance retains the fallback route for the normalized language.
+- The bundled portable analyzer is currently configured for English. Its configured language and each request language are normalized before comparison; a missing or different request language cannot select that fallback.
+- Provider selection emits one concise `[KVXLinguistics]` diagnostic for the resolved route and reason. Fallback resource-load failures remain explicit and leave the primary result in place.
+- The containing app bundles `averaged-perceptron-tagger-eng` and `wordnet-3.0` and supplies `Bundle.main.resourceURL` to the factory. The keyboard extension neither bundles nor loads those resources.
+- `DictationPipeline` carries the provider-reported language code into text-processing context and the final result. KeyVox Vibes requests and latest-utterance artifacts preserve that code for initial and later rewrites.
+- Keyboard-originated Vibes rewrites send the saved dictation language through `KeyVoxStyleRewriteIPCRequest`; the containing app performs the analysis and model-backed rewrite.
+- PocketTTS uses the language capability declared by its installed model metadata. The current Speak model declares English independently of the user's dictation-language preference.
 
 ### Containing App Source Layout
 
@@ -192,6 +213,16 @@ Service ownership rules:
 - `Onboarding/` owns full onboarding route state and prerequisites.
 - `Shortcuts/` owns background dictation intent coordination, signed-workflow installation handoffs, system Settings opening, and one-time Dictation Shortcut introduction state.
 - `iCloud/` and `AppUpdate/` remain isolated feature folders.
+
+### Shared Package Infrastructure
+
+- `KeyVoxModels.WhisperBaseModelArtifact` owns the shared Whisper Base revision, filename, download URL, and SHA-256 value. The iOS model catalog adds its host-owned install layout and Core ML encoder artifact.
+- `KeyVoxModels.ModelFileIntegrity` performs streaming checksum verification with byte progress while `ModelManager` remains the owner of download, staging, validation, and installation state.
+- `KeyVoxState` provides the observable-state vocabulary used by `WhisperService`, `ParakeetService`, `DictionaryStore`, and `PromotionCenter`. On Apple platforms it maps directly to Combine's `Published` and `ObservableObject`, preserving existing app observation behavior.
+- `KeyVoxVoiceActivity` owns the shared Silero resource, analyzer protocol, standard configuration, actor-isolated detector, and speech-segment result types. Provider services decide how those results affect their own decode paths.
+- `KeyVoxWhisper` owns low-level Whisper context, parameters and request snapshots, compute policy, encoder configuration, segments, and language metadata. It consumes the shared speech runtime rather than owning VAD resources.
+- `KeyVoxParakeet` exposes a backend contract while the iOS app continues to use its Core ML backend.
+- `KeyVoxCoreResources` centralizes access to packaged pronunciation and file-type resources. Apple app builds use the SwiftPM resource bundle by default.
 
 `KeyVox iOS/Core/` owns app runtime services that are not view or composition concerns:
 
@@ -846,17 +877,16 @@ When recording stops:
 
 Interrupted captures follow the same post-stop processing rules before they are staged for recovery.
 
-### Whisper Voice-Activity Gate
+### Shared Voice-Activity Contract
 
-Accepted recorder output still passes through a shared whole-capture VAD gate before Whisper decoding:
+Accepted recorder output passes through the shared `KeyVoxVoiceActivity` analyzer inside each provider service:
 
-- `KeyVoxWhisper.WhisperVoiceActivityDetector` owns the actor-isolated whisper.cpp VAD context and loads the package-bundled `ggml-silero-v5.1.2.bin` model.
+- `KeyVoxVoiceActivity.VoiceActivityDetector` owns the actor-isolated `whisper.cpp` VAD context and loads the package-bundled `ggml-silero-v5.1.2.bin` model.
 - `WhisperService+ModelLifecycle` creates the VAD detector during Whisper warmup and releases it when the Whisper model is unloaded.
-- `WhisperService+TranscriptionCore` analyzes the full accepted capture before paragraph chunking.
-- a capture with no detected speech completes as likely no-speech without entering the decoder
-- when speech is detected, the complete original capture continues to chunking and decoding; VAD segments are classification evidence, not trimming boundaries
-- if the bundled detector cannot be created or analysis fails, transcription continues through the existing decoder no-speech safeguards
-- iOS targets must not copy the Silero resource or implement a second platform-local VAD policy
+- `WhisperService+TranscriptionCore` rejects a capture with no speech, then uses `WhisperSpeechRangePlanner` to skip chunks without speech overlap and compact padded speech ranges before decoding.
+- `ParakeetService+TranscriptionCore` creates the analyzer lazily, rejects a whole capture with no speech, and otherwise preserves the original chunk audio for Parakeet decoding.
+- If detector creation or analysis fails, each provider continues through its existing decoder and provider-specific no-speech safeguards.
+- iOS targets do not copy the Silero resource or implement a second target-local VAD policy.
 
 ## Interrupted Capture Recovery
 
@@ -880,6 +910,8 @@ Rules:
 ## Model Installation, Background Downloads, and Recovery
 
 `ModelManager` is the source of truth for install lifecycle.
+
+`KeyVoxModels.WhisperBaseModelArtifact` is the shared source of truth for the Whisper Base weights revision, filename, download URL, and checksum. `ModelManager` and `DictationModelCatalog` remain responsible for iOS installation layout, acceleration artifacts, readiness, and lifecycle. `ModelFileIntegrity` supplies streaming SHA-256 verification without owning those decisions.
 
 The current iOS app treats models as rooted installs keyed by `DictationModelID`:
 
@@ -1169,6 +1201,13 @@ Important force-quit nuance:
 - delete must cancel any active background job for the same model before clearing persisted job state and removing rooted install directories
 - `repairModelIfNeeded(for:)` clears partial state and performs a clean reinstall when validation is not ready, but must not interrupt another model’s active download/install
 
+## Promotion Campaign Contract
+
+- `KeyVoxPromotions` owns campaign manifest decoding, remote retrieval, cached and bundled fallback, platform/version/date eligibility, deterministic fixed or rotating selection, and persisted selection state.
+- `PromotionCenter.currentCampaign` is the observable value injected into the app environment. `HomeTabView` and `IOSPromotionCard` render that state without duplicating campaign selection rules.
+- App activation requests a manifest refresh. The repository caches a successful remote response for a later center initialization; the current center keeps the campaign selected from its startup manifest.
+- Preview configuration uses a separate defaults namespace so preview selection does not mutate production campaign state.
+
 ## Dictionary, Style, and Sync Contract
 
 The containing app owns live dictionary and style state, while the dictation pipeline remains shared.
@@ -1257,8 +1296,8 @@ The keys use the same symbols as the Style tab and show setting state through ic
 - `TerminalPunctuationBoundaryRepair` preserves source-backed terminal `!` and `?!` boundaries across model rewrites and Chill heuristic formatting.
 - `AddressFactRepair` preserves source-backed address facts before money and number repair.
 - `NumberEvidence` is the shared factual number evidence source used by general number repair and money repair.
-- `NumberEvidenceRepair.repair` coordinates factual number preservation in changed -> deleted -> separator order, with `NumberSeparatorEvidenceRepair` owning decimal-vs-time separator evidence after changed/deleted number repair runs.
-- `MoneyFactRepair` owns currency-specific repair while relying on shared number evidence for amount values.
+- `NumberEvidenceRepair.repair` coordinates factual number preservation in changed -> deleted -> separator order, with `NumberSeparatorEvidenceRepair` owning decimal-vs-time separator evidence after changed/deleted number repair runs and rejecting ambiguous detector output split into whitespace-separated adjacent detections.
+- `MoneyFactRepair` owns currency-specific repair while relying on shared number evidence for amount values; currency-unit lookup uses lemma evidence when available and the token surface as the deterministic fallback.
 - `APStyleNumberRepair` owns AP-style number presentation only after factual number evidence has been repaired.
 - `ChillHeuristicFormatter` owns deterministic Chill casing and punctuation after optional local-model cleanup.
 - `DictationUtteranceArtifact` and `DictationTextVariantArtifact` are package-owned serializable models so the app can cache the latest utterance without inventing iOS-only artifact shapes.
@@ -1287,7 +1326,7 @@ The shared `KeyVoxCore` dictation pipeline owns the stable hook point:
 4. Caps Lock casing override is applied after transformation
 5. final text is recorded and inserted
 
-`DictationPipelineResult` exposes raw provider text, base text, selected pre-Caps final text, selected final text, inference duration, transform duration, transform applied flag, selected style identifier, transform chunk count, transform errors, transform processing mode, and paste duration.
+`DictationPipelineResult` exposes the provider-reported language code, raw provider text, base text, selected pre-Caps final text, selected final text, inference duration, transform duration, transform applied flag, selected style identifier, transform chunk count, transform errors, transform processing mode, and paste duration.
 This keeps the keyboard insertion path unchanged while still making speed-profile and artifact data explicit.
 
 Failure policy:
@@ -1758,7 +1797,7 @@ Warning precedence must remain:
 
 ### Text Insertion Rules
 
-`KeyVoxTextComposition` owns the deterministic editor-adjacent capitalization, leading spacing, quotation-mark, sentence-boundary, terminal-punctuation, and trailing-separator policy shared with macOS. It accepts platform-neutral adjacent-text context and never reads `UITextDocumentProxy` or inserts text.
+`KeyVoxTextComposition` owns deterministic editor-adjacent capitalization, calendar-date and link-prefix protection, leading spacing, quotation-mark, sentence-boundary, terminal-punctuation, and trailing-separator policy. It accepts platform-neutral adjacent-text context and returns finalized text plus any required following-code-point deletion as data; it never reads `UITextDocumentProxy` or inserts text.
 
 `KeyboardInsertionSpacingCoordinator` converts the keyboard's preceding-text snapshot into the shared context and stays intentionally thin:
 

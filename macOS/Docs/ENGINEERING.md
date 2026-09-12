@@ -2,7 +2,7 @@
 
 This document contains implementation and maintainer-focused details that are intentionally kept out of the top-level README.
 
-**Last Updated: 2026-09-05**
+**Last Updated: 2026-09-12**
 
 ## Design Philosophy
 
@@ -35,8 +35,13 @@ KeyVox is organized by responsibility:
 - `Core/Audio/`: Selected-device `AVAudioEngine` capture, deterministic multichannel-to-mono mixing, stream processing, silence classification, and threshold policy.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/` and `Packages/KeyVoxCore/Sources/KeyVoxCore/Lists/`: Deterministic dictionary correction and list parsing/rendering, with matcher evaluation strategies organized under `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/Evaluation/` (`Helpers/`, `SplitJoin/`, and strategy files). `DictionaryMatcher+SpelledUppercaseGuard.swift` owns shared phonetic validation for uppercase dictionary sequences, while `DictionaryMatcher+ExactMultiTokenJoin.swift` owns exact three- and four-token joins into canonical single-entry replacements. `DictionaryInitialEntries.swift` defines the single `KeyVox` entry that a host may persist for a genuine fresh installation; matching itself uses only the entries supplied by the user dictionary.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/`: Ordered pure normalization stages used by post-processing: early literal cleanup, pre-list normalization, late model-output cleanup, and final finishers. The individual passes remain small and composable, while the documented contract stays centered on stable ordering boundaries rather than every micro-pass. Shared normalization utilities (for example URL/domain/email-safe capitalization guards) also live here.
-- `Packages/KeyVoxTextComposition/`: Platform-neutral policy for composing finalized dictation with adjacent editor text. It owns leading capitalization, leading spacing, quote classification, sentence-boundary rules, adjacent terminal-punctuation decisions, and trailing-separator decisions, but never reads Accessibility state or performs insertion.
-- `Packages/KeyVoxStyleRewrite/Sources/KeyVoxStyleRewrite/OutputRepair/`: Deterministic post-model Vibes repair. `PunctuationRepair` preserves punctuation facts first, `TerminalPunctuationBoundaryRepair` preserves source-backed terminal `!` and `?!` boundaries, `AddressFactRepair` preserves source-backed address facts, `NumberEvidence` is the shared factual number evidence source used by general number repair and money repair, `NumberSeparatorEvidenceRepair` owns decimal-vs-time separator preservation, `NumberEvidenceRepair` coordinates factual number preservation, `MoneyFactRepair` owns currency-specific repair, and `APStyleNumberRepair` owns AP-style number presentation only after factual number evidence has been repaired. `StyleRewritePromptLeakGuard` falls back to the base text when generated output leaks significant prompt text.
+- `Packages/KeyVoxLinguistics/`: Shared linguistic provider contracts, native and portable analyzers, feature availability, UTF-16 token/range models, normalized language identifiers, analysis-health evaluation, and lazy health-based fallback routing.
+- `Packages/KeyVoxModels/`: Shared model artifact identity and streaming checksum verification. App-owned catalogs and installers retain lifecycle and install-layout responsibility.
+- `Packages/KeyVoxState/`: Shared observable-state vocabulary used by `WhisperService`, `ParakeetService`, `DictionaryStore`, and `PromotionCenter`. Apple builds map it directly to Combine so existing `Published` projections and `ObservableObject` behavior remain intact.
+- `Packages/KeyVoxPromotions/`: Campaign manifest loading, decoding, eligibility, deterministic selection/rotation, persisted selection state, and the published current-campaign surface.
+- `Packages/KeyVoxVoiceActivity/`: Shared Silero model, detector protocol, actor-isolated runtime, standard thresholds, and speech-segment results used by both dictation providers.
+- `Packages/KeyVoxTextComposition/`: Platform-neutral policy for composing finalized dictation with adjacent editor text. It owns leading capitalization, calendar-date and link-prefix protection, leading spacing, quote classification, sentence-boundary rules, adjacent terminal-punctuation decisions, and trailing-separator decisions. It returns text plus any required following-character deletion as data, but never reads Accessibility state or performs insertion.
+- `Packages/KeyVoxStyleRewrite/Sources/KeyVoxStyleRewrite/OutputRepair/`: Deterministic post-model Vibes repair. `RepairTokenization` obtains roles and lemmas through the injected shared linguistic analyzer. `PunctuationRepair` preserves punctuation facts first, `TerminalPunctuationBoundaryRepair` preserves source-backed terminal `!` and `?!` boundaries, `AddressFactRepair` preserves source-backed address facts, `NumberEvidence` is the shared factual number evidence source used by general number repair and money repair, `NumberSeparatorEvidenceRepair` owns decimal-vs-time separator preservation and rejects ambiguous date-detector output split into whitespace-separated adjacent detections, `NumberEvidenceRepair` coordinates factual number preservation, `MoneyFactRepair` owns currency-specific repair with lemma-or-token currency-unit lookup, and `APStyleNumberRepair` owns AP-style number presentation only after factual number evidence has been repaired. `StyleRewritePromptLeakGuard` falls back to the base text when generated output leaks significant prompt text.
 - `Core/Services/`: Paste/injection, update/checking, and process-termination services. Paste behavior is intentionally split into `Accessibility/`, `MenuFallback/`, `Clipboard/`, `Composition/`, `Heuristics/`, and `Pipeline/` subdomains. `PasteUntouchedInsertionAuthorizer` decides whether the latest insertion may change, while `PasteUntouchedInsertionReplacer` owns exact AX target resolution, safe write strategy, verification, and caret placement. The composition coordinators resolve Mac-specific preceding/following context and delegate deterministic capitalization, leading spacing, adjacent terminal-punctuation, and trailing-separator policy to `KeyVoxTextComposition`; they do not duplicate package rules. Menu fallback removes boundary spaces from its clipboard payload, delivers leading spaces in the ordered paste sequence, and types trailing spaces only after verified paste completion so host applications cannot silently trim the shared separator. In-place updater pieces live under `AppUpdate/`, immediate process termination is centralized in `AppProcessTerminator.swift`, update feed source selection lives in `UpdateFeedConfig.swift`, and provider inference lives under `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Whisper/` and `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Parakeet/`.
 - `Core/Overlay/`: Floating overlay lifecycle, persistence, motion, generic standalone-pill presentation, generic audio-indicator timing/state driving, and reusable fling-impact types.
 - `Views/`: Setup onboarding, first-dictation practice, settings, warnings, and presentation-only UI composition, including the proprietary logo system renderer plus separate reusable overlay-pill components.
@@ -96,6 +101,8 @@ For the full file-level map, see [`CODEMAP.md`](CODEMAP.md).
   - `WhisperService`
   - `ParakeetService`
   - `SwitchableDictationProvider`
+  - one shared health-routed linguistic analyzer
+  - one shared promotion center configured for the Mac audience and current app version
   - Mac Vibes local rewrite manager/inference/coordinator
 - `AppSettingsStore.activeDictationProvider` is the local source of truth for the selected provider.
 - `AppSettingsStore.whisperDictationLanguage` is the device-local source of truth for Whisper's configured language.
@@ -109,9 +116,21 @@ For the full file-level map, see [`CODEMAP.md`](CODEMAP.md).
 - `AppSettingsStore.whisperDictationLanguage` persists in local UserDefaults under `KeyVox.App.WhisperDictationLanguage`, defaults to Auto Detect, and is intentionally excluded from iCloud sync so different Macs and iOS devices may keep different choices.
 - Missing or unsupported stored identifiers resolve to Auto Detect. Settings writes must be validated against `WhisperBaseLanguageCatalog`.
 - `AppServiceRegistry` applies the stored language when composing `WhisperService` and observes later changes. `WhisperService` also reapplies the configured identifier before each transcription request.
+- `DictationPipeline` carries the provider-reported language into post-processing results and Vibes text-processing context. Initial rewrites and later latest-insertion rewrites reuse that explicit language instead of inferring one from the text.
 - `Views/Settings/DictationLanguageSection.swift` uses the standard Mac `SettingsRow` plus right-side menu picker. The control displays the current selection directly; it does not use the iOS Change-button presentation.
 - Parakeet TDT v3 has no native forced-language selection. Its row remains visible with a disabled Auto Detect picker and directs users to the Need Help FAQ for its supported languages.
 - Switching to Parakeet does not erase the stored Whisper choice; switching back restores it.
+
+### Linguistic Analysis Routing Contract
+
+- `AppServiceRegistry` creates one analyzer through `LinguisticAnalyzerFactory.healthRouted` and injects it into Whisper continuation analysis, `TranscriptionPostProcessor`, and the Mac Vibes transformer.
+- The native analyzer remains primary. The portable analyzer is resolved lazily from `Bundle.main.resourceURL` only after native analysis is proven unhealthy.
+- Health evaluation uses the caller's requested UTF-16 range and requested features. Invalid token ranges, missing requested word boundaries, unavailable semantic features, missing grammatical-role evidence, and missing lemma evidence are unhealthy.
+- Punctuation-only requested ranges are valid inconclusive results even when the surrounding string contains words; they do not trigger fallback.
+- Healthy native results remain native. Inconclusive results are returned unchanged. A proven unhealthy result selects and retains the fallback route for that normalized request language when a matching fallback exists.
+- The bundled fallback is currently configured for English. Both configured and requested language codes are normalized before matching; an undetermined or different language leaves the fallback unavailable.
+- `averaged-perceptron-tagger-eng` and `wordnet-3.0` are app-bundle resources. Loading occurs only on first matching fallback demand, not during ordinary healthy analysis or app startup.
+- `[KVXLinguistics]` diagnostics identify primary versus fallback routing, normalized language, health reason, and fallback load failure without changing the returned text.
 
 ## Mac Vibes Local Rewrite Contract
 
@@ -145,6 +164,7 @@ For the full file-level map, see [`CODEMAP.md`](CODEMAP.md).
   - Opening help from the Vibes card question-mark path starts at Scene B as standalone help: no close-header space, no X, and a `Done` footer action.
 
 - `MacVibesCoordinator.canUseVibes` means the local Vibes AI model is installed and ready.
+- `MacVibesCoordinator` passes each dictation's provider-reported language into shared output repair, and `MacDictationChangeSession` preserves it for later Vibe changes to the same untouched insertion.
 - `MacVibesCoordinator.selectedVibe` resolves to `.none` while the model is missing, but the persisted selected style is not erased just because the model is unavailable.
 - `MacVibesCoordinator.releasePrewarmSession(reason:)` forwards to the local transformer so prewarm work is cancelled and the local rewrite model is unloaded after dictation and Vibe-change transforms.
 - The app does not prewarm Vibes AI at launch or immediately after install readiness; model loading must stay tied to user-initiated dictation or Vibe-change work.
@@ -198,20 +218,22 @@ Supported flags:
 - If no untouched insertion exists, the chord is still consumed and the pill reports the requested formatting control as off and unavailable for replacement.
 - Formatting feedback uses the shared overlay pill: yellow SF Symbol means enabled, white means disabled, model-backed rendering uses the shared icon pulse, and the completed stroke starts when replacement begins rather than after post-insertion verification.
 
-## Whisper Voice-Activity Gate
+## Shared Voice-Activity Contract
 
-Whisper uses a shared whole-capture VAD gate after macOS stop-time audio acceptance and before paragraph chunking:
+Both dictation providers use the shared `KeyVoxVoiceActivity` analyzer after macOS stop-time audio acceptance:
 
-- `KeyVoxWhisper.WhisperVoiceActivityDetector` owns the actor-isolated whisper.cpp VAD context and loads the package-bundled `ggml-silero-v5.1.2.bin` model.
+- `KeyVoxVoiceActivity.VoiceActivityDetector` owns the actor-isolated `whisper.cpp` VAD context and loads the package-bundled `ggml-silero-v5.1.2.bin` model.
 - `WhisperService+ModelLifecycle` creates the detector during Whisper warmup and releases it when Whisper unloads.
-- `WhisperService+TranscriptionCore` treats no detected speech as likely no-speech and skips decoder work.
-- when speech is detected, the complete accepted recording proceeds unchanged; VAD segments must not trim transcription input
-- if detector creation or analysis is unavailable, the existing Whisper decoder no-speech safeguards remain the fallback
-- the gate is Whisper-specific; Parakeet keeps its existing provider flow, and macOS must not add a second host-local VAD asset or policy
+- `WhisperService+TranscriptionCore` rejects captures with no speech, uses `WhisperSpeechRangePlanner` to skip chunks without speech overlap, and compacts selected speech ranges before decoding.
+- `ParakeetService+TranscriptionCore` lazily creates the same analyzer, rejects a whole capture with no speech, and otherwise sends its original chunk audio to Parakeet without VAD trimming.
+- If detector creation or analysis is unavailable, each provider continues through its existing decoder and provider-specific no-speech safeguards.
+- The app target does not own a second Silero asset or host-local VAD implementation.
 
 ## Post-Processing Order
 
-1. For Whisper, whole-capture VAD rejects no-speech input before chunking; Parakeet begins with the next step.
+`TranscriptionPostProcessor` receives the shared health-routed analyzer from `AppServiceRegistry`; linguistic consumers within normalization and dictionary matching therefore share the same native-or-portable route for a normalized language.
+
+1. Shared VAD rejects whole captures with no detected speech for both providers. Whisper also uses detected speech ranges to select decode input; Parakeet does not trim accepted audio.
 2. `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/AudioParagraphChunker.swift` computes conservative chunk boundaries from silence windows.
 3. The active provider (`WhisperService` or `ParakeetService`) transcribes each chunk and stitches chunk text with `\n\n` when `autoParagraphsEnabled` is on (space-separated when off).
 4. Early literal cleanup runs first: `EmailAddressNormalizer` repairs email literal casing/punctuation boundaries before downstream matching, then dictionary correction applies the persisted entries supplied to `DictionaryMatcher`, including dictionary-backed spoken/literal email recovery.
@@ -238,6 +260,8 @@ Whisper uses a shared whole-capture VAD gate after macOS stop-time audio accepta
 ## Model Management
 
 - macOS model installation is model-aware rather than provider-hard-coded.
+- `KeyVoxModels.WhisperBaseModelArtifact` is the shared source of truth for the Whisper Base revision, filename, download URL, and SHA-256 value. The Mac catalog adds its Core ML encoder artifact and host-owned install layout.
+- `KeyVoxModels` also exposes streaming SHA-256 verification without owning download or installation state; the current Mac installer keeps its existing host-side verification path.
 - `Core/ModelDownloader/DictationModelCatalog.swift` is the source of truth for:
   - model IDs
   - install layouts
@@ -264,6 +288,14 @@ Whisper uses a shared whole-capture VAD gate after macOS stop-time audio accepta
 - `Views/Settings/SettingsVibesAIInstallCard.swift` is the Settings/System Vibes AI management surface for install, removal, progress, repair, and the trigger-key interactions toggle.
 - `Core/Transcription/TranscriptionManager+RecordingSession.swift` persists the last successful final transcription to `UserDefaultsKeys.App.lastTranscription` for the Settings Home tab.
 - `Core/Transcription/TranscriptionManager+RecordingSession.swift` also marks the first-dictation completion flag after successful normal dictation and asks popup eligibility to re-run when that first completion happens outside the first-dictation window.
+
+## Promotion Campaign Contract
+
+- `AppServiceRegistry` creates `PromotionCenter` with the Mac audience, current app version, shared defaults, and runtime-selected bundled or remote manifest source.
+- `KeyVoxPromotions` owns manifest decoding, remote retrieval, cached and bundled fallback, platform/version/date eligibility, deterministic fixed or rotating selection, and persisted selection state.
+- `PromotionCenter.currentCampaign` is the observable app-facing value. Views render that state and do not duplicate campaign selection rules.
+- A refresh updates the repository cache for a later center initialization; the current center keeps the campaign selected from its startup manifest.
+- Preview configuration uses a separate defaults namespace so preview selection does not mutate production campaign state.
 
 ## Update Feed and Release Checks
 
