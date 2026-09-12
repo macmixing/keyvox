@@ -36,6 +36,7 @@ public final class TranscriptionPostProcessor: @unchecked Sendable {
     private let allCapsOverrideNormalizer = AllCapsOverrideNormalizer()
     private let whitespaceNormalizer = WhitespaceNormalizer()
     private let capitalizationNormalizer = SentenceCapitalizationNormalizer()
+    private let ellipsisContinuationNormalizer = EllipsisContinuationNormalizer()
     private let terminalPunctuationNormalizer = TerminalPunctuationNormalizer()
     private let terminalPeriodNormalizer = TerminalPeriodNormalizer()
     private var dictionaryFingerprint = ""
@@ -267,8 +268,15 @@ public final class TranscriptionPostProcessor: @unchecked Sendable {
         #if DEBUG
         logPipelineStage("sentenceNormalized", sentenceNormalized)
         #endif
+        let ellipsisContinuationNormalized = ellipsisContinuationNormalizer.normalize(
+            in: sentenceNormalized,
+            dictionaryEntries: dictionaryEntries
+        )
+        #if DEBUG
+        logPipelineStage("ellipsisContinuationNormalized", ellipsisContinuationNormalized)
+        #endif
         let punctuatedOutput = terminalPunctuationNormalizer.appendTerminalPeriodIfEndingInFormattedTime(
-            sentenceNormalized
+            ellipsisContinuationNormalized
         )
         let terminalPeriodNormalized = terminalPeriodNormalizer.appendTerminalPeriodIfNeeded(
             to: punctuatedOutput,
