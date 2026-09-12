@@ -98,6 +98,34 @@ final class HealthRoutingLinguisticAnalyzerTests: XCTestCase {
         XCTAssertEqual(fallbackFactoryCalls.value, 0)
     }
 
+    func testPunctuationOnlyRequestedRangeDoesNotSelectFallbackForLexicalText() {
+        let lexicalText = #function
+        let text = ".\(lexicalText)"
+        let punctuationRange = NSRange(location: 0, length: 1)
+        let fallbackFactoryCalls = LockedCounter()
+        let router = HealthRoutingLinguisticAnalyzer(
+            primary: FixedAnalyzer { _, _ in
+                LinguisticAnalysis(tokens: [], availableFeatures: [])
+            },
+            fallbackFactory: {
+                fallbackFactoryCalls.increment()
+                return nil
+            },
+            diagnosticHandler: { _ in }
+        )
+
+        let result = router.analyze(
+            text,
+            range: punctuationRange,
+            languageCode: nil,
+            features: [.roles, .wordBoundaries],
+            grouping: .words
+        )
+
+        XCTAssertTrue(result.tokens.isEmpty)
+        XCTAssertEqual(fallbackFactoryCalls.value, 0)
+    }
+
     func testAvailableNameCapabilityDoesNotRequireANameMatch() {
         let text = #function
         let fallbackFactoryCalls = LockedCounter()

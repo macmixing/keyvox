@@ -17,19 +17,24 @@ enum LinguisticAnalysisHealth {
 
     static func evaluate(
         text: String,
+        requestedRange: NSRange?,
         requestedFeatures: LinguisticFeatures,
         analysis: LinguisticAnalysis
     ) -> Result {
         let fullRange = NSRange(text.startIndex..<text.endIndex, in: text)
+        let effectiveRange = requestedRange ?? fullRange
+        guard let stringRange = Range(effectiveRange, in: text) else {
+            return .unhealthy(.invalidTokenRange)
+        }
         guard analysis.tokens.allSatisfy({ token in
-            token.range.location >= fullRange.location
+            token.range.location >= effectiveRange.location
                 && token.range.length > 0
-                && NSMaxRange(token.range) <= NSMaxRange(fullRange)
+                && NSMaxRange(token.range) <= NSMaxRange(effectiveRange)
         }) else {
             return .unhealthy(.invalidTokenRange)
         }
 
-        let hasLexicalInput = text.unicodeScalars.contains { scalar in
+        let hasLexicalInput = text[stringRange].unicodeScalars.contains { scalar in
             CharacterSet.alphanumerics.contains(scalar)
         }
         guard hasLexicalInput else { return .inconclusive }
