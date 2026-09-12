@@ -1,5 +1,5 @@
 import Foundation
-import NaturalLanguage
+import KeyVoxLinguistics
 
 enum PocketTTSChunkPlanner {
     private static let hardBreakPattern = #"\n\s*\n+"#
@@ -29,7 +29,26 @@ enum PocketTTSChunkPlanner {
         return (normalized, PocketTTSConstants.longTextExtraFrames)
     }
 
-    static func chunk(_ text: String, tokenizer: SentencePieceTokenizer, fastModeEnabled: Bool = false) -> [String] {
+    static func chunk(
+        _ text: String,
+        tokenizer: SentencePieceTokenizer,
+        fastModeEnabled: Bool = false,
+        linguisticAnalyzer: any LinguisticAnalyzing = TextLinguistics.provider
+    ) -> [String] {
+        TextLinguistics.$provider.withValue(linguisticAnalyzer) {
+            chunkWithSelectedLinguisticAnalyzer(
+                text,
+                tokenizer: tokenizer,
+                fastModeEnabled: fastModeEnabled
+            )
+        }
+    }
+
+    private static func chunkWithSelectedLinguisticAnalyzer(
+        _ text: String,
+        tokenizer: SentencePieceTokenizer,
+        fastModeEnabled: Bool
+    ) -> [String] {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return [] }
         
@@ -418,31 +437,32 @@ enum PocketTTSChunkPlanner {
     }
 
     private static func shouldSuppressSentenceBoundary(for word: String, in context: String) -> Bool {
-        let tagger = NLTagger(tagSchemes: [.lexicalClass, .nameType])
-        tagger.string = context
-        
         let range = (context as NSString).range(of: word, options: .backwards)
         guard range.location != NSNotFound,
               let swiftRange = Range(range, in: context) else { return false }
-        
-        let stringIndex = swiftRange.lowerBound
-        
-        let (tag, _) = tagger.tag(at: stringIndex, unit: .word, scheme: .lexicalClass)
-        if let tag = tag {
-            if tag == .determiner || tag == .preposition {
+
+        let analysis = TextLinguistics.analyze(
+            context,
+            features: [.roles, .names, .wordBoundaries]
+        )
+        let offset = NSRange(swiftRange, in: context).location
+        guard let token = analysis.token(atUTF16Offset: offset) else { return false }
+
+        if let role = token.role {
+            switch role {
+            case .determiner, .preposition:
                 return false
+            default:
+                break
             }
         }
-        
-        let (nameTag, _) = tagger.tag(at: stringIndex, unit: .word, scheme: .nameType)
-        if let nameTag = nameTag {
-            if nameTag == .personalName || nameTag == .organizationName {
-                let words = context.split(separator: " ")
-                if words.count >= 2 {
-                    let secondToLast = words.dropLast().last.map(String.init) ?? ""
-                    if secondToLast.first?.isUppercase == true {
-                        return true
-                    }
+
+        if case .name = token.identity {
+            let words = context.split(separator: " ")
+            if words.count >= 2 {
+                let secondToLast = words.dropLast().last.map(String.init) ?? ""
+                if secondToLast.first?.isUppercase == true {
+                    return true
                 }
             }
         }
