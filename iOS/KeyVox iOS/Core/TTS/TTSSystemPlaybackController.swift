@@ -23,6 +23,7 @@ final class TTSSystemPlaybackController {
     private var lastIsReplay = false
     private var lastElapsedBucket: Int?
     private var lastDurationBucket: Int?
+    private var isCleared = true
     private lazy var artwork: MPMediaItemArtwork? = Self.makeArtwork()
 
     init(
@@ -105,6 +106,7 @@ final class TTSSystemPlaybackController {
         nowPlayingInfoCenter.nowPlayingInfo = info
         nowPlayingInfoCenter.playbackState = isPlaying ? .playing : .paused
 
+        isCleared = false
         lastTitle = title
         lastVoiceName = voiceName
         lastIsPlaying = isPlaying
@@ -114,10 +116,12 @@ final class TTSSystemPlaybackController {
     }
 
     func clear() {
+        guard isCleared == false else { return }
         updateRemoteCommandAvailability(isActive: false, isPlaying: false, canSeek: false)
         nowPlayingInfoCenter.nowPlayingInfo = nil
         Self.log("Cleared now playing info.")
 
+        isCleared = true
         lastTitle = nil
         lastVoiceName = nil
         lastIsPlaying = false

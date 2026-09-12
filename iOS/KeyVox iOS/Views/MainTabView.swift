@@ -37,10 +37,10 @@ struct MainTabView: View {
                 if #available(iOS 26.0, *) {
                     tabContent
                         .tabBarMinimizeBehavior(.automatic)
-                        .tint(.indigo)
+                        .tint(.yellow)
                 } else {
                     tabContent
-                        .tint(.indigo)
+                        .tint(.yellow)
                 }
             }
             .navigationTitle(selectedTab == .home ? "" : selectedTab.title)

@@ -24,7 +24,7 @@ enum PocketTTSInstallState: Equatable {
     }
 }
 
-enum PocketTTSInstallTarget: Equatable {
+enum PocketTTSInstallTarget: Equatable, Sendable {
     case sharedModel
     case voice(AppSettingsStore.TTSVoice)
 }

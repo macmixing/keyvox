@@ -129,7 +129,7 @@ final class ListPatternDetectorTests: XCTestCase {
         XCTAssertTrue(detected?.trailingText == "and because we leave early")
     }
 
-    func testDetectsRestartedOneMarkersAcrossParagraphBreaks() {
+    func testDoesNotDetectRepeatedOneMarkersAcrossParagraphBreaks() {
         let detector = ListPatternDetector()
         let text = """
         For this trip:
@@ -142,9 +142,7 @@ final class ListPatternDetectorTests: XCTestCase {
         """
 
         let detected = detector.detectList(in: text)
-        XCTAssertTrue(detected != nil)
-        XCTAssertTrue(detected?.items.map(\.spokenIndex) == [1, 2, 3])
-        XCTAssertTrue(detected?.items.map(\.content) == ["Pack charger", "Pack toothbrush", "Pack socks"])
+        XCTAssertNil(detected)
     }
 
     func testDoesNotDetectRestartedOneMarkersWithoutParagraphBreaks() {

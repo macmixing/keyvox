@@ -3,11 +3,9 @@ import KeyVoxLinguistics
 
 public struct ListPatternDetection {
     public let run: [ListPatternMarker]
-    public let renumberSequentially: Bool
 
-    public init(run: [ListPatternMarker], renumberSequentially: Bool) {
+    public init(run: [ListPatternMarker]) {
         self.run = run
-        self.renumberSequentially = renumberSequentially
     }
 }
 
@@ -30,11 +28,7 @@ public struct ListPatternRunSelector {
         languageCode: String?
     ) -> ListPatternDetection? {
         if let bestRun = bestMonotonicRun(from: markers, in: text, languageCode: languageCode), bestRun.count >= 2 {
-            return ListPatternDetection(run: bestRun, renumberSequentially: false)
-        }
-        if let restartedRun = restartedOneRunAcrossParagraphBreaks(from: markers, in: text),
-           restartedRun.count >= 2 {
-            return ListPatternDetection(run: restartedRun, renumberSequentially: true)
+            return ListPatternDetection(run: bestRun)
         }
         return nil
     }
@@ -442,43 +436,4 @@ public struct ListPatternRunSelector {
         return prefix.range(of: boundaryPattern, options: .regularExpression) != nil
     }
 
-    // Paragraph chunking can restart list numbering context between chunks
-    // (e.g. "one ...", "one ...", "one ..."). Recover list intent only when
-    // those restarts are separated by explicit paragraph breaks.
-    private func restartedOneRunAcrossParagraphBreaks(from markers: [ListPatternMarker], in text: String) -> [ListPatternMarker]? {
-        guard markers.count >= 2 else { return nil }
-        let nsText = text as NSString
-
-        var best: [ListPatternMarker] = []
-        var current: [ListPatternMarker] = []
-
-        for marker in markers {
-            guard marker.number == 1 else {
-                if current.count > best.count { best = current }
-                current = []
-                continue
-            }
-
-            guard let previous = current.last else {
-                current = [marker]
-                continue
-            }
-
-            let gapStart = previous.contentStart
-            let gapLength = max(0, marker.markerTokenStart - gapStart)
-            let gap = nsText.substring(with: NSRange(location: gapStart, length: gapLength))
-            if gap.contains("\n\n") {
-                current.append(marker)
-            } else {
-                if current.count > best.count { best = current }
-                current = [marker]
-            }
-        }
-
-        if current.count > best.count {
-            best = current
-        }
-
-        return best.count >= 2 ? best : nil
-    }
 }

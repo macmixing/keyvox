@@ -10,9 +10,13 @@ struct PocketTTSEngineTests {
         await harness.engine.prepareForForegroundSynthesis()
         await harness.engine.prepareForBackgroundContinuation()
 
-        #expect(harness.factoryProbe.createCallCount == 0)
-        #expect(harness.runtime.prepareCount == 0)
-        #expect(harness.runtime.preferredModes.isEmpty)
+        let createCallCount = harness.factoryProbe.createCallCount
+        let prepareCount = await harness.runtime.prepareCountSnapshot()
+        let preferredModes = await harness.runtime.preferredModesSnapshot()
+
+        #expect(createCallCount == 0)
+        #expect(prepareCount == 0)
+        #expect(preferredModes.isEmpty)
     }
 
     @Test func explicitPreparationOwnsRuntimeUntilUnload() async throws {
@@ -25,13 +29,19 @@ struct PocketTTSEngineTests {
         await harness.engine.prepareForForegroundSynthesis()
         try await harness.engine.prepareIfNeeded()
 
-        #expect(harness.factoryProbe.createCallCount == 2)
-        #expect(harness.runtime.prepareCount == 1)
-        #expect(harness.recreatedRuntime.prepareCount == 1)
-        #expect(harness.runtime.preferredModes.count == 2)
-        #expect(matches(harness.runtime.preferredModes[safe: 0], .foreground))
-        #expect(matches(harness.runtime.preferredModes[safe: 1], .backgroundSafe))
-        #expect(harness.recreatedRuntime.preferredModes.isEmpty)
+        let createCallCount = harness.factoryProbe.createCallCount
+        let runtimePrepareCount = await harness.runtime.prepareCountSnapshot()
+        let recreatedRuntimePrepareCount = await harness.recreatedRuntime.prepareCountSnapshot()
+        let preferredModes = await harness.runtime.preferredModesSnapshot()
+        let recreatedPreferredModes = await harness.recreatedRuntime.preferredModesSnapshot()
+
+        #expect(createCallCount == 2)
+        #expect(runtimePrepareCount == 1)
+        #expect(recreatedRuntimePrepareCount == 1)
+        #expect(preferredModes.count == 2)
+        #expect(matches(preferredModes[safe: 0], .foreground))
+        #expect(matches(preferredModes[safe: 1], .backgroundSafe))
+        #expect(recreatedPreferredModes.isEmpty)
     }
 
     private func makeHarness() -> PocketTTSEngineHarness {
@@ -98,6 +108,14 @@ private final class SpyPocketTTSEngineRuntime: PocketTTSEngineRuntime {
     }
 
     func requestPreferredComputeMode(_ mode: KeyVoxTTSComputeMode) {}
+
+    func prepareCountSnapshot() async -> Int {
+        prepareCount
+    }
+
+    func preferredModesSnapshot() async -> [KeyVoxTTSComputeMode] {
+        preferredModes
+    }
 
     func synthesizeStreaming(
         text: String,
