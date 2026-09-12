@@ -1,6 +1,7 @@
 import Foundation
 import Combine
 import KeyVoxCore
+import KeyVoxLinguistics
 import KeyVoxPromotions
 
 @MainActor
@@ -13,6 +14,7 @@ final class AppServiceRegistry {
     let activeProviderRouter: SwitchableDictationProvider
     let whisperService: WhisperService
     let parakeetService: ParakeetService
+    let linguisticAnalyzer: any LinguisticAnalyzing
     let localRewriteModelManager: MacLocalRewriteModelManager
     let vibesCoordinator: MacVibesCoordinator
     let weeklyWordStatsStore: WeeklyWordStatsStore
@@ -30,7 +32,7 @@ final class AppServiceRegistry {
             audioRecorder: audioRecorder,
             serviceRegistry: self,
             vibesCoordinator: vibesCoordinator,
-            postProcessor: TranscriptionPostProcessor()
+            postProcessor: TranscriptionPostProcessor(linguisticAnalyzer: linguisticAnalyzer)
         )
         audioRecorder.prepareRecordingSession()
 
@@ -49,6 +51,7 @@ final class AppServiceRegistry {
         activeProviderRouter: SwitchableDictationProvider,
         whisperService: WhisperService,
         parakeetService: ParakeetService,
+        linguisticAnalyzer: (any LinguisticAnalyzing)? = nil,
         localRewriteModelManager: MacLocalRewriteModelManager? = nil,
         vibesCoordinator: MacVibesCoordinator? = nil,
         weeklyWordStatsStore: WeeklyWordStatsStore,
@@ -63,11 +66,14 @@ final class AppServiceRegistry {
         self.activeProviderRouter = activeProviderRouter
         self.whisperService = whisperService
         self.parakeetService = parakeetService
+        let resolvedLinguisticAnalyzer = linguisticAnalyzer ?? Self.makeLinguisticAnalyzer()
+        self.linguisticAnalyzer = resolvedLinguisticAnalyzer
         let resolvedLocalRewriteModelManager = localRewriteModelManager ?? MacLocalRewriteModelManager(refreshOnInit: false)
         self.localRewriteModelManager = resolvedLocalRewriteModelManager
         self.vibesCoordinator = vibesCoordinator ?? Self.makeVibesCoordinator(
             appSettings: appSettings,
-            localRewriteModelManager: resolvedLocalRewriteModelManager
+            localRewriteModelManager: resolvedLocalRewriteModelManager,
+            linguisticAnalyzer: resolvedLinguisticAnalyzer
         )
         self.weeklyWordStatsStore = weeklyWordStatsStore
         self.weeklyWordStatsCloudSync = weeklyWordStatsCloudSync
@@ -96,8 +102,10 @@ final class AppServiceRegistry {
             fileManager: fileManager,
             baseDirectoryURL: appSupportRoot
         )
+        linguisticAnalyzer = Self.makeLinguisticAnalyzer()
         whisperService = WhisperService(
-            modelPathResolver: modelLocator.resolvedWhisperModelPath
+            modelPathResolver: modelLocator.resolvedWhisperModelPath,
+            linguisticAnalyzer: linguisticAnalyzer
         )
         parakeetService = ParakeetService(
             modelURLResolver: modelLocator.resolvedParakeetModelDirectoryURL
@@ -108,7 +116,8 @@ final class AppServiceRegistry {
         )
         vibesCoordinator = Self.makeVibesCoordinator(
             appSettings: appSettings,
-            localRewriteModelManager: localRewriteModelManager
+            localRewriteModelManager: localRewriteModelManager,
+            linguisticAnalyzer: linguisticAnalyzer
         )
         activeProviderRouter = SwitchableDictationProvider(initialProvider: whisperService)
         dictationProvider = activeProviderRouter
@@ -181,11 +190,13 @@ final class AppServiceRegistry {
 
     private static func makeVibesCoordinator(
         appSettings: AppSettingsStore,
-        localRewriteModelManager: MacLocalRewriteModelManager
+        localRewriteModelManager: MacLocalRewriteModelManager,
+        linguisticAnalyzer: any LinguisticAnalyzing
     ) -> MacVibesCoordinator {
         let localRewriteInferenceService = localRewriteInferenceService(for: localRewriteModelManager)
         let localStyleRewriteTextTransformer = MacLocalStyleRewriteTextTransformer(
-            inferenceService: localRewriteInferenceService
+            inferenceService: localRewriteInferenceService,
+            linguisticAnalyzer: linguisticAnalyzer
         )
         localRewriteModelManager.onDidInvalidateInstalledModel = { [weak localRewriteInferenceService] in
             Task { @MainActor in
@@ -201,6 +212,13 @@ final class AppServiceRegistry {
             releaseResources: { reason in
                 await localStyleRewriteTextTransformer.releaseResources(reason: reason)
             }
+        )
+    }
+
+    private static func makeLinguisticAnalyzer() -> any LinguisticAnalyzing {
+        LinguisticAnalyzerFactory.healthRouted(
+            portableResourceDirectory: { Bundle.main.resourceURL },
+            portableLanguageCode: "en"
         )
     }
 

@@ -16,6 +16,7 @@ final class KeyboardLocalStyleRewriteTextTransformer: DictationTextTransforming 
             id: UUID(),
             styleIdentifier: request.styleIdentifier,
             baseText: request.baseText,
+            languageCode: request.languageCode,
             createdAt: Date()
         )
 

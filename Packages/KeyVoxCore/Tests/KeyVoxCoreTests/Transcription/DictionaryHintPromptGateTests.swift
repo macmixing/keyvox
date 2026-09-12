@@ -1,7 +1,7 @@
 import XCTest
 @testable import KeyVoxCore
 
-final class DictionaryHintPromptGateTests: XCTestCase {
+final class DictionaryHintPromptGateTests: LinguisticAnalyzerTestCase {
     func testSkipsVeryShortUtterances() {
         XCTAssertFalse(
             DictionaryHintPromptGate.shouldUseHintPrompt(

@@ -2,7 +2,7 @@ import Foundation
 import XCTest
 @testable import KeyVoxCore
 
-final class ReplacementScorerTests: XCTestCase {
+final class ReplacementScorerTests: LinguisticAnalyzerTestCase {
     func testThresholdsMatchBalancedPolicy() {
         let scorer = ReplacementScorer.balanced
         XCTAssertTrue(scorer.threshold(for: 1) == 0.90)

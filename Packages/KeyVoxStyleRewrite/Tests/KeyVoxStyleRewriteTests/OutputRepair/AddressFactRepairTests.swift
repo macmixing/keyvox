@@ -2,7 +2,7 @@ import Foundation
 import XCTest
 @testable import KeyVoxStyleRewrite
 
-final class AddressFactRepairTests: XCTestCase {
+final class AddressFactRepairTests: LinguisticAnalyzerTestCase {
     func testRewriteRepairDoesNotConvertAddressLikeSpokenNumberClusters() {
         let output = OutputRepair.repairModelOutput(
             original: "Meet me at eleven fifty two North Washington Street.",

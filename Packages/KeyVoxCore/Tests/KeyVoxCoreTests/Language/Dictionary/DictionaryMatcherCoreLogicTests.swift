@@ -3,7 +3,7 @@ import XCTest
 @testable import KeyVoxCore
 
 @MainActor
-final class DictionaryMatcherCoreLogicTests: XCTestCase {
+final class DictionaryMatcherCoreLogicTests: LinguisticAnalyzerTestCase {
     func testStylizedFallbackRequiresActualInternalUppercase() async {
         let matcher = makeMatcher()
         let punctuationOnly = DictionaryMatcher.Token(

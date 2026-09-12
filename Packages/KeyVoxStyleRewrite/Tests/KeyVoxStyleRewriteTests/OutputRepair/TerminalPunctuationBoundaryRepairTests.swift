@@ -2,7 +2,7 @@ import Foundation
 import XCTest
 @testable import KeyVoxStyleRewrite
 
-final class TerminalPunctuationBoundaryRepairTests: XCTestCase {
+final class TerminalPunctuationBoundaryRepairTests: LinguisticAnalyzerTestCase {
     func testTerminalPunctuationBoundaryRepairRestoresSourceBoundaryExclamation() {
         let output = TerminalPunctuationBoundaryRepair().repair(
             original: "That is wild! Are we shipping this?",

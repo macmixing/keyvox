@@ -108,6 +108,7 @@ public enum StyleRewriteDictationConfiguration {
     public static func request(
         for style: StyleRewriteStyle,
         baseText: String,
+        languageCode: String? = nil,
         deterministicVariants: [StyleRewriteInputVariant] = [],
         contextTokenLimit: Int = modelContextTokenLimit,
         maximumResponseTokens: Int = defaultMaximumResponseTokens
@@ -118,6 +119,7 @@ public enum StyleRewriteDictationConfiguration {
         case .polished:
             return polishedRequest(
                 baseText: baseText,
+                languageCode: languageCode,
                 deterministicVariants: deterministicVariants,
                 contextTokenLimit: contextTokenLimit,
                 maximumResponseTokens: maximumResponseTokens
@@ -125,6 +127,7 @@ public enum StyleRewriteDictationConfiguration {
         case .casual:
             return casualRequest(
                 baseText: baseText,
+                languageCode: languageCode,
                 deterministicVariants: deterministicVariants,
                 contextTokenLimit: contextTokenLimit,
                 maximumResponseTokens: maximumResponseTokens
@@ -132,6 +135,7 @@ public enum StyleRewriteDictationConfiguration {
         case .chill:
             return chillRequest(
                 baseText: baseText,
+                languageCode: languageCode,
                 deterministicVariants: deterministicVariants,
                 contextTokenLimit: contextTokenLimit,
                 maximumResponseTokens: maximumResponseTokens
@@ -141,12 +145,14 @@ public enum StyleRewriteDictationConfiguration {
 
     private static func polishedRequest(
         baseText: String,
+        languageCode: String?,
         deterministicVariants: [StyleRewriteInputVariant],
         contextTokenLimit: Int,
         maximumResponseTokens: Int
     ) -> TextTransformRequest {
         return TextTransformRequest(
             baseText: baseText,
+            languageCode: languageCode,
             styleIdentifier: StyleRewriteStyle.polished.styleIdentifier,
             instructions: polishedLoRASystemPrompt,
             promptPrefix: "",
@@ -160,12 +166,14 @@ public enum StyleRewriteDictationConfiguration {
 
     private static func casualRequest(
         baseText: String,
+        languageCode: String?,
         deterministicVariants: [StyleRewriteInputVariant],
         contextTokenLimit: Int,
         maximumResponseTokens: Int
     ) -> TextTransformRequest {
         return TextTransformRequest(
             baseText: baseText,
+            languageCode: languageCode,
             styleIdentifier: StyleRewriteStyle.casual.styleIdentifier,
             instructions: casualLoRASystemPrompt,
             promptPrefix: "",
@@ -179,12 +187,14 @@ public enum StyleRewriteDictationConfiguration {
 
     private static func chillRequest(
         baseText: String,
+        languageCode: String?,
         deterministicVariants: [StyleRewriteInputVariant],
         contextTokenLimit: Int,
         maximumResponseTokens: Int
     ) -> TextTransformRequest {
         let cleanupRequest = casualRequest(
             baseText: baseText,
+            languageCode: languageCode,
             deterministicVariants: deterministicVariants,
             contextTokenLimit: contextTokenLimit,
             maximumResponseTokens: maximumResponseTokens
@@ -192,6 +202,7 @@ public enum StyleRewriteDictationConfiguration {
 
         return TextTransformRequest(
             baseText: baseText,
+            languageCode: languageCode,
             styleIdentifier: StyleRewriteStyle.chill.styleIdentifier,
             instructions: cleanupRequest.instructions,
             promptPrefix: cleanupRequest.promptPrefix,

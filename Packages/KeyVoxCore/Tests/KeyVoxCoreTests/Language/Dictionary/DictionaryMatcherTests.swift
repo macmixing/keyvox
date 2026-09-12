@@ -3,7 +3,7 @@ import XCTest
 @testable import KeyVoxCore
 
 @MainActor
-final class DictionaryMatcherTests: XCTestCase {
+final class DictionaryMatcherTests: LinguisticAnalyzerTestCase {
     func testMatchesSpokenNumbersInsideAlphanumericDictionaryEntry() async {
         let matcher = makeRuntimeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "9to5Mac")])

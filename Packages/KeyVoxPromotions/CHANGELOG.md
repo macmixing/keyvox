@@ -6,6 +6,23 @@ The format loosely follows Keep a Changelog, and the package uses semantic versi
 
 ---
 
+## [1.1.0] - 2026-09-12
+
+Shared campaign delivery now supports Android alongside the existing Apple clients.
+
+### Includes
+
+- Added Android as a first-class promotion platform for manifest eligibility and campaign selection.
+- Added Android campaign definitions to the bundled promotion manifest.
+- Added configurable resource-bundle resolution so each client can provide the package resources from its own runtime layout.
+- Moved promotion state publishing behind the shared cross-platform state abstraction while preserving native observation on Apple platforms.
+
+### Notes
+
+- `1.1.0` extends the existing campaign source of truth to Android without changing iOS or macOS campaign behavior.
+
+---
+
 ## [1.0.0] - 2026-08-26
 
 Initial shared campaign delivery and selection system for KeyVox on iOS and macOS.

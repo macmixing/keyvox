@@ -2,7 +2,7 @@ import Foundation
 import XCTest
 @testable import KeyVoxStyleRewrite
 
-final class DictationUtteranceArtifactTests: XCTestCase {
+final class DictationUtteranceArtifactTests: LinguisticAnalyzerTestCase {
     func testDictationUtteranceArtifactRoundTripsThroughJSON() throws {
         let artifact = DictationUtteranceArtifact(
             id: UUID(),

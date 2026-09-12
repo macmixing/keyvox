@@ -2,7 +2,7 @@ import Foundation
 import XCTest
 @testable import KeyVoxStyleRewrite
 
-final class TextTransformChunkPlannerTests: XCTestCase {
+final class TextTransformChunkPlannerTests: LinguisticAnalyzerTestCase {
     func testChunkPlannerBudgetsInstructionsInputAndExpectedOutput() async throws {
         let request = TextTransformRequest(
             baseText: "one two three four five six seven eight",

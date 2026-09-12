@@ -2,7 +2,7 @@ import XCTest
 @testable import KeyVoxCore
 
 @MainActor
-final class WhisperServiceRequestStateTests: XCTestCase {
+final class WhisperServiceRequestStateTests: LinguisticAnalyzerTestCase {
     func testStaleRequestCannotOverwriteCurrentTranscriptionState() async {
         let service = WhisperService()
         let staleRequestID = service.beginTranscriptionRequest()

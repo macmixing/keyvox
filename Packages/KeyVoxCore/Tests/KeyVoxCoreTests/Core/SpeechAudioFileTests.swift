@@ -2,7 +2,7 @@ import Foundation
 import XCTest
 @testable import KeyVoxCore
 
-final class SpeechAudioFileTests: XCTestCase {
+final class SpeechAudioFileTests: LinguisticAnalyzerTestCase {
     private func little(_ value: UInt32, count: Int) -> [UInt8] {
         (0..<count).map { UInt8(truncatingIfNeeded: value >> ($0 * 8)) }
     }

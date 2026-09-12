@@ -3,7 +3,7 @@ import KeyVoxLinguistics
 @testable import KeyVoxCore
 
 @MainActor
-final class WhisperSegmentTextAssemblerTests: XCTestCase {
+final class WhisperSegmentTextAssemblerTests: LinguisticAnalyzerTestCase {
     func testLowercasesIncidentalContinuationCapitals() async {
         let assembler = makeAssembler()
         let text = await assembler.assemble(

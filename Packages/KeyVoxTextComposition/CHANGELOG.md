@@ -6,6 +6,24 @@ The format loosely follows Keep a Changelog, and the package uses semantic versi
 
 ---
 
+## [1.1.0] - 2026-09-12
+
+Shared text composition now provides portable insertion behavior for Apple and Android editors.
+
+### Includes
+
+- Added a complete insertion-composition result that can return normalized text and whether the following editor character should be removed.
+- Added portable URL and link-prefix recognition without depending on Apple data detectors.
+- Added calendar-date prefix detection and explicit document-start context for consistent capitalization decisions.
+- Moved dictionary-aware leading capitalization into a shared policy that can be used by each client’s editor integration.
+- Added platform-neutral verification and probe targets for consuming the same composition behavior outside Apple application targets.
+
+### Notes
+
+- `1.1.0` extends the existing composition policies to portable editor clients while preserving Apple insertion behavior.
+
+---
+
 ## [1.0.4] - 2026-09-04
 
 Preserved sentence-start capitalization when dictation follows a numbered hyphen sequence.

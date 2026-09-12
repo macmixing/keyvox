@@ -6,6 +6,22 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.1.0] - 2026-09-12
+
+The shared speech runtime now supports portable Whisper and voice-activity consumers.
+
+### Includes
+
+- Added a portable C bridge for the speech runtime used by non-Apple builds.
+- Kept the existing bundled Whisper binary conditional to Apple platforms while exposing the same `KeyVoxSpeechRuntime` product to portable clients.
+- Preserved package ownership of the Silero voice-activity resources and documented their bundled license alongside the portable runtime.
+
+### Notes
+
+- `1.1.0` extends the existing shared voice-activity runtime to portable platform builds without changing Apple VAD behavior.
+
+---
+
 ## [1.0.0] - 2026-08-22
 
 Provider-neutral Silero voice activity detection shared by KeyVox transcription models.

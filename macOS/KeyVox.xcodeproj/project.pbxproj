@@ -176,6 +176,8 @@
 		E90000052FE1000100AA0001 /* MacTriggerTapClassifierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90000152FE1000100AA0001 /* MacTriggerTapClassifierTests.swift */; };
 		E90000062FE1000100AA0001 /* KeyVoxStyleRewrite in Frameworks */ = {isa = PBXBuildFile; productRef = E90000212FE1000100AA0001 /* KeyVoxStyleRewrite */; };
 		E90000072FE1000100AA0001 /* KeyVoxStyleRewrite in Frameworks */ = {isa = PBXBuildFile; productRef = E90000222FE1000100AA0001 /* KeyVoxStyleRewrite */; };
+		D22000012FF6000100AA0001 /* averaged-perceptron-tagger-eng in Resources */ = {isa = PBXBuildFile; fileRef = D22000042FF6000100AA0001 /* averaged-perceptron-tagger-eng */; };
+		D22000022FF6000100AA0001 /* wordnet-3.0 in Resources */ = {isa = PBXBuildFile; fileRef = D22000052FF6000100AA0001 /* wordnet-3.0 */; };
 		D22000032FF6000100AA0001 /* KeyVoxLinguistics in Frameworks */ = {isa = PBXBuildFile; productRef = D22000072FF6000100AA0001 /* KeyVoxLinguistics */; };
 		D23000012FF7000100AA0001 /* KeyVoxWhisper in Frameworks */ = {isa = PBXBuildFile; productRef = D23000042FF7000100AA0001 /* KeyVoxWhisper */; };
 		D23000022FF7000100AA0001 /* KeyVoxVoiceActivity in Frameworks */ = {isa = PBXBuildFile; productRef = D23000052FF7000100AA0001 /* KeyVoxVoiceActivity */; };
@@ -496,6 +498,8 @@
 		F30000352FC2000100AA0001 /* AppUpdateApplicationsPrereflightTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateApplicationsPrereflightTests.swift; sourceTree = "<group>"; };
 		F30000372FC2000100AA0001 /* AppActionButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppActionButton.swift; sourceTree = "<group>"; };
 		F41010052FF3000100AA0001 /* MacPromotionCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacPromotionCard.swift; sourceTree = "<group>"; };
+		D22000042FF6000100AA0001 /* averaged-perceptron-tagger-eng */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "averaged-perceptron-tagger-eng"; path = "../Tools/Models/averaged-perceptron-tagger-eng"; sourceTree = SOURCE_ROOT; };
+		D22000052FF6000100AA0001 /* wordnet-3.0 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "wordnet-3.0"; path = "../Tools/Models/wordnet-3.0"; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -606,6 +610,8 @@
 		8E6D05D32F3C51D6003BD458 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				D22000042FF6000100AA0001 /* averaged-perceptron-tagger-eng */,
+				D22000052FF6000100AA0001 /* wordnet-3.0 */,
 				8E9540092F6AA90B00B1F3B5 /* LICENSE.md */,
 				8E95400A2F6AA90B00B1F3B5 /* THIRD_PARTY_NOTICES.md */,
 				8E70C6EC2F623AFA00E9E555 /* updater.sh */,
@@ -1162,6 +1168,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D22000012FF6000100AA0001 /* averaged-perceptron-tagger-eng in Resources */,
+				D22000022FF6000100AA0001 /* wordnet-3.0 in Resources */,
 				8E70C6ED2F623AFA00E9E555 /* updater.sh in Resources */,
 				8EECEB122F65676100BECF17 /* Kanit-Light.ttf in Resources */,
 				8E927F652F3C532800C071B3 /* Assets.xcassets in Resources */,
@@ -1590,7 +1598,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.5;
-				MARKETING_VERSION = 1.3.8;
+				MARKETING_VERSION = 1.3.9;
 				PRODUCT_BUNDLE_IDENTIFIER = com.cueit.keyvox;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1641,7 +1649,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.5;
-				MARKETING_VERSION = 1.3.8;
+				MARKETING_VERSION = 1.3.9;
 				PRODUCT_BUNDLE_IDENTIFIER = com.cueit.keyvox;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";

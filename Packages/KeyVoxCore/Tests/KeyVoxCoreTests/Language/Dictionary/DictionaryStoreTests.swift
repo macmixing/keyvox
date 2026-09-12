@@ -3,7 +3,7 @@ import XCTest
 @testable import KeyVoxCore
 
 @MainActor
-final class DictionaryStoreTests: XCTestCase {
+final class DictionaryStoreTests: LinguisticAnalyzerTestCase {
     func testAddUpdateDeleteAndReloadPersistence() async throws {
         try withTemporaryDirectory { root in
             let base = root.appendingPathComponent("KeyVox", isDirectory: true)

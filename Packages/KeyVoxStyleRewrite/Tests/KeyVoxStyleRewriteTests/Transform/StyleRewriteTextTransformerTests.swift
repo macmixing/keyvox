@@ -3,7 +3,7 @@ import XCTest
 @testable import KeyVoxStyleRewrite
 
 @MainActor
-final class StyleRewriteTextTransformerTests: XCTestCase {
+final class StyleRewriteTextTransformerTests: LinguisticAnalyzerTestCase {
     func testStyleRewriteTransformerMapsBackendFailureWithoutClaimingVibeSuccess() async throws {
         let request = try XCTUnwrap(StyleRewriteDictationConfiguration.request(
             for: .polished,

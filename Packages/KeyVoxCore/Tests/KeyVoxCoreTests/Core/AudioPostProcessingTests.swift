@@ -1,7 +1,7 @@
 import XCTest
 @testable import KeyVoxCore
 
-final class AudioPostProcessingTests: XCTestCase {
+final class AudioPostProcessingTests: LinguisticAnalyzerTestCase {
     func testRemoveInternalGapsPreservesTrailingPartialWindow() {
         let speechWindow = Array(repeating: Float(0.2), count: 1_600)
         let removableGapWindowCount = 17

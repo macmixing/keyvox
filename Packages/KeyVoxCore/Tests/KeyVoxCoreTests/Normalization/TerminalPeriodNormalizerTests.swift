@@ -1,7 +1,7 @@
 import XCTest
 @testable import KeyVoxCore
 
-final class TerminalPeriodNormalizerTests: XCTestCase {
+final class TerminalPeriodNormalizerTests: LinguisticAnalyzerTestCase {
     func testAppendsPeriodToOrdinaryProseWithoutTerminalPunctuation() {
         let output = TerminalPeriodNormalizer().appendTerminalPeriodIfNeeded(to: "Please send the notes tomorrow")
 

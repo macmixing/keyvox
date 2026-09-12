@@ -1,7 +1,7 @@
 import XCTest
 @testable import KeyVoxTTS
 
-final class PocketTTSSpokenNumberNormalizerTests: XCTestCase {
+final class PocketTTSSpokenNumberNormalizerTests: LinguisticAnalyzerTestCase {
     func testNormalizeSpeaksSellerCounterAmounts() {
         let normalized = PocketTTSChunkPlanner.normalize(
             "Seller countered: $46,000 / $8k down / 30 months"
