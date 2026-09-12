@@ -2,7 +2,7 @@ import Foundation
 import XCTest
 @testable import KeyVoxStyleRewrite
 
-final class NumberEvidenceRepairTests: XCTestCase {
+final class NumberEvidenceRepairTests: LinguisticAnalyzerTestCase {
     func testRewriteRepairRemovesCommaLeftByDeletedMiddleTokens() {
         let output = OutputRepair.repairModelOutput(
             original: "Hey, um what are you doing, um tomorrow?",

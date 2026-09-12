@@ -1,5 +1,5 @@
 import Foundation
-import NaturalLanguage
+import KeyVoxLinguistics
 
 struct RepairWordToken: Equatable {
     let text: String
@@ -9,7 +9,7 @@ struct RepairWordToken: Equatable {
 
 struct RepairTaggedToken {
     let token: RepairWordToken
-    let tag: NLTag?
+    let tag: LexicalRole?
     let lemma: String?
 }
 
@@ -43,13 +43,19 @@ enum RepairTokenization {
         let wordTokens = wordTokens(in: text)
         guard !wordTokens.isEmpty else { return [] }
 
-        let tagger = NLTagger(tagSchemes: [.lexicalClass, .lemma])
-        tagger.string = text
+        let analysis = TextLinguistics.analyze(
+            text,
+            features: [.roles, .lemmas, .wordBoundaries]
+        )
 
         return wordTokens.map { token in
-            let tag = tagger.tag(at: token.range.lowerBound, unit: .word, scheme: .lexicalClass).0
-            let lemma = tagger.tag(at: token.range.lowerBound, unit: .word, scheme: .lemma).0?.rawValue
-            return RepairTaggedToken(token: token, tag: tag, lemma: lemma)
+            let offset = NSRange(token.range, in: text).location
+            let linguisticToken = analysis.token(atUTF16Offset: offset)
+            return RepairTaggedToken(
+                token: token,
+                tag: linguisticToken?.role,
+                lemma: linguisticToken?.lemma
+            )
         }
     }
 

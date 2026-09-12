@@ -1,4 +1,5 @@
 import Foundation
+import KeyVoxLinguistics
 
 public struct StyleRewriteTextTransformTokenCounter: TextTransformTokenCounting {
     private let fallbackTokenCounter: any TextTransformTokenCounting
@@ -18,13 +19,15 @@ public final class StyleRewriteTextTransformer: DictationTextTransforming {
 
     private let tokenCounter: any TextTransformTokenCounting
     private let chunkResponderProvider: ChunkResponderProvider
-    private let outputRepairExecutor = OutputRepairExecutor()
+    private let outputRepairExecutor: OutputRepairExecutor
 
     public init(
         tokenCounter: any TextTransformTokenCounting = StyleRewriteTextTransformTokenCounter(),
+        linguisticAnalyzer: any LinguisticAnalyzing = TextLinguistics.provider,
         chunkResponderProvider: @escaping ChunkResponderProvider
     ) {
         self.tokenCounter = tokenCounter
+        outputRepairExecutor = OutputRepairExecutor(linguisticAnalyzer: linguisticAnalyzer)
         self.chunkResponderProvider = chunkResponderProvider
     }
 

@@ -2,7 +2,7 @@ import Foundation
 import XCTest
 @testable import KeyVoxStyleRewrite
 
-final class StyleRewriteInputVariantSelectionTests: XCTestCase {
+final class StyleRewriteInputVariantSelectionTests: LinguisticAnalyzerTestCase {
     func testRewriteInputVariantSelectionUsesNoListVersionVariant() {
         let baseText = "That's version:\n\n1. Dot\n2. Dot seven"
         let selected = StyleRewriteInputVariantSelection.baseText(

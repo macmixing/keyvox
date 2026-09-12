@@ -14,14 +14,23 @@ let package = Package(
             targets: ["KeyVoxStyleRewrite"]
         )
     ],
+    dependencies: [
+        .package(path: "../KeyVoxLinguistics"),
+    ],
     targets: [
         .target(
             name: "KeyVoxStyleRewrite",
+            dependencies: [
+                .product(name: "KeyVoxLinguistics", package: "KeyVoxLinguistics"),
+            ],
             path: "Sources/KeyVoxStyleRewrite"
         ),
         .testTarget(
             name: "KeyVoxStyleRewriteTests",
-            dependencies: ["KeyVoxStyleRewrite"],
+            dependencies: [
+                "KeyVoxStyleRewrite",
+                .product(name: "KeyVoxLinguistics", package: "KeyVoxLinguistics"),
+            ],
             path: "Tests/KeyVoxStyleRewriteTests"
         )
     ]

@@ -3,7 +3,7 @@ import XCTest
 @testable import KeyVoxStyleRewrite
 
 @MainActor
-final class TextTransformChunkRunnerTests: XCTestCase {
+final class TextTransformChunkRunnerTests: LinguisticAnalyzerTestCase {
     func testChunkRunnerStitchesMultipleChunksInOrder() async throws {
         let request = StyleRewriteTestRequestFactory.request("Alpha one. Beta two.")
         let responder = StyleRewriteTestChunkResponder(responses: [

@@ -2,7 +2,7 @@ import Foundation
 import XCTest
 @testable import KeyVoxStyleRewrite
 
-final class VersionNumberEvidenceRepairTests: XCTestCase {
+final class VersionNumberEvidenceRepairTests: LinguisticAnalyzerTestCase {
     func testRewriteRepairPreservesVersionNumberDecimalShape() {
         let output = OutputRepair.repairModelOutput(
             original: "I'm shipping version five point thirty tomorrow.",

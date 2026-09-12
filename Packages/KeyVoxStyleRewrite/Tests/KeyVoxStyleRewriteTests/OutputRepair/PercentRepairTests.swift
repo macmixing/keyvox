@@ -2,7 +2,7 @@ import Foundation
 import XCTest
 @testable import KeyVoxStyleRewrite
 
-final class PercentRepairTests: XCTestCase {
+final class PercentRepairTests: LinguisticAnalyzerTestCase {
     func testRewriteRepairFixesModelPercentSentenceSplit() {
         let output = OutputRepair.repairModelOutput(
             original: "The discount is five percent if we ship today.",

@@ -1,8 +1,17 @@
 import Foundation
+import KeyVoxLinguistics
 
 actor OutputRepairExecutor {
+    private let linguisticAnalyzer: any LinguisticAnalyzing
+
+    init(linguisticAnalyzer: any LinguisticAnalyzing) {
+        self.linguisticAnalyzer = linguisticAnalyzer
+    }
+
     func repairModelOutput(original: String, rewritten: String) -> String {
-        OutputRepair.repairModelOutput(original: original, rewritten: rewritten)
+        TextLinguistics.$provider.withValue(linguisticAnalyzer) {
+            OutputRepair.repairModelOutput(original: original, rewritten: rewritten)
+        }
     }
 }
 
