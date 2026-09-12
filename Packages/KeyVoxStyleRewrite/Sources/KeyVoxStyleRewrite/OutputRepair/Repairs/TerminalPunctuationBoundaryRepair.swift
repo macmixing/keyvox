@@ -119,8 +119,8 @@ struct TerminalPunctuationBoundaryRepair {
     }
 
     private func punctuationCluster(in text: Substring) -> String? {
-        let punctuation = text.filter { $0 == "!" || $0 == "?" }
-        guard punctuation.contains("!") else {
+        let punctuation = text.filter { $0 == "!" || $0 == "?" || $0 == "…" }
+        guard punctuation.contains("!") || punctuation.contains("…") else {
             return nil
         }
 

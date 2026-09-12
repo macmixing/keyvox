@@ -17,6 +17,7 @@ Vibes rewrite repair now uses shared, health-routed linguistic analysis across s
 - Passed request language into the configured analyzer so a shared health router can select a matching portable provider when native evidence is unhealthy.
 - Carried dictation language context through rewrite requests and saved utterance artifacts so initial and later style changes use the same language-aware analysis.
 - Preserved currency-unit evidence when lemmas are unavailable and tightened ambiguous split-date handling without relying on example-specific vocabulary.
+- Preserved source-backed ellipses through shared output repair for Casual, Polished, and Chill rewrites.
 
 ### Notes
 

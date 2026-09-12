@@ -3,6 +3,20 @@ import XCTest
 @testable import KeyVoxStyleRewrite
 
 final class TerminalPunctuationBoundaryRepairTests: LinguisticAnalyzerTestCase {
+    func testTerminalPunctuationBoundaryRepairRestoresSourceEllipsis() {
+        let inlineOutput = TerminalPunctuationBoundaryRepair().repair(
+            original: "Well… I agree.",
+            rewritten: "well i agree"
+        )
+        let terminalOutput = TerminalPunctuationBoundaryRepair().repair(
+            original: "Wait…",
+            rewritten: "wait"
+        )
+
+        XCTAssertEqual(inlineOutput, "well… i agree")
+        XCTAssertEqual(terminalOutput, "wait…")
+    }
+
     func testTerminalPunctuationBoundaryRepairRestoresSourceBoundaryExclamation() {
         let output = TerminalPunctuationBoundaryRepair().repair(
             original: "That is wild! Are we shipping this?",
