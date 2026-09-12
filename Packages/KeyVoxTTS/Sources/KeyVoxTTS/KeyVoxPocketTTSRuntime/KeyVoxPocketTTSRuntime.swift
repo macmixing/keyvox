@@ -1,5 +1,6 @@
 @preconcurrency import CoreML
 import Foundation
+import KeyVoxLinguistics
 
 public enum KeyVoxTTSComputeMode: Sendable {
     case foreground
@@ -15,6 +16,7 @@ public actor KeyVoxPocketTTSRuntime {
     }
 
     let assetLayout: KeyVoxTTSAssetLayout
+    let linguisticAnalyzer: any LinguisticAnalyzing
     var foregroundModels: ModelSet?
     var backgroundModels: ModelSet?
     var constantsBundle: PocketTTSConstantsBundle?
@@ -22,8 +24,12 @@ public actor KeyVoxPocketTTSRuntime {
     var cachedVoiceKVSnapshots: [KeyVoxTTSVoice: PocketTTSInferenceTypes.KVCacheState] = [:]
     nonisolated let computeModeController = ComputeModeController()
 
-    public init(assetLayout: KeyVoxTTSAssetLayout) {
+    public init(
+        assetLayout: KeyVoxTTSAssetLayout,
+        linguisticAnalyzer: any LinguisticAnalyzing = TextLinguistics.provider
+    ) {
         self.assetLayout = assetLayout
+        self.linguisticAnalyzer = linguisticAnalyzer
     }
 
     public func prepareIfNeeded() async throws {
@@ -101,7 +107,8 @@ public actor KeyVoxPocketTTSRuntime {
         let chunks = PocketTTSChunkPlanner.chunk(
             trimmedText,
             tokenizer: constants.tokenizer,
-            fastModeEnabled: fastModeEnabled
+            fastModeEnabled: fastModeEnabled,
+            linguisticAnalyzer: linguisticAnalyzer
         )
         Self.log(
             "Voice prefill completed in \(String(format: "%.3f", CFAbsoluteTimeGetCurrent() - voicePrefillStart))s. Chunks: \(chunks.count)"

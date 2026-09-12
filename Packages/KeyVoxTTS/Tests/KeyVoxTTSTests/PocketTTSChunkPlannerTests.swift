@@ -1,7 +1,7 @@
 import XCTest
 @testable import KeyVoxTTS
 
-final class PocketTTSChunkPlannerTests: XCTestCase {
+final class PocketTTSChunkPlannerTests: LinguisticAnalyzerTestCase {
     func testNormalizeAddsTerminalPunctuation() {
         let normalized = PocketTTSChunkPlanner.normalize("hello world")
         XCTAssertEqual(normalized.text, "        Hello world.")
