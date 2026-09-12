@@ -360,9 +360,22 @@ struct NumberSeparatorEvidenceRepair {
         using dateDetector: NSDataDetector
     ) -> Bool {
         let nsRange = NSRange(text.startIndex..<text.endIndex, in: text)
-        return dateDetector.matches(in: text, options: [], range: nsRange).contains { dateMatch in
-            guard dateMatch.date != nil,
-                  let detectedRange = Range(dateMatch.range, in: text) else {
+        let detectedRanges: [Range<String.Index>] = dateDetector.matches(
+            in: text,
+            options: [],
+            range: nsRange
+        ).compactMap { dateMatch in
+            guard dateMatch.date != nil else { return nil }
+            return Range(dateMatch.range, in: text)
+        }
+
+        return detectedRanges.contains { detectedRange in
+            if detectedRange == candidateRange,
+               hasWhitespaceSeparatedFollowingDetection(
+                   after: detectedRange,
+                   among: detectedRanges,
+                   in: text
+               ) {
                 return false
             }
 
@@ -370,6 +383,20 @@ struct NumberSeparatorEvidenceRepair {
             return detectedRange.contains(candidateRange.lowerBound)
                 && (detectedRange.upperBound == candidateRange.upperBound
                     || detectedRange.lowerBound < candidateRange.lowerBound)
+        }
+    }
+
+    private func hasWhitespaceSeparatedFollowingDetection(
+        after detectedRange: Range<String.Index>,
+        among detectedRanges: [Range<String.Index>],
+        in text: String
+    ) -> Bool {
+        detectedRanges.contains { followingRange in
+            guard followingRange.lowerBound >= detectedRange.upperBound,
+                  followingRange != detectedRange else {
+                return false
+            }
+            return text[detectedRange.upperBound..<followingRange.lowerBound].allSatisfy(\.isWhitespace)
         }
     }
 }
