@@ -513,12 +513,12 @@ extension TranscriptionPostProcessorTests {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
-            "Oh yeah, itsuh...dom@example.com.that's my email address.",
+            "Oh yeah, it's uh...dom@example.com.that's my email address.",
             dictionaryEntries: [],
             renderMode: .singleLineInline
         )
 
-        XCTAssertEqual(output, "Oh yeah, itsuh... dom@example.com. That's my email address.")
+        XCTAssertEqual(output, "Oh yeah, it's uh… dom@example.com. That's my email address.")
     }
     func testSeparatesCollapsedPrefixFromKnownDictionaryEmail() async {
         let processor = TranscriptionPostProcessor()

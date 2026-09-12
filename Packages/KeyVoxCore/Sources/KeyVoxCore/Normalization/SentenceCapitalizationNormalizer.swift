@@ -114,6 +114,9 @@ public struct SentenceCapitalizationNormalizer {
                 if isLikelyFilenameExtensionBoundary(text, dotLocation: match.range(at: 1).location) {
                     continue
                 }
+                if isDottedAbbreviationBoundary(text, dotLocation: match.range(at: 1).location) {
+                    continue
+                }
 
                 let prefixText = nsText.substring(to: match.range(at: 1).location)
                 let previousToken = prefixText.split(whereSeparator: \.isWhitespace).last.map(String.init) ?? ""
@@ -469,5 +472,28 @@ public struct SentenceCapitalizationNormalizer {
         }
 
         return FileExtensionRecognition.status(for: extensionToken) == .known
+    }
+
+    private func isDottedAbbreviationBoundary(_ text: String, dotLocation: Int) -> Bool {
+        let nsText = text as NSString
+        guard dotLocation >= 0, dotLocation < nsText.length else { return false }
+
+        var start = dotLocation
+        while start > 0 {
+            guard let scalar = UnicodeScalar(nsText.character(at: start - 1)),
+                  !CharacterSet.whitespacesAndNewlines.contains(scalar) else {
+                break
+            }
+            start -= 1
+        }
+
+        let candidate = nsText.substring(
+            with: NSRange(location: start, length: dotLocation - start + 1)
+        ).trimmingCharacters(in: CharacterSet(charactersIn: "\"'“”‘’()[]{}"))
+
+        return candidate.range(
+            of: #"^(?:\p{L}\.){2,}$"#,
+            options: .regularExpression
+        ) != nil
     }
 }
