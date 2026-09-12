@@ -72,6 +72,7 @@ public struct DictationPipelineResult: Sendable {
     }
 
     public let id: UUID
+    public let languageCode: String?
     public let rawText: String
     public let baseText: String
     public let uncappedFinalText: String
@@ -89,6 +90,48 @@ public struct DictationPipelineResult: Sendable {
     public let textTransformationErrors: [String]
     public let textTransformationProcessingMode: String?
     public let pasteDuration: TimeInterval
+
+    public init(
+        id: UUID,
+        languageCode: String? = nil,
+        rawText: String,
+        baseText: String,
+        uncappedFinalText: String,
+        finalText: String,
+        baseParagraphsEnabled: Bool,
+        baseListsEnabled: Bool,
+        deterministicVariants: [DeterministicTextVariant],
+        wasLikelyNoSpeech: Bool,
+        inferenceDuration: TimeInterval,
+        textTransformationDuration: TimeInterval,
+        textTransformationApplied: Bool,
+        textTransformationStyleIdentifier: String?,
+        textTransformationChunkCount: Int,
+        textTransformationErrorDescription: String?,
+        textTransformationErrors: [String],
+        textTransformationProcessingMode: String?,
+        pasteDuration: TimeInterval
+    ) {
+        self.id = id
+        self.languageCode = languageCode
+        self.rawText = rawText
+        self.baseText = baseText
+        self.uncappedFinalText = uncappedFinalText
+        self.finalText = finalText
+        self.baseParagraphsEnabled = baseParagraphsEnabled
+        self.baseListsEnabled = baseListsEnabled
+        self.deterministicVariants = deterministicVariants
+        self.wasLikelyNoSpeech = wasLikelyNoSpeech
+        self.inferenceDuration = inferenceDuration
+        self.textTransformationDuration = textTransformationDuration
+        self.textTransformationApplied = textTransformationApplied
+        self.textTransformationStyleIdentifier = textTransformationStyleIdentifier
+        self.textTransformationChunkCount = textTransformationChunkCount
+        self.textTransformationErrorDescription = textTransformationErrorDescription
+        self.textTransformationErrors = textTransformationErrors
+        self.textTransformationProcessingMode = textTransformationProcessingMode
+        self.pasteDuration = pasteDuration
+    }
 }
 
 public struct DictationPipelineTextProcessingResult: Equatable, Sendable {
@@ -136,6 +179,7 @@ public struct DictationPipelineTextProcessingResult: Equatable, Sendable {
 }
 
 public struct DictationPipelineTextProcessingContext: Sendable {
+    public let languageCode: String?
     public let rawText: String
     public let baseText: String
     public let baseParagraphsEnabled: Bool
@@ -143,12 +187,14 @@ public struct DictationPipelineTextProcessingContext: Sendable {
     public let deterministicVariants: [DictationPipelineResult.DeterministicTextVariant]
 
     public init(
+        languageCode: String? = nil,
         rawText: String,
         baseText: String,
         baseParagraphsEnabled: Bool,
         baseListsEnabled: Bool,
         deterministicVariants: [DictationPipelineResult.DeterministicTextVariant]
     ) {
+        self.languageCode = languageCode
         self.rawText = rawText
         self.baseText = baseText
         self.baseParagraphsEnabled = baseParagraphsEnabled
@@ -237,6 +283,7 @@ public final class DictationPipeline {
                     completion(
                         DictationPipelineResult(
                             id: utteranceID,
+                            languageCode: languageCode,
                             rawText: rawText,
                             baseText: "",
                             uncappedFinalText: "",
@@ -286,6 +333,7 @@ public final class DictationPipeline {
                     completion(
                         DictationPipelineResult(
                             id: utteranceID,
+                            languageCode: languageCode,
                             rawText: rawText,
                             baseText: finalText,
                             uncappedFinalText: "",
@@ -316,6 +364,7 @@ public final class DictationPipeline {
                     languageCode: languageCode
                 )
                 let processingContext = DictationPipelineTextProcessingContext(
+                    languageCode: languageCode,
                     rawText: rawText,
                     baseText: finalText,
                     baseParagraphsEnabled: autoParagraphsEnabled,
@@ -339,6 +388,7 @@ public final class DictationPipeline {
                 completion(
                     DictationPipelineResult(
                         id: utteranceID,
+                        languageCode: languageCode,
                         rawText: rawText,
                         baseText: finalText,
                         uncappedFinalText: output.text,
