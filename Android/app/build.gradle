@@ -24,7 +24,12 @@ android {
             matchingFallbacks = ['debug']
         }
     }
-    packaging { jniLibs { useLegacyPackaging = true } }
+    packaging {
+        jniLibs {
+            useLegacyPackaging = true
+            keepDebugSymbols += ['**/*.so']
+        }
+    }
     sourceSets.debug {
         jniLibs.srcDir 'build/generated/engine/npu-device/jniLibs'
         assets.srcDir 'build/generated/engine/npu-device/assets'

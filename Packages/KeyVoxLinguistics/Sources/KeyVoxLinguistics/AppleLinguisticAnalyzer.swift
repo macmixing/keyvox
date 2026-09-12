@@ -46,7 +46,23 @@ struct AppleLinguisticAnalyzer: LinguisticAnalyzing {
             case .personalName, .placeName, .organizationName: identity = .name
             default: identity = .unknown
             }
-            return LinguisticToken(range: NSRange(range, in: text), role: role, lemma: lemma, identity: identity)
+            let inflection: LinguisticToken.Inflection
+            if role == .noun, let lemma {
+                let tokenText = String(text[range])
+                inflection = tokenText.compare(
+                    lemma,
+                    options: [.caseInsensitive, .diacriticInsensitive]
+                ) == .orderedSame ? .singular : .plural
+            } else {
+                inflection = .unknown
+            }
+            return LinguisticToken(
+                range: NSRange(range, in: text),
+                role: role,
+                lemma: lemma,
+                identity: identity,
+                inflection: inflection
+            )
         }
 
         var tokens: [LinguisticToken] = []

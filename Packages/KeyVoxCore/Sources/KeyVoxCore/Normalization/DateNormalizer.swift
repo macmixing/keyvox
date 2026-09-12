@@ -18,10 +18,10 @@ public struct DateNormalizer {
 
         var monthIndexByToken: [String: Int] = [:]
         let monthTokenGroups = [
-            monthFormatter.monthSymbols ?? [],
-            monthFormatter.standaloneMonthSymbols ?? [],
-            monthFormatter.shortMonthSymbols ?? [],
-            monthFormatter.shortStandaloneMonthSymbols ?? [],
+            monthFormatter.keyVoxMonthSymbols,
+            monthFormatter.keyVoxStandaloneMonthSymbols,
+            monthFormatter.keyVoxShortMonthSymbols,
+            monthFormatter.keyVoxShortStandaloneMonthSymbols,
         ]
 
         for symbols in monthTokenGroups {

@@ -46,11 +46,13 @@ final class EngineSession {
             baseDirectoryURL: dictionaryDirectory
         )
         AndroidDictionaryCasingStore.shared.update(entries: dictionary.entries)
+        let linguisticAnalyzer = try AndroidLinguisticCapabilities.makeAnalyzer(resources: resources)
         service = WhisperService(modelPathResolver: { installer.modelURL.path },
             voiceActivityDetectorFactory: { VoiceActivityDetector(modelURL: vadURL) },
-            whisperFactory: { acceleration.makeWhisper(model: $0, params: $1) })
+            whisperFactory: { acceleration.makeWhisper(model: $0, params: $1) },
+            linguisticAnalyzer: linguisticAnalyzer)
         postProcessorPreparation = Task.detached(priority: .userInitiated) {
-            TranscriptionPostProcessor()
+            TranscriptionPostProcessor(linguisticAnalyzer: linguisticAnalyzer)
         }
     }
 

@@ -348,7 +348,12 @@ extension DictionaryMatcher {
         tokens: [Token]
     ) -> Bool {
         guard tokenStart > 0, tokenEndExclusive < tokens.count else { return false }
-        return tokens[tokenStart - 1].lexicalClass == .noun
+        let precedingClass = tokens[tokenStart - 1].lexicalClass
+        let hasPortableNounIntroduction = precedingClass == .noun
+            || (precedingClass == .adjective
+                && tokenStart > 1
+                && tokens[tokenStart - 2].lexicalClass == .determiner)
+        return hasPortableNounIntroduction
             && isTitlecaseToken(tokens[tokenStart])
             && tokens[tokenEndExclusive].lexicalClass == .adverb
     }

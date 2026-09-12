@@ -11,21 +11,16 @@ compatible processing language. Other languages receive Unicode word boundaries
 without grammatical predictions. Existing Apple applications retain their Apple
 analyzer unless a host explicitly supplies this alternative.
 
-The Swift predictor follows the model's feature schema. Input segmentation uses
-Unicode word boundaries, which differ from the Penn Treebank tokenization used
-for training, particularly for contractions, possessives, and hyphenated text.
-Prediction context currently spans the complete input rather than restarting at
-sentence boundaries. These differences limit accuracy; this is not a claim of
-Apple or Treebank linguistic parity.
-
-Only supported grammatical roles and word boundaries are reported. Ambiguous
-`IN` and `TO` labels produce no semantic role. Proper-noun labels do not establish
-named entities. Lemmas and named entities are unavailable.
+The Swift predictor follows the model's feature schema. KeyVox resolves the
+subset of contextual grammatical roles, noun inflection, and name identity that
+Core consumes. The Android host pairs it with the separately licensed WordNet
+lexical indexes. This is a focused compatibility implementation, not a general
+replacement for Apple's Natural Language API.
 
 To use the model in the speech harness, deploy this directory alongside the
 executable and set `KEYVOX_LINGUISTIC_MODEL` to its absolute path. Supply a matching
-processing language as the final command argument. The model is not included in
-Swift package resources or downloaded automatically.
+processing language as the final command argument. Model installation and asset
+ownership remain the host's responsibility rather than Core's.
 
 Distributions including these assets must retain `LICENSE.txt`. Distributions
 including the Swift predictor must also retain the package's bundled

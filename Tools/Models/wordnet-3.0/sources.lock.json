@@ -1,0 +1,29 @@
+{
+  "version": "3.0",
+  "license": "WordNet 3.0 License",
+  "archive_url": "https://wordnetcode.princeton.edu/3.0/WordNet-3.0.tar.gz",
+  "archive_sha256": "640db279c949a88f61f851dd54ebbb22d003f8b90b85267042ef85a3781d3a52",
+  "files": [
+    {
+      "path": "index.noun",
+      "sha256": "a490d99d93d017bf4822fe2f0ffa51fd73911ce271dc7535fade21f8814b5a04"
+    },
+    {
+      "path": "index.verb",
+      "sha256": "c7c79b558d787f1e31c6f8b3eeadb8fcbb26a64545ecc1241e21d9b61f95ee8e"
+    },
+    {
+      "path": "index.adj",
+      "sha256": "42f58dda2c7cff66eb8fa55ba62e0a873a9b3f43c878e8201108f5dab6dcff28"
+    },
+    {
+      "path": "index.adv",
+      "sha256": "6f5465ed5758fe9c8a2f7ec17b1300f3aa875756c70ff7cba162f7e71bcf88ea"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "7731175a77952e259390b496fab905e57118b8d19ad3a8383c67eee724ff443f"
+    }
+  ],
+  "provenance": "Unmodified lexical index files and license from Princeton University's official WordNet 3.0 source archive. No corpus or generated derivative is included."
+}

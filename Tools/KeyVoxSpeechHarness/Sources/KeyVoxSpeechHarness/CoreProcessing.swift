@@ -7,6 +7,8 @@ enum CoreProcessing {
         let location: Int
         let length: Int
         let role: String?
+        let identity: String
+        let inflection: String
     }
 
     private struct Report: Encodable {
@@ -22,13 +24,18 @@ enum CoreProcessing {
         let linguisticTokenCount: Int
         let lexicalRoleCount: Int
         let linguisticTokens: [TokenReport]
+        let linguisticImplementation: String
     }
 
     static func run(text: String, languageCode: String?, detectedLanguageCode: String? = nil) async throws {
         let analyzer: any LinguisticAnalyzing
         if let modelPath = ProcessInfo.processInfo.environment["KEYVOX_LINGUISTIC_MODEL"] {
-            analyzer = try PerceptronLinguisticAnalyzer(modelDirectory: URL(fileURLWithPath: modelPath),
-                                                        languageCode: languageCode)
+            let lexicalDatabasePath = ProcessInfo.processInfo.environment["KEYVOX_LEXICAL_DATABASE"]
+            analyzer = try PerceptronLinguisticAnalyzer(
+                modelDirectory: URL(fileURLWithPath: modelPath),
+                lexicalDatabaseDirectory: lexicalDatabasePath.map(URL.init(fileURLWithPath:)),
+                languageCode: languageCode
+            )
         } else {
             analyzer = TextLinguistics.provider
         }
@@ -52,10 +59,22 @@ enum CoreProcessing {
                             lexicalRoleCount: analysis.tokens.filter { $0.role != nil }.count,
                             linguisticTokens: analysis.tokens.map {
                                 TokenReport(location: $0.range.location, length: $0.range.length,
-                                            role: $0.role.map { String(describing: $0) })
-                            })
+                                            role: $0.role.map { String(describing: $0) },
+                                            identity: String(describing: $0.identity),
+                                            inflection: String(describing: $0.inflection))
+                            },
+                            linguisticImplementation: modelPathDescription())
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.sortedKeys]
         print(String(decoding: try encoder.encode(report), as: UTF8.self))
+    }
+
+    private static func modelPathDescription() -> String {
+        guard ProcessInfo.processInfo.environment["KEYVOX_LINGUISTIC_MODEL"] != nil else {
+            return "platform-default"
+        }
+        return ProcessInfo.processInfo.environment["KEYVOX_LEXICAL_DATABASE"] == nil
+            ? "perceptron"
+            : "perceptron+wordnet-3.0"
     }
 }

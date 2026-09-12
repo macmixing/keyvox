@@ -78,6 +78,10 @@ accompany Qualcomm-containing distributions.
   policy.
 - FUNCTIONAL: installed JNI/Swift bridge, shared Whisper service, Silero VAD,
   and real Core processing of a caller-provided speech recording.
+- FUNCTIONAL: Android-owned perceptron and WordNet linguistic capabilities are
+  injected into Core and Whisper segment assembly; the recorded 582-test
+  cross-platform bakeoff passed with Apple-identical expectations, and the engine
+  logs its exact selected implementation.
 - FUNCTIONAL: app-owned download and SHA-256 verification of the exact shared
   iOS Whisper Base artifact. Weights are downloaded, not bundled in the APK.
 - FUNCTIONAL: microphone start from the keyboard in another app; capture continues
@@ -147,13 +151,15 @@ Base weights. The fixture check requires a caller-provided mono 16 kHz Float32
 little-endian PCM file in app-private files. Recordings are not distributed as test
 assets. It verifies real nonempty processed output, not recognition accuracy.
 
-Foundation validation: 572 Core tests passed on the Apple host. Android debug and
-release APKs build, lint passes, and physical Android 16 instrumentation passes
+Foundation validation: the recorded 582-test Core bakeoff passed on both Apple
+and Android. Android
+debug and release APKs build, lint passes, and physical Android 16 instrumentation passes
 editor lifetime/no-speech selection checks, repeated microphone cancel/restart,
 Stop through processing, and real speech-fixture inference. The device also
 demonstrated external-app keyboard start and continued capture after Home.
-Both APKs include 19 native libraries with retained dependency/resource notices;
-their staged ELF load segments satisfy 16 KB alignment. Other Android versions,
+The protected package includes its staged native libraries with retained
+dependency/resource notices; their ELF load segments satisfy 16 KB alignment.
+Other Android versions,
 lock-screen behavior, and complete iOS dictation parity remain unverified.
 
 ## Distribution
@@ -164,7 +170,9 @@ networking dependencies retain their separate permissive notices. Whisper and
 Silero are MIT. Swift Crypto 4.5.2 and its recorded bundled components retain
 Apache-2.0/BoringSSL/Fiat/XKCP notices; Swift ASN.1 1.7.2 is a resolved build
 dependency. NDK libc++ retains the LLVM/NDK notices. Core's existing lexicon,
-common-word and file-type data retain their individual licenses. See
+common-word and file-type data retain their individual licenses. The English
+perceptron assets are MIT; WordNet 3.0 lexical indexes retain their separate
+commercially distributable notice and advertising restriction. See
 `../Tools/Licenses` and the packaged resource notices for exact provenance and
 terms. The APK contains both notice sets. The audited Swift package dependency
 versions are pinned in `EngineBridge/Package.resolved`.
