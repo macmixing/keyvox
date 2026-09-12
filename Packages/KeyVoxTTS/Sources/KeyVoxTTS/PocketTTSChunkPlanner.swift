@@ -443,6 +443,7 @@ enum PocketTTSChunkPlanner {
 
         let analysis = TextLinguistics.analyze(
             context,
+            languageCode: PocketTTSModelMetadata.languageCode,
             features: [.roles, .names, .wordBoundaries]
         )
         let offset = NSRange(swiftRange, in: context).location
