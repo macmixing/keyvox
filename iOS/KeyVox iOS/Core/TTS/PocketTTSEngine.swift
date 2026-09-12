@@ -1,4 +1,5 @@
 import Foundation
+import KeyVoxLinguistics
 import KeyVoxTTS
 
 protocol PocketTTSEngineRuntime: AnyObject {
@@ -16,8 +17,11 @@ protocol PocketTTSEngineRuntime: AnyObject {
 private final class LivePocketTTSEngineRuntime: PocketTTSEngineRuntime {
     private let runtime: KeyVoxPocketTTSRuntime
 
-    init(assetLayout: KeyVoxTTSAssetLayout) {
-        self.runtime = KeyVoxPocketTTSRuntime(assetLayout: assetLayout)
+    init(assetLayout: KeyVoxTTSAssetLayout, linguisticAnalyzer: any LinguisticAnalyzing) {
+        self.runtime = KeyVoxPocketTTSRuntime(
+            assetLayout: assetLayout,
+            linguisticAnalyzer: linguisticAnalyzer
+        )
     }
 
     func prepareIfNeeded() async throws {
@@ -66,6 +70,7 @@ final class PocketTTSEngine: TTSEngine {
     
     init(
         fileManager: FileManager = .default,
+        linguisticAnalyzer: any LinguisticAnalyzing = TextLinguistics.provider,
         assetLayoutProvider: (() -> KeyVoxTTSAssetLayout?)? = nil,
         sharedModelInstalledProvider: (() -> Bool)? = nil,
         runtimeFactory: ((KeyVoxTTSAssetLayout) -> any PocketTTSEngineRuntime)? = nil
@@ -75,7 +80,10 @@ final class PocketTTSEngine: TTSEngine {
         self.assetLayoutProvider = assetLayoutProvider ?? { assetLocator.assetLayout() }
         self.sharedModelInstalledProvider = sharedModelInstalledProvider ?? { assetLocator.isSharedModelInstalled() }
         self.runtimeFactory = runtimeFactory ?? { assetLayout in
-            LivePocketTTSEngineRuntime(assetLayout: assetLayout)
+            LivePocketTTSEngineRuntime(
+                assetLayout: assetLayout,
+                linguisticAnalyzer: linguisticAnalyzer
+            )
         }
     }
 

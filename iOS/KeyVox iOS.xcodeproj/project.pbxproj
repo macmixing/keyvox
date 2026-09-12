@@ -38,6 +38,8 @@
 		D10000012FF4000100AA0001 /* KeyVoxWhisper in Frameworks */ = {isa = PBXBuildFile; productRef = D10000072FF4000100AA0001 /* KeyVoxWhisper */; };
 		D10000022FF4000100AA0001 /* KeyVoxLinguistics in Frameworks */ = {isa = PBXBuildFile; productRef = D10000082FF4000100AA0001 /* KeyVoxLinguistics */; };
 		D10000032FF4000100AA0001 /* KeyVoxVoiceActivity in Frameworks */ = {isa = PBXBuildFile; productRef = D10000092FF4000100AA0001 /* KeyVoxVoiceActivity */; };
+		D20000012FF5000100AA0001 /* averaged-perceptron-tagger-eng in Resources */ = {isa = PBXBuildFile; fileRef = D20000032FF5000100AA0001 /* averaged-perceptron-tagger-eng */; };
+		D20000022FF5000100AA0001 /* wordnet-3.0 in Resources */ = {isa = PBXBuildFile; fileRef = D20000042FF5000100AA0001 /* wordnet-3.0 */; };
 		928D300FF612F97300000004 /* KeyVoxModels in Frameworks */ = {isa = PBXBuildFile; productRef = 928D300FF612F97300000002 /* KeyVoxModels */; };
 		F41000012FF3000100AA0001 /* KeyVoxPromotions in Frameworks */ = {isa = PBXBuildFile; productRef = F41000032FF3000100AA0001 /* KeyVoxPromotions */; };
 /* End PBXBuildFile section */
@@ -111,6 +113,8 @@
 		8E9E38522F5BF1F000EAFA72 /* KeyVox iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "KeyVox iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		8E9E385F2F5BF1F200EAFA72 /* KeyVox iOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "KeyVox iOSTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		8EECE7322F64020900BECF17 /* Launch Screen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = "Launch Screen.storyboard"; sourceTree = "<group>"; };
+		D20000032FF5000100AA0001 /* averaged-perceptron-tagger-eng */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "averaged-perceptron-tagger-eng"; path = "../Tools/Models/averaged-perceptron-tagger-eng"; sourceTree = SOURCE_ROOT; };
+		D20000042FF5000100AA0001 /* wordnet-3.0 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "wordnet-3.0"; path = "../Tools/Models/wordnet-3.0"; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -392,6 +396,8 @@
 		8E9E38492F5BF1F000EAFA72 = {
 			isa = PBXGroup;
 			children = (
+				D20000032FF5000100AA0001 /* averaged-perceptron-tagger-eng */,
+				D20000042FF5000100AA0001 /* wordnet-3.0 */,
 				5B64A2A32FF01A9A00A10001 /* THIRD_PARTY_NOTICES.md */,
 				8EECE7322F64020900BECF17 /* Launch Screen.storyboard */,
 				8E70C9132F62B1DB00E9E555 /* LaunchLogo.png */,
@@ -652,6 +658,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D20000012FF5000100AA0001 /* averaged-perceptron-tagger-eng in Resources */,
+				D20000022FF5000100AA0001 /* wordnet-3.0 in Resources */,
 				5B64A2A42FF01A9A00A10001 /* THIRD_PARTY_NOTICES.md in Resources */,
 				8E70C9142F62B1DB00E9E555 /* LaunchLogo.png in Resources */,
 				8EECE7342F64020900BECF17 /* Launch Screen.storyboard in Resources */,

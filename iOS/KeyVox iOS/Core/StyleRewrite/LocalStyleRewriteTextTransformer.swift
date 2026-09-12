@@ -1,4 +1,5 @@
 import Foundation
+import KeyVoxLinguistics
 import KeyVoxLocalInference
 import KeyVoxStyleRewrite
 import KeyVoxVibesAdapters
@@ -6,13 +7,20 @@ import KeyVoxVibesAdapters
 @MainActor
 final class LocalStyleRewriteTextTransformer: DictationTextTransforming {
     private let inferenceService: LocalRewriteInferenceService
+    private let linguisticAnalyzer: any LinguisticAnalyzing
     private var prewarmTask: Task<Void, Never>?
-    private lazy var transformer = StyleRewriteTextTransformer { [weak self] _ in
+    private lazy var transformer = StyleRewriteTextTransformer(
+        linguisticAnalyzer: linguisticAnalyzer
+    ) { [weak self] _ in
         LocalStyleRewriteChunkResponder(inferenceService: self?.inferenceService)
     }
 
-    init(inferenceService: LocalRewriteInferenceService) {
+    init(
+        inferenceService: LocalRewriteInferenceService,
+        linguisticAnalyzer: any LinguisticAnalyzing = TextLinguistics.provider
+    ) {
         self.inferenceService = inferenceService
+        self.linguisticAnalyzer = linguisticAnalyzer
     }
 
     func prewarm(request: TextTransformRequest) {

@@ -2,6 +2,7 @@ import AVFAudio
 import Combine
 import Foundation
 import KeyVoxCore
+import KeyVoxLinguistics
 import KeyVoxLocalInference
 import KeyVoxPromotions
 import KeyVoxStyleRewrite
@@ -108,7 +109,14 @@ final class AppServiceRegistry {
             defaults: settingsDefaults,
             forcePresentation: runtimeFlags.forceKeyVoxVibesIntro
         )
-        let whisperService = WhisperService(modelPathResolver: modelLocator.resolvedWhisperModelPath)
+        let linguisticAnalyzer = LinguisticAnalyzerFactory.healthRouted(
+            portableResourceDirectory: { Bundle.main.resourceURL },
+            portableLanguageCode: "en"
+        )
+        let whisperService = WhisperService(
+            modelPathResolver: modelLocator.resolvedWhisperModelPath,
+            linguisticAnalyzer: linguisticAnalyzer
+        )
         whisperService.updateLanguage(settingsStore.whisperDictationLanguage)
         let parakeetService = ParakeetService(modelURLResolver: modelLocator.resolvedParakeetModelDirectoryURL)
         let activeProviderRouter = SwitchableDictationProvider(initialProvider: whisperService)
@@ -126,7 +134,7 @@ final class AppServiceRegistry {
             },
             backgroundDownloadCoordinator: backgroundDownloadCoordinator
         )
-        let postProcessor = TranscriptionPostProcessor()
+        let postProcessor = TranscriptionPostProcessor(linguisticAnalyzer: linguisticAnalyzer)
         let keyboardBridge = KeyVoxKeyboardBridge()
         let styleRewriteArtifactStore = StyleRewriteLatestArtifactStore(defaults: settingsDefaults)
         let localRewriteBackgroundDownloadJobStore = LocalRewriteBackgroundDownloadJobStore(
@@ -166,7 +174,8 @@ final class AppServiceRegistry {
             }
         )
         let localStyleRewriteTextTransformer = LocalStyleRewriteTextTransformer(
-            inferenceService: localRewriteInferenceService
+            inferenceService: localRewriteInferenceService,
+            linguisticAnalyzer: linguisticAnalyzer
         )
         let styleRewritePipelineCoordinator = StyleRewritePipelineCoordinator(
             selectedStyleProvider: {
@@ -265,7 +274,10 @@ final class AppServiceRegistry {
             }
         )
         let ttsSystemPlaybackController = TTSSystemPlaybackController()
-        let ttsEngine = PocketTTSEngine(fileManager: fileManager)
+        let ttsEngine = PocketTTSEngine(
+            fileManager: fileManager,
+            linguisticAnalyzer: linguisticAnalyzer
+        )
         let pocketTTSBackgroundDownloadJobStore = PocketTTSBackgroundDownloadJobStore(
             fileManager: fileManager,
             jobURLProvider: { SharedPaths.pocketTTSDownloadJobURL(fileManager: fileManager) }
