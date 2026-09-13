@@ -412,6 +412,8 @@ extension DictionaryMatcher {
         guard window.count == 2 else { return false }
         guard isStylizedSingleTokenEntry(candidate) else { return false }
         guard let candidateToken = candidate.tokens.first else { return false }
+        let observedJoined = window.map(\.normalized).joined()
+        guard !candidate.matchingNormalizedPhrases.contains(observedJoined) else { return false }
         let observedTail = window[1].normalized
         guard observedTail.hasSuffix("s"),
               !observedTail.hasSuffix("'s"),

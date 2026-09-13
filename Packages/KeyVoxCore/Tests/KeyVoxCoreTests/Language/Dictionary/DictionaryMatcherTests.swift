@@ -1018,6 +1018,16 @@ final class DictionaryMatcherTests: LinguisticAnalyzerTestCase {
         XCTAssertEqual(result.text, "Is that MrBeast over there?")
     }
 
+    func testSplitJoinRestoresDictionaryCasingForExactTwoTokenJoin() async {
+        let matcher = makeRuntimeMatcher()
+        let entry = DictionaryEntry(phrase: "macOS")
+        matcher.rebuildIndex(entries: [entry])
+
+        let result = matcher.apply(to: "Mac OS")
+
+        XCTAssertEqual(result.text, entry.phrase)
+    }
+
     func testDoesNotReplaceUnrelatedMixedCaseTokenWithStylizedDictionaryEntry() async {
         let matcher = makeRuntimeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "MrBeast")])
