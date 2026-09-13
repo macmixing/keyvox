@@ -24,8 +24,8 @@ Core now also provides portable audio, resource, linguistic, and runtime boundar
 - Added shared state publishing and injectable Whisper and Parakeet runtime boundaries without changing the platform-native defaults.
 - Propagated the selected or detected dictation language through continuation analysis, post-processing, pipeline results, and downstream text processing.
 - Added portable linguistic evidence that allows qualifying quantities before following words to receive thousands separators.
-- Kept words after inline ellipses lowercase while preserving stylized dictionary entries, standalone `I`, and capitalization at real paragraph breaks.
-- Normalized spoken and three-period ellipses to Unicode.
+- Kept words after inline ellipses lowercase while preserving recognized multiword names, stylized dictionary entries, standalone `I`, first-person `I` contractions, and capitalization at real paragraph breaks.
+- Normalized spoken, three-period, and Parakeet-emitted `.dot.dot.` ellipses to Unicode.
 
 ### Notes
 

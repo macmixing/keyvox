@@ -1,4 +1,5 @@
 import Foundation
+import KeyVoxLinguistics
 
 struct EllipsisContinuationNormalizer {
     private static let continuationRegex = try? NSRegularExpression(
@@ -44,10 +45,44 @@ struct EllipsisContinuationNormalizer {
         in text: String,
         dictionaryEntries: [DictionaryEntry]
     ) -> Bool {
-        token == "I"
+        isFirstPersonPronoun(token)
             || token.unicodeScalars.dropFirst().contains { $0.properties.isUppercase }
+            || beginsRecognizedNamePhrase(at: tokenRange, in: text)
             || isDottedAcronym(startingAt: tokenRange, in: text)
             || beginsDictionaryEntry(at: tokenRange, in: text, dictionaryEntries: dictionaryEntries)
+    }
+
+    private func isFirstPersonPronoun(_ token: String) -> Bool {
+        guard token.first == "I" else { return false }
+        let remainder = token.dropFirst()
+        guard !remainder.isEmpty else { return true }
+        guard remainder.first == "'" || remainder.first == "’" else { return false }
+        let contraction = remainder.dropFirst()
+        return !contraction.isEmpty && contraction.allSatisfy { $0.isLetter }
+    }
+
+    private func beginsRecognizedNamePhrase(at tokenRange: NSRange, in text: String) -> Bool {
+        let analysis = TextLinguistics.analyze(
+            text,
+            features: [.names, .wordBoundaries]
+        )
+        guard let tokenIndex = analysis.tokens.firstIndex(where: {
+            NSLocationInRange(tokenRange.location, $0.range)
+        }),
+        tokenIndex + 1 < analysis.tokens.count else { return false }
+
+        let token = analysis.tokens[tokenIndex]
+        let nextToken = analysis.tokens[tokenIndex + 1]
+        guard case .name = token.identity,
+              case .name = nextToken.identity,
+              let separatorRange = Range(
+                  NSRange(
+                      location: NSMaxRange(token.range),
+                      length: nextToken.range.location - NSMaxRange(token.range)
+                  ),
+                  in: text
+              ) else { return false }
+        return text[separatorRange].allSatisfy(\.isWhitespace)
     }
 
     private func isDottedAcronym(startingAt tokenRange: NSRange, in text: String) -> Bool {
