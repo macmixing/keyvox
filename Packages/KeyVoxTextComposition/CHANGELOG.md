@@ -18,6 +18,7 @@ Shared text composition now provides portable insertion behavior for Apple and A
 - Moved dictionary-aware leading capitalization into a shared policy that can be used by each client’s editor integration.
 - Added platform-neutral verification and probe targets for consuming the same composition behavior outside Apple application targets.
 - Attached a dictated ellipsis directly to preceding editor text without inserting a space.
+- Preserved leading spaces after existing punctuation in optimized release builds.
 
 ### Notes
 
