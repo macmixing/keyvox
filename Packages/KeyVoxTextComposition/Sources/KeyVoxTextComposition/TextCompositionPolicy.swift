@@ -1,6 +1,8 @@
 import Foundation
 
 public enum TextCompositionPolicy {
+    private static let attachingPunctuation = Set(".,!?;:…)]}\\\"'”’&".unicodeScalars)
+
     public static func composeForInsertion(
         text: String,
         precedingContext: TextCompositionContext?,
@@ -364,8 +366,7 @@ public enum TextCompositionPolicy {
             return false
         }
 
-        let punctuation = CharacterSet(charactersIn: ".,!?;:…)]}\\\"'”’&")
-        if firstIncomingCharacter.unicodeScalars.allSatisfy(punctuation.contains) {
+        if firstIncomingCharacter.unicodeScalars.allSatisfy(attachingPunctuation.contains) {
             return false
         }
 
@@ -377,7 +378,7 @@ public enum TextCompositionPolicy {
             CharacterSet.alphanumerics.contains($0)
         }
         let previousIsTriggerPunctuation = previousCharacter.unicodeScalars.contains(
-            where: punctuation.contains
+            where: attachingPunctuation.contains
         )
         return previousIsWordLike
             || previousIsTriggerPunctuation
