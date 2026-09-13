@@ -6,6 +6,32 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.4.2] - 2026-09-13
+
+Adds spoken ellipses, alphanumeric dictionary matching, and language-aware English analysis while updating iOS 27 audio handling and improving dictionary, list, number, money, and ellipsis behavior.
+
+### Added
+
+- Added `dot dot dot` support for dictation: three spoken `dot` tokens separated only by whitespace or punctuation now become a single Unicode ellipsis, and repeated literal-period ellipses are normalized to the same character.
+- Added spoken-number matching for digit runs inside alphanumeric custom-dictionary entries, including entries with multiple numeric runs, while keeping each spoken number aligned with its original digits.
+- Added language-aware linguistic analysis for dictation, Vibes, and Speak, with a bundled offline English fallback when Apple's analysis is incomplete; healthy Apple results remain preferred, dictation language now carries through post-processing and later keyboard or Vibes changes, and Speak uses its English model independently from the dictation-language setting.
+
+### Changed
+
+- Updated recording, Speak, cached replay, and voice previews to use iOS 27's asynchronous audio-session APIs, wait for unfinished handoffs, reuse compatible active sessions, and reject stale or duplicate playback work while retaining the existing path on earlier iOS versions.
+- Updated Speak's recording-session and protected-data handling to preserve haptics and system sounds and avoid restoring foreground synthesis while the device remains locked.
+- Changed the selected tab tint from indigo to yellow across supported tab-bar implementations.
+
+### Fixed
+
+- Fixed the Dictionary add button replaying or inheriting an interrupted entrance animation after leaving and returning to the tab.
+- Fixed repeated `one` markers in separate paragraphs being converted into a numbered sequence; numbered-list formatting now requires consecutive spoken markers and preserves their original values.
+- Fixed qualifying four-digit quantities before following words missing thousands separators when Apple linguistic evidence is unusable.
+- Fixed Vibes losing major or minor currency words when linguistic lemmas are unavailable and mistaking an ambiguous dotted number for a time when a separate date or time immediately follows it.
+- Fixed inline ellipses incorrectly capitalizing ordinary continuation words or disappearing during Vibes rewrites, while preserving intentional capitalization for `I`, acronyms, saved dictionary entries, internally capitalized terms, and new paragraphs.
+
+---
+
 ## [1.4.1] - 2026-09-06
 
 Keeps model downloads moving across app transitions and relaunches while improving download visibility, dictated capitalization, number and time preservation, and custom-dictionary accuracy.
