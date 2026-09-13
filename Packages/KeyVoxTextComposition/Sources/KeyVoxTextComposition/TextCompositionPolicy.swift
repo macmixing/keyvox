@@ -364,7 +364,7 @@ public enum TextCompositionPolicy {
             return false
         }
 
-        let punctuation = CharacterSet(charactersIn: ".,!?;:)]}\\\"'”’&")
+        let punctuation = CharacterSet(charactersIn: ".,!?;:…)]}\\\"'”’&")
         if firstIncomingCharacter.unicodeScalars.allSatisfy(punctuation.contains) {
             return false
         }

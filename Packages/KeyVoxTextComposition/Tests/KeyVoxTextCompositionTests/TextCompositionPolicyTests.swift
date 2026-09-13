@@ -441,6 +441,8 @@ final class TextCompositionPolicyTests: XCTestCase {
         XCTAssertEqual(applySpacing(to: "there", after: "&"), " there")
         XCTAssertEqual(applySpacing(to: "there", after: "😎"), " there")
         XCTAssertEqual(applySpacing(to: ".", after: "o"), ".")
+        XCTAssertEqual(applySpacing(to: "…", after: "o"), "…")
+        XCTAssertEqual(applySpacing(to: "…", after: "7"), "…")
         XCTAssertEqual(applySpacing(to: "there", after: " "), "there")
         XCTAssertEqual(applySpacing(to: "there", after: "("), "there")
     }
