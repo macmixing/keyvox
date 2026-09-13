@@ -72,6 +72,14 @@ final class PasteFailureRecoveryCoordinator {
                 self.completeRecovery(reason: .triggerPressed)
             }
             .store(in: &cancellables)
+
+        KeyboardMonitor.shared.$commandVPressedSignal
+            .dropFirst()
+            .sink { [weak self] _ in
+                guard let self, self.isActive else { return }
+                self.handleCommandV()
+            }
+            .store(in: &cancellables)
     }
 
     // Keep teardown explicit to avoid synthesized deinit runtime issues in test host.
@@ -205,6 +213,12 @@ final class PasteFailureRecoveryCoordinator {
 
         guard event.modifierFlags.contains(.command) else { return }
         guard event.charactersIgnoringModifiers?.lowercased() == "v" else { return }
+
+        handleCommandV()
+    }
+
+    private func handleCommandV() {
+        guard isActive else { return }
 
         let now = Date()
         guard now.timeIntervalSince(lastCommandVAt) >= commandVDebounceInterval else { return }
