@@ -54,6 +54,7 @@ struct KeyboardModifierStateMachine {
     var fnDown = false
 
     enum KeyCode {
+        static let v: UInt16 = 9
         static let escape: UInt16 = 53
         static let leftOption: UInt16 = 58
         static let rightOption: UInt16 = 61
@@ -143,6 +144,7 @@ final class KeyboardMonitor: ObservableObject {
     @Published var isShiftPressed = false
     @Published var isCapsLockOn = false
     @Published private(set) var triggerKeyEvent: KeyboardTriggerEvent?
+    @Published private(set) var commandVPressedSignal = false
 
     /// Current trigger binding snapshot mirrored from `AppSettingsStore`.
     @Published private(set) var triggerBinding: TriggerBinding
@@ -239,6 +241,16 @@ final class KeyboardMonitor: ObservableObject {
                 context.reenableEventTap()
                 return Unmanaged.passUnretained(event)
             }
+            if eventType == .keyDown {
+                let keyCode = UInt16(event.getIntegerValueField(.keyboardEventKeycode))
+                let commandPressed = event.flags.contains(.maskCommand)
+                if keyCode == KeyboardModifierStateMachine.KeyCode.v, commandPressed {
+                    Task { @MainActor in
+                        KeyboardMonitor.shared.handleCommandV()
+                    }
+                }
+                return Unmanaged.passUnretained(event)
+            }
             guard eventType == .flagsChanged else {
                 return Unmanaged.passUnretained(event)
             }
@@ -248,6 +260,7 @@ final class KeyboardMonitor: ObservableObject {
             return Unmanaged.passUnretained(event)
         }
         let eventMask = CGEventMask(1 << CGEventType.flagsChanged.rawValue)
+            | CGEventMask(1 << CGEventType.keyDown.rawValue)
         let userInfo = Unmanaged.passUnretained(modifierEventTapContext).toOpaque()
         guard let eventTap = CGEvent.tapCreate(
             tap: .cgSessionEventTap,
@@ -272,6 +285,10 @@ final class KeyboardMonitor: ObservableObject {
 
     private func handleEscapeKey() {
         escapePressedSignal.toggle()
+    }
+
+    private func handleCommandV() {
+        commandVPressedSignal.toggle()
     }
 
     deinit {
