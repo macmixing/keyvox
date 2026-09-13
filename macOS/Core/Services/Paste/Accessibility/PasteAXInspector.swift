@@ -379,21 +379,14 @@ final class PasteAXInspector: PasteAXInspecting {
                 element: element
             )
             let caretIndexLine = lineForIndex(caretLocation, element: element)
-            let shouldTreatTrailingNewline = Self.shouldTreatNewlineRangeAtCaret(
-                rangeAfterCaret,
+            let shouldTreatTrailingNewline = Self.shouldTreatNewlineAsPrecedingCaret(
+                rangeAfterCaret: rangeAfterCaret,
                 rangeText: rangeText,
                 value: value,
                 caretLocation: caretLocation,
                 insertionLine: insertionLine,
                 caretIndexLine: caretIndexLine
             )
-                || (value.map {
-                    Self.shouldTreatTrailingValueNewlineAsPrecedingCaret(
-                        rangeText: rangeText,
-                        value: $0,
-                        caretLocation: caretLocation
-                    )
-                } ?? false)
             if shouldTreatTrailingNewline {
                 return rangeText + "\n"
             }
@@ -463,6 +456,34 @@ final class PasteAXInspector: PasteAXInspecting {
             return false
         }
         return insertionLine == caretIndexLine
+    }
+
+    static func shouldTreatNewlineAsPrecedingCaret(
+        rangeAfterCaret: String?,
+        rangeText: String,
+        value: String?,
+        caretLocation: Int?,
+        insertionLine: Int?,
+        caretIndexLine: Int?
+    ) -> Bool {
+        let rangeDecision = shouldTreatNewlineRangeAtCaret(
+            rangeAfterCaret,
+            rangeText: rangeText,
+            value: value,
+            caretLocation: caretLocation,
+            insertionLine: insertionLine,
+            caretIndexLine: caretIndexLine
+        )
+        guard isNewlineRangeAtCaret(rangeAfterCaret) == false else {
+            return rangeDecision
+        }
+        return rangeDecision || (value.map {
+            shouldTreatTrailingValueNewlineAsPrecedingCaret(
+                rangeText: rangeText,
+                value: $0,
+                caretLocation: caretLocation
+            )
+        } ?? false)
     }
 
     private static func valueConfirmsNewlineFollowsCaret(

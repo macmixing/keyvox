@@ -85,6 +85,21 @@ final class PastePoliciesStabilityTests: XCTestCase {
         )
     }
 
+    func testValueConfirmedTrailingEditorNewlineRemainsAfterCaret() {
+        let precedingText = "abc"
+
+        XCTAssertFalse(
+            PasteAXInspector.shouldTreatNewlineAsPrecedingCaret(
+                rangeAfterCaret: "\n",
+                rangeText: precedingText,
+                value: precedingText + "\n",
+                caretLocation: precedingText.utf16.count,
+                insertionLine: 0,
+                caretIndexLine: 0
+            )
+        )
+    }
+
     func testMismatchedValueKeepsNewlineCaretCorrection() {
         XCTAssertTrue(
             PasteAXInspector.shouldTreatNewlineRangeAtCaret(
