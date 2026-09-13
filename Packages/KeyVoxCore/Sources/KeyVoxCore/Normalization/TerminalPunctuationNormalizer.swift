@@ -35,7 +35,12 @@ public struct TerminalPunctuationNormalizer {
     public func normalizeSpokenTerminalPunctuation(in text: String) -> String {
         guard !text.isEmpty else { return text }
 
-        var normalized = normalizeSpokenEllipses(in: normalizeLiteralEllipses(in: text))
+        let artifactNormalized = text.replacingOccurrences(
+            of: ".dot.dot.",
+            with: "…",
+            options: .caseInsensitive
+        )
+        var normalized = normalizeSpokenEllipses(in: normalizeLiteralEllipses(in: artifactNormalized))
         let words = wordTokens(in: normalized)
         guard !words.isEmpty else { return normalized }
         let commandMatches = terminalCommandMatches(in: words, text: normalized)
