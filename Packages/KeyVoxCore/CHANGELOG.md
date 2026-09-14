@@ -6,6 +6,24 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.3.1] - 2026-09-13
+
+Long dictations now deliver their selected text faster by reducing repeated portable linguistic work and moving paragraph and list variant generation after delivery when those variants are not required immediately.
+
+### Includes
+
+- Reused localized spoken-number parsing results instead of repeating the same expensive work for every matching word.
+- Allowed the selected dictation result to be delivered before generating its paragraph and list variants when output processing does not require them immediately.
+- Reused the selected result as its matching deterministic variant instead of processing it a second time.
+- Preserved precomputed variants when downstream model-based output processing requires them.
+- Added regression coverage for delivering selected text before deferred variants are generated.
+
+### Notes
+
+- `1.3.1` tracks the shared long-dictation latency fix for portable linguistic analysis and deterministic paragraph and list variants.
+
+---
+
 ## [1.3.0] - 2026-09-13
 
 Dictionary entries with embedded numbers now match their naturally spoken forms.
