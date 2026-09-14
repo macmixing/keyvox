@@ -6,6 +6,26 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.3.9] - 2026-09-13
+
+Adds spoken ellipses, alphanumeric dictionary matching, and language-aware English analysis while improving list, number, money, and ellipsis handling.
+
+### Added
+
+- Added `dot dot dot` support for dictation: three spoken `dot` tokens separated only by whitespace or punctuation now become a single Unicode ellipsis, and repeated literal-period ellipses are normalized to the same character.
+- Added spoken-number matching for digit runs inside alphanumeric custom-dictionary entries, including entries with multiple numeric runs, while keeping each spoken number aligned with its original digits.
+- Added language-aware linguistic analysis for dictation and Vibes, with a bundled offline English fallback when Apple's analysis is incomplete; healthy Apple results remain preferred, and the original dictation language now carries through post-processing and later Vibes changes.
+
+### Fixed
+
+- Fixed repeated `one` markers in separate paragraphs being converted into a numbered sequence; numbered-list formatting now requires consecutive spoken markers and preserves their original values.
+- Fixed qualifying four-digit quantities before following words missing thousands separators when Apple linguistic evidence is unusable.
+- Fixed Vibes losing major or minor currency words when linguistic lemmas are unavailable and mistaking an ambiguous dotted number for a time when a separate date or time immediately follows it.
+- Fixed inline ellipses incorrectly capitalizing ordinary continuation words or disappearing during Vibes rewrites, while preserving intentional capitalization for `I`, acronyms, saved dictionary entries, internally capitalized terms, and new paragraphs.
+- Fixed manual paste recovery immediately after granting Accessibility access for the first time.
+
+---
+
 ## [1.3.8] - 2026-09-07
 
 Improves Mac audio and trigger-key reliability while refining listening feedback, text handling, number and time preservation, and custom-dictionary accuracy.
