@@ -6,6 +6,22 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.3.2] - 2026-09-14
+
+Stylized dictionary entries now match lowercase possessive near-misses while preserving the possessive suffix.
+
+### Includes
+
+- Evaluated single-token matches using the normalized form already selected by dictionary scoring.
+- Preserved possessive suffixes while restoring the dictionary entry's canonical capitalization.
+- Added regression coverage for a lowercase possessive near-miss of an internally capitalized dictionary entry.
+
+### Notes
+
+- `1.3.2` tracks restored possessive matching for stylized single-token dictionary entries in the shared Core engine.
+
+---
+
 ## [1.3.1] - 2026-09-13
 
 Long dictations now deliver their selected text faster by reducing repeated portable linguistic work and moving paragraph and list variant generation after delivery when those variants are not required immediately.
