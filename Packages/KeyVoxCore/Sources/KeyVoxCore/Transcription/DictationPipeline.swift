@@ -217,6 +217,7 @@ public final class DictationPipeline {
     private let recordSpokenWords: (String) -> Void
     private let pasteText: (String) -> Void
     private let processOutputText: (DictationPipelineTextProcessingContext) async -> DictationPipelineTextProcessingResult
+    private let outputProcessingRequiresDeterministicVariantsProvider: () -> Bool
 
     public init(
         transcriptionProvider: DictationTranscriptionProviding,
@@ -231,7 +232,8 @@ public final class DictationPipeline {
         processOutputText: @escaping (String) async -> DictationPipelineTextProcessingResult = {
             .unchanged($0)
         },
-        processOutputTextWithContext: ((DictationPipelineTextProcessingContext) async -> DictationPipelineTextProcessingResult)? = nil
+        processOutputTextWithContext: ((DictationPipelineTextProcessingContext) async -> DictationPipelineTextProcessingResult)? = nil,
+        outputProcessingRequiresDeterministicVariantsProvider: @escaping () -> Bool = { true }
     ) {
         self.transcriptionProvider = transcriptionProvider
         self.transcriptionController = transcriptionProvider as? any DictationTranscriptionControlling
@@ -246,6 +248,7 @@ public final class DictationPipeline {
         self.processOutputText = processOutputTextWithContext ?? { context in
             await processOutputText(context.baseText)
         }
+        self.outputProcessingRequiresDeterministicVariantsProvider = outputProcessingRequiresDeterministicVariantsProvider
     }
 
     public func run(
@@ -356,20 +359,26 @@ public final class DictationPipeline {
                     return
                 }
 
-                let deterministicVariants = await self.deterministicVariants(
-                    paragraphRawText: paragraphRawText,
-                    inlineRawText: inlineRawText,
-                    dictionaryEntries: dictionaryEntries,
-                    renderMode: renderMode,
-                    languageCode: languageCode
-                )
+                let variantsRequiredBeforeOutput = self.outputProcessingRequiresDeterministicVariantsProvider()
+                let outputVariants = variantsRequiredBeforeOutput
+                    ? await self.deterministicVariants(
+                        paragraphRawText: paragraphRawText,
+                        inlineRawText: inlineRawText,
+                        selectedText: finalText,
+                        selectedParagraphsEnabled: autoParagraphsEnabled,
+                        selectedListsEnabled: listFormattingEnabled,
+                        dictionaryEntries: dictionaryEntries,
+                        renderMode: renderMode,
+                        languageCode: languageCode
+                    )
+                    : []
                 let processingContext = DictationPipelineTextProcessingContext(
                     languageCode: languageCode,
                     rawText: rawText,
                     baseText: finalText,
                     baseParagraphsEnabled: autoParagraphsEnabled,
                     baseListsEnabled: listFormattingEnabled,
-                    deterministicVariants: deterministicVariants
+                    deterministicVariants: outputVariants
                 )
                 let output = await self.processOutputText(processingContext)
                 let outputText = self.allCapsOverrideNormalizer.normalize(
@@ -384,6 +393,18 @@ public final class DictationPipeline {
                 }
 
                 let pasteDuration = outputText.isEmpty ? 0 : Date().timeIntervalSince(pasteStart)
+                let deterministicVariants = variantsRequiredBeforeOutput
+                    ? outputVariants
+                    : await self.deterministicVariants(
+                        paragraphRawText: paragraphRawText,
+                        inlineRawText: inlineRawText,
+                        selectedText: finalText,
+                        selectedParagraphsEnabled: autoParagraphsEnabled,
+                        selectedListsEnabled: listFormattingEnabled,
+                        dictionaryEntries: dictionaryEntries,
+                        renderMode: renderMode,
+                        languageCode: languageCode
+                    )
 
                 completion(
                     DictationPipelineResult(
@@ -415,6 +436,9 @@ public final class DictationPipeline {
     private func deterministicVariants(
         paragraphRawText: String,
         inlineRawText: String,
+        selectedText: String,
+        selectedParagraphsEnabled: Bool,
+        selectedListsEnabled: Bool,
         dictionaryEntries: [DictionaryEntry],
         renderMode: ListRenderMode,
         languageCode: String?
@@ -424,6 +448,9 @@ public final class DictationPipeline {
             await makeDeterministicVariants(
                 paragraphRawText: paragraphRawText,
                 inlineRawText: inlineRawText,
+                selectedText: selectedText,
+                selectedParagraphsEnabled: selectedParagraphsEnabled,
+                selectedListsEnabled: selectedListsEnabled,
                 dictionaryEntries: dictionaryEntries,
                 renderMode: renderMode,
                 languageCode: languageCode
@@ -433,6 +460,9 @@ public final class DictationPipeline {
         return await makeDeterministicVariants(
             paragraphRawText: paragraphRawText,
             inlineRawText: inlineRawText,
+            selectedText: selectedText,
+            selectedParagraphsEnabled: selectedParagraphsEnabled,
+            selectedListsEnabled: selectedListsEnabled,
             dictionaryEntries: dictionaryEntries,
             renderMode: renderMode,
             languageCode: languageCode
@@ -443,42 +473,33 @@ public final class DictationPipeline {
     private func makeDeterministicVariants(
         paragraphRawText: String,
         inlineRawText: String,
+        selectedText: String,
+        selectedParagraphsEnabled: Bool,
+        selectedListsEnabled: Bool,
         dictionaryEntries: [DictionaryEntry],
         renderMode: ListRenderMode,
         languageCode: String?
     ) async -> [DictationPipelineResult.DeterministicTextVariant] {
-        let noParagraphsNoLists = await postProcessor.processAsync(
-            inlineRawText,
-            dictionaryEntries: dictionaryEntries,
-            renderMode: .singleLineInline,
-            listFormattingEnabled: false,
-            forceAllCaps: false,
-            languageCode: languageCode
-        )
-        let paragraphsNoLists = await postProcessor.processAsync(
-            paragraphRawText,
-            dictionaryEntries: dictionaryEntries,
-            renderMode: renderMode,
-            listFormattingEnabled: false,
-            forceAllCaps: false,
-            languageCode: languageCode
-        )
-        let noParagraphsWithLists = await postProcessor.processAsync(
-            inlineRawText,
-            dictionaryEntries: dictionaryEntries,
-            renderMode: renderMode,
-            listFormattingEnabled: true,
-            forceAllCaps: false,
-            languageCode: languageCode
-        )
-        let paragraphsWithLists = await postProcessor.processAsync(
-            paragraphRawText,
-            dictionaryEntries: dictionaryEntries,
-            renderMode: renderMode,
-            listFormattingEnabled: true,
-            forceAllCaps: false,
-            languageCode: languageCode
-        )
+        func variantText(paragraphsEnabled: Bool, listsEnabled: Bool) async -> String {
+            if paragraphsEnabled == selectedParagraphsEnabled,
+               listsEnabled == selectedListsEnabled {
+                return selectedText
+            }
+
+            return await postProcessor.processAsync(
+                paragraphsEnabled ? paragraphRawText : inlineRawText,
+                dictionaryEntries: dictionaryEntries,
+                renderMode: paragraphsEnabled || listsEnabled ? renderMode : .singleLineInline,
+                listFormattingEnabled: listsEnabled,
+                forceAllCaps: false,
+                languageCode: languageCode
+            )
+        }
+
+        let noParagraphsNoLists = await variantText(paragraphsEnabled: false, listsEnabled: false)
+        let paragraphsNoLists = await variantText(paragraphsEnabled: true, listsEnabled: false)
+        let noParagraphsWithLists = await variantText(paragraphsEnabled: false, listsEnabled: true)
+        let paragraphsWithLists = await variantText(paragraphsEnabled: true, listsEnabled: true)
 
         return [
             DictationPipelineResult.DeterministicTextVariant(

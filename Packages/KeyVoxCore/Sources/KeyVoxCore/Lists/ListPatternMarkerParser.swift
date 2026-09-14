@@ -36,6 +36,17 @@ struct ListPatternMarkerParser {
 
     private static let formattersLock = NSLock()
     private static var formatters: [String: NumberFormatter] = [:]
+    private static var localizedNumberValues: [LocalizedNumberCacheKey: LocalizedNumberCacheValue] = [:]
+
+    private struct LocalizedNumberCacheKey: Hashable {
+        let localeIdentifier: String
+        let token: String
+    }
+
+    private enum LocalizedNumberCacheValue {
+        case number(Int)
+        case notNumber
+    }
 
     private static func formatterWithoutLock(for locale: Locale) -> NumberFormatter {
         let identifier = locale.identifier
@@ -87,15 +98,32 @@ struct ListPatternMarkerParser {
 
         for locale in candidateLocales(from: languageCode) {
             formattersLock.lock()
-            let numberFormatter = formatterWithoutLock(for: locale)
-            let parsed = numberFormatter.number(from: token)
-            let value = parsed?.intValue
-            let roundTrip = value.flatMap { numberFormatter.string(from: NSNumber(value: $0)) }
+            let cacheKey = LocalizedNumberCacheKey(
+                localeIdentifier: locale.identifier,
+                token: token
+            )
+            let cachedValue: LocalizedNumberCacheValue
+            if let existing = localizedNumberValues[cacheKey] {
+                cachedValue = existing
+            } else {
+                let numberFormatter = formatterWithoutLock(for: locale)
+                let parsed = numberFormatter.number(from: token)
+                let value = parsed?.intValue
+                let roundTrip = value.flatMap { numberFormatter.string(from: NSNumber(value: $0)) }
+                if let value,
+                   let roundTrip,
+                   normalizedSpokenToken(token) == normalizedSpokenToken(roundTrip) {
+                    cachedValue = .number(value)
+                } else {
+                    cachedValue = .notNumber
+                }
+                localizedNumberValues[cacheKey] = cachedValue
+            }
             formattersLock.unlock()
 
-            guard let value, let roundTrip else { continue }
-            guard normalizedSpokenToken(token) == normalizedSpokenToken(roundTrip) else { continue }
-            return value
+            if case .number(let value) = cachedValue {
+                return value
+            }
         }
 
         return nil
