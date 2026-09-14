@@ -198,6 +198,15 @@ public struct TerminalPunctuationNormalizer {
                     return (start, noun[finalStemCharacter].isUppercase ? "IES" : "ies")
                 }
             }
+
+            let lowercaseStem = noun[..<apostrophe].lowercased()
+            if ["s", "x", "ch", "sh"].contains(where: lowercaseStem.hasSuffix) {
+                let start = text.index(
+                    words[nounIndex].range.lowerBound,
+                    offsetBy: noun.distance(from: noun.startIndex, to: apostrophe)
+                )
+                return (start, noun[finalStemCharacter].isUppercase ? "ES" : "es")
+            }
         }
 
         let start = text.index(
