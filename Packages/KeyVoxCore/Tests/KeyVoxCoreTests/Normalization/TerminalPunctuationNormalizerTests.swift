@@ -38,6 +38,46 @@ final class TerminalPunctuationNormalizerTests: LinguisticAnalyzerTestCase {
         XCTAssertEqual(imperativeOutput, "Run!")
     }
 
+    func testRepairsPluralPossessiveArtifactBeforeTerminalCommands() {
+        let normalizer = TerminalPunctuationNormalizer()
+
+        XCTAssertEqual(
+            normalizer.normalizeSpokenTerminalPunctuation(
+                in: "I received assets for both of the video's exclamation point."
+            ),
+            "I received assets for both of the videos!"
+        )
+        XCTAssertEqual(
+            normalizer.normalizeSpokenTerminalPunctuation(
+                in: "Did you receive assets for both of the video’s question mark?"
+            ),
+            "Did you receive assets for both of the videos?"
+        )
+        XCTAssertEqual(
+            normalizer.normalizeSpokenTerminalPunctuation(
+                in: "Did you receive assets for both of the company’s question mark?"
+            ),
+            "Did you receive assets for both of the companies?"
+        )
+        XCTAssertEqual(
+            normalizer.normalizeSpokenTerminalPunctuation(
+                in: "Did you receive assets for both of the class's question mark?"
+            ),
+            "Did you receive assets for both of the classes?"
+        )
+    }
+
+    func testPreservesOrdinaryPossessiveBeforeTerminalCommand() {
+        let normalizer = TerminalPunctuationNormalizer()
+
+        XCTAssertEqual(
+            normalizer.normalizeSpokenTerminalPunctuation(
+                in: "That one is the company's exclamation point."
+            ),
+            "That one is the company's!"
+        )
+    }
+
     func testConvertsTerminalExclamationCommandAfterClauseEndingInThat() {
         let normalizer = TerminalPunctuationNormalizer()
 

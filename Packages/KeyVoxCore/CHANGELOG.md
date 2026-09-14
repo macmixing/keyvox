@@ -17,6 +17,7 @@ Long dictations now deliver their selected text faster by reducing repeated port
 - Reused the selected result as its matching deterministic variant instead of processing it a second time.
 - Preserved precomputed variants when downstream model-based output processing requires them.
 - Added regression coverage for delivering selected text before deferred variants are generated.
+- Removed mistaken possessive apostrophes from plural nouns before spoken exclamation-point and question-mark commands, including correct `ies` and `es` plural endings.
 
 ### Notes
 
