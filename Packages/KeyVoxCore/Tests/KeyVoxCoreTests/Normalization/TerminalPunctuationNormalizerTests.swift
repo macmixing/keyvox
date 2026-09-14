@@ -43,27 +43,68 @@ final class TerminalPunctuationNormalizerTests: LinguisticAnalyzerTestCase {
 
         XCTAssertEqual(
             normalizer.normalizeSpokenTerminalPunctuation(
-                in: "I received assets for both of the video's exclamation point."
+                in: "I received payment for the video's exclamation point."
             ),
-            "I received assets for both of the videos!"
+            "I received payment for the videos!"
         )
         XCTAssertEqual(
             normalizer.normalizeSpokenTerminalPunctuation(
-                in: "Did you receive assets for both of the video’s question mark?"
+                in: "Did you receive payment for the video’s question mark?"
             ),
-            "Did you receive assets for both of the videos?"
+            "Did you receive payment for the videos?"
         )
         XCTAssertEqual(
             normalizer.normalizeSpokenTerminalPunctuation(
-                in: "Did you receive assets for both of the company’s question mark?"
+                in: "Did you receive payment for both of the video’s question mark?"
             ),
-            "Did you receive assets for both of the companies?"
+            "Did you receive payment for both of the videos?"
+        )
+    }
+
+    func testRepairsRegularPluralSpellingsBeforeTerminalCommands() {
+        let normalizer = TerminalPunctuationNormalizer()
+
+        XCTAssertEqual(
+            normalizer.normalizeSpokenTerminalPunctuation(
+                in: "Did you receive payment for the company’s question mark?"
+            ),
+            "Did you receive payment for the companies?"
         )
         XCTAssertEqual(
             normalizer.normalizeSpokenTerminalPunctuation(
-                in: "Did you receive assets for both of the class's question mark?"
+                in: "Did you receive payment for the class's question mark?"
             ),
-            "Did you receive assets for both of the classes?"
+            "Did you receive payment for the classes?"
+        )
+        XCTAssertEqual(
+            normalizer.normalizeSpokenTerminalPunctuation(
+                in: "Did you receive payment for the box's question mark?"
+            ),
+            "Did you receive payment for the boxes?"
+        )
+        XCTAssertEqual(
+            normalizer.normalizeSpokenTerminalPunctuation(
+                in: "Did you receive payment for the buzz's question mark?"
+            ),
+            "Did you receive payment for the buzzes?"
+        )
+        XCTAssertEqual(
+            normalizer.normalizeSpokenTerminalPunctuation(
+                in: "Did you receive payment for the church's question mark?"
+            ),
+            "Did you receive payment for the churches?"
+        )
+        XCTAssertEqual(
+            normalizer.normalizeSpokenTerminalPunctuation(
+                in: "Did you receive payment for the dish's question mark?"
+            ),
+            "Did you receive payment for the dishes?"
+        )
+        XCTAssertEqual(
+            normalizer.normalizeSpokenTerminalPunctuation(
+                in: "Did you receive payment for the key's question mark?"
+            ),
+            "Did you receive payment for the keys?"
         )
     }
 
