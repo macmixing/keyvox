@@ -84,12 +84,6 @@ final class TerminalPunctuationNormalizerTests: LinguisticAnalyzerTestCase {
         )
         XCTAssertEqual(
             normalizer.normalizeSpokenTerminalPunctuation(
-                in: "Can you listen to the buzz's question mark?"
-            ),
-            "Can you listen to the buzzes?"
-        )
-        XCTAssertEqual(
-            normalizer.normalizeSpokenTerminalPunctuation(
                 in: "Did you deliver supplies to the church's question mark?"
             ),
             "Did you deliver supplies to the churches?"
@@ -105,6 +99,29 @@ final class TerminalPunctuationNormalizerTests: LinguisticAnalyzerTestCase {
                 in: "Did you attach tags to the key's question mark?"
             ),
             "Did you attach tags to the keys?"
+        )
+    }
+
+    func testRepairsZEndingPluralSpellingsBeforeTerminalCommands() {
+        let normalizer = TerminalPunctuationNormalizer()
+
+        XCTAssertEqual(
+            normalizer.normalizeSpokenTerminalPunctuation(
+                in: "Did you send answers to the quiz's question mark?"
+            ),
+            "Did you send answers to the quizzes?"
+        )
+        XCTAssertEqual(
+            normalizer.normalizeSpokenTerminalPunctuation(
+                in: "Were these questions taken from the quiz’s question mark?"
+            ),
+            "Were these questions taken from the quizzes?"
+        )
+        XCTAssertEqual(
+            normalizer.normalizeSpokenTerminalPunctuation(
+                in: "Can you listen to the buzz's question mark?"
+            ),
+            "Can you listen to the buzzes?"
         )
     }
 
