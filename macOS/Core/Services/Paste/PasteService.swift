@@ -94,8 +94,14 @@ class PasteService {
     }
 
     // MARK: - Entry Point
-    func pasteText(_ text: String) {
-        guard !text.isEmpty else { return }
+    func pasteText(
+        _ text: String,
+        completion: (@MainActor () -> Void)? = nil
+    ) {
+        guard !text.isEmpty else {
+            completion?()
+            return
+        }
         cancelActiveRecoveryOnMainThread()
 
         let targetAppIdentity = frontmostAppIdentity()
@@ -229,6 +235,12 @@ class PasteService {
                     from: savedSnapshot,
                     policy: executionPlan.restorePolicy
                 )
+            }
+
+            if let completion {
+                DispatchQueue.main.async {
+                    completion()
+                }
             }
         }
     }

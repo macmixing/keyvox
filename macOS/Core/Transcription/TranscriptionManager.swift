@@ -76,8 +76,11 @@ class TranscriptionManager: ObservableObject {
         recordSpokenWords: { [weak self] text in
             self?.weeklyWordStatsStore.recordSpokenWords(from: text)
         },
-        pasteText: { text in
-            PasteService.shared.pasteText(text)
+        pasteText: { [weak self] text in
+            PasteService.shared.pasteText(text) { [weak self] in
+                guard let self, self.state == .transcribing else { return }
+                OverlayManager.shared.hide()
+            }
         },
         processOutputTextWithContext: { [weak self] context in
             guard let self else { return .unchanged(context.baseText) }
