@@ -29,6 +29,10 @@ final class MacVibesCoordinator {
         isModelReady()
     }
 
+    var requiresDeterministicVariantsForOutputProcessing: Bool {
+        selectedVibe.usesModelRewrite
+    }
+
     @discardableResult
     func advanceSelectedVibe() -> StyleRewriteStyle {
         guard canUseVibes else {
