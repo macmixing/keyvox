@@ -36,6 +36,7 @@ struct ListPatternMarkerParser {
 
     private static let formattersLock = NSLock()
     private static var formatters: [String: NumberFormatter] = [:]
+    private static let maximumLocalizedNumberCacheEntries = 4_096
     private static var localizedNumberValues: [LocalizedNumberCacheKey: LocalizedNumberCacheValue] = [:]
 
     private struct LocalizedNumberCacheKey: Hashable {
@@ -116,6 +117,9 @@ struct ListPatternMarkerParser {
                     cachedValue = .number(value)
                 } else {
                     cachedValue = .notNumber
+                }
+                if localizedNumberValues.count >= maximumLocalizedNumberCacheEntries {
+                    localizedNumberValues.removeAll(keepingCapacity: true)
                 }
                 localizedNumberValues[cacheKey] = cachedValue
             }
