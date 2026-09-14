@@ -6,6 +6,7 @@ public struct TerminalPunctuationNormalizer {
         let text: String
         let range: Range<String.Index>
         let lexicalClass: LexicalRole?
+        let identity: LinguisticToken.Identity
     }
 
     private struct CommandMatch {
@@ -49,7 +50,15 @@ public struct TerminalPunctuationNormalizer {
 
         for commandMatch in commandMatches.reversed() {
             let replacementRange = replacementRange(for: commandMatch, words: words, text: normalized)
-            normalized.replaceSubrange(replacementRange, with: commandMatch.symbols)
+            if let apostrophe = pluralPossessiveArtifact(
+                before: commandMatch,
+                words: words,
+                text: normalized
+            ) {
+                normalized.replaceSubrange(apostrophe..<replacementRange.upperBound, with: "s" + commandMatch.symbols)
+            } else {
+                normalized.replaceSubrange(replacementRange, with: commandMatch.symbols)
+            }
         }
         return normalized
     }
@@ -134,11 +143,46 @@ public struct TerminalPunctuationNormalizer {
     }
 
     private func wordTokens(in text: String) -> [WordToken] {
-        let analysis = TextLinguistics.analyze(text, features: [.roles, .wordBoundaries])
+        let analysis = TextLinguistics.analyze(text, features: [.roles, .names, .wordBoundaries])
         return analysis.tokens.compactMap { token in
             guard let range = Range(token.range, in: text) else { return nil }
-            return WordToken(text: String(text[range]), range: range, lexicalClass: token.role)
+            return WordToken(
+                text: String(text[range]),
+                range: range,
+                lexicalClass: token.role,
+                identity: token.identity
+            )
         }
+    }
+
+    private func pluralPossessiveArtifact(
+        before match: CommandMatch,
+        words: [WordToken],
+        text: String
+    ) -> String.Index? {
+        let nounIndex = words.index(before: match.firstWordIndex)
+        guard nounIndex >= words.startIndex + 3,
+              words[nounIndex].lexicalClass == .noun,
+              words[nounIndex].identity == .ordinaryWord,
+              words[nounIndex - 1].lexicalClass == .determiner,
+              words[nounIndex - 2].lexicalClass == .preposition,
+              words[nounIndex - 3].lexicalClass == .determiner,
+              isWhitespaceOnly(text[words[nounIndex].range.upperBound..<words[match.firstWordIndex].range.lowerBound]) else {
+            return nil
+        }
+
+        let noun = words[nounIndex].text
+        guard noun.count > 2,
+              noun.last?.lowercased() == "s" else {
+            return nil
+        }
+
+        let apostrophe = noun.index(noun.endIndex, offsetBy: -2)
+        guard noun[apostrophe] == "'" || noun[apostrophe] == "’" else {
+            return nil
+        }
+
+        return text.index(words[nounIndex].range.lowerBound, offsetBy: noun.distance(from: noun.startIndex, to: apostrophe))
     }
 
     private func terminalCommandMatches(in words: [WordToken], text: String) -> [CommandMatch] {
