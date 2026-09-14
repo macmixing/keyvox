@@ -442,6 +442,20 @@ final class DictionaryMatcherTests: LinguisticAnalyzerTestCase {
         XCTAssertEqual(result.text, "KeyVox's lemonade")
     }
 
+    func testCorrectsLowercaseStylizedNearMissWithPossessiveSuffix() async {
+        let matcher = makeRuntimeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryInitialEntries.keyVox])
+
+        let result = matcher.apply(
+            to: "I really like keybox's transcription quality."
+        )
+
+        XCTAssertEqual(
+            result.text,
+            "I really like KeyVox's transcription quality."
+        )
+    }
+
     func testCandidateRelativeTrailingFormHonorsStricterConfiguredPhoneticThreshold() async {
         let scorer = ReplacementScorer(
             textWeight: 0.50,

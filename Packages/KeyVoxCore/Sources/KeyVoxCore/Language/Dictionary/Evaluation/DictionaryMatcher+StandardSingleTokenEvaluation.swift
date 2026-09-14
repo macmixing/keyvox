@@ -27,9 +27,7 @@ extension DictionaryMatcher {
         let observedToken = window[0]
         let candidateToken = best.entry.tokens[0]
         let candidatePhonetic = encoder.scoringSignature(for: candidateToken, lexicon: lexicon)
-        let surfaceObservedNormalized = selection.usesCandidateRelativeTrailingForm
-            ? selection.observedNormalized
-            : observedToken.normalized
+        let surfaceObservedNormalized = selection.observedNormalized
         let textSimilarity = scorer.similarity(lhs: surfaceObservedNormalized, rhs: candidateToken)
         let phoneticSimilarity = scorer.similarity(lhs: observedToken.phonetic, rhs: candidatePhonetic)
         let isCommonWord = lexicon.isCommonWord(baseTokenForCommonWordGuard(observedToken.normalized))
