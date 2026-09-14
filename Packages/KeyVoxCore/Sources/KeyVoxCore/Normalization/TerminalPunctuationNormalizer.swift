@@ -50,12 +50,15 @@ public struct TerminalPunctuationNormalizer {
 
         for commandMatch in commandMatches.reversed() {
             let replacementRange = replacementRange(for: commandMatch, words: words, text: normalized)
-            if let apostrophe = pluralPossessiveArtifact(
+            if let repair = pluralPossessiveRepair(
                 before: commandMatch,
                 words: words,
                 text: normalized
             ) {
-                normalized.replaceSubrange(apostrophe..<replacementRange.upperBound, with: "s" + commandMatch.symbols)
+                normalized.replaceSubrange(
+                    repair.start..<replacementRange.upperBound,
+                    with: repair.pluralSuffix + commandMatch.symbols
+                )
             } else {
                 normalized.replaceSubrange(replacementRange, with: commandMatch.symbols)
             }
@@ -155,11 +158,11 @@ public struct TerminalPunctuationNormalizer {
         }
     }
 
-    private func pluralPossessiveArtifact(
+    private func pluralPossessiveRepair(
         before match: CommandMatch,
         words: [WordToken],
         text: String
-    ) -> String.Index? {
+    ) -> (start: String.Index, pluralSuffix: String)? {
         let nounIndex = words.index(before: match.firstWordIndex)
         guard nounIndex >= words.startIndex + 3,
               words[nounIndex].lexicalClass == .noun,
@@ -182,7 +185,26 @@ public struct TerminalPunctuationNormalizer {
             return nil
         }
 
-        return text.index(words[nounIndex].range.lowerBound, offsetBy: noun.distance(from: noun.startIndex, to: apostrophe))
+        if apostrophe > noun.startIndex {
+            let finalStemCharacter = noun.index(before: apostrophe)
+            if noun[finalStemCharacter].lowercased() == "y",
+               finalStemCharacter > noun.startIndex {
+                let precedingCharacter = noun[noun.index(before: finalStemCharacter)]
+                if !"aeiou".contains(precedingCharacter.lowercased()) {
+                    let start = text.index(
+                        words[nounIndex].range.lowerBound,
+                        offsetBy: noun.distance(from: noun.startIndex, to: finalStemCharacter)
+                    )
+                    return (start, noun[finalStemCharacter].isUppercase ? "IES" : "ies")
+                }
+            }
+        }
+
+        let start = text.index(
+            words[nounIndex].range.lowerBound,
+            offsetBy: noun.distance(from: noun.startIndex, to: apostrophe)
+        )
+        return (start, "s")
     }
 
     private func terminalCommandMatches(in words: [WordToken], text: String) -> [CommandMatch] {

@@ -53,6 +53,12 @@ final class TerminalPunctuationNormalizerTests: LinguisticAnalyzerTestCase {
             ),
             "Did you receive assets for both of the videos?"
         )
+        XCTAssertEqual(
+            normalizer.normalizeSpokenTerminalPunctuation(
+                in: "Did you receive assets for both of the company’s question mark?"
+            ),
+            "Did you receive assets for both of the companies?"
+        )
     }
 
     func testPreservesOrdinaryPossessiveBeforeTerminalCommand() {
