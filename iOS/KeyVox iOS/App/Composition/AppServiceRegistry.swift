@@ -236,6 +236,9 @@ final class AppServiceRegistry {
             processOutputTextWithContext: { [weak styleRewritePipelineCoordinator] context in
                 await styleRewritePipelineCoordinator?.processOutputText(context) ?? .unchanged(context.baseText)
             },
+            outputProcessingRequiresDeterministicVariantsProvider: { [weak styleRewritePipelineCoordinator] in
+                styleRewritePipelineCoordinator?.requiresDeterministicVariantsForOutputProcessing ?? false
+            },
             recordPipelineResult: { [weak styleRewritePipelineCoordinator] result, selectedText in
                 styleRewritePipelineCoordinator?.recordLatestArtifact(from: result, selectedText: selectedText)
             },

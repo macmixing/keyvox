@@ -36,6 +36,10 @@ final class StyleRewritePipelineCoordinator {
         textTransformer.prewarm(request: request)
     }
 
+    var requiresDeterministicVariantsForOutputProcessing: Bool {
+        selectedStyleProvider().usesModelRewrite
+    }
+
     func processOutputText(_ baseText: String) async -> DictationPipelineTextProcessingResult {
         guard let request = transformRequest(for: baseText, languageCode: nil, deterministicVariants: []) else {
             return .unchanged(baseText)

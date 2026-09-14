@@ -36,6 +36,7 @@ final class TranscriptionManager: ObservableObject {
     private let listFormattingEnabledProvider: () -> Bool
     private let capsLockEnabledProvider: () -> Bool
     private let processOutputText: (DictationPipelineTextProcessingContext) async -> DictationPipelineTextProcessingResult
+    private let outputProcessingRequiresDeterministicVariantsProvider: () -> Bool
     private let recordPipelineResult: (DictationPipelineResult, String) -> Void
     private let recordSuccessfulDictation: () -> Void
     private let prewarmStyleRewriteForUpcomingDictation: () -> Void
@@ -50,6 +51,8 @@ final class TranscriptionManager: ObservableObject {
     var utteranceSafetyTask: Task<Void, Never>?
     var activeUtteranceID = UUID()
     var activeInterruptedCaptureRecoveryID: UUID?
+    var immediatePipelineOutputUtteranceID: UUID?
+    var publishedPipelineOutputUtteranceID: UUID?
 
     lazy var dictationPipeline = DictationPipeline(
         transcriptionProvider: transcriptionService,
@@ -76,6 +79,9 @@ final class TranscriptionManager: ObservableObject {
         },
         processOutputTextWithContext: { [weak self] context in
             await self?.processOutputText(context) ?? .unchanged(context.baseText)
+        },
+        outputProcessingRequiresDeterministicVariantsProvider: { [weak self] in
+            self?.outputProcessingRequiresDeterministicVariantsProvider() ?? false
         }
     )
 
@@ -110,6 +116,7 @@ final class TranscriptionManager: ObservableObject {
         processOutputTextWithContext: @escaping (DictationPipelineTextProcessingContext) async -> DictationPipelineTextProcessingResult = {
             .unchanged($0.baseText)
         },
+        outputProcessingRequiresDeterministicVariantsProvider: @escaping () -> Bool = { false },
         recordPipelineResult: @escaping (DictationPipelineResult, String) -> Void = { _, _ in },
         recordSuccessfulDictation: @escaping () -> Void = {},
         prewarmStyleRewriteForUpcomingDictation: @escaping () -> Void = {},
@@ -142,6 +149,7 @@ final class TranscriptionManager: ObservableObject {
         self.listFormattingEnabledProvider = listFormattingEnabledProvider
         self.capsLockEnabledProvider = capsLockEnabledProvider
         self.processOutputText = processOutputTextWithContext
+        self.outputProcessingRequiresDeterministicVariantsProvider = outputProcessingRequiresDeterministicVariantsProvider
         self.recordPipelineResult = recordPipelineResult
         self.recordSuccessfulDictation = recordSuccessfulDictation
         self.prewarmStyleRewriteForUpcomingDictation = prewarmStyleRewriteForUpcomingDictation
@@ -348,6 +356,7 @@ final class TranscriptionManager: ObservableObject {
         )
 
         pendingPipelineOutputText = nil
+        immediatePipelineOutputUtteranceID = utteranceID
         state = .transcribing
         keyboardBridge.publishTranscribing()
 
@@ -355,6 +364,9 @@ final class TranscriptionManager: ObservableObject {
             audioFrames: stoppedCapture.outputFrames,
             useDictionaryHintPrompt: usedDictionaryHintPrompt
         )
+        let pipelineOutputWasPublished = publishedPipelineOutputUtteranceID == utteranceID
+        immediatePipelineOutputUtteranceID = nil
+        publishedPipelineOutputUtteranceID = nil
 
         guard utteranceID == activeUtteranceID else {
             await releaseStyleRewritePrewarmSession("stale-result")
@@ -389,7 +401,9 @@ final class TranscriptionManager: ObservableObject {
             print("--- Speed Profile End ---")
             #endif
             lastTranscriptionText = finalText
-            keyboardBridge.publishTranscriptionReady(finalText)
+            if !pipelineOutputWasPublished {
+                keyboardBridge.publishTranscriptionReady(finalText)
+            }
             commandResult = .completed(finalText)
         }
 
@@ -450,6 +464,10 @@ final class TranscriptionManager: ObservableObject {
 
     private func capturePipelineOutput(_ text: String) {
         pendingPipelineOutputText = text
+        guard immediatePipelineOutputUtteranceID == activeUtteranceID else { return }
+        lastTranscriptionText = text
+        keyboardBridge.publishTranscriptionReady(text)
+        publishedPipelineOutputUtteranceID = immediatePipelineOutputUtteranceID
     }
 
     #if DEBUG
