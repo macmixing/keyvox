@@ -164,12 +164,11 @@ public struct TerminalPunctuationNormalizer {
         text: String
     ) -> (start: String.Index, pluralSuffix: String)? {
         let nounIndex = words.index(before: match.firstWordIndex)
-        guard nounIndex >= words.startIndex + 3,
+        guard nounIndex >= words.startIndex + 2,
               words[nounIndex].lexicalClass == .noun,
               words[nounIndex].identity == .ordinaryWord,
               words[nounIndex - 1].lexicalClass == .determiner,
               words[nounIndex - 2].lexicalClass == .preposition,
-              words[nounIndex - 3].lexicalClass == .determiner,
               isWhitespaceOnly(text[words[nounIndex].range.upperBound..<words[match.firstWordIndex].range.lowerBound]) else {
             return nil
         }
@@ -200,6 +199,15 @@ public struct TerminalPunctuationNormalizer {
             }
 
             let lowercaseStem = noun[..<apostrophe].lowercased()
+            if lowercaseStem.hasSuffix("z") {
+                let start = text.index(
+                    words[nounIndex].range.lowerBound,
+                    offsetBy: noun.distance(from: noun.startIndex, to: apostrophe)
+                )
+                let suffix = lowercaseStem.hasSuffix("zz") ? "es" : "zes"
+                return (start, noun[finalStemCharacter].isUppercase ? suffix.uppercased() : suffix)
+            }
+
             if ["s", "x", "ch", "sh"].contains(where: lowercaseStem.hasSuffix) {
                 let start = text.index(
                     words[nounIndex].range.lowerBound,

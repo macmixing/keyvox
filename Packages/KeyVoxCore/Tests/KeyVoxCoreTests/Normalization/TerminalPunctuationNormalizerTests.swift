@@ -43,38 +43,96 @@ final class TerminalPunctuationNormalizerTests: LinguisticAnalyzerTestCase {
 
         XCTAssertEqual(
             normalizer.normalizeSpokenTerminalPunctuation(
-                in: "I received assets for both of the video's exclamation point."
+                in: "I received payment for the video's exclamation point."
             ),
-            "I received assets for both of the videos!"
+            "I received payment for the videos!"
         )
         XCTAssertEqual(
             normalizer.normalizeSpokenTerminalPunctuation(
-                in: "Did you receive assets for both of the video’s question mark?"
+                in: "Did you archive the files for the video’s question mark?"
             ),
-            "Did you receive assets for both of the videos?"
+            "Did you archive the files for the videos?"
         )
         XCTAssertEqual(
             normalizer.normalizeSpokenTerminalPunctuation(
-                in: "Did you receive assets for both of the company’s question mark?"
+                in: "Were these clips selected from both of the video’s question mark?"
             ),
-            "Did you receive assets for both of the companies?"
-        )
-        XCTAssertEqual(
-            normalizer.normalizeSpokenTerminalPunctuation(
-                in: "Did you receive assets for both of the class's question mark?"
-            ),
-            "Did you receive assets for both of the classes?"
+            "Were these clips selected from both of the videos?"
         )
     }
 
-    func testPreservesOrdinaryPossessiveBeforeTerminalCommand() {
+    func testRepairsRegularPluralSpellingsBeforeTerminalCommands() {
         let normalizer = TerminalPunctuationNormalizer()
 
         XCTAssertEqual(
             normalizer.normalizeSpokenTerminalPunctuation(
-                in: "That one is the company's exclamation point."
+                in: "Did you send reports to the company’s question mark?"
             ),
-            "That one is the company's!"
+            "Did you send reports to the companies?"
+        )
+        XCTAssertEqual(
+            normalizer.normalizeSpokenTerminalPunctuation(
+                in: "Did you distribute schedules to the class's question mark?"
+            ),
+            "Did you distribute schedules to the classes?"
+        )
+        XCTAssertEqual(
+            normalizer.normalizeSpokenTerminalPunctuation(
+                in: "Did you attach labels to the box's question mark?"
+            ),
+            "Did you attach labels to the boxes?"
+        )
+        XCTAssertEqual(
+            normalizer.normalizeSpokenTerminalPunctuation(
+                in: "Did you deliver supplies to the church's question mark?"
+            ),
+            "Did you deliver supplies to the churches?"
+        )
+        XCTAssertEqual(
+            normalizer.normalizeSpokenTerminalPunctuation(
+                in: "Did you add garnish to the dish's question mark?"
+            ),
+            "Did you add garnish to the dishes?"
+        )
+        XCTAssertEqual(
+            normalizer.normalizeSpokenTerminalPunctuation(
+                in: "Did you attach tags to the key's question mark?"
+            ),
+            "Did you attach tags to the keys?"
+        )
+    }
+
+    func testRepairsZEndingPluralSpellingsBeforeTerminalCommands() {
+        let normalizer = TerminalPunctuationNormalizer()
+
+        XCTAssertEqual(
+            normalizer.normalizeSpokenTerminalPunctuation(
+                in: "Did you send answers to the quiz's question mark?"
+            ),
+            "Did you send answers to the quizzes?"
+        )
+        XCTAssertEqual(
+            normalizer.normalizeSpokenTerminalPunctuation(
+                in: "Were these questions taken from the quiz’s question mark?"
+            ),
+            "Were these questions taken from the quizzes?"
+        )
+        XCTAssertEqual(
+            normalizer.normalizeSpokenTerminalPunctuation(
+                in: "Can you listen to the buzz's question mark?"
+            ),
+            "Can you listen to the buzzes?"
+        )
+    }
+
+    func testRepairsPluralArtifactInPartitivePhrase() {
+        let normalizer = TerminalPunctuationNormalizer()
+
+        XCTAssertEqual(
+            normalizer.normalizeSpokenTerminalPunctuation(
+                in: "This is one of the company's exclamation point."
+            ),
+            "This is one of the companies!"
         )
     }
 
