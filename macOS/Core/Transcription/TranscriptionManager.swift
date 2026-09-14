@@ -82,6 +82,9 @@ class TranscriptionManager: ObservableObject {
         processOutputTextWithContext: { [weak self] context in
             guard let self else { return .unchanged(context.baseText) }
             return await self.vibesCoordinator.processOutputText(context)
+        },
+        outputProcessingRequiresDeterministicVariantsProvider: { [weak self] in
+            self?.vibesCoordinator.requiresDeterministicVariantsForOutputProcessing ?? false
         }
     )
     var isLocked = false

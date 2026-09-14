@@ -1,5 +1,6 @@
 import XCTest
 @testable import KeyVoxCore
+import KeyVoxLinguistics
 
 @MainActor
 final class DictationPipelineTests: LinguisticAnalyzerTestCase {
@@ -72,6 +73,45 @@ final class DictationPipelineTests: LinguisticAnalyzerTestCase {
         XCTAssertEqual(variants[.init(paragraphsEnabled: true, listsEnabled: false)], "Project notes one Cueboard two Cueboard")
         XCTAssertEqual(variants[.init(paragraphsEnabled: false, listsEnabled: true)], "Project notes:\n\n1. Cueboard\n2. Cueboard")
         XCTAssertEqual(variants[.init(paragraphsEnabled: true, listsEnabled: true)], result.baseText)
+    }
+
+    func testPipelinePastesSelectedTextBeforeGeneratingDeferredVariants() async throws {
+        let provider = StubTranscriptionProvider(
+            result: .init(
+                text: "project notes one cue board two cue board",
+                languageCode: "en",
+                paragraphsText: nil,
+                inlineText: nil
+            )
+        )
+        let analyzer = PipelineRecordingLinguisticAnalyzer(base: TextLinguistics.provider)
+        var analyzerCallsAtPaste = 0
+        var receivedContext: DictationPipelineTextProcessingContext?
+        let pipeline = DictationPipeline(
+            transcriptionProvider: provider,
+            postProcessor: TranscriptionPostProcessor(linguisticAnalyzer: analyzer),
+            dictionaryEntriesProvider: { [DictionaryEntry(phrase: "Cueboard")] },
+            autoParagraphsEnabledProvider: { true },
+            listFormattingEnabledProvider: { true },
+            listRenderModeProvider: { .multiline },
+            recordSpokenWords: { _ in },
+            pasteText: { _ in analyzerCallsAtPaste = analyzer.callCount },
+            processOutputTextWithContext: { context in
+                receivedContext = context
+                return .unchanged(context.baseText)
+            },
+            outputProcessingRequiresDeterministicVariantsProvider: { false }
+        )
+
+        let result = await runPipeline(
+            pipeline,
+            audioFrames: Array(repeating: Float(0.1), count: 128),
+            useDictionaryHintPrompt: false
+        )
+
+        XCTAssertEqual(receivedContext?.deterministicVariants.count, 0)
+        XCTAssertEqual(result.deterministicVariants.count, 4)
+        XCTAssertGreaterThan(analyzer.callCount, analyzerCallsAtPaste)
     }
 
     func testPipelineEmitsSingleLineDeterministicListVariantsWhenRenderModeIsInline() async throws {
@@ -681,6 +721,37 @@ private struct DeterministicVariantKey: Hashable {
     init(paragraphsEnabled: Bool, listsEnabled: Bool) {
         self.paragraphsEnabled = paragraphsEnabled
         self.listsEnabled = listsEnabled
+    }
+}
+
+private final class PipelineRecordingLinguisticAnalyzer: LinguisticAnalyzing, @unchecked Sendable {
+    private let base: any LinguisticAnalyzing
+    private let lock = NSLock()
+    private var calls = 0
+
+    init(base: any LinguisticAnalyzing) {
+        self.base = base
+    }
+
+    var callCount: Int {
+        lock.withLock { calls }
+    }
+
+    func analyze(
+        _ text: String,
+        range: NSRange?,
+        languageCode: String?,
+        features: LinguisticFeatures,
+        grouping: LinguisticGrouping
+    ) -> LinguisticAnalysis {
+        lock.withLock { calls += 1 }
+        return base.analyze(
+            text,
+            range: range,
+            languageCode: languageCode,
+            features: features,
+            grouping: grouping
+        )
     }
 }
 
