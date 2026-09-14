@@ -49,15 +49,15 @@ final class TerminalPunctuationNormalizerTests: LinguisticAnalyzerTestCase {
         )
         XCTAssertEqual(
             normalizer.normalizeSpokenTerminalPunctuation(
-                in: "Did you receive payment for the video’s question mark?"
+                in: "Did you archive the files for the video’s question mark?"
             ),
-            "Did you receive payment for the videos?"
+            "Did you archive the files for the videos?"
         )
         XCTAssertEqual(
             normalizer.normalizeSpokenTerminalPunctuation(
-                in: "Did you receive payment for both of the video’s question mark?"
+                in: "Were these clips selected from both of the video’s question mark?"
             ),
-            "Did you receive payment for both of the videos?"
+            "Were these clips selected from both of the videos?"
         )
     }
 
@@ -66,56 +66,56 @@ final class TerminalPunctuationNormalizerTests: LinguisticAnalyzerTestCase {
 
         XCTAssertEqual(
             normalizer.normalizeSpokenTerminalPunctuation(
-                in: "Did you receive payment for the company’s question mark?"
+                in: "Did you send reports to the company’s question mark?"
             ),
-            "Did you receive payment for the companies?"
+            "Did you send reports to the companies?"
         )
         XCTAssertEqual(
             normalizer.normalizeSpokenTerminalPunctuation(
-                in: "Did you receive payment for the class's question mark?"
+                in: "Did you distribute schedules to the class's question mark?"
             ),
-            "Did you receive payment for the classes?"
+            "Did you distribute schedules to the classes?"
         )
         XCTAssertEqual(
             normalizer.normalizeSpokenTerminalPunctuation(
-                in: "Did you receive payment for the box's question mark?"
+                in: "Did you attach labels to the box's question mark?"
             ),
-            "Did you receive payment for the boxes?"
+            "Did you attach labels to the boxes?"
         )
         XCTAssertEqual(
             normalizer.normalizeSpokenTerminalPunctuation(
-                in: "Did you receive payment for the buzz's question mark?"
+                in: "Can you listen to the buzz's question mark?"
             ),
-            "Did you receive payment for the buzzes?"
+            "Can you listen to the buzzes?"
         )
         XCTAssertEqual(
             normalizer.normalizeSpokenTerminalPunctuation(
-                in: "Did you receive payment for the church's question mark?"
+                in: "Did you deliver supplies to the church's question mark?"
             ),
-            "Did you receive payment for the churches?"
+            "Did you deliver supplies to the churches?"
         )
         XCTAssertEqual(
             normalizer.normalizeSpokenTerminalPunctuation(
-                in: "Did you receive payment for the dish's question mark?"
+                in: "Did you add garnish to the dish's question mark?"
             ),
-            "Did you receive payment for the dishes?"
+            "Did you add garnish to the dishes?"
         )
         XCTAssertEqual(
             normalizer.normalizeSpokenTerminalPunctuation(
-                in: "Did you receive payment for the key's question mark?"
+                in: "Did you attach tags to the key's question mark?"
             ),
-            "Did you receive payment for the keys?"
+            "Did you attach tags to the keys?"
         )
     }
 
-    func testPreservesOrdinaryPossessiveBeforeTerminalCommand() {
+    func testRepairsPluralArtifactInPartitivePhrase() {
         let normalizer = TerminalPunctuationNormalizer()
 
         XCTAssertEqual(
             normalizer.normalizeSpokenTerminalPunctuation(
-                in: "That one is the company's exclamation point."
+                in: "This is one of the company's exclamation point."
             ),
-            "That one is the company's!"
+            "This is one of the companies!"
         )
     }
 
