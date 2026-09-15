@@ -2,6 +2,11 @@ import KeyVoxCore
 import SwiftUI
 
 struct OnboardingLanguageScreen: View {
+    enum PresentationContext {
+        case onboarding
+        case settings(onDone: () -> Void)
+    }
+
     @Environment(\.appHaptics) private var appHaptics
     @EnvironmentObject private var onboardingStore: OnboardingStore
     @EnvironmentObject private var settingsStore: AppSettingsStore
@@ -10,6 +15,11 @@ struct OnboardingLanguageScreen: View {
     @State private var searchText = ""
     @State private var isAdvancing = false
     @State private var advanceTask: Task<Void, Never>?
+    private let presentationContext: PresentationContext
+
+    init(presentationContext: PresentationContext = .onboarding) {
+        self.presentationContext = presentationContext
+    }
 
     var body: some View {
         AppScrollScreen {
@@ -76,7 +86,7 @@ struct OnboardingLanguageScreen: View {
         }
         .safeAreaInset(edge: .bottom) {
             AppActionButton(
-                title: "Continue",
+                title: actionTitle,
                 style: .primary,
                 fillsWidth: true,
                 fontSize: 20,
@@ -89,7 +99,7 @@ struct OnboardingLanguageScreen: View {
             .background(AppTheme.screenBackground.opacity(0.98))
         }
         .onAppear {
-            selection = onboardingStore.onboardingDictationLanguage
+            selection = initialSelection
         }
         .onChange(of: onboardingStore.shouldShowLanguageSelectionScreen) { _, shouldShowLanguageSelection in
             guard shouldShowLanguageSelection else { return }
@@ -100,6 +110,24 @@ struct OnboardingLanguageScreen: View {
         .onDisappear {
             advanceTask?.cancel()
             advanceTask = nil
+        }
+    }
+
+    private var actionTitle: String {
+        switch presentationContext {
+        case .onboarding:
+            "Continue"
+        case .settings:
+            "Done"
+        }
+    }
+
+    private var initialSelection: DictationLanguage? {
+        switch presentationContext {
+        case .onboarding:
+            onboardingStore.onboardingDictationLanguage
+        case .settings:
+            settingsStore.whisperDictationLanguage
         }
     }
 
@@ -171,6 +199,12 @@ struct OnboardingLanguageScreen: View {
 
     private func advance(with selection: DictationLanguage) {
         settingsStore.whisperDictationLanguage = selection
-        onboardingStore.completeLanguageSelection(language: selection)
+
+        switch presentationContext {
+        case .onboarding:
+            onboardingStore.completeLanguageSelection(language: selection)
+        case .settings(let onDone):
+            onDone()
+        }
     }
 }
