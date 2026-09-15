@@ -27,6 +27,7 @@ struct SettingsTabView: View {
     @State var ttsExpandedContentHeight: CGFloat = 0
     @State var isThirdPartyNoticesPresented = false
     @State var isDictationShortcutSetupPresented = false
+    @State var isLanguagePickerPresented = false
     @State private var handledModelSectionExpansionRequestID: UUID?
     @StateObject var downloadNetworkMonitor = OnboardingDownloadNetworkMonitor()
     
@@ -55,8 +56,17 @@ struct SettingsTabView: View {
                     isDictationShortcutSetupPresented = false
                 }
             }
+            .fullScreenCover(isPresented: $isLanguagePickerPresented) {
+                OnboardingLanguageScreen(
+                    presentationContext: .settings {
+                        isLanguagePickerPresented = false
+                    }
+                )
+            }
             .blocksAppReviewRequest(
-                isThirdPartyNoticesPresented || isDictationShortcutSetupPresented
+                isThirdPartyNoticesPresented
+                    || isDictationShortcutSetupPresented
+                    || isLanguagePickerPresented
             )
             .onDisappear {
                 ttsPreviewPlayer.stop()

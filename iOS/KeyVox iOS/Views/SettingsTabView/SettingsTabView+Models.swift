@@ -126,19 +126,15 @@ extension SettingsTabView {
                 .frame(maxWidth: .infinity, alignment: .leading)
 
                 if settingsStore.activeDictationProvider == .whisper {
-                    Menu {
-                        Picker("", selection: whisperLanguageSelection) {
-                            ForEach(whisperLanguageOptions) { language in
-                                Text(DictationLanguageDisplayNameFormatter.displayName(for: language))
-                                    .tag(language)
-                            }
-                        }
-                        .pickerStyle(.inline)
+                    Button {
+                        appHaptics.light()
+                        isLanguagePickerPresented = true
                     } label: {
                         Text("Change")
                             .font(.appFont(16))
                             .foregroundStyle(.yellow)
                     }
+                    .buttonStyle(.plain)
                     .padding(.top, 2)
                 }
             }
@@ -370,29 +366,6 @@ extension SettingsTabView {
                 settingsStore.activeDictationProvider = newValue
             }
         )
-    }
-
-    var whisperLanguageSelection: Binding<DictationLanguage> {
-        Binding(
-            get: { settingsStore.whisperDictationLanguage },
-            set: { newValue in
-                guard WhisperBaseLanguageCatalog.supports(newValue) else { return }
-                settingsStore.whisperDictationLanguage = newValue
-            }
-        )
-    }
-
-    var whisperLanguageOptions: [DictationLanguage] {
-        let languageOptions = WhisperBaseLanguageCatalog.supportedLanguages
-            .filter { !$0.isAutomatic }
-            .sorted {
-                DictationLanguageDisplayNameFormatter.displayName(for: $0)
-                    .localizedCaseInsensitiveCompare(
-                        DictationLanguageDisplayNameFormatter.displayName(for: $1)
-                    ) == .orderedAscending
-            }
-
-        return [.automatic] + languageOptions
     }
 
     var activeDictationLanguageDisplayName: String {
