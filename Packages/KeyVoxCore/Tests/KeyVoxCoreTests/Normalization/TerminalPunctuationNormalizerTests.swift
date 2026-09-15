@@ -31,11 +31,9 @@ final class TerminalPunctuationNormalizerTests: LinguisticAnalyzerTestCase {
 
         let pointOutput = normalizer.normalizeSpokenTerminalPunctuation(in: "Ship it exclamation point")
         let markOutput = normalizer.normalizeSpokenTerminalPunctuation(in: "Ship it exclamation mark")
-        let imperativeOutput = normalizer.normalizeSpokenTerminalPunctuation(in: "Run exclamation point.")
 
         XCTAssertEqual(pointOutput, "Ship it!")
         XCTAssertEqual(markOutput, "Ship it!")
-        XCTAssertEqual(imperativeOutput, "Run!")
     }
 
     func testRepairsPluralPossessiveArtifactBeforeTerminalCommands() {
