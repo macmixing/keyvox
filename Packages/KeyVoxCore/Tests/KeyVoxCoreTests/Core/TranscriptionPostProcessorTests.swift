@@ -4,6 +4,19 @@ import XCTest
 
 @MainActor
 final class TranscriptionPostProcessorTests: LinguisticAnalyzerTestCase {
+    func testConvertsSpokenExclamationAfterSingleWordImperative() async {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Run exclamation point.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline,
+            languageCode: "en"
+        )
+
+        XCTAssertEqual(output, "Run!")
+    }
+
     func testAppliesDictionaryCasingBeforeListFormatting() async {
         let processor = TranscriptionPostProcessor()
         let entries = [
