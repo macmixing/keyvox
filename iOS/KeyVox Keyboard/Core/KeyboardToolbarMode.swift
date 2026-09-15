@@ -7,14 +7,12 @@ enum KeyboardToolbarMode: Equatable {
     case dictationModelActionWarning(String)
     case fullAccessWarning
     case microphoneWarning
-    case phoneCallWarning
     case updateRequiredWarning
 
     static func resolve(
         modelAvailability: KeyboardDictationModelStatus.Availability,
         hasFullAccess: Bool,
         hasMicrophonePermission: Bool,
-        hasActivePhoneCall: Bool,
         isUpdateRequired: Bool
     ) -> KeyboardToolbarMode {
         switch modelAvailability {
@@ -38,10 +36,6 @@ enum KeyboardToolbarMode: Equatable {
             return .microphoneWarning
         }
 
-        guard hasActivePhoneCall == false else {
-            return .phoneCallWarning
-        }
-
         return .branded
     }
 
@@ -55,8 +49,6 @@ enum KeyboardToolbarMode: Equatable {
             return "Allow Full Access for dictation"
         case .microphoneWarning:
             return "Allow Microphone Access for dictation"
-        case .phoneCallWarning:
-            return "Use KeyVox after this call"
         case .updateRequiredWarning:
             return "Update KeyVox to keep using dictation"
         case .hidden, .branded:

@@ -53,6 +53,13 @@ final class KeyVoxKeyboardBridge {
         KeyVoxIPCBridge.touchHeartbeat()
     }
 
+    func publishRecordingStartFailed() {
+        KeyVoxIPCBridge.setRecordingState("startFailed")
+        KeyVoxIPCBridge.clearLiveMeter()
+        postDarwinNotification(named: KeyVoxIPCBridge.Notification.recordingStartFailed)
+        KeyVoxIPCBridge.touchHeartbeat()
+    }
+
     func publishTranscribing() {
         KeyVoxIPCBridge.setRecordingState("transcribing")
         KeyVoxIPCBridge.writeLiveMeter(level: 0, signalState: .dead)

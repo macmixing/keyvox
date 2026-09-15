@@ -132,7 +132,6 @@
 				"Core/Dictation/DictationChange/KeyboardDictationChangeController+Session.swift",
 				"Core/Dictation/DictationChange/KeyboardDictationChangeController+Variants.swift",
 				Core/Dictation/DictationChange/KeyboardDictationChangeSession.swift,
-				Core/Dictation/KeyboardCallObserver.swift,
 				Core/Dictation/KeyboardDictationController.swift,
 				Core/Dictation/KeyboardLocalStyleRewriteTextTransformer.swift,
 				Core/Feedback/KeyboardHapticsSettingsStore.swift,

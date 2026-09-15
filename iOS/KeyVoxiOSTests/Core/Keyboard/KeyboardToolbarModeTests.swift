@@ -2,33 +2,29 @@ import Testing
 @testable import KeyVox_iOS
 
 struct KeyboardToolbarModeTests {
-    @Test func activePhoneCallUsesPhoneCallWarning() {
+    @Test func readyConfigurationUsesBrandedToolbar() {
         let mode = KeyboardToolbarMode.resolve(
             modelAvailability: .ready,
             hasFullAccess: true,
             hasMicrophonePermission: true,
-            hasActivePhoneCall: true,
             isUpdateRequired: false
         )
 
-        #expect(mode == .phoneCallWarning)
-        #expect(mode.warningText != nil)
-        #expect(mode.showsWarningInfoButton == false)
+        #expect(mode == .branded)
+        #expect(mode.warningText == nil)
     }
 
-    @Test func activePhoneCallDoesNotOverrideHigherPriorityWarnings() {
+    @Test func accessWarningsRemainAvailable() {
         let fullAccessMode = KeyboardToolbarMode.resolve(
             modelAvailability: .ready,
             hasFullAccess: false,
             hasMicrophonePermission: true,
-            hasActivePhoneCall: true,
             isUpdateRequired: false
         )
         let microphoneMode = KeyboardToolbarMode.resolve(
             modelAvailability: .ready,
             hasFullAccess: true,
             hasMicrophonePermission: false,
-            hasActivePhoneCall: true,
             isUpdateRequired: false
         )
 

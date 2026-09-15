@@ -17,7 +17,6 @@ final class KeyboardViewController: UIInputViewController {
     let openVibesModelRecoveryURL = URL(string: "keyvoxios://vibes/model-recovery")
     let delayedTranscriptionLandingHapticThreshold: TimeInterval = 1
     let dictionaryCasingStore = KeyboardDictionaryCasingStore()
-    let callObserver =  KeyboardCallObserver()
     lazy var containingAppLauncher = KeyboardContainingAppLauncher(responderProvider: { [weak self] in
         self
     })
@@ -42,7 +41,13 @@ final class KeyboardViewController: UIInputViewController {
         openContainingApp: { [weak self] url in
             self?.containingAppLauncher.open(url)
         },
-        startRecordingURL: startRecordingURL
+        startRecordingURL: startRecordingURL,
+        isAudioCaptureAvailable: {
+            let audioSession = AVAudioSession.sharedInstance()
+            let currentAudioConflict = audioSession.isOtherAudioPlaying
+                && audioSession.secondaryAudioShouldBeSilencedHint
+            return !currentAudioConflict
+        }
     )
     lazy var ttsController = KeyboardTTSController(
         ipcManager: ipcManager,
@@ -138,7 +143,6 @@ final class KeyboardViewController: UIInputViewController {
         preparePresentationIfNeeded()
         KeyVoxIPCBridge.reportKeyboardOnboardingState(hasFullAccess: hasFullAccess)
         configureDictationBehavior()
-        callObserver.refreshState()
         rootContainerView?.keyGridView.resetInteractionState()
         appSettingsStore.normalizeSelectedVibeIfNeeded()
         indicatorDriver.start()
@@ -222,13 +226,15 @@ final class KeyboardViewController: UIInputViewController {
             self?.keyboardState = state
         }
         ttsController.onStateChange = { [weak self] state in
-            self?.keyboardState = state
+            guard let self else { return }
+            let isPresentingTTS = state == .preparingPlayback || state.isTTSPlaybackActive
+            let wasPresentingTTS = self.keyboardState == .preparingPlayback
+                || self.keyboardState.isTTSPlaybackActive
+            guard isPresentingTTS || wasPresentingTTS else { return }
+            self.keyboardState = state
         }
         dictationController.onTranscriptionReady = { [weak self] text in
             self?.handleTranscriptionReady(text)
-        }
-        callObserver.onCallStateChange = { [weak self] in
-            self?.updateUI()
         }
     }
 
@@ -276,7 +282,6 @@ final class KeyboardViewController: UIInputViewController {
             modelAvailability: KeyboardDictationModelStatus.availability(),
             hasFullAccess: hasFullAccess,
             hasMicrophonePermission: hasMicrophonePermission,
-            hasActivePhoneCall: callObserver.hasActivePhoneCall,
             isUpdateRequired: KeyVoxIPCBridge.isAppUpdateRequired()
         )
     }
@@ -355,7 +360,7 @@ final class KeyboardViewController: UIInputViewController {
         switch keyboardState {
         case .speaking, .pausedSpeaking:
             ttsController.handlePlaybackControlTap()
-        case .idle, .waitingForApp, .preparingPlayback, .recording, .transcribing:
+        case .idle, .waitingForApp, .dictationStartFailed, .preparingPlayback, .recording, .transcribing:
             dictationController.handleMicTap()
         }
     }
