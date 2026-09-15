@@ -220,7 +220,6 @@ extension KeyboardViewController {
             self.preparePresentationIfNeeded()
             self.configurePrimaryViewHeight()
             self.syncCapsLockState()
-            self.callObserver.refreshState()
             self.rootContainerView?.keyGridView.resetInteractionState()
             self.dictationController.syncStateFromSharedState()
             self.ttsController.syncStateFromSharedState()

@@ -1682,7 +1682,7 @@ Implementation split:
 - `KeyVoxCore.DictationDeterministicVariantResolver` owns target-state selection and saved-versus-rendered deterministic source selection
 - `KeyVoxCore.DictationDeterministicTextFormatter` owns paragraph collapse, ordered-list line preservation, and post-rewrite layout adjustment
 - keyboard `Core` is grouped by domain:
-  - `Dictation/` owns recording-state handoff, live indicator driving, call gating, and latest-insertion long-press changes
+  - `Dictation/` owns recording-state handoff, generic startup-failure feedback, live indicator driving, and latest-insertion long-press changes
   - `Feedback/` owns extension-local haptics configuration and dispatch
   - `Input/` owns text insertion, special-key interaction, and cursor trackpad behavior
   - `Settings/` owns App Group-backed keyboard controls that mirror containing-app settings
@@ -1700,7 +1700,6 @@ Toolbar modes are:
 - branded
 - full-access warning
 - microphone warning
-- phone-call warning
 - update-required warning
 
 The keyboard root layout has an important invariant:
@@ -1708,7 +1707,7 @@ The keyboard root layout has an important invariant:
 - the stable non-flashing keyboard structure lives in the main keyboard stack
 - the warning UI is layered as an overlay on top of the toolbar row
 - the warning must **not** be moved into the root arranged-subview layout path again
-- `KeyboardRootView.apply` must invalidate layout when branded-toolbar Vibes visibility changes, including when a call warning disappears, so the measured accessory geometry is restored instead of retaining warning-mode spacing
+- `KeyboardRootView.apply` must invalidate layout when branded-toolbar Vibes visibility changes so the measured accessory geometry is restored instead of retaining warning-mode spacing
 
 That separation exists because putting the warning UI into the main root layout reintroduced the keyboard launch flash.
 
@@ -1762,7 +1761,6 @@ The branded toolbar requires:
 - installed model
 - `hasFullAccess == true`
 - microphone permission granted
-- no active phone call reported by `KeyboardCallObserver`
 
 When the model is installed but Full Access is missing:
 
@@ -1778,20 +1776,24 @@ When the model is installed and Full Access is granted but microphone permission
 - show the red warning toolbar with the microphone message
 - do not show the Full Access instructional button
 
-When the model is installed, Full Access is granted, microphone permission is granted, and an active phone call is reported:
+When a microphone tap cannot start dictation:
 
-- keep the key grid visible
-- hide the branded toolbar controls
-- show the red warning toolbar with `Use KeyVox after this call.`
-- do not launch any separate instructional surface
+- keep the branded toolbar and key grid visible
+- synchronously inspect `AVAudioSession.sharedInstance()` inside the keyboard process before changing state or opening the containing app
+- treat `isOtherAudioPlaying && secondaryAudioShouldBeSilencedHint` as the immediate conflict signal; when both values are true, show the failure state without entering `waitingForApp`
+- do not persist or transport this availability decision through the App Group bridge
+- do not use CallKit or represent the failure as phone-call detection
+- replace the microphone with a red X for two seconds
+- if preflight allows the request but `AudioRecorder.startRecording()` later throws, have the containing app publish the separate `recordingStartFailed` state through the existing App Group bridge
+- use the same generic failure feedback for that explicit startup failure or a keyboard-side no-response timeout
+- return to the microphone with the logo control's existing animated transition
 
 Warning precedence must remain:
 
 1. model unavailable -> hidden toolbar
 2. Full Access missing -> full-access warning
 3. microphone permission missing -> microphone warning
-4. active phone call -> phone-call warning
-5. otherwise -> branded toolbar
+4. otherwise -> branded toolbar
 
 `FullAccessView` is keyboard-only instructional UI. It does not route through onboarding state or the containing app.
 

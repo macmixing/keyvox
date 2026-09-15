@@ -6,10 +6,12 @@ final class KeyboardIPCManager {
         case idle
         case waitingForApp
         case recording
+        case startFailed
         case transcribing
     }
 
     var onRecordingStarted: (() -> Void)?
+    var onRecordingStartFailed: (() -> Void)?
     var onTranscribingStarted: (() -> Void)?
     var onTranscriptionReady: ((String) -> Void)?
     var onNoSpeech: (() -> Void)?
@@ -34,6 +36,7 @@ final class KeyboardIPCManager {
         isRegistered = true
 
         registerDarwinObserver(named: KeyVoxIPCBridge.Notification.recordingStarted)
+        registerDarwinObserver(named: KeyVoxIPCBridge.Notification.recordingStartFailed)
         registerDarwinObserver(named: KeyVoxIPCBridge.Notification.transcribingStarted)
         registerDarwinObserver(named: KeyVoxIPCBridge.Notification.transcriptionReady)
         registerDarwinObserver(named: KeyVoxIPCBridge.Notification.noSpeech)
@@ -70,6 +73,11 @@ final class KeyboardIPCManager {
         postDarwinNotification(named: KeyVoxIPCBridge.Notification.cancelRecording)
     }
 
+    func clearRecordingStartFailure() {
+        guard currentSharedRecordingState() == .startFailed else { return }
+        KeyVoxIPCBridge.clearTransientOperationState()
+    }
+
     func sendStartTTSCommand() {
         KeyVoxIPCBridge.setTTSState(.preparing)
         postDarwinNotification(named: KeyVoxIPCBridge.Notification.startTTS)
@@ -92,7 +100,7 @@ final class KeyboardIPCManager {
         switch currentKeyboardState() {
         case .recording, .transcribing:
             snapshot = KeyVoxIPCBridge.currentLiveMeterSnapshot()
-        case .idle, .waitingForApp, .preparingPlayback, .speaking, .pausedSpeaking:
+        case .idle, .waitingForApp, .dictationStartFailed, .preparingPlayback, .speaking, .pausedSpeaking:
             snapshot = nil
         }
 
@@ -136,6 +144,13 @@ final class KeyboardIPCManager {
         switch state {
         case .idle:
             return .idle
+        case .startFailed:
+            if let stateAge,
+               stateAge >= KeyVoxIPCBridge.recordingStartFailureDisplayDuration {
+                KeyVoxIPCBridge.clearTransientOperationState()
+                return .idle
+            }
+            return .startFailed
         case .waitingForApp:
             if let age = KeyVoxIPCBridge.currentRecordingStateAge(), age > 5 {
                 KeyVoxIPCBridge.clearTransientOperationState()
@@ -241,6 +256,8 @@ final class KeyboardIPCManager {
             switch name {
             case KeyVoxIPCBridge.Notification.recordingStarted:
                 self.onRecordingStarted?()
+            case KeyVoxIPCBridge.Notification.recordingStartFailed:
+                self.onRecordingStartFailed?()
             case KeyVoxIPCBridge.Notification.transcribingStarted:
                 self.onTranscribingStarted?()
             case KeyVoxIPCBridge.Notification.transcriptionReady:

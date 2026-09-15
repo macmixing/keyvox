@@ -94,6 +94,7 @@ enum KeyVoxIPCBridge {
         static let cancelRecording = "com.cueit.keyvox.cancelRecording"
         static let disableSession = "com.cueit.keyvox.disableSession"
         static let recordingStarted = "com.cueit.keyvox.recordingStarted"
+        static let recordingStartFailed = "com.cueit.keyvox.recordingStartFailed"
         static let transcribingStarted = "com.cueit.keyvox.transcribingStarted"
         static let transcriptionReady = "com.cueit.keyvox.transcriptionReady"
         static let noSpeech = "com.cueit.keyvox.noSpeech"
@@ -116,6 +117,7 @@ enum KeyVoxIPCBridge {
     }
     
     static let heartbeatFreshnessWindow: TimeInterval = 5 // 5 seconds (active heartbeat is 1Hz)
+    static let recordingStartFailureDisplayDuration: TimeInterval = 2
     static let recentTTSWarmStartWindow: TimeInterval = 8
     
     private static var defaults: UserDefaults? {
@@ -146,7 +148,7 @@ enum KeyVoxIPCBridge {
         lastHeartbeatUpdateTime = 0
         log("clearSessionActive")
     }
-    
+
     static func setRecordingState(_ state: String) {
         let d = defaults
         d?.set(state, forKey: Key.recordingState)

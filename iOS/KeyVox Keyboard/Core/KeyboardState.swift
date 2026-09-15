@@ -3,6 +3,7 @@ import UIKit
 enum KeyboardState: Equatable {
     case idle
     case waitingForApp
+    case dictationStartFailed
     case preparingPlayback
     case recording
     case transcribing
@@ -11,7 +12,7 @@ enum KeyboardState: Equatable {
 
     var indicatorPhase: AudioIndicatorPhase {
         switch self {
-        case .idle:
+        case .idle, .dictationStartFailed:
             return .idle
         case .waitingForApp:
             return .waiting
@@ -30,7 +31,7 @@ enum KeyboardState: Equatable {
         switch self {
         case .idle, .recording, .transcribing, .speaking, .pausedSpeaking:
             return true
-        case .waitingForApp, .preparingPlayback:
+        case .waitingForApp, .dictationStartFailed, .preparingPlayback:
             return false
         }
     }
@@ -39,14 +40,14 @@ enum KeyboardState: Equatable {
         switch self {
         case .speaking, .pausedSpeaking:
             return true
-        case .idle, .waitingForApp, .preparingPlayback, .recording, .transcribing:
+        case .idle, .waitingForApp, .dictationStartFailed, .preparingPlayback, .recording, .transcribing:
             return false
         }
     }
 
     var showsCancelButton: Bool {
         switch self {
-        case .idle:
+        case .idle, .dictationStartFailed:
             return false
         case .waitingForApp, .recording, .transcribing:
             return true

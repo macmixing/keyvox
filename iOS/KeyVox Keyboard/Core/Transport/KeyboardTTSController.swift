@@ -86,7 +86,7 @@ final class KeyboardTTSController {
             stopPlaybackIfActive()
         case .preparingPlayback:
             break
-        case .idle, .transcribing:
+        case .idle, .dictationStartFailed, .transcribing:
             guard let request = makeClipboardRequest() else { return }
             requestWriter(request)
 
@@ -111,7 +111,7 @@ final class KeyboardTTSController {
             cancelPendingWork()
             ipcManager.sendStopTTSCommand()
             state = .idle
-        case .idle, .waitingForApp, .preparingPlayback, .recording, .transcribing:
+        case .idle, .waitingForApp, .dictationStartFailed, .preparingPlayback, .recording, .transcribing:
             break
         }
     }
@@ -126,7 +126,7 @@ final class KeyboardTTSController {
         case .pausedSpeaking:
             ipcManager.sendResumeTTSCommand()
             state = .speaking
-        case .idle, .waitingForApp, .preparingPlayback, .recording, .transcribing:
+        case .idle, .waitingForApp, .dictationStartFailed, .preparingPlayback, .recording, .transcribing:
             break
         }
     }

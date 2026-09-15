@@ -5,12 +5,27 @@ import UIKit
 
 extension KeyboardLogoBarView {
     func applyKeyboardState(_ state: KeyboardState) {
+        let wasShowingRecordingStartFailure = keyboardState == .dictationStartFailed
         let previousTransportSymbolName = transportSymbolName
         keyboardState = state
         if state.isTTSPlaybackActive == false {
             playbackProgress = 0
         }
         let nextTransportSymbolName = transportSymbolName
+
+        if state == .dictationStartFailed, wasShowingRecordingStartFailure == false {
+            updateAccessibility()
+            animateRecordingStartFailure()
+            updateLayerFrames()
+            return
+        }
+
+        if state != .dictationStartFailed, wasShowingRecordingStartFailure {
+            updateAccessibility()
+            animateRecordingStartFailureReturn()
+            updateLayerFrames()
+            return
+        }
 
         if indicatorPhase != state.indicatorPhase {
             applyIndicatorPhase(state.indicatorPhase)
@@ -58,6 +73,8 @@ extension KeyboardLogoBarView {
             return "pause.fill"
         case .pausedSpeaking:
             return "play.fill"
+        case .dictationStartFailed:
+            return nil
         case .idle, .waitingForApp, .preparingPlayback, .recording, .transcribing:
             return nil
         }
@@ -72,6 +89,10 @@ extension KeyboardLogoBarView {
         case .waitingForApp:
             accessibilityLabel = "Opening app"
             accessibilityValue = "Waiting"
+            isEnabled = false
+        case .dictationStartFailed:
+            accessibilityLabel = "Dictation couldn't start"
+            accessibilityValue = nil
             isEnabled = false
         case .recording:
             accessibilityLabel = "Stop recording and transcribe"

@@ -259,7 +259,7 @@ final class TranscriptionManager: ObservableObject {
         } catch {
             state = .idle
             lastErrorMessage = error.localizedDescription
-            keyboardBridge.publishNoSpeech()
+            keyboardBridge.publishRecordingStartFailed()
             await finishAndDisableSessionIfNeeded()
             return .failed(error.localizedDescription)
         }
