@@ -27,10 +27,6 @@ public struct TerminalPunctuationNormalizer {
     private static let terminalSentencePunctuationRegex = try? NSRegularExpression(
         pattern: #"[.!?…][\"'”’\)\]\}]*\s*$"#
     )
-    private static let literalEllipsisRegex = try? NSRegularExpression(
-        pattern: #"\.{3,}(?:[ \t]+\.)?"#
-    )
-
     public init() {}
 
     public func normalizeSpokenTerminalPunctuation(in text: String) -> String {
@@ -38,10 +34,10 @@ public struct TerminalPunctuationNormalizer {
 
         let artifactNormalized = text.replacingOccurrences(
             of: ".dot.dot.",
-            with: "…",
+            with: "...",
             options: .caseInsensitive
         )
-        var normalized = normalizeSpokenEllipses(in: normalizeLiteralEllipses(in: artifactNormalized))
+        var normalized = normalizeSpokenEllipses(in: artifactNormalized)
         let words = wordTokens(in: normalized)
         guard !words.isEmpty else { return normalized }
         let commandMatches = terminalCommandMatches(in: words, text: normalized)
@@ -64,12 +60,6 @@ public struct TerminalPunctuationNormalizer {
             }
         }
         return normalized
-    }
-
-    private func normalizeLiteralEllipses(in text: String) -> String {
-        guard let regex = Self.literalEllipsisRegex else { return text }
-        let range = NSRange(location: 0, length: (text as NSString).length)
-        return regex.stringByReplacingMatches(in: text, options: [], range: range, withTemplate: "…")
     }
 
     private func normalizeSpokenEllipses(in text: String) -> String {
