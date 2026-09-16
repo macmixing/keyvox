@@ -17,6 +17,12 @@
     <string name="dictation_channel">Dictation</string>
     <string name="microphone_active">Microphone in use</string>
     <string name="allow_microphone">Allow microphone</string>
+    <string name="enable_dictation_bubble">Enable dictation bubble</string>
+    <string name="dictation_bubble_accessibility_description">Show the KeyVox dictation button over other apps and insert locally processed speech into the active text field.</string>
+    <string name="dictation_bubble_disclosure_title">Enable the KeyVox dictation bubble?</string>
+    <string name="dictation_bubble_disclosure_message">Android’s accessibility permission can expose screen content and actions. KeyVox uses it only to find the active text field, insert your locally processed dictation, and show the movable dictation bubble. KeyVox does not send this content off your device.</string>
+    <string name="continue_action">Continue</string>
+    <string name="dictation_copied">No active text field. Dictation copied.</string>
     <string name="download_model">Download speech model</string>
     <string name="model_checking">Checking speech model…</string>
     <string name="model_missing">Speech model required</string>

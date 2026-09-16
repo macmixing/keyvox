@@ -9,6 +9,7 @@ import android.view.Gravity;
 import android.widget.LinearLayout;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
+import org.keyvox.android.dictation.DictationLogoBarView;
 import org.keyvox.android.dictation.DictationSession;
 
 /** Root presentation for the Android KeyVox keyboard. */
@@ -70,7 +71,7 @@ final class KeyboardShellView extends LinearLayout {
         );
         content.addView(toolbar, new LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
-            KeyboardStyle.layoutDp(context, KeyboardStyle.TOOLBAR_HEIGHT_DP)
+            DictationLogoBarView.preferredSizePx(context)
         ));
 
         keyGrid = new KeyboardKeyGridView(context, new KeyboardKeyGridView.Listener() {
