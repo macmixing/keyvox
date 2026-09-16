@@ -31,7 +31,11 @@ nonisolated struct MacTriggerTapClassifier {
         }
 
         let interval = timestamp - lastTapAt
-        if interval >= 0 && interval <= doubleTapInterval {
+        guard interval >= 0 else {
+            return .none
+        }
+
+        if interval <= doubleTapInterval {
             self.lastTapAt = nil
             return .doubleTap
         }

@@ -33,12 +33,13 @@ final class MacTriggerTapClassifierTests: XCTestCase {
         XCTAssertFalse(classifier.isAwaitingSecondTap(at: 10.5))
     }
 
-    func testEarlierTimestampDoesNotCountAsSecondTap() {
+    func testEarlierTimestampIsIgnoredWithoutReplacingPendingTap() {
         var classifier = MacTriggerTapClassifier(doubleTapInterval: 0.3)
         _ = classifier.registerQuickTap(at: 10)
 
         XCTAssertFalse(classifier.isAwaitingSecondTap(at: 9.9))
-        XCTAssertEqual(classifier.registerQuickTap(at: 9.9), .scheduleSingleTap)
+        XCTAssertEqual(classifier.registerQuickTap(at: 9.9), .none)
+        XCTAssertTrue(classifier.isAwaitingSecondTap(at: 10.1))
     }
 
     func testSecondQuickTapOutsideWindowSchedulesNewSingleTap() {
