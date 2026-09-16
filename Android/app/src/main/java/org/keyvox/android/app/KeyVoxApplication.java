@@ -8,6 +8,7 @@ import org.keyvox.android.app.home.WeeklyWordStatsStore;
 import org.keyvox.android.app.dictionary.DictionarySession;
 import org.keyvox.android.app.promotion.PromotionSession;
 import org.keyvox.android.engine.NativeEngine;
+import org.keyvox.android.ime.KeyVoxKeyboardVisibility;
 
 public final class KeyVoxApplication extends Application {
     private DictationSession dictation;
@@ -16,6 +17,7 @@ public final class KeyVoxApplication extends Application {
     private PromotionSession promotions;
     private DictionarySession dictionary;
     private AppSettingsStore settings;
+    private KeyVoxKeyboardVisibility keyboardVisibility;
     @Override public void onCreate() {
         super.onCreate();
         weeklyWordStats = new WeeklyWordStatsStore(this);
@@ -23,6 +25,7 @@ public final class KeyVoxApplication extends Application {
         promotions = new PromotionSession();
         dictionary = new DictionarySession();
         settings = new AppSettingsStore(this);
+        keyboardVisibility = new KeyVoxKeyboardVisibility();
         dictation = new DictationSession(
             this,
             text -> {
@@ -65,5 +68,8 @@ public final class KeyVoxApplication extends Application {
     }
     public static AppSettingsStore settings(Context context) {
         return ((KeyVoxApplication) context.getApplicationContext()).settings;
+    }
+    public static KeyVoxKeyboardVisibility keyboardVisibility(Context context) {
+        return ((KeyVoxApplication) context.getApplicationContext()).keyboardVisibility;
     }
 }

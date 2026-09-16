@@ -44,10 +44,21 @@ public final class KeyVoxInputMethodService extends InputMethodService {
     }
 
     @Override public void onDestroy() {
+        KeyVoxApplication.keyboardVisibility(this).setVisible(false);
         session.removeObserver(changed);
         KeyVoxApplication.settings(this).removeObserver(settingsChanged);
         mainHandler.removeCallbacks(retryPendingDeletion);
         super.onDestroy();
+    }
+
+    @Override public void onWindowShown() {
+        super.onWindowShown();
+        KeyVoxApplication.keyboardVisibility(this).setVisible(true);
+    }
+
+    @Override public void onWindowHidden() {
+        KeyVoxApplication.keyboardVisibility(this).setVisible(false);
+        super.onWindowHidden();
     }
 
     private void openApp() {

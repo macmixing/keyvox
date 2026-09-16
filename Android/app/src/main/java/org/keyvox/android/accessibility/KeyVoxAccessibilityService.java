@@ -6,6 +6,7 @@ import android.view.accessibility.AccessibilityEvent;
 import org.keyvox.android.app.KeyVoxApplication;
 import org.keyvox.android.dictation.DictationResult;
 import org.keyvox.android.dictation.DictationSession;
+import org.keyvox.android.ime.KeyVoxKeyboardVisibility;
 
 /** Coordinates bubble dictation with the editor that owned focus when recording began. */
 public final class KeyVoxAccessibilityService extends AccessibilityService {
@@ -15,6 +16,8 @@ public final class KeyVoxAccessibilityService extends AccessibilityService {
     private DictationClipboard clipboard;
     private DictationBubbleController bubble;
     private Runnable observer;
+    private KeyVoxKeyboardVisibility keyboardVisibility;
+    private Runnable keyboardVisibilityObserver;
     private AccessibilityEditorTarget target;
     private long ownedRequest = -1;
     private boolean delivering;
@@ -26,9 +29,16 @@ public final class KeyVoxAccessibilityService extends AccessibilityService {
         clipboard = new DictationClipboard(this);
         insertion = new AccessibilityTextInsertion(locator, clipboard);
         bubble = new DictationBubbleController(this, this::toggleDictation);
-        bubble.attach();
+        keyboardVisibility = KeyVoxApplication.keyboardVisibility(this);
+        keyboardVisibilityObserver = this::renderBubbleVisibility;
+        keyboardVisibility.observe(keyboardVisibilityObserver);
         observer = this::render;
         session.observe(observer);
+    }
+
+    private void renderBubbleVisibility() {
+        if (keyboardVisibility.isVisible()) bubble.detach();
+        else bubble.attach();
     }
 
     private void toggleDictation() {
@@ -92,6 +102,9 @@ public final class KeyVoxAccessibilityService extends AccessibilityService {
 
     @Override public void onDestroy() {
         if (session != null && observer != null) session.removeObserver(observer);
+        if (keyboardVisibility != null && keyboardVisibilityObserver != null) {
+            keyboardVisibility.removeObserver(keyboardVisibilityObserver);
+        }
         if (bubble != null) bubble.detach();
         if (ownedRequest >= 0 && session != null
                 && (session.phase() == DictationSession.Phase.STARTING
