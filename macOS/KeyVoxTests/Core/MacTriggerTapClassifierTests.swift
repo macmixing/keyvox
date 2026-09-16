@@ -33,6 +33,14 @@ final class MacTriggerTapClassifierTests: XCTestCase {
         XCTAssertFalse(classifier.isAwaitingSecondTap(at: 10.5))
     }
 
+    func testEarlierTimestampDoesNotCountAsSecondTap() {
+        var classifier = MacTriggerTapClassifier(doubleTapInterval: 0.3)
+        _ = classifier.registerQuickTap(at: 10)
+
+        XCTAssertFalse(classifier.isAwaitingSecondTap(at: 9.9))
+        XCTAssertEqual(classifier.registerQuickTap(at: 9.9), .scheduleSingleTap)
+    }
+
     func testSecondQuickTapOutsideWindowSchedulesNewSingleTap() {
         var classifier = MacTriggerTapClassifier(doubleTapInterval: 0.3)
         _ = classifier.registerQuickTap(at: 10)
@@ -123,6 +131,15 @@ final class MacVibesTriggerActionControllerTests: XCTestCase {
         controller.noteTriggerPressed(at: 10)
 
         XCTAssertFalse(controller.shouldHandleReleaseAsQuickTap(at: 10.1))
+    }
+
+    func testReleaseEarlierThanPressIsNotVibeQuickTap() {
+        let (controller, defaults, suiteName) = makeController(isModelReady: { true })
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+
+        controller.noteTriggerPressed(at: 10)
+
+        XCTAssertFalse(controller.shouldHandleReleaseAsQuickTap(at: 9.9))
     }
 
     func testDisabledTriggerInteractionsDoNotSuppressOrDeferRecordingStart() {
