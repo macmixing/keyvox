@@ -30,7 +30,9 @@ public final class DictationInsertionResult {
         }
 
         DictationInsertionResult correction = null;
-        for (int cursor = 0; cursor <= before.length(); cursor++) {
+        int lowestCursor = before.length() - commonSuffixLength(before, after);
+        int highestCursor = commonPrefixLength(before, after);
+        for (int cursor = lowestCursor; cursor <= highestCursor; cursor++) {
             DictationInsertionResult candidate = evaluateAt(
                 before,
                 insertedText,
@@ -93,6 +95,24 @@ public final class DictationInsertionResult {
 
     private static boolean validSelection(String text, int start, int end) {
         return start >= 0 && start <= end && end <= text.length();
+    }
+
+    private static int commonPrefixLength(String left, String right) {
+        int limit = Math.min(left.length(), right.length());
+        int index = 0;
+        while (index < limit && left.charAt(index) == right.charAt(index)) index++;
+        return index;
+    }
+
+    private static int commonSuffixLength(String left, String right) {
+        int limit = Math.min(left.length(), right.length());
+        int index = 0;
+        while (index < limit
+                && left.charAt(left.length() - 1 - index)
+                    == right.charAt(right.length() - 1 - index)) {
+            index++;
+        }
+        return index;
     }
 
     private static DictationInsertionResult insertedWithoutCorrection() {

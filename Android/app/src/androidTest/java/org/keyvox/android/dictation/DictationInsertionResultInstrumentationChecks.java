@@ -40,6 +40,41 @@ public final class DictationInsertionResultInstrumentationChecks {
                 }
             }
         }
+        verifyLongFieldWithUnavailableSelection();
+    }
+
+    private static void verifyLongFieldWithUnavailableSelection() {
+        String prefix = "a".repeat(10_000);
+        String suffix = "b".repeat(10_000);
+        String before = prefix + suffix;
+        String inserted = "x";
+        String expected = prefix + inserted + suffix;
+
+        DictationInsertionResult exact = DictationInsertionResult.evaluate(
+            before,
+            inserted,
+            -1,
+            -1,
+            expected
+        );
+        check(exact.inserted());
+        check(!exact.needsCorrection());
+
+        int insertionEnd = prefix.length() + inserted.length();
+        String withExtraLineBreak = expected.substring(0, insertionEnd)
+            + "\n"
+            + expected.substring(insertionEnd);
+        DictationInsertionResult corrected = DictationInsertionResult.evaluate(
+            before,
+            inserted,
+            -1,
+            -1,
+            withExtraLineBreak
+        );
+        check(corrected.inserted());
+        check(corrected.needsCorrection());
+        check(corrected.expectedText().equals(expected));
+        check(corrected.correctionStart() == insertionEnd);
     }
 
     private static void check(boolean condition) {
