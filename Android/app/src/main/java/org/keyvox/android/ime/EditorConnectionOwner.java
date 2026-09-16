@@ -5,6 +5,7 @@ import android.view.inputmethod.ExtractedText;
 import android.view.inputmethod.ExtractedTextRequest;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import org.keyvox.android.dictation.DictationInsertionResult;
 import org.keyvox.android.dictation.DictationResult;
 import org.keyvox.android.engine.NativeEngine;
 
@@ -17,16 +18,28 @@ final class EditorConnectionOwner {
         final boolean precedingTextIsTruncated;
         final String followingText;
         final boolean followingTextIsTruncated;
+        final String editorText;
+        final int editorTextStartOffset;
+        final int selectionStart;
+        final int selectionEnd;
 
         EditorContext(
                 String precedingText,
                 boolean precedingTextIsTruncated,
                 String followingText,
-                boolean followingTextIsTruncated) {
+                boolean followingTextIsTruncated,
+                String editorText,
+                int editorTextStartOffset,
+                int selectionStart,
+                int selectionEnd) {
             this.precedingText = precedingText;
             this.precedingTextIsTruncated = precedingTextIsTruncated;
             this.followingText = followingText;
             this.followingTextIsTruncated = followingTextIsTruncated;
+            this.editorText = editorText;
+            this.editorTextStartOffset = editorTextStartOffset;
+            this.selectionStart = selectionStart;
+            this.selectionEnd = selectionEnd;
         }
     }
 
@@ -126,6 +139,7 @@ final class EditorConnectionOwner {
         try {
             boolean inserted = connection.commitText(composition.text, 1);
             if (!inserted) return null;
+            removeUnexpectedLineBreak(context, composition.text);
             if (inserted && composition.deleteFollowingCodePoint) {
                 int followingUtf16Units = Character.charCount(
                     Character.codePointAt(context.followingText, 0));
@@ -237,7 +251,31 @@ final class EditorConnectionOwner {
             precedingText,
             precedingTruncated,
             followingText,
-            followingTruncated);
+            followingTruncated,
+            extracted == null || extracted.text == null ? null : extracted.text.toString(),
+            extracted == null ? -1 : extracted.startOffset,
+            extracted == null ? -1 : extracted.selectionStart,
+            extracted == null ? -1 : extracted.selectionEnd);
+    }
+
+    private void removeUnexpectedLineBreak(EditorContext before, String insertedText) {
+        if (before.editorText == null) return;
+        ExtractedText extracted = connection.getExtractedText(new ExtractedTextRequest(), 0);
+        if (extracted == null || extracted.text == null
+                || extracted.startOffset != before.editorTextStartOffset) {
+            return;
+        }
+        DictationInsertionResult result = DictationInsertionResult.evaluate(
+            before.editorText,
+            insertedText,
+            before.selectionStart,
+            before.selectionEnd,
+            extracted.text.toString()
+        );
+        if (!result.needsCorrection()) return;
+        int correctionStart = extracted.startOffset + result.correctionStart();
+        if (!connection.setSelection(correctionStart, correctionStart + 1)) return;
+        connection.commitText("", 1);
     }
 
     private Map<DictationResult.FormatState, String> preparedVariants(

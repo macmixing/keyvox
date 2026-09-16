@@ -17,6 +17,7 @@ public final class ShellInstrumentation extends org.keyvox.android.engine.Engine
             org.keyvox.android.app.home.HomeInstrumentationChecks.run(this);
             String compositionTimings = CompositionInstrumentationChecks.run();
             KeyboardDictationChangeInstrumentationChecks.run(this);
+            org.keyvox.android.dictation.DictationInsertionResultInstrumentationChecks.run();
             org.keyvox.android.accessibility.AccessibilityInstrumentationChecks.run();
             verifyEditorLifetime();
             verifyDictationDestination();

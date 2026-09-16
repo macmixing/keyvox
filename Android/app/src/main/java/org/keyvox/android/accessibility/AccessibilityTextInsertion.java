@@ -5,6 +5,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.view.accessibility.AccessibilityNodeInfo;
 import java.util.function.Consumer;
+import org.keyvox.android.dictation.DictationInsertionResult;
 import org.keyvox.android.engine.NativeEngine;
 
 /** Performs and verifies one text replacement against the editor captured at dictation start. */
@@ -77,12 +78,23 @@ final class AccessibilityTextInsertion {
         }
         CharSequence current = node.isShowingHintText() ? null : node.getText();
         String before = current == null ? "" : current.toString();
+        int selectionStart = node.getTextSelectionStart();
+        int selectionEnd = node.getTextSelectionEnd();
         clipboard.placeForPaste(pasteText);
         if (!node.performAction(AccessibilityNodeInfo.ACTION_PASTE)) {
             completion.accept(false);
             return;
         }
-        verifyPaste(node, target, before, pasteText, 0, completion);
+        verifyPaste(
+            node,
+            target,
+            before,
+            pasteText,
+            selectionStart,
+            selectionEnd,
+            0,
+            completion
+        );
     }
 
     private void verifySetText(
@@ -111,6 +123,8 @@ final class AccessibilityTextInsertion {
             AccessibilityEditorTarget target,
             String before,
             String pastedText,
+            int selectionStart,
+            int selectionEnd,
             int attempt,
             Consumer<Boolean> completion) {
         main.postDelayed(() -> {
@@ -121,13 +135,95 @@ final class AccessibilityTextInsertion {
                 ? null
                 : current.getText();
             String after = value == null ? "" : value.toString();
-            if (!after.equals(before) && after.contains(pastedText)) {
+            DictationInsertionResult result = DictationInsertionResult.evaluate(
+                before,
+                pastedText,
+                selectionStart,
+                selectionEnd,
+                after
+            );
+            if (result.needsCorrection()) {
+                removeExtraLineBreak(current, target, pastedText, result, completion);
+            } else if (result.inserted()) {
                 completion.accept(true);
             } else if (attempt + 1 < VERIFICATION_ATTEMPTS) {
-                verifyPaste(writtenNode, target, before, pastedText, attempt + 1, completion);
+                verifyPaste(
+                    writtenNode,
+                    target,
+                    before,
+                    pastedText,
+                    selectionStart,
+                    selectionEnd,
+                    attempt + 1,
+                    completion
+                );
             } else {
                 completion.accept(false);
             }
         }, VERIFICATION_DELAY_MS);
     }
+
+    private void removeExtraLineBreak(
+            AccessibilityNodeInfo node,
+            AccessibilityEditorTarget target,
+            String pastedText,
+            DictationInsertionResult result,
+            Consumer<Boolean> completion) {
+        Bundle selectionArguments = new Bundle();
+        selectionArguments.putInt(
+            AccessibilityNodeInfo.ACTION_ARGUMENT_SELECTION_START_INT,
+            result.correctionStart()
+        );
+        selectionArguments.putInt(
+            AccessibilityNodeInfo.ACTION_ARGUMENT_SELECTION_END_INT,
+            result.correctionStart() + 1
+        );
+        boolean selectionAccepted = node.performAction(
+            AccessibilityNodeInfo.ACTION_SET_SELECTION,
+            selectionArguments
+        );
+        boolean cutAccepted = selectionAccepted
+            && node.performAction(AccessibilityNodeInfo.ACTION_CUT);
+        if (!cutAccepted) {
+            clipboard.placeForPaste(pastedText);
+            completion.accept(false);
+            return;
+        }
+        verifyCorrection(node, target, pastedText, result.expectedText(), 0, completion);
+    }
+
+    private void verifyCorrection(
+            AccessibilityNodeInfo writtenNode,
+            AccessibilityEditorTarget target,
+            String pastedText,
+            String expectedText,
+            int attempt,
+            Consumer<Boolean> completion) {
+        main.postDelayed(() -> {
+            AccessibilityNodeInfo current = writtenNode.refresh()
+                ? writtenNode
+                : locator.currentEditorInWindow(target);
+            CharSequence value = current == null || current.isShowingHintText()
+                ? null
+                : current.getText();
+            String actual = value == null ? "" : value.toString();
+            if (actual.equals(expectedText)) {
+                clipboard.placeForPaste(pastedText);
+                completion.accept(true);
+            } else if (attempt + 1 < VERIFICATION_ATTEMPTS) {
+                verifyCorrection(
+                    writtenNode,
+                    target,
+                    pastedText,
+                    expectedText,
+                    attempt + 1,
+                    completion
+                );
+            } else {
+                clipboard.placeForPaste(pastedText);
+                completion.accept(false);
+            }
+        }, VERIFICATION_DELAY_MS);
+    }
+
 }
