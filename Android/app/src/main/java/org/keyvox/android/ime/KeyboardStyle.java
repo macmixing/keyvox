@@ -24,9 +24,6 @@ final class KeyboardStyle {
     static final float KEY_BORDER_DP = 0.5f;
     static final float KEY_ICON_DP = 22;
     static final float RESTORE_KEYBOARD_ICON_DP = 26;
-    static final float LOGO_DIAMETER_DP = 53;
-    static final float TOOLBAR_HEIGHT_DP = LOGO_DIAMETER_DP;
-
     static final Typeface KEY_TYPEFACE = Typeface.create("sans-serif", Typeface.NORMAL);
 
     private KeyboardStyle() {}

@@ -6,6 +6,7 @@ import android.widget.FrameLayout;
 import java.util.ArrayList;
 import java.util.List;
 import org.keyvox.android.R;
+import org.keyvox.android.dictation.DictationLogoBarView;
 import org.keyvox.android.dictation.DictationSession;
 
 /** Positions fixed and capability-driven controls across the keyboard toolbar. */
@@ -14,7 +15,7 @@ final class KeyboardToolbarView extends FrameLayout {
     private final KeyboardIconButton cancel;
     private KeyboardIconButton paragraphs;
     private KeyboardIconButton lists;
-    private final KeyboardLogoBarView logo;
+    private final DictationLogoBarView logo;
     private final KeyboardDictationChangeController dictationChanges;
     private final KeyboardToolbarLayout.Plan slotPlan;
     private final List<AccessoryView> packedAccessories = new ArrayList<>();
@@ -61,10 +62,11 @@ final class KeyboardToolbarView extends FrameLayout {
 
         addPackedAccessories(slotPlan.accessories);
 
-        logo = new KeyboardLogoBarView(context, toggleDictation);
+        logo = new DictationLogoBarView(context, toggleDictation);
+        int logoSize = DictationLogoBarView.preferredSizePx(context);
         addView(logo, new LayoutParams(
-            KeyboardStyle.layoutDp(context, KeyboardStyle.LOGO_DIAMETER_DP),
-            KeyboardStyle.layoutDp(context, KeyboardStyle.LOGO_DIAMETER_DP)
+            logoSize,
+            logoSize
         ));
     }
 
@@ -89,7 +91,7 @@ final class KeyboardToolbarView extends FrameLayout {
 
     @Override protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         int width = MeasureSpec.getSize(widthMeasureSpec);
-        int height = KeyboardStyle.layoutDp(getContext(), KeyboardStyle.TOOLBAR_HEIGHT_DP);
+        int height = DictationLogoBarView.preferredSizePx(getContext());
         int utilityColumn = slotPlan.utility.column;
         int fixedWidth = KeyboardStyle.tenColumnRight(getContext(), width, utilityColumn)
             - KeyboardStyle.tenColumnLeft(getContext(), width, utilityColumn);
@@ -117,7 +119,7 @@ final class KeyboardToolbarView extends FrameLayout {
                 MeasureSpec.makeMeasureSpec(accessoryHeight, MeasureSpec.EXACTLY)
             );
         }
-        int logoSize = KeyboardStyle.layoutDp(getContext(), KeyboardStyle.LOGO_DIAMETER_DP);
+        int logoSize = DictationLogoBarView.preferredSizePx(getContext());
         logo.measure(
             MeasureSpec.makeMeasureSpec(logoSize, MeasureSpec.EXACTLY),
             MeasureSpec.makeMeasureSpec(logoSize, MeasureSpec.EXACTLY)
@@ -155,7 +157,7 @@ final class KeyboardToolbarView extends FrameLayout {
             );
         }
 
-        int logoSize = KeyboardStyle.layoutDp(getContext(), KeyboardStyle.LOGO_DIAMETER_DP);
+        int logoSize = DictationLogoBarView.preferredSizePx(getContext());
         int logoCenter = KeyboardStyle.tenColumnRight(getContext(), width, slotPlan.logoLeading.column)
             + KeyboardStyle.layoutDp(getContext(), KeyboardStyle.KEY_SPACING_DP) / 2;
         int logoLeft = logoCenter - logoSize / 2;
