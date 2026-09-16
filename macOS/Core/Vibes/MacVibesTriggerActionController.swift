@@ -34,7 +34,8 @@ final class MacVibesTriggerActionController {
     func shouldHandleReleaseAsQuickTap(at timestamp: TimeInterval = ProcessInfo.processInfo.systemUptime) -> Bool {
         guard appSettings.vibesTriggerKeyInteractionsEnabled else { return false }
         guard let triggerPressedAt else { return false }
-        return timestamp - triggerPressedAt <= quickTapMaximumDuration
+        let pressDuration = timestamp - triggerPressedAt
+        return pressDuration >= 0 && pressDuration <= quickTapMaximumDuration
     }
 
     func cancelPendingSingleTap() {

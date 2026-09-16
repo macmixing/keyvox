@@ -518,7 +518,7 @@ extension TranscriptionPostProcessorTests {
             renderMode: .singleLineInline
         )
 
-        XCTAssertEqual(output, "Oh yeah, it's uh… dom@example.com. That's my email address.")
+        XCTAssertEqual(output, "Oh yeah, it's uh dom@example.com. That's my email address.")
     }
     func testSeparatesCollapsedPrefixFromKnownDictionaryEmail() async {
         let processor = TranscriptionPostProcessor()

@@ -6,6 +6,40 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.3.10] - 2026-09-15
+
+Speeds up long dictations and improves recording-overlay, punctuation, dictionary, and modifier-trigger reliability.
+
+### Changed
+
+- Updated long-dictation processing to reuse bounded spoken-number results and deliver selected text before unused paragraph and list variants, reducing the delay before insertion while preserving immediate variants for active Vibes rewrites.
+- Removed model-inserted ellipsis that happened during pauses in dictation.
+
+### Fixed
+
+- Fixed mistaken possessive apostrophes in plural nouns before spoken question-mark and exclamation-point commands, including preposition-led and partitive phrases and regular `s`, `ies`, and `es` plural endings.
+- Fixed lowercase possessive near-misses of internally capitalized custom-dictionary entries failing to restore the saved spelling while preserving the possessive suffix.
+- Fixed the recording overlay remaining visible after dictated text had already been inserted.
+- Fixed stale or out-of-order modifier timestamps disrupting single- and double-tap trigger recognition, including after modifier-event monitoring recovers.
+
+### Package versions
+
+KeyVox macOS 1.3.10:
+- KeyVoxCore            1.3.2
+- KeyVoxLinguistics     1.0.0
+- KeyVoxLocalInference  1.0.4
+- KeyVoxModels          1.0.0
+- KeyVoxParakeet        1.1.0
+- KeyVoxPromotions      1.1.0
+- KeyVoxState           1.0.0
+- KeyVoxStyleRewrite    1.1.0
+- KeyVoxTextComposition 1.1.0
+- KeyVoxVibesAdapters   1.0.4
+- KeyVoxVoiceActivity   1.1.0
+- KeyVoxWhisper         1.2.0
+
+---
+
 ## [1.3.9] - 2026-09-13
 
 Adds spoken ellipses, alphanumeric dictionary matching, and language-aware English analysis while improving list, number, money, and ellipsis handling.

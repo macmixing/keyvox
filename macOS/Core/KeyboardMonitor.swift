@@ -2,7 +2,9 @@ import Cocoa
 import Combine
 import CoreGraphics
 
-private final class KeyboardModifierEventTapContext {
+final class KeyboardModifierEventTapContext {
+    private static let timestampComparisonTolerance: TimeInterval = 0.001
+
     private let lock = NSLock()
     private var timestampsByKeyCode: [UInt16: [TimeInterval]] = [:]
     private var eventTap: CFMachPort?
@@ -19,13 +21,29 @@ private final class KeyboardModifierEventTapContext {
         lock.unlock()
     }
 
-    func takeTimestamp(for keyCode: UInt16) -> TimeInterval? {
+    func takeTimestamp(
+        for keyCode: UInt16,
+        matching eventTimestamp: TimeInterval
+    ) -> TimeInterval? {
         lock.lock()
         defer { lock.unlock() }
-        guard var timestamps = timestampsByKeyCode[keyCode], !timestamps.isEmpty else {
+        guard var timestamps = timestampsByKeyCode[keyCode] else { return nil }
+        guard let matchingIndex = timestamps.lastIndex(where: {
+            abs($0 - eventTimestamp) <= Self.timestampComparisonTolerance
+        }) else {
+            timestamps.removeAll {
+                $0 < eventTimestamp - Self.timestampComparisonTolerance
+            }
+            if timestamps.isEmpty {
+                timestampsByKeyCode.removeValue(forKey: keyCode)
+            } else {
+                timestampsByKeyCode[keyCode] = timestamps
+            }
             return nil
         }
-        let timestamp = timestamps.removeFirst()
+
+        let timestamp = timestamps[matchingIndex]
+        timestamps.removeSubrange(...matchingIndex)
         if timestamps.isEmpty {
             timestampsByKeyCode.removeValue(forKey: keyCode)
         } else {
@@ -36,6 +54,7 @@ private final class KeyboardModifierEventTapContext {
 
     func reenableEventTap() {
         lock.lock()
+        timestampsByKeyCode.removeAll()
         let eventTap = eventTap
         lock.unlock()
         if let eventTap {
@@ -316,8 +335,10 @@ final class KeyboardMonitor: ObservableObject {
         if modifierEventTap == nil {
             startPhysicalModifierTimestampMonitoringIfAuthorized()
         }
-        let eventTimestamp = modifierEventTapContext.takeTimestamp(for: event.keyCode)
-            ?? event.timestamp
+        let eventTimestamp = modifierEventTapContext.takeTimestamp(
+            for: event.keyCode,
+            matching: event.timestamp
+        ) ?? event.timestamp
         lastFlagsChangedEvent = event
         modifierState.update(keyCode: event.keyCode, flags: event.modifierFlags)
 
