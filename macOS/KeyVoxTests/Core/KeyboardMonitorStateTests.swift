@@ -3,6 +3,47 @@ import XCTest
 @testable import KeyVox
 
 final class KeyboardMonitorStateTests: XCTestCase {
+    func testPhysicalTimestampMatcherIgnoresUnrelatedModifierSamples() {
+        let matcher = KeyboardModifierEventTapContext()
+
+        matcher.record(
+            keyCode: KeyboardModifierStateMachine.KeyCode.leftCommand,
+            timestamp: 10
+        )
+
+        XCTAssertNil(matcher.takeTimestamp(
+            for: KeyboardModifierStateMachine.KeyCode.rightOption,
+            matching: 10
+        ))
+    }
+
+    func testPhysicalTimestampMatcherDiscardsStaleSampleAndUsesMatchingEvent() {
+        let matcher = KeyboardModifierEventTapContext()
+        let keyCode = KeyboardModifierStateMachine.KeyCode.rightOption
+        matcher.record(keyCode: keyCode, timestamp: 10)
+        matcher.record(keyCode: keyCode, timestamp: 20)
+
+        XCTAssertEqual(
+            matcher.takeTimestamp(for: keyCode, matching: 20),
+            20
+        )
+    }
+
+    func testPhysicalTimestampMatcherDoesNotConsumeFutureTransition() {
+        let matcher = KeyboardModifierEventTapContext()
+        let keyCode = KeyboardModifierStateMachine.KeyCode.rightOption
+        matcher.record(keyCode: keyCode, timestamp: 10.1)
+
+        XCTAssertNil(matcher.takeTimestamp(
+            for: keyCode,
+            matching: 10
+        ))
+        XCTAssertEqual(
+            matcher.takeTimestamp(for: keyCode, matching: 10.1),
+            10.1
+        )
+    }
+
     func testLeftAndRightModifierTransitionsByKeyCode() {
         var state = KeyboardModifierStateMachine()
 

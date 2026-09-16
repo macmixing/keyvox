@@ -16,7 +16,8 @@ nonisolated struct MacTriggerTapClassifier {
 
     func isAwaitingSecondTap(at timestamp: TimeInterval) -> Bool {
         guard let lastTapAt else { return false }
-        return timestamp - lastTapAt <= doubleTapInterval
+        let interval = timestamp - lastTapAt
+        return interval >= 0 && interval <= doubleTapInterval
     }
 
     mutating func reset() {
@@ -29,7 +30,12 @@ nonisolated struct MacTriggerTapClassifier {
             return .scheduleSingleTap
         }
 
-        if timestamp - lastTapAt <= doubleTapInterval {
+        let interval = timestamp - lastTapAt
+        guard interval >= 0 else {
+            return .none
+        }
+
+        if interval <= doubleTapInterval {
             self.lastTapAt = nil
             return .doubleTap
         }
