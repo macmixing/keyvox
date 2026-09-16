@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Insets;
 import android.graphics.PixelFormat;
+import android.graphics.PointF;
 import android.graphics.Rect;
 import android.os.Build;
 import android.os.Handler;
@@ -34,6 +35,8 @@ final class DictationBubbleController {
     private final DictationLogoBarView view;
     private final WindowManager.LayoutParams parameters;
     private final int touchSlop;
+    private final BubbleDragVelocity dragVelocity = new BubbleDragVelocity();
+    private final BubbleMotionController motion;
     private boolean attached;
     private boolean dragging;
     private boolean gestureMoved;
@@ -58,6 +61,10 @@ final class DictationBubbleController {
         );
         parameters.gravity = Gravity.TOP | Gravity.START;
         touchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
+        motion = new BubbleMotionController(
+            context.getResources().getDisplayMetrics().density,
+            this::updatePosition
+        );
         view.setOnTouchListener(this::handleTouch);
     }
 
@@ -73,6 +80,7 @@ final class DictationBubbleController {
     }
 
     void configurationChanged() {
+        motion.cancel();
         int size = DictationLogoBarView.preferredSizePx(context);
         parameters.width = size;
         parameters.height = size;
@@ -83,6 +91,8 @@ final class DictationBubbleController {
 
     void detach() {
         main.removeCallbacksAndMessages(null);
+        motion.cancel();
+        dragVelocity.clear();
         if (attached) windowManager.removeView(view);
         attached = false;
     }
@@ -90,6 +100,7 @@ final class DictationBubbleController {
     private boolean handleTouch(View ignored, MotionEvent event) {
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
+                motion.cancel();
                 downRawX = event.getRawX();
                 downRawY = event.getRawY();
                 downWindowX = parameters.x;
@@ -106,6 +117,7 @@ final class DictationBubbleController {
                     main.removeCallbacksAndMessages(null);
                 }
                 if (dragging) {
+                    dragVelocity.append(event.getRawX(), event.getRawY(), event.getEventTime());
                     parameters.x = downWindowX + Math.round(deltaX);
                     parameters.y = downWindowY + Math.round(deltaY);
                     clampPosition();
@@ -114,13 +126,28 @@ final class DictationBubbleController {
                 return true;
             case MotionEvent.ACTION_UP:
                 main.removeCallbacksAndMessages(null);
-                if (dragging) savePosition();
+                if (dragging) {
+                    dragVelocity.append(event.getRawX(), event.getRawY(), event.getEventTime());
+                    PointF velocity = dragVelocity.releaseVelocity();
+                    Rect movementArea = movementArea();
+                    boolean flung = velocity != null && motion.fling(
+                        parameters.x,
+                        parameters.y,
+                        velocity.x,
+                        velocity.y,
+                        movementArea,
+                        this::savePosition
+                    );
+                    if (!flung) savePosition();
+                }
                 else if (!gestureMoved) view.performClick();
+                dragVelocity.clear();
                 dragging = false;
                 gestureMoved = false;
                 return true;
             case MotionEvent.ACTION_CANCEL:
                 main.removeCallbacksAndMessages(null);
+                dragVelocity.clear();
                 dragging = false;
                 gestureMoved = false;
                 return true;
@@ -131,7 +158,15 @@ final class DictationBubbleController {
 
     private void beginDrag() {
         dragging = true;
+        dragVelocity.begin(downRawX, downRawY, android.os.SystemClock.uptimeMillis());
         view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
+    }
+
+    private void updatePosition(int x, int y) {
+        if (!attached) return;
+        parameters.x = x;
+        parameters.y = y;
+        windowManager.updateViewLayout(view, parameters);
     }
 
     private void restorePosition() {
@@ -188,11 +223,15 @@ final class DictationBubbleController {
             width = context.getResources().getDisplayMetrics().widthPixels;
             height = context.getResources().getDisplayMetrics().heightPixels;
         }
-        return new Rect(
+        return BubblePosition.movementArea(
+            width,
+            height,
             left,
             top,
-            Math.max(left, width - rightInset - parameters.width),
-            Math.max(top, height - bottomInset - parameters.height)
+            rightInset,
+            bottomInset,
+            parameters.width,
+            parameters.height
         );
     }
 

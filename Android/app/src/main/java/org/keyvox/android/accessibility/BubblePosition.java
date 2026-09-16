@@ -6,6 +6,25 @@ import android.graphics.Rect;
 final class BubblePosition {
     private BubblePosition() {}
 
+    static Rect movementArea(
+            int displayWidth,
+            int displayHeight,
+            int leftInset,
+            int topInset,
+            int rightInset,
+            int bottomInset,
+            int bubbleWidth,
+            int bubbleHeight) {
+        int availableWidth = displayWidth - leftInset - rightInset;
+        int availableHeight = displayHeight - topInset - bottomInset;
+        return new Rect(
+            0,
+            0,
+            Math.max(0, availableWidth - bubbleWidth),
+            Math.max(0, availableHeight - bubbleHeight)
+        );
+    }
+
     static int coordinate(int minimum, int length, float fraction) {
         return Math.round(minimum + clampFraction(fraction) * length);
     }
