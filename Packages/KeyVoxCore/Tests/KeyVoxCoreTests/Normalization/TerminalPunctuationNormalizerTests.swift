@@ -2,15 +2,15 @@ import XCTest
 @testable import KeyVoxCore
 
 final class TerminalPunctuationNormalizerTests: LinguisticAnalyzerTestCase {
-    func testCanonicalizesThreeDotsToUnicodeEllipsis() {
+    func testCanonicalizesSpokenEllipsisWithoutMergingModelArtifacts() {
         let normalizer = TerminalPunctuationNormalizer()
         let cases = [
             ("dot dot dot", "…"),
             ("dot, dot, dot", "…"),
             ("dot. Dot dot", "…"),
             ("Wait dot dot dot maybe", "Wait… maybe"),
-            ("Wait... maybe", "Wait… maybe"),
-            ("...", "…"),
+            ("Wait... maybe", "Wait... maybe"),
+            ("This is strange.dot.dot. What's happening?", "This is strange... What's happening?"),
         ]
 
         for (input, expected) in cases {

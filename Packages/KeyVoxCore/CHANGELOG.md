@@ -6,7 +6,7 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
-## [1.3.2] - 2026-09-14
+## [1.3.2] - 2026-09-15
 
 Stylized dictionary entries now match lowercase possessive near-misses while preserving the possessive suffix.
 
@@ -15,6 +15,7 @@ Stylized dictionary entries now match lowercase possessive near-misses while pre
 - Evaluated single-token matches using the normalized form already selected by dictionary scoring.
 - Preserved possessive suffixes while restoring the dictionary entry's canonical capitalization.
 - Added regression coverage for a lowercase possessive near-miss of an internally capitalized dictionary entry.
+- Removed model-generated ellipsis artifacts while preserving explicitly dictated ellipses and continuation casing.
 
 ### Notes
 
