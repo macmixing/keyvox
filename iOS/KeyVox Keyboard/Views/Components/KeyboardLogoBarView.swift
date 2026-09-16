@@ -37,6 +37,7 @@ final class KeyboardLogoBarView: UIControl {
     private let transportProgressLayer = CAShapeLayer()
     private let barLayers = (0..<5).map { _ in CAGradientLayer() }
     private let microphoneImageView = UIImageView()
+    private let recordingStartFailureImageView = UIImageView()
     private let microphoneBaseImage = UIImage(named: "microphone-icon")
     private var widthConstraint: NSLayoutConstraint?
     private var heightConstraint: NSLayoutConstraint?
@@ -56,6 +57,7 @@ final class KeyboardLogoBarView: UIControl {
         configureLayers()
         observeAppearanceChanges()
         bringSubviewToFront(microphoneImageView)
+        bringSubviewToFront(recordingStartFailureImageView)
         configureInitialPresentation()
         updateAccessibility()
     }
@@ -71,6 +73,14 @@ final class KeyboardLogoBarView: UIControl {
         updateCenterIconImageIfNeeded(for: CGSize(width: iconSide, height: iconSide))
         microphoneImageView.bounds = CGRect(x: 0, y: 0, width: iconSide, height: iconSide)
         microphoneImageView.center = CGPoint(x: bounds.midX, y: bounds.midY)
+        let failureIconSide = min(bounds.width, bounds.height) * Metrics.transportSymbolSizeRatio
+        recordingStartFailureImageView.bounds = CGRect(
+            x: 0,
+            y: 0,
+            width: failureIconSide,
+            height: failureIconSide
+        )
+        recordingStartFailureImageView.center = CGPoint(x: bounds.midX, y: bounds.midY)
         updateLayerFrames()
     }
 
@@ -112,6 +122,11 @@ final class KeyboardLogoBarView: UIControl {
         microphoneImageView.tintColor = nil
         microphoneImageView.image = microphoneBaseImage?.withRenderingMode(.alwaysOriginal)
         addSubview(microphoneImageView)
+
+        recordingStartFailureImageView.translatesAutoresizingMaskIntoConstraints = false
+        recordingStartFailureImageView.contentMode = .scaleAspectFit
+        recordingStartFailureImageView.tintColor = nil
+        addSubview(recordingStartFailureImageView)
     }
 
     private func configureSizeConstraints() {
@@ -150,6 +165,9 @@ final class KeyboardLogoBarView: UIControl {
         microphoneImageView.isHidden = false
         microphoneImageView.alpha = 1
         microphoneImageView.transform = .identity
+        recordingStartFailureImageView.isHidden = true
+        recordingStartFailureImageView.alpha = 0
+        recordingStartFailureImageView.transform = .identity
         barsAreVisible = false
         setBarsHidden(true)
         setBarOpacity(0)
@@ -259,6 +277,74 @@ final class KeyboardLogoBarView: UIControl {
             animations: {
                 self.microphoneImageView.alpha = 1
                 self.microphoneImageView.transform = .identity
+            }
+        )
+    }
+
+    func animateRecordingStartFailure() {
+        isAnimatingActivationTransition = false
+        indicatorPhase = .idle
+        timelineState = .initial
+        barsAreVisible = false
+        for barLayer in barLayers {
+            barLayer.removeAllAnimations()
+        }
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        setBarsHidden(true)
+        setBarOpacity(0)
+        CATransaction.commit()
+
+        let pointSize = min(bounds.width, bounds.height) * Metrics.transportSymbolSizeRatio
+        let configuration = UIImage.SymbolConfiguration(pointSize: pointSize, weight: .heavy)
+        let tintColor = UIColor.systemRed
+            .withAlphaComponent(0.85)
+            .resolvedColor(with: traitCollection)
+        recordingStartFailureImageView.image = UIImage(
+            systemName: "xmark",
+            withConfiguration: configuration
+        )?.withTintColor(tintColor, renderingMode: .alwaysOriginal)
+        recordingStartFailureImageView.isHidden = false
+        recordingStartFailureImageView.alpha = 0
+        recordingStartFailureImageView.transform = CGAffineTransform(scaleX: 0.28, y: 0.28)
+
+        microphoneImageView.isHidden = true
+        microphoneImageView.alpha = 0
+        microphoneImageView.transform = .identity
+
+        UIView.animate(
+            withDuration: 0.2,
+            delay: 0,
+            options: [.beginFromCurrentState, .allowUserInteraction, .curveEaseOut],
+            animations: {
+                self.recordingStartFailureImageView.alpha = 1
+                self.recordingStartFailureImageView.transform = .identity
+            }
+        )
+    }
+
+    func animateRecordingStartFailureReturn() {
+        refreshMicrophoneImageForCurrentTraits()
+        microphoneImageView.isHidden = false
+        microphoneImageView.alpha = 0
+        microphoneImageView.transform = CGAffineTransform(scaleX: 0.22, y: 0.22)
+
+        UIView.animate(
+            withDuration: 0.42,
+            delay: 0,
+            usingSpringWithDamping: 0.72,
+            initialSpringVelocity: 0.35,
+            options: [.beginFromCurrentState, .allowUserInteraction],
+            animations: {
+                self.recordingStartFailureImageView.alpha = 0
+                self.recordingStartFailureImageView.transform = CGAffineTransform(scaleX: 0.22, y: 0.22)
+                self.microphoneImageView.alpha = 1
+                self.microphoneImageView.transform = .identity
+            },
+            completion: { _ in
+                self.recordingStartFailureImageView.isHidden = true
+                self.recordingStartFailureImageView.alpha = 0
+                self.recordingStartFailureImageView.transform = .identity
             }
         )
     }

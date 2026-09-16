@@ -19,6 +19,7 @@ func keyboardMainQueueScheduler(
 
 protocol KeyboardDictationIPCManaging: AnyObject {
     var onRecordingStarted: (() -> Void)? { get set }
+    var onRecordingStartFailed: (() -> Void)? { get set }
     var onTranscribingStarted: (() -> Void)? { get set }
     var onTranscriptionReady: ((String) -> Void)? { get set }
     var onNoSpeech: (() -> Void)? { get set }
@@ -28,6 +29,7 @@ protocol KeyboardDictationIPCManaging: AnyObject {
     func sendStartCommand()
     func sendStopCommand()
     func sendCancelCommand()
+    func clearRecordingStartFailure()
     func currentRecordingState() -> KeyboardState
     func reconciledRecordingStateIfNeeded() -> KeyboardState
     func currentTranscription() -> String?
@@ -55,6 +57,8 @@ extension KeyboardIPCManager.SharedRecordingState {
             return .waitingForApp
         case .recording:
             return .recording
+        case .startFailed:
+            return .dictationStartFailed
         case .transcribing:
             return .transcribing
         }
@@ -69,13 +73,16 @@ final class KeyboardDictationController {
     private let scheduleAction: KeyboardActionScheduler
     private let openContainingApp: (URL?) -> Void
     private let startRecordingURL: URL?
+    private let isAudioCaptureAvailable: () -> Bool
     private let waitingTimeoutDuration: TimeInterval
+    private let failureDisplayDuration: TimeInterval
     private let warmSessionGracePeriod: TimeInterval
     private let warmSessionGracePeriodAfterTTSPlayback: TimeInterval
     private let warmSessionGracePeriodWithBluetoothAudio: TimeInterval
     private let maxTranscriptionReconciliationRetries: Int
 
     private var waitingForAppTimeoutAction: KeyboardScheduledAction?
+    private var failureResetAction: KeyboardScheduledAction?
     private var gracePeriodAction: KeyboardScheduledAction?
     private var transcriptionReconciliationAction: KeyboardScheduledAction?
     private var transcriptionReconciliationRetryCount = 0
@@ -91,7 +98,9 @@ final class KeyboardDictationController {
         scheduleAction: @escaping KeyboardActionScheduler,
         openContainingApp: @escaping (URL?) -> Void,
         startRecordingURL: URL?,
+        isAudioCaptureAvailable: @escaping () -> Bool = { true },
         waitingTimeoutDuration: TimeInterval = 5,
+        failureDisplayDuration: TimeInterval = KeyVoxIPCBridge.recordingStartFailureDisplayDuration,
         warmSessionGracePeriod: TimeInterval = 0.5,
         warmSessionGracePeriodAfterTTSPlayback: TimeInterval = 0.5,
         warmSessionGracePeriodWithBluetoothAudio: TimeInterval = 1.5,
@@ -101,7 +110,9 @@ final class KeyboardDictationController {
         self.scheduleAction = scheduleAction
         self.openContainingApp = openContainingApp
         self.startRecordingURL = startRecordingURL
+        self.isAudioCaptureAvailable = isAudioCaptureAvailable
         self.waitingTimeoutDuration = waitingTimeoutDuration
+        self.failureDisplayDuration = failureDisplayDuration
         self.warmSessionGracePeriod = warmSessionGracePeriod
         self.warmSessionGracePeriodAfterTTSPlayback = warmSessionGracePeriodAfterTTSPlayback
         self.warmSessionGracePeriodWithBluetoothAudio = warmSessionGracePeriodWithBluetoothAudio
@@ -121,6 +132,7 @@ final class KeyboardDictationController {
         cancelPendingWork()
         ipcManager.unregisterObservers()
         ipcManager.onRecordingStarted = nil
+        ipcManager.onRecordingStartFailed = nil
         ipcManager.onTranscribingStarted = nil
         ipcManager.onTranscriptionReady = nil
         ipcManager.onNoSpeech = nil
@@ -130,6 +142,11 @@ final class KeyboardDictationController {
         cancelWaitingTimeout()
 
         let sharedState = ipcManager.reconciledRecordingStateIfNeeded()
+        if sharedState == .dictationStartFailed {
+            ipcManager.clearRecordingStartFailure()
+            presentRecordingStartFailure()
+            return
+        }
         state = sharedState
 
         if sharedState == .waitingForApp {
@@ -149,6 +166,10 @@ final class KeyboardDictationController {
 
         switch state {
         case .idle:
+            guard isAudioCaptureAvailable() else {
+                presentRecordingStartFailure()
+                return
+            }
             state = .waitingForApp
             scheduleWaitingTimeout()
 
@@ -164,6 +185,10 @@ final class KeyboardDictationController {
             ipcManager.sendStopCommand()
             scheduleTranscriptionReconciliation()
         case .speaking, .pausedSpeaking:
+            guard isAudioCaptureAvailable() else {
+                presentRecordingStartFailure()
+                return
+            }
             state = .waitingForApp
             scheduleWaitingTimeout()
 
@@ -174,7 +199,7 @@ final class KeyboardDictationController {
             } else {
                 openContainingApp(startRecordingURL)
             }
-        case .waitingForApp, .preparingPlayback, .transcribing:
+        case .waitingForApp, .dictationStartFailed, .preparingPlayback, .transcribing:
             break
         }
     }
@@ -182,6 +207,7 @@ final class KeyboardDictationController {
     func cancelPendingWork() {
         waitingForAppTimeoutAction?.cancel()
         waitingForAppTimeoutAction = nil
+        cancelFailureReset()
         cancelGracePeriod()
         cancelTranscriptionReconciliation()
     }
@@ -189,6 +215,9 @@ final class KeyboardDictationController {
     private func configureIPC() {
         ipcManager.onRecordingStarted = { [weak self] in
             self?.handleRecordingStarted()
+        }
+        ipcManager.onRecordingStartFailed = { [weak self] in
+            self?.handleRecordingStartFailed()
         }
         ipcManager.onTranscribingStarted = { [weak self] in
             self?.handleTranscribingStarted()
@@ -203,7 +232,15 @@ final class KeyboardDictationController {
 
     private func handleRecordingStarted() {
         cancelWaitingTimeout()
+        cancelFailureReset()
         state = .recording
+    }
+
+    private func handleRecordingStartFailed() {
+        let shouldPresentFailure = state == .waitingForApp || state == .recording
+        ipcManager.clearRecordingStartFailure()
+        guard shouldPresentFailure else { return }
+        presentRecordingStartFailure()
     }
 
     private func handleTranscribingStarted() {
@@ -234,8 +271,26 @@ final class KeyboardDictationController {
         cancelWaitingTimeout()
         waitingForAppTimeoutAction = scheduleAction(waitingTimeoutDuration) { [weak self] in
             guard let self, self.state == .waitingForApp else { return }
+            self.presentRecordingStartFailure()
+        }
+    }
+
+    private func presentRecordingStartFailure() {
+        cancelWaitingTimeout()
+        cancelTranscriptionReconciliation()
+        cancelFailureReset()
+        state = .dictationStartFailed
+        failureResetAction = scheduleAction(failureDisplayDuration) { [weak self] in
+            guard let self, self.state == .dictationStartFailed else { return }
+            self.failureResetAction = nil
+            self.ipcManager.clearRecordingStartFailure()
             self.state = .idle
         }
+    }
+
+    private func cancelFailureReset() {
+        failureResetAction?.cancel()
+        failureResetAction = nil
     }
 
     private func cancelWaitingTimeout() {
@@ -253,6 +308,10 @@ final class KeyboardDictationController {
                 return
             }
             self.state = .waitingForApp
+            guard self.isAudioCaptureAvailable() else {
+                self.presentRecordingStartFailure()
+                return
+            }
             self.openContainingApp(self.startRecordingURL)
         }
     }
@@ -281,7 +340,7 @@ final class KeyboardDictationController {
                     self.ipcManager.sendStopCommand()
                 }
                 self.scheduleTranscriptionReconciliation()
-            case .waitingForApp, .preparingPlayback, .speaking, .pausedSpeaking:
+            case .waitingForApp, .dictationStartFailed, .preparingPlayback, .speaking, .pausedSpeaking:
                 self.scheduleTranscriptionReconciliation()
             }
         }

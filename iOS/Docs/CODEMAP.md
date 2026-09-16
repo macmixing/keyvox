@@ -22,8 +22,8 @@ The current default runtime flow is:
 4. The keyboard tour autofocuses a text field, waits for the KeyVox keyboard to be shown, and only enables completion after the first non-empty tour transcription completes.
 5. Finishing the keyboard tour completes onboarding directly; there is no separate customize-app screen on the current branch.
 6. After onboarding, the main app shell owns ongoing model management, style/settings changes, weekly usage, and session controls.
-7. When the user taps the mic in the keyboard extension, the extension decides between warm Darwin signaling and cold URL launch. The user may instead invoke the Toggle Dictation App Shortcut to start or stop the same shared recording without foregrounding KeyVox.
-8. The containing app records and processes audio, runs the shared dictation pipeline with the provider-reported language code, and publishes `transcribing`, `transcriptionReady`, or `noSpeech` back through the App Group bridge. A visible KeyVox keyboard inserts the result, while the bundled shortcut workflow copies returned text and posts the completion notification.
+7. When the user taps the mic in the keyboard extension, the extension first reads its own current `AVAudioSession` state. If other audio is playing and iOS says secondary audio should be silenced, the keyboard shows its generic two-second start-failure state without entering the handoff state or opening the containing app. Otherwise, the extension decides between warm Darwin signaling and cold URL launch. The user may instead invoke the Toggle Dictation App Shortcut to start or stop the same shared recording without foregrounding KeyVox.
+8. The containing app records and processes audio, runs the shared dictation pipeline with the provider-reported language code, and publishes `recordingStartFailed`, `transcribing`, `transcriptionReady`, or `noSpeech` back through the App Group bridge. `recordingStartFailed` reports an actual recorder startup error and is separate from the keyboard-local audio-session preflight. A visible KeyVox keyboard inserts successful results, while the bundled shortcut workflow copies returned text and posts the completion notification.
 9. The app optionally rewrites the post-processed base text through the local Vibes model and LoRA adapter selected by the current Vibe, preserving the dictation language for linguistic output repair and later artifact-scoped rewrites.
 10. The extension resolves preceding and following host-text context, delegates leading spacing, capitalization, adjacent terminal-punctuation, and trailing-separator policy to `KeyVoxTextComposition`, and performs the resulting insertion or punctuation replacement through the iOS document proxy.
 11. Later keyboard long presses may restyle or revert only the latest untouched KeyVox insertion: Vibes changes use an app-IPC rewrite request, paragraph/list changes use persisted deterministic artifact variants, and Caps Lock swaps between the inserted text and the preserved pre-Caps selected output. If the local Vibes model is missing, keyboard Vibes taps do not cycle styles and instead route the user into the app-owned Vibes install/trial flow.
@@ -373,7 +373,6 @@ iOS/
 │   │   │   │   ├── KeyboardDictationChangeController+Variants.swift
 │   │   │   │   ├── KeyboardDictationChangeController.swift
 │   │   │   │   └── KeyboardDictationChangeSession.swift
-│   │   │   ├── KeyboardCallObserver.swift
 │   │   │   ├── KeyboardLocalStyleRewriteTextTransformer.swift
 │   │   │   └── KeyboardDictationController.swift
 │   │   ├── Feedback/
@@ -1206,7 +1205,7 @@ Packages/
 
 - `KeyVox Keyboard/App/KeyboardViewController.swift`
   - Extension controller and top-level keyboard surface owner.
-  - Owns toolbar mode switching, call-aware warning presentation, full-access instructions presentation, warm/cold app launch behavior, onboarding presentation reporting, Caps Lock, Vibes key cycling, missing-model Vibes recovery launch, dictionary/settings tab launch, symbol page, trackpad mode, and insertion.
+  - Owns toolbar mode switching, full-access instructions presentation, warm/cold app launch behavior, onboarding presentation reporting, Caps Lock, Vibes key cycling, missing-model Vibes recovery launch, dictionary/settings tab launch, symbol page, trackpad mode, and insertion.
   - Missing-model taps open `keyvoxios://vibes/model-recovery`; access-aware recovery scene selection remains app-owned by `KeyVoxVibesPurchaseController`.
 - `KeyVox Keyboard/Core/KeyboardDictationModelStatus.swift`
   - Resolves the active provider's App Group artifacts into ready, not-installed, or repair-required state for keyboard warning presentation.
@@ -1219,8 +1218,6 @@ Packages/
   - Keeps the keyboard view hierarchy disposable across globe-key presentation swaps.
 - `KeyVox Keyboard/App/KeyboardViewController+Debug.swift`
   - Debug-only presentation lifecycle counters and controller test hooks.
-- `KeyVox Keyboard/Core/Dictation/KeyboardCallObserver.swift`
-  - Tracks active phone-call state through `CallKit` so the keyboard can warn before dictation is attempted during a call.
 - `KeyVox Keyboard/Core/Dictation/DictationChange/KeyboardDictationChangeController.swift`
   - Keyboard-local artifact-scoped changer facade for the latest untouched KeyVox dictation insertion.
   - Owns the display-facing state surface, injected collaborators, and current session reference used by the split dictation-change files.
@@ -1238,6 +1235,9 @@ Packages/
   - Keyboard-side style rewrite transport that writes the base text, style, and saved dictation language into a `KeyVoxStyleRewriteIPCRequest`, polls for the matching response, and returns package-shaped transform results with processing mode `app-ipc`.
   - Keeps local rewrite model execution out of the extension.
 - `KeyVox Keyboard/Core/Dictation/KeyboardDictationController.swift`
+  - Owns the keyboard-side recording request lifecycle, including a synchronous keyboard-process audio-session gate, a generic two-second start-failure state, and the no-response fallback.
+  - The gate reads the extension's live `AVAudioSession` values directly; it does not consume a persisted containing-app availability flag.
+  - Consumes containing-app startup results from shared state so a failure remains observable across the temporary app handoff.
   - Keyboard-local state machine for shared recording state and app launch handoff.
 - `../Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/DictationDeterministicState.swift`
   - Shared paragraph/list state value used by both keyboard long-press changes and Mac trigger-key changes.
@@ -1290,7 +1290,7 @@ Packages/
   - Mirrors the control strip for the left-handed layout setting without changing typed symbol order.
 - `KeyVox Keyboard/Views/KeyboardRootView.swift`
   - Stable keyboard chrome and key grid.
-  - Hosts the branded toolbar row and the shared warning overlay for Full Access, microphone permission, and active phone calls.
+  - Hosts the branded toolbar row and the shared warning overlay for Full Access and microphone permission.
   - Invalidates layout whenever branded-toolbar Vibes visibility changes so returning from a warning mode restores measured top-row spacing.
 - `KeyVox Keyboard/Views/Components/KeyboardSpeakButton.swift`
   - Keyboard speak control used for copied-text playback transport in the top-row accessory area.

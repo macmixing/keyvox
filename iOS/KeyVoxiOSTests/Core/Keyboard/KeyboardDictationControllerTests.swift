@@ -3,6 +3,26 @@ import Testing
 @testable import KeyVox_iOS
 
 struct KeyboardDictationControllerTests {
+    @Test func unavailableAudioCaptureShowsFailureWithoutOpeningContainingApp() {
+        let ipcManager = KeyboardDictationIPCManagerSpy()
+        let scheduler = KeyboardActionSchedulerSpy()
+        let appLauncher = KeyboardContainingAppLauncherSpy()
+        let controller = KeyboardDictationController(
+            ipcManager: ipcManager,
+            scheduleAction: scheduler.schedule,
+            openContainingApp: appLauncher.open,
+            startRecordingURL: URL(string: "keyvoxios://record/start"),
+            isAudioCaptureAvailable: { false }
+        )
+
+        controller.handleMicTap()
+
+        #expect(controller.state == .dictationStartFailed)
+        #expect(ipcManager.sendStartCommandCallCount == 0)
+        #expect(appLauncher.openedURLs.isEmpty)
+        #expect(scheduler.scheduledDelays == [2.0])
+    }
+
     @Test func coldSessionOpensContainingAppImmediately() {
         let ipcManager = KeyboardDictationIPCManagerSpy()
         ipcManager.isSessionWarmValue = false
@@ -90,7 +110,7 @@ struct KeyboardDictationControllerTests {
         #expect(appLauncher.openedURLs.isEmpty)
     }
 
-    @Test func waitingTimeoutReturnsStateToIdle() {
+    @Test func waitingTimeoutShowsFailureBeforeReturningToIdle() {
         let ipcManager = KeyboardDictationIPCManagerSpy()
         ipcManager.isSessionWarmValue = false
         let scheduler = KeyboardActionSchedulerSpy()
@@ -105,7 +125,54 @@ struct KeyboardDictationControllerTests {
         controller.handleMicTap()
         scheduler.runScheduledAction(after: 5.0)
 
+        #expect(controller.state == .dictationStartFailed)
+
+        scheduler.runScheduledAction(after: 2.0)
+
         #expect(controller.state == .idle)
+    }
+
+    @Test func explicitStartFailureShowsFailureAndClearsSharedResultAfterDisplay() {
+        let ipcManager = KeyboardDictationIPCManagerSpy()
+        ipcManager.isSessionWarmValue = true
+        ipcManager.currentRecordingStateValue = .dictationStartFailed
+        let scheduler = KeyboardActionSchedulerSpy()
+        let controller = KeyboardDictationController(
+            ipcManager: ipcManager,
+            scheduleAction: scheduler.schedule,
+            openContainingApp: { _ in },
+            startRecordingURL: URL(string: "keyvoxios://record/start")
+        )
+
+        controller.handleMicTap()
+        ipcManager.onRecordingStartFailed?()
+
+        #expect(controller.state == .dictationStartFailed)
+        #expect(ipcManager.clearRecordingStartFailureCallCount == 1)
+
+        ipcManager.reconciledRecordingStateValue = .idle
+        scheduler.runScheduledAction(after: 2.0)
+
+        #expect(controller.state == .idle)
+        #expect(ipcManager.clearRecordingStartFailureCallCount == 2)
+    }
+
+    @Test func sharedStartFailureIsPresentedAfterContainingAppHandoff() {
+        let ipcManager = KeyboardDictationIPCManagerSpy()
+        let scheduler = KeyboardActionSchedulerSpy()
+        let controller = KeyboardDictationController(
+            ipcManager: ipcManager,
+            scheduleAction: scheduler.schedule,
+            openContainingApp: { _ in },
+            startRecordingURL: URL(string: "keyvoxios://record/start")
+        )
+
+        controller.handleMicTap()
+        ipcManager.reconciledRecordingStateValue = .dictationStartFailed
+        controller.syncStateFromSharedState()
+
+        #expect(controller.state == .dictationStartFailed)
+        #expect(ipcManager.clearRecordingStartFailureCallCount == 1)
     }
 
     @Test func tappingMicWhileRecordingStopsAndTransitionsToTranscribing() {
@@ -248,6 +315,7 @@ struct KeyboardDictationControllerTests {
 
 private final class KeyboardDictationIPCManagerSpy: KeyboardDictationIPCManaging {
     var onRecordingStarted: (() -> Void)?
+    var onRecordingStartFailed: (() -> Void)?
     var onTranscribingStarted: (() -> Void)?
     var onTranscriptionReady: ((String) -> Void)?
     var onNoSpeech: (() -> Void)?
@@ -264,6 +332,7 @@ private final class KeyboardDictationIPCManagerSpy: KeyboardDictationIPCManaging
     var sendStartCommandCallCount = 0
     var sendStopCommandCallCount = 0
     var sendCancelCommandCallCount = 0
+    var clearRecordingStartFailureCallCount = 0
 
     func registerObservers() {
         registerObserversCallCount += 1
@@ -283,6 +352,10 @@ private final class KeyboardDictationIPCManagerSpy: KeyboardDictationIPCManaging
 
     func sendCancelCommand() {
         sendCancelCommandCallCount += 1
+    }
+
+    func clearRecordingStartFailure() {
+        clearRecordingStartFailureCallCount += 1
     }
 
     func currentRecordingState() -> KeyboardState {
