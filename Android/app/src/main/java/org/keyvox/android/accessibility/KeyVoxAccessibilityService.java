@@ -28,7 +28,7 @@ public final class KeyVoxAccessibilityService extends AccessibilityService {
         locator = new AccessibilityEditorLocator(this);
         clipboard = new DictationClipboard(this);
         insertion = new AccessibilityTextInsertion(locator, clipboard);
-        bubble = new DictationBubbleController(this, this::toggleDictation);
+        bubble = new DictationBubbleController(this, this::toggleDictation, this::cancelDictation);
         keyboardVisibility = KeyVoxApplication.keyboardVisibility(this);
         keyboardVisibilityObserver = this::renderBubbleVisibility;
         keyboardVisibility.observe(keyboardVisibilityObserver);
@@ -54,11 +54,24 @@ public final class KeyVoxAccessibilityService extends AccessibilityService {
         if (request >= 0) {
             ownedRequest = request;
             target = currentTarget;
+            render();
+        }
+    }
+
+    private void cancelDictation() {
+        if (delivering || ownedRequest < 0 || session.request() != ownedRequest) return;
+        if (session.phase() == DictationSession.Phase.STARTING
+                || session.phase() == DictationSession.Phase.RECORDING) {
+            session.cancel();
         }
     }
 
     private void render() {
-        bubble.render(session);
+        boolean ownsActiveRecording = ownedRequest >= 0
+            && session.request() == ownedRequest
+            && (session.phase() == DictationSession.Phase.STARTING
+                || session.phase() == DictationSession.Phase.RECORDING);
+        bubble.render(session, ownsActiveRecording);
         if (ownedRequest < 0) return;
         if (session.request() != ownedRequest) {
             clearDelivery();
