@@ -24,6 +24,7 @@ final class KeyVoxSetupView extends ScrollView {
         Runnable enableKeyboard,
         Runnable selectKeyboard,
         Runnable requestMicrophone,
+        Runnable enableDictationBubble,
         Runnable downloadModel
     ) {
         super(context);
@@ -52,6 +53,11 @@ final class KeyVoxSetupView extends ScrollView {
         card.addView(actionButton(R.string.select_keyboard, true, selectKeyboard), buttonParams(true));
         microphone = actionButton(R.string.allow_microphone, true, requestMicrophone);
         card.addView(microphone, buttonParams(true));
+        card.addView(actionButton(
+            R.string.enable_dictation_bubble,
+            true,
+            enableDictationBubble
+        ), buttonParams(true));
 
         status = new TextView(context);
         status.setTextColor(getResources().getColor(R.color.app_secondary_text, context.getTheme()));

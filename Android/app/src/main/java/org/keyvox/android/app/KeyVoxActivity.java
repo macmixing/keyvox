@@ -10,6 +10,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.FrameLayout;
 import org.keyvox.android.dictation.DictationSession;
 import org.keyvox.android.R;
+import org.keyvox.android.accessibility.AccessibilityDisclosureDialog;
 import org.keyvox.android.app.navigation.AppTabHostView;
 import org.keyvox.android.app.navigation.ContainingAppTab;
 import org.keyvox.android.app.home.HomeTabView;
@@ -41,6 +42,10 @@ public final class KeyVoxActivity extends Activity {
             () -> requestPermissions(
                 new String[] { android.Manifest.permission.RECORD_AUDIO },
                 MICROPHONE_PERMISSION_REQUEST
+            ),
+            () -> AccessibilityDisclosureDialog.show(
+                this,
+                () -> startActivity(new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
             ),
             () -> KeyVoxApplication.dictation(this).downloadModel()
         );
