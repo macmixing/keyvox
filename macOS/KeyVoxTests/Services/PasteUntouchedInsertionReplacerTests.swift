@@ -30,6 +30,44 @@ final class PasteUntouchedInsertionReplacerTests: XCTestCase {
         XCTAssertEqual(resolvedRange?.length, expectedRange.length)
     }
 
+    func testNormalizedRangeAcceptsInvisibleFormatMarkerAtExpectedLineBreakBoundary() {
+        let expectedText = ["α", "", "β", "γ"].joined(separator: "\n")
+        let accessibleText = "α\u{FEFF}β\nγ"
+        let accessibleLength = (accessibleText as NSString).length
+        let expectedRange = CFRange(location: 0, length: accessibleLength)
+        let selectedRange = CFRange(location: accessibleLength, length: 0)
+
+        let resolvedRange = PasteUntouchedInsertionReplacer.accessibilityNormalizedRange(
+            for: expectedText,
+            selectedRange: selectedRange,
+            candidateText: { range in
+                range.location == expectedRange.location && range.length == expectedRange.length
+                    ? accessibleText
+                    : nil
+            }
+        )
+
+        XCTAssertEqual(resolvedRange?.location, expectedRange.location)
+        XCTAssertEqual(resolvedRange?.length, expectedRange.length)
+    }
+
+    func testNormalizedRangeRejectsInvisibleFormatMarkerOutsideExpectedLineBreakBoundary() {
+        let expectedText = "α\nβ"
+        let accessibleText = "\u{FEFF}αβ"
+        let accessibleLength = (accessibleText as NSString).length
+        let selectedRange = CFRange(location: accessibleLength, length: 0)
+
+        let resolvedRange = PasteUntouchedInsertionReplacer.accessibilityNormalizedRange(
+            for: expectedText,
+            selectedRange: selectedRange,
+            candidateText: { range in
+                range.length == accessibleLength ? accessibleText : nil
+            }
+        )
+
+        XCTAssertNil(resolvedRange)
+    }
+
     func testNormalizedRangeRejectsChangedNonLineBreakContent() {
         let expectedText = ["α", "", "β", "γ"].joined(separator: "\n")
         let changedAccessibleText = ["αδ", "γ"].joined(separator: "\n")

@@ -139,6 +139,7 @@ final class PasteUntouchedInsertionReplacer: PasteUntouchedInsertionReplacing {
 
         let expectedWithoutLineBreaks = text.components(separatedBy: .newlines).joined()
         guard expectedWithoutLineBreaks.isEmpty == false else { return nil }
+        let expectedLineBreakBoundaries = lineBreakBoundaries(in: text)
 
         let shortestCandidateLength = max(1, expectedLength - lineBreakLength)
         let longestCandidateLength = min(expectedLength, selectedRange.location)
@@ -157,9 +158,10 @@ final class PasteUntouchedInsertionReplacer: PasteUntouchedInsertionReplacing {
                 continue
             }
 
-            let candidateWithoutLineBreaks = candidateText
-                .components(separatedBy: .newlines)
-                .joined()
+            let candidateWithoutLineBreaks = normalizedAccessibilityCandidate(
+                candidateText,
+                expectedLineBreakBoundaries: expectedLineBreakBoundaries
+            )
             guard candidateWithoutLineBreaks == expectedWithoutLineBreaks else {
                 continue
             }
@@ -168,6 +170,44 @@ final class PasteUntouchedInsertionReplacer: PasteUntouchedInsertionReplacing {
         }
 
         return nil
+    }
+
+    private static func lineBreakBoundaries(in text: String) -> Set<Int> {
+        var contentLength = 0
+        var boundaries = Set<Int>()
+
+        for character in text {
+            if character.isAccessibilityLineBreak {
+                boundaries.insert(contentLength)
+            } else {
+                contentLength += String(character).utf16.count
+            }
+        }
+
+        return boundaries
+    }
+
+    private static func normalizedAccessibilityCandidate(
+        _ text: String,
+        expectedLineBreakBoundaries: Set<Int>
+    ) -> String {
+        var contentLength = 0
+        var normalized = String()
+
+        for character in text {
+            if character.isAccessibilityLineBreak {
+                continue
+            }
+            if character.isInvisibleAccessibilityFormatCharacter,
+               expectedLineBreakBoundaries.contains(contentLength) {
+                continue
+            }
+
+            normalized.append(character)
+            contentLength += String(character).utf16.count
+        }
+
+        return normalized
     }
 
     static func writeStrategy(
@@ -347,5 +387,15 @@ final class PasteUntouchedInsertionReplacer: PasteUntouchedInsertionReplacing {
 
     private func setSelectedRange(_ range: CFRange, for element: AXUIElement) -> Bool {
         axInspector.setSelectedRange(range, for: element)
+    }
+}
+
+private extension Character {
+    var isAccessibilityLineBreak: Bool {
+        unicodeScalars.allSatisfy(CharacterSet.newlines.contains)
+    }
+
+    var isInvisibleAccessibilityFormatCharacter: Bool {
+        unicodeScalars.allSatisfy { $0.properties.generalCategory == .format }
     }
 }
