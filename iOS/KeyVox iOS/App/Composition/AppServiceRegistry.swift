@@ -239,8 +239,12 @@ final class AppServiceRegistry {
             outputProcessingRequiresDeterministicVariantsProvider: { [weak styleRewritePipelineCoordinator] in
                 styleRewritePipelineCoordinator?.requiresDeterministicVariantsForOutputProcessing ?? false
             },
-            recordPipelineResult: { [weak styleRewritePipelineCoordinator] result, selectedText in
-                styleRewritePipelineCoordinator?.recordLatestArtifact(from: result, selectedText: selectedText)
+            recordPipelineResult: { [weak styleRewritePipelineCoordinator] result, selectedText, deliveryID in
+                styleRewritePipelineCoordinator?.recordLatestArtifact(
+                    from: result,
+                    selectedText: selectedText,
+                    deliveryID: deliveryID
+                )
             },
             recordSuccessfulDictation: { [weak appReviewRequestStore] in
                 appReviewRequestStore?.recordSuccessfulDictation()

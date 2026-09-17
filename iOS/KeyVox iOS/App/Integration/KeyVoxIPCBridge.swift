@@ -63,6 +63,8 @@ enum KeyVoxIPCBridge {
         static let recordingState = "recordingState"
         static let recordingStateTimestamp = "recordingState_timestamp"
         static let transcription = "latestTranscription"
+        static let transcriptionID = "latestTranscriptionID"
+        static let transcriptionStyleIdentifier = "latestTranscriptionStyleIdentifier"
         static let sessionTimestamp = "session_timestamp"
         static let sessionHasBluetoothAudioRoute = "sessionHasBluetoothAudioRoute"
         static let recentTTSPlaybackTimestamp = "recentTTSPlayback_timestamp"
@@ -156,16 +158,30 @@ enum KeyVoxIPCBridge {
         
     }
     
-    static func setTranscription(_ text: String) {
+    static func setTranscription(
+        _ text: String,
+        id: UUID? = nil,
+        styleIdentifier: String? = nil
+    ) {
         let d = defaults
         d?.set(text, forKey: Key.transcription)
-        
+        if let id {
+            d?.set(id.uuidString, forKey: Key.transcriptionID)
+        } else {
+            d?.removeObject(forKey: Key.transcriptionID)
+        }
+        if let styleIdentifier {
+            d?.set(styleIdentifier, forKey: Key.transcriptionStyleIdentifier)
+        } else {
+            d?.removeObject(forKey: Key.transcriptionStyleIdentifier)
+        }
     }
     
     static func removeTranscription() {
         let d = defaults
         d?.removeObject(forKey: Key.transcription)
-        
+        d?.removeObject(forKey: Key.transcriptionID)
+        d?.removeObject(forKey: Key.transcriptionStyleIdentifier)
     }
 
     static func clearTransientOperationState() {
@@ -406,6 +422,18 @@ enum KeyVoxIPCBridge {
         let d = defaults
         
         return d?.string(forKey: Key.transcription)
+    }
+
+    static func latestTranscriptionID() -> UUID? {
+        guard let rawValue = defaults?.string(forKey: Key.transcriptionID) else {
+            return nil
+        }
+
+        return UUID(uuidString: rawValue)
+    }
+
+    static func latestTranscriptionStyleIdentifier() -> String? {
+        defaults?.string(forKey: Key.transcriptionStyleIdentifier)
     }
 
     static func currentTTSState() -> KeyVoxTTSState {

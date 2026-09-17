@@ -3,20 +3,28 @@ import KeyVoxCore
 import KeyVoxStyleRewrite
 
 extension KeyboardDictationChangeController {
-    func recordInsertedDictation(_ insertion: KeyboardTextInsertionResult) {
+    func recordInsertedDictation(
+        _ insertion: KeyboardTextInsertionResult,
+        artifactID: UUID?,
+        styleIdentifier: String? = nil
+    ) {
         displaySource = .selectedPreference
 
-        guard let artifact = artifactStore.latestArtifact() else {
+        guard let artifactID,
+              let artifact = artifactStore.latestArtifact(matching: artifactID) else {
+            let deliveredStyle = styleIdentifier.flatMap(StyleRewriteStyle.init(rawValue:)) ?? .none
             activeSession = KeyboardDictationChangeSession(
+                artifactID: artifactID,
+                hasLoadedArtifact: false,
                 sourceText: insertion.sourceText,
                 languageCode: nil,
                 originalText: insertion.insertedText,
                 documentContextBeforeInput: insertion.documentContextBeforeInput,
                 preparesAsDictationInsertion: true,
                 currentText: insertion.insertedText,
-                currentStyle: .none,
+                currentStyle: deliveredStyle,
                 previousStyle: nil,
-                variants: [.none: insertion.insertedText],
+                variants: [deliveredStyle: insertion.insertedText],
                 baselineDeterministicState: nil,
                 currentDeterministicState: nil,
                 deterministicVariants: [:],
@@ -89,6 +97,8 @@ extension KeyboardDictationChangeController {
         )
 
         activeSession = KeyboardDictationChangeSession(
+            artifactID: artifactID,
+            hasLoadedArtifact: true,
             sourceText: originalText,
             languageCode: artifact.languageCode,
             originalText: originalText,
@@ -105,6 +115,27 @@ extension KeyboardDictationChangeController {
             capsBaselineIsUppercase: initialCapsSourceText != nil,
             isCapsTransformApplied: false,
             uncappedCurrentText: initialCapsSourceText
+        )
+    }
+
+    func refreshActiveSessionFromArtifactIfAvailable() {
+        guard let session = activeSession,
+              session.hasLoadedArtifact == false,
+              session.isCapsTransformApplied == false,
+              let artifactID = session.artifactID,
+              artifactStore.latestArtifact(matching: artifactID) != nil,
+              activeInsertionMatchesCurrentText(session) else {
+            return
+        }
+
+        recordInsertedDictation(
+            KeyboardTextInsertionResult(
+                sourceText: session.sourceText,
+                insertedText: session.currentText,
+                documentContextBeforeInput: session.documentContextBeforeInput
+            ),
+            artifactID: artifactID,
+            styleIdentifier: session.currentStyle.styleIdentifier
         )
     }
 

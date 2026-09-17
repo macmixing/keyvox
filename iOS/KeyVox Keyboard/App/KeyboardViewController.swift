@@ -566,11 +566,17 @@ final class KeyboardViewController: UIInputViewController {
     }
 
     private func handleTranscriptionReady(_ text: String) {
+        let artifactID = KeyVoxIPCBridge.latestTranscriptionID()
+        let styleIdentifier = KeyVoxIPCBridge.latestTranscriptionStyleIdentifier()
         guard let insertion = textInputController.insertTranscriptionWithResult(text) else {
             return
         }
 
-        dictationChangeController.recordInsertedDictation(insertion)
+        dictationChangeController.recordInsertedDictation(
+            insertion,
+            artifactID: artifactID,
+            styleIdentifier: styleIdentifier
+        )
         updateActiveInsertionVisualState()
         emitDelayedTranscriptionLandingHapticIfNeeded()
     }

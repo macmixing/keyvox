@@ -59,7 +59,7 @@ struct KeyboardDictationChangeControllerTests {
         )
 
         let insertion = try #require(textInputController.insertTranscriptionWithResult(listText))
-        controller.recordInsertedDictation(insertion)
+        controller.recordInsertedDictation(insertion, artifactID: artifact.id)
 
         #expect(controller.hasActiveUntouchedInsertion == true)
         #expect(controller.displayedAutoParagraphsEnabled == false)
@@ -111,7 +111,7 @@ struct KeyboardDictationChangeControllerTests {
         )
 
         let insertion = try #require(textInputController.insertTranscriptionWithResult(text))
-        controller.recordInsertedDictation(insertion)
+        controller.recordInsertedDictation(insertion, artifactID: artifact.id)
         #expect(controller.hasActiveUntouchedInsertion == true)
 
         documentProxy.insertText("x")
@@ -172,7 +172,7 @@ struct KeyboardDictationChangeControllerTests {
         )
 
         let insertion = try #require(textInputController.insertTranscriptionWithResult(noListText))
-        controller.recordInsertedDictation(insertion)
+        controller.recordInsertedDictation(insertion, artifactID: artifact.id)
         defaults.set(true, forKey: UserDefaultsKeys.autoParagraphsEnabled)
         defaults.set(true, forKey: UserDefaultsKeys.listFormattingEnabled)
 
@@ -240,7 +240,7 @@ struct KeyboardDictationChangeControllerTests {
         )
 
         let insertion = try #require(textInputController.insertTranscriptionWithResult(text))
-        controller.recordInsertedDictation(insertion)
+        controller.recordInsertedDictation(insertion, artifactID: artifact.id)
 
         #expect(controller.applyCapsLongPressChange() == true)
         #expect(controller.displayedCapsTransformApplied == true)
@@ -299,7 +299,7 @@ struct KeyboardDictationChangeControllerTests {
         )
 
         let insertion = try #require(textInputController.insertTranscriptionWithResult(text.uppercased()))
-        controller.recordInsertedDictation(insertion)
+        controller.recordInsertedDictation(insertion, artifactID: artifact.id)
 
         #expect(controller.displayedCapsTransformApplied == false)
         #expect(controller.displayedCapsTextIsUppercase == false)
@@ -371,7 +371,7 @@ struct KeyboardDictationChangeControllerTests {
         )
 
         let insertion = try #require(textInputController.insertTranscriptionWithResult(casualText.uppercased()))
-        controller.recordInsertedDictation(insertion)
+        controller.recordInsertedDictation(insertion, artifactID: artifact.id)
 
         #expect(controller.displayedCapsTransformApplied == false)
         #expect(controller.displayedCapsTextIsUppercase == false)
@@ -439,7 +439,7 @@ struct KeyboardDictationChangeControllerTests {
         )
 
         let insertion = try #require(textInputController.insertTranscriptionWithResult(noListText))
-        controller.recordInsertedDictation(insertion)
+        controller.recordInsertedDictation(insertion, artifactID: artifact.id)
         #expect(controller.applyCapsLongPressChange() == true)
 
         let didApplyList = await controller.applyDeterministicLongPressChange(
@@ -521,7 +521,7 @@ struct KeyboardDictationChangeControllerTests {
         )
 
         let insertion = try #require(textInputController.insertTranscriptionWithResult(text))
-        controller.recordInsertedDictation(insertion)
+        controller.recordInsertedDictation(insertion, artifactID: artifact.id)
         var processingStartCount = 0
         var processingEndCount = 0
 
@@ -607,7 +607,7 @@ struct KeyboardDictationChangeControllerTests {
         )
 
         let insertion = try #require(textInputController.insertTranscriptionWithResult(casualListText))
-        controller.recordInsertedDictation(insertion)
+        controller.recordInsertedDictation(insertion, artifactID: artifact.id)
 
         let didRemoveList = await controller.applyDeterministicLongPressChange(
             .lists,
@@ -640,6 +640,128 @@ struct KeyboardDictationChangeControllerTests {
         #expect(transformer.transformCallCount == 1)
         #expect(processingStartCount == 0)
         #expect(processingEndCount == 0)
+    }
+
+    @Test func dictationChangesNeverUseArtifactFromPreviousDictation() async throws {
+        setenv("KEYVOX_BYPASS_VIBES_TRIAL", "1", 1)
+        defer {
+            unsetenv("KEYVOX_BYPASS_VIBES_TRIAL")
+        }
+        let suiteName = "KeyboardDictationChangeControllerTests-\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suiteName))
+        defer {
+            defaults.removePersistentDomain(forName: suiteName)
+        }
+        defaults.set(StyleRewriteStyle.polished.rawValue, forKey: UserDefaultsKeys.selectedVibe)
+
+        let previousText = "Previous dictation."
+        let previousArtifact = DictationUtteranceArtifact(
+            id: UUID(),
+            rawText: previousText,
+            baseText: previousText,
+            selectedText: previousText,
+            selectedStyleIdentifier: nil,
+            baseParagraphsEnabled: false,
+            baseListsEnabled: false,
+            variants: [],
+            deterministicVariants: [
+                DictationDeterministicTextVariantArtifact(
+                    paragraphsEnabled: false,
+                    listsEnabled: false,
+                    text: previousText
+                ),
+                DictationDeterministicTextVariantArtifact(
+                    paragraphsEnabled: true,
+                    listsEnabled: false,
+                    text: "Previous\n\ndictation."
+                )
+            ],
+            inferenceDuration: 0,
+            textTransformationDuration: 0,
+            createdAt: Date()
+        )
+        defaults.set(
+            try JSONEncoder().encode(previousArtifact),
+            forKey: KeyVoxIPCBridge.Key.latestDictationArtifactData
+        )
+
+        let documentProxy = KeyboardDictationChangeDocumentProxySpy()
+        let textInputController = KeyboardTextInputController(
+            documentProxy: documentProxy,
+            emitKeypress: {}
+        )
+        let appSettingsStore = KeyboardAppSettingsStore(defaults: defaults)
+        let controller = KeyboardDictationChangeController(
+            textInputController: textInputController,
+            appSettingsStore: appSettingsStore,
+            artifactStore: KeyboardDictationChangeArtifactStore(defaults: defaults)
+        )
+
+        let currentArtifactID = UUID()
+        let currentOriginalText = "This is the current dictation."
+        let currentPolishedText = "This is the polished current dictation."
+        let insertion = try #require(textInputController.insertTranscriptionWithResult(currentPolishedText))
+        controller.recordInsertedDictation(
+            insertion,
+            artifactID: currentArtifactID,
+            styleIdentifier: StyleRewriteStyle.polished.styleIdentifier
+        )
+
+        #expect(controller.activeSession?.currentStyle == .polished)
+        #expect(controller.isDisplayedVibeAppliedToCurrentInsertion == true)
+
+        let didUseStaleParagraphVariant = await controller.applyDeterministicLongPressChange(
+            .paragraphs,
+            onProcessingStart: {},
+            onProcessingEnd: {}
+        )
+
+        #expect(didUseStaleParagraphVariant == false)
+        #expect(documentProxy.documentContextBeforeInput == currentPolishedText)
+
+        let didUseStaleArtifact = await controller.applyLongPressChange(
+            onProcessingStart: {},
+            onProcessingEnd: {}
+        )
+
+        #expect(didUseStaleArtifact == false)
+        #expect(documentProxy.documentContextBeforeInput == currentPolishedText)
+
+        let currentArtifact = DictationUtteranceArtifact(
+            id: currentArtifactID,
+            rawText: currentOriginalText,
+            baseText: currentOriginalText,
+            selectedText: currentPolishedText,
+            selectedStyleIdentifier: StyleRewriteStyle.polished.styleIdentifier,
+            baseParagraphsEnabled: false,
+            baseListsEnabled: false,
+            variants: [
+                DictationTextVariantArtifact(
+                    styleIdentifier: StyleRewriteStyle.polished.styleIdentifier,
+                    text: currentPolishedText,
+                    duration: 0,
+                    chunkCount: 1,
+                    applied: true,
+                    errors: []
+                )
+            ],
+            deterministicVariants: [],
+            inferenceDuration: 0,
+            textTransformationDuration: 0,
+            createdAt: Date()
+        )
+        defaults.set(
+            try JSONEncoder().encode(currentArtifact),
+            forKey: KeyVoxIPCBridge.Key.latestDictationArtifactData
+        )
+
+        let didRevertCurrentDictation = await controller.applyLongPressChange(
+            onProcessingStart: {},
+            onProcessingEnd: {}
+        )
+
+        #expect(didRevertCurrentDictation == true)
+        #expect(documentProxy.documentContextBeforeInput == currentOriginalText)
     }
 }
 

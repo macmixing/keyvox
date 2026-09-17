@@ -67,13 +67,21 @@ final class KeyVoxKeyboardBridge {
         KeyVoxIPCBridge.touchHeartbeat()
     }
 
-    func publishTranscriptionReady(_ text: String) {
+    func publishTranscriptionReady(
+        _ text: String,
+        id: UUID,
+        styleIdentifier: String?
+    ) {
         #if DEBUG
         if ProcessInfo.processInfo.environment["KVX_DEBUG_LOG_RAW_TEXT"] == "1" {
             print("[KVXKeyboardBridge] transcriptionPayload text=\(text)")
         }
         #endif
-        KeyVoxIPCBridge.setTranscription(text)
+        KeyVoxIPCBridge.setTranscription(
+            text,
+            id: id,
+            styleIdentifier: styleIdentifier
+        )
         KeyVoxIPCBridge.setRecordingState("idle")
         KeyVoxIPCBridge.clearLiveMeter()
         postDarwinNotification(named: KeyVoxIPCBridge.Notification.transcriptionReady)

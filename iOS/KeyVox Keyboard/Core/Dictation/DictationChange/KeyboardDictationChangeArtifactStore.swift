@@ -8,11 +8,16 @@ final class KeyboardDictationChangeArtifactStore {
         self.defaults = defaults
     }
 
-    func latestArtifact() -> DictationUtteranceArtifact? {
+    func latestArtifact(matching id: UUID) -> DictationUtteranceArtifact? {
         guard let data = defaults?.data(forKey: KeyVoxIPCBridge.Key.latestDictationArtifactData) else {
             return nil
         }
 
-        return try? JSONDecoder().decode(DictationUtteranceArtifact.self, from: data)
+        guard let artifact = try? JSONDecoder().decode(DictationUtteranceArtifact.self, from: data),
+              artifact.id == id else {
+            return nil
+        }
+
+        return artifact
     }
 }

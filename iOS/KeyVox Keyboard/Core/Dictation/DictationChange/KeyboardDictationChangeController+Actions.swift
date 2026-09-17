@@ -14,7 +14,9 @@ extension KeyboardDictationChangeController {
         isApplyingChange = true
         defer { isApplyingChange = false }
 
-        guard var session = activeSession else {
+        refreshActiveSessionFromArtifactIfAvailable()
+        guard var session = activeSession,
+              session.artifactID == nil || session.hasLoadedArtifact else {
             return false
         }
 
@@ -148,7 +150,9 @@ extension KeyboardDictationChangeController {
         isApplyingChange = true
         defer { isApplyingChange = false }
 
+        refreshActiveSessionFromArtifactIfAvailable()
         guard var session = activeSession,
+              session.artifactID == nil || session.hasLoadedArtifact,
               let currentState = session.currentDeterministicState else {
             return false
         }
