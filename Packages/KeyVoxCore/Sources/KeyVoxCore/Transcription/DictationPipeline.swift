@@ -203,6 +203,18 @@ public struct DictationPipelineTextProcessingContext: Sendable {
     }
 }
 
+public struct DictationPipelineOutputDelivery: Equatable, Sendable {
+    public let id: UUID
+    public let text: String
+    public let styleIdentifier: String?
+
+    public init(id: UUID, text: String, styleIdentifier: String?) {
+        self.id = id
+        self.text = text
+        self.styleIdentifier = styleIdentifier
+    }
+}
+
 @MainActor
 public final class DictationPipeline {
     private let transcriptionProvider: DictationTranscriptionProviding
@@ -216,6 +228,7 @@ public final class DictationPipeline {
     private let listRenderModeProvider: () -> ListRenderMode
     private let recordSpokenWords: (String) -> Void
     private let pasteText: (String) -> Void
+    private let outputDeliveryHandler: ((DictationPipelineOutputDelivery) -> Void)?
     private let processOutputText: (DictationPipelineTextProcessingContext) async -> DictationPipelineTextProcessingResult
     private let outputProcessingRequiresDeterministicVariantsProvider: () -> Bool
 
@@ -229,6 +242,7 @@ public final class DictationPipeline {
         listRenderModeProvider: @escaping () -> ListRenderMode,
         recordSpokenWords: @escaping (String) -> Void,
         pasteText: @escaping (String) -> Void,
+        outputDeliveryHandler: ((DictationPipelineOutputDelivery) -> Void)? = nil,
         processOutputText: @escaping (String) async -> DictationPipelineTextProcessingResult = {
             .unchanged($0)
         },
@@ -245,6 +259,7 @@ public final class DictationPipeline {
         self.listRenderModeProvider = listRenderModeProvider
         self.recordSpokenWords = recordSpokenWords
         self.pasteText = pasteText
+        self.outputDeliveryHandler = outputDeliveryHandler
         self.processOutputText = processOutputTextWithContext ?? { context in
             await processOutputText(context.baseText)
         }
@@ -254,9 +269,9 @@ public final class DictationPipeline {
     public func run(
         audioFrames: [Float],
         useDictionaryHintPrompt: Bool,
+        utteranceID: UUID = UUID(),
         completion: @escaping (DictationPipelineResult) -> Void
     ) {
-        let utteranceID = UUID()
         let inferenceStart = Date()
         let autoParagraphsEnabled = autoParagraphsEnabledProvider()
         let listFormattingEnabled = listFormattingEnabledProvider()
@@ -389,7 +404,17 @@ public final class DictationPipeline {
 
                 if !outputText.isEmpty {
                     self.recordSpokenWords(outputText)
-                    self.pasteText(outputText)
+                    if let outputDeliveryHandler = self.outputDeliveryHandler {
+                        outputDeliveryHandler(
+                            DictationPipelineOutputDelivery(
+                                id: utteranceID,
+                                text: outputText,
+                                styleIdentifier: output.styleIdentifier
+                            )
+                        )
+                    } else {
+                        self.pasteText(outputText)
+                    }
                 }
 
                 let pasteDuration = outputText.isEmpty ? 0 : Date().timeIntervalSince(pasteStart)

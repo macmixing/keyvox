@@ -13,6 +13,8 @@ enum KeyboardDictationChangeDisplaySource {
 }
 
 struct KeyboardDictationChangeSession {
+    let artifactID: UUID?
+    var hasLoadedArtifact: Bool
     var sourceText: String
     var languageCode: String? = nil
     var originalText: String

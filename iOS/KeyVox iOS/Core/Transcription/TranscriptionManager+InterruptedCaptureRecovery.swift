@@ -79,7 +79,8 @@ extension TranscriptionManager {
 
         let result = await runDictationPipeline(
             audioFrames: payload.audioFrames,
-            useDictionaryHintPrompt: payload.recovery.usedDictionaryHintPrompt
+            useDictionaryHintPrompt: payload.recovery.usedDictionaryHintPrompt,
+            utteranceID: recoveryID
         )
 
         guard !Task.isCancelled,

@@ -141,7 +141,10 @@ final class StyleRewritePipelineCoordinator {
         )
     }
 
-    func recordLatestArtifact(from result: DictationPipelineResult, selectedText: String) {
+    func recordLatestArtifact(
+        from result: DictationPipelineResult,
+        selectedText: String
+    ) {
         guard !result.wasLikelyNoSpeech else {
             artifactStore.clear()
             return

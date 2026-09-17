@@ -74,8 +74,9 @@ final class TranscriptionManager: ObservableObject {
             self?.weeklyWordStatsStore.recordSpokenWords(from: text)
             self?.recordSuccessfulDictation()
         },
-        pasteText: { [weak self] text in
-            self?.capturePipelineOutput(text)
+        pasteText: { _ in },
+        outputDeliveryHandler: { [weak self] delivery in
+            self?.capturePipelineOutput(delivery)
         },
         processOutputTextWithContext: { [weak self] context in
             await self?.processOutputText(context) ?? .unchanged(context.baseText)
@@ -87,12 +88,14 @@ final class TranscriptionManager: ObservableObject {
 
     func runDictationPipeline(
         audioFrames: [Float],
-        useDictionaryHintPrompt: Bool
+        useDictionaryHintPrompt: Bool,
+        utteranceID: UUID
     ) async -> DictationPipelineResult {
         await withCheckedContinuation { continuation in
             dictationPipeline.run(
                 audioFrames: audioFrames,
-                useDictionaryHintPrompt: useDictionaryHintPrompt
+                useDictionaryHintPrompt: useDictionaryHintPrompt,
+                utteranceID: utteranceID
             ) { result in
                 continuation.resume(returning: result)
             }
@@ -362,11 +365,16 @@ final class TranscriptionManager: ObservableObject {
 
         let result = await runDictationPipeline(
             audioFrames: stoppedCapture.outputFrames,
-            useDictionaryHintPrompt: usedDictionaryHintPrompt
+            useDictionaryHintPrompt: usedDictionaryHintPrompt,
+            utteranceID: utteranceID
         )
         let pipelineOutputWasPublished = publishedPipelineOutputUtteranceID == utteranceID
-        immediatePipelineOutputUtteranceID = nil
-        publishedPipelineOutputUtteranceID = nil
+        if immediatePipelineOutputUtteranceID == utteranceID {
+            immediatePipelineOutputUtteranceID = nil
+        }
+        if publishedPipelineOutputUtteranceID == utteranceID {
+            publishedPipelineOutputUtteranceID = nil
+        }
 
         guard utteranceID == activeUtteranceID else {
             await releaseStyleRewritePrewarmSession("stale-result")
@@ -402,7 +410,11 @@ final class TranscriptionManager: ObservableObject {
             #endif
             lastTranscriptionText = finalText
             if !pipelineOutputWasPublished {
-                keyboardBridge.publishTranscriptionReady(finalText)
+                keyboardBridge.publishTranscriptionReady(
+                    finalText,
+                    id: result.id,
+                    styleIdentifier: result.textTransformationStyleIdentifier
+                )
             }
             commandResult = .completed(finalText)
         }
@@ -462,12 +474,19 @@ final class TranscriptionManager: ObservableObject {
         isModelAvailable = modelAvailabilityProvider()
     }
 
-    private func capturePipelineOutput(_ text: String) {
-        pendingPipelineOutputText = text
-        guard immediatePipelineOutputUtteranceID == activeUtteranceID else { return }
-        lastTranscriptionText = text
-        keyboardBridge.publishTranscriptionReady(text)
-        publishedPipelineOutputUtteranceID = immediatePipelineOutputUtteranceID
+    private func capturePipelineOutput(_ delivery: DictationPipelineOutputDelivery) {
+        guard delivery.id == activeUtteranceID,
+              delivery.id == immediatePipelineOutputUtteranceID else {
+            return
+        }
+        pendingPipelineOutputText = delivery.text
+        lastTranscriptionText = delivery.text
+        keyboardBridge.publishTranscriptionReady(
+            delivery.text,
+            id: delivery.id,
+            styleIdentifier: delivery.styleIdentifier
+        )
+        publishedPipelineOutputUtteranceID = delivery.id
     }
 
     #if DEBUG
