@@ -6,6 +6,22 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.3.3] - 2026-09-17
+
+Dictation output deliveries now preserve the identity and transformation style of the utterance that produced them, allowing clients to reject late output from cancelled requests.
+
+### Includes
+
+- Accepted a caller-provided utterance identifier for each pipeline run and retained it in the completed pipeline result.
+- Added a structured early-output delivery containing the originating identifier, selected text, and applied style while preserving the existing text-only callback for current clients.
+- Added regression coverage for caller-owned identity and style propagation through early output delivery.
+
+### Notes
+
+- `1.3.3` tracks producer-owned dictation identity propagation for clients that need deterministic stale-result rejection.
+
+---
+
 ## [1.3.2] - 2026-09-15
 
 Stylized dictionary entries now match lowercase possessive near-misses while preserving the possessive suffix.
