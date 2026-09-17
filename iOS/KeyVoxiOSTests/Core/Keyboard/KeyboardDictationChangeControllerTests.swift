@@ -643,15 +643,12 @@ struct KeyboardDictationChangeControllerTests {
     }
 
     @Test func dictationChangesNeverUseArtifactFromPreviousDictation() async throws {
-        setenv("KEYVOX_BYPASS_VIBES_TRIAL", "1", 1)
-        defer {
-            unsetenv("KEYVOX_BYPASS_VIBES_TRIAL")
-        }
         let suiteName = "KeyboardDictationChangeControllerTests-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suiteName))
         defer {
             defaults.removePersistentDomain(forName: suiteName)
         }
+        defaults.set(true, forKey: UserDefaultsKeys.App.isVibesUnlocked)
         defaults.set(StyleRewriteStyle.polished.rawValue, forKey: UserDefaultsKeys.selectedVibe)
 
         let previousText = "Previous dictation."
@@ -690,7 +687,10 @@ struct KeyboardDictationChangeControllerTests {
             documentProxy: documentProxy,
             emitKeypress: {}
         )
-        let appSettingsStore = KeyboardAppSettingsStore(defaults: defaults)
+        let appSettingsStore = KeyboardAppSettingsStore(
+            defaults: defaults,
+            isVibesAIInstalledProvider: { true }
+        )
         let controller = KeyboardDictationChangeController(
             textInputController: textInputController,
             appSettingsStore: appSettingsStore,

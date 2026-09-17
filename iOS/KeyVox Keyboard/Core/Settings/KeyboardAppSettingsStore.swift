@@ -7,9 +7,16 @@ final class KeyboardAppSettingsStore {
     }
 
     private let defaults: UserDefaults?
+    private let isVibesAIInstalledProvider: () -> Bool
 
-    init(defaults: UserDefaults? = UserDefaults(suiteName: KeyVoxIPCBridge.appGroupID)) {
+    init(
+        defaults: UserDefaults? = UserDefaults(suiteName: KeyVoxIPCBridge.appGroupID),
+        isVibesAIInstalledProvider: @escaping () -> Bool = {
+            KeyboardModelAvailability.isVibesAIInstalled()
+        }
+    ) {
         self.defaults = defaults
+        self.isVibesAIInstalledProvider = isVibesAIInstalledProvider
     }
 
     var selectedVibeTitle: String {
@@ -25,7 +32,7 @@ final class KeyboardAppSettingsStore {
     }
 
     var isVibesAIInstalled: Bool {
-        KeyboardModelAvailability.isVibesAIInstalled()
+        isVibesAIInstalledProvider()
     }
 
     var canUseVibes: Bool {
