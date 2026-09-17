@@ -143,8 +143,7 @@ final class StyleRewritePipelineCoordinator {
 
     func recordLatestArtifact(
         from result: DictationPipelineResult,
-        selectedText: String,
-        deliveryID: UUID
+        selectedText: String
     ) {
         guard !result.wasLikelyNoSpeech else {
             artifactStore.clear()
@@ -169,7 +168,7 @@ final class StyleRewritePipelineCoordinator {
 
         artifactStore.save(
             DictationUtteranceArtifact(
-                id: deliveryID,
+                id: result.id,
                 languageCode: result.languageCode,
                 rawText: result.rawText,
                 baseText: result.baseText,

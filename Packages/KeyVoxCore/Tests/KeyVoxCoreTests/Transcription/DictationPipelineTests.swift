@@ -4,6 +4,57 @@ import KeyVoxLinguistics
 
 @MainActor
 final class DictationPipelineTests: LinguisticAnalyzerTestCase {
+    func testPipelineDeliversProcessedOutputWithCallerUtteranceIdentity() async throws {
+        let provider = StubTranscriptionProvider(
+            result: .init(text: "source", languageCode: "en", paragraphsText: nil, inlineText: nil)
+        )
+        let utteranceID = UUID()
+        let transformedText = UUID().uuidString
+        let styleIdentifier = UUID().uuidString
+        var deliveredOutput: DictationPipelineOutputDelivery?
+        var legacyPastedText: String?
+        let pipeline = DictationPipeline(
+            transcriptionProvider: provider,
+            postProcessor: TranscriptionPostProcessor(),
+            dictionaryEntriesProvider: { [] },
+            autoParagraphsEnabledProvider: { false },
+            listFormattingEnabledProvider: { false },
+            listRenderModeProvider: { .singleLineInline },
+            recordSpokenWords: { _ in },
+            pasteText: { legacyPastedText = $0 },
+            outputDeliveryHandler: { deliveredOutput = $0 },
+            processOutputText: { _ in
+                DictationPipelineTextProcessingResult(
+                    text: transformedText,
+                    duration: 0,
+                    applied: true,
+                    styleIdentifier: styleIdentifier,
+                    chunkCount: 1,
+                    errorDescription: nil,
+                    errors: []
+                )
+            }
+        )
+
+        let result = await runPipeline(
+            pipeline,
+            audioFrames: Array(repeating: Float(0.1), count: 32),
+            useDictionaryHintPrompt: false,
+            utteranceID: utteranceID
+        )
+
+        XCTAssertEqual(result.id, utteranceID)
+        XCTAssertEqual(
+            deliveredOutput,
+            DictationPipelineOutputDelivery(
+                id: utteranceID,
+                text: transformedText,
+                styleIdentifier: styleIdentifier
+            )
+        )
+        XCTAssertNil(legacyPastedText)
+    }
+
     func testPipelineProcessesAndPastesFormattedText() async throws {
         let provider = StubTranscriptionProvider(
             result: .init(text: "project notes one cue board two cue board", languageCode: "en", paragraphsText: nil, inlineText: nil)
@@ -698,10 +749,15 @@ final class DictationPipelineTests: LinguisticAnalyzerTestCase {
     private func runPipeline(
         _ pipeline: DictationPipeline,
         audioFrames: [Float],
-        useDictionaryHintPrompt: Bool
+        useDictionaryHintPrompt: Bool,
+        utteranceID: UUID = UUID()
     ) async -> DictationPipelineResult {
         await withCheckedContinuation { continuation in
-            pipeline.run(audioFrames: audioFrames, useDictionaryHintPrompt: useDictionaryHintPrompt) {
+            pipeline.run(
+                audioFrames: audioFrames,
+                useDictionaryHintPrompt: useDictionaryHintPrompt,
+                utteranceID: utteranceID
+            ) {
                 continuation.resume(returning: $0)
             }
         }

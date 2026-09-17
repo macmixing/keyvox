@@ -37,7 +37,7 @@ final class TranscriptionManager: ObservableObject {
     private let capsLockEnabledProvider: () -> Bool
     private let processOutputText: (DictationPipelineTextProcessingContext) async -> DictationPipelineTextProcessingResult
     private let outputProcessingRequiresDeterministicVariantsProvider: () -> Bool
-    private let recordPipelineResult: (DictationPipelineResult, String, UUID) -> Void
+    private let recordPipelineResult: (DictationPipelineResult, String) -> Void
     private let recordSuccessfulDictation: () -> Void
     private let prewarmStyleRewriteForUpcomingDictation: () -> Void
     let releaseStyleRewritePrewarmSession: @MainActor (String) async -> Void
@@ -53,7 +53,6 @@ final class TranscriptionManager: ObservableObject {
     var activeInterruptedCaptureRecoveryID: UUID?
     var immediatePipelineOutputUtteranceID: UUID?
     var publishedPipelineOutputUtteranceID: UUID?
-    var pendingPipelineOutputStyleIdentifier: String?
 
     lazy var dictationPipeline = DictationPipeline(
         transcriptionProvider: transcriptionService,
@@ -75,14 +74,12 @@ final class TranscriptionManager: ObservableObject {
             self?.weeklyWordStatsStore.recordSpokenWords(from: text)
             self?.recordSuccessfulDictation()
         },
-        pasteText: { [weak self] text in
-            self?.capturePipelineOutput(text)
+        pasteText: { _ in },
+        outputDeliveryHandler: { [weak self] delivery in
+            self?.capturePipelineOutput(delivery)
         },
         processOutputTextWithContext: { [weak self] context in
-            guard let self else { return .unchanged(context.baseText) }
-            let result = await self.processOutputText(context)
-            self.pendingPipelineOutputStyleIdentifier = result.styleIdentifier
-            return result
+            await self?.processOutputText(context) ?? .unchanged(context.baseText)
         },
         outputProcessingRequiresDeterministicVariantsProvider: { [weak self] in
             self?.outputProcessingRequiresDeterministicVariantsProvider() ?? false
@@ -91,12 +88,14 @@ final class TranscriptionManager: ObservableObject {
 
     func runDictationPipeline(
         audioFrames: [Float],
-        useDictionaryHintPrompt: Bool
+        useDictionaryHintPrompt: Bool,
+        utteranceID: UUID
     ) async -> DictationPipelineResult {
         await withCheckedContinuation { continuation in
             dictationPipeline.run(
                 audioFrames: audioFrames,
-                useDictionaryHintPrompt: useDictionaryHintPrompt
+                useDictionaryHintPrompt: useDictionaryHintPrompt,
+                utteranceID: utteranceID
             ) { result in
                 continuation.resume(returning: result)
             }
@@ -121,7 +120,7 @@ final class TranscriptionManager: ObservableObject {
             .unchanged($0.baseText)
         },
         outputProcessingRequiresDeterministicVariantsProvider: @escaping () -> Bool = { false },
-        recordPipelineResult: @escaping (DictationPipelineResult, String, UUID) -> Void = { _, _, _ in },
+        recordPipelineResult: @escaping (DictationPipelineResult, String) -> Void = { _, _ in },
         recordSuccessfulDictation: @escaping () -> Void = {},
         prewarmStyleRewriteForUpcomingDictation: @escaping () -> Void = {},
         releaseStyleRewritePrewarmSession: @escaping @MainActor (String) async -> Void = { _ in },
@@ -360,18 +359,22 @@ final class TranscriptionManager: ObservableObject {
         )
 
         pendingPipelineOutputText = nil
-        pendingPipelineOutputStyleIdentifier = nil
         immediatePipelineOutputUtteranceID = utteranceID
         state = .transcribing
         keyboardBridge.publishTranscribing()
 
         let result = await runDictationPipeline(
             audioFrames: stoppedCapture.outputFrames,
-            useDictionaryHintPrompt: usedDictionaryHintPrompt
+            useDictionaryHintPrompt: usedDictionaryHintPrompt,
+            utteranceID: utteranceID
         )
         let pipelineOutputWasPublished = publishedPipelineOutputUtteranceID == utteranceID
-        immediatePipelineOutputUtteranceID = nil
-        publishedPipelineOutputUtteranceID = nil
+        if immediatePipelineOutputUtteranceID == utteranceID {
+            immediatePipelineOutputUtteranceID = nil
+        }
+        if publishedPipelineOutputUtteranceID == utteranceID {
+            publishedPipelineOutputUtteranceID = nil
+        }
 
         guard utteranceID == activeUtteranceID else {
             await releaseStyleRewritePrewarmSession("stale-result")
@@ -386,7 +389,7 @@ final class TranscriptionManager: ObservableObject {
         pendingPipelineOutputText = nil
         lastErrorMessage = nil
         state = .idle
-        recordPipelineResult(result, finalText, utteranceID)
+        recordPipelineResult(result, finalText)
 
         let commandResult: TranscriptionStopCommandResult
         if result.wasLikelyNoSpeech || finalText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
@@ -409,7 +412,7 @@ final class TranscriptionManager: ObservableObject {
             if !pipelineOutputWasPublished {
                 keyboardBridge.publishTranscriptionReady(
                     finalText,
-                    id: utteranceID,
+                    id: result.id,
                     styleIdentifier: result.textTransformationStyleIdentifier
                 )
             }
@@ -471,16 +474,19 @@ final class TranscriptionManager: ObservableObject {
         isModelAvailable = modelAvailabilityProvider()
     }
 
-    private func capturePipelineOutput(_ text: String) {
-        pendingPipelineOutputText = text
-        guard immediatePipelineOutputUtteranceID == activeUtteranceID else { return }
-        lastTranscriptionText = text
+    private func capturePipelineOutput(_ delivery: DictationPipelineOutputDelivery) {
+        guard delivery.id == activeUtteranceID,
+              delivery.id == immediatePipelineOutputUtteranceID else {
+            return
+        }
+        pendingPipelineOutputText = delivery.text
+        lastTranscriptionText = delivery.text
         keyboardBridge.publishTranscriptionReady(
-            text,
-            id: activeUtteranceID,
-            styleIdentifier: pendingPipelineOutputStyleIdentifier
+            delivery.text,
+            id: delivery.id,
+            styleIdentifier: delivery.styleIdentifier
         )
-        publishedPipelineOutputUtteranceID = immediatePipelineOutputUtteranceID
+        publishedPipelineOutputUtteranceID = delivery.id
     }
 
     #if DEBUG
