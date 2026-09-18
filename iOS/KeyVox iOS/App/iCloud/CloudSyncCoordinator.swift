@@ -174,9 +174,9 @@ final class CloudSyncCoordinator {
 
     private func bootstrapDictionary() -> Bool {
         let localEntries = dictionaryStore.entries
-        let localModifiedAt = inferredLocalDictionaryModifiedAt()
+        let hasLocalSnapshot = dictionaryStore.persistedSnapshotModifiedAt != nil
+        let localModifiedAt = hasLocalSnapshot ? inferredLocalDictionaryModifiedAt() : nil
         let remotePayload = loadRemoteDictionaryPayload()
-        let hasLocalSnapshot = localModifiedAt != nil
         let hasExistingCloudInstallation =
             ubiquitousStore.object(forKey: KeyVoxiCloudKeys.hasInstalledKeyVox) as? Bool == true
 
@@ -372,6 +372,10 @@ final class CloudSyncCoordinator {
 
     private func applyRemoteDictionaryIfNewer() {
         guard let payload = loadRemoteDictionaryPayload() else { return }
+        guard dictionaryStore.persistedSnapshotModifiedAt != nil else {
+            applyRemoteDictionary(payload)
+            return
+        }
         let localModifiedAt = dictionaryModifiedAt() ?? .distantPast
         guard payload.modifiedAt > localModifiedAt else { return }
         applyRemoteDictionary(payload)
@@ -382,7 +386,8 @@ final class CloudSyncCoordinator {
         defer { isApplyingRemoteDictionary = false }
 
         do {
-            if dictionaryStore.entries != payload.entries {
+            if dictionaryStore.entries != payload.entries
+                || dictionaryStore.persistedSnapshotModifiedAt == nil {
                 try dictionaryStore.replaceAll(entries: payload.entries)
             }
             setLocalDictionaryModifiedAt(payload.modifiedAt)
