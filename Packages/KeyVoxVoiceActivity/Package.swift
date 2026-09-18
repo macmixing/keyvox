@@ -4,7 +4,7 @@ import PackageDescription
 let package = Package(
     name: "KeyVoxVoiceActivity",
     platforms: [
-        .macOS(.v13),
+        .macOS("13.3"),
         .iOS("18.0"),
     ],
     products: [
