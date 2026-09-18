@@ -6,6 +6,21 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.1.1] - 2026-09-18
+
+The Apple speech runtime now uses the upstream Whisper.cpp v1.9.4 engine.
+
+### Includes
+
+- Updated the bundled Apple Whisper XCFramework from v1.7.6 to upstream build b5130 for v1.9.4.
+- Included upstream timestamp parsing and runtime corrections while preserving the existing package API and supported Apple platforms.
+
+### Notes
+
+- `1.1.1` is a patch-level dependency update and does not change the public `KeyVoxVoiceActivity` API.
+
+---
+
 ## [1.1.0] - 2026-09-12
 
 The shared speech runtime now supports portable Whisper and voice-activity consumers.
