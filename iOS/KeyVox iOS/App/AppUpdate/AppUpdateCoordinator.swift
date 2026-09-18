@@ -123,25 +123,20 @@ final class AppUpdateCoordinator: ObservableObject {
 
     private func syncPresentationState() {
         guard let currentVersion = currentAppVersion else {
-            KeyVoxIPCBridge.setAppUpdateRequired(false)
             activePrompt = nil
             return
         }
 
         guard let cachedDecision else {
-            KeyVoxIPCBridge.setAppUpdateRequired(false)
             activePrompt = nil
             return
         }
 
         guard currentVersion < cachedDecision.release.version else {
             clearCachedDecision()
-            KeyVoxIPCBridge.setAppUpdateRequired(false)
             activePrompt = nil
             return
         }
-
-        KeyVoxIPCBridge.setAppUpdateRequired(cachedDecision.urgency == .forced)
 
         if cachedDecision.urgency == .forced {
             activePrompt = Prompt(decision: cachedDecision)

@@ -281,8 +281,7 @@ final class KeyboardViewController: UIInputViewController {
         KeyboardToolbarMode.resolve(
             modelAvailability: KeyboardDictationModelStatus.availability(),
             hasFullAccess: hasFullAccess,
-            hasMicrophonePermission: hasMicrophonePermission,
-            isUpdateRequired: KeyVoxIPCBridge.isAppUpdateRequired()
+            hasMicrophonePermission: hasMicrophonePermission
         )
     }
 

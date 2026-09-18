@@ -6,8 +6,7 @@ struct KeyboardToolbarModeTests {
         let mode = KeyboardToolbarMode.resolve(
             modelAvailability: .ready,
             hasFullAccess: true,
-            hasMicrophonePermission: true,
-            isUpdateRequired: false
+            hasMicrophonePermission: true
         )
 
         #expect(mode == .branded)
@@ -18,14 +17,12 @@ struct KeyboardToolbarModeTests {
         let fullAccessMode = KeyboardToolbarMode.resolve(
             modelAvailability: .ready,
             hasFullAccess: false,
-            hasMicrophonePermission: true,
-            isUpdateRequired: false
+            hasMicrophonePermission: true
         )
         let microphoneMode = KeyboardToolbarMode.resolve(
             modelAvailability: .ready,
             hasFullAccess: true,
-            hasMicrophonePermission: false,
-            isUpdateRequired: false
+            hasMicrophonePermission: false
         )
 
         #expect(fullAccessMode == .fullAccessWarning)
