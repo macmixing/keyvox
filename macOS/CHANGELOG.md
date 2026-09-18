@@ -6,6 +6,33 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.3.11] - 2026-09-17
+
+Protects cloud dictionary data during restore recovery and restores multiline dictation changes in Electron editors.
+
+### Fixed
+
+- Fixed paragraph and list changes reverting in Electron-based editors when accessibility text includes an invisible structural marker at an expected line break.
+- Fixed restored timestamps without a local dictionary snapshot overwriting existing iCloud dictionary data; matching cloud snapshots are now accepted and persisted when local dictionary storage is missing.
+
+### Package versions
+
+KeyVox macOS 1.3.11:
+- KeyVoxCore            1.3.2
+- KeyVoxLinguistics     1.0.0
+- KeyVoxLocalInference  1.0.4
+- KeyVoxModels          1.0.0
+- KeyVoxParakeet        1.1.0
+- KeyVoxPromotions      1.1.0
+- KeyVoxState           1.0.0
+- KeyVoxStyleRewrite    1.1.0
+- KeyVoxTextComposition 1.1.0
+- KeyVoxVibesAdapters   1.0.4
+- KeyVoxVoiceActivity   1.1.0
+- KeyVoxWhisper         1.2.0
+
+---
+
 ## [1.3.10] - 2026-09-15
 
 Speeds up long dictations and improves recording-overlay, punctuation, dictionary, and modifier-trigger reliability.
