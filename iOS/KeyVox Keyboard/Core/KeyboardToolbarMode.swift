@@ -7,13 +7,11 @@ enum KeyboardToolbarMode: Equatable {
     case dictationModelActionWarning(String)
     case fullAccessWarning
     case microphoneWarning
-    case updateRequiredWarning
 
     static func resolve(
         modelAvailability: KeyboardDictationModelStatus.Availability,
         hasFullAccess: Bool,
-        hasMicrophonePermission: Bool,
-        isUpdateRequired: Bool
+        hasMicrophonePermission: Bool
     ) -> KeyboardToolbarMode {
         switch modelAvailability {
         case .ready:
@@ -22,10 +20,6 @@ enum KeyboardToolbarMode: Equatable {
             return .dictationModelWarning
         case .actionRequired(let message):
             return .dictationModelActionWarning(message)
-        }
-
-        guard isUpdateRequired == false else {
-            return .updateRequiredWarning
         }
 
         guard hasFullAccess else {
@@ -49,8 +43,6 @@ enum KeyboardToolbarMode: Equatable {
             return "Allow Full Access for dictation"
         case .microphoneWarning:
             return "Allow Microphone Access for dictation"
-        case .updateRequiredWarning:
-            return "Update KeyVox to keep using dictation"
         case .hidden, .branded:
             return nil
         }
