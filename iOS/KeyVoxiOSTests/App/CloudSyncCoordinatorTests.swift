@@ -128,6 +128,56 @@ struct CloudSyncCoordinatorTests {
         #expect(harness.defaults.object(forKey: UserDefaultsKeys.iCloud.dictionaryLastModifiedAt) as? Date == remoteDate)
     }
 
+    @Test func restoredTimestampWithoutDictionaryDoesNotOverwriteUnavailableCloud() async throws {
+        let restoredDate = makeDate(year: 2026, month: 3, day: 8, hour: 11)
+        let harness = try makeHarness(now: restoredDate)
+        defer { harness.cleanup() }
+        harness.defaults.set(restoredDate, forKey: UserDefaultsKeys.iCloud.dictionaryLastModifiedAt)
+        harness.cloudStore.seedValue(true, forKey: KeyVoxiCloudKeys.hasInstalledKeyVox)
+
+        let coordinator = makeCoordinator(harness: harness)
+        _ = coordinator
+
+        #expect(harness.dictionaryStore.entries.isEmpty)
+        #expect(harness.dictionaryStore.persistedSnapshotModifiedAt == nil)
+        #expect(harness.cloudStore.dictionaryPayload() == nil)
+    }
+
+    @Test func restoredTimestampWithoutDictionaryAcceptsMatchingCloudSnapshot() async throws {
+        let restoredDate = makeDate(year: 2026, month: 3, day: 8, hour: 12)
+        let harness = try makeHarness(now: restoredDate)
+        defer { harness.cleanup() }
+        harness.defaults.set(restoredDate, forKey: UserDefaultsKeys.iCloud.dictionaryLastModifiedAt)
+        try harness.cloudStore.seedDictionary(
+            entries: [DictionaryInitialEntries.keyVox],
+            modifiedAt: restoredDate
+        )
+
+        let coordinator = makeCoordinator(harness: harness)
+        _ = coordinator
+
+        #expect(harness.dictionaryStore.entries == [DictionaryInitialEntries.keyVox])
+        #expect(harness.dictionaryStore.persistedSnapshotModifiedAt != nil)
+    }
+
+    @Test func restoredTimestampWithoutDictionaryAcceptsMatchingCloudSnapshotAfterBootstrap() async throws {
+        let restoredDate = makeDate(year: 2026, month: 3, day: 8, hour: 13)
+        let harness = try makeHarness(now: restoredDate)
+        defer { harness.cleanup() }
+        harness.defaults.set(restoredDate, forKey: UserDefaultsKeys.iCloud.dictionaryLastModifiedAt)
+        harness.cloudStore.seedValue(true, forKey: KeyVoxiCloudKeys.hasInstalledKeyVox)
+
+        let coordinator = makeCoordinator(harness: harness)
+        try harness.cloudStore.seedDictionary(
+            entries: [DictionaryInitialEntries.keyVox],
+            modifiedAt: restoredDate
+        )
+        coordinator.processExternalChanges(for: [KeyVoxiCloudKeys.dictionaryPayload])
+
+        #expect(harness.dictionaryStore.entries == [DictionaryInitialEntries.keyVox])
+        #expect(harness.dictionaryStore.persistedSnapshotModifiedAt != nil)
+    }
+
     @Test func newerCloudDictionaryWins() async throws {
         let localDate = makeDate(year: 2026, month: 3, day: 7, hour: 8)
         let remoteDate = makeDate(year: 2026, month: 3, day: 9, hour: 8)
