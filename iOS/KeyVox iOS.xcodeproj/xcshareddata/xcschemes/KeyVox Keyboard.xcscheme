@@ -31,6 +31,7 @@
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "8E9E38512F5BF1F000EAFA72"
                BuildableName = "KeyVox iOS.app"
+               BlueprintName = "KeyVox iOS"
                ReferencedContainer = "container:KeyVox iOS.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -78,6 +79,7 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "8E9E38512F5BF1F000EAFA72"
             BuildableName = "KeyVox iOS.app"
+            BlueprintName = "KeyVox iOS"
             ReferencedContainer = "container:KeyVox iOS.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -96,6 +98,7 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "8E9E38512F5BF1F000EAFA72"
             BuildableName = "KeyVox iOS.app"
+            BlueprintName = "KeyVox iOS"
             ReferencedContainer = "container:KeyVox iOS.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>

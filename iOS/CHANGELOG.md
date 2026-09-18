@@ -6,6 +6,38 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.4.4] - 2026-09-17
+
+Keeps dictation changes attached to the current insertion, preserves keyboard access during required updates, and protects cloud dictionary data during restore recovery.
+
+### Changed
+
+- Kept keyboard dictation available when an app update is required while preserving the permanent update prompt in the containing app.
+
+### Fixed
+
+- Fixed Paragraph, List, and Vibe changes using output from a previous dictation when the current dictation's supporting data arrives late, while preserving the applied Vibe indicator until the matching data is available.
+- Fixed restored timestamps without a local dictionary snapshot overwriting existing iCloud dictionary data; matching cloud snapshots are now accepted and persisted when local dictionary storage is missing.
+
+### Package versions
+
+KeyVox iOS 1.4.4
+  KeyVoxCore            1.3.2
+  KeyVoxLinguistics     1.0.0
+  KeyVoxLocalInference  1.0.4
+  KeyVoxModels          1.0.0
+  KeyVoxParakeet        1.1.0
+  KeyVoxPromotions      1.1.0
+  KeyVoxState           1.0.0
+  KeyVoxStyleRewrite    1.1.0
+  KeyVoxTTS             1.1.0
+  KeyVoxTextComposition 1.1.0
+  KeyVoxVibesAdapters   1.0.4
+  KeyVoxVoiceActivity   1.1.0
+  KeyVoxWhisper         1.2.0
+
+---
+
 ## [1.4.3] - 2026-09-15
 
 Adds clearer keyboard feedback when dictation cannot start, improves language selection in Settings, and restores possessive matching for stylized dictionary entries.
