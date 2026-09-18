@@ -2,7 +2,7 @@
 import PackageDescription
 let package = Package(
     name: "KeyVoxAndroidEngine",
-    platforms: [.macOS(.v13)],
+    platforms: [.macOS("13.3")],
     products: [.library(name: "KeyVoxAndroidEngine", type: .dynamic, targets: ["KeyVoxAndroidEngine"])],
     dependencies: [
         .package(path: "../../Packages/KeyVoxCore"),

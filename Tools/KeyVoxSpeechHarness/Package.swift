@@ -3,7 +3,7 @@ import PackageDescription
 
 let package = Package(
     name: "KeyVoxSpeechHarness",
-    platforms: [.macOS(.v13)],
+    platforms: [.macOS("13.3")],
     dependencies: [
         .package(path: "../../Packages/KeyVoxModels"),
         .package(path: "../../Packages/KeyVoxCore"),
