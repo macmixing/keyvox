@@ -102,10 +102,9 @@ extension DictionaryMatcher {
             let candidateToken = candidate.tokens[0]
             let candidateIsCommonWord = lexicon.isCommonWord(candidateToken)
 
-            // If the first token already matches the single-token candidate
-            // exactly, split-join must not consume the following token
-            // (e.g. "KeyVox, and" -> "KeyVox" or "KeyVox bug" -> "KeyVox").
-            if window[0].normalized == candidateToken {
+            // If either token already matches the single-token candidate exactly,
+            // split-join must not consume its neighboring word.
+            if window.contains(where: { $0.normalized == candidateToken }) {
                 continue
             }
 

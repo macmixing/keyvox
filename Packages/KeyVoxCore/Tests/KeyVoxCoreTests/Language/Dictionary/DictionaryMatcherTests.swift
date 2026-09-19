@@ -233,6 +233,15 @@ final class DictionaryMatcherTests: LinguisticAnalyzerTestCase {
         XCTAssertEqual(result.text, "My app is called KeyVox.")
     }
 
+    func testDoesNotConsumePrecedingWordWhenStylizedEntryAlreadyMatchesExactly() async {
+        let matcher = makeRuntimeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "GoFundMe")])
+
+        let input = "Did you try to add GoFundMe?"
+
+        XCTAssertEqual(matcher.apply(to: input).text, input)
+    }
+
     func testSplitStylizedBrandDoesNotInferPossessionFromIntrinsicEnding() async {
         let matcher = makeRuntimeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "KeyVox")])
