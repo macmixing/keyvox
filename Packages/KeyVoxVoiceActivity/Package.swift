@@ -4,7 +4,7 @@ import PackageDescription
 let package = Package(
     name: "KeyVoxVoiceActivity",
     platforms: [
-        .macOS(.v13),
+        .macOS("13.3"),
         .iOS("18.0"),
     ],
     products: [
@@ -20,8 +20,8 @@ let package = Package(
     targets: [
         .binaryTarget(
             name: "whisper",
-            url: "https://github.com/ggml-org/whisper.cpp/releases/download/v1.7.6/whisper-v1.7.6-xcframework.zip",
-            checksum: "9fcb28106d0b94a525e59bec057e35b57033195ac7408d7e1ab8e4b597cdfeb5"
+            url: "https://github.com/ggml-org/whisper.cpp/releases/download/b5130/whisper-b5130-xcframework.zip",
+            checksum: "033a43b0174e8cf9b366f72e4a428cdcf126f93ad1c87d3fa119a96bed6f231a"
         ),
         .target(
             name: "KeyVoxSpeechRuntime",

@@ -5,7 +5,7 @@ import PackageDescription
 let package = Package(
     name: "KeyVoxWhisper",
     platforms: [
-        .macOS(.v13),
+        .macOS("13.3"),
         .iOS("18.0"),
     ],
     products: [
