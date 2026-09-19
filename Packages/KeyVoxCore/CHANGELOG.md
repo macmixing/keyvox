@@ -6,6 +6,21 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.3.4] - 2026-09-18
+
+Exact single-token dictionary matches no longer consume a neighboring word during split-word correction.
+
+### Includes
+
+- Prevented split-join matching from replacing a two-word span when either word already exactly matches the dictionary entry.
+- Added regression coverage for preserving the word immediately before an exact stylized dictionary match.
+
+### Notes
+
+- `1.3.4` tracks safer split-join boundaries for exact dictionary matches in the shared Core engine.
+
+---
+
 ## [1.3.3] - 2026-09-17
 
 Dictation output deliveries now preserve the identity and transformation style of the utterance that produced them, allowing clients to reject late output from cancelled requests.
