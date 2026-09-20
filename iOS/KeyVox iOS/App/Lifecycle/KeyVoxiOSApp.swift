@@ -1,3 +1,4 @@
+import Combine
 import SwiftUI
 import UIKit
 import KeyVoxCore
@@ -104,6 +105,9 @@ struct KeyVoxApp: App {
                 .environmentObject(promotionCenter)
                 .environmentObject(dictionaryStore)
                 .onChange(of: scenePhase, initial: true) { _, newPhase in
+                    onboardingStore.resolvePersistentStateIfPossible(
+                        isProtectedDataAvailable: UIApplication.shared.isProtectedDataAvailable
+                    )
                     Self.log("scenePhase=\(String(describing: newPhase))")
                     switch newPhase {
                     case .active:
@@ -161,6 +165,13 @@ struct KeyVoxApp: App {
                     @unknown default:
                         break
                     }
+                }
+                .onReceive(NotificationCenter.default.publisher(
+                    for: UIApplication.protectedDataDidBecomeAvailableNotification
+                )) { _ in
+                    onboardingStore.resolvePersistentStateIfPossible(
+                        isProtectedDataAvailable: true
+                    )
                 }
                 .onOpenURL { url in
                     if let route = KeyVoxURLRoute(url: url) {

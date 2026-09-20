@@ -34,7 +34,8 @@ struct AppRootView: View {
     @State private var isDescendantBlockingReviewRequest = false
 
     private var destination: RootDestination {
-        if !appLaunchRouteStore.hasResolvedInitialLaunchContext {
+        if !appLaunchRouteStore.hasResolvedInitialLaunchContext
+            || !onboardingStore.hasResolvedPersistentState {
             return .launchHold
         }
 

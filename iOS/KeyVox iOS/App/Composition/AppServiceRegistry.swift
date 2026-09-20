@@ -1,6 +1,7 @@
 import AVFAudio
 import Combine
 import Foundation
+import UIKit
 import KeyVoxCore
 import KeyVoxLinguistics
 import KeyVoxLocalInference
@@ -73,7 +74,11 @@ final class AppServiceRegistry {
             baseDirectoryURL: dictionaryBaseDirectory
         )
         let runtimeFlags = RuntimeFlags()
-        let onboardingStore = OnboardingStore(defaults: settingsDefaults, runtimeFlags: runtimeFlags)
+        let onboardingStore = OnboardingStore(
+            defaults: settingsDefaults,
+            runtimeFlags: runtimeFlags,
+            isProtectedDataAvailable: UIApplication.shared.isProtectedDataAvailable
+        )
         let dictationShortcutSetupIntroController = DictationShortcutSetupIntroController(
             defaults: settingsDefaults
         )
@@ -341,7 +346,8 @@ final class AppServiceRegistry {
             settingsStore: settingsStore,
             dictionaryStore: dictionaryStore,
             defaults: settingsDefaults,
-            hasExistingLocalInstallation: onboardingStore.hasCompletedOnboarding,
+            hasExistingLocalInstallation: !onboardingStore.hasResolvedPersistentState
+                || onboardingStore.hasCompletedOnboarding,
             forceFreshDictionaryInstall: runtimeFlags.forceFreshDictionaryInstall
         )
         let weeklyWordStatsCloudSync = WeeklyWordStatsCloudSync(
