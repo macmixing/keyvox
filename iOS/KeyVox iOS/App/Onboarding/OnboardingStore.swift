@@ -4,20 +4,25 @@ import KeyVoxCore
 
 @MainActor
 final class OnboardingStore: ObservableObject {
+    @Published private(set) var hasResolvedPersistentState: Bool
+
     @Published private(set) var hasCompletedOnboarding: Bool {
         didSet {
+            guard !isRestoringPersistentState else { return }
             defaults.set(hasCompletedOnboarding, forKey: UserDefaultsKeys.App.hasCompletedOnboarding)
         }
     }
 
     @Published private(set) var hasCompletedWelcomeScreen: Bool {
         didSet {
+            guard !isRestoringPersistentState else { return }
             defaults.set(hasCompletedWelcomeScreen, forKey: UserDefaultsKeys.App.hasCompletedOnboardingWelcome)
         }
     }
 
     @Published private(set) var hasCompletedLanguageSelection: Bool {
         didSet {
+            guard !isRestoringPersistentState else { return }
             defaults.set(
                 hasCompletedLanguageSelection,
                 forKey: UserDefaultsKeys.App.hasCompletedOnboardingLanguageSelection
@@ -27,6 +32,7 @@ final class OnboardingStore: ObservableObject {
 
     @Published private(set) var onboardingDictationLanguage: DictationLanguage? {
         didSet {
+            guard !isRestoringPersistentState else { return }
             if let onboardingDictationLanguage {
                 defaults.set(
                     onboardingDictationLanguage.rawValue,
@@ -42,11 +48,13 @@ final class OnboardingStore: ObservableObject {
     @Published private(set) var isForceDictationShortcutSetupLaunch: Bool
     @Published private(set) var hasPendingKeyboardTour: Bool {
         didSet {
+            guard !isRestoringPersistentState else { return }
             defaults.set(hasPendingKeyboardTour, forKey: UserDefaultsKeys.App.hasPendingKeyboardTour)
         }
     }
     @Published private(set) var hasPendingDictationShortcutSetup: Bool {
         didSet {
+            guard !isRestoringPersistentState else { return }
             defaults.set(
                 hasPendingDictationShortcutSetup,
                 forKey: UserDefaultsKeys.App.hasPendingDictationShortcutSetup
@@ -100,14 +108,23 @@ final class OnboardingStore: ObservableObject {
     }
 
     private let defaults: UserDefaults
+    private var isRestoringPersistentState = false
 
-    init(defaults: UserDefaults, runtimeFlags: RuntimeFlags) {
+    init(
+        defaults: UserDefaults,
+        runtimeFlags: RuntimeFlags,
+        isProtectedDataAvailable: Bool = true
+    ) {
         self.defaults = defaults
+        let persistedCompletion = defaults.object(
+            forKey: UserDefaultsKeys.App.hasCompletedOnboarding
+        ) as? Bool
         let persistedPendingKeyboardTour = defaults.object(forKey: UserDefaultsKeys.App.hasPendingKeyboardTour) as? Bool ?? false
         let persistedPendingDictationShortcutSetup = defaults.object(
             forKey: UserDefaultsKeys.App.hasPendingDictationShortcutSetup
         ) as? Bool ?? false
-        hasCompletedOnboarding = defaults.object(forKey: UserDefaultsKeys.App.hasCompletedOnboarding) as? Bool ?? false
+        hasResolvedPersistentState = isProtectedDataAvailable || persistedCompletion != nil
+        hasCompletedOnboarding = persistedCompletion ?? false
         hasCompletedWelcomeScreen = defaults.object(forKey: UserDefaultsKeys.App.hasCompletedOnboardingWelcome) as? Bool ?? false
         hasCompletedLanguageSelection = defaults.object(
             forKey: UserDefaultsKeys.App.hasCompletedOnboardingLanguageSelection
@@ -126,6 +143,39 @@ final class OnboardingStore: ObservableObject {
         isPendingKeyboardTourRouteArmed = false
         isIgnoringPersistedPendingKeyboardTourThisLaunch = runtimeFlags.forceOnboarding
         hasCompletedOnboardingThisLaunch = false
+    }
+
+    func resolvePersistentStateIfPossible(isProtectedDataAvailable: Bool) {
+        guard !hasResolvedPersistentState, isProtectedDataAvailable else { return }
+
+        defaults.synchronize()
+        let persistedCompletion = defaults.object(
+            forKey: UserDefaultsKeys.App.hasCompletedOnboarding
+        ) as? Bool
+        let persistedPendingKeyboardTour = defaults.object(
+            forKey: UserDefaultsKeys.App.hasPendingKeyboardTour
+        ) as? Bool ?? false
+        let persistedPendingDictationShortcutSetup = defaults.object(
+            forKey: UserDefaultsKeys.App.hasPendingDictationShortcutSetup
+        ) as? Bool ?? false
+
+        isRestoringPersistentState = true
+        hasCompletedOnboarding = persistedCompletion ?? false
+        hasCompletedWelcomeScreen = defaults.object(
+            forKey: UserDefaultsKeys.App.hasCompletedOnboardingWelcome
+        ) as? Bool ?? false
+        hasCompletedLanguageSelection = defaults.object(
+            forKey: UserDefaultsKeys.App.hasCompletedOnboardingLanguageSelection
+        ) as? Bool ?? false
+        onboardingDictationLanguage = defaults
+            .string(forKey: UserDefaultsKeys.App.onboardingDictationLanguage)
+            .map(DictationLanguage.init(rawValue:))
+        hasPendingKeyboardTour = persistedPendingKeyboardTour
+        hasPendingDictationShortcutSetup = isForceOnboardingLaunch
+            ? false
+            : persistedPendingDictationShortcutSetup
+        isRestoringPersistentState = false
+        hasResolvedPersistentState = true
     }
 
     func completeOnboarding() {

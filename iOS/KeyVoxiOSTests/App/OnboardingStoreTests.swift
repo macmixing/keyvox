@@ -39,6 +39,72 @@ struct OnboardingStoreTests {
         #expect(store.shouldShowKeyboardTourScreen == false)
     }
 
+    @Test func unavailableProtectedDataDefersMissingCompletionState() {
+        let defaults = makeDefaults()
+        let store = OnboardingStore(
+            defaults: defaults,
+            runtimeFlags: RuntimeFlags(environment: [:]),
+            isProtectedDataAvailable: false
+        )
+
+        #expect(store.hasResolvedPersistentState == false)
+        #expect(store.hasCompletedOnboarding == false)
+        #expect(store.shouldShowOnboarding)
+    }
+
+    @Test func protectedDataAvailabilityRestoresCompletedOnboardingBeforePresentation() {
+        let defaults = makeDefaults()
+        let store = OnboardingStore(
+            defaults: defaults,
+            runtimeFlags: RuntimeFlags(environment: [:]),
+            isProtectedDataAvailable: false
+        )
+        defaults.set(true, forKey: UserDefaultsKeys.App.hasCompletedOnboarding)
+        defaults.set(true, forKey: UserDefaultsKeys.App.hasCompletedOnboardingWelcome)
+        defaults.set(true, forKey: UserDefaultsKeys.App.hasCompletedOnboardingLanguageSelection)
+
+        store.resolvePersistentStateIfPossible(isProtectedDataAvailable: true)
+
+        #expect(store.hasResolvedPersistentState)
+        #expect(store.hasCompletedOnboarding)
+        #expect(store.hasCompletedWelcomeScreen)
+        #expect(store.hasCompletedLanguageSelection)
+        #expect(store.shouldShowOnboarding == false)
+    }
+
+    @Test func protectedDataAvailabilityResolvesGenuineFirstLaunchToOnboarding() {
+        let defaults = makeDefaults()
+        let store = OnboardingStore(
+            defaults: defaults,
+            runtimeFlags: RuntimeFlags(environment: [:]),
+            isProtectedDataAvailable: false
+        )
+
+        store.resolvePersistentStateIfPossible(isProtectedDataAvailable: true)
+
+        #expect(store.hasResolvedPersistentState)
+        #expect(store.hasCompletedOnboarding == false)
+        #expect(store.shouldShowOnboarding)
+        #expect(defaults.object(forKey: UserDefaultsKeys.App.hasCompletedOnboarding) == nil)
+        #expect(defaults.object(forKey: UserDefaultsKeys.App.hasCompletedOnboardingWelcome) == nil)
+        #expect(defaults.object(forKey: UserDefaultsKeys.App.hasCompletedOnboardingLanguageSelection) == nil)
+    }
+
+    @Test func readableCompletionStateResolvesWhileProtectedDataIsUnavailable() {
+        let defaults = makeDefaults()
+        defaults.set(true, forKey: UserDefaultsKeys.App.hasCompletedOnboarding)
+
+        let store = OnboardingStore(
+            defaults: defaults,
+            runtimeFlags: RuntimeFlags(environment: [:]),
+            isProtectedDataAvailable: false
+        )
+
+        #expect(store.hasResolvedPersistentState)
+        #expect(store.hasCompletedOnboarding)
+        #expect(store.shouldShowOnboarding == false)
+    }
+
     @Test func completedOnboardingHidesFlowWhenForceFlagIsOff() {
         let defaults = makeDefaults()
         defaults.set(true, forKey: UserDefaultsKeys.App.hasCompletedOnboarding)
