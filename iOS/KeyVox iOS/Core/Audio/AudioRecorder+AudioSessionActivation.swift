@@ -14,6 +14,11 @@ extension AudioRecorder {
     }
 
     func activateAudioSession() async throws {
+        #if targetEnvironment(simulator)
+        try await performAudioSessionOperation { audioSession in
+            try audioSession.setActive(true)
+        }
+        #else
         if #available(iOS 27.0, *) {
             try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
                 audioSession.activate(options: []) { activated, error in
@@ -35,9 +40,15 @@ extension AudioRecorder {
                 try audioSession.setActive(true)
             }
         }
+        #endif
     }
 
     func deactivateAudioSession() async throws {
+        #if targetEnvironment(simulator)
+        try await performAudioSessionOperation { audioSession in
+            try audioSession.setActive(false)
+        }
+        #else
         if #available(iOS 27.0, *) {
             try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
                 audioSession.deactivate(options: []) { deactivated, error in
@@ -59,6 +70,7 @@ extension AudioRecorder {
                 try audioSession.setActive(false)
             }
         }
+        #endif
     }
 
     private func performAudioSessionOperation(
