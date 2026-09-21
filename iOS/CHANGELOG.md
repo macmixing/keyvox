@@ -6,6 +6,38 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.4.5] - 2026-09-20
+
+Preserves onboarding after protected-data launches, updates the Whisper runtime, and protects words beside exact custom-dictionary matches.
+
+### Changed
+
+- Updated the Apple Whisper runtime to upstream v1.9.4, including its timestamp parsing and runtime corrections while preserving existing app behavior and supported iOS versions.
+
+### Fixed
+
+- Fixed existing users being returned to onboarding when the app launches before protected data becomes available; KeyVox now waits for persisted state and restores onboarding progress without treating temporarily unreadable data as a fresh installation.
+- Fixed exact single-token custom-dictionary matches consuming a neighboring word during split-word correction while preserving genuine split-word matches.
+
+### Package versions
+
+KeyVox iOS 1.4.5
+  KeyVoxCore            1.3.4
+  KeyVoxLinguistics     1.0.0
+  KeyVoxLocalInference  1.0.4
+  KeyVoxModels          1.0.0
+  KeyVoxParakeet        1.1.0
+  KeyVoxPromotions      1.1.0
+  KeyVoxState           1.0.0
+  KeyVoxStyleRewrite    1.1.0
+  KeyVoxTTS             1.1.0
+  KeyVoxTextComposition 1.1.0
+  KeyVoxVibesAdapters   1.0.4
+  KeyVoxVoiceActivity   1.1.1
+  KeyVoxWhisper         1.2.0
+
+---
+
 ## [1.4.4] - 2026-09-17
 
 Keeps dictation changes attached to the current insertion, preserves keyboard access during required updates, and protects cloud dictionary data during restore recovery.
