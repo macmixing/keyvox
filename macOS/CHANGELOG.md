@@ -6,6 +6,36 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.3.12] - 2026-09-22
+
+Updates the Whisper runtime and prevents exact custom-dictionary matches from consuming neighboring words.
+
+### Changed
+
+- Updated the Apple Whisper runtime to upstream v1.9.4, including its timestamp parsing and runtime corrections while preserving existing app behavior and supported macOS versions.
+
+### Fixed
+
+- Fixed exact single-token custom-dictionary matches consuming a neighboring word during split-word correction while preserving genuine split-word matches.
+
+### Package versions
+
+KeyVox macOS 1.3.12:
+- KeyVoxCore            1.3.4
+- KeyVoxLinguistics     1.0.0
+- KeyVoxLocalInference  1.0.4
+- KeyVoxModels          1.0.0
+- KeyVoxParakeet        1.1.0
+- KeyVoxPromotions      1.1.0
+- KeyVoxState           1.0.0
+- KeyVoxStyleRewrite    1.1.0
+- KeyVoxTextComposition 1.1.0
+- KeyVoxVibesAdapters   1.0.4
+- KeyVoxVoiceActivity   1.1.1
+- KeyVoxWhisper         1.2.0
+
+---
+
 ## [1.3.11] - 2026-09-17
 
 Protects cloud dictionary data during restore recovery and restores multiline dictation changes in Electron editors.
