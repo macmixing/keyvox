@@ -36,6 +36,12 @@ extension DictionaryMatcher {
 
         let exactMatch = observedNormalized == best.entry.normalizedPhrase
         if tokenCount == 1,
+           window[0].lexicalClass == .pronoun,
+           !exactMatch {
+            stats.rejectedCommonWord += 1
+            return nil
+        }
+        if tokenCount == 1,
            window[0].normalized.count < StandardEvaluationPolicy.minimumSingleTokenLength,
            !exactMatch {
             stats.rejectedShortToken += 1
