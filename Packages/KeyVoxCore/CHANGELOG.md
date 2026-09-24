@@ -6,6 +6,21 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.3.5] - 2026-09-23
+
+Dictionary matching now preserves recognized pronouns instead of replacing them with unrelated names.
+
+### Includes
+
+- Prevented a different single-word dictionary entry from replacing a pronoun, even when their pronunciation scores match.
+- Added regression coverage for a pronoun that was incorrectly replaced by a dictionary name.
+
+### Notes
+
+- `1.3.5` tracks safer pronoun handling in the shared Core dictionary matcher.
+
+---
+
 ## [1.3.4] - 2026-09-18
 
 Exact single-token dictionary matches no longer consume a neighboring word during split-word correction.
