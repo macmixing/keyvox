@@ -26,19 +26,22 @@ extension DictionaryMatcher {
             }
         }
 
-        if second.hasSuffix("'s"), second.count > minimumSplitTokenLength {
+        if second.hasSuffix("'s") {
             let stem = String(second.dropLast(2))
-            if stem.count >= minimumSplitTokenLength {
-                let possessiveJoin = first + stem
-                if !possessiveJoin.isEmpty, seen.insert(possessiveJoin).inserted {
-                    forms.append(
-                        JoinedObservedForm(
-                            normalized: possessiveJoin,
-                            singularizedSecondToken: false,
-                            replacementSuffix: "'s"
-                        )
+            let possessiveJoin = first + stem
+            let exactlyMatchesEntry = entriesByTokenCount[1]?.contains {
+                $0.matchingNormalizedPhrases.contains(possessiveJoin)
+            } == true
+            if !stem.isEmpty,
+               (stem.count >= minimumSplitTokenLength || exactlyMatchesEntry),
+               seen.insert(possessiveJoin).inserted {
+                forms.append(
+                    JoinedObservedForm(
+                        normalized: possessiveJoin,
+                        singularizedSecondToken: false,
+                        replacementSuffix: "'s"
                     )
-                }
+                )
             }
         }
 
