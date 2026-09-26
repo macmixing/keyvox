@@ -6,7 +6,7 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
-## [1.3.5] - 2026-09-23
+## [1.3.5] - 2026-09-26
 
 Dictionary matching now preserves recognized pronouns instead of replacing them with unrelated names.
 
@@ -14,6 +14,7 @@ Dictionary matching now preserves recognized pronouns instead of replacing them 
 
 - Prevented a different single-word dictionary entry from replacing a pronoun, even when their pronunciation scores match.
 - Added regression coverage for a pronoun that was incorrectly replaced by a dictionary name.
+- Preserved possessive `'s` when a split dictionary match ends with a short word, such as `open AI's` becoming `OpenAI's`.
 
 ### Notes
 

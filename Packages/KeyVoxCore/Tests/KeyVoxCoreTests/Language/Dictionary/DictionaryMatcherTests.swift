@@ -1177,6 +1177,14 @@ final class DictionaryMatcherTests: LinguisticAnalyzerTestCase {
         XCTAssertTrue(result.text == "show Cueboard's abilities")
     }
 
+    func testSplitJoinPossessiveKeepsSuffixForShortFinalStem() async {
+        let matcher = makeRuntimeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "OpenAI")])
+
+        let result = matcher.apply(to: "I absolutely hate open AI's auto approval system.")
+        XCTAssertEqual(result.text, "I absolutely hate OpenAI's auto approval system.")
+    }
+
     func testDoesNotOvercorrectCommonPhrase() async {
         let matcher = makeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Cueboard")])
