@@ -6,6 +6,37 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.4.6] - 2026-09-27
+
+Improves custom-dictionary accuracy, protects continuous speech in long dictations, and keeps shortcut-started Live Activities available through the recording session.
+
+### Fixed
+
+- Fixed recognized pronouns being replaced by unrelated single-word custom-dictionary entries while preserving exact dictionary matches.
+- Fixed possessive suffixes being dropped when a split-word custom-dictionary match ends with a short word.
+- Fixed unrelated neighboring words being combined into a custom-dictionary entry when the phonetic evidence is too weak.
+- Fixed long dictations splitting continuous speech at a fallback chunk boundary when an earlier non-speech gap is available.
+- Fixed a shortcut-started recording losing its required Live Activity when the Live Activities preference changes during the session; the activity now remains available until recording ends.
+
+### Package versions
+
+KeyVox iOS 1.4.6
+  KeyVoxCore            1.3.5
+  KeyVoxLinguistics     1.0.0
+  KeyVoxLocalInference  1.0.4
+  KeyVoxModels          1.0.0
+  KeyVoxParakeet        1.1.0
+  KeyVoxPromotions      1.1.0
+  KeyVoxState           1.0.0
+  KeyVoxStyleRewrite    1.1.0
+  KeyVoxTTS             1.1.0
+  KeyVoxTextComposition 1.1.0
+  KeyVoxVibesAdapters   1.0.4
+  KeyVoxVoiceActivity   1.1.1
+  KeyVoxWhisper         1.2.0
+
+---
+
 ## [1.4.5] - 2026-09-20
 
 Preserves onboarding after protected-data launches, updates the Whisper runtime, and protects words beside exact custom-dictionary matches.
