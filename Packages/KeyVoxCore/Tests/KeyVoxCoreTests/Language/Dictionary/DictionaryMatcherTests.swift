@@ -275,6 +275,15 @@ final class DictionaryMatcherTests: LinguisticAnalyzerTestCase {
         XCTAssertEqual(matcher.apply(to: input).text, input)
     }
 
+    func testDoesNotCollapseUnrelatedPhraseIntoOpenAI() async {
+        let matcher = makeRuntimeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "OpenAI")])
+
+        let input = "I can open you a new window."
+
+        XCTAssertEqual(matcher.apply(to: input).text, input)
+    }
+
     func testCorrectsStylizedSingleTokenBrandNearMissWithRuntimeLexicon() async {
         let matcher = makeRuntimeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "KeyVox")])

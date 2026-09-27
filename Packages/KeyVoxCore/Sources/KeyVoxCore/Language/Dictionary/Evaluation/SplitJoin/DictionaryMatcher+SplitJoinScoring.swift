@@ -27,6 +27,7 @@ private enum SplitJoinScoringConstants {
     static let stylizedAnchoredBlendedMinimum = 0.48
     static let stylizedAnchoredThreshold = 0.44
     static let stylizedAnchoredTailGuardMinimumSimilarity = 0.55
+    static let stylizedAnchoredTailGuardMinimumPhoneticLength = 2
     static let numericShortTokenTextMinimum = 0.80
     static let numericShortTokenPhoneticMinimum = 0.70
 
@@ -403,8 +404,18 @@ extension DictionaryMatcher {
         let textSimilarity = scorer.similarity(lhs: observedTail, rhs: candidateTail)
         let phoneticSimilarity = scorer.similarity(lhs: observedTailPhonetic, rhs: candidateTailPhonetic)
 
-        return max(textSimilarity, phoneticSimilarity)
-            >= SplitJoinScoringConstants.stylizedAnchoredTailGuardMinimumSimilarity
+        if textSimilarity >= SplitJoinScoringConstants.stylizedAnchoredTailGuardMinimumSimilarity {
+            return true
+        }
+
+        guard observedTailPhonetic.count
+                >= SplitJoinScoringConstants.stylizedAnchoredTailGuardMinimumPhoneticLength,
+              candidateTailPhonetic.count
+                >= SplitJoinScoringConstants.stylizedAnchoredTailGuardMinimumPhoneticLength else {
+            return false
+        }
+
+        return phoneticSimilarity >= SplitJoinScoringConstants.stylizedAnchoredTailGuardMinimumSimilarity
     }
 
     private func shouldRejectFuzzyStylizedSplitJoinPluralForm(window: [Token], candidate: CompiledEntry) -> Bool {
