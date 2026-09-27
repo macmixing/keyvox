@@ -6,6 +6,35 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.3.13] - 2026-09-27
+
+Improves custom-dictionary accuracy and protects continuous speech in long dictations.
+
+### Fixed
+
+- Fixed recognized pronouns being replaced by unrelated single-word custom-dictionary entries while preserving exact dictionary matches.
+- Fixed possessive suffixes being dropped when a split-word custom-dictionary match ends with a short word.
+- Fixed unrelated neighboring words being combined into a custom-dictionary entry when the phonetic evidence is too weak.
+- Fixed long dictations splitting continuous speech at a fallback chunk boundary when an earlier non-speech gap is available.
+
+### Package versions
+
+KeyVox macOS 1.3.13:
+- KeyVoxCore            1.3.5
+- KeyVoxLinguistics     1.0.0
+- KeyVoxLocalInference  1.0.4
+- KeyVoxModels          1.0.0
+- KeyVoxParakeet        1.1.0
+- KeyVoxPromotions      1.1.0
+- KeyVoxState           1.0.0
+- KeyVoxStyleRewrite    1.1.0
+- KeyVoxTextComposition 1.1.0
+- KeyVoxVibesAdapters   1.0.4
+- KeyVoxVoiceActivity   1.1.1
+- KeyVoxWhisper         1.2.0
+
+---
+
 ## [1.3.12] - 2026-09-22
 
 Updates the Whisper runtime and prevents exact custom-dictionary matches from consuming neighboring words.
