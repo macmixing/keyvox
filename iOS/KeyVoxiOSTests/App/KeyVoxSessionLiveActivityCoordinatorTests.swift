@@ -170,6 +170,7 @@ struct KeyVoxSessionLiveActivityCoordinatorTests {
 
         try await coordinator.prepareForAudioRecordingIntent()
         await coordinator.completeAudioRecordingIntentStart(
+            recordingStarted: false,
             isSessionActive: false,
             sessionDisablePending: false
         )
@@ -202,12 +203,45 @@ struct KeyVoxSessionLiveActivityCoordinatorTests {
 
         try await coordinator.prepareForAudioRecordingIntent()
         await coordinator.completeAudioRecordingIntentStart(
+            recordingStarted: true,
             isSessionActive: true,
             sessionDisablePending: false
         )
 
         #expect(controller.endCallCount == 0)
         #expect(controller.isActivityActive)
+    }
+
+    @Test func disablingPreferenceKeepsRequiredIntentActivityUntilSessionEnds() async throws {
+        let controller = MockKeyVoxSessionLiveActivityController()
+        let coordinator = makeCoordinator(controller: controller)
+        await Task.yield()
+
+        try await coordinator.prepareForAudioRecordingIntent()
+        await coordinator.completeAudioRecordingIntentStart(
+            recordingStarted: true,
+            isSessionActive: true,
+            sessionDisablePending: false
+        )
+        await coordinator.applyState(
+            isSessionActive: true,
+            sessionDisablePending: false,
+            liveActivitiesEnabled: false,
+            weeklyWordCount: 0
+        )
+
+        #expect(controller.endCallCount == 0)
+        #expect(controller.isActivityActive)
+
+        await coordinator.applyState(
+            isSessionActive: false,
+            sessionDisablePending: false,
+            liveActivitiesEnabled: false,
+            weeklyWordCount: 0
+        )
+
+        #expect(controller.endCallCount == 1)
+        #expect(!controller.isActivityActive)
     }
 
     private func makeCoordinator(

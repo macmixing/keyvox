@@ -28,6 +28,7 @@ protocol ShortcutDictationSessionControlling: AnyObject {
 protocol ShortcutRecordingActivityCoordinating: AnyObject {
     func prepareForAudioRecordingIntent() async throws
     func completeAudioRecordingIntentStart(
+        recordingStarted: Bool,
         isSessionActive: Bool,
         sessionDisablePending: Bool
     ) async
@@ -81,6 +82,7 @@ final class ShortcutDictationCoordinator {
 
         let result = await sessionController.performStartRecordingCommand(isFromURL: false)
         await liveActivityCoordinator.completeAudioRecordingIntentStart(
+            recordingStarted: result == .started,
             isSessionActive: sessionController.isSessionActive,
             sessionDisablePending: sessionController.sessionDisablePending
         )

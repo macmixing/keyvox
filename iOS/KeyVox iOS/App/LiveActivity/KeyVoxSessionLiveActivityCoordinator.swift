@@ -76,6 +76,7 @@ final class KeyVoxSessionLiveActivityCoordinator {
     private var liveActivitiesEnabled: Bool
     private var weeklyWordCount: Int
     private var isAudioRecordingStartPending = false
+    private var isAudioRecordingIntentSessionActive = false
 
     init(
         initialIsSessionActive: Bool,
@@ -116,6 +117,9 @@ final class KeyVoxSessionLiveActivityCoordinator {
         self.sessionDisablePending = sessionDisablePending
         self.liveActivitiesEnabled = liveActivitiesEnabled
         self.weeklyWordCount = weeklyWordCount
+        if !isSessionActive {
+            isAudioRecordingIntentSessionActive = false
+        }
         await reconcileActivity()
     }
 
@@ -134,11 +138,13 @@ final class KeyVoxSessionLiveActivityCoordinator {
     }
 
     func completeAudioRecordingIntentStart(
+        recordingStarted: Bool,
         isSessionActive: Bool,
         sessionDisablePending: Bool
     ) async {
         self.isSessionActive = isSessionActive
         self.sessionDisablePending = sessionDisablePending
+        isAudioRecordingIntentSessionActive = recordingStarted && isSessionActive
         isAudioRecordingStartPending = false
         await reconcileActivity()
     }
@@ -232,6 +238,7 @@ final class KeyVoxSessionLiveActivityCoordinator {
 
     private var shouldShowActivity: Bool {
         isAudioRecordingStartPending
+            || isAudioRecordingIntentSessionActive
             || (liveActivitiesEnabled && isSessionActive && !sessionDisablePending)
     }
 }
