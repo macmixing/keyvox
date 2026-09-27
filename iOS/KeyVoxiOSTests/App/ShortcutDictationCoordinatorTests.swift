@@ -15,7 +15,7 @@ struct ShortcutDictationCoordinatorTests {
         let outcome = await coordinator.toggleRecording()
 
         #expect(outcome == .recordingStarted)
-        #expect(calls.values == ["prepareActivity", "startRecording", "completeActivity:true:false"])
+        #expect(calls.values == ["prepareActivity", "startRecording", "completeActivity:true:true:false"])
     }
 
     @Test func rollsBackLiveActivityWhenSharedRecorderFailsToStart() async {
@@ -33,7 +33,7 @@ struct ShortcutDictationCoordinatorTests {
         let outcome = await coordinator.toggleRecording()
 
         #expect(outcome == .failed("Microphone unavailable"))
-        #expect(calls.values == ["prepareActivity", "startRecording", "completeActivity:false:false"])
+        #expect(calls.values == ["prepareActivity", "startRecording", "completeActivity:false:false:false"])
     }
 
     @Test func stopsRecordingStartedByAnotherSurfaceAndReturnsTranscript() async {
@@ -141,10 +141,13 @@ private final class MockShortcutRecordingActivityCoordinator: ShortcutRecordingA
     }
 
     func completeAudioRecordingIntentStart(
+        recordingStarted: Bool,
         isSessionActive: Bool,
         sessionDisablePending: Bool
     ) async {
-        calls.values.append("completeActivity:\(isSessionActive):\(sessionDisablePending)")
+        calls.values.append(
+            "completeActivity:\(recordingStarted):\(isSessionActive):\(sessionDisablePending)"
+        )
     }
 }
 
