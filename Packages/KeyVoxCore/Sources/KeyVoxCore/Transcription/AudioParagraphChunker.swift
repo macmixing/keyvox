@@ -1,4 +1,5 @@
 import Foundation
+import KeyVoxVoiceActivity
 
 public struct AudioParagraphChunker {
     private static let sampleRate: Double = 16_000
@@ -59,7 +60,10 @@ public struct AudioParagraphChunker {
         self.config = config
     }
 
-    public func split(_ audioFrames: [Float]) -> Result {
+    public func split(
+        _ audioFrames: [Float],
+        speechSegments: [VoiceActivitySegment] = []
+    ) -> Result {
         guard !audioFrames.isEmpty else {
             return Result(
                 chunks: [],
@@ -74,6 +78,9 @@ public struct AudioParagraphChunker {
         }
 
         let windowRMS = rmsWindows(from: audioFrames, windowSize: config.windowSize)
+        let speechFrameRanges = speechSegments.compactMap {
+            speechFrameRange(for: $0, audioFrameCount: audioFrames.count)
+        }
         let ambientFloor = percentile(windowRMS, p: config.ambientFloorPercentile) ?? config.minimumSilenceThreshold
         let silenceThreshold = max(config.minimumSilenceThreshold, ambientFloor * config.silenceThresholdMultiplier)
 
@@ -116,6 +123,7 @@ public struct AudioParagraphChunker {
                 to: silenceBoundary,
                 windowRMS: windowRMS,
                 audioFrameCount: audioFrames.count,
+                protectedSpeechRanges: speechFrameRanges,
                 into: &fallbackBoundaryFrames,
                 combinedBoundaries: &combinedBoundaries
             )
@@ -127,6 +135,7 @@ public struct AudioParagraphChunker {
             to: audioFrames.count,
             windowRMS: windowRMS,
             audioFrameCount: audioFrames.count,
+            protectedSpeechRanges: speechFrameRanges,
             into: &fallbackBoundaryFrames,
             combinedBoundaries: &combinedBoundaries
         )
@@ -200,6 +209,7 @@ public struct AudioParagraphChunker {
         to chunkEnd: Int,
         windowRMS: [Float],
         audioFrameCount: Int,
+        protectedSpeechRanges: [Range<Int>],
         into fallbackBoundaryFrames: inout [Int],
         combinedBoundaries: inout [Int]
     ) {
@@ -214,7 +224,8 @@ public struct AudioParagraphChunker {
                 chunkStart: start,
                 chunkEnd: chunkEnd,
                 windowRMS: windowRMS,
-                audioFrameCount: audioFrameCount
+                audioFrameCount: audioFrameCount,
+                protectedSpeechRanges: protectedSpeechRanges
             )
             guard boundary > start, boundary < chunkEnd else { break }
             fallbackBoundaryFrames.append(boundary)
@@ -228,7 +239,8 @@ public struct AudioParagraphChunker {
         chunkStart: Int,
         chunkEnd: Int,
         windowRMS: [Float],
-        audioFrameCount: Int
+        audioFrameCount: Int,
+        protectedSpeechRanges: [Range<Int>]
     ) -> Int {
         let minEdgeDistance = max(0, config.fallbackBoundaryMinDistanceFromEdgesFrames)
         let lowerBound = max(chunkStart + minEdgeDistance, chunkStart + 1)
@@ -239,6 +251,13 @@ public struct AudioParagraphChunker {
 
         let maxAllowedBoundary = min(upperBound, targetFrame)
         let clampedTarget = min(max(targetFrame, lowerBound), maxAllowedBoundary)
+        if let safeBoundary = latestSafeBoundary(
+            from: lowerBound,
+            through: maxAllowedBoundary,
+            protectedSpeechRanges: protectedSpeechRanges
+        ) {
+            return safeBoundary
+        }
         let searchRadius = max(0, config.fallbackBoundarySearchRadiusFrames)
         let searchStart = max(lowerBound, clampedTarget - searchRadius)
         let searchEnd = min(maxAllowedBoundary, clampedTarget + searchRadius)
@@ -267,6 +286,52 @@ public struct AudioParagraphChunker {
 
         let center = centerFrame(forWindow: bestWindow, audioFrameCount: audioFrameCount)
         return min(max(center, lowerBound), upperBound)
+    }
+
+    private func latestSafeBoundary(
+        from lowerBound: Int,
+        through upperBound: Int,
+        protectedSpeechRanges: [Range<Int>]
+    ) -> Int? {
+        guard lowerBound <= upperBound, !protectedSpeechRanges.isEmpty else { return nil }
+
+        let relevantRanges = protectedSpeechRanges
+            .compactMap { range -> Range<Int>? in
+                let start = max(lowerBound, range.lowerBound)
+                let end = min(upperBound + 1, range.upperBound)
+                return end > start ? start..<end : nil
+            }
+            .sorted { $0.lowerBound < $1.lowerBound }
+
+        var cursor = lowerBound
+        var latestBoundary: Int?
+
+        for range in relevantRanges {
+            if range.lowerBound > cursor {
+                latestBoundary = cursor + ((range.lowerBound - cursor) / 2)
+            }
+            cursor = max(cursor, range.upperBound)
+            if cursor > upperBound {
+                break
+            }
+        }
+
+        if cursor <= upperBound {
+            latestBoundary = upperBound
+        }
+
+        return latestBoundary
+    }
+
+    private func speechFrameRange(
+        for segment: VoiceActivitySegment,
+        audioFrameCount: Int
+    ) -> Range<Int>? {
+        let start = Int((Double(segment.startTime) / 100.0 * Self.sampleRate).rounded())
+        let end = Int((Double(segment.endTime) / 100.0 * Self.sampleRate).rounded())
+        let clampedStart = max(0, min(start, audioFrameCount))
+        let clampedEnd = max(clampedStart, min(end, audioFrameCount))
+        return clampedEnd > clampedStart ? clampedStart..<clampedEnd : nil
     }
 
     private func centerFrame(forWindow windowIndex: Int, audioFrameCount: Int) -> Int {

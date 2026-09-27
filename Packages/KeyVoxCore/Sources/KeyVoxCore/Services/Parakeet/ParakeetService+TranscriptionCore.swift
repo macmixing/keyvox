@@ -35,6 +35,7 @@ extension ParakeetService {
             let paragraphChunker = self.paragraphChunker
 
             do {
+                let voiceActivityAnalysis: VoiceActivityAnalysis?
                 if let voiceActivityAnalyzer = self.voiceActivityAnalyzer,
                    let voiceActivity = await voiceActivityAnalyzer.analyze(
                     audioFrames: audioFrames,
@@ -52,6 +53,9 @@ extension ParakeetService {
                         )
                         return
                     }
+                    voiceActivityAnalysis = voiceActivity
+                } else {
+                    voiceActivityAnalysis = nil
                 }
 
                 guard let parakeet = await self.loadedParakeet() else {
@@ -59,7 +63,10 @@ extension ParakeetService {
                     return
                 }
 
-                let chunkResult = paragraphChunker.split(audioFrames)
+                let chunkResult = paragraphChunker.split(
+                    audioFrames,
+                    speechSegments: voiceActivityAnalysis?.speechSegments ?? []
+                )
                 var transcribedChunks: [TranscribedChunk] = []
                 transcribedChunks.reserveCapacity(chunkResult.chunks.count)
                 var transcribedResult = ParakeetTranscriptionResult(segments: [])
