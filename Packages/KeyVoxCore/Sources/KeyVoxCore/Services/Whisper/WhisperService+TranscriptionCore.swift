@@ -87,7 +87,10 @@ extension WhisperService {
                     voiceActivityAnalysis = nil
                 }
 
-                let chunkResult = paragraphChunker.split(audioFrames)
+                let chunkResult = paragraphChunker.split(
+                    audioFrames,
+                    speechSegments: voiceActivityAnalysis?.speechSegments ?? []
+                )
                 #if DEBUG
                 let boundaryMs = chunkResult.boundaryFrames.map { Int((Double($0) / 16_000.0) * 1_000.0) }
                 let chunkDurationsMs = chunkResult.chunkFrameLengths.map { Int((Double($0) / 16_000.0) * 1_000.0) }

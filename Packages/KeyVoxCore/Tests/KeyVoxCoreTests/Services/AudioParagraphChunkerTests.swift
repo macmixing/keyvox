@@ -1,4 +1,5 @@
 import Foundation
+import KeyVoxVoiceActivity
 import XCTest
 @testable import KeyVoxCore
 
@@ -81,6 +82,25 @@ final class AudioParagraphChunkerTests: LinguisticAnalyzerTestCase {
         XCTAssertGreaterThan(result.fallbackBoundaryFrames.count, 0)
         XCTAssertGreaterThan(result.chunks.count, 1)
         XCTAssertTrue(result.chunkFrameLengths.allSatisfy { $0 <= result.maxChunkFrames })
+    }
+
+    func testFallbackBoundaryUsesVoiceActivityGapInsteadOfSplittingSpeech() {
+        let chunker = makeFallbackTestChunker()
+        let audio = makeSpeech(112_000)
+        let speechSegments = [
+            VoiceActivitySegment(startTime: 0, endTime: 300),
+            VoiceActivitySegment(startTime: 350, endTime: 700),
+        ]
+
+        let result = chunker.split(audio, speechSegments: speechSegments)
+
+        XCTAssertEqual(result.fallbackBoundaryFrames, [52_000])
+        XCTAssertTrue(result.chunkFrameLengths.allSatisfy { $0 <= result.maxChunkFrames })
+        XCTAssertFalse(speechSegments.contains { segment in
+            let startFrame = Int(segment.startTime / 100 * 16_000)
+            let endFrame = Int(segment.endTime / 100 * 16_000)
+            return (startFrame..<endFrame).contains(result.fallbackBoundaryFrames[0])
+        })
     }
 
     func testShortAudioRemainsSingleChunk() {
