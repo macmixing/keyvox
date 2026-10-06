@@ -5,7 +5,9 @@ import Foundation
 /// Uses stupid backoff: an observed three-word sequence scores its own probability, an
 /// observed pair scores its probability times the backoff factor, and otherwise the
 /// word's overall frequency is used with the factor applied once per missing level. A
-/// sequence the counts never saw therefore always scores below one they did see.
+/// sequence the counts never saw therefore always scores below one they did see. Close
+/// to the start of a sentence, the sentence start itself counts as an earlier word, so
+/// words that usually open sentences score as such.
 ///
 /// The user's personal words count as dictionary words and score at least as likely as
 /// an everyday word, since the bundled counts usually have never seen them. A personal
@@ -17,6 +19,9 @@ public struct ContextLanguageScorer: Sendable {
         public let isDictionaryWord: Bool
     }
 
+    /// Stands for the start of a sentence in the bundled counts; it must match
+    /// `SENTENCE_START` in `Tools/KeyVoxLanguageModel/normalize.py`.
+    static let sentenceStart = "<s>"
     private static let backoffLogFactor = log(0.4)
     /// About one occurrence in ten thousand words: the frequency of an everyday word.
     private static let personalWordLogProbability = log(1e-4)
@@ -44,15 +49,16 @@ public struct ContextLanguageScorer: Sendable {
 
     /// - Parameter previousWords: Earlier words in the sentence, newest first.
     public func score(of word: String, previousWords: [String]) throws -> Score {
-        let analysis = try analyze(word.lowercased(), previousWords)
+        let context = previousWords.count < 2 ? previousWords + [Self.sentenceStart] : previousWords
+        let analysis = try analyze(word.lowercased(), context)
         let logProbability: Double
-        if previousWords.count >= 2, analysis.precedingTrigramObserved {
+        if context.count >= 2, analysis.precedingTrigramObserved {
             logProbability = analysis.precedingTrigramLogProbability
-        } else if previousWords.isEmpty == false, analysis.precedingPairObserved {
+        } else if analysis.precedingPairObserved {
             logProbability = analysis.precedingLogProbability
-                + (previousWords.count >= 2 ? Self.backoffLogFactor : 0)
+                + (context.count >= 2 ? Self.backoffLogFactor : 0)
         } else {
-            let missingLevels = Double(min(previousWords.count, 2))
+            let missingLevels = Double(min(context.count, 2))
             logProbability = analysis.unigramLogProbability + missingLevels * Self.backoffLogFactor
         }
         guard vocabulary.contains(word) else {
