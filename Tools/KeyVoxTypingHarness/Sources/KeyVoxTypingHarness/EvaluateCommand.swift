@@ -6,7 +6,7 @@ enum EvaluateCommand {
     static func run(_ options: HarnessCommand.EvaluateOptions) throws {
         let plan = try options.source.resolvePlan()
         let setup = try EngineSetup()
-        let typer = SentenceTyper(setup: setup, usesTouches: options.usesTouches)
+        let typer = SentenceTyper(setup: setup, decider: options.decider, usesTouches: options.usesTouches)
         let completion = CompletionEvaluator(engine: setup.engine)
         let nextWord = NextWordEvaluator(engine: setup.engine)
         let suggestionBar = SuggestionBarEvaluator(engine: setup.engine)

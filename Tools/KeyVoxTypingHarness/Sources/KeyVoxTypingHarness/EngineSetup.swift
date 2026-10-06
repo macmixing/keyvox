@@ -5,6 +5,8 @@ import KeyVoxPredictiveKeyboard
 struct EngineSetup {
     let engine: EnglishPredictiveEngine
     let layout: KeyboardLayoutModel
+    let keys: KeyCenterMap
+    let language: ContextLanguageScorer
     let startupMilliseconds: Double
 
     init() throws {
@@ -13,6 +15,12 @@ struct EngineSetup {
         layout = KeyboardLayoutModel()
         engine.updateKeyboardGeometry(layout.predictionGeometry, keyboardSize: layout.keyboardSize)
         startupMilliseconds = Self.milliseconds(since: started)
+        keys = KeyCenterMap(geometry: layout.predictionGeometry)
+        language = ContextLanguageScorer(engine: engine)
+    }
+
+    func correctionEvaluator(decider: CorrectionEvaluator.Decider) -> CorrectionEvaluator {
+        CorrectionEvaluator(engine: engine, decider: decider, keys: keys, language: language)
     }
 
     static func milliseconds(since start: ContinuousClock.Instant) -> Double {

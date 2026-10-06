@@ -11,6 +11,8 @@ struct TypingHarness {
                 try PlanCommand.run(options)
             case .compare(let options):
                 try CompareCommand.run(options)
+            case .tune(let options):
+                try TuneCommand.run(options)
             }
         } catch {
             FileHandle.standardError.write(Data("\(error)\n".utf8))

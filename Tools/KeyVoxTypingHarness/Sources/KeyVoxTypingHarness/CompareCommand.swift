@@ -11,7 +11,7 @@ enum CompareCommand {
                 "\(apple.sentences.count) Apple sentences for \(plan.sentences.count) planned"
             )
         }
-        let typer = SentenceTyper(setup: try EngineSetup(), usesTouches: true)
+        let typer = SentenceTyper(setup: try EngineSetup(), decider: options.decider, usesTouches: true)
 
         var total = 0
         var appleCorrect = 0

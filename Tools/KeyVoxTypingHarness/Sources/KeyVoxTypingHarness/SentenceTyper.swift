@@ -10,10 +10,11 @@ struct SentenceTyper {
     }
 
     let setup: EngineSetup
+    let decider: CorrectionEvaluator.Decider
     let usesTouches: Bool
 
     func type(_ sentence: TypingPlan.Sentence) throws -> [TypedWord] {
-        let correction = CorrectionEvaluator(engine: setup.engine)
+        let correction = setup.correctionEvaluator(decider: decider)
         var finalWords: [String] = []
         var typedWords: [TypedWord] = []
         for (word, offsets) in zip(sentence.words, sentence.taps) {
