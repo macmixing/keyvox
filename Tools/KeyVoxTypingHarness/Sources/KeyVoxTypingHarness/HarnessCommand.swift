@@ -49,6 +49,8 @@ enum HarnessCommand {
         var parameters = NoisyChannelCorrector.standardParameters
         /// The user's own words and phrases.
         var personalWords: [String] = []
+        /// The word typed after the typed word, to reconsider the typed word with it.
+        var followingWord: String?
     }
 
     case evaluate(EvaluateOptions)
@@ -70,7 +72,8 @@ enum HarnessCommand {
                                   [--personal <word or phrase,...>]
       KeyVoxTypingHarness tune --tune-plan <path>... [--holdout-plan <path>...] [--passes <count>]
       KeyVoxTypingHarness explain [--word <typed>] [--touches "x,y x,y ..."] [--previous <newest,older,...>]
-                                  [--personal <word or phrase,...>] [--param <name>=<value>...]
+                                  [--following <next word>] [--personal <word or phrase,...>]
+                                  [--param <name>=<value>...]
     """
 
     init(arguments: [String]) throws {
@@ -169,6 +172,7 @@ enum HarnessCommand {
                 case "--personal":
                     options.personalWords = try Self.value(after: flag, in: &remaining)
                         .split(separator: ",").map(String.init)
+                case "--following": options.followingWord = try Self.value(after: flag, in: &remaining)
                 case "--param":
                     try Self.applyParameter(try Self.value(after: flag, in: &remaining), to: &options.parameters)
                 default: throw HarnessError.unknownFlag(flag)
@@ -221,7 +225,7 @@ enum HarnessCommand {
         let parts = assignment.split(separator: "=", maxSplits: 1).map(String.init)
         guard parts.count == 2,
               let value = Double(parts[1]),
-              let dimension = ParameterSearch.dimensions.first(where: { $0.name == parts[0] }) else {
+              let dimension = ParameterSearch.settableDimensions.first(where: { $0.name == parts[0] }) else {
             throw HarnessError.invalidValue("--param \(assignment)")
         }
         parameters[keyPath: dimension.keyPath] = value

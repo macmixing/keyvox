@@ -9,6 +9,14 @@ enum ParameterSearch {
         let values: [Double]
     }
 
+    /// Every parameter the command line can set: the searched ones, plus the revision
+    /// margin, which only typing whole sentences exercises.
+    static var settableDimensions: [Dimension] {
+        dimensions + [
+            Dimension(name: "revisionMargin", keyPath: \.revisionMargin, values: []),
+        ]
+    }
+
     static var dimensions: [Dimension] { [
         Dimension(name: "touchStandardDeviation", keyPath: \.touch.touchStandardDeviation,
                   values: [0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.6, 0.7]),

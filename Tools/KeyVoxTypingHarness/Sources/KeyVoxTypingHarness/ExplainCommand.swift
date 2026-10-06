@@ -4,7 +4,8 @@ import KeyVoxPredictiveKeyboard
 
 /// `explain`: runs one typed word with exact touches and context, and optionally the
 /// user's own words, through the shipping prediction path and prints every candidate's
-/// scores, to see why a decision happened. With no typed word it shows the next-word bar.
+/// scores, to see why a decision happened. With no typed word it shows the next-word bar;
+/// with a following word it shows how the typed word is reconsidered once that word is known.
 enum ExplainCommand {
     static func run(_ options: HarnessCommand.ExplainOptions) throws {
         let setup = try EngineSetup()
@@ -59,8 +60,18 @@ enum ExplainCommand {
             typedWord: request.currentWord,
             touches: request.touches,
             previousWords: request.previousWords,
+            followingWord: options.followingWord,
             candidates: response.suggestions.map(\.word) + personalCandidates
         )
+        if let followingWord = options.followingWord {
+            let revision = try computer.revision(for: RevisionRequest(
+                word: request.currentWord,
+                touches: request.touches,
+                previousWords: request.previousWords,
+                followingWord: followingWord
+            ))
+            print("revision before \(followingWord): \(revision ?? "none")")
+        }
         print("engine candidates: \(response.suggestions.map(\.word))")
         print("personal candidates: \(personalCandidates)")
         for candidate in [decision.typed] + decision.rankedAlternatives {

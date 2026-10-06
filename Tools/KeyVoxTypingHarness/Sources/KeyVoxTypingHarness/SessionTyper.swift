@@ -71,8 +71,15 @@ struct SessionTyper {
         case .space, .returnKey:
             let separator = key == .space ? " " : "\n"
             let result = try computer.compute(session.request(textBeforeCursor: text))
+            let revision = try session.revisionRequest(textBeforeCursor: text, result: result)
+                .flatMap(computer.revision(for:))
             Self.apply(
-                session.wordBoundaryEdit(separator: separator, textBeforeCursor: text, result: result),
+                session.wordBoundaryEdit(
+                    separator: separator,
+                    textBeforeCursor: text,
+                    result: result,
+                    revision: revision
+                ),
                 to: &text
             )
         case .delete:
