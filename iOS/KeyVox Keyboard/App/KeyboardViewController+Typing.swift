@@ -24,8 +24,15 @@ extension KeyboardViewController {
         refreshPredictions()
     }
 
-    /// Call after any change to the text or cursor, including the keyboard's own edits.
+    /// Call after any change to the text or cursor, including the keyboard's own edits. A
+    /// change of the field's traits means the cursor moved to another field while the
+    /// keyboard stayed up, which starts that field fresh.
     func handleTypingContextChange() {
+        guard KeyboardTypingTraits(proxy: textDocumentProxy) == typingTraits else {
+            prepareTypingForCurrentField()
+            updateActiveInsertionVisualState()
+            return
+        }
         predictionCoordinator.textDidChange()
         synchronizeLetterCase()
         refreshPredictions()
