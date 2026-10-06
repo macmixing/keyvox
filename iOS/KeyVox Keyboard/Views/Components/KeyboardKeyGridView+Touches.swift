@@ -57,9 +57,11 @@ extension KeyboardKeyGridView {
                 onCharacterKeyTouchDown?()
                 showPopup(for: hitKey)
             case .delete:
+                var isRepeat = false
                 deleteRepeatController.begin { [weak self, weak session] in
                     guard let self, let session else { return false }
-                    return self.deliver(.delete, location: session.activationLocation, timestamp: session.timestamp)
+                    defer { isRepeat = true }
+                    return self.deliver(.delete, from: session, isRepeat: isRepeat)
                 }
             case .space:
                 trackpadOriginKeyView = hitKey
@@ -142,7 +144,7 @@ extension KeyboardKeyGridView {
                 deleteRepeatController.cancel()
             case .alternateSymbols:
                 if compactKeysHoldController.end() == false {
-                    deliver(.alternateSymbols, location: session.activationLocation, timestamp: session.timestamp)
+                    deliver(.alternateSymbols, from: session)
                 }
             case .space:
                 let wasTrackpadActive = spaceTrackpadController.end()
@@ -151,11 +153,11 @@ extension KeyboardKeyGridView {
                     updateAllKeyStates()
                     onSpaceTrackpadEvent?(.ended)
                 } else {
-                    deliver(.space, location: session.activationLocation, timestamp: session.timestamp)
+                    deliver(.space, from: session)
                 }
             case let .some(kind):
                 guard session.hasTyped == false else { continue }
-                deliver(kind, location: session.activationLocation, timestamp: session.timestamp)
+                deliver(kind, from: session)
             case .none:
                 continue
             }
@@ -198,14 +200,25 @@ extension KeyboardKeyGridView {
         for session in pending {
             session.hasTyped = true
             if let kind = session.kind {
-                deliver(kind, location: session.activationLocation, timestamp: session.timestamp)
+                deliver(kind, from: session)
             }
         }
     }
 
     @discardableResult
-    private func deliver(_ kind: KeyboardKeyKind, location: CGPoint, timestamp: TimeInterval) -> Bool {
-        onKeyActivated?(KeyboardKeyActivation(kind: kind, location: location, timestamp: timestamp)) ?? false
+    private func deliver(
+        _ kind: KeyboardKeyKind,
+        from session: KeyboardKeyTouchSession,
+        isRepeat: Bool = false
+    ) -> Bool {
+        let activation = KeyboardKeyActivation(
+            kind: kind,
+            location: session.activationLocation,
+            keyFrame: session.keyView.map { $0.convert($0.bounds, to: self) } ?? .null,
+            timestamp: session.timestamp,
+            isRepeat: isRepeat
+        )
+        return onKeyActivated?(activation) ?? false
     }
 
     private func activateSpaceTrackpad() {

@@ -61,6 +61,32 @@ extension KeyboardViewController {
         }
     }
 
+    /// A first press of space, return, shift, delete, 123, or the globe that landed close to
+    /// a letter key types that letter instead when the letter is the likelier intent.
+    func resolveContestedTap(_ activation: KeyboardKeyActivation) -> KeyboardKeyActivation {
+        guard symbolPage == .letters,
+              typingTraits.allowsPredictions,
+              activation.isRepeat == false,
+              let otherKey = Self.contestedKey(for: activation.kind),
+              let letter = predictionCoordinator.intendedLetter(
+                  forTapAt: activation.location,
+                  onKeyWithFrame: activation.keyFrame,
+                  otherKey: otherKey
+              ) else {
+            return activation
+        }
+        keypressHaptics.emitKeypressIfEnabled()
+        let letterKey = KeyboardKeyModel(kind: .character(String(letter)), widthUnits: 1)
+            .applying(letterCaseController.letterCase)
+        return KeyboardKeyActivation(
+            kind: letterKey.kind,
+            location: activation.location,
+            keyFrame: activation.keyFrame,
+            timestamp: activation.timestamp,
+            isRepeat: false
+        )
+    }
+
     /// Records a typed letter's touch for prediction and ends a one-letter shift.
     func recordTypedCharacter(_ activation: KeyboardKeyActivation) {
         guard case let .character(value) = activation.kind,
@@ -90,6 +116,17 @@ extension KeyboardViewController {
                     lexicon: lexicon
                 )
             )
+        }
+    }
+
+    private static func contestedKey(for kind: KeyboardKeyKind) -> ContestedTap.OtherKey? {
+        switch kind {
+        case .space, .returnKey:
+            return .wordBoundary
+        case .shift, .delete, .numberSymbols, .nextKeyboard:
+            return .control
+        default:
+            return nil
         }
     }
 

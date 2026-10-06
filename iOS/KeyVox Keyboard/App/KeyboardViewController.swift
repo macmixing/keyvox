@@ -514,7 +514,8 @@ final class KeyboardViewController: UIInputViewController {
     }
 
     @discardableResult
-    func handleKeyActivation(_ activation: KeyboardKeyActivation) -> Bool {
+    func handleKeyActivation(_ keyActivation: KeyboardKeyActivation) -> Bool {
+        let activation = resolveContestedTap(keyActivation)
         let kind = activation.kind
         if kind == .restoreFullKeyboard {
             guard keysMode == .compact else { return false }

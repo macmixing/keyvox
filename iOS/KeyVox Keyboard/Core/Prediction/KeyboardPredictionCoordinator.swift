@@ -13,6 +13,8 @@ final class KeyboardPredictionCoordinator {
     private let session = PredictiveTypingSession()
     private let queue = DispatchQueue(label: "org.keyvox.keyboard.prediction", qos: .userInitiated)
     private let textBeforeCursor: () -> String?
+    private let contestedTapPolicy = ContestedTapPolicy()
+    private var letterKeys: KeyCenterMap?
     private var latestResult: PredictionResult?
     private var pendingRequest: PredictionRequest?
     private var publishedBar = SuggestionBar.empty
@@ -36,6 +38,7 @@ final class KeyboardPredictionCoordinator {
 
     func updateGeometry(_ geometry: [KeyboardCharacterKeyGeometry], keyboardSize: CGSize) {
         let keys = geometry.map { PredictionKeyGeometry(character: $0.character, frame: $0.frame) }
+        letterKeys = KeyCenterMap(geometry: keys)
         queue.async { [weak self] in
             guard let self else { return }
             if let computer = self.computer {
@@ -111,6 +114,30 @@ final class KeyboardPredictionCoordinator {
             return session.wordBoundaryEdit(separator: separator, textBeforeCursor: text, result: nil)
         }
         return session.wordBoundaryEdit(separator: separator, textBeforeCursor: text, result: result)
+    }
+
+    /// The letter a tap on another key was meant for, or nil to keep that key. Only taps
+    /// close to a letter key wait for the engine.
+    func intendedLetter(
+        forTapAt location: CGPoint,
+        onKeyWithFrame keyFrame: CGRect,
+        otherKey: ContestedTap.OtherKey
+    ) -> Character? {
+        let maximumDistance = contestedTapPolicy.parameters.maximumDistance
+        guard let letterKeys,
+              letterKeys.letters(near: location, within: maximumDistance).isEmpty == false else {
+            return nil
+        }
+        let request = session.request(textBeforeCursor: textBeforeCursor())
+        return queue.sync {
+            try? resolvedComputer()?.intendedLetter(
+                forTapAt: location,
+                onKeyWithFrame: keyFrame,
+                otherKey: otherKey,
+                request: request,
+                policy: contestedTapPolicy
+            )
+        }
     }
 
     func backspaceEdit() -> TextEdit? {
