@@ -1,6 +1,11 @@
-/// Carries the typed word's capitalization over to a suggested replacement.
+/// How a suggested word is written: with the typed word's capitalization carried over, and
+/// the pronoun "I", alone or contracted ("i'm"), always capitalized.
 public enum WordCasing {
     public static func apply(of typedWord: String, to suggestion: String) -> String {
+        capitalizingPronoun(carryingCapitalization(of: typedWord, to: suggestion))
+    }
+
+    private static func carryingCapitalization(of typedWord: String, to suggestion: String) -> String {
         let letters = typedWord.filter(\.isLetter)
         guard letters.isEmpty == false else { return suggestion }
         if letters.count > 1, letters == letters.uppercased(), letters != letters.lowercased() {
@@ -10,5 +15,14 @@ public enum WordCasing {
             return suggestion
         }
         return first.uppercased() + suggestion.dropFirst()
+    }
+
+    /// `word` with the pronoun "I", alone or contracted, capitalized.
+    public static func capitalizingPronoun(_ word: String) -> String {
+        let rest = word.dropFirst()
+        guard word.first == "i", rest.isEmpty || rest.first == "'" || rest.first == "’" else {
+            return word
+        }
+        return "I" + rest
     }
 }

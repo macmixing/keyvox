@@ -198,7 +198,8 @@ public final class PredictionComputer: @unchecked Sendable {
     }
 
     /// Text replacements always expand; personal words and words the user kept are never
-    /// replaced; otherwise the grammatical fix or the corrector's choice applies.
+    /// replaced; otherwise the corrector's choice, or the typed word itself, is written
+    /// with the typed capitalization and a capital pronoun "I" ("i'm" becomes "I'm").
     private static func replacement(
         typed: String,
         request: PredictionRequest,
@@ -210,10 +211,8 @@ public final class PredictionComputer: @unchecked Sendable {
             return expansion
         }
         guard vocabulary.contains(typed) == false else { return nil }
-        if let grammatical = EnglishAutomaticCorrectionPolicy.grammaticalReplacement(for: typed) {
-            return grammatical
-        }
-        return decision.replacement.map { WordCasing.apply(of: typed, to: $0) }
+        let written = WordCasing.apply(of: typed, to: decision.replacement ?? typed)
+        return written == typed ? nil : written
     }
 
     private func nextWordBar(
@@ -233,6 +232,6 @@ public final class PredictionComputer: @unchecked Sendable {
             candidates: vocabulary.continuations(after: previousWord)
                 + response.suggestions.map(\.word)
         )
-        return SuggestionBarComposer.composeNextWords(ranked.map(\.word))
+        return SuggestionBarComposer.composeNextWords(ranked.map { WordCasing.capitalizingPronoun($0.word) })
     }
 }
