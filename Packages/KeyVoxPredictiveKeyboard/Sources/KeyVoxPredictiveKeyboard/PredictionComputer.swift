@@ -100,6 +100,63 @@ public final class PredictionComputer: @unchecked Sendable {
         )
     }
 
+    /// The letter a tap on a non-letter key was meant for, or nil to keep that key.
+    /// - Parameter otherKeyFrame: The frame of the key the touch hit, in the same
+    ///   coordinates as the letter key geometry.
+    public func intendedLetter(
+        forTapAt touch: CGPoint,
+        onKeyWithFrame otherKeyFrame: CGRect,
+        otherKey: ContestedTap.OtherKey,
+        request: PredictionRequest,
+        policy: ContestedTapPolicy
+    ) throws -> Character? {
+        lock.lock()
+        let keys = keys
+        let vocabulary = vocabulary
+        lock.unlock()
+        let nearby = keys.letters(near: touch, within: policy.parameters.maximumDistance)
+        guard nearby.isEmpty == false else { return nil }
+        let language = ContextLanguageScorer(engine: engine, vocabulary: vocabulary)
+        let typed = request.currentWord.replacingOccurrences(of: "’", with: "'").lowercased()
+
+        var letters: [ContestedTap.Letter] = []
+        for (letter, distance) in nearby {
+            let prefix = typed + String(letter)
+            let completions = try engine.predict(
+                typedWord: prefix,
+                previousWords: request.previousWords,
+                touches: [],
+                mode: .completion
+            ).suggestions.map(\.word) + vocabulary.candidates(near: prefix) + [prefix]
+            var continuation: Double?
+            for word in completions where word.lowercased().hasPrefix(prefix) {
+                let score = try language.score(of: word, previousWords: request.previousWords)
+                guard score.isDictionaryWord else { continue }
+                continuation = max(continuation ?? -.infinity, score.logProbability)
+            }
+            if let continuation {
+                letters.append(ContestedTap.Letter(
+                    letter: letter,
+                    distance: distance,
+                    continuationLogProbability: continuation
+                ))
+            }
+        }
+
+        var ending: Double?
+        if typed.isEmpty == false {
+            let score = try language.score(of: typed, previousWords: request.previousWords)
+            ending = score.isDictionaryWord ? score.logProbability : nil
+        }
+        return policy.intendedLetter(for: ContestedTap(
+            otherKey: otherKey,
+            landedOnOtherKey: otherKeyFrame.contains(touch),
+            startsWord: typed.isEmpty,
+            letters: letters,
+            endingLogProbability: ending
+        ))
+    }
+
     /// Text replacements always expand; personal words and words the user kept are never
     /// replaced; otherwise the grammatical fix or the corrector's choice applies.
     private static func replacement(
