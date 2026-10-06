@@ -105,7 +105,8 @@ final class KeyboardPredictionCoordinator {
     }
 
     /// What typing `separator` after the current word inserts, applying any
-    /// autocorrection first; nil when there is no word to finish.
+    /// autocorrection first, and revising the word before it when the current word shows
+    /// it was a typo; nil when there is no word to finish.
     func wordBoundaryEdit(separator: String, allowsAutocorrection: Bool) -> TextEdit? {
         let text = textBeforeCursor()
         let request = session.request(textBeforeCursor: text)
@@ -113,7 +114,16 @@ final class KeyboardPredictionCoordinator {
         guard allowsAutocorrection, let result = currentResult(for: request) else {
             return session.wordBoundaryEdit(separator: separator, textBeforeCursor: text, result: nil)
         }
-        return session.wordBoundaryEdit(separator: separator, textBeforeCursor: text, result: result)
+        let revision = session.revisionRequest(textBeforeCursor: text, result: result)
+            .flatMap { revisionRequest in
+                queue.sync { try? resolvedComputer()?.revision(for: revisionRequest) }
+            }
+        return session.wordBoundaryEdit(
+            separator: separator,
+            textBeforeCursor: text,
+            result: result,
+            revision: revision
+        )
     }
 
     /// The letter a tap on another key was meant for, or nil to keep that key. Only taps
