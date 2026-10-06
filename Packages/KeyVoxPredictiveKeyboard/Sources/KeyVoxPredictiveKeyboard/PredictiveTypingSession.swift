@@ -104,7 +104,7 @@ public final class PredictiveTypingSession {
     /// What typing `separator` (a space, return, or punctuation) after the current word
     /// inserts: the autocorrection from `result` when it was computed for this word, and
     /// `revision` in place of the word before it when one was decided, followed by the
-    /// separator. Backspace can undo what a space changed. Punctuation right after a
+    /// separator. Backspace right after can undo what it changed. Punctuation right after a
     /// suggestion-bar tap replaces the space the tap added.
     public func wordBoundaryEdit(
         separator: String,
@@ -143,25 +143,21 @@ public final class PredictiveTypingSession {
                 return TextEdit(deleteCount: replacesChosenSpace ? 1 : 0, insertText: separator)
             }
             let inserted = autocorrection + separator
-            if separator == " " {
-                lastAutocorrection = AppliedAutocorrection(
-                    original: currentWord,
-                    insertedText: inserted,
-                    replacedWords: [currentWord]
-                )
-            }
+            lastAutocorrection = AppliedAutocorrection(
+                original: currentWord,
+                insertedText: inserted,
+                replacedWords: [currentWord]
+            )
             return TextEdit(deleteCount: currentWord.count, insertText: inserted)
         }
         let (previous, replacement) = revised
         let original = previous.word + " " + currentWord
         let inserted = replacement + " " + (autocorrection ?? currentWord) + separator
-        if separator == " " {
-            lastAutocorrection = AppliedAutocorrection(
-                original: original,
-                insertedText: inserted,
-                replacedWords: autocorrection == nil ? [previous.word] : [previous.word, currentWord]
-            )
-        }
+        lastAutocorrection = AppliedAutocorrection(
+            original: original,
+            insertedText: inserted,
+            replacedWords: autocorrection == nil ? [previous.word] : [previous.word, currentWord]
+        )
         return TextEdit(deleteCount: original.count, insertText: inserted)
     }
 
