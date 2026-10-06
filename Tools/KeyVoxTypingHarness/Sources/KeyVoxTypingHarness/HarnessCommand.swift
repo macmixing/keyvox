@@ -220,7 +220,7 @@ enum HarnessCommand {
         let parts = assignment.split(separator: "=", maxSplits: 1).map(String.init)
         guard parts.count == 2,
               let value = Double(parts[1]),
-              let dimension = ParameterSearch.settableDimensions.first(where: { $0.name == parts[0] }) else {
+              let dimension = ParameterSearch.dimensions.first(where: { $0.name == parts[0] }) else {
             throw HarnessError.invalidValue("--param \(assignment)")
         }
         parameters[keyPath: dimension.keyPath] = value

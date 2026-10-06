@@ -60,6 +60,8 @@ enum TuneCommand {
                         typedWord: typing.typedWord,
                         touches: typing.touches.map(\.location),
                         previousWords: previousWords,
+                        followingWord: sentence.truthWords.indices.contains(index + 1)
+                            ? sentence.truthWords[index + 1] : nil,
                         candidates: response.suggestions.map(\.word)
                     ))
                 }
@@ -77,12 +79,22 @@ enum TuneCommand {
         let corrector = NoisyChannelCorrector(parameters: parameters, keys: keys, language: language)
         var score = TuningScore()
         for sample in samples {
-            let final = try corrector.decide(
+            var final = try corrector.decide(
                 typedWord: sample.typedWord,
                 touches: sample.touches,
                 previousWords: sample.previousWords,
                 candidates: sample.candidates
             ).replacement ?? sample.typedWord
+            // A word left as typed gets a second look once the next word is known.
+            if final == sample.typedWord, let followingWord = sample.followingWord {
+                final = try corrector.decide(
+                    typedWord: sample.typedWord,
+                    touches: sample.touches,
+                    previousWords: sample.previousWords,
+                    followingWord: followingWord,
+                    candidates: sample.candidates
+                ).replacement ?? sample.typedWord
+            }
             score.record(intended: sample.intendedWord, typed: sample.typedWord, final: final)
         }
         return score
