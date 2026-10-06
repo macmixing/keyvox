@@ -6,6 +6,32 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.3.14] - 2026-10-06
+
+Prevents custom-dictionary matches from joining words across punctuation.
+
+### Fixed
+
+- Fixed custom-dictionary matching joining words separated by sentence or clause punctuation into a dictionary entry while preserving exact matches across abbreviation periods.
+
+### Package versions
+
+KeyVox macOS 1.3.14:
+- KeyVoxCore            1.3.6
+- KeyVoxLinguistics     1.0.0
+- KeyVoxLocalInference  1.0.4
+- KeyVoxModels          1.0.0
+- KeyVoxParakeet        1.1.0
+- KeyVoxPromotions      1.1.0
+- KeyVoxState           1.0.0
+- KeyVoxStyleRewrite    1.1.0
+- KeyVoxTextComposition 1.1.0
+- KeyVoxVibesAdapters   1.0.4
+- KeyVoxVoiceActivity   1.1.1
+- KeyVoxWhisper         1.2.0
+
+---
+
 ## [1.3.13] - 2026-09-27
 
 Improves custom-dictionary accuracy and protects continuous speech in long dictations.
