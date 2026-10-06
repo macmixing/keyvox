@@ -15,12 +15,19 @@ enum ExplainCommand {
         let session = PredictiveTypingSession()
         var text = options.previousWords.reversed().joined(separator: " ")
         if text.isEmpty == false { text.append(" ") }
-        for (letter, touch) in zip(options.typedWord, options.touches) {
+        for (index, letter) in options.typedWord.enumerated() {
             text.append(letter)
-            session.recordTap(at: touch, textBeforeCursor: text)
+            if options.touches.indices.contains(index) {
+                session.recordTap(at: options.touches[index], textBeforeCursor: text)
+            }
         }
         let request = session.request(textBeforeCursor: text)
         let result = try computer.compute(request)
+        print(String(
+            format: "engine load added %.1f MB; process footprint now %.1f MB",
+            MemoryFootprint.megabytes(setup.startupFootprintBytes),
+            MemoryFootprint.megabytes(MemoryFootprint.current())
+        ))
         print("request word=\(request.currentWord) previous=\(request.previousWords) touches=\(request.touches.count)")
         print("autocorrection: \(result.autocorrection ?? "none")")
         print("bar: \(result.bar.items.map { "\($0.text) (\($0.kind))" })")

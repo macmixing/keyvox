@@ -8,13 +8,17 @@ struct EngineSetup {
     let keys: KeyCenterMap
     let language: ContextLanguageScorer
     let startupMilliseconds: Double
+    /// Physical footprint the engine added when it loaded.
+    let startupFootprintBytes: UInt64
 
     init() throws {
+        let footprintBefore = MemoryFootprint.current()
         let started = ContinuousClock.now
         engine = try EnglishPredictiveEngine()
         layout = KeyboardLayoutModel()
         engine.updateKeyboardGeometry(layout.predictionGeometry, keyboardSize: layout.keyboardSize)
         startupMilliseconds = Self.milliseconds(since: started)
+        startupFootprintBytes = MemoryFootprint.current() &- footprintBefore
         keys = KeyCenterMap(geometry: layout.predictionGeometry)
         language = ContextLanguageScorer(engine: engine)
     }

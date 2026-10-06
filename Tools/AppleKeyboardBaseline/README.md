@@ -39,3 +39,20 @@ swift run -c release --scratch-path /tmp/keyvox-typing-harness KeyVoxTypingHarne
 The Simulator must show the software keyboard (I/O > Keyboard > Connect Hardware
 Keyboard off). Results are rewritten after every sentence, so an interrupted run keeps
 its progress.
+
+## Replay on the KeyVox keyboard
+
+Install the KeyVox app on a separate simulator, then add the KeyVox keyboard with Full
+Access:
+
+```sh
+TEST_RUNNER_SETUP_KEYBOARD_NAME=KeyVox \
+xcodebuild test -project AppleKeyboardBaseline.xcodeproj -scheme BaselineUITests \
+  -destination "platform=iOS Simulator,id=<simulator-udid>" \
+  -derivedDataPath /tmp/keyvox-apple-baseline \
+  -only-testing:BaselineUITests/KeyboardSetupTests
+```
+
+Replay the same plan with `TEST_RUNNER_BASELINE_KEYBOARD_MARKER=Shift` (a key label only
+the KeyVox keyboard has) and `TEST_RUNNER_BASELINE_KEYBOARD_NAME=KeyVox`. Add
+`TEST_RUNNER_BASELINE_DISABLE_AUTOCORRECT=1` to record the raw typed letters instead.
