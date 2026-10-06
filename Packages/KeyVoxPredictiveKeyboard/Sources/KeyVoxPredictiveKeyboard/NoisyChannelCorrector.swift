@@ -49,7 +49,7 @@ public struct NoisyChannelCorrector: Sendable {
 
     public static let standardParameters = Parameters(
         touch: TouchAlignmentScorer.Parameters(
-            touchStandardDeviation: 0.45,
+            touchStandardDeviation: 0.4,
             extraTouchCost: 6,
             skippedLetterCost: 4,
             skippedRepeatedLetterCost: 2,
@@ -60,7 +60,7 @@ public struct NoisyChannelCorrector: Sendable {
         correctionMargin: 0.5,
         dictionaryWordCorrectionMargin: 4,
         apostropheRestorationMargin: 0,
-        revisionMargin: 4
+        revisionMargin: 2
     )
 
     public struct ScoredCandidate: Sendable, Equatable {
