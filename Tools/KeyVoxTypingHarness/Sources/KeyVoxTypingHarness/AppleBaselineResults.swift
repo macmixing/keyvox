@@ -9,6 +9,8 @@ struct AppleBaselineResults: Codable {
 
     let device: String
     let systemVersion: String
+    /// "System" for Apple's keyboard, otherwise the replayed third-party keyboard.
+    let keyboard: String?
     let sentences: [Sentence]
 
     static func load(from path: String) throws -> AppleBaselineResults {

@@ -1,3 +1,4 @@
+import CoreGraphics
 import Foundation
 import KeyVoxPredictiveKeyboard
 
@@ -36,10 +37,19 @@ enum HarnessCommand {
         var parameters = NoisyChannelCorrector.standardParameters
     }
 
+    struct ExplainOptions {
+        var typedWord = ""
+        var touches: [CGPoint] = []
+        /// Newest first.
+        var previousWords: [String] = []
+        var parameters = NoisyChannelCorrector.standardParameters
+    }
+
     case evaluate(EvaluateOptions)
     case plan(PlanOptions)
     case compare(CompareOptions)
     case tune(TuneOptions)
+    case explain(ExplainOptions)
 
     static let usage = """
     usage:
@@ -51,6 +61,8 @@ enum HarnessCommand {
       KeyVoxTypingHarness compare --plan <path> --apple <results-json> [--disagreements <tsv-path>]
                                   [--param <name>=<value>...]
       KeyVoxTypingHarness tune --tune-plan <path>... [--holdout-plan <path>...] [--passes <count>]
+      KeyVoxTypingHarness explain --word <typed> [--touches "x,y x,y ..."] [--previous <newest,older,...>]
+                                  [--param <name>=<value>...]
     """
 
     init(arguments: [String]) throws {
@@ -118,6 +130,29 @@ enum HarnessCommand {
             }
             guard options.tuningPlanPaths.isEmpty == false else { throw HarnessError.usage }
             self = .tune(options)
+        case "explain":
+            var options = ExplainOptions()
+            while let flag = remaining.popFirst() {
+                switch flag {
+                case "--word": options.typedWord = try Self.value(after: flag, in: &remaining)
+                case "--touches":
+                    options.touches = try Self.value(after: flag, in: &remaining)
+                        .split(separator: " ")
+                        .map { pair in
+                            let parts = pair.split(separator: ",").compactMap { Double($0) }
+                            guard parts.count == 2 else { throw HarnessError.invalidValue(flag) }
+                            return CGPoint(x: parts[0], y: parts[1])
+                        }
+                case "--previous":
+                    options.previousWords = try Self.value(after: flag, in: &remaining)
+                        .split(separator: ",").map(String.init)
+                case "--param":
+                    try Self.applyParameter(try Self.value(after: flag, in: &remaining), to: &options.parameters)
+                default: throw HarnessError.unknownFlag(flag)
+                }
+            }
+            guard options.typedWord.isEmpty == false else { throw HarnessError.usage }
+            self = .explain(options)
         default:
             throw HarnessError.usage
         }

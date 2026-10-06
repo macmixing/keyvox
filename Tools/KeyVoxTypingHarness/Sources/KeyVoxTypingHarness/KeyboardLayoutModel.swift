@@ -33,10 +33,11 @@ struct KeyboardLayoutModel {
             }
         }
         keyFrames = frames
+        // The key grid the keyboard reports also holds the bottom row (123, space, return).
+        let gridRowCount = Double(Self.rows.count + 1)
         keyboardSize = CGSize(
             width: gridWidth,
-            height: Double(Self.rows.count) * Self.keyHeight
-                + Double(Self.rows.count - 1) * Self.rowSpacing
+            height: gridRowCount * Self.keyHeight + (gridRowCount - 1) * Self.rowSpacing
         )
     }
 

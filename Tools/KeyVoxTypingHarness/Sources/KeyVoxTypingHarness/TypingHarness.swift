@@ -13,6 +13,8 @@ struct TypingHarness {
                 try CompareCommand.run(options)
             case .tune(let options):
                 try TuneCommand.run(options)
+            case .explain(let options):
+                try ExplainCommand.run(options)
             }
         } catch {
             FileHandle.standardError.write(Data("\(error)\n".utf8))

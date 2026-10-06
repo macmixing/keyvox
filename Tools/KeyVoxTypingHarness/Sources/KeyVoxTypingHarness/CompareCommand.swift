@@ -57,7 +57,7 @@ enum CompareCommand {
 
         let lines = [
             "Apple vs KeyVox on identical planned taps",
-            "  Apple keyboard: \(apple.device), iOS \(apple.systemVersion)",
+            "  simulator keyboard: \(apple.keyboard ?? "System") on \(apple.device), iOS \(apple.systemVersion)",
             "  sentences: \(apple.sentences.count)   words: \(total)"
                 + "   noise: \(plan.noiseInKeyPitches) key pitches",
             "",
