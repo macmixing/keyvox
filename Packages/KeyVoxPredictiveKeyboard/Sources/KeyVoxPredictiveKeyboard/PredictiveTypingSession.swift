@@ -28,6 +28,8 @@ public final class PredictiveTypingSession {
     private var wordTouches = TypedWordTouches()
     private var lastAutocorrection: AppliedAutocorrection?
     private var revisableWord: RevisableWord?
+    /// What the last suggestion-bar tap inserted, ending in the space punctuation replaces.
+    private var chosenText: String?
     /// Words whose autocorrection the user undid; space keeps them as typed.
     private var keptWords: Set<String> = []
 
@@ -36,6 +38,7 @@ public final class PredictiveTypingSession {
     /// Call after a tapped character has been inserted.
     public func recordTap(at location: CGPoint, textBeforeCursor: String?) {
         lastAutocorrection = nil
+        chosenText = nil
         let context = TypingTextContext(textBeforeCursor: textBeforeCursor)
         if context.currentWord.isEmpty {
             wordTouches.reset()
@@ -50,6 +53,9 @@ public final class PredictiveTypingSession {
            textBeforeCursor?.hasSuffix(lastAutocorrection.insertedText) != true {
             self.lastAutocorrection = nil
         }
+        if let chosenText, textBeforeCursor?.hasSuffix(chosenText) != true {
+            self.chosenText = nil
+        }
         wordTouches.synchronize(currentWord: TypingTextContext(textBeforeCursor: textBeforeCursor).currentWord)
     }
 
@@ -58,6 +64,7 @@ public final class PredictiveTypingSession {
         wordTouches.reset()
         lastAutocorrection = nil
         revisableWord = nil
+        chosenText = nil
         keptWords = []
     }
 
@@ -97,7 +104,8 @@ public final class PredictiveTypingSession {
     /// What typing `separator` (a space, return, or punctuation) after the current word
     /// inserts: the autocorrection from `result` when it was computed for this word, and
     /// `revision` in place of the word before it when one was decided, followed by the
-    /// separator. Backspace can undo what a space changed.
+    /// separator. Backspace can undo what a space changed. Punctuation right after a
+    /// suggestion-bar tap replaces the space the tap added.
     public func wordBoundaryEdit(
         separator: String,
         textBeforeCursor: String?,
@@ -107,6 +115,9 @@ public final class PredictiveTypingSession {
         let context = TypingTextContext(textBeforeCursor: textBeforeCursor)
         let currentWord = context.currentWord
         let touches = wordTouches.touches(for: currentWord)
+        let replacesChosenSpace = currentWord.isEmpty
+            && separator.allSatisfy(\.isWhitespace) == false
+            && chosenText.map { textBeforeCursor?.hasSuffix($0) == true } == true
         let revised = revisableWord(before: context, textBeforeCursor: textBeforeCursor)
             .flatMap { revisable in
                 revision.flatMap { $0 != revisable.word ? (revisable, $0) : nil }
@@ -115,6 +126,7 @@ public final class PredictiveTypingSession {
         wordTouches.reset()
         lastAutocorrection = nil
         revisableWord = nil
+        chosenText = nil
 
         if autocorrection == nil, separator == " ", currentWord.isEmpty == false,
            keptWords.contains(currentWord.lowercased()) == false {
@@ -127,7 +139,9 @@ public final class PredictiveTypingSession {
         }
 
         guard let revised else {
-            guard let autocorrection else { return TextEdit(deleteCount: 0, insertText: separator) }
+            guard let autocorrection else {
+                return TextEdit(deleteCount: replacesChosenSpace ? 1 : 0, insertText: separator)
+            }
             let inserted = autocorrection + separator
             if separator == " " {
                 lastAutocorrection = AppliedAutocorrection(
@@ -176,8 +190,10 @@ public final class PredictiveTypingSession {
         wordTouches.reset()
         if item.kind == .typed {
             keptWords.insert(context.currentWord.lowercased())
+            chosenText = context.currentWord + " "
             return TextEdit(deleteCount: 0, insertText: " ")
         }
+        chosenText = item.text + " "
         return TextEdit(deleteCount: context.currentWord.count, insertText: item.text + " ")
     }
 
