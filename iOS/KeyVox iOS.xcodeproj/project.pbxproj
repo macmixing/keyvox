@@ -32,10 +32,10 @@
 		9B5100052FB1000100AA0001 /* KeyVoxLocalInference in Frameworks */ = {isa = PBXBuildFile; productRef = 9B5100032FB1000100AA0001 /* KeyVoxLocalInference */; };
 		9B5200012FB2000100AA0001 /* KeyVoxVibesAdapters in Frameworks */ = {isa = PBXBuildFile; productRef = 9B5200032FB2000100AA0001 /* KeyVoxVibesAdapters */; };
 		9B5200042FB2000100AA0001 /* KeyVoxVibesAdapters in Frameworks */ = {isa = PBXBuildFile; productRef = 9B5200032FB2000100AA0001 /* KeyVoxVibesAdapters */; };
-		B4C200012FF2000100AA0001 /* KeyVoxTextComposition in Frameworks */ = {isa = PBXBuildFile; productRef = B4C200032FF2000100AA0001 /* KeyVoxTextComposition */; };
-		B4C200022FF2000100AA0001 /* KeyVoxTextComposition in Frameworks */ = {isa = PBXBuildFile; productRef = B4C200032FF2000100AA0001 /* KeyVoxTextComposition */; };
 		A7E100032FF5000100AA0001 /* KeyVoxPredictiveKeyboard in Frameworks */ = {isa = PBXBuildFile; productRef = A7E100022FF5000100AA0001 /* KeyVoxPredictiveKeyboard */; };
 		A7E100042FF5000100AA0001 /* KeyVoxPredictiveKeyboard in Frameworks */ = {isa = PBXBuildFile; productRef = A7E100022FF5000100AA0001 /* KeyVoxPredictiveKeyboard */; };
+		B4C200012FF2000100AA0001 /* KeyVoxTextComposition in Frameworks */ = {isa = PBXBuildFile; productRef = B4C200032FF2000100AA0001 /* KeyVoxTextComposition */; };
+		B4C200022FF2000100AA0001 /* KeyVoxTextComposition in Frameworks */ = {isa = PBXBuildFile; productRef = B4C200032FF2000100AA0001 /* KeyVoxTextComposition */; };
 		C10000012FF0000100AA0001 /* KeyVoxCore in Frameworks */ = {isa = PBXBuildFile; productRef = 8E9E38952F5BF56600EAFA72 /* KeyVoxCore */; };
 		C10000022FF0000100AA0001 /* KeyVoxCore in Frameworks */ = {isa = PBXBuildFile; productRef = 8E9E38952F5BF56600EAFA72 /* KeyVoxCore */; };
 		D10000012FF4000100AA0001 /* KeyVoxWhisper in Frameworks */ = {isa = PBXBuildFile; productRef = D10000072FF4000100AA0001 /* KeyVoxWhisper */; };
@@ -145,6 +145,7 @@
 				Core/Input/KeyboardKeyActivation.swift,
 				Core/Input/KeyboardLetterCaseController.swift,
 				Core/Input/KeyboardSpecialKeyInteractionSupport.swift,
+				Core/Input/KeyboardSymbolPageReturnTracker.swift,
 				Core/Input/KeyboardTextInputController.swift,
 				Core/Input/KeyboardTouchRouterGestureRecognizer.swift,
 				Core/KeyboardDictationModelStatus.swift,
@@ -1314,13 +1315,13 @@
 			isa = XCLocalSwiftPackageReference;
 			relativePath = ../Packages/KeyVoxVibesAdapters;
 		};
-		B4C200042FF2000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxTextComposition" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = ../Packages/KeyVoxTextComposition;
-		};
 		A7E100012FF5000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxPredictiveKeyboard" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = ../Packages/KeyVoxPredictiveKeyboard;
+		};
+		B4C200042FF2000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxTextComposition" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../Packages/KeyVoxTextComposition;
 		};
 		D10000042FF4000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxWhisper" */ = {
 			isa = XCLocalSwiftPackageReference;
@@ -1399,15 +1400,15 @@
 			package = 9B5200022FB2000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxVibesAdapters" */;
 			productName = KeyVoxVibesAdapters;
 		};
-		B4C200032FF2000100AA0001 /* KeyVoxTextComposition */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = B4C200042FF2000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxTextComposition" */;
-			productName = KeyVoxTextComposition;
-		};
 		A7E100022FF5000100AA0001 /* KeyVoxPredictiveKeyboard */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = A7E100012FF5000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxPredictiveKeyboard" */;
 			productName = KeyVoxPredictiveKeyboard;
+		};
+		B4C200032FF2000100AA0001 /* KeyVoxTextComposition */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B4C200042FF2000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxTextComposition" */;
+			productName = KeyVoxTextComposition;
 		};
 		D10000072FF4000100AA0001 /* KeyVoxWhisper */ = {
 			isa = XCSwiftPackageProductDependency;

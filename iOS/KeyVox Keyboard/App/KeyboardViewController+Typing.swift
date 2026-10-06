@@ -87,6 +87,16 @@ extension KeyboardViewController {
         )
     }
 
+    /// Returns to the letter page for a space that follows a symbol typed on a symbol page.
+    /// Compact Keys and fields that open on the number page stay where they are.
+    func updateSymbolPage(for kind: KeyboardKeyKind) {
+        guard keysMode == .full, typingTraits.prefersNumberPage == false else { return }
+        let page = symbolPageReturnTracker.page(for: kind, on: symbolPage)
+        if page != symbolPage {
+            symbolPage = page
+        }
+    }
+
     /// Records a typed letter's touch for prediction and ends a one-letter shift.
     func recordTypedCharacter(_ activation: KeyboardKeyActivation) {
         guard case let .character(value) = activation.kind,

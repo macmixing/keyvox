@@ -72,6 +72,7 @@ final class KeyboardViewController: UIInputViewController {
         }
     )
     let letterCaseController = KeyboardLetterCaseController()
+    var symbolPageReturnTracker = KeyboardSymbolPageReturnTracker()
     lazy var predictionCoordinator = KeyboardPredictionCoordinator(textBeforeCursor: { [weak self] in
         self?.textDocumentProxy.documentContextBeforeInput
     })
@@ -528,6 +529,7 @@ final class KeyboardViewController: UIInputViewController {
             appSettingsStore.setCompactKeysActive(false)
             keysMode = .full
         }
+        updateSymbolPage(for: kind)
         if let handled = handleTypingActivation(activation) {
             return handled
         }
