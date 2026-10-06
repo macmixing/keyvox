@@ -18,34 +18,40 @@ public struct NoisyChannelCorrector: Sendable {
         public var unknownWordPenalty: Double
         public var correctionMargin: Double
         public var dictionaryWordCorrectionMargin: Double
+        /// The margin for restoring only an apostrophe ("im" to "i'm"), which applies even
+        /// when the typed letters happen to spell a dictionary word ("ill", "were").
+        public var apostropheRestorationMargin: Double
 
         public init(
             touch: TouchAlignmentScorer.Parameters,
             languageWeight: Double,
             unknownWordPenalty: Double,
             correctionMargin: Double,
-            dictionaryWordCorrectionMargin: Double
+            dictionaryWordCorrectionMargin: Double,
+            apostropheRestorationMargin: Double
         ) {
             self.touch = touch
             self.languageWeight = languageWeight
             self.unknownWordPenalty = unknownWordPenalty
             self.correctionMargin = correctionMargin
             self.dictionaryWordCorrectionMargin = dictionaryWordCorrectionMargin
+            self.apostropheRestorationMargin = apostropheRestorationMargin
         }
     }
 
     public static let standardParameters = Parameters(
         touch: TouchAlignmentScorer.Parameters(
-            touchStandardDeviation: 0.4,
-            extraTouchCost: 4,
+            touchStandardDeviation: 0.45,
+            extraTouchCost: 6,
             skippedLetterCost: 4,
-            skippedRepeatedLetterCost: 1.5,
-            swappedLettersCost: 3
+            skippedRepeatedLetterCost: 2,
+            swappedLettersCost: 6
         ),
-        languageWeight: 1,
-        unknownWordPenalty: 3,
-        correctionMargin: 1,
-        dictionaryWordCorrectionMargin: 8
+        languageWeight: 0.8,
+        unknownWordPenalty: 0,
+        correctionMargin: 0.5,
+        dictionaryWordCorrectionMargin: 4,
+        apostropheRestorationMargin: 0
     )
 
     public struct ScoredCandidate: Sendable, Equatable {
@@ -97,17 +103,25 @@ public struct NoisyChannelCorrector: Sendable {
         }
         alternatives.sort { $0.score > $1.score }
 
-        let margin = typedCandidate.language.isDictionaryWord
-            ? parameters.dictionaryWordCorrectionMargin
-            : parameters.correctionMargin
         let replacement = alternatives.first.flatMap { best in
-            typed.count >= 2 && best.score - typedCandidate.score >= margin ? best.word : nil
+            typed.count >= 2 && best.score - typedCandidate.score >= margin(for: best, typed: typedCandidate)
+                ? best.word
+                : nil
         }
         return Decision(
             replacement: replacement,
             rankedAlternatives: alternatives,
             typed: typedCandidate
         )
+    }
+
+    private func margin(for best: ScoredCandidate, typed: ScoredCandidate) -> Double {
+        if best.word.lowercased().replacingOccurrences(of: "'", with: "") == typed.word {
+            return parameters.apostropheRestorationMargin
+        }
+        return typed.language.isDictionaryWord
+            ? parameters.dictionaryWordCorrectionMargin
+            : parameters.correctionMargin
     }
 
     private func scored(
