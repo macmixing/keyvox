@@ -85,6 +85,21 @@ extension DictionaryMatcher {
             && between.unicodeScalars.allSatisfy { CharacterSet.whitespacesAndNewlines.contains($0) }
     }
 
+    func isPunctuationBoundarySplit(window: [Token], text: String) -> Bool {
+        guard window.count == 2 else { return false }
+        let firstEnd = window[0].range.location + window[0].range.length
+        let secondStart = window[1].range.location
+        guard secondStart > firstEnd else { return false }
+
+        // Sentence or clause punctuation followed by whitespace. Dotted forms
+        // without whitespace ("A.I") are not boundaries.
+        let nsText = text as NSString
+        let between = nsText.substring(with: NSRange(location: firstEnd, length: secondStart - firstEnd))
+        let boundaryPunctuation = CharacterSet(charactersIn: ".,;:!?…")
+        return between.unicodeScalars.contains { boundaryPunctuation.contains($0) }
+            && between.unicodeScalars.contains { CharacterSet.whitespacesAndNewlines.contains($0) }
+    }
+
     func hasShortTokenSplitContext(start: Int, end: Int, tokens: [Token]) -> Bool {
         guard start > 0, end < tokens.count else { return false }
         let precedingClass = tokens[start - 1].lexicalClass

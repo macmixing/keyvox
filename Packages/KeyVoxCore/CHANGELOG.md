@@ -6,6 +6,22 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.3.6] - 2026-10-06
+
+Dictionary matching no longer merges words across sentence or clause punctuation.
+
+### Includes
+
+- Prevented split-word dictionary matching from fuzzily joining words separated by punctuation, such as `mix. Go ahead` becoming `MiGo ahead`.
+- Kept exact split-word joins across punctuation, such as `Mr. Beast` becoming `MrBeast`.
+- Added regression coverage for period, question mark, exclamation point, and comma boundaries.
+
+### Notes
+
+- `1.3.6` tracks punctuation-aware split-join boundaries in the shared Core dictionary matcher.
+
+---
+
 ## [1.3.5] - 2026-09-27
 
 Dictionary matching now preserves recognized pronouns instead of replacing them with unrelated names.
