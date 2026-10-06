@@ -10,17 +10,20 @@ struct BaselineResultsWriter {
 
         let device: String
         let systemVersion: String
+        let keyboard: String
         let sentences: [Sentence]
     }
 
     let path: String
     let device: String
     let systemVersion: String
+    let keyboard: String
 
     func write(_ texts: [String]) throws {
         let results = Results(
             device: device,
             systemVersion: systemVersion,
+            keyboard: keyboard,
             sentences: texts.map(Results.Sentence.init(text:))
         )
         let encoder = JSONEncoder()

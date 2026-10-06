@@ -10,8 +10,9 @@ struct TypingTextView: UIViewRepresentable {
     func makeUIView(context: Context) -> UITextView {
         let view = UITextView()
         view.font = .preferredFont(forTextStyle: .body)
-        view.autocorrectionType = .yes
-        view.spellCheckingType = .yes
+        let isAutocorrectionDisabled = ProcessInfo.processInfo.environment["DISABLE_AUTOCORRECT"] == "1"
+        view.autocorrectionType = isAutocorrectionDisabled ? .no : .yes
+        view.spellCheckingType = isAutocorrectionDisabled ? .no : .yes
         view.autocapitalizationType = .none
         view.smartQuotesType = .no
         view.smartDashesType = .no

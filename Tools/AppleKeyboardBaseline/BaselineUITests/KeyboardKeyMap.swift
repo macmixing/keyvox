@@ -1,7 +1,7 @@
 import XCTest
 
-/// Screen positions of the system keyboard's letter keys and space bar, used to turn
-/// planned key-pitch offsets into screen points on Apple's own key sizes.
+/// Screen positions of a keyboard's letter keys and space bar, used to turn planned
+/// key-pitch offsets into screen points on that keyboard's own key sizes.
 struct KeyboardKeyMap {
     private static let letters = Array("qwertyuiopasdfghjklzxcvbnm")
 
@@ -9,18 +9,29 @@ struct KeyboardKeyMap {
     private let pitch: CGSize
     let spaceCenter: CGPoint
 
-    init(keyboard: XCUIElement) throws {
+    /// The system keyboard, whose keys are exposed as keyboard keys.
+    init(systemKeyboard keyboard: XCUIElement) throws {
+        try self.init(spaceLabel: "space") { label in keyboard.keys[label] }
+    }
+
+    /// A third-party keyboard, whose keys are found by their accessibility labels.
+    init(customKeyboardIn app: XCUIApplication) throws {
+        try self.init(spaceLabel: "Space") { label in
+            app.descendants(matching: .any)
+                .matching(NSPredicate(format: "label == %@", label))
+                .firstMatch
+        }
+    }
+
+    private init(spaceLabel: String, key: (String) -> XCUIElement) throws {
         var centers: [Character: CGPoint] = [:]
         for letter in Self.letters {
-            let key = keyboard.keys[String(letter)]
-            guard key.exists else {
-                throw KeyMapError.missingKey(String(letter))
-            }
-            let frame = key.frame
-            centers[letter] = CGPoint(x: frame.midX, y: frame.midY)
+            let element = key(String(letter))
+            guard element.exists else { throw KeyMapError.missingKey(String(letter)) }
+            centers[letter] = CGPoint(x: element.frame.midX, y: element.frame.midY)
         }
-        let space = keyboard.keys["space"]
-        guard space.exists else { throw KeyMapError.missingKey("space") }
+        let space = key(spaceLabel)
+        guard space.exists else { throw KeyMapError.missingKey(spaceLabel) }
         spaceCenter = CGPoint(x: space.frame.midX, y: space.frame.midY)
         self.centers = centers
         pitch = CGSize(
