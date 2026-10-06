@@ -1,9 +1,9 @@
 import Foundation
 import KeyVoxPredictiveKeyboard
 
-/// `compare`: types the plan through the shipping KeyVox typing session and scores it
-/// word for word, against what the Apple keyboard produced from the same planned taps
-/// when Apple results are given.
+/// `compare`: types the plan through the shipping KeyVox typing session, optionally with
+/// the user's own words loaded, and scores it word for word, against what the Apple
+/// keyboard produced from the same planned taps when Apple results are given.
 enum CompareCommand {
     static func run(_ options: HarnessCommand.CompareOptions) throws {
         let plan = try TypingPlan.load(from: options.planPath)
@@ -19,6 +19,7 @@ enum CompareCommand {
             setup.layout.predictionGeometry,
             keyboardSize: setup.layout.keyboardSize
         )
+        try computer.updateVocabulary(PersonalVocabulary(words: options.personalWords, textReplacements: []))
         let typer = SessionTyper(
             computer: computer,
             layout: setup.layout,

@@ -37,6 +37,8 @@ enum HarnessCommand {
         var parameters = NoisyChannelCorrector.standardParameters
         /// Nil types every tap on the key it hits.
         var contestedTaps: ContestedTapPolicy.Parameters? = ContestedTapPolicy.standardParameters
+        /// The user's own words and phrases.
+        var personalWords: [String] = []
     }
 
     struct ExplainOptions {
@@ -45,6 +47,8 @@ enum HarnessCommand {
         /// Newest first.
         var previousWords: [String] = []
         var parameters = NoisyChannelCorrector.standardParameters
+        /// The user's own words and phrases.
+        var personalWords: [String] = []
     }
 
     case evaluate(EvaluateOptions)
@@ -63,9 +67,10 @@ enum HarnessCommand {
       KeyVoxTypingHarness compare --plan <path> [--apple <results-json>] [--disagreements <tsv-path>]
                                   [--param <name>=<value>...]
                                   [--no-contested-taps | --contested-param <name>=<value>...]
+                                  [--personal <word or phrase,...>]
       KeyVoxTypingHarness tune --tune-plan <path>... [--holdout-plan <path>...] [--passes <count>]
-      KeyVoxTypingHarness explain --word <typed> [--touches "x,y x,y ..."] [--previous <newest,older,...>]
-                                  [--param <name>=<value>...]
+      KeyVoxTypingHarness explain [--word <typed>] [--touches "x,y x,y ..."] [--previous <newest,older,...>]
+                                  [--personal <word or phrase,...>] [--param <name>=<value>...]
     """
 
     init(arguments: [String]) throws {
@@ -121,6 +126,9 @@ enum HarnessCommand {
                     guard var contestedTaps = options.contestedTaps else { throw HarnessError.invalidValue(flag) }
                     try Self.applyContestedParameter(try Self.value(after: flag, in: &remaining), to: &contestedTaps)
                     options.contestedTaps = contestedTaps
+                case "--personal":
+                    options.personalWords = try Self.value(after: flag, in: &remaining)
+                        .split(separator: ",").map(String.init)
                 default: throw HarnessError.unknownFlag(flag)
                 }
             }
@@ -158,12 +166,17 @@ enum HarnessCommand {
                 case "--previous":
                     options.previousWords = try Self.value(after: flag, in: &remaining)
                         .split(separator: ",").map(String.init)
+                case "--personal":
+                    options.personalWords = try Self.value(after: flag, in: &remaining)
+                        .split(separator: ",").map(String.init)
                 case "--param":
                     try Self.applyParameter(try Self.value(after: flag, in: &remaining), to: &options.parameters)
                 default: throw HarnessError.unknownFlag(flag)
                 }
             }
-            guard options.typedWord.isEmpty == false else { throw HarnessError.usage }
+            guard options.typedWord.isEmpty == false || options.previousWords.isEmpty == false else {
+                throw HarnessError.usage
+            }
             self = .explain(options)
         default:
             throw HarnessError.usage

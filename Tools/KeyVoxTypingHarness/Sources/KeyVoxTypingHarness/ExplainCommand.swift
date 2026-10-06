@@ -2,8 +2,9 @@ import CoreGraphics
 import Foundation
 import KeyVoxPredictiveKeyboard
 
-/// `explain`: runs one typed word with exact touches and context through the shipping
-/// prediction path and prints every candidate's scores, to see why a decision happened.
+/// `explain`: runs one typed word with exact touches and context, and optionally the
+/// user's own words, through the shipping prediction path and prints every candidate's
+/// scores, to see why a decision happened. With no typed word it shows the next-word bar.
 enum ExplainCommand {
     static func run(_ options: HarnessCommand.ExplainOptions) throws {
         let setup = try EngineSetup()
@@ -12,6 +13,10 @@ enum ExplainCommand {
             setup.layout.predictionGeometry,
             keyboardSize: setup.layout.keyboardSize
         )
+        let footprintBeforePersonalWords = MemoryFootprint.current()
+        let vocabulary = PersonalVocabulary(words: options.personalWords, textReplacements: [])
+        try computer.updateVocabulary(vocabulary)
+        let personalWordsFootprintBytes = MemoryFootprint.current() &- footprintBeforePersonalWords
         let session = PredictiveTypingSession()
         var text = options.previousWords.reversed().joined(separator: " ")
         if text.isEmpty == false { text.append(" ") }
@@ -24,13 +29,16 @@ enum ExplainCommand {
         let request = session.request(textBeforeCursor: text)
         let result = try computer.compute(request)
         print(String(
-            format: "engine load added %.1f MB; process footprint now %.1f MB",
+            format: "engine load added %.1f MB; %d personal words added %.2f MB; process footprint now %.1f MB",
             MemoryFootprint.megabytes(setup.startupFootprintBytes),
+            vocabulary.words.count,
+            MemoryFootprint.megabytes(personalWordsFootprintBytes),
             MemoryFootprint.megabytes(MemoryFootprint.current())
         ))
         print("request word=\(request.currentWord) previous=\(request.previousWords) touches=\(request.touches.count)")
         print("autocorrection: \(result.autocorrection ?? "none")")
         print("bar: \(result.bar.items.map { "\($0.text) (\($0.kind))" })")
+        guard request.currentWord.isEmpty == false else { return }
 
         let response = try setup.engine.predict(
             typedWord: request.currentWord,
@@ -38,18 +46,23 @@ enum ExplainCommand {
             touches: request.touches.map(PredictionTouch.init(location:)),
             mode: .correction
         )
+        let personalCandidates = try setup.engine.personalSuggestions(
+            typedWord: request.currentWord,
+            touches: request.touches.map(PredictionTouch.init(location:))
+        )
         let corrector = NoisyChannelCorrector(
             parameters: options.parameters,
             keys: setup.keys,
-            language: setup.language
+            language: ContextLanguageScorer(engine: setup.engine, vocabulary: vocabulary)
         )
         let decision = try corrector.decide(
             typedWord: request.currentWord,
             touches: request.touches,
             previousWords: request.previousWords,
-            candidates: response.suggestions.map(\.word)
+            candidates: response.suggestions.map(\.word) + personalCandidates
         )
         print("engine candidates: \(response.suggestions.map(\.word))")
+        print("personal candidates: \(personalCandidates)")
         for candidate in [decision.typed] + decision.rankedAlternatives {
             print(String(
                 format: "  %-14@ score %8.3f  touch %7.3f  logP %8.3f  dictionary %@",
