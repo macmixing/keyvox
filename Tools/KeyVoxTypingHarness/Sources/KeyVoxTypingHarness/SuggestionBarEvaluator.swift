@@ -1,8 +1,8 @@
 import KeyVoxPredictiveKeyboard
 
 /// Replays a word letter by letter with its simulated touches and records, after each
-/// letter, whether the intended word is visible in the July three-slot bar and in the
-/// engine's top three completions.
+/// letter, whether the intended word is visible in the July three-slot bar, in the
+/// engine's top three completions, and in the composed KeyVox bar.
 struct SuggestionBarEvaluator {
     struct Outcome {
         let letterCount: Int
@@ -10,13 +10,19 @@ struct SuggestionBarEvaluator {
         let lettersTypedWhenShownByJulyBar: Int?
         /// Letters typed when the intended word first showed among the top completions.
         let lettersTypedWhenShownByCompletions: Int?
+        /// Letters typed when the intended word first showed in the composed bar.
+        let lettersTypedWhenShownByComposedBar: Int?
         /// Mid-word steps (before the last letter) observed.
         let midWordSteps: Int
-        /// Mid-word steps whose first July slot does not continue the typed letters.
+        /// Mid-word steps whose first July slot does not begin with the intended letters so far.
         let midWordStepsLeadingWithNonContinuation: Int
+        /// Mid-word steps whose composed primary item does not begin with the intended letters so far.
+        let midWordStepsComposedPrimaryNonContinuation: Int
     }
 
     let engine: EnglishPredictiveEngine
+    let ranker: SuggestionCandidateRanker
+    let corrector: NoisyChannelCorrector
 
     func evaluate(
         intendedWord: String,
@@ -27,8 +33,10 @@ struct SuggestionBarEvaluator {
         let typedLetters = Array(typing.typedWord)
         var shownByJulyBar: Int?
         var shownByCompletions: Int?
+        var shownByComposedBar: Int?
         var midWordSteps = 0
         var nonContinuationSteps = 0
+        var composedNonContinuationSteps = 0
 
         for typedCount in 1...max(1, typedLetters.count) where typedLetters.isEmpty == false {
             let prefix = String(typedLetters.prefix(typedCount))
@@ -45,23 +53,38 @@ struct SuggestionBarEvaluator {
                 touches: touches,
                 mode: .correction
             )
-            let slots = JulySuggestionBar.slots(
+            let julySlots = JulySuggestionBar.slots(
                 literal: prefix,
                 completionSuggestions: completion.suggestions,
                 correctionResponse: correction
             )
-            if shownByJulyBar == nil, slots.contains(where: { $0.lowercased() == intendedWord }) {
+            let composed = try composedBar(
+                prefix: prefix,
+                touches: touches,
+                previousWords: previousWords,
+                completion: completion,
+                correction: correction
+            )
+            if shownByJulyBar == nil, julySlots.contains(where: { $0.lowercased() == intendedWord }) {
                 shownByJulyBar = typedCount
+            }
+            if shownByComposedBar == nil,
+               composed.items.contains(where: { $0.text.lowercased() == intendedWord }) {
+                shownByComposedBar = typedCount
             }
             let topCompletions = completion.suggestions.prefix(CompletionEvaluator.visibleCompletionCount)
             if shownByCompletions == nil,
                topCompletions.contains(where: { $0.word.lowercased() == intendedWord }) {
                 shownByCompletions = typedCount
             }
+            let intendedPrefix = String(intendedWord.filter { $0 != "'" }.prefix(typedCount))
             if typedCount < typedLetters.count {
                 midWordSteps += 1
-                if let leading = slots.first?.lowercased(), leading.hasPrefix(prefix) == false {
+                if let leading = julySlots.first?.lowercased(), leading.hasPrefix(intendedPrefix) == false {
                     nonContinuationSteps += 1
+                }
+                if let primary = composed.primary?.text.lowercased(), primary.hasPrefix(intendedPrefix) == false {
+                    composedNonContinuationSteps += 1
                 }
             }
         }
@@ -70,8 +93,38 @@ struct SuggestionBarEvaluator {
             letterCount: typedLetters.count,
             lettersTypedWhenShownByJulyBar: shownByJulyBar,
             lettersTypedWhenShownByCompletions: shownByCompletions,
+            lettersTypedWhenShownByComposedBar: shownByComposedBar,
             midWordSteps: midWordSteps,
-            midWordStepsLeadingWithNonContinuation: nonContinuationSteps
+            midWordStepsLeadingWithNonContinuation: nonContinuationSteps,
+            midWordStepsComposedPrimaryNonContinuation: composedNonContinuationSteps
+        )
+    }
+
+    private func composedBar(
+        prefix: String,
+        touches: [PredictionTouch],
+        previousWords: [String],
+        completion: PredictionResponse,
+        correction: PredictionResponse
+    ) throws -> SuggestionBar {
+        let points = touches.map(\.location)
+        let candidates = completion.suggestions.map(\.word) + correction.suggestions.map(\.word)
+        let ranked = try ranker.rank(
+            typedWord: prefix,
+            touches: points,
+            previousWords: previousWords,
+            candidates: candidates
+        )
+        let decision = try corrector.decide(
+            typedWord: prefix,
+            touches: points,
+            previousWords: previousWords,
+            candidates: correction.suggestions.map(\.word)
+        )
+        return SuggestionBarComposer.compose(
+            typedWord: prefix,
+            autocorrection: decision.replacement,
+            rankedWords: ranked.map(\.word)
         )
     }
 }

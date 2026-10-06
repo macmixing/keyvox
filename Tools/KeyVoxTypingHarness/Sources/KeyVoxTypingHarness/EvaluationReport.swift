@@ -49,6 +49,38 @@ struct EvaluationReport {
         )
     }
 
+    func composedBarShowRate(withinLetters letters: Int) -> Double {
+        let shown = suggestionBars.filter {
+            ($0.lettersTypedWhenShownByComposedBar ?? .max) <= letters
+        }
+        return Self.rate(shown.count, of: suggestionBars.count)
+    }
+
+    var composedBarEverShownRate: Double {
+        Self.rate(
+            suggestionBars.filter { $0.lettersTypedWhenShownByComposedBar != nil }.count,
+            of: suggestionBars.count
+        )
+    }
+
+    var composedBarNonContinuationRate: Double {
+        Self.rate(
+            suggestionBars.reduce(0) { $0 + $1.midWordStepsComposedPrimaryNonContinuation },
+            of: suggestionBars.reduce(0) { $0 + $1.midWordSteps }
+        )
+    }
+
+    /// Keystroke savings when the user taps the bar as soon as it shows the intended word.
+    func barKeystrokeSavings(lettersWhenShown: (SuggestionBarEvaluator.Outcome) -> Int?) -> Double {
+        let baseline = suggestionBars.reduce(0) { $0 + $1.letterCount + 1 }
+        let assisted = suggestionBars.reduce(0) { total, outcome in
+            let shown = lettersWhenShown(outcome).map { min($0, outcome.letterCount) }
+            return total + (shown.map { $0 + 1 } ?? outcome.letterCount + 1)
+        }
+        guard baseline > 0 else { return 0 }
+        return 1 - Double(assisted) / Double(baseline)
+    }
+
     var completionBarEverShownRate: Double {
         Self.rate(
             suggestionBars.filter { $0.lettersTypedWhenShownByCompletions != nil }.count,
@@ -56,8 +88,8 @@ struct EvaluationReport {
         )
     }
 
-    /// Share of mid-word moments where the July bar's first slot did not continue the
-    /// letters already typed.
+    /// Share of mid-word moments where the July bar's first slot did not begin with the
+    /// intended word's letters so far.
     var julyBarNonContinuationRate: Double {
         Self.rate(
             suggestionBars.reduce(0) { $0 + $1.midWordStepsLeadingWithNonContinuation },

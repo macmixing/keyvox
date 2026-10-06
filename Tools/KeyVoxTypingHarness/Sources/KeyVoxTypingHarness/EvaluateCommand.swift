@@ -1,4 +1,5 @@
 import Foundation
+import KeyVoxPredictiveKeyboard
 
 /// `evaluate`: types a plan through KeyVox and prints autocorrect, bar, completion,
 /// next-word, and speed results.
@@ -9,7 +10,25 @@ enum EvaluateCommand {
         let typer = SentenceTyper(setup: setup, decider: options.decider, usesTouches: options.usesTouches)
         let completion = CompletionEvaluator(engine: setup.engine)
         let nextWord = NextWordEvaluator(engine: setup.engine)
-        let suggestionBar = SuggestionBarEvaluator(engine: setup.engine)
+        let barParameters: NoisyChannelCorrector.Parameters
+        if case .channel(let parameters) = options.decider {
+            barParameters = parameters
+        } else {
+            barParameters = NoisyChannelCorrector.standardParameters
+        }
+        let suggestionBar = SuggestionBarEvaluator(
+            engine: setup.engine,
+            ranker: SuggestionCandidateRanker(
+                parameters: barParameters,
+                keys: setup.keys,
+                language: setup.language
+            ),
+            corrector: NoisyChannelCorrector(
+                parameters: barParameters,
+                keys: setup.keys,
+                language: setup.language
+            )
+        )
         var report = EvaluationReport()
         report.engineStartupMilliseconds = setup.startupMilliseconds
 

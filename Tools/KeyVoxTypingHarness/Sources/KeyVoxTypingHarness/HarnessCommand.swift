@@ -33,7 +33,7 @@ enum HarnessCommand {
         var planPath = ""
         var appleResultsPath = ""
         var disagreementsPath: String?
-        var decider = CorrectionEvaluator.Decider.channel(NoisyChannelCorrector.standardParameters)
+        var parameters = NoisyChannelCorrector.standardParameters
     }
 
     case evaluate(EvaluateOptions)
@@ -48,8 +48,8 @@ enum HarnessCommand {
                                    [--decider july|channel] [--no-touches] [--failures <tsv-path>]
       KeyVoxTypingHarness plan --corpus <path>... --output <path>
                                [--sentences <count>] [--noise <key pitches>] [--seed <value>]
-      KeyVoxTypingHarness compare --plan <path> --apple <results-json>
-                                  [--decider july|channel] [--disagreements <tsv-path>]
+      KeyVoxTypingHarness compare --plan <path> --apple <results-json> [--disagreements <tsv-path>]
+                                  [--param <name>=<value>...]
       KeyVoxTypingHarness tune --tune-plan <path>... [--holdout-plan <path>...] [--passes <count>]
     """
 
@@ -93,7 +93,8 @@ enum HarnessCommand {
                 case "--apple": options.appleResultsPath = try Self.value(after: flag, in: &remaining)
                 case "--disagreements":
                     options.disagreementsPath = try Self.value(after: flag, in: &remaining)
-                case "--decider": options.decider = try Self.decider(after: flag, in: &remaining)
+                case "--param":
+                    try Self.applyParameter(try Self.value(after: flag, in: &remaining), to: &options.parameters)
                 default: throw HarnessError.unknownFlag(flag)
                 }
             }
@@ -151,6 +152,19 @@ enum HarnessCommand {
             return false
         }
         return true
+    }
+
+    private static func applyParameter(
+        _ assignment: String,
+        to parameters: inout NoisyChannelCorrector.Parameters
+    ) throws {
+        let parts = assignment.split(separator: "=", maxSplits: 1).map(String.init)
+        guard parts.count == 2,
+              let value = Double(parts[1]),
+              let dimension = ParameterSearch.dimensions.first(where: { $0.name == parts[0] }) else {
+            throw HarnessError.invalidValue("--param \(assignment)")
+        }
+        parameters[keyPath: dimension.keyPath] = value
     }
 
     private static func decider(
