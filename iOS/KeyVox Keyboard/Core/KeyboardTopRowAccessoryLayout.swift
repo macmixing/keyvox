@@ -76,19 +76,17 @@ extension KeyboardLayoutGeometry {
             var centerXConstraint: NSLayoutConstraint?
             var verticalConstraint: NSLayoutConstraint?
             var widthConstraint: NSLayoutConstraint?
-            var heightConstraint: NSLayoutConstraint?
+            var heightConstraints: [NSLayoutConstraint] = []
             weak var referenceView: UIView?
             var usesLandscapeHeight = false
             var usesCapsLockHeight = false
-            var portraitHeight: CGFloat = 0
 
             func deactivateConstraints() {
                 NSLayoutConstraint.deactivate([
                     centerXConstraint,
                     verticalConstraint,
                     widthConstraint,
-                    heightConstraint,
-                ].compactMap { $0 })
+                ].compactMap { $0 } + heightConstraints)
             }
         }
 
@@ -207,19 +205,10 @@ extension KeyboardLayoutGeometry {
             }
 
             let usesCapsLockHeight = canUseCapsLockHeight && !isLandscape && capsLockButton != nil
-            let resolvedPortraitHeight = min(
-                currentReferenceView.bounds.width,
-                KeyboardStyle.buttonSize
-            )
             let shouldRefreshConstraints =
                 state.referenceView !== currentReferenceView
                 || state.usesLandscapeHeight != isLandscape
                 || state.usesCapsLockHeight != usesCapsLockHeight
-                || (
-                    isLandscape == false
-                    && usesCapsLockHeight == false
-                    && abs(state.portraitHeight - resolvedPortraitHeight) > 0.5
-                )
 
             if shouldRefreshConstraints {
                 state.deactivateConstraints()
@@ -240,24 +229,34 @@ extension KeyboardLayoutGeometry {
                 }
                 state.widthConstraint = button.widthAnchor.constraint(equalTo: currentReferenceView.widthAnchor)
                 if isLandscape {
-                    state.heightConstraint = button.heightAnchor.constraint(equalTo: currentReferenceView.heightAnchor)
+                    state.heightConstraints = [button.heightAnchor.constraint(equalTo: currentReferenceView.heightAnchor)]
                 } else if canUseCapsLockHeight, let capsLockButton {
-                    state.heightConstraint = button.heightAnchor.constraint(equalTo: capsLockButton.heightAnchor)
+                    state.heightConstraints = [button.heightAnchor.constraint(equalTo: capsLockButton.heightAnchor)]
                 } else {
-                    state.heightConstraint = button.heightAnchor.constraint(equalToConstant: resolvedPortraitHeight)
+                    state.heightConstraints = portraitHeightConstraints(for: button, referenceView: currentReferenceView)
                 }
                 state.referenceView = currentReferenceView
                 state.usesLandscapeHeight = isLandscape
                 state.usesCapsLockHeight = usesCapsLockHeight
-                state.portraitHeight = resolvedPortraitHeight
 
                 NSLayoutConstraint.activate([
                     state.centerXConstraint!,
                     state.verticalConstraint!,
                     state.widthConstraint!,
-                    state.heightConstraint!,
-                ])
+                ] + state.heightConstraints)
             }
+        }
+
+        // Resolves to min(reference key width, button size) in the layout engine, so the height follows
+        // the reference key instead of a width read before the key grid has been laid out.
+        private func portraitHeightConstraints(for button: UIView, referenceView: UIView) -> [NSLayoutConstraint] {
+            let preferredHeightConstraint = button.heightAnchor.constraint(equalToConstant: KeyboardStyle.buttonSize)
+            preferredHeightConstraint.priority = .required - 1
+            return [
+                button.heightAnchor.constraint(lessThanOrEqualTo: referenceView.widthAnchor),
+                button.heightAnchor.constraint(lessThanOrEqualToConstant: KeyboardStyle.buttonSize),
+                preferredHeightConstraint,
+            ]
         }
 
         private var singleKeyAccessories: [SingleKeyAccessory] {
