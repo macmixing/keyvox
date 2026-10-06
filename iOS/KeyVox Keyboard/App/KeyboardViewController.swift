@@ -524,9 +524,16 @@ final class KeyboardViewController: UIInputViewController {
             interactionHaptics.emitMediumIfEnabled()
             return true
         }
+        // ABC shows the full letter keys without turning Compact Keys off, so 123 returns to them.
         if kind == .abc, keysMode == .compact {
-            appSettingsStore.setCompactKeysActive(false)
             keysMode = .full
+        }
+        if kind == .numberSymbols, symbolPage == .letters,
+           KeyboardKeysMode.resolve(
+               isCompactKeysEnabled: appSettingsStore.isCompactKeysEnabled,
+               isCompactKeysActive: appSettingsStore.isCompactKeysActive
+           ) == .compact {
+            keysMode = .compact
         }
         updateSymbolPage(for: kind)
         if let handled = handleTypingActivation(activation) {
