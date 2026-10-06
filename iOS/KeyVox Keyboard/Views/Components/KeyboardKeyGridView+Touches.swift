@@ -249,7 +249,7 @@ extension KeyboardKeyGridView {
         touchSessions.values.contains { $0.keyView === keyView }
     }
 
-    private static func isCharacter(_ kind: KeyboardKeyKind) -> Bool {
+    nonisolated private static func isCharacter(_ kind: KeyboardKeyKind) -> Bool {
         if case .character = kind { return true }
         return false
     }
