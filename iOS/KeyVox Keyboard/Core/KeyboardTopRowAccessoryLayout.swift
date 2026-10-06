@@ -396,9 +396,11 @@ extension KeyboardLayoutGeometry {
                         equalTo: currentLogoLeadingReferenceView.topAnchor,
                         constant: -KeyboardStyle.keyboardRowSpacing
                     )
-                } else if let vibesButton {
+                } else if let capsLockButton {
+                    // Level with the caps lock button, which keeps its place while hidden;
+                    // the Vibes button beside it loses its constraints when hidden.
                     logoBarVerticalConstraint = logoBarView.bottomAnchor.constraint(
-                        equalTo: vibesButton.bottomAnchor
+                        equalTo: capsLockButton.bottomAnchor
                     )
                 } else {
                     logoBarVerticalConstraint = logoBarView.bottomAnchor.constraint(
