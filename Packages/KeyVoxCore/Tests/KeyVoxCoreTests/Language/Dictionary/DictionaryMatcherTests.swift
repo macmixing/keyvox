@@ -284,6 +284,22 @@ final class DictionaryMatcherTests: LinguisticAnalyzerTestCase {
         XCTAssertEqual(matcher.apply(to: input).text, input)
     }
 
+    func testDoesNotJoinWordsAcrossPunctuationBoundaryIntoStylizedEntry() async {
+        let matcher = makeRuntimeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "MiGo")])
+
+        let inputs = [
+            "I have the album mix. Go ahead.",
+            "Is this the radio mix? Go ahead.",
+            "Grab the radio mix! Go ahead.",
+            "Grab the radio mix, go ahead.",
+        ]
+
+        for input in inputs {
+            XCTAssertEqual(matcher.apply(to: input).text, input)
+        }
+    }
+
     func testCorrectsStylizedSingleTokenBrandNearMissWithRuntimeLexicon() async {
         let matcher = makeRuntimeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "KeyVox")])

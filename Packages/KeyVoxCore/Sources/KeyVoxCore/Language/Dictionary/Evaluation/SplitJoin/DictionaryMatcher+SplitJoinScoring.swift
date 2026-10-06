@@ -58,6 +58,18 @@ extension DictionaryMatcher {
             return nil
         }
 
+        let exactJoinedCandidates = Set(oneTokenCandidates.flatMap(\.matchingNormalizedPhrases))
+        let hasExactJoinCandidate = forms.contains { form in
+            exactJoinedCandidates.contains(form.normalized)
+        }
+
+        // Punctuation between the words marks a real boundary ("mix. Go"), so only an
+        // exact dictionary join ("Mr. Beast" -> "MrBeast") may merge across it.
+        if isPunctuationBoundarySplit(window: window, text: text), !hasExactJoinCandidate {
+            stats.rejectedLowScore += 1
+            return nil
+        }
+
         let isDelimitedSingleLetterTailLane =
             (isExplicitHyphenDelimitedSplit(window: window, text: text)
                 || isWhitespaceDelimitedSplit(window: window, text: text))
@@ -69,10 +81,6 @@ extension DictionaryMatcher {
             || window[1].normalized.count < minimumSplitTokenLength
         var requiresContextualShortTokenEvidence = false
         if containsShortToken {
-            let exactJoinedCandidates = Set(oneTokenCandidates.flatMap(\.matchingNormalizedPhrases))
-            let hasExactJoinCandidate = forms.contains { form in
-                exactJoinedCandidates.contains(form.normalized)
-            }
             let hasNumericShortToken = window.contains {
                 DictionaryNumericMatching.isNumericToken($0.normalized)
             }
