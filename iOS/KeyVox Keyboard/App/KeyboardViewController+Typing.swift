@@ -17,6 +17,7 @@ extension KeyboardViewController {
         predictionCoordinator.reset()
         if typingTraits.allowsPredictions {
             predictionCoordinator.prepare()
+            loadPersonalVocabulary()
         }
         letterCaseController.reset()
         synchronizeLetterCase()
@@ -77,6 +78,19 @@ extension KeyboardViewController {
         interactionHaptics.emitLightIfEnabled()
         textInputController.apply(predictionCoordinator.choiceEdit(item))
         handleTypingContextChange()
+    }
+
+    /// Hands the engine the user's KeyVox Dictionary, contact names, and text replacements.
+    private func loadPersonalVocabulary() {
+        let dictionaryPhrases = dictionaryCasingStore.dictionaryPhrases()
+        requestSupplementaryLexicon { [weak self] lexicon in
+            self?.predictionCoordinator.updateVocabulary(
+                KeyboardPersonalVocabularyBuilder.vocabulary(
+                    dictionaryPhrases: dictionaryPhrases,
+                    lexicon: lexicon
+                )
+            )
+        }
     }
 
     func applyLetterCase() {

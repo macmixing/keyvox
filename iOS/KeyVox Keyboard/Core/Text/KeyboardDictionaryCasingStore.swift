@@ -28,6 +28,11 @@ final class KeyboardDictionaryCasingStore {
             .appendingPathComponent("dictionary.json")
     }
 
+    /// The phrases in the user's KeyVox Dictionary, reloaded when the file changes.
+    func dictionaryPhrases() -> [String] {
+        loadPhrasesIfNeeded()
+    }
+
     func shouldPreserveLeadingCapitalization(in text: String) -> Bool {
         loadPhrasesIfNeeded().contains { phrase in
             text.hasPrefix(phrase) && nextCharacterAfterPhraseBoundaryIsSafe(phrase: phrase, in: text)

@@ -157,6 +157,7 @@
 				Core/KeyboardToolbarMode.swift,
 				Core/KeyboardTopRowAccessoryLayout.swift,
 				Core/KeyboardTypography.swift,
+				Core/Prediction/KeyboardPersonalVocabularyBuilder.swift,
 				Core/Prediction/KeyboardPredictionCoordinator.swift,
 				Core/Prediction/KeyboardTypingTraits.swift,
 				Core/Settings/KeyboardAppSettingsStore.swift,

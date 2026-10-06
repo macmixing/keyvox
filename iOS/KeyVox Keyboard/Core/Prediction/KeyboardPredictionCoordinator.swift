@@ -20,6 +20,7 @@ final class KeyboardPredictionCoordinator {
     // Owned by `queue`.
     private var computer: PredictionComputer?
     private var pendingGeometry: (keys: [PredictionKeyGeometry], size: CGSize)?
+    private var pendingVocabulary: PersonalVocabulary?
     private var engineUnavailable = false
 
     init(textBeforeCursor: @escaping () -> String?) {
@@ -41,6 +42,18 @@ final class KeyboardPredictionCoordinator {
                 computer.updateKeyboardGeometry(keys, keyboardSize: keyboardSize)
             } else {
                 self.pendingGeometry = (keys, keyboardSize)
+            }
+        }
+    }
+
+    func updateVocabulary(_ vocabulary: PersonalVocabulary) {
+        latestResult = nil
+        queue.async { [weak self] in
+            guard let self else { return }
+            if let computer = self.computer {
+                computer.updateVocabulary(vocabulary)
+            } else {
+                self.pendingVocabulary = vocabulary
             }
         }
     }
@@ -154,6 +167,10 @@ final class KeyboardPredictionCoordinator {
         if let pendingGeometry {
             computer.updateKeyboardGeometry(pendingGeometry.keys, keyboardSize: pendingGeometry.size)
             self.pendingGeometry = nil
+        }
+        if let pendingVocabulary {
+            computer.updateVocabulary(pendingVocabulary)
+            self.pendingVocabulary = nil
         }
         self.computer = computer
         return computer
