@@ -8,7 +8,9 @@ import Foundation
 /// sequence the counts never saw therefore always scores below one they did see.
 ///
 /// The user's personal words count as dictionary words and score at least as likely as
-/// an everyday word, since the bundled counts usually have never seen them.
+/// an everyday word, since the bundled counts usually have never seen them. A personal
+/// word right after the word it follows in one of the user's phrases scores as one of the
+/// likeliest next words.
 public struct ContextLanguageScorer: Sendable {
     public struct Score: Sendable, Equatable {
         public let logProbability: Double
@@ -18,6 +20,8 @@ public struct ContextLanguageScorer: Sendable {
     private static let backoffLogFactor = log(0.4)
     /// About one occurrence in ten thousand words: the frequency of an everyday word.
     private static let personalWordLogProbability = log(1e-4)
+    /// One in ten: above all but the most common word pairs.
+    private static let personalContinuationLogProbability = log(0.1)
 
     private let analyze: @Sendable (String, [String]) throws -> WordLanguageAnalysis
     private let vocabulary: PersonalVocabulary
@@ -54,8 +58,12 @@ public struct ContextLanguageScorer: Sendable {
         guard vocabulary.contains(word) else {
             return Score(logProbability: logProbability, isDictionaryWord: analysis.wordIsValid)
         }
+        let continuesPhrase = previousWords.first.map { vocabulary.continues($0, with: word) } ?? false
         return Score(
-            logProbability: max(logProbability, Self.personalWordLogProbability),
+            logProbability: max(
+                logProbability,
+                continuesPhrase ? Self.personalContinuationLogProbability : Self.personalWordLogProbability
+            ),
             isDictionaryWord: true
         )
     }

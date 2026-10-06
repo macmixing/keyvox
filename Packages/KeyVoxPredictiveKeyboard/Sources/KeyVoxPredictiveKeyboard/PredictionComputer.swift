@@ -30,10 +30,11 @@ public final class PredictionComputer: @unchecked Sendable {
     }
 
     /// Call whenever the user's dictionary, contacts, or text replacements change.
-    public func updateVocabulary(_ vocabulary: PersonalVocabulary) {
+    public func updateVocabulary(_ vocabulary: PersonalVocabulary) throws {
         lock.lock()
         self.vocabulary = vocabulary
         lock.unlock()
+        try engine.setPersonalWords(vocabulary.words)
     }
 
     public func compute(_ request: PredictionRequest) throws -> PredictionResult {
@@ -47,7 +48,7 @@ public final class PredictionComputer: @unchecked Sendable {
         guard request.currentWord.isEmpty == false else {
             return PredictionResult(
                 request: request,
-                bar: try nextWordBar(for: request, ranker: ranker),
+                bar: try nextWordBar(for: request, vocabulary: vocabulary, ranker: ranker),
                 autocorrection: nil
             )
         }
@@ -66,21 +67,26 @@ public final class PredictionComputer: @unchecked Sendable {
             touches: engineTouches,
             mode: .correction
         )
-        let personalCandidates = vocabulary.candidates(near: typed)
+        let personalCandidates = try engine.personalSuggestions(
+            typedWord: typed,
+            touches: engineTouches
+        )
         let corrector = NoisyChannelCorrector(parameters: parameters, keys: keys, language: language)
         let decision = try corrector.decide(
             typedWord: typed,
             touches: request.touches,
             previousWords: request.previousWords,
-            candidates: correction.suggestions.map(\.word) + personalCandidates
+            candidates: vocabulary.writtenForms(of: correction.suggestions.map(\.word) + personalCandidates)
         )
         let ranked = try ranker.rank(
             typedWord: typed,
             touches: request.touches,
             previousWords: request.previousWords,
-            candidates: completion.suggestions.map(\.word)
-                + correction.suggestions.map(\.word)
-                + personalCandidates
+            candidates: vocabulary.writtenForms(
+                of: completion.suggestions.map(\.word)
+                    + correction.suggestions.map(\.word)
+                    + personalCandidates
+            )
         )
 
         let replacement = Self.replacement(
@@ -127,7 +133,9 @@ public final class PredictionComputer: @unchecked Sendable {
                 previousWords: request.previousWords,
                 touches: [],
                 mode: .completion
-            ).suggestions.map(\.word) + vocabulary.candidates(near: prefix) + [prefix]
+            ).suggestions.map(\.word)
+                + engine.personalSuggestions(typedWord: prefix, touches: [])
+                + [prefix]
             var continuation: Double?
             for word in completions where word.lowercased().hasPrefix(prefix) {
                 let score = try language.score(of: word, previousWords: request.previousWords)
@@ -178,9 +186,10 @@ public final class PredictionComputer: @unchecked Sendable {
 
     private func nextWordBar(
         for request: PredictionRequest,
+        vocabulary: PersonalVocabulary,
         ranker: SuggestionCandidateRanker
     ) throws -> SuggestionBar {
-        guard request.previousWords.isEmpty == false else { return .empty }
+        guard let previousWord = request.previousWords.first else { return .empty }
         let response = try engine.predict(
             typedWord: "",
             previousWords: request.previousWords,
@@ -189,7 +198,8 @@ public final class PredictionComputer: @unchecked Sendable {
         )
         let ranked = try ranker.rankNextWords(
             previousWords: request.previousWords,
-            candidates: response.suggestions.map(\.word)
+            candidates: vocabulary.continuations(after: previousWord)
+                + response.suggestions.map(\.word)
         )
         return SuggestionBarComposer.composeNextWords(ranked.map(\.word))
     }

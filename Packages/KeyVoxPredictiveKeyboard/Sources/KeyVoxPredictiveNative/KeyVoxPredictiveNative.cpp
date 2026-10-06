@@ -19,8 +19,12 @@
 #include <utility>
 #include <vector>
 
+#include "latinime/dictionary/interface/dictionary_header_structure_policy.h"
+#include "latinime/dictionary/property/historical_info.h"
 #include "latinime/dictionary/property/ngram_context.h"
+#include "latinime/dictionary/property/unigram_property.h"
 #include "latinime/dictionary/structure/dictionary_structure_with_buffer_policy_factory.h"
+#include "latinime/dictionary/utils/format_utils.h"
 #include "latinime/suggest/core/dictionary/dictionary.h"
 #include "latinime/suggest/core/layout/proximity_info.h"
 #include "latinime/suggest/core/result/suggestion_results.h"
@@ -517,27 +521,74 @@ public:
             }
         }
 
-        result->count = static_cast<int32_t>(
-            std::min<size_t>(candidates.size(), KVPK_MAX_SUGGESTIONS)
-        );
-        for (int32_t index = 0; index < result->count; ++index) {
-            const NativeCandidate &candidate = candidates[index];
-            std::strncpy(
-                result->suggestions[index].word,
-                candidate.word.c_str(),
-                KVPK_MAX_WORD_BYTES - 1
-            );
-            result->suggestions[index].word[KVPK_MAX_WORD_BYTES - 1] = '\0';
-            result->suggestions[index].nativeScore = candidate.score;
-            result->suggestions[index].nativeType = candidate.type;
-            result->suggestions[index].rankProbability = candidate.probability;
-        }
+        writeSuggestions(candidates, result);
 
         if (mode == KVPKPredictionModeCorrection && !candidates.empty()) {
             result->automaticCorrectionProbability = actionProbability(
                 typed, previous, candidates, result->typedWordIsValid
             );
         }
+        return true;
+    }
+
+    /// Replaces the user's own words (dictionary entries, contact names) with `words`, in
+    /// the form the user writes them, for `predictPersonal` to search. Nothing is kept
+    /// when there are none.
+    bool setPersonalWords(const char *const *words, int32_t wordCount) {
+        if (wordCount < 0 || (wordCount > 0 && !words)) return false;
+        std::lock_guard<std::mutex> lock(mutex_);
+        personalDictionary_.reset();
+        personalSession_.reset();
+        if (wordCount == 0) return true;
+
+        DictionaryHeaderStructurePolicy::AttributeMap attributes;
+        auto policy = DictionaryStructureWithBufferPolicyFactory::newPolicyForOnMemoryDict(
+            FormatUtils::VERSION_403, std::vector<int>(), &attributes
+        );
+        if (!policy) throw std::runtime_error("could not create the personal dictionary");
+        auto dictionary = std::make_unique<Dictionary>(&environment_, std::move(policy));
+        const UnigramProperty property(
+            false, false, false, false, MAX_PROBABILITY, HistoricalInfo()
+        );
+        for (int32_t index = 0; index < wordCount; ++index) {
+            if (!words[index]) continue;
+            const std::vector<int> codePoints = utf8CodePoints(words[index]);
+            if (codePoints.empty() || codePoints.size() >= MAX_WORD_LENGTH) continue;
+            dictionary->addUnigramEntry(
+                CodePointArrayView(codePoints.data(), codePoints.size()), &property
+            );
+        }
+        personalDictionary_ = std::move(dictionary);
+        personalSession_ = std::make_unique<DicTraverseSession>(&environment_, nullptr, false);
+        return true;
+    }
+
+    /// The user's own words the typed letters and touches could be heading for,
+    /// completions and near misses alike, searched the way the bundled dictionary is.
+    bool predictPersonal(const char *typedWord,
+                         const int32_t *touchX,
+                         const int32_t *touchY,
+                         int32_t touchCount,
+                         KVPKPredictionResult *result) {
+        if (!result || !typedWord) return false;
+        std::lock_guard<std::mutex> lock(mutex_);
+        std::memset(result, 0, sizeof(*result));
+        const std::vector<int> typedCodePoints = utf8CodePoints(typedWord);
+        if (!personalDictionary_ || typedCodePoints.empty()
+                || typedCodePoints.size() >= MAX_WORD_LENGTH) {
+            return true;
+        }
+        std::vector<NativeCandidate> candidates = dictionaryCandidates(
+            *personalDictionary_, personalSession_.get(), typedCodePoints, makeContext({}),
+            touchX, touchY, touchCount
+        );
+        std::stable_sort(
+            candidates.begin(), candidates.end(),
+            [](const NativeCandidate &left, const NativeCandidate &right) {
+                return left.score > right.score;
+            }
+        );
+        writeSuggestions(candidates, result);
         return true;
     }
 
@@ -607,10 +658,56 @@ private:
         return NgramContext(codePoints, lengths, beginnings, count);
     }
 
+    static void writeSuggestions(const std::vector<NativeCandidate> &candidates,
+                                 KVPKPredictionResult *result) {
+        result->count = static_cast<int32_t>(
+            std::min<size_t>(candidates.size(), KVPK_MAX_SUGGESTIONS)
+        );
+        for (int32_t index = 0; index < result->count; ++index) {
+            const NativeCandidate &candidate = candidates[index];
+            std::strncpy(
+                result->suggestions[index].word,
+                candidate.word.c_str(),
+                KVPK_MAX_WORD_BYTES - 1
+            );
+            result->suggestions[index].word[KVPK_MAX_WORD_BYTES - 1] = '\0';
+            result->suggestions[index].nativeScore = candidate.score;
+            result->suggestions[index].nativeType = candidate.type;
+            result->suggestions[index].rankProbability = candidate.probability;
+        }
+    }
+
     std::vector<NativeCandidate> nativeCandidates(
         const std::string &typed,
         const std::vector<int> &typedCodePoints,
         const std::vector<std::string> &previous,
+        const int32_t *touchX,
+        const int32_t *touchY,
+        int32_t touchCount
+    ) {
+        std::vector<NativeCandidate> result = dictionaryCandidates(
+            *dictionary_, session_.get(), typedCodePoints, makeContext(previous),
+            touchX, touchY, touchCount
+        );
+        appendSingleEditCandidates(typed, &result);
+        std::stable_sort(
+            result.begin(), result.end(),
+            [](const NativeCandidate &left, const NativeCandidate &right) {
+                if (left.score != right.score) return left.score > right.score;
+                return left.word.size() < right.word.size();
+            }
+        );
+        for (size_t index = 0; index < result.size(); ++index) result[index].nativeRank = index;
+        return result;
+    }
+
+    /// The words `dictionary` offers for the typed letters and touches, or for what follows
+    /// `context` when nothing is typed, each once with its best native score.
+    std::vector<NativeCandidate> dictionaryCandidates(
+        const Dictionary &dictionary,
+        DicTraverseSession *session,
+        const std::vector<int> &typedCodePoints,
+        const NgramContext &context,
         const int32_t *touchX,
         const int32_t *touchY,
         int32_t touchCount
@@ -639,15 +736,14 @@ private:
             pointerIds.push_back(0);
         }
 
-        NgramContext context = makeContext(previous);
         SuggestionResults nativeResults(kInternalCandidateCount);
         if (typedCodePoints.empty()) {
-            dictionary_->getPredictions(&context, &nativeResults);
+            dictionary.getPredictions(&context, &nativeResults);
         } else {
             const int rawOptions[] = {0, 1, 0, 0, 1000};
             SuggestOptions options(rawOptions, 5);
-            dictionary_->getSuggestions(
-                proximity_.get(), session_.get(), x.data(), y.data(), times.data(),
+            dictionary.getSuggestions(
+                proximity_.get(), session, x.data(), y.data(), times.data(),
                 pointerIds.data(), const_cast<int *>(typedCodePoints.data()),
                 static_cast<int>(typedCodePoints.size()), &context, &options, -1.0f,
                 &nativeResults
@@ -706,15 +802,6 @@ private:
                 static_cast<size_t>(index),
             });
         }
-        appendSingleEditCandidates(typed, &result);
-        std::stable_sort(
-            result.begin(), result.end(),
-            [](const NativeCandidate &left, const NativeCandidate &right) {
-                if (left.score != right.score) return left.score > right.score;
-                return left.word.size() < right.word.size();
-            }
-        );
-        for (size_t index = 0; index < result.size(); ++index) result[index].nativeRank = index;
         return result;
     }
 
@@ -923,6 +1010,8 @@ private:
     JNIEnv environment_;
     std::unique_ptr<Dictionary> dictionary_;
     std::unique_ptr<DicTraverseSession> session_;
+    std::unique_ptr<Dictionary> personalDictionary_;
+    std::unique_ptr<DicTraverseSession> personalSession_;
     std::unique_ptr<ProximityInfo> proximity_;
     std::unordered_map<int, KVPKKeyGeometry> keyByCodePoint_;
     ContextArtifact context_;
@@ -1036,6 +1125,47 @@ bool KVPKEngineAnalyzeWord(
         return false;
     } catch (...) {
         lastError = "unknown word analysis error";
+        return false;
+    }
+}
+
+bool KVPKEngineSetPersonalWords(
+    KVPKEngineRef engine,
+    const char *const *words,
+    int32_t wordCount
+) {
+    if (!engine) return false;
+    try {
+        lastError.clear();
+        return static_cast<Engine *>(engine)->setPersonalWords(words, wordCount);
+    } catch (const std::exception &error) {
+        lastError = error.what();
+        return false;
+    } catch (...) {
+        lastError = "unknown personal words error";
+        return false;
+    }
+}
+
+bool KVPKEnginePredictPersonal(
+    KVPKEngineRef engine,
+    const char *typedWord,
+    const int32_t *touchX,
+    const int32_t *touchY,
+    int32_t touchCount,
+    KVPKPredictionResult *result
+) {
+    if (!engine) return false;
+    try {
+        lastError.clear();
+        return static_cast<Engine *>(engine)->predictPersonal(
+            typedWord, touchX, touchY, touchCount, result
+        );
+    } catch (const std::exception &error) {
+        lastError = error.what();
+        return false;
+    } catch (...) {
+        lastError = "unknown personal prediction error";
         return false;
     }
 }

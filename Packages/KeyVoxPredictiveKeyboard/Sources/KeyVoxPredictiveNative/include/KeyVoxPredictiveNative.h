@@ -98,6 +98,25 @@ bool KVPKEngineAnalyzeWord(
     KVPKWordAnalysis *result
 );
 
+/// Replaces the user's own words: their dictionary entries and contact names, in the form
+/// they write them. Pass a count of zero to clear them.
+bool KVPKEngineSetPersonalWords(
+    KVPKEngineRef engine,
+    const char *const *words,
+    int32_t wordCount
+);
+
+/// The user's own words that the typed letters and touches could be heading for, found
+/// the way the bundled dictionary's words are.
+bool KVPKEnginePredictPersonal(
+    KVPKEngineRef engine,
+    const char *typedWord,
+    const int32_t *touchX,
+    const int32_t *touchY,
+    int32_t touchCount,
+    KVPKPredictionResult *result
+);
+
 #ifdef __cplusplus
 }
 #endif

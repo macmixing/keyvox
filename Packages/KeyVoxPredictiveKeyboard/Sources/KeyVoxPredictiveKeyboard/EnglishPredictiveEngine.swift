@@ -148,6 +148,49 @@ public final class EnglishPredictiveEngine: @unchecked Sendable {
         )
     }
 
+    /// Replaces the user's own words, in the form they write them, for
+    /// `personalSuggestions` to search.
+    public func setPersonalWords(_ words: [String]) throws {
+        let cStrings = words.map { strdup($0) }
+        defer { cStrings.forEach { free($0) } }
+        let pointers = cStrings.map { $0.map { UnsafePointer($0) } }
+        let succeeded = pointers.withUnsafeBufferPointer { words in
+            KVPKEngineSetPersonalWords(nativeEngine, words.baseAddress, Int32(words.count))
+        }
+        guard succeeded else {
+            throw PredictiveKeyboardError.nativePredictionFailed(Self.nativeLastError)
+        }
+    }
+
+    /// The user's own words that the typed letters and touches could be heading for,
+    /// completions and near misses alike, found the way the bundled dictionary's words are.
+    public func personalSuggestions(
+        typedWord: String,
+        touches: [PredictionTouch]
+    ) throws -> [String] {
+        let touchX = touches.map { Int32($0.location.x.rounded()) }
+        let touchY = touches.map { Int32($0.location.y.rounded()) }
+        var result = KVPKPredictionResult()
+        let succeeded = typedWord.lowercased().withCString { typed in
+            touchX.withUnsafeBufferPointer { x in
+                touchY.withUnsafeBufferPointer { y in
+                    KVPKEnginePredictPersonal(
+                        nativeEngine,
+                        typed,
+                        x.baseAddress,
+                        y.baseAddress,
+                        Int32(min(x.count, y.count)),
+                        &result
+                    )
+                }
+            }
+        }
+        guard succeeded else {
+            throw PredictiveKeyboardError.nativePredictionFailed(Self.nativeLastError)
+        }
+        return result.suggestionValues.map(\.word)
+    }
+
     public func analyze(
         word: String,
         previousWord: String? = nil

@@ -54,7 +54,7 @@ final class KeyboardPredictionCoordinator {
         queue.async { [weak self] in
             guard let self else { return }
             if let computer = self.computer {
-                computer.updateVocabulary(vocabulary)
+                try? computer.updateVocabulary(vocabulary)
             } else {
                 self.pendingVocabulary = vocabulary
             }
@@ -196,7 +196,7 @@ final class KeyboardPredictionCoordinator {
             self.pendingGeometry = nil
         }
         if let pendingVocabulary {
-            computer.updateVocabulary(pendingVocabulary)
+            try? computer.updateVocabulary(pendingVocabulary)
             self.pendingVocabulary = nil
         }
         self.computer = computer
