@@ -12,7 +12,7 @@ struct SessionTyper {
         var text = ""
         for (word, offsets) in zip(sentence.words, sentence.taps) {
             let typing = SimulatedTyping(
-                intendedWord: word,
+                tappedWord: word,
                 offsetsInKeyPitches: offsets,
                 layout: layout
             )

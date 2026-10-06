@@ -7,9 +7,16 @@ import Foundation
 /// rows vertically). Any keyboard can replay the same fingers on its own key sizes.
 struct TypingPlan: Codable {
     struct Sentence: Codable {
+        /// The letters to tap, word by word.
         let words: [String]
         /// Per word, per tapped letter: `[dx, dy]` in key pitches.
         let taps: [[[Double]]]
+        /// What the typist meant, when the tapped letters are a recorded human attempt
+        /// rather than the intended words themselves.
+        var intended: [String]? = nil
+
+        /// The words a correct result must contain.
+        var truthWords: [String] { intended ?? words }
     }
 
     let noiseInKeyPitches: Double

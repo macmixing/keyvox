@@ -10,10 +10,10 @@ struct SimulatedTyping {
     let typedWord: String
     let touches: [PredictionTouch]
 
-    init(intendedWord: String, offsetsInKeyPitches: [[Double]], layout: KeyboardLayoutModel) {
+    init(tappedWord: String, offsetsInKeyPitches: [[Double]], layout: KeyboardLayoutModel) {
         var typed = ""
         var touches: [PredictionTouch] = []
-        for (letter, offset) in zip(intendedWord.filter { $0 != "'" }, offsetsInKeyPitches) {
+        for (letter, offset) in zip(tappedWord.filter { $0 != "'" }, offsetsInKeyPitches) {
             guard let center = layout.center(of: letter) else { continue }
             let touch = CGPoint(
                 x: center.x + offset[0] * layout.keyPitch.width,

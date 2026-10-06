@@ -28,14 +28,14 @@ enum CompareCommand {
 
         for (sentence, appleSentence) in zip(plan.sentences, apple.sentences) {
             let appleWords = WordAlignment.align(
-                intended: sentence.words,
+                intended: sentence.truthWords,
                 produced: AppleBaselineResults.words(in: appleSentence.text)
             )
             let keyVoxWords = WordAlignment.align(
-                intended: sentence.words,
+                intended: sentence.truthWords,
                 produced: AppleBaselineResults.words(in: try typer.type(sentence))
             )
-            for (index, intended) in sentence.words.enumerated() {
+            for (index, intended) in sentence.truthWords.enumerated() {
                 let appleWord = appleWords[index] ?? ""
                 let keyVoxWord = keyVoxWords[index] ?? ""
                 let appleIsCorrect = appleWord == intended
@@ -49,7 +49,7 @@ enum CompareCommand {
                         intended,
                         appleWord.isEmpty ? "-" : appleWord,
                         keyVoxWord.isEmpty ? "-" : keyVoxWord,
-                        sentence.words[..<index].suffix(3).joined(separator: " "),
+                        sentence.truthWords[..<index].suffix(3).joined(separator: " "),
                     ].joined(separator: "\t"))
                 }
             }

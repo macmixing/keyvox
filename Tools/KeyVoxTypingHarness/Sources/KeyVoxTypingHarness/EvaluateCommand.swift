@@ -36,8 +36,8 @@ enum EvaluateCommand {
             report.recordSentence()
             let typedWords = try typer.type(sentence)
             for (index, typedWord) in typedWords.enumerated() {
-                let word = sentence.words[index]
-                let cleanPreviousWords = Array(sentence.words[..<index].reversed().prefix(3))
+                let word = sentence.truthWords[index]
+                let cleanPreviousWords = Array(sentence.truthWords[..<index].reversed().prefix(3))
                 report.record(typedWord.outcome, milliseconds: typedWord.milliseconds)
                 report.record(try suggestionBar.evaluate(
                     intendedWord: word,

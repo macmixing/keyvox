@@ -77,6 +77,12 @@ enum HarnessCommand {
                 case "--no-touches": options.usesTouches = false
                 case "--failures": options.failuresPath = try Self.value(after: flag, in: &remaining)
                 case "--decider": options.decider = try Self.decider(after: flag, in: &remaining)
+                case "--param":
+                    guard case .channel(var parameters) = options.decider else {
+                        throw HarnessError.invalidValue(flag)
+                    }
+                    try Self.applyParameter(try Self.value(after: flag, in: &remaining), to: &parameters)
+                    options.decider = .channel(parameters)
                 default: throw HarnessError.unknownFlag(flag)
                 }
             }

@@ -43,19 +43,20 @@ enum TuneCommand {
             for sentence in plan.sentences {
                 for (index, (word, offsets)) in zip(sentence.words, sentence.taps).enumerated() {
                     let typing = SimulatedTyping(
-                        intendedWord: word,
+                        tappedWord: word,
                         offsetsInKeyPitches: offsets,
                         layout: setup.layout
                     )
-                    let previousWords = Array(sentence.words[..<index].reversed().prefix(3))
+                    let previousWords = Array(sentence.truthWords[..<index].reversed().prefix(3))
+                    let intendedWord = sentence.truthWords[index]
                     let julyOutcome = try july.evaluate(
-                        intendedWord: word,
+                        intendedWord: intendedWord,
                         typing: typing,
                         previousWords: previousWords,
                         usesTouches: true
                     )
                     samples.append(TuningSample(
-                        intendedWord: word,
+                        intendedWord: intendedWord,
                         typedWord: typing.typedWord,
                         touches: typing.touches.map(\.location),
                         previousWords: previousWords,

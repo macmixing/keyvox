@@ -17,16 +17,16 @@ struct SentenceTyper {
         let correction = setup.correctionEvaluator(decider: decider)
         var finalWords: [String] = []
         var typedWords: [TypedWord] = []
-        for (word, offsets) in zip(sentence.words, sentence.taps) {
+        for (index, (word, offsets)) in zip(sentence.words, sentence.taps).enumerated() {
             let typing = SimulatedTyping(
-                intendedWord: word,
+                tappedWord: word,
                 offsetsInKeyPitches: offsets,
                 layout: setup.layout
             )
             let previousWords = Array(finalWords.reversed().prefix(3))
             let started = ContinuousClock.now
             let outcome = try correction.evaluate(
-                intendedWord: word,
+                intendedWord: sentence.truthWords[index],
                 typing: typing,
                 previousWords: previousWords,
                 usesTouches: usesTouches
