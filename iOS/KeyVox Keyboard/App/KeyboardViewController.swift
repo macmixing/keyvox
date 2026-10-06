@@ -277,8 +277,7 @@ final class KeyboardViewController: UIInputViewController {
             toolbarMode: toolbarMode,
             isTTSReady: isTTSReady,
             isTrackpadModeActive: isTrackpadModeActive,
-            showsNextKeyboardKey: needsInputModeSwitchKey,
-            isPredictionEnabled: typingTraits.allowsPredictions
+            showsNextKeyboardKey: needsInputModeSwitchKey
         )
         applyLetterCase()
         if toolbarMode != .fullAccessWarning {

@@ -172,17 +172,17 @@ final class KeyboardRootView: UIView {
         toolbarMode: KeyboardToolbarMode,
         isTTSReady: Bool,
         isTrackpadModeActive: Bool,
-        showsNextKeyboardKey: Bool,
-        isPredictionEnabled: Bool
+        showsNextKeyboardKey: Bool
     ) {
         let showsBrandedToolbar = toolbarMode == .branded
         let warningText = toolbarMode.warningText
         let showsToolbarWarning = warningText != nil
         let shouldShowCancel = showsBrandedToolbar && state.showsCancelButton
+        // The full keyboard keeps its suggestion bar, empty when there is nothing to suggest;
+        // the dictation buttons show in Compact Keys and while dictating.
         let showsSuggestionBar = showsBrandedToolbar
             && !shouldShowCancel
-            && isPredictionEnabled
-            && symbolPage == .letters
+            && keysMode == .full
         let showsToolbarAccessories = showsBrandedToolbar && !showsSuggestionBar
         let shouldShowSpeak = showsToolbarAccessories && isTTSReady
         let shouldShowVibes = showsToolbarAccessories && isVibesAvailable
