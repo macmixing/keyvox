@@ -10,7 +10,8 @@ The format (little-endian) is the one KeyVoxPredictiveNative's ContextArtifact r
     sequence: key (u64), log(1 + count) over [0, 16] (u8), log P(word | older, previous) over [-16, 0] (u8)
 
 A word's key hashes its lowercased UTF-8 text; a pair hashes previous, 0xFF, word; a
-sequence hashes older, 0xFE, previous, 0xFF, word.
+sequence hashes older, 0xFE, previous, 0xFF, word. A sentence start appears as the
+previous or older word `<s>`, so the model knows which words open sentences.
 
 Counts are scaled so they total `--scaled-total`, the size of the text the bundled
 rankers were trained against, so their count features stay in range; probabilities come
@@ -26,6 +27,8 @@ import struct
 from pathlib import Path
 
 import numpy as np
+
+from normalize import SENTENCE_START
 
 ID_BITS = 21
 ID_MASK = np.uint64((1 << ID_BITS) - 1)
@@ -103,7 +106,10 @@ def main() -> None:
     shorter = np.where(pair_is_kept, log_pair[kept_pairs][position], log_word[triple_word] + BACKOFF)
     kept_triples = strongest(triple_counts * (log_triple - (shorter + BACKOFF)), arguments.sequences)
 
-    kept_words = np.arange(min(arguments.words, len(vocabulary)))
+    kept_words = np.array(
+        [index for index, word in enumerate(vocabulary[:arguments.words + 1]) if word != SENTENCE_START][:arguments.words],
+        dtype=np.int64,
+    )
     words = table(
         [fnv1a64(encoded[index]) for index in kept_words],
         [quantized(np.log1p(word_counts[kept_words] * scale), 0, 16)],

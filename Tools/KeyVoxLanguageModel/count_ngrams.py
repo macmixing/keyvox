@@ -2,8 +2,10 @@
 
 Writes `<data_dir>/vocabulary.txt` (one word per line; a word's line number is its id)
 and `<data_dir>/counts.npz`. Pairs and sequences are packed into one key of 21 bits per
-word id. Words seen only once, or beyond the vocabulary limit, are counted on their own
-but break pairs and sequences as a sentence end does.
+word id. Every sentence begins with the sentence-start marker, the vocabulary's last id,
+so the words that open sentences are counted after it. Words seen only once, or beyond
+the vocabulary limit, are counted on their own but break pairs and sequences as a
+sentence end does.
 """
 
 import argparse
@@ -13,6 +15,8 @@ from collections.abc import Iterator
 from pathlib import Path
 
 import numpy as np
+
+from normalize import SENTENCE_START
 
 ID_BITS = 21
 MAXIMUM_VOCABULARY = (1 << ID_BITS) - 1
@@ -55,11 +59,16 @@ def main() -> None:
     paths = sorted((arguments.data_dir / "sentences").glob("*.txt"))
 
     word_counts: Counter[str] = Counter()
+    sentence_count = 0
     for words in sentence_words(paths):
         word_counts.update(words)
+        sentence_count += 1
     total_tokens = sum(word_counts.values())
-    vocabulary = [word for word, count in word_counts.most_common(MAXIMUM_VOCABULARY) if count >= 2]
+    vocabulary = [word for word, count in word_counts.most_common(MAXIMUM_VOCABULARY - 1) if count >= 2]
     ids = {word: index for index, word in enumerate(vocabulary)}
+    sentence_start = len(vocabulary)
+    vocabulary.append(SENTENCE_START)
+    word_counts[SENTENCE_START] = sentence_count
     print(f"{total_tokens} words, {len(word_counts)} distinct, {len(vocabulary)} in vocabulary", flush=True)
 
     empty = (np.zeros(0, dtype=np.uint64), np.zeros(0, dtype=np.int64))
@@ -81,6 +90,7 @@ def main() -> None:
         buffer = array("q")
 
     for words in sentence_words(paths):
+        buffer.append(sentence_start)
         buffer.extend([ids.get(word, BREAK) for word in words])
         buffer.append(BREAK)
         processed += len(words)

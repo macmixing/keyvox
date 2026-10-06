@@ -9,6 +9,10 @@ such as "[Music]" are dropped.
 import re
 from collections.abc import Iterator
 
+# Stands for the start of a sentence in the model's pairs and sequences; it must match
+# `ContextLanguageScorer.sentenceStart` in KeyVoxPredictiveKeyboard.
+SENTENCE_START = "<s>"
+
 _BRACKETED = re.compile(r"\[[^\]]*\]")
 _SENTENCE_END = re.compile(r"[.!?\n]+")
 _WORD = re.compile(r"[^\W\d_]+(?:'[^\W\d_]+)*")
