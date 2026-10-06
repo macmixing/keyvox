@@ -9,8 +9,10 @@ enum TuneCommand {
         let cache = CachedLanguageAnalysis(engine: setup.engine)
         let language = ContextLanguageScorer(analyze: { try cache.analyze($0, $1) })
         let tuning = try samples(planPaths: options.tuningPlanPaths, setup: setup)
-        let holdout = try samples(planPaths: options.holdoutPlanPaths, setup: setup)
-        print("Tuning on \(tuning.count) words, holding out \(holdout.count) words")
+        let holdouts = try options.holdoutPlanPaths.map { path in
+            (name: URL(fileURLWithPath: path).lastPathComponent, samples: try samples(planPaths: [path], setup: setup))
+        }
+        print("Tuning on \(tuning.count) words, holding out \(holdouts.reduce(0) { $0 + $1.samples.count }) words")
 
         let score = { (samples: [TuningSample], parameters: NoisyChannelCorrector.Parameters) in
             try channelScore(samples, parameters: parameters, keys: setup.keys, language: language)
@@ -27,10 +29,11 @@ enum TuneCommand {
             }
         )
         print("Tuned channel    tuning: \(bestScore.summary)")
-        if holdout.isEmpty == false {
-            print("July decider     holdout: \(julyScore(holdout).summary)")
-            print("Standard channel holdout: \(try score(holdout, NoisyChannelCorrector.standardParameters).summary)")
-            print("Tuned channel    holdout: \(try score(holdout, best).summary)")
+        for holdout in holdouts {
+            print("Holdout \(holdout.name):")
+            print("  July decider:     \(julyScore(holdout.samples).summary)")
+            print("  Standard channel: \(try score(holdout.samples, NoisyChannelCorrector.standardParameters).summary)")
+            print("  Tuned channel:    \(try score(holdout.samples, best).summary)")
         }
         print("Tuned parameters: \(best)")
     }

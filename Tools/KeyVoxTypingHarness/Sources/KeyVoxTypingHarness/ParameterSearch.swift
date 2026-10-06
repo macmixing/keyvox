@@ -20,6 +20,8 @@ enum ParameterSearch {
                   values: [-2, -1, 0, 0.5, 1, 1.5, 2, 3, 4]),
         Dimension(name: "dictionaryWordCorrectionMargin", keyPath: \.dictionaryWordCorrectionMargin,
                   values: [2, 3, 4, 5, 6, 8, 10, 14, 1_000]),
+        Dimension(name: "apostropheRestorationMargin", keyPath: \.apostropheRestorationMargin,
+                  values: [-2, -1, -0.5, 0, 0.5, 1, 1.5, 2, 3, 5]),
         Dimension(name: "extraTouchCost", keyPath: \.touch.extraTouchCost,
                   values: [2, 3, 4, 5, 6, 8]),
         Dimension(name: "skippedLetterCost", keyPath: \.touch.skippedLetterCost,

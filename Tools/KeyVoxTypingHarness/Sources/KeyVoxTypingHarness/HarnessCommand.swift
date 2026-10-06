@@ -32,9 +32,11 @@ enum HarnessCommand {
 
     struct CompareOptions {
         var planPath = ""
-        var appleResultsPath = ""
+        var appleResultsPath: String?
         var disagreementsPath: String?
         var parameters = NoisyChannelCorrector.standardParameters
+        /// Nil types every tap on the key it hits.
+        var contestedTaps: ContestedTapPolicy.Parameters? = ContestedTapPolicy.standardParameters
     }
 
     struct ExplainOptions {
@@ -58,8 +60,9 @@ enum HarnessCommand {
                                    [--decider july|channel] [--no-touches] [--failures <tsv-path>]
       KeyVoxTypingHarness plan --corpus <path>... --output <path>
                                [--sentences <count>] [--noise <key pitches>] [--seed <value>]
-      KeyVoxTypingHarness compare --plan <path> --apple <results-json> [--disagreements <tsv-path>]
+      KeyVoxTypingHarness compare --plan <path> [--apple <results-json>] [--disagreements <tsv-path>]
                                   [--param <name>=<value>...]
+                                  [--no-contested-taps | --contested-param <name>=<value>...]
       KeyVoxTypingHarness tune --tune-plan <path>... [--holdout-plan <path>...] [--passes <count>]
       KeyVoxTypingHarness explain --word <typed> [--touches "x,y x,y ..."] [--previous <newest,older,...>]
                                   [--param <name>=<value>...]
@@ -113,12 +116,15 @@ enum HarnessCommand {
                     options.disagreementsPath = try Self.value(after: flag, in: &remaining)
                 case "--param":
                     try Self.applyParameter(try Self.value(after: flag, in: &remaining), to: &options.parameters)
+                case "--no-contested-taps": options.contestedTaps = nil
+                case "--contested-param":
+                    guard var contestedTaps = options.contestedTaps else { throw HarnessError.invalidValue(flag) }
+                    try Self.applyContestedParameter(try Self.value(after: flag, in: &remaining), to: &contestedTaps)
+                    options.contestedTaps = contestedTaps
                 default: throw HarnessError.unknownFlag(flag)
                 }
             }
-            guard options.planPath.isEmpty == false, options.appleResultsPath.isEmpty == false else {
-                throw HarnessError.usage
-            }
+            guard options.planPath.isEmpty == false else { throw HarnessError.usage }
             self = .compare(options)
         case "tune":
             var options = TuneOptions()
@@ -206,6 +212,24 @@ enum HarnessCommand {
             throw HarnessError.invalidValue("--param \(assignment)")
         }
         parameters[keyPath: dimension.keyPath] = value
+    }
+
+    private static func applyContestedParameter(
+        _ assignment: String,
+        to parameters: inout ContestedTapPolicy.Parameters
+    ) throws {
+        let parts = assignment.split(separator: "=", maxSplits: 1).map(String.init)
+        let keyPaths: [String: WritableKeyPath<ContestedTapPolicy.Parameters, Double>] = [
+            "boundaryMaximumDistance": \.boundaryMaximumDistance,
+            "controlMaximumDistance": \.controlMaximumDistance,
+            "touchStandardDeviation": \.touchStandardDeviation,
+            "languageWeight": \.languageWeight,
+            "boundaryThreshold": \.boundaryThreshold,
+        ]
+        guard parts.count == 2, let value = Double(parts[1]), let keyPath = keyPaths[parts[0]] else {
+            throw HarnessError.invalidValue("--contested-param \(assignment)")
+        }
+        parameters[keyPath: keyPath] = value
     }
 
     private static func decider(

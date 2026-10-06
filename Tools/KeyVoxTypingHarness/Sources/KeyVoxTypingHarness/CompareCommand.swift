@@ -2,12 +2,13 @@ import Foundation
 import KeyVoxPredictiveKeyboard
 
 /// `compare`: types the plan through the shipping KeyVox typing session and scores it
-/// word for word against what the Apple keyboard produced from the same planned taps.
+/// word for word, against what the Apple keyboard produced from the same planned taps
+/// when Apple results are given.
 enum CompareCommand {
     static func run(_ options: HarnessCommand.CompareOptions) throws {
         let plan = try TypingPlan.load(from: options.planPath)
-        let apple = try AppleBaselineResults.load(from: options.appleResultsPath)
-        guard apple.sentences.count <= plan.sentences.count else {
+        let apple = try options.appleResultsPath.map(AppleBaselineResults.load(from:))
+        if let apple, apple.sentences.count > plan.sentences.count {
             throw HarnessError.planMismatch(
                 "\(apple.sentences.count) Apple sentences for \(plan.sentences.count) planned"
             )
@@ -18,7 +19,11 @@ enum CompareCommand {
             setup.layout.predictionGeometry,
             keyboardSize: setup.layout.keyboardSize
         )
-        let typer = SessionTyper(computer: computer, layout: setup.layout)
+        let typer = SessionTyper(
+            computer: computer,
+            layout: setup.layout,
+            contestedTaps: options.contestedTaps.map(ContestedTapPolicy.init(parameters:))
+        )
 
         var total = 0
         var appleCorrect = 0
@@ -26,17 +31,20 @@ enum CompareCommand {
         var bothCorrect = 0
         var rows = ["intended\tapple\tkeyvox\tprevious"]
 
-        for (sentence, appleSentence) in zip(plan.sentences, apple.sentences) {
-            let appleWords = WordAlignment.align(
-                intended: sentence.truthWords,
-                produced: AppleBaselineResults.words(in: appleSentence.text)
-            )
+        let sentences = plan.sentences.prefix(apple?.sentences.count ?? plan.sentences.count)
+        for (sentenceIndex, sentence) in sentences.enumerated() {
+            let appleWords = apple.map {
+                WordAlignment.align(
+                    intended: sentence.truthWords,
+                    produced: AppleBaselineResults.words(in: $0.sentences[sentenceIndex].text)
+                )
+            }
             let keyVoxWords = WordAlignment.align(
                 intended: sentence.truthWords,
                 produced: AppleBaselineResults.words(in: try typer.type(sentence))
             )
             for (index, intended) in sentence.truthWords.enumerated() {
-                let appleWord = appleWords[index] ?? ""
+                let appleWord = appleWords?[index] ?? ""
                 let keyVoxWord = keyVoxWords[index] ?? ""
                 let appleIsCorrect = appleWord == intended
                 let keyVoxIsCorrect = keyVoxWord == intended
@@ -55,19 +63,31 @@ enum CompareCommand {
             }
         }
 
-        let lines = [
-            "Apple vs KeyVox on identical planned taps",
-            "  simulator keyboard: \(apple.keyboard ?? "System") on \(apple.device), iOS \(apple.systemVersion)",
-            "  sentences: \(apple.sentences.count)   words: \(total)"
+        var lines = [
+            apple == nil ? "KeyVox on planned taps" : "Apple vs KeyVox on identical planned taps",
+        ]
+        if let apple {
+            lines.append(
+                "  simulator keyboard: \(apple.keyboard ?? "System") on \(apple.device), iOS \(apple.systemVersion)"
+            )
+        }
+        lines += [
+            "  sentences: \(sentences.count)   words: \(total)"
                 + "   noise: \(plan.noiseInKeyPitches) key pitches",
             "",
-            "  Apple final words correct:   \(percent(appleCorrect, total))",
-            "  KeyVox final words correct:  \(percent(keyVoxCorrect, total))",
-            "  both correct:                \(percent(bothCorrect, total))",
-            "  only Apple correct:          \(percent(appleCorrect - bothCorrect, total))",
-            "  only KeyVox correct:         \(percent(keyVoxCorrect - bothCorrect, total))",
-            "",
         ]
+        if apple != nil {
+            lines.append("  Apple final words correct:   \(percent(appleCorrect, total))")
+        }
+        lines.append("  KeyVox final words correct:  \(percent(keyVoxCorrect, total))")
+        if apple != nil {
+            lines += [
+                "  both correct:                \(percent(bothCorrect, total))",
+                "  only Apple correct:          \(percent(appleCorrect - bothCorrect, total))",
+                "  only KeyVox correct:         \(percent(keyVoxCorrect - bothCorrect, total))",
+            ]
+        }
+        lines.append("")
         print(lines.joined(separator: "\n"))
         if let path = options.disagreementsPath {
             try (rows.joined(separator: "\n") + "\n").write(toFile: path, atomically: true, encoding: .utf8)
