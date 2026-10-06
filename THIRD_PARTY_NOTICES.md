@@ -180,6 +180,22 @@ Attribution: Based on sentence data contributed by the Tatoeba community.
 
 Attribution: Based on the OpenAssistant OASST1 dataset created by the OpenAssistant contributors.
 
+### OpenAssistant OASST2 (derived predictive-keyboard data)
+- Source: <https://huggingface.co/datasets/OpenAssistant/oasst2>
+- License: Apache License 2.0
+- License URL: <https://www.apache.org/licenses/LICENSE-2.0>
+- Note: English messages were normalized, aggregated, and transformed into the non-reversible word, word-pair, and word-sequence count artifact bundled with `Packages/KeyVoxPredictiveKeyboard`. `Tools/KeyVoxLanguageModel` rebuilds it.
+
+Attribution: Based on the OpenAssistant OASST2 dataset created by the OpenAssistant contributors.
+
+### YouTube-Commons (derived predictive-keyboard data)
+- Source: <https://huggingface.co/datasets/PleIAs/YouTube-Commons>
+- License: CC BY 4.0
+- License URL: <https://creativecommons.org/licenses/by/4.0/>
+- Note: English transcripts were normalized, aggregated, and transformed into the non-reversible word, word-pair, and word-sequence count artifact bundled with `Packages/KeyVoxPredictiveKeyboard`. The dataset credits each transcript to its creator's channel, title, and link. `Tools/KeyVoxLanguageModel` rebuilds the artifact.
+
+Attribution: Based on YouTube-Commons by PleIAs: transcripts of videos their creators published under the Creative Commons Attribution license, each credited to its channel in the dataset.
+
 ### Aalto ITE Typing dataset (derived predictive-keyboard rankers)
 - Source: <https://doi.org/10.5281/zenodo.12528163>
 - License: CC BY 4.0
