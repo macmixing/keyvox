@@ -92,9 +92,8 @@ public struct NoisyChannelCorrector: Sendable {
         var observed: Set<String> = [typed]
         var alternatives: [ScoredCandidate] = []
         for candidate in candidates {
-            let word = candidate.lowercased()
-            guard observed.insert(word).inserted else { continue }
-            alternatives.append(try scored(word, touches: aimedTouches, previousWords: previousWords))
+            guard observed.insert(candidate.lowercased()).inserted else { continue }
+            alternatives.append(try scored(candidate, touches: aimedTouches, previousWords: previousWords))
         }
         alternatives.sort { $0.score > $1.score }
 

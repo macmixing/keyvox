@@ -43,6 +43,17 @@ public struct TouchAlignmentScorer: Sendable {
     }
 
     public func cost(of touches: [CGPoint], typing word: String) -> Double {
+        let table = alignmentTable(touches: touches, word: word)
+        return table[touches.count][table[touches.count].count - 1]
+    }
+
+    /// The cost of the touches as the beginning of `word`: every touch must be explained,
+    /// but letters after the last aligned one are free, as for a word still being typed.
+    public func prefixCost(of touches: [CGPoint], typing word: String) -> Double {
+        alignmentTable(touches: touches, word: word)[touches.count].min() ?? 0
+    }
+
+    private func alignmentTable(touches: [CGPoint], word: String) -> [[Double]] {
         let letters = Array(Self.foldedLetters(word))
         let touchCount = touches.count
         let letterCount = letters.count
@@ -85,7 +96,7 @@ public struct TouchAlignmentScorer: Sendable {
                 table[touchIndex][letterIndex] = best
             }
         }
-        return table[touchCount][letterCount]
+        return table
     }
 
     /// Touches at the centers of the typed letters' keys, for input that arrived without
