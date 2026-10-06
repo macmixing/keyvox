@@ -45,6 +45,9 @@ enum KeyboardStyle {
     static let popupFont = UIFont.systemFont(ofSize: 32, weight: .medium)
 
     static let backgroundColor = UIColor.clear
+    /// Invisible, but not fully transparent: keyboard extensions only receive touches on
+    /// pixels that are not fully clear, so areas that must take taps use this.
+    static let touchableClearColor = UIColor.white.withAlphaComponent(0.001)
     static let borderColor = UIColor.clear
     static let labelColor = UIColor.label
     static let secondaryLabelColor = UIColor.secondaryLabel

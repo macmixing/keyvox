@@ -17,6 +17,7 @@ final class KeyboardRootView: UIView {
     let vibesButton = KeyboardVibesButton()
     let logoBarView = KeyboardLogoBarView()
     let keyGridView = KeyboardKeyGridView()
+    let suggestionBarView = KeyboardSuggestionBarView()
     let fullAccessInfoButton = KeyboardHitTargetButton(type: .system)
 
     private let leadingControlsStack = UIView()
@@ -36,6 +37,8 @@ final class KeyboardRootView: UIView {
     private var capsLockButtonHeightConstraint: NSLayoutConstraint?
     private var keyGridHeightConstraint: NSLayoutConstraint?
     private var topRowAccessoryLayoutGeometry: KeyboardLayoutGeometry.TopRowAccessoryLayout?
+    private var suggestionBarLeadingConstraint: NSLayoutConstraint?
+    private var suggestionBarTrailingConstraint: NSLayoutConstraint?
     private var isLeftHandedLayoutEnabled = false
 
     override init(frame: CGRect) {
@@ -48,6 +51,19 @@ final class KeyboardRootView: UIView {
     @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+
+    /// Sends touches in the keyboard's outer padding, which no other view covers, to the
+    /// key grid so they type the nearest key.
+    override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
+        let hitView = super.hitTest(point, with: event)
+        guard hitView == nil || hitView === self || hitView === mainStack else { return hitView }
+        let gridPoint = convert(point, to: keyGridView)
+        guard keyGridView.isHidden == false,
+              keyGridView.point(inside: gridPoint, with: event) else {
+            return hitView
+        }
+        return keyGridView
     }
 
     override func layoutSubviews() {
@@ -113,6 +129,30 @@ final class KeyboardRootView: UIView {
             showsVibesButton: showsVibesButton,
             isLeftHandedLayoutEnabled: isLeftHandedLayoutEnabled
         )
+        updateSuggestionBarHorizontalConstraints()
+    }
+
+    /// Spans the top-row slots between the settings button and the mic, which swap sides
+    /// in the left-handed layout.
+    private func updateSuggestionBarHorizontalConstraints() {
+        let slots: (leading: KeyboardTopRowAccessorySlot, trailing: KeyboardTopRowAccessorySlot) =
+            isLeftHandedLayoutEnabled ? (.three, .nine) : (.two, .eight)
+        guard let leadingReference = keyGridView.topRowKeyView(for: slots.leading),
+              let trailingReference = keyGridView.topRowKeyView(for: slots.trailing) else {
+            return
+        }
+        guard suggestionBarLeadingConstraint?.secondItem !== leadingReference
+                || suggestionBarTrailingConstraint?.secondItem !== trailingReference else {
+            return
+        }
+        NSLayoutConstraint.deactivate(
+            [suggestionBarLeadingConstraint, suggestionBarTrailingConstraint].compactMap { $0 }
+        )
+        let leading = suggestionBarView.leadingAnchor.constraint(equalTo: leadingReference.leadingAnchor)
+        let trailing = suggestionBarView.trailingAnchor.constraint(equalTo: trailingReference.trailingAnchor)
+        NSLayoutConstraint.activate([leading, trailing])
+        suggestionBarLeadingConstraint = leading
+        suggestionBarTrailingConstraint = trailing
     }
 
     func apply(
@@ -131,14 +171,21 @@ final class KeyboardRootView: UIView {
         isLeftHandedLayoutEnabled: Bool,
         toolbarMode: KeyboardToolbarMode,
         isTTSReady: Bool,
-        isTrackpadModeActive: Bool
+        isTrackpadModeActive: Bool,
+        showsNextKeyboardKey: Bool,
+        isPredictionEnabled: Bool
     ) {
         let showsBrandedToolbar = toolbarMode == .branded
         let warningText = toolbarMode.warningText
         let showsToolbarWarning = warningText != nil
         let shouldShowCancel = showsBrandedToolbar && state.showsCancelButton
-        let shouldShowSpeak = showsBrandedToolbar && isTTSReady
-        let shouldShowVibes = showsBrandedToolbar && isVibesAvailable
+        let showsSuggestionBar = showsBrandedToolbar
+            && !shouldShowCancel
+            && isPredictionEnabled
+            && symbolPage == .letters
+        let showsToolbarAccessories = showsBrandedToolbar && !showsSuggestionBar
+        let shouldShowSpeak = showsToolbarAccessories && isTTSReady
+        let shouldShowVibes = showsToolbarAccessories && isVibesAvailable
         let wasVibesButtonHidden = vibesButton.isHidden
         let shouldEnableSpeak = shouldShowSpeak
             && state != .waitingForApp
@@ -165,21 +212,23 @@ final class KeyboardRootView: UIView {
         capsLockButton.isDictationCapsApplied = isDictationCapsApplied
         capsLockButton.isDictationCapsUppercase = isDictationCapsUppercase
         capsLockButton.isTrackpadModeActive = isTrackpadModeActive
-        capsLockButton.isEnabled = showsBrandedToolbar && !isTrackpadModeActive
-        capsLockButton.isHidden = !showsBrandedToolbar
+        capsLockButton.isEnabled = showsToolbarAccessories && !isTrackpadModeActive
+        capsLockButton.isHidden = !showsToolbarAccessories
         paragraphButton.isOn = isAutoParagraphsEnabled
         paragraphButton.isTrackpadModeActive = isTrackpadModeActive
-        paragraphButton.isEnabled = showsBrandedToolbar && !isTrackpadModeActive
-        paragraphButton.isHidden = !showsBrandedToolbar
+        paragraphButton.isEnabled = showsToolbarAccessories && !isTrackpadModeActive
+        paragraphButton.isHidden = !showsToolbarAccessories
         listsButton.isOn = isListFormattingEnabled
         listsButton.isTrackpadModeActive = isTrackpadModeActive
-        listsButton.isEnabled = showsBrandedToolbar && !isTrackpadModeActive
-        listsButton.isHidden = !showsBrandedToolbar
+        listsButton.isEnabled = showsToolbarAccessories && !isTrackpadModeActive
+        listsButton.isHidden = !showsToolbarAccessories
         dictionaryButton.isTrackpadModeActive = isTrackpadModeActive
-        dictionaryButton.isEnabled = showsBrandedToolbar && !isTrackpadModeActive
-        dictionaryButton.isHidden = !showsBrandedToolbar
+        dictionaryButton.isEnabled = showsToolbarAccessories && !isTrackpadModeActive
+        dictionaryButton.isHidden = !showsToolbarAccessories
+        suggestionBarView.isHidden = !showsSuggestionBar
+        suggestionBarView.isUserInteractionEnabled = showsSuggestionBar && !isTrackpadModeActive
         vibesButton.isTrackpadModeActive = isTrackpadModeActive
-        vibesButton.isEnabled = showsBrandedToolbar && isVibesAvailable && !isTrackpadModeActive
+        vibesButton.isEnabled = shouldShowVibes && !isTrackpadModeActive
         vibesButton.isHidden = !shouldShowVibes
         vibesButton.title = displayedVibeTitle
         vibesButton.displayedVibeStyle = displayedVibeStyle
@@ -203,7 +252,11 @@ final class KeyboardRootView: UIView {
         logoBarView.applyKeyboardState(state)
         logoBarView.isEnabled = showsBrandedToolbar && state.isIndicatorEnabled
 
-        keyGridView.setLayout(symbolPage: symbolPage, keysMode: keysMode)
+        keyGridView.setLayout(
+            symbolPage: symbolPage,
+            keysMode: keysMode,
+            showsNextKeyboardKey: showsNextKeyboardKey
+        )
         keyGridHeightConstraint?.constant = keysMode.keyGridHeight
         keyGridView.setKeyboardEnabled(true)
         keyGridView.refreshAppearance()
@@ -214,7 +267,7 @@ final class KeyboardRootView: UIView {
     }
 
     private func configureView() {
-        backgroundColor = .clear
+        backgroundColor = KeyboardStyle.touchableClearColor
         clipsToBounds = true
         translatesAutoresizingMaskIntoConstraints = false
     }
@@ -302,6 +355,8 @@ final class KeyboardRootView: UIView {
         addSubview(dictionaryButton)
         addSubview(vibesButton)
         addSubview(speakButton)
+        suggestionBarView.isHidden = true
+        addSubview(suggestionBarView)
         addSubview(logoBarView)
         addSubview(settingsButton)
         addSubview(cancelButton)
@@ -385,6 +440,8 @@ final class KeyboardRootView: UIView {
             ),
             fullAccessWarningLabel.centerXAnchor.constraint(equalTo: fullAccessWarningContainer.centerXAnchor),
             fullAccessWarningLabel.centerYAnchor.constraint(equalTo: fullAccessWarningContainer.centerYAnchor),
+            suggestionBarView.centerYAnchor.constraint(equalTo: capsLockButton.centerYAnchor),
+            suggestionBarView.heightAnchor.constraint(equalTo: capsLockButton.heightAnchor),
             centerContainerView.widthAnchor.constraint(greaterThanOrEqualTo: logoBarView.widthAnchor),
             centerContainerView.heightAnchor.constraint(greaterThanOrEqualTo: logoBarView.heightAnchor),
 

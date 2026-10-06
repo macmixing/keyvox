@@ -97,8 +97,20 @@ extension KeyboardViewController {
         rootContainerView.speakButton.addTarget(self, action: #selector(handleSpeakTap), for: .touchUpInside)
         rootContainerView.logoBarView.addTarget(self, action: #selector(handleMicTap), for: .touchUpInside)
         rootContainerView.fullAccessInfoButton.addTarget(self, action: #selector(handleFullAccessInfoTap), for: .touchUpInside)
-        rootContainerView.keyGridView.onKeyActivated = { [weak self] kind in
-            self?.handleKeyActivation(kind) ?? false
+        rootContainerView.keyGridView.onKeyActivated = { [weak self] activation in
+            self?.handleKeyActivation(activation) ?? false
+        }
+        rootContainerView.keyGridView.onCharacterKeyTouchDown = { [weak self] in
+            self?.keypressHaptics.emitKeypressIfEnabled()
+        }
+        rootContainerView.keyGridView.onCharacterGeometryChange = { [weak self] geometry, size in
+            self?.predictionCoordinator.updateGeometry(geometry, keyboardSize: size)
+        }
+        rootContainerView.suggestionBarView.onItemSelected = { [weak self] item in
+            self?.handleSuggestionSelected(item)
+        }
+        predictionCoordinator.onBarChange = { [weak self] bar in
+            self?.rootContainerView?.suggestionBarView.apply(bar)
         }
         rootContainerView.keyGridView.onCompactKeysRequested = { [weak self] in
             self?.handleCompactKeysRequest() ?? false
@@ -127,6 +139,7 @@ extension KeyboardViewController {
         indicatorDriver.stop()
         indicatorDriver.sampleProvider = nil
         indicatorDriver.onUpdate = nil
+        predictionCoordinator.onBarChange = nil
         rootContainerView?.logoBarView.applyPlaybackProgress(0)
         dictationController.unregisterObservers()
 
@@ -154,6 +167,9 @@ extension KeyboardViewController {
             rootContainerView.logoBarView.removeTarget(self, action: #selector(handleMicTap), for: .touchUpInside)
             rootContainerView.fullAccessInfoButton.removeTarget(self, action: #selector(handleFullAccessInfoTap), for: .touchUpInside)
             rootContainerView.keyGridView.onKeyActivated = nil
+            rootContainerView.keyGridView.onCharacterKeyTouchDown = nil
+            rootContainerView.keyGridView.onCharacterGeometryChange = nil
+            rootContainerView.suggestionBarView.onItemSelected = nil
             rootContainerView.keyGridView.onCompactKeysRequested = nil
             rootContainerView.keyGridView.onSpaceTrackpadEvent = nil
             rootContainerView.keyGridView.setPopupContainerView(nil)

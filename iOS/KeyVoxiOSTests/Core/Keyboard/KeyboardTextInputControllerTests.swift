@@ -3,7 +3,7 @@ import Testing
 @testable import KeyVox_iOS
 
 struct KeyboardTextInputControllerTests {
-    @Test func characterKeyInsertsTextAndEmitsHaptics() {
+    @Test func characterKeyInsertsTextWithoutKeypressHapticsOfItsOwn() {
         let documentProxy = KeyboardTextDocumentProxySpy()
         let haptics = KeyboardKeypressHapticsSpy()
         let controller = KeyboardTextInputController(
@@ -21,7 +21,7 @@ struct KeyboardTextInputControllerTests {
 
         #expect(handled == true)
         #expect(documentProxy.insertedTexts == ["A"])
-        #expect(haptics.emissionCount == 1)
+        #expect(haptics.emissionCount == 0)
         #expect(symbolPage == .primary)
     }
 
@@ -151,7 +151,7 @@ struct KeyboardTextInputControllerTests {
         #expect(haptics.emissionCount == 1)
     }
 
-    @Test func abcKeyTriggersCapsResetAndInputModeAdvance() {
+    @Test func abcKeyOpensLetterPage() {
         let documentProxy = KeyboardTextDocumentProxySpy()
         let haptics = KeyboardKeypressHapticsSpy()
         let controller = KeyboardTextInputController(
@@ -174,6 +174,36 @@ struct KeyboardTextInputControllerTests {
         )
 
         #expect(handled == true)
+        #expect(symbolPage == .letters)
+        #expect(resetCount == 0)
+        #expect(advanceCount == 0)
+        #expect(haptics.emissionCount == 1)
+    }
+
+    @Test func nextKeyboardKeyTriggersCapsResetAndInputModeAdvance() {
+        let documentProxy = KeyboardTextDocumentProxySpy()
+        let haptics = KeyboardKeypressHapticsSpy()
+        let controller = KeyboardTextInputController(
+            documentProxy: documentProxy,
+            emitKeypress: haptics.emitKeypressIfEnabled
+        )
+        var symbolPage = KeyboardSymbolPage.letters
+        var resetCount = 0
+        var advanceCount = 0
+
+        let handled = controller.handleKeyActivation(
+            .nextKeyboard,
+            symbolPage: &symbolPage,
+            resetCapsLockStateIfNeeded: {
+                resetCount += 1
+            },
+            advanceToNextInputMode: {
+                advanceCount += 1
+            }
+        )
+
+        #expect(handled == true)
+        #expect(symbolPage == .letters)
         #expect(resetCount == 1)
         #expect(advanceCount == 1)
         #expect(haptics.emissionCount == 1)

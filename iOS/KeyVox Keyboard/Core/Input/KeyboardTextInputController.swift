@@ -1,4 +1,5 @@
 import UIKit
+import KeyVoxPredictiveKeyboard
 import KeyVoxTextComposition
 
 struct KeyboardTextInsertionResult: Equatable {
@@ -86,7 +87,6 @@ final class KeyboardTextInputController {
         switch kind {
         case let .character(value):
             pendingSelectionDeletion = nil
-            emitKeypress()
             documentProxy.insertText(value)
             return true
         case .delete:
@@ -141,15 +141,35 @@ final class KeyboardTextInputController {
         case .abc:
             pendingSelectionDeletion = nil
             emitKeypress()
+            symbolPage = .letters
+            return true
+        case .alternateSymbols:
+            emitKeypress()
+            symbolPage = .alternate
+            return true
+        case .numberSymbols:
+            emitKeypress()
+            symbolPage = .primary
+            return true
+        case .nextKeyboard:
+            pendingSelectionDeletion = nil
+            emitKeypress()
             resetCapsLockStateIfNeeded()
             advanceToNextInputMode()
             return true
-        case .alternateSymbols, .numberSymbols:
-            emitKeypress()
-            symbolPage.toggle()
-            return true
-        case .restoreFullKeyboard:
+        case .restoreFullKeyboard, .shift:
             return false
+        }
+    }
+
+    /// Applies a typing-session edit at the cursor: deletes, then inserts.
+    func apply(_ edit: TextEdit) {
+        pendingSelectionDeletion = nil
+        for _ in 0..<edit.deleteCount {
+            documentProxy.deleteBackward()
+        }
+        if edit.insertText.isEmpty == false {
+            documentProxy.insertText(edit.insertText)
         }
     }
 

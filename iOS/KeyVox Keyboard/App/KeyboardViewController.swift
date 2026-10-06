@@ -71,6 +71,11 @@ final class KeyboardViewController: UIInputViewController {
             KeyVoxIPCBridge.writeTTSRequest(request)
         }
     )
+    let letterCaseController = KeyboardLetterCaseController()
+    lazy var predictionCoordinator = KeyboardPredictionCoordinator(textBeforeCursor: { [weak self] in
+        self?.textDocumentProxy.documentContextBeforeInput
+    })
+    lazy var typingTraits = KeyboardTypingTraits(proxy: textDocumentProxy)
     var primaryHeightConstraint: NSLayoutConstraint?
     var keyboardState: KeyboardState = .idle {
         didSet {
@@ -78,7 +83,7 @@ final class KeyboardViewController: UIInputViewController {
             updateUI()
         }
     }
-    var symbolPage: KeyboardSymbolPage = .primary {
+    var symbolPage: KeyboardSymbolPage = .letters {
         didSet {
             updateUI()
         }
@@ -140,6 +145,7 @@ final class KeyboardViewController: UIInputViewController {
             isCompactKeysEnabled: appSettingsStore.isCompactKeysEnabled,
             isCompactKeysActive: appSettingsStore.isCompactKeysActive
         )
+        prepareTypingForCurrentField()
         preparePresentationIfNeeded()
         KeyVoxIPCBridge.reportKeyboardOnboardingState(hasFullAccess: hasFullAccess)
         configureDictationBehavior()
@@ -160,12 +166,12 @@ final class KeyboardViewController: UIInputViewController {
 
     override func textDidChange(_ textInput: UITextInput?) {
         super.textDidChange(textInput)
-        updateActiveInsertionVisualState()
+        handleTypingContextChange()
     }
 
     override func selectionDidChange(_ textInput: UITextInput?) {
         super.selectionDidChange(textInput)
-        updateActiveInsertionVisualState()
+        handleTypingContextChange()
     }
 
     override func viewWillDisappear(_ animated: Bool) {
@@ -269,8 +275,11 @@ final class KeyboardViewController: UIInputViewController {
             isLeftHandedLayoutEnabled: appSettingsStore.isLeftHandedKeyboardLayoutEnabled,
             toolbarMode: toolbarMode,
             isTTSReady: isTTSReady,
-            isTrackpadModeActive: isTrackpadModeActive
+            isTrackpadModeActive: isTrackpadModeActive,
+            showsNextKeyboardKey: needsInputModeSwitchKey,
+            isPredictionEnabled: typingTraits.allowsPredictions
         )
+        applyLetterCase()
         if toolbarMode != .fullAccessWarning {
             setFullAccessInstructionsPresented(false)
         }
@@ -505,13 +514,21 @@ final class KeyboardViewController: UIInputViewController {
     }
 
     @discardableResult
-    func handleKeyActivation(_ kind: KeyboardKeyKind) -> Bool {
+    func handleKeyActivation(_ activation: KeyboardKeyActivation) -> Bool {
+        let kind = activation.kind
         if kind == .restoreFullKeyboard {
             guard keysMode == .compact else { return false }
             appSettingsStore.setCompactKeysActive(false)
             keysMode = .full
             interactionHaptics.emitMediumIfEnabled()
             return true
+        }
+        if kind == .abc, keysMode == .compact {
+            appSettingsStore.setCompactKeysActive(false)
+            keysMode = .full
+        }
+        if let handled = handleTypingActivation(activation) {
+            return handled
         }
 
         var updatedSymbolPage = symbolPage
@@ -527,7 +544,8 @@ final class KeyboardViewController: UIInputViewController {
         )
         symbolPage = updatedSymbolPage
         if didHandle {
-            updateActiveInsertionVisualState()
+            recordTypedCharacter(activation)
+            handleTypingContextChange()
         }
         return didHandle
     }
@@ -546,7 +564,7 @@ final class KeyboardViewController: UIInputViewController {
                     self?.textInputController.adjustCursorPosition(by: offset)
                 }
             )
-            updateActiveInsertionVisualState()
+            handleTypingContextChange()
         case .ended, .cancelled:
             isTrackpadModeActive = false
             cursorTrackpadInteractor.end()
@@ -576,11 +594,11 @@ final class KeyboardViewController: UIInputViewController {
             artifactID: artifactID,
             styleIdentifier: styleIdentifier
         )
-        updateActiveInsertionVisualState()
+        handleTypingContextChange()
         emitDelayedTranscriptionLandingHapticIfNeeded()
     }
 
-    private func updateActiveInsertionVisualState() {
+    func updateActiveInsertionVisualState() {
         rootContainerView?.vibesButton.title = dictationChangeController.displayedVibeTitle
         rootContainerView?.vibesButton.displayedVibeStyle = dictationChangeController.displayedVibeStyle
         rootContainerView?.vibesButton.isDisplayedVibeApplied = dictationChangeController.isDisplayedVibeAppliedToCurrentInsertion
