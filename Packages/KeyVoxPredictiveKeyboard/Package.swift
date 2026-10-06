@@ -29,7 +29,7 @@ let package = Package(
             name: "KeyVoxPredictiveKeyboard",
             dependencies: ["KeyVoxPredictiveNative"],
             path: "Sources/KeyVoxPredictiveKeyboard",
-            resources: [.copy("Resources")]
+            resources: [.copy("PredictiveData")]
         ),
         .testTarget(
             name: "KeyVoxPredictiveKeyboardTests",

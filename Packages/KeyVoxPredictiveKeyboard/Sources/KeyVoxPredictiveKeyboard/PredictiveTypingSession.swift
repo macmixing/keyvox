@@ -66,16 +66,27 @@ public final class PredictiveTypingSession {
         result.request == request(textBeforeCursor: textBeforeCursor)
     }
 
-    /// What space inserts. `result` must be current for `textBeforeCursor`.
-    public func spaceEdit(textBeforeCursor: String?, result: PredictionResult) -> TextEdit {
-        let currentWord = result.request.currentWord
+    /// What typing `separator` (a space, return, or punctuation) after the current word
+    /// inserts: the autocorrection from `result` when it was computed for this word,
+    /// followed by the separator. Backspace can undo an autocorrection ended by a space.
+    public func wordBoundaryEdit(
+        separator: String,
+        textBeforeCursor: String?,
+        result: PredictionResult?
+    ) -> TextEdit {
+        let currentWord = TypingTextContext(textBeforeCursor: textBeforeCursor).currentWord
         wordTouches.reset()
-        guard let replacement = result.autocorrection, replacement != currentWord else {
-            lastAutocorrection = nil
-            return TextEdit(deleteCount: 0, insertText: " ")
+        lastAutocorrection = nil
+        guard let result,
+              result.request.currentWord == currentWord,
+              let replacement = result.autocorrection,
+              replacement != currentWord else {
+            return TextEdit(deleteCount: 0, insertText: separator)
         }
-        let inserted = replacement + " "
-        lastAutocorrection = AppliedAutocorrection(original: currentWord, insertedText: inserted)
+        let inserted = replacement + separator
+        if separator == " " {
+            lastAutocorrection = AppliedAutocorrection(original: currentWord, insertedText: inserted)
+        }
         return TextEdit(deleteCount: currentWord.count, insertText: inserted)
     }
 

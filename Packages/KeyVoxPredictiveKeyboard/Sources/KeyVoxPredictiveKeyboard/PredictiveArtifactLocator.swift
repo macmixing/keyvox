@@ -11,7 +11,7 @@ struct PredictiveArtifactLocator {
         if let url = bundle.url(
             forResource: name,
             withExtension: fileExtension,
-            subdirectory: "Resources"
+            subdirectory: "PredictiveData"
         ) ?? bundle.url(forResource: name, withExtension: fileExtension) {
             return url
         }
@@ -22,7 +22,7 @@ struct PredictiveArtifactLocator {
         if let url = bundle.url(
             forResource: name,
             withExtension: nil,
-            subdirectory: "Resources"
+            subdirectory: "PredictiveData"
         ) ?? bundle.url(forResource: name, withExtension: nil),
            url.hasDirectoryPath {
             return url
