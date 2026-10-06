@@ -23,6 +23,9 @@ let package = Package(
                 .headerSearchPath("."),
                 .headerSearchPath("latinime"),
                 .define("KEYVOX_LATINIME_PORT"),
+                // The bundled LatinIME sources narrow sizes to int and use variable-length
+                // arrays throughout, as upstream does.
+                .unsafeFlags(["-Wno-shorten-64-to-32", "-Wno-vla-cxx-extension"]),
             ]
         ),
         .target(
