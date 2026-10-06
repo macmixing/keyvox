@@ -1,6 +1,8 @@
-import CoreGraphics
 import Foundation
 import KeyVoxPredictiveNative
+#if canImport(CoreGraphics)
+import CoreGraphics
+#endif
 
 public final class EnglishPredictiveEngine: @unchecked Sendable {
     private let nativeEngine: KVPKEngineRef
