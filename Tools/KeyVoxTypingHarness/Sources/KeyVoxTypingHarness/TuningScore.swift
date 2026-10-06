@@ -1,4 +1,4 @@
-/// How a decider did across tuning samples.
+/// How a set of corrector parameters did across tuning samples.
 struct TuningScore {
     /// Each correctly typed word that space breaks counts this many extra misses.
     static let brokenWordWeight = 1.0

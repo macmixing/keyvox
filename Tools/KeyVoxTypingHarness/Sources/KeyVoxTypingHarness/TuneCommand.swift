@@ -17,7 +17,6 @@ enum TuneCommand {
         let score = { (samples: [TuningSample], parameters: NoisyChannelCorrector.Parameters) in
             try channelScore(samples, parameters: parameters, keys: setup.keys, language: language)
         }
-        print("July decider     tuning: \(julyScore(tuning).summary)")
         print("Standard channel tuning: \(try score(tuning, NoisyChannelCorrector.standardParameters).summary)")
 
         let (best, bestScore) = try ParameterSearch.search(
@@ -31,7 +30,6 @@ enum TuneCommand {
         print("Tuned channel    tuning: \(bestScore.summary)")
         for holdout in holdouts {
             print("Holdout \(holdout.name):")
-            print("  July decider:     \(julyScore(holdout.samples).summary)")
             print("  Standard channel: \(try score(holdout.samples, NoisyChannelCorrector.standardParameters).summary)")
             print("  Tuned channel:    \(try score(holdout.samples, best).summary)")
         }
@@ -40,7 +38,6 @@ enum TuneCommand {
 
     private static func samples(planPaths: [String], setup: EngineSetup) throws -> [TuningSample] {
         var samples: [TuningSample] = []
-        let july = setup.correctionEvaluator(decider: .july)
         for path in planPaths {
             let plan = try TypingPlan.load(from: path)
             for sentence in plan.sentences {
@@ -52,32 +49,23 @@ enum TuneCommand {
                     )
                     let previousWords = Array(sentence.truthWords[..<index].reversed().prefix(3))
                     let intendedWord = sentence.truthWords[index]
-                    let julyOutcome = try july.evaluate(
-                        intendedWord: intendedWord,
-                        typing: typing,
+                    let response = try setup.engine.predict(
+                        typedWord: typing.typedWord,
                         previousWords: previousWords,
-                        usesTouches: true
+                        touches: typing.touches,
+                        mode: .correction
                     )
                     samples.append(TuningSample(
                         intendedWord: intendedWord,
                         typedWord: typing.typedWord,
                         touches: typing.touches.map(\.location),
                         previousWords: previousWords,
-                        candidates: julyOutcome.suggestions,
-                        julyFinalWord: julyOutcome.finalWord.lowercased()
+                        candidates: response.suggestions.map(\.word)
                     ))
                 }
             }
         }
         return samples
-    }
-
-    private static func julyScore(_ samples: [TuningSample]) -> TuningScore {
-        var score = TuningScore()
-        for sample in samples {
-            score.record(intended: sample.intendedWord, typed: sample.typedWord, final: sample.julyFinalWord)
-        }
-        return score
     }
 
     private static func channelScore(
@@ -89,19 +77,12 @@ enum TuneCommand {
         let corrector = NoisyChannelCorrector(parameters: parameters, keys: keys, language: language)
         var score = TuningScore()
         for sample in samples {
-            let final: String
-            if let grammatical = EnglishAutomaticCorrectionPolicy.grammaticalReplacement(
-                for: sample.typedWord
-            ) {
-                final = grammatical.lowercased()
-            } else {
-                final = try corrector.decide(
-                    typedWord: sample.typedWord,
-                    touches: sample.touches,
-                    previousWords: sample.previousWords,
-                    candidates: sample.candidates
-                ).replacement ?? sample.typedWord
-            }
+            let final = try corrector.decide(
+                typedWord: sample.typedWord,
+                touches: sample.touches,
+                previousWords: sample.previousWords,
+                candidates: sample.candidates
+            ).replacement ?? sample.typedWord
             score.record(intended: sample.intendedWord, typed: sample.typedWord, final: final)
         }
         return score

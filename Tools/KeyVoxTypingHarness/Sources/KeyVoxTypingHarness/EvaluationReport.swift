@@ -29,24 +29,11 @@ struct EvaluationReport {
         suggestionBars.append(outcome)
     }
 
-    func julyBarShowRate(withinLetters letters: Int) -> Double {
-        let shown = suggestionBars.filter { ($0.lettersTypedWhenShownByJulyBar ?? .max) <= letters }
-        return Self.rate(shown.count, of: suggestionBars.count)
-    }
-
     func completionBarShowRate(withinLetters letters: Int) -> Double {
         let shown = suggestionBars.filter {
             ($0.lettersTypedWhenShownByCompletions ?? .max) <= letters
         }
         return Self.rate(shown.count, of: suggestionBars.count)
-    }
-
-    /// Share of words whose intended form showed in the July bar at any point while typing.
-    var julyBarEverShownRate: Double {
-        Self.rate(
-            suggestionBars.filter { $0.lettersTypedWhenShownByJulyBar != nil }.count,
-            of: suggestionBars.count
-        )
     }
 
     func composedBarShowRate(withinLetters letters: Int) -> Double {
@@ -85,15 +72,6 @@ struct EvaluationReport {
         Self.rate(
             suggestionBars.filter { $0.lettersTypedWhenShownByCompletions != nil }.count,
             of: suggestionBars.count
-        )
-    }
-
-    /// Share of mid-word moments where the July bar's first slot did not begin with the
-    /// intended word's letters so far.
-    var julyBarNonContinuationRate: Double {
-        Self.rate(
-            suggestionBars.reduce(0) { $0 + $1.midWordStepsLeadingWithNonContinuation },
-            of: suggestionBars.reduce(0) { $0 + $1.midWordSteps }
         )
     }
 

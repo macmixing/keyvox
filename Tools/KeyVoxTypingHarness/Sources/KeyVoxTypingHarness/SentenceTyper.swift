@@ -1,4 +1,5 @@
 import Foundation
+import KeyVoxPredictiveKeyboard
 
 /// Types one planned sentence word by word through KeyVox's correction path, feeding
 /// each word's final form back in as context for the next word, as a real text field would.
@@ -10,11 +11,11 @@ struct SentenceTyper {
     }
 
     let setup: EngineSetup
-    let decider: CorrectionEvaluator.Decider
+    let parameters: NoisyChannelCorrector.Parameters
     let usesTouches: Bool
 
     func type(_ sentence: TypingPlan.Sentence) throws -> [TypedWord] {
-        let correction = setup.correctionEvaluator(decider: decider)
+        let correction = setup.correctionEvaluator(parameters: parameters)
         var finalWords: [String] = []
         var typedWords: [TypedWord] = []
         for (index, (word, offsets)) in zip(sentence.words, sentence.taps).enumerated() {

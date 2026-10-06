@@ -23,8 +23,8 @@ struct EngineSetup {
         language = ContextLanguageScorer(engine: engine)
     }
 
-    func correctionEvaluator(decider: CorrectionEvaluator.Decider) -> CorrectionEvaluator {
-        CorrectionEvaluator(engine: engine, decider: decider, keys: keys, language: language)
+    func correctionEvaluator(parameters: NoisyChannelCorrector.Parameters) -> CorrectionEvaluator {
+        CorrectionEvaluator(engine: engine, parameters: parameters, keys: keys, language: language)
     }
 
     static func milliseconds(since start: ContinuousClock.Instant) -> Double {

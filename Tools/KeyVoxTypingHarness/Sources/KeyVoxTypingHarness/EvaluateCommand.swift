@@ -7,24 +7,18 @@ enum EvaluateCommand {
     static func run(_ options: HarnessCommand.EvaluateOptions) throws {
         let plan = try options.source.resolvePlan()
         let setup = try EngineSetup()
-        let typer = SentenceTyper(setup: setup, decider: options.decider, usesTouches: options.usesTouches)
+        let typer = SentenceTyper(setup: setup, parameters: options.parameters, usesTouches: options.usesTouches)
         let completion = CompletionEvaluator(engine: setup.engine)
         let nextWord = NextWordEvaluator(engine: setup.engine)
-        let barParameters: NoisyChannelCorrector.Parameters
-        if case .channel(let parameters) = options.decider {
-            barParameters = parameters
-        } else {
-            barParameters = NoisyChannelCorrector.standardParameters
-        }
         let suggestionBar = SuggestionBarEvaluator(
             engine: setup.engine,
             ranker: SuggestionCandidateRanker(
-                parameters: barParameters,
+                parameters: options.parameters,
                 keys: setup.keys,
                 language: setup.language
             ),
             corrector: NoisyChannelCorrector(
-                parameters: barParameters,
+                parameters: options.parameters,
                 keys: setup.keys,
                 language: setup.language
             )

@@ -16,7 +16,7 @@ enum HarnessCommand {
         var source = PlanSource()
         var usesTouches = true
         var failuresPath: String?
-        var decider = CorrectionEvaluator.Decider.channel(NoisyChannelCorrector.standardParameters)
+        var parameters = NoisyChannelCorrector.standardParameters
     }
 
     struct TuneOptions {
@@ -63,7 +63,7 @@ enum HarnessCommand {
     usage:
       KeyVoxTypingHarness evaluate (--corpus <path>... | --plan <path>)
                                    [--sentences <count>] [--noise <key pitches>] [--seed <value>]
-                                   [--decider july|channel] [--no-touches] [--failures <tsv-path>]
+                                   [--no-touches] [--failures <tsv-path>] [--param <name>=<value>...]
       KeyVoxTypingHarness plan --corpus <path>... --output <path>
                                [--sentences <count>] [--noise <key pitches>] [--seed <value>]
       KeyVoxTypingHarness compare --plan <path> [--apple <results-json>] [--disagreements <tsv-path>]
@@ -87,13 +87,8 @@ enum HarnessCommand {
                 switch flag {
                 case "--no-touches": options.usesTouches = false
                 case "--failures": options.failuresPath = try Self.value(after: flag, in: &remaining)
-                case "--decider": options.decider = try Self.decider(after: flag, in: &remaining)
                 case "--param":
-                    guard case .channel(var parameters) = options.decider else {
-                        throw HarnessError.invalidValue(flag)
-                    }
-                    try Self.applyParameter(try Self.value(after: flag, in: &remaining), to: &parameters)
-                    options.decider = .channel(parameters)
+                    try Self.applyParameter(try Self.value(after: flag, in: &remaining), to: &options.parameters)
                 default: throw HarnessError.unknownFlag(flag)
                 }
             }
@@ -247,17 +242,6 @@ enum HarnessCommand {
             throw HarnessError.invalidValue("--contested-param \(assignment)")
         }
         parameters[keyPath: keyPath] = value
-    }
-
-    private static func decider(
-        after flag: String,
-        in remaining: inout ArraySlice<String>
-    ) throws -> CorrectionEvaluator.Decider {
-        switch try value(after: flag, in: &remaining) {
-        case "july": return .july
-        case "channel": return .channel(NoisyChannelCorrector.standardParameters)
-        default: throw HarnessError.invalidValue(flag)
-        }
     }
 
     private static func value(
