@@ -6,6 +6,9 @@ import Foundation
 /// observed pair scores its probability times the backoff factor, and otherwise the
 /// word's overall frequency is used with the factor applied once per missing level. A
 /// sequence the counts never saw therefore always scores below one they did see.
+///
+/// The user's personal words count as dictionary words and score at least as likely as
+/// an everyday word, since the bundled counts usually have never seen them.
 public struct ContextLanguageScorer: Sendable {
     public struct Score: Sendable, Equatable {
         public let logProbability: Double
@@ -13,18 +16,26 @@ public struct ContextLanguageScorer: Sendable {
     }
 
     private static let backoffLogFactor = log(0.4)
+    /// About one occurrence in ten thousand words: the frequency of an everyday word.
+    private static let personalWordLogProbability = log(1e-4)
 
     private let analyze: @Sendable (String, [String]) throws -> WordLanguageAnalysis
+    private let vocabulary: PersonalVocabulary
 
-    public init(engine: EnglishPredictiveEngine) {
+    public init(engine: EnglishPredictiveEngine, vocabulary: PersonalVocabulary = .empty) {
         analyze = { word, previousWords in
             try engine.analyze(word: word, previousWords: previousWords)
         }
+        self.vocabulary = vocabulary
     }
 
     /// Scores through any analysis source, such as a cache in front of the engine.
-    public init(analyze: @escaping @Sendable (String, [String]) throws -> WordLanguageAnalysis) {
+    public init(
+        analyze: @escaping @Sendable (String, [String]) throws -> WordLanguageAnalysis,
+        vocabulary: PersonalVocabulary = .empty
+    ) {
         self.analyze = analyze
+        self.vocabulary = vocabulary
     }
 
     /// - Parameter previousWords: Earlier words in the sentence, newest first.
@@ -40,6 +51,12 @@ public struct ContextLanguageScorer: Sendable {
             let missingLevels = Double(min(previousWords.count, 2))
             logProbability = analysis.unigramLogProbability + missingLevels * Self.backoffLogFactor
         }
-        return Score(logProbability: logProbability, isDictionaryWord: analysis.wordIsValid)
+        guard vocabulary.contains(word) else {
+            return Score(logProbability: logProbability, isDictionaryWord: analysis.wordIsValid)
+        }
+        return Score(
+            logProbability: max(logProbability, Self.personalWordLogProbability),
+            isDictionaryWord: true
+        )
     }
 }

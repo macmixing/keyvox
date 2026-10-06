@@ -8,9 +8,9 @@ import CoreGraphics
 public final class PredictionComputer: @unchecked Sendable {
     private let engine: EnglishPredictiveEngine
     private let parameters: NoisyChannelCorrector.Parameters
-    private let language: ContextLanguageScorer
     private let lock = NSLock()
     private var keys: KeyCenterMap
+    private var vocabulary = PersonalVocabulary.empty
 
     public init(
         engine: EnglishPredictiveEngine,
@@ -18,7 +18,6 @@ public final class PredictionComputer: @unchecked Sendable {
     ) {
         self.engine = engine
         self.parameters = parameters
-        language = ContextLanguageScorer(engine: engine)
         keys = KeyCenterMap(geometry: EnglishKeyboardLayout.defaultGeometry)
     }
 
@@ -30,10 +29,19 @@ public final class PredictionComputer: @unchecked Sendable {
         lock.unlock()
     }
 
+    /// Call whenever the user's dictionary, contacts, or text replacements change.
+    public func updateVocabulary(_ vocabulary: PersonalVocabulary) {
+        lock.lock()
+        self.vocabulary = vocabulary
+        lock.unlock()
+    }
+
     public func compute(_ request: PredictionRequest) throws -> PredictionResult {
         lock.lock()
         let keys = keys
+        let vocabulary = vocabulary
         lock.unlock()
+        let language = ContextLanguageScorer(engine: engine, vocabulary: vocabulary)
         let ranker = SuggestionCandidateRanker(parameters: parameters, keys: keys, language: language)
 
         guard request.currentWord.isEmpty == false else {
@@ -58,24 +66,29 @@ public final class PredictionComputer: @unchecked Sendable {
             touches: engineTouches,
             mode: .correction
         )
+        let personalCandidates = vocabulary.candidates(near: typed)
         let corrector = NoisyChannelCorrector(parameters: parameters, keys: keys, language: language)
         let decision = try corrector.decide(
             typedWord: typed,
             touches: request.touches,
             previousWords: request.previousWords,
-            candidates: correction.suggestions.map(\.word)
+            candidates: correction.suggestions.map(\.word) + personalCandidates
         )
         let ranked = try ranker.rank(
             typedWord: typed,
             touches: request.touches,
             previousWords: request.previousWords,
-            candidates: completion.suggestions.map(\.word) + correction.suggestions.map(\.word)
+            candidates: completion.suggestions.map(\.word)
+                + correction.suggestions.map(\.word)
+                + personalCandidates
         )
 
-        let grammatical = EnglishAutomaticCorrectionPolicy.grammaticalReplacement(for: typed)
-        let replacement = request.keepsTypedWord
-            ? nil
-            : grammatical ?? decision.replacement.map { WordCasing.apply(of: typed, to: $0) }
+        let replacement = Self.replacement(
+            typed: typed,
+            request: request,
+            vocabulary: vocabulary,
+            decision: decision
+        )
         return PredictionResult(
             request: request,
             bar: SuggestionBarComposer.compose(
@@ -85,6 +98,25 @@ public final class PredictionComputer: @unchecked Sendable {
             ),
             autocorrection: replacement
         )
+    }
+
+    /// Text replacements always expand; personal words and words the user kept are never
+    /// replaced; otherwise the grammatical fix or the corrector's choice applies.
+    private static func replacement(
+        typed: String,
+        request: PredictionRequest,
+        vocabulary: PersonalVocabulary,
+        decision: NoisyChannelCorrector.Decision
+    ) -> String? {
+        guard request.keepsTypedWord == false else { return nil }
+        if let expansion = vocabulary.expansion(for: typed) {
+            return expansion
+        }
+        guard vocabulary.contains(typed) == false else { return nil }
+        if let grammatical = EnglishAutomaticCorrectionPolicy.grammaticalReplacement(for: typed) {
+            return grammatical
+        }
+        return decision.replacement.map { WordCasing.apply(of: typed, to: $0) }
     }
 
     private func nextWordBar(
