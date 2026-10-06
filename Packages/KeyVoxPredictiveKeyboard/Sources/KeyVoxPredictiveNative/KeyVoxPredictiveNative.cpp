@@ -355,86 +355,6 @@ int damerauOSA(const std::string &left, const std::string &right) {
     return previous[rightCount];
 }
 
-int boundedDamerauOSA(
-    const std::string &left,
-    const std::string &right,
-    int maximumDistance
-) {
-    const int leftCount = static_cast<int>(left.size());
-    const int rightCount = static_cast<int>(right.size());
-    if (leftCount >= MAX_WORD_LENGTH || rightCount >= MAX_WORD_LENGTH
-            || std::abs(leftCount - rightCount) > maximumDistance) {
-        return maximumDistance + 1;
-    }
-
-    const int outsideBand = maximumDistance + 1;
-    std::array<int, MAX_WORD_LENGTH> previousPrevious;
-    std::array<int, MAX_WORD_LENGTH> previous;
-    std::array<int, MAX_WORD_LENGTH> current;
-    previousPrevious.fill(outsideBand);
-    previous.fill(outsideBand);
-    current.fill(outsideBand);
-    for (int column = 0; column <= std::min(rightCount, maximumDistance); ++column) {
-        previous[column] = column;
-    }
-    previousPrevious = previous;
-
-    for (int row = 1; row <= leftCount; ++row) {
-        current.fill(outsideBand);
-        if (row <= maximumDistance) current[0] = row;
-        const int firstColumn = std::max(1, row - maximumDistance);
-        const int lastColumn = std::min(rightCount, row + maximumDistance);
-        int rowMinimum = outsideBand;
-        for (int column = firstColumn; column <= lastColumn; ++column) {
-            const int substitution = previous[column - 1]
-                + (left[row - 1] == right[column - 1] ? 0 : 1);
-            current[column] = std::min({
-                previous[column] + 1,
-                current[column - 1] + 1,
-                substitution,
-            });
-            if (row > 1 && column > 1
-                    && left[row - 1] == right[column - 2]
-                    && left[row - 2] == right[column - 1]) {
-                current[column] = std::min(
-                    current[column],
-                    previousPrevious[column - 2] + 1
-                );
-            }
-            rowMinimum = std::min(rowMinimum, current[column]);
-        }
-        if (rowMinimum > maximumDistance) return outsideBand;
-        previousPrevious = previous;
-        previous = current;
-    }
-    return std::min(previous[rightCount], outsideBand);
-}
-
-std::vector<uint32_t> characterSequenceKeys(
-    const std::string &word,
-    size_t sequenceLength
-) {
-    std::string padded;
-    padded.reserve(word.size() + 2);
-    padded.push_back('\x01');
-    padded.append(word);
-    padded.push_back('\x02');
-    if (padded.size() < sequenceLength) return {};
-
-    std::vector<uint32_t> keys;
-    keys.reserve(padded.size() - sequenceLength + 1);
-    for (size_t start = 0; start + sequenceLength <= padded.size(); ++start) {
-        uint32_t key = 0;
-        for (size_t offset = 0; offset < sequenceLength; ++offset) {
-            key = (key << 8) | static_cast<uint8_t>(padded[start + offset]);
-        }
-        keys.push_back(key);
-    }
-    std::sort(keys.begin(), keys.end());
-    keys.erase(std::unique(keys.begin(), keys.end()), keys.end());
-    return keys;
-}
-
 struct NativeCandidate {
     std::string word;
     int score = 0;
@@ -468,7 +388,6 @@ public:
         );
         if (!policy) throw std::runtime_error("could not open dictionary");
         dictionary_ = std::make_unique<Dictionary>(&environment_, std::move(policy));
-        indexDictionaryWords();
         session_ = std::make_unique<DicTraverseSession>(&environment_, nullptr, true);
         if (!updateGeometry(keys, keyCount, keyboardWidth, keyboardHeight)) {
             throw std::runtime_error("invalid keyboard geometry");
@@ -590,9 +509,6 @@ public:
                 ),
                 candidates.end()
             );
-            if (mode == KVPKPredictionModeCorrection) {
-                appendMultiEditCandidates(typed, &candidates);
-            }
             TreeModel &ranker = mode == KVPKPredictionModeCompletion
                 ? completionRanker_ : correctionRanker_;
             rankCandidates(typed, previous, &candidates, ranker);
@@ -873,140 +789,6 @@ private:
         }
     }
 
-    void indexDictionaryWords() {
-        std::unordered_set<std::string> observed;
-        int token = 0;
-        do {
-            int codePoints[MAX_WORD_LENGTH] = {};
-            int codePointCount = 0;
-            const int nextToken = dictionary_->getNextWordAndNextToken(
-                token, codePoints, &codePointCount
-            );
-            std::string word;
-            word.reserve(static_cast<size_t>(codePointCount));
-            bool isSupported = codePointCount >= 2 && codePointCount < MAX_WORD_LENGTH;
-            for (int index = 0; index < codePointCount && isSupported; ++index) {
-                int codePoint = codePoints[index];
-                if (codePoint >= 'A' && codePoint <= 'Z') {
-                    codePoint += 'a' - 'A';
-                }
-                if ((codePoint < 'a' || codePoint > 'z') && codePoint != '\'') {
-                    isSupported = false;
-                    break;
-                }
-                word.push_back(static_cast<char>(codePoint));
-            }
-            if (isSupported && observed.insert(word).second) {
-                const uint32_t wordIdentifier = static_cast<uint32_t>(dictionaryWords_.size());
-                dictionaryWords_.push_back(word);
-                for (uint32_t key : characterSequenceKeys(word, 2)) {
-                    dictionaryWordIdentifiersByBigram_[key].push_back(wordIdentifier);
-                }
-            }
-            token = nextToken;
-        } while (token != 0);
-    }
-
-    void appendMultiEditCandidates(
-        const std::string &typed,
-        std::vector<NativeCandidate> *candidates
-    ) const {
-        if (typed.size() < 5 || typed.size() + 2 >= MAX_WORD_LENGTH
-                || !std::all_of(typed.begin(), typed.end(), [](unsigned char value) {
-                    return value >= 'a' && value <= 'z';
-                })) {
-            return;
-        }
-        if (std::any_of(
-                candidates->begin(), candidates->end(),
-                [&typed](const NativeCandidate &candidate) {
-                    return boundedDamerauOSA(typed, candidate.word, 1) <= 1;
-                }
-        )) {
-            return;
-        }
-
-        struct Match {
-            std::string word;
-            double unigramLogCount;
-        };
-        std::unordered_set<std::string> observed;
-        for (const NativeCandidate &candidate : *candidates) {
-            observed.insert(candidate.word);
-        }
-        std::vector<Match> matches;
-        const size_t minimumLength = typed.size() > 2 ? typed.size() - 2 : 2;
-        const size_t maximumLength = std::min(
-            typed.size() + 2,
-            static_cast<size_t>(MAX_WORD_LENGTH - 1)
-        );
-
-        const auto collectMatches = [&](
-            const std::vector<uint32_t> &keys,
-            const std::unordered_map<uint32_t, std::vector<uint32_t>> &index,
-            uint8_t minimumHitCount
-        ) {
-            std::vector<uint8_t> hitCounts(dictionaryWords_.size(), 0);
-            std::vector<uint32_t> shortlist;
-            for (uint32_t key : keys) {
-                const auto posting = index.find(key);
-                if (posting == index.end()) continue;
-                for (uint32_t wordIdentifier : posting->second) {
-                    const std::string &word = dictionaryWords_[wordIdentifier];
-                    if (word.size() < minimumLength || word.size() > maximumLength) continue;
-                    if (hitCounts[wordIdentifier] == 0) shortlist.push_back(wordIdentifier);
-                    if (hitCounts[wordIdentifier] < UINT8_MAX) ++hitCounts[wordIdentifier];
-                }
-            }
-            for (uint32_t wordIdentifier : shortlist) {
-                if (hitCounts[wordIdentifier] < minimumHitCount) continue;
-                const std::string &word = dictionaryWords_[wordIdentifier];
-                if (observed.find(word) != observed.end()) continue;
-                if (boundedDamerauOSA(typed, word, 2) != 2) continue;
-                matches.push_back({word, context_.unigram(word).first});
-            }
-        };
-        const std::vector<uint32_t> bigramKeys = characterSequenceKeys(typed, 2);
-        const uint8_t minimumBigramHits = static_cast<uint8_t>(
-            std::max<int>(1, static_cast<int>(bigramKeys.size()) - 4)
-        );
-        collectMatches(
-            bigramKeys,
-            dictionaryWordIdentifiersByBigram_,
-            minimumBigramHits
-        );
-        std::sort(matches.begin(), matches.end(), [](const Match &left, const Match &right) {
-            if (left.unigramLogCount != right.unigramLogCount) {
-                return left.unigramLogCount > right.unigramLogCount;
-            }
-            return left.word < right.word;
-        });
-
-        int recoveryScore = 0;
-        int recoveryType = Dictionary::KIND_CORRECTION;
-        if (!candidates->empty()) {
-            recoveryScore = std::min_element(
-                candidates->begin(), candidates->end(),
-                [](const NativeCandidate &left, const NativeCandidate &right) {
-                    return left.score < right.score;
-                }
-            )->score - 1;
-            recoveryType = candidates->front().type;
-        }
-        constexpr size_t maximumRecoveryCandidateCount = 64;
-        for (const Match &match : matches) {
-            if (!observed.insert(match.word).second) continue;
-            candidates->push_back({
-                match.word,
-                recoveryScore,
-                recoveryType,
-                0.0,
-                candidates->size(),
-            });
-            if (candidates->size() >= maximumRecoveryCandidateCount) break;
-        }
-    }
-
     void rankCandidates(const std::string &typed,
                         const std::vector<std::string> &previous,
                         std::vector<NativeCandidate> *candidates,
@@ -1143,8 +925,6 @@ private:
     std::unique_ptr<DicTraverseSession> session_;
     std::unique_ptr<ProximityInfo> proximity_;
     std::unordered_map<int, KVPKKeyGeometry> keyByCodePoint_;
-    std::vector<std::string> dictionaryWords_;
-    std::unordered_map<uint32_t, std::vector<uint32_t>> dictionaryWordIdentifiersByBigram_;
     ContextArtifact context_;
     TreeModel correctionRanker_;
     TreeModel completionRanker_;
