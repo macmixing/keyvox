@@ -171,14 +171,12 @@ extension KeyboardViewController {
     /// the word. Returns nil when there is no correction so the regular path inserts the
     /// separator (keeping behaviors such as the double-space period).
     private func applyWordBoundary(separator: String, emitsKeypress: Bool) -> Bool? {
-        guard typingTraits.allowsPredictions,
-              let edit = predictionCoordinator.wordBoundaryEdit(
-                  separator: separator,
-                  allowsAutocorrection: typingTraits.allowsAutocorrection
-              ),
-              edit.deleteCount > 0 else {
-            return nil
-        }
+        guard typingTraits.allowsPredictions else { return nil }
+        let edit = predictionCoordinator.wordBoundaryEdit(
+            separator: separator,
+            allowsAutocorrection: typingTraits.allowsAutocorrection
+        )
+        guard edit.deleteCount > 0 else { return nil }
         if emitsKeypress {
             keypressHaptics.emitKeypressIfEnabled()
         }

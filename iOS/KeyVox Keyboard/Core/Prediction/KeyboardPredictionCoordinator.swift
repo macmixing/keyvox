@@ -106,12 +106,14 @@ final class KeyboardPredictionCoordinator {
 
     /// What typing `separator` after the current word inserts, applying any
     /// autocorrection first, and revising the word before it when the current word shows
-    /// it was a typo; nil when there is no word to finish.
-    func wordBoundaryEdit(separator: String, allowsAutocorrection: Bool) -> TextEdit? {
+    /// it was a typo. Punctuation right after a suggestion tap replaces the space the tap
+    /// added.
+    func wordBoundaryEdit(separator: String, allowsAutocorrection: Bool) -> TextEdit {
         let text = textBeforeCursor()
         let request = session.request(textBeforeCursor: text)
-        guard request.currentWord.isEmpty == false else { return nil }
-        guard allowsAutocorrection, let result = currentResult(for: request) else {
+        guard request.currentWord.isEmpty == false,
+              allowsAutocorrection,
+              let result = currentResult(for: request) else {
             return session.wordBoundaryEdit(separator: separator, textBeforeCursor: text, result: nil)
         }
         let revision = session.revisionRequest(textBeforeCursor: text, result: result)
