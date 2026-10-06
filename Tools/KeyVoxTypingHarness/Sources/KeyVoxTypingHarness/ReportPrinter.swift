@@ -2,7 +2,11 @@ import Foundation
 
 /// Renders an evaluation report as plain text for the terminal.
 enum ReportPrinter {
-    static func render(_ report: EvaluationReport, options: HarnessOptions) -> String {
+    static func render(
+        _ report: EvaluationReport,
+        noiseInKeyPitches: Double,
+        usesTouches: Bool
+    ) -> String {
         let exact = report.corrections(of: .exact)
         let apostrophe = report.corrections(of: .missingApostrophe)
         let mistyped = report.corrections(of: .mistyped)
@@ -17,8 +21,8 @@ enum ReportPrinter {
         var lines = [
             "Typing evaluation",
             "  sentences: \(report.sentenceCount)   words: \(report.corrections.count)",
-            "  touch noise: \(options.noiseStandardDeviation) pt standard deviation"
-                + "   touches sent to engine: \(options.usesTouches ? "yes" : "no")",
+            "  touch noise: \(noiseInKeyPitches) key pitches standard deviation"
+                + "   touches sent to engine: \(usesTouches ? "yes" : "no")",
             "",
             "Final words after space",
             "  correct with autocorrect:    \(percent(report.finalWordAccuracy))",
@@ -45,6 +49,15 @@ enum ReportPrinter {
             "  offered within 2 letters:     \(percent(report.completionOfferRate(withinLetters: 2)))",
             "  offered within 3 letters:     \(percent(report.completionOfferRate(withinLetters: 3)))",
             "  keystroke savings:            \(percent(report.completionKeystrokeSavings))",
+            "",
+            "Suggestion bar while typing (simulated taps): \(report.suggestionBars.count) words",
+            "  July bar shows the word within 2 letters:      \(percent(report.julyBarShowRate(withinLetters: 2)))",
+            "  July bar shows the word within 3 letters:      \(percent(report.julyBarShowRate(withinLetters: 3)))",
+            "  July bar shows the word before space:          \(percent(report.julyBarEverShownRate))",
+            "  top-3 completions show it within 2 letters:    \(percent(report.completionBarShowRate(withinLetters: 2)))",
+            "  top-3 completions show it within 3 letters:    \(percent(report.completionBarShowRate(withinLetters: 3)))",
+            "  top-3 completions show it before space:        \(percent(report.completionBarEverShownRate))",
+            "  July first slot not continuing typed letters:  \(percent(report.julyBarNonContinuationRate)) of mid-word moments",
             "",
             "Next-word predictions: \(report.nextWords.count) words",
             "  intended word first:          \(percent(report.nextWordRate(withinRank: 1)))",

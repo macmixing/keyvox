@@ -4,6 +4,7 @@ struct EvaluationReport {
     private(set) var corrections: [CorrectionOutcome] = []
     private(set) var completions: [CompletionEvaluator.Outcome] = []
     private(set) var nextWords: [NextWordEvaluator.Outcome] = []
+    private(set) var suggestionBars: [SuggestionBarEvaluator.Outcome] = []
     private(set) var correctionMilliseconds: [Double] = []
     var engineStartupMilliseconds = 0.0
 
@@ -22,6 +23,46 @@ struct EvaluationReport {
 
     mutating func record(_ outcome: NextWordEvaluator.Outcome) {
         nextWords.append(outcome)
+    }
+
+    mutating func record(_ outcome: SuggestionBarEvaluator.Outcome) {
+        suggestionBars.append(outcome)
+    }
+
+    func julyBarShowRate(withinLetters letters: Int) -> Double {
+        let shown = suggestionBars.filter { ($0.lettersTypedWhenShownByJulyBar ?? .max) <= letters }
+        return Self.rate(shown.count, of: suggestionBars.count)
+    }
+
+    func completionBarShowRate(withinLetters letters: Int) -> Double {
+        let shown = suggestionBars.filter {
+            ($0.lettersTypedWhenShownByCompletions ?? .max) <= letters
+        }
+        return Self.rate(shown.count, of: suggestionBars.count)
+    }
+
+    /// Share of words whose intended form showed in the July bar at any point while typing.
+    var julyBarEverShownRate: Double {
+        Self.rate(
+            suggestionBars.filter { $0.lettersTypedWhenShownByJulyBar != nil }.count,
+            of: suggestionBars.count
+        )
+    }
+
+    var completionBarEverShownRate: Double {
+        Self.rate(
+            suggestionBars.filter { $0.lettersTypedWhenShownByCompletions != nil }.count,
+            of: suggestionBars.count
+        )
+    }
+
+    /// Share of mid-word moments where the July bar's first slot did not continue the
+    /// letters already typed.
+    var julyBarNonContinuationRate: Double {
+        Self.rate(
+            suggestionBars.reduce(0) { $0 + $1.midWordStepsLeadingWithNonContinuation },
+            of: suggestionBars.reduce(0) { $0 + $1.midWordSteps }
+        )
     }
 
     func corrections(of kind: CorrectionOutcome.TypingKind) -> [CorrectionOutcome] {

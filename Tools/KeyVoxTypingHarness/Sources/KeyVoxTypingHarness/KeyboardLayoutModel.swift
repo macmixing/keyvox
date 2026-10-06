@@ -17,10 +17,13 @@ struct KeyboardLayoutModel {
 
     let keyFrames: [Character: CGRect]
     let keyboardSize: CGSize
+    /// Distance between neighboring key centers across a row and between rows.
+    let keyPitch: CGSize
 
     init(gridWidth: Double = 394) {
         let keyWidth = (gridWidth - Self.keySpacing * 9) / 10
         let keyPitch = keyWidth + Self.keySpacing
+        self.keyPitch = CGSize(width: keyPitch, height: Self.keyHeight + Self.rowSpacing)
         var frames: [Character: CGRect] = [:]
         for (rowIndex, row) in Self.rows.enumerated() {
             let y = Double(rowIndex) * (Self.keyHeight + Self.rowSpacing)
