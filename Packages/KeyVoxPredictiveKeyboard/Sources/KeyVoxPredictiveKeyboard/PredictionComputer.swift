@@ -106,6 +106,38 @@ public final class PredictionComputer: @unchecked Sendable {
         )
     }
 
+    /// What should replace a word the user finished as typed, now that the word after it is
+    /// known, or nil to leave it. The user's own words are always left alone.
+    public func revision(for request: RevisionRequest) throws -> String? {
+        lock.lock()
+        let keys = keys
+        let vocabulary = vocabulary
+        lock.unlock()
+        let typed = request.word.replacingOccurrences(of: "’", with: "'")
+        guard vocabulary.contains(typed) == false else { return nil }
+        let engineTouches = request.touches.map(PredictionTouch.init(location:))
+        let correction = try engine.predict(
+            typedWord: typed,
+            previousWords: request.previousWords,
+            touches: engineTouches,
+            mode: .correction
+        )
+        let personalCandidates = try engine.personalSuggestions(typedWord: typed, touches: engineTouches)
+        let corrector = NoisyChannelCorrector(
+            parameters: parameters,
+            keys: keys,
+            language: ContextLanguageScorer(engine: engine, vocabulary: vocabulary)
+        )
+        let decision = try corrector.decide(
+            typedWord: typed,
+            touches: request.touches,
+            previousWords: request.previousWords,
+            followingWord: request.followingWord,
+            candidates: vocabulary.writtenForms(of: correction.suggestions.map(\.word) + personalCandidates)
+        )
+        return decision.replacement.map { WordCasing.apply(of: typed, to: $0) }
+    }
+
     /// The letter a tap on a non-letter key was meant for, or nil to keep that key.
     /// - Parameter otherKeyFrame: The frame of the key the touch hit, in the same
     ///   coordinates as the letter key geometry.
