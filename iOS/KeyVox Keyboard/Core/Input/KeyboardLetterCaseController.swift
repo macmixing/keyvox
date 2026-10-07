@@ -1,3 +1,4 @@
+import KeyVoxPredictiveKeyboard
 import UIKit
 
 enum KeyboardLetterCase: Equatable {
@@ -80,9 +81,9 @@ final class KeyboardLetterCaseController {
             guard let last = textBeforeCursor.last else { return true }
             if last.isNewline { return true }
             guard last.isWhitespace else { return false }
-            let trimmed = textBeforeCursor.trimmingCharacters(in: .whitespaces)
-            guard let boundary = trimmed.last else { return true }
-            return boundary.isNewline || ".!?".contains(boundary)
+            return TypingTextContext.startsSentence(
+                after: textBeforeCursor.trimmingCharacters(in: .whitespaces)
+            )
         @unknown default:
             return false
         }
