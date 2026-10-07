@@ -1,14 +1,15 @@
 #!/usr/bin/env bash
 # Lists the words of the SCOWL word list the predictive keyboard's dictionary is made from,
-# with their capitals, one per line into <output>: size 60, American spellings, variant
-# level 2, at the revision credited in THIRD_PARTY_NOTICES.md.
+# with their capitals, one per line into <output>: up to <size> (the dictionary uses 60),
+# American spellings, variant level 2, at the revision credited in THIRD_PARTY_NOTICES.md.
 set -euo pipefail
 
-if [[ $# -ne 1 ]]; then
-  echo "usage: $0 <output>" >&2
+if [[ $# -ne 2 ]]; then
+  echo "usage: $0 <size> <output>" >&2
   exit 1
 fi
-OUTPUT="$1"
+SIZE="$1"
+OUTPUT="$2"
 TMP_DIR="$(mktemp -d)"
 
 cleanup() {
@@ -26,6 +27,6 @@ tar -xzf "$TMP_DIR/scowl.tar.gz" -C "$TMP_DIR"
 (
   cd "$TMP_DIR/wordlist-$SCOWL_COMMIT"
   make >/dev/null 2>&1
-  ./scowl --db scowl.db word-list 60 A 2 2>/dev/null
+  ./scowl --db scowl.db word-list "$SIZE" A 2 2>/dev/null
 ) > "$OUTPUT"
 echo "$OUTPUT: $(wc -l < "$OUTPUT" | tr -d ' ') words"

@@ -2,9 +2,11 @@
 "iPhone": one per line as the lowercase word, a tab, and that spelling, in byte order of
 the lowercase word, for `CapitalizedSpellings` in KeyVoxPredictiveKeyboard.
 
-A word is listed when its dictionary's SCOWL word list (from `scowl_words.sh`) spells it
-only one way, with capitals. Left out, so they stay as typed:
-- a word the word list also spells in lowercase ("will", "bob") or in more than one way;
+A word is listed when its dictionary's SCOWL word list (size 60, from `scowl_words.sh`)
+spells it only one way, with capitals. Left out, so they stay as typed:
+- a word the common part of the word list (size 50) also spells in lowercase ("will",
+  "bob"), while a rare lowercase sense does not count ("charlie", "batman");
+- a word spelled with capitals in more than one way;
 - a spelling with capitals in a row ("NASA", "CDs");
 - a word the written sources show in lowercase more often than as spelled, away from where
   a sentence or quotation begins ("grey", or "th" after a number).
@@ -26,12 +28,17 @@ def has_capitals_in_a_row(spelling: str) -> bool:
     return any(first.isupper() and second.isupper() for first, second in zip(spelling, spelling[1:]))
 
 
-def capitals_only_spellings(scowl_words: Path) -> dict[str, str]:
-    """Lowercase word to its one spelling, for words the word list spells only with capitals."""
-    with open(scowl_words, encoding="utf-8") as lines:
+def read_spellings(path: Path) -> list[str]:
+    with open(path, encoding="utf-8") as lines:
         spellings = [line.rstrip("\n").replace("’", "'") for line in lines]
-    spellings = [spelling for spelling in spellings if spelling and not spelling.endswith(".")]
-    lowercase = {spelling for spelling in spellings if spelling == spelling.lower()}
+    return [spelling for spelling in spellings if spelling and not spelling.endswith(".")]
+
+
+def capitals_only_spellings(scowl_words: Path, common_words: Path) -> dict[str, str]:
+    """Lowercase word to its one spelling, for words spelled only with capitals unless in a
+    rare lowercase sense."""
+    spellings = read_spellings(scowl_words)
+    lowercase = {spelling for spelling in read_spellings(common_words) if spelling == spelling.lower()}
     capitalized: defaultdict[str, set[str]] = defaultdict(set)
     for spelling in spellings:
         if spelling != spelling.lower():
@@ -46,11 +53,12 @@ def capitals_only_spellings(scowl_words: Path) -> dict[str, str]:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("data_dir", type=Path)
-    parser.add_argument("scowl_words", type=Path)
+    parser.add_argument("scowl_words", type=Path, help="The size-60 word list.")
+    parser.add_argument("common_words", type=Path, help="The size-50 word list.")
     parser.add_argument("output", type=Path)
     arguments = parser.parse_args()
 
-    spellings = capitals_only_spellings(arguments.scowl_words)
+    spellings = capitals_only_spellings(arguments.scowl_words, arguments.common_words)
     as_spelled: Counter[str] = Counter()
     in_lowercase: Counter[str] = Counter()
     for name in WRITTEN_SOURCES:
