@@ -17,19 +17,45 @@ struct SessionTyper {
         let session = PredictiveTypingSession()
         var text = ""
         for (word, offsets) in zip(sentence.words, sentence.taps) {
-            for (letter, offset) in zip(word.filter { $0 != "'" }, offsets) {
-                guard let center = layout.center(of: letter) else { continue }
-                let touch = CGPoint(
-                    x: center.x + offset[0] * layout.keyPitch.width,
-                    y: center.y + offset[1] * layout.keyPitch.height
-                )
-                guard let (key, frame) = layout.key(at: touch) else { continue }
-                let resolved = try resolve(key, frame: frame, at: touch, session: session, text: text)
-                try press(resolved, at: touch, session: session, text: &text)
-            }
+            try typeLetters(of: word, offsets: offsets, session: session, text: &text)
             try press(.space, at: .zero, session: session, text: &text)
         }
         return text
+    }
+
+    /// The suggestion bar after typing each word of `context` and a space, then the letters
+    /// of `prefix`, every tap at its key's center.
+    func bar(afterTyping context: [String], prefix: String) throws -> SuggestionBar {
+        let session = PredictiveTypingSession()
+        var text = ""
+        for word in context {
+            try typeLetters(of: word, offsets: centered(word), session: session, text: &text)
+            try press(.space, at: .zero, session: session, text: &text)
+        }
+        try typeLetters(of: prefix, offsets: centered(prefix), session: session, text: &text)
+        return try computer.compute(session.request(textBeforeCursor: text)).bar
+    }
+
+    private func centered(_ word: String) -> [[Double]] {
+        Array(repeating: [0, 0], count: word.filter { $0 != "'" }.count)
+    }
+
+    private func typeLetters(
+        of word: String,
+        offsets: [[Double]],
+        session: PredictiveTypingSession,
+        text: inout String
+    ) throws {
+        for (letter, offset) in zip(word.filter { $0 != "'" }, offsets) {
+            guard let center = layout.center(of: letter) else { continue }
+            let touch = CGPoint(
+                x: center.x + offset[0] * layout.keyPitch.width,
+                y: center.y + offset[1] * layout.keyPitch.height
+            )
+            guard let (key, frame) = layout.key(at: touch) else { continue }
+            let resolved = try resolve(key, frame: frame, at: touch, session: session, text: text)
+            try press(resolved, at: touch, session: session, text: &text)
+        }
     }
 
     private func resolve(

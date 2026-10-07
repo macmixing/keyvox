@@ -19,7 +19,11 @@ enum CompareCommand {
             setup.layout.predictionGeometry,
             keyboardSize: setup.layout.keyboardSize
         )
-        try computer.updateVocabulary(PersonalVocabulary(words: options.personalWords, textReplacements: []))
+        try computer.updateVocabulary(PersonalVocabulary(
+            words: options.personalWords,
+            knownNames: options.knownNames,
+            textReplacements: []
+        ))
         let typer = SessionTyper(
             computer: computer,
             layout: setup.layout,
@@ -31,6 +35,7 @@ enum CompareCommand {
         var keyVoxCorrect = 0
         var bothCorrect = 0
         var rows = ["intended\tapple\tkeyvox\tprevious"]
+        var texts: [AppleBaselineResults.Sentence] = []
 
         let sentences = plan.sentences.prefix(apple?.sentences.count ?? plan.sentences.count)
         for (sentenceIndex, sentence) in sentences.enumerated() {
@@ -40,9 +45,11 @@ enum CompareCommand {
                     produced: AppleBaselineResults.words(in: $0.sentences[sentenceIndex].text)
                 )
             }
+            let typed = try typer.type(sentence)
+            texts.append(AppleBaselineResults.Sentence(text: typed))
             let keyVoxWords = WordAlignment.align(
                 intended: sentence.truthWords,
-                produced: AppleBaselineResults.words(in: try typer.type(sentence))
+                produced: AppleBaselineResults.words(in: typed)
             )
             for (index, intended) in sentence.truthWords.enumerated() {
                 let appleWord = appleWords?[index] ?? ""
@@ -90,6 +97,10 @@ enum CompareCommand {
         }
         lines.append("")
         print(lines.joined(separator: "\n"))
+        if let path = options.textsPath {
+            let results = AppleBaselineResults(device: "harness", systemVersion: "", keyboard: "KeyVox", sentences: texts)
+            try JSONEncoder().encode(results).write(to: URL(fileURLWithPath: path))
+        }
         if let path = options.disagreementsPath {
             try (rows.joined(separator: "\n") + "\n").write(toFile: path, atomically: true, encoding: .utf8)
             print("Disagreements written to \(path)")

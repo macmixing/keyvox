@@ -11,6 +11,8 @@ struct TypingHarness {
                 try PlanCommand.run(options)
             case .compare(let options):
                 try CompareCommand.run(options)
+            case .bars(let options):
+                try BarsCommand.run(options)
             case .tune(let options):
                 try TuneCommand.run(options)
             case .explain(let options):

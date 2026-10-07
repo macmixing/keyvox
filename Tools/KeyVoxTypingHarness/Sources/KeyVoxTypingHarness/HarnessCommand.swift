@@ -39,6 +39,20 @@ enum HarnessCommand {
         var contestedTaps: ContestedTapPolicy.Parameters? = ContestedTapPolicy.standardParameters
         /// The user's own words and phrases.
         var personalWords: [String] = []
+        /// Names the system knows, such as contact names.
+        var knownNames: [String] = []
+        /// Where to write the typed text of every sentence, in the Apple results format.
+        var textsPath: String?
+    }
+
+    struct BarsOptions {
+        var probesPath = ""
+        var outputPath = ""
+        var parameters = NoisyChannelCorrector.standardParameters
+        /// The user's own words and phrases.
+        var personalWords: [String] = []
+        /// Names the system knows, such as contact names.
+        var knownNames: [String] = []
     }
 
     struct ExplainOptions {
@@ -56,6 +70,7 @@ enum HarnessCommand {
     case evaluate(EvaluateOptions)
     case plan(PlanOptions)
     case compare(CompareOptions)
+    case bars(BarsOptions)
     case tune(TuneOptions)
     case explain(ExplainOptions)
 
@@ -69,7 +84,10 @@ enum HarnessCommand {
       KeyVoxTypingHarness compare --plan <path> [--apple <results-json>] [--disagreements <tsv-path>]
                                   [--param <name>=<value>...]
                                   [--no-contested-taps | --contested-param <name>=<value>...]
-                                  [--personal <word or phrase,...>]
+                                  [--personal <word or phrase,...>] [--known-names <word,...>]
+                                  [--texts <json-path>]
+      KeyVoxTypingHarness bars --probes <json-path> --output <json-path> [--param <name>=<value>...]
+                               [--personal <word or phrase,...>] [--known-names <word,...>]
       KeyVoxTypingHarness tune --tune-plan <path>... [--holdout-plan <path>...] [--passes <count>]
       KeyVoxTypingHarness explain [--word <typed>] [--touches "x,y x,y ..."] [--previous <newest,older,...>]
                                   [--following <next word>] [--personal <word or phrase,...>]
@@ -127,11 +145,36 @@ enum HarnessCommand {
                 case "--personal":
                     options.personalWords = try Self.value(after: flag, in: &remaining)
                         .split(separator: ",").map(String.init)
+                case "--known-names":
+                    options.knownNames = try Self.value(after: flag, in: &remaining)
+                        .split(separator: ",").map(String.init)
+                case "--texts": options.textsPath = try Self.value(after: flag, in: &remaining)
                 default: throw HarnessError.unknownFlag(flag)
                 }
             }
             guard options.planPath.isEmpty == false else { throw HarnessError.usage }
             self = .compare(options)
+        case "bars":
+            var options = BarsOptions()
+            while let flag = remaining.popFirst() {
+                switch flag {
+                case "--probes": options.probesPath = try Self.value(after: flag, in: &remaining)
+                case "--output": options.outputPath = try Self.value(after: flag, in: &remaining)
+                case "--param":
+                    try Self.applyParameter(try Self.value(after: flag, in: &remaining), to: &options.parameters)
+                case "--personal":
+                    options.personalWords = try Self.value(after: flag, in: &remaining)
+                        .split(separator: ",").map(String.init)
+                case "--known-names":
+                    options.knownNames = try Self.value(after: flag, in: &remaining)
+                        .split(separator: ",").map(String.init)
+                default: throw HarnessError.unknownFlag(flag)
+                }
+            }
+            guard options.probesPath.isEmpty == false, options.outputPath.isEmpty == false else {
+                throw HarnessError.usage
+            }
+            self = .bars(options)
         case "tune":
             var options = TuneOptions()
             while let flag = remaining.popFirst() {
