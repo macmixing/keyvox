@@ -15,4 +15,16 @@ enum KeyboardSwitcher {
         }
         return marker.waitForExistence(timeout: 3)
     }
+
+    /// Switches back to the system keyboard the same way, if another keyboard is showing.
+    static func switchToSystemKeyboard(in app: XCUIApplication) -> Bool {
+        let systemKey = app.keyboards.keys["q"]
+        for _ in 0..<4 {
+            if systemKey.waitForExistence(timeout: 2) { return true }
+            let nextKeyboard = app.buttons["Next keyboard"]
+            guard nextKeyboard.waitForExistence(timeout: 3) else { return false }
+            nextKeyboard.tap()
+        }
+        return systemKey.waitForExistence(timeout: 3)
+    }
 }

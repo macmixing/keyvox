@@ -7,7 +7,8 @@ import XCTest
 /// Run through `xcodebuild test` with `TEST_RUNNER_BASELINE_PLAN` and
 /// `TEST_RUNNER_BASELINE_OUTPUT` set to host paths (see README.md). The system keyboard
 /// is used unless `TEST_RUNNER_BASELINE_KEYBOARD_MARKER` names a key label that only a
-/// third-party keyboard has, in which case the replay switches to that keyboard.
+/// third-party keyboard has, in which case the replay switches to that keyboard, and taps
+/// the key labeled `TEST_RUNNER_BASELINE_KEYBOARD_LETTERS_KEY`, if set, to show its letters.
 final class AppleKeyboardBaselineTests: XCTestCase {
     func testReplayTypingPlan() throws {
         let environment = ProcessInfo.processInfo.environment
@@ -33,10 +34,13 @@ final class AppleKeyboardBaselineTests: XCTestCase {
         let keyMap: KeyboardKeyMap
         if let customKeyboardMarker {
             XCTAssertTrue(KeyboardSwitcher.switchToKeyboard(withKey: customKeyboardMarker, in: app))
+            if let lettersKey = environment["BASELINE_KEYBOARD_LETTERS_KEY"], lettersKey.isEmpty == false {
+                app.descendants(matching: .any).matching(NSPredicate(format: "label == %@", lettersKey)).firstMatch.tap()
+            }
             keyMap = try KeyboardKeyMap(customKeyboardIn: app)
         } else {
+            XCTAssertTrue(KeyboardSwitcher.switchToSystemKeyboard(in: app))
             let keyboard = app.keyboards.element
-            XCTAssertTrue(keyboard.waitForExistence(timeout: 15))
             keyMap = try KeyboardKeyMap(systemKeyboard: keyboard)
         }
         let origin = app.coordinate(withNormalizedOffset: .zero)
