@@ -15,6 +15,9 @@ SENTENCE_START = "<s>"
 
 _BRACKETED = re.compile(r"\[[^\]]*\]")
 _SENTENCE_END = re.compile(r"[.!?\n]+")
+# Where a sentence or a quotation can begin, so the word after it may be capitalized for
+# that reason alone.
+_POSSIBLE_START = re.compile(r"[.!?\n\"“”:(\[{]+")
 _WORD = re.compile(r"[^\W\d_]+(?:'[^\W\d_]+)*")
 
 
@@ -22,5 +25,15 @@ def sentences(text: str) -> Iterator[list[str]]:
     text = _BRACKETED.sub(" ", text).replace("’", "'")
     for sentence in _SENTENCE_END.split(text):
         words = _WORD.findall(sentence.lower())
+        if words:
+            yield words
+
+
+def written_runs(text: str) -> Iterator[list[str]]:
+    """Words as written, in runs that each begin where a sentence or quotation can begin,
+    so a word after the first of a run is capitalized, or not, for its own sake."""
+    text = _BRACKETED.sub(" ", text).replace("’", "'")
+    for run in _POSSIBLE_START.split(text):
+        words = _WORD.findall(run)
         if words:
             yield words
