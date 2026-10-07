@@ -11,6 +11,7 @@ public final class PredictionComputer: @unchecked Sendable {
     private let lock = NSLock()
     private var keys: KeyCenterMap
     private var vocabulary = PersonalVocabulary.empty
+    private var forms = PersonalWordForms.empty
 
     public init(
         engine: EnglishPredictiveEngine,
@@ -31,16 +32,24 @@ public final class PredictionComputer: @unchecked Sendable {
 
     /// Call whenever the user's dictionary, contacts, or text replacements change.
     public func updateVocabulary(_ vocabulary: PersonalVocabulary) throws {
+        var everydayWords: Set<String> = []
+        for word in vocabulary.phraseWords where try engine.analyze(word: word).wordIsValid {
+            everydayWords.insert(word)
+        }
+        let forms = PersonalWordForms(vocabulary: vocabulary, everydayWords: everydayWords)
         lock.lock()
         self.vocabulary = vocabulary
+        self.forms = forms
         lock.unlock()
-        try engine.setPersonalWords(vocabulary.words)
+        // Searched in lowercase; `PersonalWordForms` decides how the words are written.
+        try engine.setPersonalWords(vocabulary.words.map(PersonalVocabulary.key))
     }
 
     public func compute(_ request: PredictionRequest) throws -> PredictionResult {
         lock.lock()
         let keys = keys
         let vocabulary = vocabulary
+        let forms = forms
         lock.unlock()
         let language = ContextLanguageScorer(engine: engine, vocabulary: vocabulary)
         let ranker = SuggestionCandidateRanker(parameters: parameters, keys: keys, language: language)
@@ -76,16 +85,20 @@ public final class PredictionComputer: @unchecked Sendable {
             typedWord: typed,
             touches: request.touches,
             previousWords: request.previousWords,
-            candidates: vocabulary.writtenForms(of: correction.suggestions.map(\.word) + personalCandidates)
+            candidates: forms.written(
+                correction.suggestions.map(\.word) + personalCandidates,
+                after: request.previousWords.first
+            )
         )
         let ranked = try ranker.rank(
             typedWord: typed,
             touches: request.touches,
             previousWords: request.previousWords,
-            candidates: vocabulary.writtenForms(
-                of: completion.suggestions.map(\.word)
+            candidates: forms.written(
+                completion.suggestions.map(\.word)
                     + correction.suggestions.map(\.word)
-                    + personalCandidates
+                    + personalCandidates,
+                after: request.previousWords.first
             )
         )
 
@@ -93,6 +106,7 @@ public final class PredictionComputer: @unchecked Sendable {
             typed: typed,
             request: request,
             vocabulary: vocabulary,
+            forms: forms,
             decision: decision
         )
         return PredictionResult(
@@ -107,14 +121,21 @@ public final class PredictionComputer: @unchecked Sendable {
     }
 
     /// What should replace a word the user finished as typed, now that the word after it is
-    /// known, or nil to leave it. The user's own words are always left alone.
+    /// known, or nil to leave it. A word that starts one of the user's phrases takes the
+    /// phrase's capitals once the phrase's next word follows; the user's words and known
+    /// names are otherwise left alone.
     public func revision(for request: RevisionRequest) throws -> String? {
         lock.lock()
         let keys = keys
         let vocabulary = vocabulary
+        let forms = forms
         lock.unlock()
         let typed = request.word.replacingOccurrences(of: "’", with: "'")
-        guard vocabulary.contains(typed) == false else { return nil }
+        if let phraseStart = vocabulary.phraseForm(of: typed, before: request.followingWord) {
+            let written = WordCasing.apply(of: typed, to: phraseStart)
+            return written == typed ? nil : written
+        }
+        guard vocabulary.keepsAsTyped(typed) == false else { return nil }
         let engineTouches = request.touches.map(PredictionTouch.init(location:))
         let correction = try engine.predict(
             typedWord: typed,
@@ -133,7 +154,10 @@ public final class PredictionComputer: @unchecked Sendable {
             touches: request.touches,
             previousWords: request.previousWords,
             followingWord: request.followingWord,
-            candidates: vocabulary.writtenForms(of: correction.suggestions.map(\.word) + personalCandidates)
+            candidates: forms.written(
+                correction.suggestions.map(\.word) + personalCandidates,
+                after: request.previousWords.first
+            )
         )
         return decision.replacement.map { WordCasing.apply(of: typed, to: $0) }
     }
@@ -197,21 +221,25 @@ public final class PredictionComputer: @unchecked Sendable {
         ))
     }
 
-    /// Text replacements always expand; personal words and words the user kept are never
-    /// replaced; otherwise the corrector's choice, or the typed word itself, is written
-    /// with the typed capitalization and a capital pronoun "I" ("i'm" becomes "I'm").
+    /// Text replacements always expand; words the user kept are never replaced, and the
+    /// user's words and known names are only ever written the user's way; otherwise the
+    /// corrector's choice, or the typed word itself, is written with the typed
+    /// capitalization and a capital pronoun "I" ("i'm" becomes "I'm").
     private static func replacement(
         typed: String,
         request: PredictionRequest,
         vocabulary: PersonalVocabulary,
+        forms: PersonalWordForms,
         decision: NoisyChannelCorrector.Decision
     ) -> String? {
         guard request.keepsTypedWord == false else { return nil }
         if let expansion = vocabulary.expansion(for: typed) {
             return expansion
         }
-        guard vocabulary.contains(typed) == false else { return nil }
-        let written = WordCasing.apply(of: typed, to: decision.replacement ?? typed)
+        let chosen = vocabulary.keepsAsTyped(typed)
+            ? forms.written(typed, after: request.previousWords.first)
+            : decision.replacement ?? typed
+        let written = WordCasing.apply(of: typed, to: chosen)
         return written == typed ? nil : written
     }
 

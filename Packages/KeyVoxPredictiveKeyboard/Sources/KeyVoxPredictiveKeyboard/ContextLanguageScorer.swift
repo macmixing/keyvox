@@ -9,10 +9,10 @@ import Foundation
 /// to the start of a sentence, the sentence start itself counts as an earlier word, so
 /// words that usually open sentences score as such.
 ///
-/// The user's personal words count as dictionary words and score at least as likely as
-/// an everyday word, since the bundled counts usually have never seen them. A personal
-/// word right after the word it follows in one of the user's phrases scores as one of the
-/// likeliest next words.
+/// Words of the user's dictionary entries count as dictionary words and score at least as
+/// likely as an everyday word, since the bundled counts usually have never seen them. An
+/// entry word right after the word it follows in one of the user's phrases scores as one
+/// of the likeliest next words.
 public struct ContextLanguageScorer: Sendable {
     public struct Score: Sendable, Equatable {
         public let logProbability: Double
