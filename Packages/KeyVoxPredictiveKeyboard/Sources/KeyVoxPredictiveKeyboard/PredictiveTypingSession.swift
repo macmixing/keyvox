@@ -18,6 +18,18 @@ public final class PredictiveTypingSession {
         let replacedWords: [String]
     }
 
+    /// The word the suggestion bar is for: a selected word, the whole word around the cursor
+    /// when the cursor is inside one, or otherwise the letters right before the cursor.
+    private struct SuggestedWord {
+        let text: String
+        /// Characters of the word before and after the cursor, which replacing it deletes. A
+        /// selected word has none, since inserting replaces the selection.
+        let charactersBeforeCursor: Int
+        let charactersAfterCursor: Int
+        /// The word ends at the cursor, as while typing it, so space may autocorrect it.
+        let endsAtCursor: Bool
+    }
+
     /// A word space finished as typed, which the word after it may still revise.
     private struct RevisableWord {
         let word: String
@@ -68,21 +80,42 @@ public final class PredictiveTypingSession {
         keptWords = []
     }
 
-    public func request(textBeforeCursor: String?) -> PredictionRequest {
-        let context = TypingTextContext(textBeforeCursor: textBeforeCursor)
-        let isAllLetters = context.currentWord.allSatisfy(\.isLetter)
+    /// What to suggest for the text around the cursor. A selected word, or one the cursor
+    /// was moved into, is suggested for as a whole, such as a misspelled word the user tapped;
+    /// space never autocorrects it.
+    public func request(
+        textBeforeCursor: String?,
+        selectedText: String? = nil,
+        textAfterCursor: String? = nil
+    ) -> PredictionRequest {
+        let context = TypingTextContext(
+            textBeforeCursor: textBeforeCursor,
+            selectedText: selectedText,
+            textAfterCursor: textAfterCursor
+        )
+        let word = Self.suggestedWord(in: context)
+        let isAllLetters = word.text.allSatisfy(\.isLetter)
         return PredictionRequest(
-            currentWord: context.currentWord,
-            touches: isAllLetters ? wordTouches.touches(for: context.currentWord) : [],
+            currentWord: word.text,
+            touches: word.endsAtCursor && isAllLetters ? wordTouches.touches(for: word.text) : [],
             previousWords: context.previousWords,
-            keepsTypedWord: keptWords.contains(context.currentWord.lowercased()),
+            keepsTypedWord: word.endsAtCursor == false || keptWords.contains(word.text.lowercased()),
             isAtSentenceStart: context.isAtSentenceStart
         )
     }
 
     /// Whether `result` was computed for the text as it is now.
-    public func isCurrent(_ result: PredictionResult, textBeforeCursor: String?) -> Bool {
-        result.request == request(textBeforeCursor: textBeforeCursor)
+    public func isCurrent(
+        _ result: PredictionResult,
+        textBeforeCursor: String?,
+        selectedText: String? = nil,
+        textAfterCursor: String? = nil
+    ) -> Bool {
+        result.request == request(
+            textBeforeCursor: textBeforeCursor,
+            selectedText: selectedText,
+            textAfterCursor: textAfterCursor
+        )
     }
 
     /// What to reconsider when the current word ends: the word right before it, if space
@@ -178,19 +211,67 @@ public final class PredictiveTypingSession {
         )
     }
 
-    /// What tapping a suggestion-bar item inserts.
-    public func choiceEdit(_ item: SuggestionBar.Item, textBeforeCursor: String?) -> TextEdit {
-        let context = TypingTextContext(textBeforeCursor: textBeforeCursor)
+    /// What tapping a suggestion-bar item inserts in place of the word the bar is for,
+    /// followed by a space unless a space or punctuation already follows that word.
+    public func choiceEdit(
+        _ item: SuggestionBar.Item,
+        textBeforeCursor: String?,
+        selectedText: String? = nil,
+        textAfterCursor: String? = nil
+    ) -> TextEdit {
+        let context = TypingTextContext(
+            textBeforeCursor: textBeforeCursor,
+            selectedText: selectedText,
+            textAfterCursor: textAfterCursor
+        )
+        let word = Self.suggestedWord(in: context)
         lastAutocorrection = nil
         revisableWord = nil
         wordTouches.reset()
+        let textAfterWord = context.followingText.dropFirst(word.charactersAfterCursor)
+        let isSeparated = textAfterWord.first.map { TypingTextContext.isWordCharacter($0) == false } ?? false
+        let space = isSeparated ? "" : " "
+        let written: String
         if item.kind == .typed {
-            keptWords.insert(context.currentWord.lowercased())
-            chosenText = context.currentWord + " "
-            return TextEdit(deleteCount: 0, insertText: " ")
+            keptWords.insert(word.text.lowercased())
+            written = word.text
+        } else {
+            written = item.text
         }
-        chosenText = item.text + " "
-        return TextEdit(deleteCount: context.currentWord.count, insertText: item.text + " ")
+        chosenText = textAfterWord.isEmpty ? written + space : nil
+        if item.kind == .typed, word.endsAtCursor {
+            return TextEdit(deleteCount: 0, insertText: space)
+        }
+        return TextEdit(
+            deleteCount: word.charactersBeforeCursor,
+            insertText: written + space,
+            deleteAfterCount: word.charactersAfterCursor
+        )
+    }
+
+    private static func suggestedWord(in context: TypingTextContext) -> SuggestedWord {
+        if let selected = context.selectedWord {
+            return SuggestedWord(
+                text: selected,
+                charactersBeforeCursor: 0,
+                charactersAfterCursor: 0,
+                endsAtCursor: false
+            )
+        }
+        guard context.currentWord.isEmpty == false, context.restOfWord.isEmpty == false else {
+            return SuggestedWord(
+                text: context.currentWord,
+                charactersBeforeCursor: context.currentWord.count,
+                charactersAfterCursor: 0,
+                endsAtCursor: true
+            )
+        }
+        return SuggestedWord(
+            text: context.currentWord + context.restOfWord,
+            charactersBeforeCursor: context.currentWord.count,
+            charactersAfterCursor: context.restOfWord.count,
+            endsAtCursor: false
+        )
     }
 
     /// The revisable word, if the text still reads it, one space, and the current word.

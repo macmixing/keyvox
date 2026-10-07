@@ -10,7 +10,8 @@ public struct PredictionRequest: Sendable, Equatable {
     public let currentWord: String
     public let touches: [CGPoint]
     public let previousWords: [String]
-    /// The user undid an autocorrection of this exact word, so space must keep it.
+    /// Space must keep this word as typed: the user undid its autocorrection, or the word is
+    /// selected or has the cursor inside it.
     public let keepsTypedWord: Bool
     public let isAtSentenceStart: Bool
 }
