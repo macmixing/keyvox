@@ -2,8 +2,8 @@ import KeyVoxPredictiveKeyboard
 import UIKit
 
 /// Builds the user's personal vocabulary from their KeyVox Dictionary and the system
-/// lexicon. The lexicon's names, such as contacts, are only kept as typed; its text
-/// replacements expand.
+/// lexicon. The lexicon's names, such as contacts, are known names; its text replacements
+/// expand.
 enum KeyboardPersonalVocabularyBuilder {
     static func vocabulary(dictionaryPhrases: [String], lexicon: UILexicon?) -> PersonalVocabulary {
         var knownNames: [String] = []
