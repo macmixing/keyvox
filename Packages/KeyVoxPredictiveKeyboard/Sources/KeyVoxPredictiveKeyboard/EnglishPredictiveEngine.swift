@@ -7,6 +7,8 @@ import CoreGraphics
 public final class EnglishPredictiveEngine: @unchecked Sendable {
     private let nativeEngine: KVPKEngineRef
     private let accentOverlay: AccentSuggestionOverlay
+    /// Words spelled only with capitals, such as names.
+    public let capitalizedSpellings: CapitalizedSpellings
 
     public init() throws {
         let locator = PredictiveArtifactLocator()
@@ -20,6 +22,9 @@ public final class EnglishPredictiveEngine: @unchecked Sendable {
         let actionURL = try locator.url(name: "production_action_800k", extension: "kvtr")
         let accentURL = try locator.url(name: "accent_overlay", extension: "bin")
         accentOverlay = try AccentSuggestionOverlay(data: Data(contentsOf: accentURL))
+        capitalizedSpellings = try CapitalizedSpellings(
+            contentsOf: locator.url(name: "capitalized_spellings", extension: "txt")
+        )
 
         let defaultGeometry = EnglishKeyboardLayout.defaultGeometry
         let nativeGeometry = defaultGeometry.compactMap(Self.nativeGeometry)

@@ -3,9 +3,9 @@
 /// Entries from their KeyVox Dictionary are suggested and corrected toward like the bundled
 /// dictionary's words and are never autocorrected away; the words of an entry phrase predict
 /// each other in order, and `PersonalWordForms` decides when they take the entry's
-/// capitals. Names the system knows, such as contacts, are only left as typed: they are
-/// never suggested and never change how another word is written. Text replacement shortcuts
-/// expand at the end of a word.
+/// capitals. Names the system knows, such as contacts, are kept as typed and never
+/// corrected, and `PredictionComputer` adds the ones that are names rather than everyday
+/// words as one-word entries. Text replacement shortcuts expand at the end of a word.
 public struct PersonalVocabulary: Sendable, Equatable {
     public struct TextReplacement: Sendable, Equatable {
         public let shortcut: String
@@ -33,18 +33,21 @@ public struct PersonalVocabulary: Sendable, Equatable {
     private let phrasePairForms: [PhrasePair: PhrasePair]
     /// Lowercased word to the words that follow it in entry phrases, as written.
     private let continuationsByKey: [String: [String]]
-    /// Lowercased names the system knows, such as contacts.
-    private let knownNameKeys: Set<String>
     /// Lowercased shortcut to its expansion.
     private let expansionsByShortcut: [String: String]
+    /// Lowercased words of the known names.
+    private let knownNameKeys: Set<String>
 
     /// - Parameters:
     ///   - words: KeyVox Dictionary entries, single words or phrases; each word of a phrase
     ///     counts on its own and predicts the word after it.
-    ///   - knownNames: Names the system knows, such as contact names, which are left as
-    ///     typed and nothing more.
+    ///   - knownNames: Names the system knows, such as contact names, as given.
     ///   - textReplacements: Shortcuts and what they expand to.
     public init(words: [String], knownNames: [String] = [], textReplacements: [TextReplacement]) {
+        entries = words
+        self.knownNames = knownNames.flatMap(Self.words(in:))
+        knownNameKeys = Set(self.knownNames.map(Self.key))
+        self.textReplacements = textReplacements
         var entryForms: [String: String] = [:]
         var singleWordEntryForms: [String: String] = [:]
         var pairForms: [PhrasePair: PhrasePair] = [:]
@@ -76,12 +79,28 @@ public struct PersonalVocabulary: Sendable, Equatable {
         singleWordEntryFormsByKey = singleWordEntryForms
         phrasePairForms = pairForms
         continuationsByKey = continuations
-        knownNameKeys = Set(knownNames.flatMap(Self.words(in:)).map(Self.key))
         expansionsByShortcut = expansions
     }
 
+    /// The KeyVox Dictionary entries, as given.
+    public let entries: [String]
+    /// The words of the names the system knows, as given.
+    public let knownNames: [String]
+    public let textReplacements: [TextReplacement]
+
     public var isEmpty: Bool {
-        entryFormsByKey.isEmpty && knownNameKeys.isEmpty && expansionsByShortcut.isEmpty
+        entries.isEmpty && knownNames.isEmpty && textReplacements.isEmpty
+    }
+
+    /// This vocabulary with `names`, words of its known names, as one-word entries after the
+    /// user's own; the other known names stay known names.
+    public func addingNamesAsEntries(_ names: [String]) -> PersonalVocabulary {
+        let nameKeys = Set(names.map(Self.key))
+        return PersonalVocabulary(
+            words: entries + names,
+            knownNames: knownNames.filter { nameKeys.contains(Self.key($0)) == false },
+            textReplacements: textReplacements
+        )
     }
 
     /// Every word of every entry, as written there.
@@ -99,9 +118,9 @@ public struct PersonalVocabulary: Sendable, Equatable {
         entryFormsByKey[Self.key(word)] != nil
     }
 
-    /// Whether `word`, typed in full, must be left as typed: an entry word or a known name.
+    /// Whether `word` is a word of a known name, which is kept as typed.
     public func keepsAsTyped(_ word: String) -> Bool {
-        contains(word) || knownNameKeys.contains(Self.key(word))
+        knownNameKeys.contains(Self.key(word))
     }
 
     /// How an entry writes `word`, if it is an entry word.

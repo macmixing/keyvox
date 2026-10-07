@@ -4,8 +4,7 @@
 /// phrase is written the phrase's way right after the phrase word before it, so "big
 /// dictation" becomes "Big Dictation"; on its own it keeps the phrase's capitals only when
 /// it is not an everyday word ("Esposito" from "Dom Esposito"), so "dictation" alone stays
-/// as the bundled dictionary writes it. Known names and every other word are left as they
-/// are.
+/// as the bundled dictionary writes it. Every other word is left as it is.
 struct PersonalWordForms: Sendable {
     static let empty = PersonalWordForms(vocabulary: .empty, everydayWords: [])
 
@@ -32,9 +31,5 @@ struct PersonalWordForms: Sendable {
             return phraseWord
         }
         return word
-    }
-
-    func written(_ words: [String], after previousWord: String?) -> [String] {
-        words.map { written($0, after: previousWord) }
     }
 }
