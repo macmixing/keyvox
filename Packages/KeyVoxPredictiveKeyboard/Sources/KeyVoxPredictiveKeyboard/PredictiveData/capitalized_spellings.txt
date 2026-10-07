@@ -501,6 +501,7 @@ alphonso	Alphonso
 alphonso's	Alphonso's
 alpo	Alpo
 alpo's	Alpo's
+alps	Alps
 alps's	Alps's
 alsace	Alsace
 alsace's	Alsace's
@@ -714,6 +715,7 @@ angeles	Angeles
 angeles's	Angeles's
 angelia	Angelia
 angelia's	Angelia's
+angelica	Angelica
 angelica's	Angelica's
 angelico	Angelico
 angelico's	Angelico's
@@ -744,9 +746,13 @@ anglican's	Anglican's
 anglicanism	Anglicanism
 anglicanism's	Anglicanism's
 anglicans	Anglicans
+anglicisms	Anglicisms
 anglicization	Anglicization
+anglicize	Anglicize
 anglo	Anglo
+anglophile	Anglophile
 anglophile's	Anglophile's
+anglophiles	Anglophiles
 anglophobe	Anglophobe
 anglophobes	Anglophobes
 anglos	Anglos
@@ -794,6 +800,7 @@ anniston	Anniston
 anniston's	Anniston's
 annmarie	Annmarie
 annmarie's	Annmarie's
+annunciation	Annunciation
 anouilh	Anouilh
 anouilh's	Anouilh's
 anselm	Anselm
@@ -874,6 +881,7 @@ aphrodite	Aphrodite
 aphrodite's	Aphrodite's
 apia	Apia
 apia's	Apia's
+apocrypha	Apocrypha
 apocrypha's	Apocrypha's
 apollinaire	Apollinaire
 apollinaire's	Apollinaire's
@@ -887,6 +895,7 @@ appalachian	Appalachian
 appalachian's	Appalachian's
 appalachians	Appalachians
 appalachians's	Appalachians's
+appaloosa	Appaloosa
 appaloosa's	Appaloosa's
 apple's	Apple's
 appleseed	Appleseed
@@ -1233,6 +1242,7 @@ attila	Attila
 attila's	Attila's
 attlee	Attlee
 attlee's	Attlee's
+attn	Attn
 attucks	Attucks
 attucks's	Attucks's
 atwood	Atwood
@@ -1282,6 +1292,7 @@ aureomycin	Aureomycin
 aureomycin's	Aureomycin's
 auriga	Auriga
 auriga's	Auriga's
+aurora's	Aurora's
 auschwitz	Auschwitz
 auschwitz's	Auschwitz's
 aussie	Aussie
@@ -1317,6 +1328,7 @@ ava	Ava
 ava's	Ava's
 avalon	Avalon
 avalon's	Avalon's
+ave	Ave
 aventine	Aventine
 aventine's	Aventine's
 avernus	Avernus
@@ -1400,6 +1412,7 @@ bacall	Bacall
 bacall's	Bacall's
 bacardi	Bacardi
 bacardi's	Bacardi's
+bacchanalia	Bacchanalia
 bacchanalia's	Bacchanalia's
 bacchic	Bacchic
 bacchus	Bacchus
@@ -1420,6 +1433,7 @@ baez	Baez
 baez's	Baez's
 baffin	Baffin
 baffin's	Baffin's
+baggies	Baggies
 baggies's	Baggies's
 baghdad	Baghdad
 baghdad's	Baghdad's
@@ -1445,6 +1459,7 @@ baidu	Baidu
 baidu's	Baidu's
 baikal	Baikal
 baikal's	Baikal's
+bailey	Bailey
 bailey's	Bailey's
 baird	Baird
 baird's	Baird's
@@ -1460,6 +1475,7 @@ balanchine	Balanchine
 balanchine's	Balanchine's
 balaton	Balaton
 balaton's	Balaton's
+balboa	Balboa
 balboa's	Balboa's
 balder's	Balder's
 baldwin	Baldwin
@@ -1547,6 +1563,7 @@ barbarossa	Barbarossa
 barbarossa's	Barbarossa's
 barbary	Barbary
 barbary's	Barbary's
+barbie	Barbie
 barbie's	Barbie's
 barbour	Barbour
 barbour's	Barbour's
@@ -1631,7 +1648,9 @@ basho's	Basho's
 basie	Basie
 basie's	Basie's
 basil's	Basil's
+basque	Basque
 basque's	Basque's
+basques	Basques
 basra	Basra
 basra's	Basra's
 basseterre	Basseterre
@@ -1641,11 +1660,14 @@ bastille's	Bastille's
 basutoland	Basutoland
 bataan	Bataan
 bataan's	Bataan's
+bates	Bates
 bates's	Bates's
 bathsheba	Bathsheba
 bathsheba's	Bathsheba's
 batista	Batista
 batista's	Batista's
+batman	Batman
+batman's	Batman's
 batu	Batu
 batu's	Batu's
 baudelaire	Baudelaire
@@ -1682,6 +1704,8 @@ bayreuth	Bayreuth
 bayreuth's	Bayreuth's
 baywatch	Baywatch
 baywatch's	Baywatch's
+beadle	Beadle
+beadle's	Beadle's
 beardmore	Beardmore
 beardmore's	Beardmore's
 beardsley	Beardsley
@@ -1728,6 +1752,7 @@ beckley's	Beckley's
 beckman	Beckman
 becky	Becky
 becky's	Becky's
+becquerel	Becquerel
 becquerel's	Becquerel's
 bede	Bede
 bede's	Bede's
@@ -1824,6 +1849,7 @@ bendix	Bendix
 bendix's	Bendix's
 benedict	Benedict
 benedict's	Benedict's
+benedictine	Benedictine
 benedictine's	Benedictine's
 benedictines	Benedictines
 benelux	Benelux
@@ -2082,6 +2108,7 @@ bjerknes	Bjerknes
 bjerknes's	Bjerknes's
 bjork	Bjork
 bjork's	Bjork's
+bk	Bk
 blackbeard	Blackbeard
 blackbeard's	Blackbeard's
 blackburn	Blackburn
@@ -2190,6 +2217,7 @@ bojangles	Bojangles
 bojangles's	Bojangles's
 boleyn	Boleyn
 boleyn's	Boleyn's
+bolivar	Bolivar
 bolivar's	Bolivar's
 bolivia	Bolivia
 bolivia's	Bolivia's
@@ -2201,6 +2229,7 @@ bollywood's	Bollywood's
 bologna's	Bologna's
 bolshevik	Bolshevik
 bolshevik's	Bolshevik's
+bolsheviks	Bolsheviks
 bolshevism	Bolshevism
 bolshevism's	Bolshevism's
 bolshevist	Bolshevist
@@ -2398,6 +2427,7 @@ brazzaville	Brazzaville
 brazzaville's	Brazzaville's
 breakspear	Breakspear
 breakspear's	Breakspear's
+breathalyzers	Breathalyzers
 brecht	Brecht
 brecht's	Brecht's
 breckenridge	Breckenridge
@@ -2531,6 +2561,7 @@ brookes	Brookes
 brooklyn	Brooklyn
 brooklyn's	Brooklyn's
 brooks's	Brooks's
+bros	Bros
 brown's	Brown's
 browne	Browne
 browne's	Browne's
@@ -2671,6 +2702,7 @@ burgoyne	Burgoyne
 burgoyne's	Burgoyne's
 burgundian	Burgundian
 burgundian's	Burgundian's
+burgundy	Burgundy
 burgundy's	Burgundy's
 burke	Burke
 burke's	Burke's
@@ -2722,6 +2754,7 @@ byron	Byron
 byron's	Byron's
 byronic	Byronic
 byronic's	Byronic's
+byzantine	Byzantine
 byzantine's	Byzantine's
 byzantium	Byzantium
 byzantium's	Byzantium's
@@ -2801,6 +2834,7 @@ callahan	Callahan
 callahan's	Callahan's
 callao	Callao
 callao's	Callao's
+callas	Callas
 callas's	Callas's
 callie	Callie
 callie's	Callie's
@@ -2941,6 +2975,7 @@ capri's	Capri's
 capricorn	Capricorn
 capricorn's	Capricorn's
 capricorns	Capricorns
+capt	Capt
 capuchin's	Capuchin's
 capulet	Capulet
 capulet's	Capulet's
@@ -2956,7 +2991,9 @@ carboloy	Carboloy
 carboloy's	Carboloy's
 carbondale	Carbondale
 carbondale's	Carbondale's
+carboniferous	Carboniferous
 carboniferous's	Carboniferous's
+carborundum	Carborundum
 carborundum's	Carborundum's
 cardenas	Cardenas
 cardenas's	Cardenas's
@@ -3046,6 +3083,8 @@ carroll	Carroll
 carroll's	Carroll's
 carson	Carson
 carson's	Carson's
+carter	Carter
+carter's	Carter's
 cartersville	Cartersville
 cartersville's	Cartersville's
 cartesian	Cartesian
@@ -3161,6 +3200,7 @@ cayman	Cayman
 cayman's	Cayman's
 cayuga	Cayuga
 cayuga's	Cayuga's
+cayuse	Cayuse
 ceausescu	Ceausescu
 ceausescu's	Ceausescu's
 cebu	Cebu
@@ -3291,6 +3331,7 @@ chapultepec	Chapultepec
 chapultepec's	Chapultepec's
 charbray	Charbray
 charbray's	Charbray's
+chardonnay	Chardonnay
 chardonnay's	Chardonnay's
 charlemagne	Charlemagne
 charlemagne's	Charlemagne's
@@ -3303,6 +3344,7 @@ charleston's	Charleston's
 charlestons	Charlestons
 charley	Charley
 charley's	Charley's
+charlie	Charlie
 charlie's	Charlie's
 charlotte	Charlotte
 charlotte's	Charlotte's
@@ -3354,6 +3396,7 @@ chechnya	Chechnya
 chechnya's	Chechnya's
 cheddar's	Cheddar's
 cheer's	Cheer's
+cheerios	Cheerios
 cheerios's	Cheerios's
 cheetos	Cheetos
 cheetos's	Cheetos's
@@ -3397,9 +3440,13 @@ cheshire	Cheshire
 cheshire's	Cheshire's
 chester	Chester
 chester's	Chester's
+chesterfield	Chesterfield
 chesterfield's	Chesterfield's
 chesterton	Chesterton
 chesterton's	Chesterton's
+chevalier	Chevalier
+chevalier's	Chevalier's
+cheviot	Cheviot
 cheviot's	Cheviot's
 chevrolet	Chevrolet
 chevrolet's	Chevrolet's
@@ -3497,6 +3544,7 @@ christensen	Christensen
 christensen's	Christensen's
 christi	Christi
 christi's	Christi's
+christian	Christian
 christian's	Christian's
 christianity	Christianity
 christianity's	Christianity's
@@ -3804,6 +3852,7 @@ congo	Congo
 congo's	Congo's
 congolese	Congolese
 congolese's	Congolese's
+congregationalist	Congregationalist
 congregationalist's	Congregationalist's
 congreve	Congreve
 congreve's	Congreve's
@@ -3878,6 +3927,7 @@ cora	Cora
 cora's	Cora's
 cordelia	Cordelia
 cordelia's	Cordelia's
+cordilleras	Cordilleras
 cordilleras's	Cordilleras's
 cordoba	Cordoba
 cordoba's	Cordoba's
@@ -3988,6 +4038,7 @@ coyle	Coyle
 coyle's	Coyle's
 cozumel	Cozumel
 cozumel's	Cozumel's
+cpl	Cpl
 crabbe	Crabbe
 crabbe's	Crabbe's
 craig	Craig
@@ -4011,6 +4062,7 @@ creon	Creon
 creon's	Creon's
 cressida	Cressida
 cressida's	Cressida's
+cretaceous	Cretaceous
 cretaceous's	Cretaceous's
 cretan	Cretan
 cretan's	Cretan's
@@ -4097,6 +4149,7 @@ cunard's	Cunard's
 cunningham	Cunningham
 cunningham's	Cunningham's
 cupid's	Cupid's
+curaçao	Curaçao
 curaçao's	Curaçao's
 curie's	Curie's
 curitiba	Curitiba
@@ -4118,6 +4171,8 @@ cybele's	Cybele's
 cyclades	Cyclades
 cyclades's	Cyclades's
 cyclopes's	Cyclopes's
+cyclops	Cyclops
+cyclops's	Cyclops's
 cygnus	Cygnus
 cygnus's	Cygnus's
 cymbeline	Cymbeline
@@ -4163,6 +4218,8 @@ dacron	Dacron
 dacron's	Dacron's
 dada	Dada
 dada's	Dada's
+dadaism	Dadaism
+dadaism's	Dadaism's
 daedalus	Daedalus
 daedalus's	Daedalus's
 daguerre	Daguerre
@@ -4225,7 +4282,9 @@ danielle	Danielle
 danielle's	Danielle's
 daniels	Daniels
 daniels's	Daniels's
+danish	Danish
 danish's	Danish's
+danishes	Danishes
 dannie	Dannie
 dannie's	Dannie's
 danny	Danny
@@ -4326,6 +4385,7 @@ dayan	Dayan
 dayan's	Dayan's
 dayton	Dayton
 dayton's	Dayton's
+deadhead	Deadhead
 deadhead's	Deadhead's
 deana	Deana
 deana's	Deana's
@@ -4379,6 +4439,7 @@ deere's	Deere's
 defi	DeFi
 defoe	Defoe
 defoe's	Defoe's
+degas	Degas
 degas's	Degas's
 degeneres	DeGeneres
 degeneres's	DeGeneres's
@@ -4549,10 +4610,12 @@ dianna's	Dianna's
 dianne	Dianne
 dianne's	Dianne's
 dias's	Dias's
+diaspora's	Diaspora's
 diaz	Diaz
 diaz's	Diaz's
 dicaprio	DiCaprio
 dicaprio's	DiCaprio's
+dickens	Dickens
 dickens's	Dickens's
 dickensian	Dickensian
 dickerson	Dickerson
@@ -4566,6 +4629,7 @@ dictaphone's	Dictaphone's
 dictaphones	Dictaphones
 diderot	Diderot
 diderot's	Diderot's
+dido	Dido
 dido's	Dido's
 didrikson	Didrikson
 didrikson's	Didrikson's
@@ -4632,6 +4696,7 @@ dixie	Dixie
 dixie's	Dixie's
 dixiecrat	Dixiecrat
 dixiecrat's	Dixiecrat's
+dixieland	Dixieland
 dixieland's	Dixieland's
 dixon	Dixon
 dixon's	Dixon's
@@ -4645,7 +4710,11 @@ dnepropetrovsk	Dnepropetrovsk
 dnepropetrovsk's	Dnepropetrovsk's
 dniester	Dniester
 dniester's	Dniester's
+dobbin	Dobbin
+dobbin's	Dobbin's
+doberman	Doberman
 doberman's	Doberman's
+dobro	Dobro
 dobro's	Dobro's
 doctorow	Doctorow
 doctorow's	Doctorow's
@@ -4833,6 +4902,7 @@ dumas	Dumas
 dumas's	Dumas's
 dumbledore	Dumbledore
 dumbledore's	Dumbledore's
+dumbo	Dumbo
 dumbo's	Dumbo's
 dunant	Dunant
 dunant's	Dunant's
@@ -4881,6 +4951,7 @@ dustbuster's	Dustbuster's
 dustin	Dustin
 dustin's	Dustin's
 dusty's	Dusty's
+dutch	Dutch
 dutch's	Dutch's
 dutchman	Dutchman
 dutchman's	Dutchman's
@@ -5271,6 +5342,7 @@ epicurus	Epicurus
 epicurus's	Epicurus's
 epimethius	Epimethius
 epimethius's	Epimethius's
+epiphany	Epiphany
 epiphany's	Epiphany's
 episcopalian	Episcopalian
 episcopalian's	Episcopalian's
@@ -5511,6 +5583,9 @@ excalibur	Excalibur
 excalibur's	Excalibur's
 excedrin	Excedrin
 excedrin's	Excedrin's
+excellencies	Excellencies
+excellency	Excellency
+excellency's	Excellency's
 exercycle	Exercycle
 exercycle's	Exercycle's
 exocet	Exocet
@@ -5610,6 +5685,8 @@ faustus	Faustus
 faustus's	Faustus's
 fawkes	Fawkes
 fawkes's	Fawkes's
+fay	Fay
+fay's	Fay's
 faye	Faye
 faye's	Faye's
 fayetteville	Fayetteville
@@ -5909,6 +5986,7 @@ fredrick	Fredrick
 fredrick's	Fredrick's
 freemason	Freemason
 freemason's	Freemason's
+freemasonry	Freemasonry
 freemasonry's	Freemasonry's
 freemasons	Freemasons
 freetown	Freetown
@@ -5965,6 +6043,7 @@ frisian	Frisian
 frisian's	Frisian's
 frito	Frito
 frito's	Frito's
+fritz	Fritz
 fritz's	Fritz's
 frobisher	Frobisher
 frobisher's	Frobisher's
@@ -6006,6 +6085,7 @@ fulani	Fulani
 fulani's	Fulani's
 fulbright	Fulbright
 fulbright's	Fulbright's
+fuller's	Fuller's
 fullerton	Fullerton
 fulton	Fulton
 fulton's	Fulton's
@@ -6279,6 +6359,7 @@ gershwin	Gershwin
 gershwin's	Gershwin's
 gertrude	Gertrude
 gertrude's	Gertrude's
+gestapo	Gestapo
 gestapo's	Gestapo's
 gethsemane	Gethsemane
 gethsemane's	Gethsemane's
@@ -6292,6 +6373,7 @@ ghana	Ghana
 ghana's	Ghana's
 ghanaian	Ghanaian
 ghanaians	Ghanaians
+ghats	Ghats
 ghats's	Ghats's
 ghazvanid	Ghazvanid
 ghazvanid's	Ghazvanid's
@@ -6434,11 +6516,13 @@ godard	Godard
 godard's	Godard's
 goddard	Goddard
 goddard's	Goddard's
+godhead	Godhead
 godhead's	Godhead's
 godiva	Godiva
 godiva's	Godiva's
 godot	Godot
 godot's	Godot's
+godspeed	Godspeed
 godthaab	Godthaab
 godthaab's	Godthaab's
 godunov	Godunov
@@ -6536,6 +6620,9 @@ gorey	Gorey
 gorey's	Gorey's
 gorgas	Gorgas
 gorgas's	Gorgas's
+gorgon	Gorgon
+gorgon's	Gorgon's
+gorgons	Gorgons
 gorgonzola's	Gorgonzola's
 gorky	Gorky
 gorky's	Gorky's
@@ -6569,6 +6656,7 @@ graffias	Graffias
 graffias's	Graffias's
 grafton	Grafton
 grafton's	Grafton's
+graham	Graham
 graham's	Graham's
 grahame	Grahame
 grahame's	Grahame's
@@ -6696,6 +6784,7 @@ guangzhou	Guangzhou
 guangzhou's	Guangzhou's
 guantanamo	Guantanamo
 guantanamo's	Guantanamo's
+guarani	Guarani
 guarani's	Guarani's
 guarnieri	Guarnieri
 guarnieri's	Guarnieri's
@@ -6871,6 +6960,7 @@ halsey	Halsey
 halsey's	Halsey's
 haman	Haman
 haman's	Haman's
+hamburg	Hamburg
 hamburg's	Hamburg's
 hamhung	Hamhung
 hamhung's	Hamhung's
@@ -7099,6 +7189,7 @@ hegel	Hegel
 hegel's	Hegel's
 hegelian	Hegelian
 hegelian's	Hegelian's
+hegira	Hegira
 hegira's	Hegira's
 heidegger	Heidegger
 heidegger's	Heidegger's
@@ -7279,6 +7370,7 @@ hess	Hess
 hess's	Hess's
 hesse	Hesse
 hesse's	Hesse's
+hessian	Hessian
 hessian's	Hessian's
 hester	Hester
 hester's	Hester's
@@ -7317,6 +7409,8 @@ hieronymus's	Hieronymus's
 higashiosaka	Higashiosaka
 higgins	Higgins
 higgins's	Higgins's
+highlander	Highlander
+highlander's	Highlander's
 highness's	Highness's
 hightstown	Hightstown
 hightstown's	Hightstown's
@@ -7503,7 +7597,9 @@ hoosier	Hoosier
 hoosier's	Hoosier's
 hoosiers	Hoosiers
 hooters's	Hooters's
+hoover	Hoover
 hoover's	Hoover's
+hoovers	Hoovers
 hopewell	Hopewell
 hopewell's	Hopewell's
 hopi	Hopi
@@ -7610,6 +7706,8 @@ hume	Hume
 hume's	Hume's
 hummel	Hummel
 hummel's	Hummel's
+hummer	Hummer
+hummer's	Hummer's
 humphrey	Humphrey
 humphrey's	Humphrey's
 humphreys	Humphreys
@@ -7780,6 +7878,7 @@ indianapolis	Indianapolis
 indianapolis's	Indianapolis's
 indianian	Indianian
 indians	Indians
+indies	Indies
 indies's	Indies's
 indio	Indio
 indio's	Indio's
@@ -7975,6 +8074,7 @@ isuzu	Isuzu
 isuzu's	Isuzu's
 itaipu	Itaipu
 itaipu's	Itaipu's
+ital	Ital
 italian	Italian
 italian's	Italian's
 italianate	Italianate
@@ -8047,6 +8147,7 @@ jacobs	Jacobs
 jacobs's	Jacobs's
 jacobson	Jacobson
 jacobson's	Jacobson's
+jacquard	Jacquard
 jacquard's	Jacquard's
 jacqueline	Jacqueline
 jacqueline's	Jacqueline's
@@ -8165,6 +8266,7 @@ jason's	Jason's
 jasper's	Jasper's
 jataka	Jataka
 jataka's	Jataka's
+java	Java
 java's	Java's
 javanese	Javanese
 javanese's	Javanese's
@@ -8186,6 +8288,8 @@ jayne	Jayne
 jayne's	Jayne's
 jayson	Jayson
 jayson's	Jayson's
+jean	Jean
+jean's	Jean's
 jeanette	Jeanette
 jeanette's	Jeanette's
 jeanie	Jeanie
@@ -8240,6 +8344,8 @@ jennifer	Jennifer
 jennifer's	Jennifer's
 jennings	Jennings
 jennings's	Jennings's
+jenny	Jenny
+jenny's	Jenny's
 jensen	Jensen
 jensen's	Jensen's
 jephthah	Jephthah
@@ -8256,6 +8362,7 @@ jericho	Jericho
 jericho's	Jericho's
 jermaine	Jermaine
 jermaine's	Jermaine's
+jeroboam	Jeroboam
 jeroboam's	Jeroboam's
 jerold	Jerold
 jerold's	Jerold's
@@ -8355,6 +8462,7 @@ joe	Joe
 joe's	Joe's
 joel	Joel
 joel's	Joel's
+joey	Joey
 joey's	Joey's
 jogjakarta	Jogjakarta
 jogjakarta's	Jogjakarta's
@@ -8374,6 +8482,7 @@ johnie	Johnie
 johnie's	Johnie's
 johnnie	Johnnie
 johnnie's	Johnnie's
+johnny	Johnny
 johnny's	Johnny's
 johns's	Johns's
 johnson	Johnson
@@ -8449,6 +8558,7 @@ joycean	Joycean
 joycean's	Joycean's
 joyner	Joyner
 joyner's	Joyner's
+jr	Jr
 juan	Juan
 juan's	Juan's
 juana	Juana
@@ -8507,6 +8617,7 @@ julliard	Julliard
 julliard's	Julliard's
 july	July
 july's	July's
+jun	Jun
 june	June
 june's	June's
 juneau	Juneau
@@ -8558,6 +8669,8 @@ kaifeng	Kaifeng
 kaifeng's	Kaifeng's
 kailua	Kailua
 kailua's	Kailua's
+kaiser	Kaiser
+kaiser's	Kaiser's
 kaitlin	Kaitlin
 kaitlin's	Kaitlin's
 kalahari	Kalahari
@@ -8753,6 +8866,7 @@ kelly	Kelly
 kelly's	Kelly's
 kelsey	Kelsey
 kelsey's	Kelsey's
+kelvin	Kelvin
 kelvin's	Kelvin's
 kemerovo	Kemerovo
 kemerovo's	Kemerovo's
@@ -8917,6 +9031,7 @@ kinshasa	Kinshasa
 kinshasa's	Kinshasa's
 kiowa	Kiowa
 kiowa's	Kiowa's
+kip's	Kip's
 kipling	Kipling
 kipling's	Kipling's
 kirby	Kirby
@@ -9022,6 +9137,7 @@ koestler	Koestler
 koestler's	Koestler's
 kohinoor	Kohinoor
 kohinoor's	Kohinoor's
+kohl	Kohl
 kohl's	Kohl's
 koizumi	Koizumi
 koizumi's	Koizumi's
@@ -9173,6 +9289,7 @@ kuznets	Kuznets
 kuznets's	Kuznets's
 kuznetsk	Kuznetsk
 kuznetsk's	Kuznetsk's
+kw	kW
 kwakiutl	Kwakiutl
 kwakiutl's	Kwakiutl's
 kwan	Kwan
@@ -9259,6 +9376,7 @@ lamont	Lamont
 lamont's	Lamont's
 lana	Lana
 lana's	Lana's
+lanai	Lanai
 lanai's	Lanai's
 lancashire	Lancashire
 lancashire's	Lancashire's
@@ -9367,6 +9485,7 @@ lauder	Lauder
 lauder's	Lauder's
 laue	Laue
 laue's	Laue's
+laundromat's	Laundromat's
 laura	Laura
 laura's	Laura's
 laurasia	Laurasia
@@ -9460,6 +9579,7 @@ legendre	Legendre
 legendre's	Legendre's
 leger	Leger
 leger's	Leger's
+leghorn	Leghorn
 leghorn's	Leghorn's
 lego	Lego
 lego's	Lego's
@@ -9680,6 +9800,7 @@ lillie	Lillie
 lillie's	Lillie's
 lilliput	Lilliput
 lilliput's	Lilliput's
+lilliputian	Lilliputian
 lilliputian's	Lilliputian's
 lilly	Lilly
 lilly's	Lilly's
@@ -9944,6 +10065,7 @@ loyd	Loyd
 loyd's	Loyd's
 loyola	Loyola
 loyola's	Loyola's
+ltd	Ltd
 lu's	Lu's
 luanda	Luanda
 luanda's	Luanda's
@@ -10018,6 +10140,7 @@ lula	Lula
 lula's	Lula's
 lully	Lully
 lully's	Lully's
+lulu	Lulu
 lulu's	Lulu's
 lumière's	Lumière's
 luna	Luna
@@ -10107,6 +10230,7 @@ mabel	Mabel
 mabel's	Mabel's
 mable	Mable
 mable's	Mable's
+mac	Mac
 mac's	Mac's
 macao	Macao
 macao's	Macao's
@@ -10130,6 +10254,7 @@ macedonia's	Macedonia's
 macedonian	Macedonian
 macedonian's	Macedonian's
 macedonians	Macedonians
+mach	Mach
 mach's	Mach's
 machiavelli	Machiavelli
 machiavelli's	Machiavelli's
@@ -10188,6 +10313,8 @@ mae	Mae
 mae's	Mae's
 maeterlinck	Maeterlinck
 maeterlinck's	Maeterlinck's
+mafioso	Mafioso
+mafioso's	Mafioso's
 magdalena	Magdalena
 magdalena's	Magdalena's
 magdalene	Magdalene
@@ -10200,6 +10327,7 @@ maggie	Maggie
 maggie's	Maggie's
 maghreb	Maghreb
 maghreb's	Maghreb's
+magi	Magi
 magi's	Magi's
 maginot	Maginot
 maginot's	Maginot's
@@ -10387,6 +10515,7 @@ mani	Mani
 mani's	Mani's
 manichean	Manichean
 manichean's	Manichean's
+manila	Manila
 manila's	Manila's
 manitoba	Manitoba
 manitoba's	Manitoba's
@@ -10478,6 +10607,7 @@ margaret's	Margaret's
 margarita's	Margarita's
 margarito	Margarito
 margarito's	Margarito's
+marge	Marge
 marge's	Marge's
 margery	Margery
 margery's	Margery's
@@ -10893,6 +11023,8 @@ meade's	Meade's
 meadows's	Meadows's
 meagan	Meagan
 meagan's	Meagan's
+meany	Meany
+meany's	Meany's
 mecca's	Mecca's
 medan	Medan
 medan's	Medan's
@@ -10902,7 +11034,9 @@ medellin	Medellin
 medellin's	Medellin's
 medford	Medford
 medford's	Medford's
+medicaid	Medicaid
 medicaid's	Medicaid's
+medicare	Medicare
 medicare's	Medicare's
 medici	Medici
 medici's	Medici's
@@ -10910,6 +11044,8 @@ medina	Medina
 medina's	Medina's
 mediterranean	Mediterranean
 mediterranean's	Mediterranean's
+medusa	Medusa
+medusa's	Medusa's
 meg's	Meg's
 megan	Megan
 megan's	Megan's
@@ -11032,6 +11168,8 @@ merced	Merced
 merced's	Merced's
 mercedes	Mercedes
 mercedes's	Mercedes's
+mercer	Mercer
+mercer's	Mercer's
 mercia	Mercia
 mercia's	Mercia's
 merck	Merck
@@ -11111,6 +11249,7 @@ meyers	Meyers
 meyers's	Meyers's
 mfume	Mfume
 mfume's	Mfume's
+mgr	Mgr
 mia's	Mia's
 miami	Miami
 miami's	Miami's
@@ -11145,6 +11284,7 @@ michigander	Michigander
 michigander's	Michigander's
 michiganders	Michiganders
 michiganite	Michiganite
+mick	Mick
 mick's	Mick's
 mickey's	Mickey's
 mickie	Mickie
@@ -11401,6 +11541,8 @@ molina	Molina
 molina's	Molina's
 mollie	Mollie
 mollie's	Mollie's
+molly	Molly
+molly's	Molly's
 molnar	Molnar
 molnar's	Molnar's
 moloch	Moloch
@@ -11436,6 +11578,7 @@ monessen	Monessen
 monessen's	Monessen's
 monet	Monet
 monet's	Monet's
+mongol	Mongol
 mongol's	Mongol's
 mongolia	Mongolia
 mongolia's	Mongolia's
@@ -11443,6 +11586,9 @@ mongolian	Mongolian
 mongolian's	Mongolian's
 mongolians	Mongolians
 mongolic	Mongolic
+mongoloid	Mongoloid
+mongoloid's	Mongoloid's
+mongols	Mongols
 monica	Monica
 monica's	Monica's
 monique	Monique
@@ -11605,6 +11751,7 @@ moussorgsky	Moussorgsky
 moussorgsky's	Moussorgsky's
 mouthe	Mouthe
 mouthe's	Mouthe's
+mouton	Mouton
 mouton's	Mouton's
 mowgli	Mowgli
 mowgli's	Mowgli's
@@ -11627,6 +11774,7 @@ mubarak	Mubarak
 mubarak's	Mubarak's
 mueller	Mueller
 mueller's	Mueller's
+muenster	Muenster
 muenster's	Muenster's
 mugabe	Mugabe
 mugabe's	Mugabe's
@@ -11645,6 +11793,7 @@ mullen	Mullen
 mullen's	Mullen's
 muller	Muller
 muller's	Muller's
+mulligan	Mulligan
 mulligan's	Mulligan's
 mullikan	Mullikan
 mullikan's	Mullikan's
@@ -11822,6 +11971,7 @@ napier	Napier
 napier's	Napier's
 naples	Naples
 naples's	Naples's
+napoleon	Napoleon
 napoleon's	Napoleon's
 napoleonic	Napoleonic
 napster	Napster
@@ -11890,7 +12040,9 @@ ndjamena	Ndjamena
 ndjamena's	Ndjamena's
 neal	Neal
 neal's	Neal's
+neanderthal	Neanderthal
 neanderthal's	Neanderthal's
+neanderthals	Neanderthals
 neapolitan	Neapolitan
 neapolitan's	Neapolitan's
 neb	Neb
@@ -11910,9 +12062,12 @@ negev	Negev
 negev's	Negev's
 negress	Negress
 negresses	Negresses
+negritude	Negritude
 negritude's	Negritude's
+negro	Negro
 negro's	Negro's
 negroes	Negroes
+negroid	Negroid
 negroid's	Negroid's
 negros	Negros
 negros's	Negros's
@@ -11932,6 +12087,7 @@ nelly	Nelly
 nelly's	Nelly's
 nelsen	Nelsen
 nelsen's	Nelsen's
+nelson	Nelson
 nelson's	Nelson's
 nembutal	Nembutal
 nembutal's	Nembutal's
@@ -11940,6 +12096,7 @@ neo	Neo
 neo's	Neo's
 neogene	Neogene
 neogene's	Neogene's
+neolithic	Neolithic
 nepal	Nepal
 nepal's	Nepal's
 nepalese	Nepalese
@@ -12100,6 +12257,7 @@ nile	Nile
 nile's	Nile's
 nimitz	Nimitz
 nimitz's	Nimitz's
+nimrod	Nimrod
 nimrod's	Nimrod's
 nina	Nina
 nina's	Nina's
@@ -12118,6 +12276,7 @@ nirenberg's	Nirenberg's
 nirvana's	Nirvana's
 nisan	Nisan
 nisan's	Nisan's
+nisei	Nisei
 nisei's	Nisei's
 nissan	Nissan
 nissan's	Nissan's
@@ -12341,6 +12500,7 @@ odom's	Odom's
 odysseus	Odysseus
 odysseus's	Odysseus's
 odyssey's	Odyssey's
+oedipal	Oedipal
 oedipal's	Oedipal's
 oedipus	Oedipus
 oedipus's	Oedipus's
@@ -12634,6 +12794,7 @@ paar	Paar
 paar's	Paar's
 pablo	Pablo
 pablo's	Pablo's
+pablum	Pablum
 pablum's	Pablum's
 pabst	Pabst
 pabst's	Pabst's
@@ -12673,6 +12834,7 @@ paleocene	Paleocene
 paleocene's	Paleocene's
 paleogene	Paleogene
 paleogene's	Paleogene's
+paleolithic	Paleolithic
 paleolithic's	Paleolithic's
 paleozoic	Paleozoic
 paleozoic's	Paleozoic's
@@ -12711,6 +12873,7 @@ pamela's	Pamela's
 pamirs	Pamirs
 pamirs's	Pamirs's
 pampers's	Pampers's
+panama	Panama
 panama's	Panama's
 panamanian	Panamanian
 panamanian's	Panamanian's
@@ -12789,6 +12952,7 @@ pasadena's	Pasadena's
 pascagoula	Pascagoula
 pascagoula's	Pascagoula's
 pascal's	Pascal's
+pascals	Pascals
 pasco	Pasco
 pasco's	Pasco's
 pasquale	Pasquale
@@ -12842,6 +13006,7 @@ pavarotti	Pavarotti
 pavarotti's	Pavarotti's
 pavlov	Pavlov
 pavlov's	Pavlov's
+pavlova	Pavlova
 pavlova's	Pavlova's
 pavlovian	Pavlovian
 pawnee	Pawnee
@@ -12881,7 +13046,9 @@ peiping	Peiping
 peiping's	Peiping's
 peking	Peking
 peking's	Peking's
+pekingese	Pekingese
 pekingese's	Pekingese's
+pekingeses	Pekingeses
 pele	Pele
 pele's	Pele's
 pelee	Pelee
@@ -13020,6 +13187,9 @@ phaethon's	Phaethon's
 phanerozoic	Phanerozoic
 phanerozoic's	Phanerozoic's
 pharisaical	Pharisaical
+pharisee	Pharisee
+pharisee's	Pharisee's
+pharisees	Pharisees
 phd	PhD
 phds	PhDs
 phekda	Phekda
@@ -13063,6 +13233,7 @@ phoenicia	Phoenicia
 phoenicia's	Phoenicia's
 phoenician	Phoenician
 phoenician's	Phoenician's
+photostat	Photostat
 photostat's	Photostat's
 phrygia	Phrygia
 phrygia's	Phrygia's
@@ -13072,6 +13243,7 @@ piaf	Piaf
 piaf's	Piaf's
 piaget	Piaget
 piaget's	Piaget's
+pianola	Pianola
 pianola's	Pianola's
 picasso	Picasso
 picasso's	Picasso's
@@ -13144,6 +13316,7 @@ pius	Pius
 pius's	Pius's
 pizarro	Pizarro
 pizarro's	Pizarro's
+pkwy	Pkwy
 planck	Planck
 planck's	Planck's
 plano	Plano
@@ -13223,8 +13396,11 @@ polaroid	Polaroid
 polaroid's	Polaroid's
 polaroids	Polaroids
 polish's	Polish's
+politburo	Politburo
+politburo's	Politburo's
 polk	Polk
 polk's	Polk's
+pollard	Pollard
 pollard's	Pollard's
 pollock	Pollock
 pollock's	Pollock's
@@ -13256,6 +13432,7 @@ pompeii	Pompeii
 pompeii's	Pompeii's
 pompey	Pompey
 pompey's	Pompey's
+ponce	Ponce
 ponce's	Ponce's
 pontchartrain	Pontchartrain
 pontchartrain's	Pontchartrain's
@@ -13272,6 +13449,7 @@ popeye	Popeye
 popeye's	Popeye's
 popocatepetl	Popocatepetl
 popocatepetl's	Popocatepetl's
+popper	Popper
 popper's	Popper's
 poppins	Poppins
 poppins's	Poppins's
@@ -13325,6 +13503,7 @@ prada	Prada
 prada's	Prada's
 prado	Prado
 prado's	Prado's
+praetorian	Praetorian
 praetorian's	Praetorian's
 prague	Prague
 prague's	Prague's
@@ -13490,6 +13669,7 @@ putnam	Putnam
 putnam's	Putnam's
 puzo	Puzo
 puzo's	Puzo's
+pvt	Pvt
 pygmalion	Pygmalion
 pygmalion's	Pygmalion's
 pyle	Pyle
@@ -13722,6 +13902,8 @@ reaganomics	Reaganomics
 reaganomics's	Reaganomics's
 realtor's	Realtor's
 realtors	Realtors
+reasoner	Reasoner
+reasoner's	Reasoner's
 reba	Reba
 reba's	Reba's
 rebecca	Rebecca
@@ -13745,6 +13927,7 @@ reebok	Reebok
 reebok's	Reebok's
 reese	Reese
 reese's	Reese's
+reeves	Reeves
 reeves's	Reeves's
 reformation's	Reformation's
 refugio	Refugio
@@ -13925,6 +14108,7 @@ rivera	Rivera
 rivera's	Rivera's
 rivers's	Rivers's
 riverside's	Riverside's
+riviera	Riviera
 riviera's	Riviera's
 riyadh	Riyadh
 riyadh's	Riyadh's
@@ -14065,7 +14249,9 @@ romany	Romany
 romany's	Romany's
 rome	Rome
 rome's	Rome's
+romeo	Romeo
 romeo's	Romeo's
+romeos	Romeos
 romero	Romero
 romero's	Romero's
 rommel	Rommel
@@ -14167,6 +14353,7 @@ rothschild	Rothschild
 rothschild's	Rothschild's
 rotterdam	Rotterdam
 rotterdam's	Rotterdam's
+rottweiler	Rottweiler
 rottweiler's	Rottweiler's
 rouault	Rouault
 rouault's	Rouault's
@@ -14301,6 +14488,7 @@ saarinen	Saarinen
 saarinen's	Saarinen's
 saatchi	Saatchi
 saatchi's	Saatchi's
+sabbath	Sabbath
 sabik	Sabik
 sabik's	Sabik's
 sabin	Sabin
@@ -14508,6 +14696,7 @@ sarah	Sarah
 sarah's	Sarah's
 sarajevo	Sarajevo
 sarajevo's	Sarajevo's
+saran	Saran
 saran's	Saran's
 sarasota	Sarasota
 sarasota's	Sarasota's
@@ -14548,6 +14737,7 @@ sassoon's	Sassoon's
 satan	Satan
 satan's	Satan's
 satanism's	Satanism's
+satanist	Satanist
 satanist's	Satanist's
 saturday	Saturday
 saturday's	Saturday's
@@ -14571,6 +14761,7 @@ sauternes	Sauternes
 savannah's	Savannah's
 savonarola	Savonarola
 savonarola's	Savonarola's
+savoy	Savoy
 savoy's	Savoy's
 savoyard	Savoyard
 savoyard's	Savoyard's
@@ -14760,6 +14951,7 @@ segundo's	Segundo's
 segways	Segways
 seiko	Seiko
 seiko's	Seiko's
+seine	Seine
 seine's	Seine's
 seinfeld	Seinfeld
 seinfeld's	Seinfeld's
@@ -14799,6 +14991,7 @@ semitic	Semitic
 semitic's	Semitic's
 semtex	Semtex
 semtex's	Semtex's
+sen	Sen
 sendai	Sendai
 sendai's	Sendai's
 seneca	Seneca
@@ -14961,6 +15154,7 @@ sheetrock	Sheetrock
 sheetrock's	Sheetrock's
 sheffield	Sheffield
 sheffield's	Sheffield's
+sheila	Sheila
 sheila's	Sheila's
 shelby	Shelby
 shelby's	Shelby's
@@ -15233,6 +15427,7 @@ smithson	Smithson
 smithson's	Smithson's
 smithsonian	Smithsonian
 smithsonian's	Smithsonian's
+smokey	Smokey
 smokey's	Smokey's
 smolensk	Smolensk
 smolensk's	Smolensk's
@@ -15257,6 +15452,7 @@ snyder	Snyder
 snyder's	Snyder's
 soave	Soave
 soave's	Soave's
+soc	Soc
 socastee	Socastee
 socastee's	Socastee's
 socorro	Socorro
@@ -15411,6 +15607,7 @@ springfield's	Springfield's
 springsteen	Springsteen
 springsteen's	Springsteen's
 sprint's	Sprint's
+sputnik	Sputnik
 sputnik's	Sputnik's
 squanto	Squanto
 squanto's	Squanto's
@@ -15510,6 +15707,7 @@ sterne	Sterne
 sterne's	Sterne's
 sterno	Sterno
 sterno's	Sterno's
+stetson	Stetson
 stetson's	Stetson's
 steuben	Steuben
 steuben's	Steuben's
@@ -15650,6 +15848,7 @@ sumner's	Sumner's
 sumter	Sumter
 sumter's	Sumter's
 sunbeam's	Sunbeam's
+sunbelt	Sunbelt
 sunbelt's	Sunbelt's
 sundanese	Sundanese
 sundanese's	Sundanese's
@@ -15671,7 +15870,9 @@ superbowl	Superbowl
 superbowl's	Superbowl's
 superfund	Superfund
 superfund's	Superfund's
+superglue	Superglue
 superglue's	Superglue's
+supt	Supt
 surabaya	Surabaya
 surabaya's	Surabaya's
 surat	Surat
@@ -15735,11 +15936,13 @@ swaziland	Swaziland
 swaziland's	Swaziland's
 swazis	Swazis
 swed	Swed
+swede	Swede
 swede's	Swede's
 sweden	Sweden
 sweden's	Sweden's
 swedenborg	Swedenborg
 swedenborg's	Swedenborg's
+swedes	Swedes
 swedish	Swedish
 swedish's	Swedish's
 sweeney	Sweeney
@@ -15978,9 +16181,11 @@ tchaikovsky	Tchaikovsky
 tchaikovsky's	Tchaikovsky's
 teasdale	Teasdale
 teasdale's	Teasdale's
+technicolor	Technicolor
 technicolor's	Technicolor's
 tecumseh	Tecumseh
 tecumseh's	Tecumseh's
+ted	Ted
 ted's	Ted's
 teddy's	Teddy's
 teflon	Teflon
@@ -16029,6 +16234,7 @@ terkel	Terkel
 terkel's	Terkel's
 terpsichore	Terpsichore
 terpsichore's	Terpsichore's
+terr	Terr
 terra	Terra
 terra's	Terra's
 terran	Terran
@@ -16099,6 +16305,7 @@ thant's	Thant's
 thar's	Thar's
 tharp	Tharp
 tharp's	Tharp's
+thatcher's	Thatcher's
 thea	Thea
 thea's	Thea's
 thebes	Thebes
@@ -16241,6 +16448,7 @@ timon	Timon
 timon's	Timon's
 timor	Timor
 timor's	Timor's
+timothy	Timothy
 timothy's	Timothy's
 timur	Timur
 timur's	Timur's
@@ -16272,6 +16480,7 @@ tishri's	Tishri's
 titania	Titania
 titania's	Titania's
 titanic's	Titanic's
+titian	Titian
 titian's	Titian's
 titicaca	Titicaca
 titicaca's	Titicaca's
@@ -16437,6 +16646,7 @@ trevino	Trevino
 trevino's	Trevino's
 trevor	Trevor
 trevor's	Trevor's
+trey	Trey
 trey's	Trey's
 triangulum	Triangulum
 triangulum's	Triangulum's
@@ -16532,6 +16742,7 @@ tulsa	Tulsa
 tulsa's	Tulsa's
 tulsidas	Tulsidas
 tulsidas's	Tulsidas's
+tums	Tums
 tums's	Tums's
 tungus	Tungus
 tungus's	Tungus's
@@ -16586,6 +16797,7 @@ tuskegee	Tuskegee
 tuskegee's	Tuskegee's
 tussaud	Tussaud
 tussaud's	Tussaud's
+tut	Tut
 tut's	Tut's
 tutankhamen	Tutankhamen
 tutankhamen's	Tutankhamen's
@@ -16609,6 +16821,7 @@ twinkies's	Twinkies's
 twitter's	Twitter's
 twizzlers	Twizzlers
 twizzlers's	Twizzlers's
+twp	Twp
 ty's	Ty's
 tycho	Tycho
 tycho's	Tycho's
@@ -16654,6 +16867,7 @@ ukraine's	Ukraine's
 ukrainian	Ukrainian
 ukrainian's	Ukrainian's
 ukrainians	Ukrainians
+ulster	Ulster
 ulster's	Ulster's
 ultrasuede	Ultrasuede
 ultrasuede's	Ultrasuede's
@@ -16852,6 +17066,7 @@ vega's	Vega's
 vegas	Vegas
 vegas's	Vegas's
 vegemite	Vegemite
+vela	Vela
 vela's	Vela's
 velcro's	Velcro's
 velez	Velez
@@ -16911,6 +17126,7 @@ verona	Verona
 verona's	Verona's
 veronese	Veronese
 veronese's	Veronese's
+veronica	Veronica
 veronica's	Veronica's
 versailles	Versailles
 versailles's	Versailles's
@@ -16971,7 +17187,9 @@ vijayanagar	Vijayanagar
 vijayanagar's	Vijayanagar's
 vijayawada	Vijayawada
 vijayawada's	Vijayawada's
+viking	Viking
 viking's	Viking's
+vikings	Vikings
 vila	Vila
 vila's	Vila's
 villarreal	Villarreal
@@ -17247,6 +17465,7 @@ weller	Weller
 weller's	Weller's
 welles	Welles
 welles's	Welles's
+wellington	Wellington
 wellington's	Wellington's
 wells's	Wells's
 welsh's	Welsh's
@@ -17307,6 +17526,7 @@ whitefield	Whitefield
 whitefield's	Whitefield's
 whitehall	Whitehall
 whitehall's	Whitehall's
+whitehead	Whitehead
 whitehead's	Whitehead's
 whitehorse	Whitehorse
 whitehorse's	Whitehorse's
@@ -17440,6 +17660,8 @@ winfrey	Winfrey
 winfrey's	Winfrey's
 winifred	Winifred
 winifred's	Winifred's
+winkle	Winkle
+winkle's	Winkle's
 winnebago	Winnebago
 winnebago's	Winnebago's
 winnie	Winnie
@@ -17529,6 +17751,7 @@ wozzeck	Wozzeck
 wozzeck's	Wozzeck's
 wrangell	Wrangell
 wrangell's	Wrangell's
+wright's	Wright's
 wrigley	Wrigley
 wrigley's	Wrigley's
 wroclaw	Wroclaw
@@ -17571,7 +17794,9 @@ xenakis's	Xenakis's
 xenia's	Xenia's
 xenophon	Xenophon
 xenophon's	Xenophon's
+xerox	Xerox
 xerox's	Xerox's
+xeroxes	Xeroxes
 xerxes	Xerxes
 xerxes's	Xerxes's
 xhosa	Xhosa
@@ -17624,6 +17849,7 @@ yamaha	Yamaha
 yamaha's	Yamaha's
 yamoussoukro	Yamoussoukro
 yamoussoukro's	Yamoussoukro's
+yang	Yang
 yang's	Yang's
 yangon	Yangon
 yangon's	Yangon's
@@ -17725,6 +17951,7 @@ ypres	Ypres
 ypres's	Ypres's
 ypsilanti	Ypsilanti
 ypsilanti's	Ypsilanti's
+yuan's	Yuan's
 yucatan	Yucatan
 yucatan's	Yucatan's
 yugo	Yugo
@@ -17852,6 +18079,7 @@ zimbabwean's	Zimbabwean's
 zimbabweans	Zimbabweans
 zimmerman	Zimmerman
 zimmerman's	Zimmerman's
+zinfandel	Zinfandel
 zinfandel's	Zinfandel's
 zion	Zion
 zion's	Zion's

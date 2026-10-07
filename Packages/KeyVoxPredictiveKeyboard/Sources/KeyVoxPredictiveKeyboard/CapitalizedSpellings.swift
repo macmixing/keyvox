@@ -2,8 +2,9 @@ import Foundation
 
 /// Words the bundled dictionary's word list spells only one way, with capitals, such as
 /// names ("Jennifer") and brands ("iPhone"), built by `Tools/KeyVoxLanguageModel`. A word it
-/// also spells in lowercase ("will", "bob"), as capitals in a row ("NASA"), or that people
-/// mostly write in lowercase ("grey") is not here, so it is left as typed.
+/// also spells in lowercase among its common words ("will", "bob"), as capitals in a row
+/// ("NASA"), or that people mostly write in lowercase ("grey") is not here, so it is left as
+/// typed.
 public struct CapitalizedSpellings: Sendable {
     private static let newline = UInt8(ascii: "\n")
     private static let tab = UInt8(ascii: "\t")

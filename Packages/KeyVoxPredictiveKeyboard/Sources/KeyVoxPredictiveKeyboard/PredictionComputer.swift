@@ -121,7 +121,8 @@ public final class PredictionComputer: @unchecked Sendable {
             request: request,
             vocabulary: vocabulary,
             forms: forms,
-            decision: decision
+            decision: decision,
+            ranked: ranked
         )
         return PredictionResult(
             request: request,
@@ -238,7 +239,9 @@ public final class PredictionComputer: @unchecked Sendable {
     }
 
     /// Text replacements always expand; words the user kept and known names are never
-    /// replaced, and the user's words are only ever written the user's way; otherwise the
+    /// replaced, and the user's words are only ever written the user's way. A typed word
+    /// the dictionary lacks becomes the best suggestion when that is one of the user's
+    /// words it begins, as the system keyboard completes a contact's name. Otherwise the
     /// corrector's choice, or the typed word itself, is spelled with its capitals when it
     /// has them, with the typed capitalization, and with a capital pronoun "I" ("i'm"
     /// becomes "I'm").
@@ -247,7 +250,8 @@ public final class PredictionComputer: @unchecked Sendable {
         request: PredictionRequest,
         vocabulary: PersonalVocabulary,
         forms: PersonalWordForms,
-        decision: NoisyChannelCorrector.Decision
+        decision: NoisyChannelCorrector.Decision,
+        ranked: [SuggestionCandidateRanker.RankedWord]
     ) -> String? {
         guard request.keepsTypedWord == false else { return nil }
         if let expansion = vocabulary.expansion(for: typed) {
@@ -258,6 +262,12 @@ public final class PredictionComputer: @unchecked Sendable {
             chosen = forms.written(typed, after: request.previousWords.first)
         } else if vocabulary.keepsAsTyped(typed) {
             chosen = typed
+        } else if decision.typed.language.isDictionaryWord == false
+                    || decision.typed.language.isEverydayWord,
+                  let best = ranked.first?.word,
+                  vocabulary.contains(best),
+                  PersonalVocabulary.key(best).hasPrefix(PersonalVocabulary.key(typed)) {
+            chosen = best
         } else {
             chosen = decision.replacement ?? engine.capitalizedSpellings.written(typed)
         }

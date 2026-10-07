@@ -9,14 +9,17 @@ import Foundation
 /// to the start of a sentence, the sentence start itself counts as an earlier word, so
 /// words that usually open sentences score as such.
 ///
-/// Words of the user's dictionary entries count as dictionary words and score at least as
-/// likely as an everyday word, since the bundled counts usually have never seen them. An
-/// entry word right after the word it follows in one of the user's phrases scores as one
-/// of the likeliest next words.
+/// A word the bundled dictionary lacks counts as a dictionary word when the counts show it
+/// in everyday use. Words of the user's dictionary entries count as dictionary words and
+/// score at least as likely as an everyday word, since the bundled counts usually have
+/// never seen them. An entry word right after the word it follows in one of the user's
+/// phrases scores as one of the likeliest next words.
 public struct ContextLanguageScorer: Sendable {
     public struct Score: Sendable, Equatable {
         public let logProbability: Double
         public let isDictionaryWord: Bool
+        /// A dictionary word only because the counts show it in everyday use.
+        public let isEverydayWord: Bool
     }
 
     /// Stands for the start of a sentence in the bundled counts; it must match
@@ -27,6 +30,9 @@ public struct ContextLanguageScorer: Sendable {
     private static let personalWordLogProbability = log(1e-4)
     /// One in ten: above all but the most common word pairs.
     private static let personalContinuationLogProbability = log(0.1)
+    /// About once in ten million words: a word the dictionary lacks but the counts see this
+    /// often, such as "wtf", is in everyday use.
+    private static let everydayUseLogProbability = log(1e-7)
 
     private let analyze: @Sendable (String, [String]) throws -> WordLanguageAnalysis
     private let vocabulary: PersonalVocabulary
@@ -62,7 +68,13 @@ public struct ContextLanguageScorer: Sendable {
             logProbability = analysis.unigramLogProbability + missingLevels * Self.backoffLogFactor
         }
         guard vocabulary.contains(word) else {
-            return Score(logProbability: logProbability, isDictionaryWord: analysis.wordIsValid)
+            let isEverydayWord = analysis.wordIsValid == false
+                && analysis.unigramLogProbability >= Self.everydayUseLogProbability
+            return Score(
+                logProbability: logProbability,
+                isDictionaryWord: analysis.wordIsValid || isEverydayWord,
+                isEverydayWord: isEverydayWord
+            )
         }
         let continuesPhrase = previousWords.first.map { vocabulary.continues($0, with: word) } ?? false
         return Score(
@@ -70,7 +82,8 @@ public struct ContextLanguageScorer: Sendable {
                 logProbability,
                 continuesPhrase ? Self.personalContinuationLogProbability : Self.personalWordLogProbability
             ),
-            isDictionaryWord: true
+            isDictionaryWord: true,
+            isEverydayWord: false
         )
     }
 }

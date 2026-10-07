@@ -15,6 +15,10 @@ public struct SuggestionCandidateRanker: Sendable {
         public let score: Double
     }
 
+    /// How far below the best candidate a word may score and still be offered; a slot with
+    /// nothing closer stays empty, as on the system keyboard.
+    static let maximumShortfall = 8.0
+
     public let parameters: NoisyChannelCorrector.Parameters
     private let language: ContextLanguageScorer
     private let touchScorer: TouchAlignmentScorer
@@ -29,7 +33,8 @@ public struct SuggestionCandidateRanker: Sendable {
         touchScorer = TouchAlignmentScorer(keys: keys, parameters: parameters.touch)
     }
 
-    /// Every distinct candidate other than the typed letters, best first.
+    /// Every distinct candidate other than the typed letters that scores within
+    /// `maximumShortfall` of the best, best first.
     public func rank(
         typedWord: String,
         touches: [CGPoint],
@@ -52,7 +57,9 @@ public struct SuggestionCandidateRanker: Sendable {
                 score: parameters.languageWeight * languageScore.logProbability - touchCost
             ))
         }
-        return ranked.sorted { $0.score > $1.score }
+        let sorted = ranked.sorted { $0.score > $1.score }
+        guard let best = sorted.first else { return [] }
+        return sorted.filter { best.score - $0.score <= Self.maximumShortfall }
     }
 
     /// Next-word candidates ordered by context likelihood alone.

@@ -8,8 +8,11 @@ import CoreGraphics
 /// word.
 ///
 /// A candidate's score is `languageWeight × log P(word | context) − touch cost`. The typed
-/// word competes as itself; space replaces it only when another word beats it by the
-/// correction margin (a larger margin when the typed word is itself a dictionary word).
+/// word competes as itself. A typed word the dictionary does not know is replaced by the
+/// best candidate, as the system keyboard replaces it, unless that candidate fits far worse
+/// than the typed letters themselves; a dictionary word only when another word beats it by
+/// the dictionary word margin, and a word known only from everyday use by the smaller
+/// everyday word margin.
 ///
 /// Once the next word is known, a word left as typed can be reconsidered: each candidate
 /// then also scores how likely the next word is after it, and replaces the typed word only
@@ -20,8 +23,13 @@ public struct NoisyChannelCorrector: Sendable {
         public var languageWeight: Double
         /// Extra log-probability penalty for a typed word the dictionary does not know.
         public var unknownWordPenalty: Double
+        /// The margin a candidate needs over a typed word the dictionary does not know; below
+        /// zero, so a somewhat worse fit still replaces it.
         public var correctionMargin: Double
         public var dictionaryWordCorrectionMargin: Double
+        /// The margin over a typed word the dictionary lacks but the counts show in everyday
+        /// use, such as "wtf", which common misspellings like "teh" also reach.
+        public var everydayWordCorrectionMargin: Double
         /// The margin for restoring only an apostrophe ("im" to "i'm"), which applies even
         /// when the typed letters happen to spell a dictionary word ("ill", "were").
         public var apostropheRestorationMargin: Double
@@ -34,6 +42,7 @@ public struct NoisyChannelCorrector: Sendable {
             unknownWordPenalty: Double,
             correctionMargin: Double,
             dictionaryWordCorrectionMargin: Double,
+            everydayWordCorrectionMargin: Double,
             apostropheRestorationMargin: Double,
             revisionMargin: Double
         ) {
@@ -42,6 +51,7 @@ public struct NoisyChannelCorrector: Sendable {
             self.unknownWordPenalty = unknownWordPenalty
             self.correctionMargin = correctionMargin
             self.dictionaryWordCorrectionMargin = dictionaryWordCorrectionMargin
+            self.everydayWordCorrectionMargin = everydayWordCorrectionMargin
             self.apostropheRestorationMargin = apostropheRestorationMargin
             self.revisionMargin = revisionMargin
         }
@@ -57,9 +67,10 @@ public struct NoisyChannelCorrector: Sendable {
         ),
         languageWeight: 0.8,
         unknownWordPenalty: 0,
-        correctionMargin: 0.5,
+        correctionMargin: -10,
         dictionaryWordCorrectionMargin: 4,
-        apostropheRestorationMargin: 0,
+        everydayWordCorrectionMargin: 2,
+        apostropheRestorationMargin: 1,
         revisionMargin: 2
     )
 
@@ -140,6 +151,9 @@ public struct NoisyChannelCorrector: Sendable {
     private func margin(for best: ScoredCandidate, typed: ScoredCandidate) -> Double {
         if best.word.lowercased().replacingOccurrences(of: "'", with: "") == typed.word {
             return parameters.apostropheRestorationMargin
+        }
+        if typed.language.isEverydayWord {
+            return parameters.everydayWordCorrectionMargin
         }
         return typed.language.isDictionaryWord
             ? parameters.dictionaryWordCorrectionMargin
