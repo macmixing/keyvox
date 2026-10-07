@@ -162,10 +162,14 @@ final class KeyboardTextInputController {
         }
     }
 
-    /// Applies a typing-session edit at the cursor: deletes, then inserts.
+    /// Applies a typing-session edit at the cursor: deletes around it, then inserts.
     func apply(_ edit: TextEdit) {
         pendingSelectionDeletion = nil
-        for _ in 0..<edit.deleteCount {
+        if edit.deleteAfterCount > 0 {
+            let following = (documentProxy.documentContextAfterInput ?? "").prefix(edit.deleteAfterCount)
+            documentProxy.adjustTextPosition(byCharacterOffset: following.utf16.count)
+        }
+        for _ in 0..<(edit.deleteCount + edit.deleteAfterCount) {
             documentProxy.deleteBackward()
         }
         if edit.insertText.isEmpty == false {

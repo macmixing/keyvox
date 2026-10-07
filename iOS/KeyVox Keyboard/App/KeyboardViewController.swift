@@ -73,9 +73,11 @@ final class KeyboardViewController: UIInputViewController {
     )
     let letterCaseController = KeyboardLetterCaseController()
     var symbolPageReturnTracker = KeyboardSymbolPageReturnTracker()
-    lazy var predictionCoordinator = KeyboardPredictionCoordinator(textBeforeCursor: { [weak self] in
-        self?.textDocumentProxy.documentContextBeforeInput
-    })
+    lazy var predictionCoordinator = KeyboardPredictionCoordinator(
+        textBeforeCursor: { [weak self] in self?.textDocumentProxy.documentContextBeforeInput },
+        selectedText: { [weak self] in self?.textDocumentProxy.selectedText },
+        textAfterCursor: { [weak self] in self?.textDocumentProxy.documentContextAfterInput }
+    )
     lazy var typingTraits = KeyboardTypingTraits(proxy: textDocumentProxy)
     var primaryHeightConstraint: NSLayoutConstraint?
     var keyboardState: KeyboardState = .idle {

@@ -13,6 +13,8 @@ final class KeyboardPredictionCoordinator {
     private let session = PredictiveTypingSession()
     private let queue = DispatchQueue(label: "org.keyvox.keyboard.prediction", qos: .userInitiated)
     private let textBeforeCursor: () -> String?
+    private let selectedText: () -> String?
+    private let textAfterCursor: () -> String?
     private let contestedTapPolicy = ContestedTapPolicy()
     private var letterKeys: KeyCenterMap?
     private var latestResult: PredictionResult?
@@ -25,8 +27,14 @@ final class KeyboardPredictionCoordinator {
     private var pendingVocabulary: PersonalVocabulary?
     private var engineUnavailable = false
 
-    init(textBeforeCursor: @escaping () -> String?) {
+    init(
+        textBeforeCursor: @escaping () -> String?,
+        selectedText: @escaping () -> String?,
+        textAfterCursor: @escaping () -> String?
+    ) {
         self.textBeforeCursor = textBeforeCursor
+        self.selectedText = selectedText
+        self.textAfterCursor = textAfterCursor
     }
 
     /// Starts loading the engine so the first word does not wait for it.
@@ -81,7 +89,11 @@ final class KeyboardPredictionCoordinator {
 
     /// Requests suggestions for the text as it is now.
     func refresh(allowsAutocorrection: Bool) {
-        let request = session.request(textBeforeCursor: textBeforeCursor())
+        let request = session.request(
+            textBeforeCursor: textBeforeCursor(),
+            selectedText: selectedText(),
+            textAfterCursor: textAfterCursor()
+        )
         if let latestResult, latestResult.request == request {
             publish(Self.bar(for: latestResult, allowsAutocorrection: allowsAutocorrection))
             return
@@ -95,7 +107,12 @@ final class KeyboardPredictionCoordinator {
                 if self.pendingRequest == request {
                     self.pendingRequest = nil
                 }
-                guard self.session.isCurrent(result, textBeforeCursor: self.textBeforeCursor()) else {
+                guard self.session.isCurrent(
+                    result,
+                    textBeforeCursor: self.textBeforeCursor(),
+                    selectedText: self.selectedText(),
+                    textAfterCursor: self.textAfterCursor()
+                ) else {
                     return
                 }
                 self.latestResult = result
@@ -157,7 +174,12 @@ final class KeyboardPredictionCoordinator {
     }
 
     func choiceEdit(_ item: SuggestionBar.Item) -> TextEdit {
-        session.choiceEdit(item, textBeforeCursor: textBeforeCursor())
+        session.choiceEdit(
+            item,
+            textBeforeCursor: textBeforeCursor(),
+            selectedText: selectedText(),
+            textAfterCursor: textAfterCursor()
+        )
     }
 
     private func currentResult(for request: PredictionRequest) -> PredictionResult? {
