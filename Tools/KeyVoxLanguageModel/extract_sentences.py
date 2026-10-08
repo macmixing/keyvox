@@ -13,6 +13,7 @@ from pathlib import Path
 import pyarrow.compute as compute
 import pyarrow.parquet as parquet
 
+from names import capitalized_names, mentions_any
 from normalize import sentences
 from sources import SOURCES
 
@@ -43,6 +44,15 @@ def oasst2_texts(directory: Path) -> Iterator[str]:
 
 
 def tatoeba_texts(directory: Path) -> Iterator[str]:
+    """English sentences that mention no name. Tatoeba reuses a few invented characters
+    ("Tom" opens about one sentence in seven), which would otherwise teach the keyboard that
+    sentences start with them."""
+    texts = list(tatoeba_rows(directory))
+    names = capitalized_names(texts)
+    return (text for text in texts if not mentions_any(text, names))
+
+
+def tatoeba_rows(directory: Path) -> Iterator[str]:
     """English sentences; each row is id, language, sentence."""
     csv.field_size_limit(sys.maxsize)
     for path in sorted(directory.glob("*.tsv.bz2")):
