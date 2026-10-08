@@ -100,7 +100,8 @@ public final class PredictiveTypingSession {
             touches: word.endsAtCursor && isAllLetters ? wordTouches.touches(for: word.text) : [],
             previousWords: context.previousWords,
             keepsTypedWord: word.endsAtCursor == false || keptWords.contains(word.text.lowercased()),
-            isAtSentenceStart: context.isAtSentenceStart
+            isAtSentenceStart: context.isAtSentenceStart,
+            previousSentence: context.isAtSentenceStart ? SentenceEnding(before: textBeforeCursor ?? "") : nil
         )
     }
 

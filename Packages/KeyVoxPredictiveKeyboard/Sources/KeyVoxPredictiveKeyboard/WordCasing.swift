@@ -17,6 +17,12 @@ public enum WordCasing {
         return first.uppercased() + suggestion.dropFirst()
     }
 
+    /// `word` written as the first word of a sentence.
+    public static func startingSentence(_ word: String) -> String {
+        guard let first = word.first else { return word }
+        return first.uppercased() + word.dropFirst()
+    }
+
     /// `word` with the pronoun "I", alone or contracted, capitalized.
     public static func capitalizingPronoun(_ word: String) -> String {
         let rest = word.dropFirst()

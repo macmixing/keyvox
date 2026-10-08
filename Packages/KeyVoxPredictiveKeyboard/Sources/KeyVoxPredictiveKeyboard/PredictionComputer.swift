@@ -296,7 +296,13 @@ public final class PredictionComputer: @unchecked Sendable {
         vocabulary: PersonalVocabulary,
         ranker: SuggestionCandidateRanker
     ) throws -> SuggestionBar {
-        guard let previousWord = request.previousWords.first else { return .empty }
+        guard let previousWord = request.previousWords.first else {
+            let openers = engine.sentenceOpeners.words(after: request.previousSentence).map { word in
+                let written = engine.capitalizedSpellings.written(word)
+                return written == word ? WordCasing.startingSentence(word) : written
+            }
+            return SuggestionBarComposer.composeNextWords(openers)
+        }
         let response = try engine.predict(
             typedWord: "",
             previousWords: request.previousWords,

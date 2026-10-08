@@ -14,4 +14,6 @@ public struct PredictionRequest: Sendable, Equatable {
     /// selected or has the cursor inside it.
     public let keepsTypedWord: Bool
     public let isAtSentenceStart: Bool
+    /// How the sentence before this one ended, at a sentence start that follows one.
+    public let previousSentence: SentenceEnding?
 }

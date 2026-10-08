@@ -47,7 +47,7 @@ public struct TypingTextContext: Sendable, Equatable {
     }
 
     /// Where the last sentence of `text` begins: right after its last sentence boundary.
-    private static func sentenceStart(in text: Substring) -> Substring.Index {
+    static func sentenceStart(in text: Substring) -> Substring.Index {
         var index = text.endIndex
         while index > text.startIndex {
             let previous = text.index(before: index)
@@ -57,7 +57,7 @@ public struct TypingTextContext: Sendable, Equatable {
         return text.startIndex
     }
 
-    private static func isSentenceBoundary(at index: Substring.Index, in text: Substring) -> Bool {
+    static func isSentenceBoundary(at index: Substring.Index, in text: Substring) -> Bool {
         let character = text[index]
         if character.isNewline || character == "!" || character == "?" { return true }
         return character == "." && isInEllipsis(at: index, in: text) == false
