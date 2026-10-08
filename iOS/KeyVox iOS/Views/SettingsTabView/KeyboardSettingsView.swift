@@ -9,9 +9,9 @@ struct KeyboardSettingsView: View {
         AppScrollScreen(additionalTopContentInset: AppScreenContentInset.tabPageTop) {
             VStack(alignment: .leading, spacing: AppTheme.sectionSpacing) {
                 typingSection
-                leftHandedLayoutSection
                 compactKeysSection
                 openOnNumberPageSection
+                leftHandedLayoutSection
             }
         }
         .navigationTitle(KeyboardSettingsCopy.screenTitle)
