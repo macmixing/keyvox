@@ -13,7 +13,7 @@ struct KeyboardSettingsView: View {
                 compactKeysSection
             }
         }
-        .navigationTitle(SettingsTabCopy.Keyboard.screenTitle)
+        .navigationTitle(KeyboardSettingsCopy.screenTitle)
         .navigationBarTitleDisplayMode(.inline)
     }
 
@@ -23,43 +23,43 @@ struct KeyboardSettingsView: View {
                 VStack(spacing: 16) {
                     SettingsRow(
                         icon: "iphone.radiowaves.left.and.right",
-                        title: SettingsTabCopy.Keyboard.hapticsTitle,
+                        title: KeyboardSettingsCopy.hapticsTitle,
                         isOn: $settingsStore.keyboardHapticsEnabled
                     )
                     divider
                     SettingsRow(
                         icon: "textformat",
-                        title: SettingsTabCopy.Keyboard.autoCapitalizationTitle,
+                        title: KeyboardSettingsCopy.autoCapitalizationTitle,
                         isOn: $settingsStore.autoCapitalizationEnabled
                     )
                     divider
                     SettingsRow(
                         icon: "text.badge.checkmark",
-                        title: SettingsTabCopy.Keyboard.autoCorrectionTitle,
+                        title: KeyboardSettingsCopy.autoCorrectionTitle,
                         isOn: $settingsStore.autoCorrectionEnabled
                     )
                     divider
                     SettingsRow(
                         icon: "capslock",
-                        title: SettingsTabCopy.Keyboard.capsLockTitle,
+                        title: KeyboardSettingsCopy.capsLockTitle,
                         isOn: $settingsStore.shiftCapsLockEnabled
                     )
                     divider
                     SettingsRow(
                         icon: "text.word.spacing",
-                        title: SettingsTabCopy.Keyboard.predictiveTextTitle,
+                        title: KeyboardSettingsCopy.predictiveTextTitle,
                         isOn: $settingsStore.predictiveTextEnabled
                     )
                     divider
                     SettingsRow(
                         icon: "space",
-                        title: SettingsTabCopy.Keyboard.periodShortcutTitle,
+                        title: KeyboardSettingsCopy.periodShortcutTitle,
                         isOn: $settingsStore.periodShortcutEnabled
                     )
                 }
             }
 
-            Text(SettingsTabCopy.Keyboard.periodShortcutDescription)
+            Text(KeyboardSettingsCopy.periodShortcutDescription)
                 .font(.appFont(15, variant: .light))
                 .foregroundStyle(.white.opacity(0.7))
                 .padding(.horizontal, AppTheme.cardPadding)
@@ -70,8 +70,8 @@ struct KeyboardSettingsView: View {
         AppCard {
             SettingsRow(
                 icon: "switch.2",
-                title: SettingsTabCopy.Keyboard.leftHandedLayoutTitle,
-                description: SettingsTabCopy.Keyboard.leftHandedLayoutDescription,
+                title: KeyboardSettingsCopy.leftHandedLayoutTitle,
+                description: KeyboardSettingsCopy.leftHandedLayoutDescription,
                 isOn: $settingsStore.leftHandedKeyboardLayoutEnabled
             )
         }
@@ -81,8 +81,8 @@ struct KeyboardSettingsView: View {
         AppCard {
             SettingsRow(
                 icon: "keyboard.chevron.compact.down",
-                title: SettingsTabCopy.Keyboard.compactKeysTitle,
-                description: SettingsTabCopy.Keyboard.compactKeysDescription,
+                title: KeyboardSettingsCopy.compactKeysTitle,
+                description: KeyboardSettingsCopy.compactKeysDescription,
                 isOn: $settingsStore.compactKeysEnabled
             )
         }

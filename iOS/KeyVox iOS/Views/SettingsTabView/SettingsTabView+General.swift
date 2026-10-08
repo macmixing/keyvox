@@ -1,24 +1,5 @@
 import SwiftUI
 
-enum SettingsTabCopy {
-    enum Keyboard {
-        static let screenTitle = "Keyboard"
-        static let screenDescription = "Typing helps, corrections, and layout for the KeyVox keyboard."
-        static let autoCapitalizationTitle = "Auto-Capitalization"
-        static let autoCorrectionTitle = "Auto-Correction"
-        static let capsLockTitle = "Enable Caps Lock"
-        static let predictiveTextTitle = "Predictive Text"
-        static let periodShortcutTitle = "“.” Shortcut"
-        static let periodShortcutDescription = "Double tap the space bar to type a period followed by a space."
-        static let hapticsTitle = "Keyboard Haptics"
-        static let hapticsDescription = "Get haptic feedback from KeyVox keyboard."
-        static let leftHandedLayoutTitle = "Left-Handed Layout"
-        static let leftHandedLayoutDescription = "Mirror KeyVox controls for easier left-hand access."
-        static let compactKeysTitle = "Compact Keys"
-        static let compactKeysDescription = "Long-press #+= to use a shorter keyboard."
-    }
-}
-
 extension SettingsTabView {
     @ViewBuilder
     var sessionSection: some View {
@@ -155,8 +136,8 @@ extension SettingsTabView {
             AppCard {
                 SettingsRow(
                     icon: "keyboard",
-                    title: SettingsTabCopy.Keyboard.screenTitle,
-                    description: SettingsTabCopy.Keyboard.screenDescription
+                    title: KeyboardSettingsCopy.screenTitle,
+                    description: KeyboardSettingsCopy.screenDescription
                 ) {
                     Image(systemName: "chevron.right")
                         .font(.system(size: 28, weight: .heavy))
