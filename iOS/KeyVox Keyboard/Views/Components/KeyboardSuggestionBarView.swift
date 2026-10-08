@@ -30,6 +30,9 @@ final class KeyboardSuggestionBarView: UIView {
             button.addTarget(self, action: #selector(handleTap(_:)), for: .touchUpInside)
             button.layer.cornerRadius = KeyboardStyle.keyCornerRadius
             button.layer.borderWidth = KeyboardStyle.keyBorderWidth
+            button.configurationUpdateHandler = { [weak self] button in
+                self?.applyAppearance(to: button)
+            }
             stackView.addArrangedSubview(button)
             buttons.append(button)
         }
@@ -76,19 +79,24 @@ final class KeyboardSuggestionBarView: UIView {
     }
 
     private func refreshAppearance() {
-        for (button, item) in zip(buttons, items) {
-            guard item != nil else {
-                button.configuration?.baseForegroundColor = .clear
-                button.backgroundColor = .clear
-                button.layer.borderColor = UIColor.clear.cgColor
-                continue
-            }
-            button.configuration?.baseForegroundColor = KeyboardStyle.keyLabelColor
-            button.backgroundColor = KeyboardStyle.keyFillColor.withAlphaComponent(0.3)
-            button.layer.borderColor = KeyboardStyle.keyBorderColor
-                .resolvedColor(with: traitCollection)
-                .cgColor
+        buttons.forEach(applyAppearance)
+    }
+
+    /// Gives a suggestion the keys' colors, and the keys' pressed colors while it is touched.
+    private func applyAppearance(to button: UIButton) {
+        guard items.indices.contains(button.tag), items[button.tag] != nil else {
+            button.configuration?.baseForegroundColor = .clear
+            button.backgroundColor = .clear
+            button.layer.borderColor = UIColor.clear.cgColor
+            return
         }
+        let isPressed = button.isHighlighted
+        button.configuration?.baseForegroundColor = KeyboardStyle.keyLabelColor
+        button.backgroundColor = (isPressed ? KeyboardStyle.keyPressedFillColor : KeyboardStyle.keyFillColor)
+            .withAlphaComponent(0.3)
+        button.layer.borderColor = (isPressed ? KeyboardStyle.keyPressedBorderColor : KeyboardStyle.keyBorderColor)
+            .resolvedColor(with: traitCollection)
+            .cgColor
     }
 
     @objc
