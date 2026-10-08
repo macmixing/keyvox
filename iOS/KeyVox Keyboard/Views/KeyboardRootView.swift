@@ -159,6 +159,7 @@ final class KeyboardRootView: UIView {
         state: KeyboardState,
         symbolPage: KeyboardSymbolPage,
         keysMode: KeyboardKeysMode,
+        allowsPredictions: Bool,
         isCapsLockEnabled: Bool,
         isDictationCapsApplied: Bool,
         isDictationCapsUppercase: Bool,
@@ -178,11 +179,15 @@ final class KeyboardRootView: UIView {
         let warningText = toolbarMode.warningText
         let showsToolbarWarning = warningText != nil
         let shouldShowCancel = showsBrandedToolbar && state.showsCancelButton
-        // The full keyboard keeps its suggestion bar, empty when there is nothing to suggest;
-        // the dictation buttons show in Compact Keys and while dictating.
+        // The full keyboard's letter page keeps its suggestion bar when the field allows
+        // predictions, empty when there is nothing to suggest; the dictation buttons show on
+        // the number and symbol pages, where the field allows no predictions, in Compact
+        // Keys, and while dictating.
         let showsSuggestionBar = showsBrandedToolbar
             && !shouldShowCancel
             && keysMode == .full
+            && symbolPage == .letters
+            && allowsPredictions
         let showsToolbarAccessories = showsBrandedToolbar && !showsSuggestionBar
         let shouldShowSpeak = showsToolbarAccessories && isTTSReady
         let shouldShowVibes = showsToolbarAccessories && isVibesAvailable

@@ -272,6 +272,7 @@ final class KeyboardViewController: UIInputViewController {
             state: keyboardState,
             symbolPage: symbolPage,
             keysMode: keysMode,
+            allowsPredictions: typingTraits.allowsPredictions,
             isCapsLockEnabled: isCapsLockEnabled,
             isDictationCapsApplied: dictationChangeController.displayedCapsTransformApplied,
             isDictationCapsUppercase: dictationChangeController.displayedCapsTextIsUppercase,
