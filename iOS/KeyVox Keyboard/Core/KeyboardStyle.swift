@@ -21,6 +21,8 @@ enum KeyboardStyle {
     static let buttonCornerRadius: CGFloat = 14
 
     static let keyHeight: CGFloat = 48
+    /// Key height in landscape, matching Apple's landscape iPhone keyboard.
+    static let landscapeKeyHeight: CGFloat = 32
     static let keyUnitWidth: CGFloat = 34
     static let keyCornerRadius: CGFloat = 8
     static let popupWidthMultiplier: CGFloat = 1.15

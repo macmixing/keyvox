@@ -159,6 +159,7 @@ final class KeyboardRootView: UIView {
         state: KeyboardState,
         symbolPage: KeyboardSymbolPage,
         keysMode: KeyboardKeysMode,
+        isLandscape: Bool,
         offersPredictions: Bool,
         isCapsLockEnabled: Bool,
         isDictationCapsApplied: Bool,
@@ -262,7 +263,8 @@ final class KeyboardRootView: UIView {
             keysMode: keysMode,
             showsNextKeyboardKey: showsNextKeyboardKey
         )
-        keyGridHeightConstraint?.constant = keysMode.keyGridHeight
+        keyGridHeightConstraint?.constant = keysMode.keyGridHeight(isLandscape: isLandscape)
+        keyGridView.setTopRowKeyHeight(keysMode.keyHeight(isLandscape: isLandscape))
         keyGridView.setKeyboardEnabled(true)
         keyGridView.refreshAppearance()
 
@@ -404,7 +406,7 @@ final class KeyboardRootView: UIView {
         capsLockButtonHeightConstraint = capsLockButton.heightAnchor.constraint(equalToConstant: KeyboardStyle.cancelButtonSize)
 
         keyGridHeightConstraint = keyGridView.heightAnchor.constraint(
-            equalToConstant: KeyboardKeysMode.full.keyGridHeight
+            equalToConstant: KeyboardKeysMode.full.keyGridHeight(isLandscape: false)
         )
 
         NSLayoutConstraint.activate([

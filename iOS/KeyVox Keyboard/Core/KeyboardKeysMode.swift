@@ -8,13 +8,22 @@ enum KeyboardKeysMode: Equatable {
         isCompactKeysEnabled && isCompactKeysActive ? .compact : .full
     }
 
-    var keyboardHeight: CGFloat {
+    /// The keyboard's height: the portrait height, shortened by however much shorter the
+    /// keys are in landscape.
+    func keyboardHeight(isLandscape: Bool) -> CGFloat {
+        let portraitHeight: CGFloat
         switch self {
         case .full:
-            return KeyboardStyle.fullKeyboardHeight
+            portraitHeight = KeyboardStyle.fullKeyboardHeight
         case .compact:
-            return KeyboardStyle.compactKeyboardHeight
+            portraitHeight = KeyboardStyle.compactKeyboardHeight
         }
+        return portraitHeight - keyGridHeight(isLandscape: false) + keyGridHeight(isLandscape: isLandscape)
+    }
+
+    /// Keys are shorter in landscape, in both full and Compact Keys.
+    func keyHeight(isLandscape: Bool) -> CGFloat {
+        isLandscape ? KeyboardStyle.landscapeKeyHeight : KeyboardStyle.keyHeight
     }
 
     var visibleRowCount: Int {
@@ -26,9 +35,9 @@ enum KeyboardKeysMode: Equatable {
         }
     }
 
-    var keyGridHeight: CGFloat {
+    func keyGridHeight(isLandscape: Bool) -> CGFloat {
         let rowCount = CGFloat(visibleRowCount)
         let spacingCount = CGFloat(max(visibleRowCount - 1, 0))
-        return (KeyboardStyle.keyHeight * rowCount) + (KeyboardStyle.keyboardRowSpacing * spacingCount)
+        return (keyHeight(isLandscape: isLandscape) * rowCount) + (KeyboardStyle.keyboardRowSpacing * spacingCount)
     }
 }

@@ -101,6 +101,14 @@ final class KeyboardViewController: UIInputViewController {
             updateUI()
         }
     }
+    /// Whether the screen is in landscape, read on each layout pass; keys are shorter there.
+    var isLandscape = false {
+        didSet {
+            guard isLandscape != oldValue else { return }
+            updatePrimaryViewHeight()
+            updateUI()
+        }
+    }
     var isCapsLockEnabled = false {
         didSet {
             updateUI()
@@ -150,6 +158,11 @@ final class KeyboardViewController: UIInputViewController {
         dictationController.syncStateFromSharedState()
         ttsController.syncStateFromSharedState()
         updateUI()
+    }
+
+    override func viewWillLayoutSubviews() {
+        super.viewWillLayoutSubviews()
+        isLandscape = view.window?.windowScene?.interfaceOrientation.isLandscape ?? false
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -224,7 +237,7 @@ final class KeyboardViewController: UIInputViewController {
             view.removeConstraint(constraint)
         }
 
-        let heightConstraint = view.heightAnchor.constraint(equalToConstant: keysMode.keyboardHeight)
+        let heightConstraint = view.heightAnchor.constraint(equalToConstant: keysMode.keyboardHeight(isLandscape: isLandscape))
         heightConstraint.priority = .required
         heightConstraint.isActive = true
         primaryHeightConstraint = heightConstraint
@@ -232,7 +245,7 @@ final class KeyboardViewController: UIInputViewController {
 
     private func updatePrimaryViewHeight() {
         guard let primaryHeightConstraint else { return }
-        primaryHeightConstraint.constant = keysMode.keyboardHeight
+        primaryHeightConstraint.constant = keysMode.keyboardHeight(isLandscape: isLandscape)
         view.setNeedsLayout()
     }
 
@@ -281,6 +294,7 @@ final class KeyboardViewController: UIInputViewController {
             state: keyboardState,
             symbolPage: symbolPage,
             keysMode: keysMode,
+            isLandscape: isLandscape,
             offersPredictions: typingTraits.showsSuggestions && fieldHasLetters,
             isCapsLockEnabled: isCapsLockEnabled,
             isDictationCapsApplied: dictationChangeController.displayedCapsTransformApplied,

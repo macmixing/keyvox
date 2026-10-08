@@ -25,6 +25,7 @@ final class KeyboardKeyGridView: UIView {
     private let rowsStack = UIStackView()
     private let topRowAccessoryReferenceStack = UIStackView()
     private var topRowAccessoryReferenceViews: [UIView] = []
+    private var topRowAccessoryReferenceHeightConstraint: NSLayoutConstraint?
     let popupView = KeyboardKeyPopupView()
     let touchRouter = KeyboardTouchRouterGestureRecognizer()
     private(set) var keyViews: [KeyboardKeyView] = []
@@ -118,6 +119,14 @@ final class KeyboardKeyGridView: UIView {
     func refreshAppearance() {
         updateAllKeyStates()
         popupView.refreshAppearance()
+    }
+
+    /// Matches the top-row reference views to the keys' height, which the landscape toolbar
+    /// buttons take as their own.
+    func setTopRowKeyHeight(_ height: CGFloat) {
+        guard let topRowAccessoryReferenceHeightConstraint,
+              topRowAccessoryReferenceHeightConstraint.constant != height else { return }
+        topRowAccessoryReferenceHeightConstraint.constant = height
     }
 
     func topRowKeyView(for slot: KeyboardTopRowAccessorySlot) -> UIView? {
@@ -237,6 +246,11 @@ final class KeyboardKeyGridView: UIView {
             return referenceView
         }
 
+        let referenceHeightConstraint = topRowAccessoryReferenceStack.heightAnchor.constraint(
+            equalToConstant: KeyboardStyle.keyHeight
+        )
+        topRowAccessoryReferenceHeightConstraint = referenceHeightConstraint
+
         NSLayoutConstraint.activate([
             rowsStack.leadingAnchor.constraint(equalTo: leadingAnchor),
             rowsStack.trailingAnchor.constraint(equalTo: trailingAnchor),
@@ -246,7 +260,7 @@ final class KeyboardKeyGridView: UIView {
             topRowAccessoryReferenceStack.leadingAnchor.constraint(equalTo: leadingAnchor),
             topRowAccessoryReferenceStack.trailingAnchor.constraint(equalTo: trailingAnchor),
             topRowAccessoryReferenceStack.topAnchor.constraint(equalTo: topAnchor),
-            topRowAccessoryReferenceStack.heightAnchor.constraint(equalToConstant: KeyboardStyle.keyHeight),
+            referenceHeightConstraint,
         ])
 
         configureTouchRouter()

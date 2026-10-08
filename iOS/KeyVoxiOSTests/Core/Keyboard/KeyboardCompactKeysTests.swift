@@ -10,10 +10,19 @@ struct KeyboardCompactKeysTests {
     }
 
     @Test func modesProvideExplicitKeyboardAndGridHeights() {
-        #expect(KeyboardKeysMode.full.keyboardHeight == 286)
-        #expect(KeyboardKeysMode.compact.keyboardHeight == 174)
-        #expect(KeyboardKeysMode.full.keyGridHeight == 216)
-        #expect(KeyboardKeysMode.compact.keyGridHeight == 104)
+        #expect(KeyboardKeysMode.full.keyboardHeight(isLandscape: false) == 286)
+        #expect(KeyboardKeysMode.compact.keyboardHeight(isLandscape: false) == 174)
+        #expect(KeyboardKeysMode.full.keyGridHeight(isLandscape: false) == 216)
+        #expect(KeyboardKeysMode.compact.keyGridHeight(isLandscape: false) == 104)
+    }
+
+    @Test func landscapeShortensFullAndCompactKeys() {
+        #expect(KeyboardKeysMode.full.keyHeight(isLandscape: true) == KeyboardStyle.landscapeKeyHeight)
+        #expect(KeyboardKeysMode.full.keyGridHeight(isLandscape: true) == 152)
+        #expect(KeyboardKeysMode.full.keyboardHeight(isLandscape: true) == 222)
+        #expect(KeyboardKeysMode.compact.keyHeight(isLandscape: true) == KeyboardStyle.landscapeKeyHeight)
+        #expect(KeyboardKeysMode.compact.keyGridHeight(isLandscape: true) == 72)
+        #expect(KeyboardKeysMode.compact.keyboardHeight(isLandscape: true) == 142)
     }
 
     @Test func compactLayoutReusesTheFinalTwoPrimaryRows() {
