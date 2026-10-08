@@ -101,13 +101,17 @@ enum KeyboardLayoutGeometry {
     }
 
     final class BottomRowLayout: RowLayout {
-        func update(isLandscape _: Bool) {
+        func update(isLandscape: Bool) {
             guard let keyGridView, let rowStack else { return }
 
             let spacing = KeyboardStyle.keySpacing
             let rowWidth = keyGridView.bounds.width
             let topRowKeyWidth = (rowWidth - (spacing * 9)) / 10
-            let sideKeyWidth = (topRowKeyWidth * 2.5) + (spacing * 1.5)
+            // In landscape the side keys span two top-row keys, leaving the space bar the six
+            // between, as on Apple's landscape keyboard.
+            let sideKeyWidth = isLandscape
+                ? (topRowKeyWidth * 2) + spacing
+                : (topRowKeyWidth * 2.5) + (spacing * 1.5)
             let keyCount = rowStack.arrangedSubviews.count
 
             if keyCount == 4 {
