@@ -5,12 +5,14 @@ import XCTest
 /// labels shown in the keyboard's suggestion bar, the band between the keyboard's top
 /// edge and its first row of keys.
 ///
-/// `TEST_RUNNER_PROBE_PLAN` is a JSON array of `{"context": [words], "prefix": letters}`;
-/// `TEST_RUNNER_PROBE_OUTPUT` receives `[{"context", "prefix", "bar": [labels]}]`.
+/// `TEST_RUNNER_PROBE_PLAN` is a JSON array of `{"context": [words], "prefix": letters}`,
+/// each optionally with `"text"`, typed first key by key in lowercase, punctuation included;
+/// `TEST_RUNNER_PROBE_OUTPUT` receives `[{"context", "prefix", "text", "bar": [labels]}]`.
 final class PredictionBarCaptureTests: XCTestCase {
     private struct Probe: Codable {
         let context: [String]
         let prefix: String
+        let text: String?
         var bar: [String]?
     }
 
@@ -47,22 +49,9 @@ final class PredictionBarCaptureTests: XCTestCase {
         let barBottom = firstRowKey.frame.minY
         let barTop = barBottom - 80
 
-        func type(_ letters: String) throws {
-            for letter in letters.filter({ $0 != "'" }) {
-                let point = try XCTUnwrap(keyMap.point(for: letter, offset: [0, 0]))
-                origin.withOffset(CGVector(dx: point.x, dy: point.y)).tap()
-            }
-        }
-
-        for index in probes.indices {
-            for word in probes[index].context {
-                try type(word)
-                origin.withOffset(CGVector(dx: keyMap.spaceCenter.x, dy: keyMap.spaceCenter.y)).tap()
-            }
-            try type(probes[index].prefix)
-            Thread.sleep(forTimeInterval: 0.8)
-            // Read from one listing of every element, the keyboard's included, as the bar
-            // changes while it is read element by element.
+        /// The bar's labels from left to right, read from one listing of every element, the
+        /// keyboard's included, as the bar changes while it is read element by element.
+        func readBar() -> [String] {
             var labels: [(CGFloat, String)] = []
             let listing = app.debugDescription as NSString
             for match in elementPattern.matches(in: listing as String, range: NSRange(location: 0, length: listing.length)) {
@@ -75,7 +64,54 @@ final class PredictionBarCaptureTests: XCTestCase {
                 }
             }
             var seen: Set<String> = []
-            probes[index].bar = labels.sorted { $0.0 < $1.0 }.map(\.1).filter { seen.insert($0).inserted }
+            return labels.sorted { $0.0 < $1.0 }.map(\.1).filter { seen.insert($0).inserted }
+        }
+
+        /// Types letters, spaces, and punctuation with the keyboard's own keys, punctuation
+        /// from its number page, so the keyboard sees the text as typed. (Typing text through
+        /// the test bypasses the keyboard's suggestions.)
+        func typeKeyByKey(_ text: String) throws {
+            for character in text.lowercased() {
+                if character == " " {
+                    origin.withOffset(CGVector(dx: keyMap.spaceCenter.x, dy: keyMap.spaceCenter.y)).tap()
+                } else if character.isLetter {
+                    try type(String(character))
+                } else {
+                    let keyboard = app.keyboards.element
+                    let numberPageKey = ["more", "numbers", "123"].map { keyboard.keys[$0] }.first { $0.exists }
+                    try XCTUnwrap(numberPageKey, "no key opens the number page").tap()
+                    let mark = keyboard.keys[String(character)]
+                    XCTAssertTrue(mark.waitForExistence(timeout: 2), "no \(character) key")
+                    mark.tap()
+                }
+            }
+        }
+
+        func type(_ letters: String) throws {
+            for letter in letters.filter({ $0 != "'" }) {
+                let point = try XCTUnwrap(keyMap.point(for: letter, offset: [0, 0]))
+                origin.withOffset(CGVector(dx: point.x, dy: point.y)).tap()
+            }
+        }
+
+        for index in probes.indices {
+            if let text = probes[index].text {
+                try typeKeyByKey(text)
+            }
+            for word in probes[index].context {
+                try type(word)
+                origin.withOffset(CGVector(dx: keyMap.spaceCenter.x, dy: keyMap.spaceCenter.y)).tap()
+            }
+            try type(probes[index].prefix)
+            Thread.sleep(forTimeInterval: 0.8)
+            // An empty bar is read again for a few seconds before it counts as empty, in case
+            // the keyboard is still filling it.
+            var bar = readBar()
+            for _ in 0..<10 where bar.isEmpty {
+                Thread.sleep(forTimeInterval: 0.3)
+                bar = readBar()
+            }
+            probes[index].bar = bar
             let data = try JSONEncoder().encode(Array(probes[...index]))
             try data.write(to: URL(fileURLWithPath: outputPath), options: .atomic)
             clear.tap()
