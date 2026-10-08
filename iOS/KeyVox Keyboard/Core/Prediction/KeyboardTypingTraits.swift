@@ -58,10 +58,11 @@ struct KeyboardTypingTraits: Equatable {
             .decimalPad,
             .asciiCapableNumberPad,
         ].contains(keyboardType)
+        // A one-time-code label alone keeps predictions, as on Apple's keyboard; a code field
+        // that asks for a number pad turns them off as numeric-only.
         let isCredential = isSecure || [
             UITextContentType.password,
             .newPassword,
-            .oneTimeCode,
         ].contains(contentType)
         let isAddressLike = [UIKeyboardType.emailAddress, .URL].contains(keyboardType)
             || [UITextContentType.emailAddress, .URL, .username].contains(contentType)
