@@ -126,9 +126,12 @@ final class KeyboardTextInputController {
                 }
             }
         case .space:
+            let contextBeforeInput = contextAfterCorrectingPendingSelectionDeletion(
+                documentProxy.documentContextBeforeInput
+            )
             pendingSelectionDeletion = nil
             emitKeypress()
-            if handleDoubleSpacePeriodInsertionIfNeeded() {
+            if handleDoubleSpacePeriodInsertionIfNeeded(contextBeforeInput: contextBeforeInput) {
                 return true
             }
             documentProxy.insertText(" ")
@@ -347,8 +350,13 @@ final class KeyboardTextInputController {
     }
 
 
-    private func handleDoubleSpacePeriodInsertionIfNeeded() -> Bool {
-        guard let context = documentProxy.documentContextBeforeInput else {
+    /// A space typed over selected text replaces it, so it is never the second space.
+    /// - Parameter contextBeforeInput: The text before the cursor, corrected for a deleted
+    ///   selection the field has not reported yet, so a space that went with the selection
+    ///   does not count as the first space.
+    private func handleDoubleSpacePeriodInsertionIfNeeded(contextBeforeInput: String?) -> Bool {
+        guard documentProxy.selectedText?.isEmpty ?? true,
+              let context = contextBeforeInput else {
             return false
         }
 

@@ -413,6 +413,59 @@ struct KeyboardTextInputControllerTests {
         #expect(insertion?.documentContextBeforeInput == "Previous sentence.")
     }
 
+    @Test func spaceAfterDeletingSelectionIgnoresStaleTrailingSpace() {
+        let documentProxy = KeyboardTextDocumentProxySpy()
+        documentProxy.documentContextBeforeInput = "Hi, how are "
+        documentProxy.documentContextAfterInput = " doing?"
+        documentProxy.selectedText = "you"
+        documentProxy.hasText = true
+        let controller = KeyboardTextInputController(
+            documentProxy: documentProxy,
+            emitKeypress: {}
+        )
+        var symbolPage = KeyboardSymbolPage.primary
+
+        _ = controller.handleKeyActivation(
+            .delete,
+            symbolPage: &symbolPage,
+            resetCapsLockStateIfNeeded: {},
+            advanceToNextInputMode: {}
+        )
+        documentProxy.selectedText = nil
+        _ = controller.handleKeyActivation(
+            .space,
+            symbolPage: &symbolPage,
+            resetCapsLockStateIfNeeded: {},
+            advanceToNextInputMode: {}
+        )
+
+        #expect(documentProxy.deleteBackwardCallCount == 1)
+        #expect(documentProxy.insertedTexts == [" "])
+    }
+
+    @Test func spaceOverSelectedWordDoesNotInsertPeriod() {
+        let documentProxy = KeyboardTextDocumentProxySpy()
+        documentProxy.documentContextBeforeInput = "Hi, how are "
+        documentProxy.documentContextAfterInput = " doing?"
+        documentProxy.selectedText = "you"
+        documentProxy.hasText = true
+        let controller = KeyboardTextInputController(
+            documentProxy: documentProxy,
+            emitKeypress: {}
+        )
+        var symbolPage = KeyboardSymbolPage.primary
+
+        _ = controller.handleKeyActivation(
+            .space,
+            symbolPage: &symbolPage,
+            resetCapsLockStateIfNeeded: {},
+            advanceToNextInputMode: {}
+        )
+
+        #expect(documentProxy.deleteBackwardCallCount == 0)
+        #expect(documentProxy.insertedTexts == [" "])
+    }
+
     @Test func interveningTypingClearsSelectionDeletionCorrection() {
         let documentProxy = KeyboardTextDocumentProxySpy()
         documentProxy.documentContextBeforeInput = "Previous sentence. "
