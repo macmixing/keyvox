@@ -14,4 +14,6 @@ enum KeyboardSettingsCopy {
     static let leftHandedLayoutDescription = "Mirror KeyVox controls for easier left-hand access."
     static let compactKeysTitle = "Compact Keys"
     static let compactKeysDescription = "Long-press #+= to use a shorter keyboard."
+    static let openOnNumberPageTitle = "Open on 123"
+    static let openOnNumberPageDescription = "Show numbers and symbols when the keyboard opens. Tap ABC for letters."
 }

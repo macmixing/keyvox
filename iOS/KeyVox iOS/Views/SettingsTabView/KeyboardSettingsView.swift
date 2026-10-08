@@ -11,6 +11,7 @@ struct KeyboardSettingsView: View {
                 typingSection
                 leftHandedLayoutSection
                 compactKeysSection
+                openOnNumberPageSection
             }
         }
         .navigationTitle(KeyboardSettingsCopy.screenTitle)
@@ -84,6 +85,17 @@ struct KeyboardSettingsView: View {
                 title: KeyboardSettingsCopy.compactKeysTitle,
                 description: KeyboardSettingsCopy.compactKeysDescription,
                 isOn: $settingsStore.compactKeysEnabled
+            )
+        }
+    }
+
+    private var openOnNumberPageSection: some View {
+        AppCard {
+            SettingsRow(
+                icon: "textformat.123",
+                title: KeyboardSettingsCopy.openOnNumberPageTitle,
+                description: KeyboardSettingsCopy.openOnNumberPageDescription,
+                isOn: $settingsStore.opensOnNumberPage
             )
         }
     }
