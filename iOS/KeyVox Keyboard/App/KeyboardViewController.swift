@@ -29,6 +29,9 @@ final class KeyboardViewController: UIInputViewController {
         },
         shouldPreserveLeadingCapitalization: { [weak self] text in
             self?.dictionaryCasingStore.shouldPreserveLeadingCapitalization(in: text) ?? false
+        },
+        isPeriodShortcutEnabled: { [weak self] in
+            self?.typingTraits.allowsPeriodShortcut ?? true
         }
     )
     lazy var dictationChangeController = KeyboardDictationChangeController(
@@ -280,7 +283,7 @@ final class KeyboardViewController: UIInputViewController {
             state: keyboardState,
             symbolPage: symbolPage,
             keysMode: keysMode,
-            offersPredictions: typingTraits.allowsPredictions && fieldHasLetters,
+            offersPredictions: typingTraits.showsSuggestions && fieldHasLetters,
             isCapsLockEnabled: isCapsLockEnabled,
             isDictationCapsApplied: dictationChangeController.displayedCapsTransformApplied,
             isDictationCapsUppercase: dictationChangeController.displayedCapsTextIsUppercase,

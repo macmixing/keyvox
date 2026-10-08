@@ -12,8 +12,8 @@ enum KeyboardLetterCase: Equatable {
 }
 
 /// Owns the letter page's shift state: a tap shifts the next letter, a quick second tap
-/// locks caps, and the field's own auto-capitalization setting decides when the
-/// keyboard shifts by itself.
+/// locks caps when caps lock is allowed, and the field's auto-capitalization decides when
+/// the keyboard shifts by itself.
 final class KeyboardLetterCaseController {
     private enum Timing {
         static let capsLockTapInterval: TimeInterval = 0.35
@@ -22,8 +22,9 @@ final class KeyboardLetterCaseController {
     private(set) var letterCase: KeyboardLetterCase = .lowercase
     private var lastShiftTapTimestamp: TimeInterval?
 
-    func handleShift(at timestamp: TimeInterval) {
-        if letterCase != .capsLocked,
+    func handleShift(at timestamp: TimeInterval, allowsCapsLock: Bool = true) {
+        if allowsCapsLock,
+           letterCase != .capsLocked,
            let lastShiftTapTimestamp,
            timestamp - lastShiftTapTimestamp <= Timing.capsLockTapInterval {
             letterCase = .capsLocked

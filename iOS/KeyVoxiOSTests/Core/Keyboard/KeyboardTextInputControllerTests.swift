@@ -48,6 +48,27 @@ struct KeyboardTextInputControllerTests {
         #expect(haptics.emissionCount == 1)
     }
 
+    @Test func secondSpaceWithPeriodShortcutOffInsertsSpace() {
+        let documentProxy = KeyboardTextDocumentProxySpy()
+        documentProxy.documentContextBeforeInput = "Hello "
+        let controller = KeyboardTextInputController(
+            documentProxy: documentProxy,
+            emitKeypress: {},
+            isPeriodShortcutEnabled: { false }
+        )
+        var symbolPage = KeyboardSymbolPage.primary
+
+        _ = controller.handleKeyActivation(
+            .space,
+            symbolPage: &symbolPage,
+            resetCapsLockStateIfNeeded: {},
+            advanceToNextInputMode: {}
+        )
+
+        #expect(documentProxy.deleteBackwardCallCount == 0)
+        #expect(documentProxy.insertedTexts == [" "])
+    }
+
     @Test func deleteKeyRemovesSelectedTextWithoutLeadingContext() {
         let documentProxy = KeyboardTextDocumentProxySpy()
         documentProxy.selectedText = "Hello"

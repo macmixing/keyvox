@@ -142,6 +142,26 @@ final class KeyboardAppSettingsStore {
         defaults?.set(active, forKey: UserDefaultsKeys.compactKeysActive)
     }
 
+    var isAutoCapitalizationEnabled: Bool {
+        defaults?.object(forKey: UserDefaultsKeys.autoCapitalizationEnabled) as? Bool ?? true
+    }
+
+    var isAutoCorrectionEnabled: Bool {
+        defaults?.object(forKey: UserDefaultsKeys.autoCorrectionEnabled) as? Bool ?? true
+    }
+
+    var isShiftCapsLockEnabled: Bool {
+        defaults?.object(forKey: UserDefaultsKeys.shiftCapsLockEnabled) as? Bool ?? true
+    }
+
+    var isPredictiveTextEnabled: Bool {
+        defaults?.object(forKey: UserDefaultsKeys.predictiveTextEnabled) as? Bool ?? true
+    }
+
+    var isPeriodShortcutEnabled: Bool {
+        defaults?.object(forKey: UserDefaultsKeys.periodShortcutEnabled) as? Bool ?? true
+    }
+
     @discardableResult
     func toggleListFormatting() -> Bool {
         let updatedValue = !isListFormattingEnabled

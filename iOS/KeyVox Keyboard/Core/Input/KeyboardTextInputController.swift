@@ -62,6 +62,7 @@ final class KeyboardTextInputController {
     private let documentProxy: any KeyboardTextDocumentProxying
     private let emitKeypress: () -> Void
     private let shouldPreserveLeadingCapitalization: (String) -> Bool
+    private let isPeriodShortcutEnabled: () -> Bool
 
     private var emptyContextDeleteAttempts = 0
     private var lastDeleteTimestamp: TimeInterval = 0
@@ -70,11 +71,13 @@ final class KeyboardTextInputController {
     init(
         documentProxy: any KeyboardTextDocumentProxying,
         emitKeypress: @escaping () -> Void,
-        shouldPreserveLeadingCapitalization: @escaping (String) -> Bool = { _ in false }
+        shouldPreserveLeadingCapitalization: @escaping (String) -> Bool = { _ in false },
+        isPeriodShortcutEnabled: @escaping () -> Bool = { true }
     ) {
         self.documentProxy = documentProxy
         self.emitKeypress = emitKeypress
         self.shouldPreserveLeadingCapitalization = shouldPreserveLeadingCapitalization
+        self.isPeriodShortcutEnabled = isPeriodShortcutEnabled
     }
 
     @discardableResult
@@ -355,7 +358,8 @@ final class KeyboardTextInputController {
     ///   selection the field has not reported yet, so a space that went with the selection
     ///   does not count as the first space.
     private func handleDoubleSpacePeriodInsertionIfNeeded(contextBeforeInput: String?) -> Bool {
-        guard documentProxy.selectedText?.isEmpty ?? true,
+        guard isPeriodShortcutEnabled(),
+              documentProxy.selectedText?.isEmpty ?? true,
               let context = contextBeforeInput else {
             return false
         }

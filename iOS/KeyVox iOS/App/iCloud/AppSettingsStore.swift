@@ -212,6 +212,36 @@ final class AppSettingsStore: ObservableObject {
         }
     }
 
+    @Published var autoCapitalizationEnabled: Bool {
+        didSet {
+            defaults.set(autoCapitalizationEnabled, forKey: UserDefaultsKeys.autoCapitalizationEnabled)
+        }
+    }
+
+    @Published var autoCorrectionEnabled: Bool {
+        didSet {
+            defaults.set(autoCorrectionEnabled, forKey: UserDefaultsKeys.autoCorrectionEnabled)
+        }
+    }
+
+    @Published var shiftCapsLockEnabled: Bool {
+        didSet {
+            defaults.set(shiftCapsLockEnabled, forKey: UserDefaultsKeys.shiftCapsLockEnabled)
+        }
+    }
+
+    @Published var predictiveTextEnabled: Bool {
+        didSet {
+            defaults.set(predictiveTextEnabled, forKey: UserDefaultsKeys.predictiveTextEnabled)
+        }
+    }
+
+    @Published var periodShortcutEnabled: Bool {
+        didSet {
+            defaults.set(periodShortcutEnabled, forKey: UserDefaultsKeys.periodShortcutEnabled)
+        }
+    }
+
     @Published var preferBuiltInMicrophone: Bool {
         didSet {
             defaults.set(preferBuiltInMicrophone, forKey: UserDefaultsKeys.preferBuiltInMicrophone)
@@ -301,6 +331,11 @@ final class AppSettingsStore: ObservableObject {
         if restoredCompactKeysEnabled == false {
             defaults.set(false, forKey: UserDefaultsKeys.compactKeysActive)
         }
+        autoCapitalizationEnabled = defaults.object(forKey: UserDefaultsKeys.autoCapitalizationEnabled) as? Bool ?? true
+        autoCorrectionEnabled = defaults.object(forKey: UserDefaultsKeys.autoCorrectionEnabled) as? Bool ?? true
+        shiftCapsLockEnabled = defaults.object(forKey: UserDefaultsKeys.shiftCapsLockEnabled) as? Bool ?? true
+        predictiveTextEnabled = defaults.object(forKey: UserDefaultsKeys.predictiveTextEnabled) as? Bool ?? true
+        periodShortcutEnabled = defaults.object(forKey: UserDefaultsKeys.periodShortcutEnabled) as? Bool ?? true
         preferBuiltInMicrophone = defaults.object(forKey: UserDefaultsKeys.preferBuiltInMicrophone) as? Bool ?? true
         liveActivitiesEnabled = defaults.object(forKey: UserDefaultsKeys.liveActivitiesEnabled) as? Bool ?? true
         if let raw = defaults.string(forKey: UserDefaultsKeys.sessionDisableTiming),

@@ -8,7 +8,7 @@ extension KeyboardViewController {
     /// Reads the focused field's traits and starts it on the right page with a fresh
     /// typing session.
     func prepareTypingForCurrentField() {
-        typingTraits = KeyboardTypingTraits(proxy: textDocumentProxy)
+        typingTraits = KeyboardTypingTraits(proxy: textDocumentProxy, settings: appSettingsStore)
         fieldHasLetters = fieldHoldsLetters()
         if keysMode == .compact {
             symbolPage = .primary
@@ -29,7 +29,7 @@ extension KeyboardViewController {
     /// change of the field's traits means the cursor moved to another field while the
     /// keyboard stayed up, which starts that field fresh.
     func handleTypingContextChange() {
-        guard KeyboardTypingTraits(proxy: textDocumentProxy) == typingTraits else {
+        guard KeyboardTypingTraits(proxy: textDocumentProxy, settings: appSettingsStore) == typingTraits else {
             prepareTypingForCurrentField()
             updateActiveInsertionVisualState()
             return
@@ -58,7 +58,10 @@ extension KeyboardViewController {
     func handleTypingActivation(_ activation: KeyboardKeyActivation) -> Bool? {
         switch activation.kind {
         case .shift:
-            letterCaseController.handleShift(at: activation.timestamp)
+            letterCaseController.handleShift(
+                at: activation.timestamp,
+                allowsCapsLock: typingTraits.allowsCapsLock
+            )
             keypressHaptics.emitKeypressIfEnabled()
             applyLetterCase()
             return true
@@ -173,8 +176,10 @@ extension KeyboardViewController {
         applyLetterCase()
     }
 
+    /// Suggestions are only worked out while they are shown; a word boundary still works out
+    /// its autocorrection on the spot when they are hidden.
     private func refreshPredictions() {
-        guard typingTraits.allowsPredictions, symbolPage == .letters else {
+        guard typingTraits.showsSuggestions, symbolPage == .letters else {
             predictionCoordinator.clearBar()
             return
         }
