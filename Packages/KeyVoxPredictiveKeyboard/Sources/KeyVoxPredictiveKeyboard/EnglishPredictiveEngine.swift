@@ -148,6 +148,7 @@ public final class EnglishPredictiveEngine: @unchecked Sendable {
 
         return PredictionResponse(
             suggestions: suggestions,
+            twoWordSuggestions: result.twoWordSuggestionValues.map(\.word),
             automaticCorrectionProbability: result.automaticCorrectionProbability,
             typedWordIsValid: result.typedWordIsValid
         )
@@ -278,28 +279,39 @@ private extension PredictionMode {
 
 private extension KVPKPredictionResult {
     var suggestionValues: [PredictiveSuggestion] {
-        let count = max(0, min(Int(self.count), Int(KVPK_MAX_SUGGESTIONS)))
-        return withUnsafePointer(to: suggestions) { pointer in
-            pointer.withMemoryRebound(
-                to: KVPKSuggestion.self,
-                capacity: Int(KVPK_MAX_SUGGESTIONS)
-            ) { suggestions in
-                (0..<count).compactMap { index in
-                    let suggestion = suggestions[index]
-                    let word = withUnsafePointer(to: suggestion.word) { wordPointer in
-                        wordPointer.withMemoryRebound(
-                            to: CChar.self,
-                            capacity: Int(KVPK_MAX_WORD_BYTES)
-                        ) { String(cString: $0) }
-                    }
-                    guard word.isEmpty == false else { return nil }
-                    return PredictiveSuggestion(
-                        word: word,
-                        nativeScore: Int(suggestion.nativeScore),
-                        nativeType: Int(suggestion.nativeType),
-                        rankProbability: suggestion.rankProbability
-                    )
+        withUnsafePointer(to: suggestions) { pointer in
+            Self.values(of: pointer, count: count, capacity: Int(KVPK_MAX_SUGGESTIONS))
+        }
+    }
+
+    var twoWordSuggestionValues: [PredictiveSuggestion] {
+        withUnsafePointer(to: twoWordSuggestions) { pointer in
+            Self.values(of: pointer, count: twoWordCount, capacity: Int(KVPK_MAX_TWO_WORD_SUGGESTIONS))
+        }
+    }
+
+    private static func values<Suggestions>(
+        of pointer: UnsafePointer<Suggestions>,
+        count: Int32,
+        capacity: Int
+    ) -> [PredictiveSuggestion] {
+        let count = max(0, min(Int(count), capacity))
+        return pointer.withMemoryRebound(to: KVPKSuggestion.self, capacity: capacity) { suggestions in
+            (0..<count).compactMap { index in
+                let suggestion = suggestions[index]
+                let word = withUnsafePointer(to: suggestion.word) { wordPointer in
+                    wordPointer.withMemoryRebound(
+                        to: CChar.self,
+                        capacity: Int(KVPK_MAX_WORD_BYTES)
+                    ) { String(cString: $0) }
                 }
+                guard word.isEmpty == false else { return nil }
+                return PredictiveSuggestion(
+                    word: word,
+                    nativeScore: Int(suggestion.nativeScore),
+                    nativeType: Int(suggestion.nativeType),
+                    rankProbability: suggestion.rankProbability
+                )
             }
         }
     }

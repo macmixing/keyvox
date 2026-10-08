@@ -116,13 +116,23 @@ public final class PredictionComputer: @unchecked Sendable {
             )
         )
 
+        let split = try missingSpaceSplit(
+            typed: typed,
+            readings: correction.twoWordSuggestions,
+            request: request,
+            vocabulary: vocabulary,
+            decision: decision,
+            keys: keys,
+            language: language
+        )
         let replacement = replacement(
             typed: typed,
             request: request,
             vocabulary: vocabulary,
             forms: forms,
             decision: decision,
-            ranked: ranked
+            ranked: ranked,
+            split: split
         )
         return PredictionResult(
             request: request,
@@ -251,11 +261,17 @@ public final class PredictionComputer: @unchecked Sendable {
         vocabulary: PersonalVocabulary,
         forms: PersonalWordForms,
         decision: NoisyChannelCorrector.Decision,
-        ranked: [SuggestionCandidateRanker.RankedWord]
+        ranked: [SuggestionCandidateRanker.RankedWord],
+        split: MissingSpaceCorrector.Split?
     ) -> String? {
         guard request.keepsTypedWord == false else { return nil }
         if let expansion = vocabulary.expansion(for: typed) {
             return expansion
+        }
+        if let split {
+            let left = WordCasing.apply(of: typed, to: engine.capitalizedSpellings.written(split.left))
+            let right = WordCasing.capitalizingPronoun(engine.capitalizedSpellings.written(split.right))
+            return left + " " + right
         }
         let chosen: String
         if vocabulary.contains(typed) {
@@ -308,5 +324,29 @@ public final class PredictionComputer: @unchecked Sendable {
                 ? forms.written(word, after: previousWord)
                 : engine.capitalizedSpellings.written(word)
         }
+    }
+
+    /// The two words a typed word the dictionary does not know was meant as, when that reads
+    /// clearly better than any one word; the user's own words are never split.
+    private func missingSpaceSplit(
+        typed: String,
+        readings: [String],
+        request: PredictionRequest,
+        vocabulary: PersonalVocabulary,
+        decision: NoisyChannelCorrector.Decision,
+        keys: KeyCenterMap,
+        language: ContextLanguageScorer
+    ) throws -> MissingSpaceCorrector.Split? {
+        guard request.keepsTypedWord == false,
+              decision.typed.language.isDictionaryWord == false,
+              vocabulary.expansion(for: typed) == nil,
+              vocabulary.contains(typed) == false,
+              vocabulary.keepsAsTyped(typed) == false else { return nil }
+        return try MissingSpaceCorrector(parameters: parameters, keys: keys, language: language).split(
+            of: readings,
+            touches: request.touches,
+            previousWords: request.previousWords,
+            decision: decision
+        )
     }
 }

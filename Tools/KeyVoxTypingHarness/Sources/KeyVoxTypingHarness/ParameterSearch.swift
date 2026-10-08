@@ -34,6 +34,14 @@ enum ParameterSearch {
                   values: [1, 2, 3, 4, 6]),
         Dimension(name: "revisionMargin", keyPath: \.revisionMargin,
                   values: [0, 1, 2, 3, 4, 5, 6, 8, 12]),
+        Dimension(name: "missingSpaceMargin", keyPath: \.missingSpaceMargin,
+                  values: [0, 2, 4, 5, 6, 7, 8]),
+        Dimension(name: "missingSpaceCorrectionMargin", keyPath: \.missingSpaceCorrectionMargin,
+                  values: [-10, -6, -5, -4, -3, -2, 0]),
+        Dimension(name: "correctedMissingSpaceCorrectionMargin", keyPath: \.correctedMissingSpaceCorrectionMargin,
+                  values: [0, 2, 3, 4, 5, 6, 8]),
+        Dimension(name: "correctedMissingSpaceMarginPerLetter", keyPath: \.correctedMissingSpaceMarginPerLetter,
+                  values: [0, 0.5, 0.75, 1, 1.25, 1.5]),
     ] }
 
     static func search(

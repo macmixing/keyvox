@@ -48,15 +48,20 @@ public struct PredictiveSuggestion: Equatable, Sendable {
 
 public struct PredictionResponse: Equatable, Sendable {
     public let suggestions: [PredictiveSuggestion]
+    /// Correction mode only: the typed letters read as two words whose space was missed
+    /// ("probably works" for "probalywroks"), lowercase and in the search's order.
+    public let twoWordSuggestions: [String]
     public let automaticCorrectionProbability: Double
     public let typedWordIsValid: Bool
 
     public init(
         suggestions: [PredictiveSuggestion],
+        twoWordSuggestions: [String],
         automaticCorrectionProbability: Double,
         typedWordIsValid: Bool
     ) {
         self.suggestions = suggestions
+        self.twoWordSuggestions = twoWordSuggestions
         self.automaticCorrectionProbability = automaticCorrectionProbability
         self.typedWordIsValid = typedWordIsValid
     }

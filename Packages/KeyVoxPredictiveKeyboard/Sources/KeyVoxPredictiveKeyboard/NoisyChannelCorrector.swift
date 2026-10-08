@@ -35,6 +35,19 @@ public struct NoisyChannelCorrector: Sendable {
         public var apostropheRestorationMargin: Double
         /// The margin for replacing a finished word once the word after it is known.
         public var revisionMargin: Double
+        /// How much a reading of the typed letters as two words whose space was missed must
+        /// beat the best one-word candidate.
+        public var missingSpaceMargin: Double
+        /// The margin such a reading needs over a typed word the dictionary does not know when
+        /// it keeps the typed letters ("hadmarried"); below zero, so a somewhat worse fit
+        /// still splits it.
+        public var missingSpaceCorrectionMargin: Double
+        /// The same margin when the reading also corrects letters ("probalywroks"), before
+        /// `correctedMissingSpaceMarginPerLetter` is taken off for each typed letter: short
+        /// names and other words the dictionary lacks reach two common words that way far
+        /// more easily than a long run of letters meant as typed.
+        public var correctedMissingSpaceCorrectionMargin: Double
+        public var correctedMissingSpaceMarginPerLetter: Double
 
         public init(
             touch: TouchAlignmentScorer.Parameters,
@@ -44,7 +57,11 @@ public struct NoisyChannelCorrector: Sendable {
             dictionaryWordCorrectionMargin: Double,
             everydayWordCorrectionMargin: Double,
             apostropheRestorationMargin: Double,
-            revisionMargin: Double
+            revisionMargin: Double,
+            missingSpaceMargin: Double,
+            missingSpaceCorrectionMargin: Double,
+            correctedMissingSpaceCorrectionMargin: Double,
+            correctedMissingSpaceMarginPerLetter: Double
         ) {
             self.touch = touch
             self.languageWeight = languageWeight
@@ -54,6 +71,10 @@ public struct NoisyChannelCorrector: Sendable {
             self.everydayWordCorrectionMargin = everydayWordCorrectionMargin
             self.apostropheRestorationMargin = apostropheRestorationMargin
             self.revisionMargin = revisionMargin
+            self.missingSpaceMargin = missingSpaceMargin
+            self.missingSpaceCorrectionMargin = missingSpaceCorrectionMargin
+            self.correctedMissingSpaceCorrectionMargin = correctedMissingSpaceCorrectionMargin
+            self.correctedMissingSpaceMarginPerLetter = correctedMissingSpaceMarginPerLetter
         }
     }
 
@@ -71,7 +92,11 @@ public struct NoisyChannelCorrector: Sendable {
         dictionaryWordCorrectionMargin: 4,
         everydayWordCorrectionMargin: 2,
         apostropheRestorationMargin: 1,
-        revisionMargin: 2
+        revisionMargin: 2,
+        missingSpaceMargin: 6,
+        missingSpaceCorrectionMargin: -4,
+        correctedMissingSpaceCorrectionMargin: 5,
+        correctedMissingSpaceMarginPerLetter: 1.5
     )
 
     public struct ScoredCandidate: Sendable, Equatable {

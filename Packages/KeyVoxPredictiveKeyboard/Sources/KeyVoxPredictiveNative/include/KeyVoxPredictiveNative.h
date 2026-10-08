@@ -11,6 +11,7 @@ extern "C" {
 
 enum {
     KVPK_MAX_SUGGESTIONS = 8,
+    KVPK_MAX_TWO_WORD_SUGGESTIONS = 16,
     KVPK_MAX_WORD_BYTES = 128,
 };
 
@@ -38,6 +39,10 @@ typedef struct KVPKSuggestion {
 typedef struct KVPKPredictionResult {
     int32_t count;
     KVPKSuggestion suggestions[KVPK_MAX_SUGGESTIONS];
+    /// Correction mode only: readings of the typed letters as two words whose space was
+    /// missed, in the search's order.
+    int32_t twoWordCount;
+    KVPKSuggestion twoWordSuggestions[KVPK_MAX_TWO_WORD_SUGGESTIONS];
     double automaticCorrectionProbability;
     bool typedWordIsValid;
 } KVPKPredictionResult;

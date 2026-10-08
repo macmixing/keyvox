@@ -503,6 +503,9 @@ public:
         std::vector<NativeCandidate> candidates = nativeCandidates(
             typed, typedCodePoints, previous, touchX, touchY, touchCount
         );
+        if (mode == KVPKPredictionModeCorrection) {
+            writeTwoWordSuggestions(candidates, result);
+        }
         if (mode != KVPKPredictionModeNextWord) {
             candidates.erase(
                 std::remove_if(
@@ -664,17 +667,32 @@ private:
             std::min<size_t>(candidates.size(), KVPK_MAX_SUGGESTIONS)
         );
         for (int32_t index = 0; index < result->count; ++index) {
-            const NativeCandidate &candidate = candidates[index];
-            std::strncpy(
-                result->suggestions[index].word,
-                candidate.word.c_str(),
-                KVPK_MAX_WORD_BYTES - 1
-            );
-            result->suggestions[index].word[KVPK_MAX_WORD_BYTES - 1] = '\0';
-            result->suggestions[index].nativeScore = candidate.score;
-            result->suggestions[index].nativeType = candidate.type;
-            result->suggestions[index].rankProbability = candidate.probability;
+            writeSuggestion(candidates[index], &result->suggestions[index]);
         }
+    }
+
+    /// The search's readings of the typed letters as exactly two words, which the one-word
+    /// suggestions leave out.
+    static void writeTwoWordSuggestions(const std::vector<NativeCandidate> &candidates,
+                                        KVPKPredictionResult *result) {
+        result->twoWordCount = 0;
+        for (const NativeCandidate &candidate : candidates) {
+            if (result->twoWordCount == KVPK_MAX_TWO_WORD_SUGGESTIONS) break;
+            const size_t space = candidate.word.find(' ');
+            if (space == std::string::npos
+                    || candidate.word.find(' ', space + 1) != std::string::npos) {
+                continue;
+            }
+            writeSuggestion(candidate, &result->twoWordSuggestions[result->twoWordCount++]);
+        }
+    }
+
+    static void writeSuggestion(const NativeCandidate &candidate, KVPKSuggestion *suggestion) {
+        std::strncpy(suggestion->word, candidate.word.c_str(), KVPK_MAX_WORD_BYTES - 1);
+        suggestion->word[KVPK_MAX_WORD_BYTES - 1] = '\0';
+        suggestion->nativeScore = candidate.score;
+        suggestion->nativeType = candidate.type;
+        suggestion->rankProbability = candidate.probability;
     }
 
     std::vector<NativeCandidate> nativeCandidates(
