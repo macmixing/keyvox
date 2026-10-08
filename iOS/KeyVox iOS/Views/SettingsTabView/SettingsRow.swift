@@ -8,14 +8,15 @@ struct SettingsRow<TrailingContent: View>: View {
 
     private let icon: Icon?
     let title: String
-    let description: String
+    /// Shown under the title; nil for a single-line row.
+    let description: String?
     let trailingContent: TrailingContent
-    
+
     init(
         icon: String? = nil,
         assetIcon: String? = nil,
         title: String,
-        description: String,
+        description: String? = nil,
         @ViewBuilder trailingContent: () -> TrailingContent
     ) {
         self.icon = assetIcon.map(Icon.asset) ?? icon.map(Icon.system)
@@ -28,7 +29,7 @@ struct SettingsRow<TrailingContent: View>: View {
         icon: String? = nil,
         assetIcon: String? = nil,
         title: String,
-        description: String,
+        description: String? = nil,
         isOn: Binding<Bool>
     ) where TrailingContent == AnyView {
         self.icon = assetIcon.map(Icon.asset) ?? icon.map(Icon.system)
@@ -56,10 +57,12 @@ struct SettingsRow<TrailingContent: View>: View {
                 trailingContent
             }
             
-            Text(description)
-                .font(.appFont(15, variant: .light))
-                .foregroundStyle(.white.opacity(0.7))
-                .frame(maxWidth: .infinity, alignment: .leading)
+            if let description {
+                Text(description)
+                    .font(.appFont(15, variant: .light))
+                    .foregroundStyle(.white.opacity(0.7))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
         }
     }
     
