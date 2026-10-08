@@ -78,7 +78,7 @@ final class KeyboardViewController: UIInputViewController {
         selectedText: { [weak self] in self?.textDocumentProxy.selectedText },
         textAfterCursor: { [weak self] in self?.textDocumentProxy.documentContextAfterInput }
     )
-    lazy var typingTraits = KeyboardTypingTraits(proxy: textDocumentProxy)
+    var typingTraits = KeyboardTypingTraits.standard
     var primaryHeightConstraint: NSLayoutConstraint?
     var keyboardState: KeyboardState = .idle {
         didSet {
@@ -148,7 +148,13 @@ final class KeyboardViewController: UIInputViewController {
             isCompactKeysEnabled: appSettingsStore.isCompactKeysEnabled,
             isCompactKeysActive: appSettingsStore.isCompactKeysActive
         )
-        prepareTypingForCurrentField()
+        // The field is read on the next main-thread turn: as a field connects, the system
+        // replaces its document state off the main thread, frees the old one, and waits for
+        // the main thread to hand over the new one, so a read here can reach freed memory.
+        DispatchQueue.main.async { [weak self] in
+            guard let self, self.rootContainerView != nil else { return }
+            self.prepareTypingForCurrentField()
+        }
         preparePresentationIfNeeded()
         KeyVoxIPCBridge.reportKeyboardOnboardingState(hasFullAccess: hasFullAccess)
         configureDictationBehavior()

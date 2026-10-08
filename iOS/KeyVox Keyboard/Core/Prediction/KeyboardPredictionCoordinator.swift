@@ -4,9 +4,11 @@ import KeyVoxPredictiveKeyboard
 /// Runs the shared typing session for the keyboard.
 ///
 /// Typing state lives on the main thread; suggestion work runs on a serial background
-/// queue and is published only if the text has not changed since it was requested. At a
-/// word boundary the current suggestion result is used, or computed on the spot if it
-/// has not arrived yet, so a fast space never skips an autocorrection.
+/// queue and is published only if no newer request was made while it ran. The text is not
+/// read again when the work finishes: by then the system may be replacing the field's
+/// document state, and reading it mid-replacement reaches freed memory. At a word boundary
+/// the current suggestion result is used, or computed on the spot if it has not arrived
+/// yet, so a fast space never skips an autocorrection.
 final class KeyboardPredictionCoordinator {
     var onBarChange: ((SuggestionBar) -> Void)?
 
@@ -19,6 +21,8 @@ final class KeyboardPredictionCoordinator {
     private var letterKeys: KeyCenterMap?
     private var latestResult: PredictionResult?
     private var pendingRequest: PredictionRequest?
+    /// The newest request read from the text; every change to the text or cursor makes one.
+    private var newestRequest: PredictionRequest?
     private var publishedBar = SuggestionBar.empty
 
     // Owned by `queue`.
@@ -80,10 +84,12 @@ final class KeyboardPredictionCoordinator {
     func reset() {
         session.reset()
         latestResult = nil
+        newestRequest = nil
         publish(.empty)
     }
 
     func clearBar() {
+        newestRequest = nil
         publish(.empty)
     }
 
@@ -94,6 +100,7 @@ final class KeyboardPredictionCoordinator {
             selectedText: selectedText(),
             textAfterCursor: textAfterCursor()
         )
+        newestRequest = request
         if let latestResult, latestResult.request == request {
             publish(Self.bar(for: latestResult, allowsAutocorrection: allowsAutocorrection))
             return
@@ -107,14 +114,7 @@ final class KeyboardPredictionCoordinator {
                 if self.pendingRequest == request {
                     self.pendingRequest = nil
                 }
-                guard self.session.isCurrent(
-                    result,
-                    textBeforeCursor: self.textBeforeCursor(),
-                    selectedText: self.selectedText(),
-                    textAfterCursor: self.textAfterCursor()
-                ) else {
-                    return
-                }
+                guard self.newestRequest == request else { return }
                 self.latestResult = result
                 self.publish(Self.bar(for: result, allowsAutocorrection: allowsAutocorrection))
             }

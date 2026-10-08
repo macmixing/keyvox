@@ -8,6 +8,26 @@ struct KeyboardTypingTraits: Equatable {
     let allowsAutocorrection: Bool
     let autocapitalization: UITextAutocapitalizationType
 
+    /// A field that allows every typing help, used until the focused field is read.
+    static let standard = KeyboardTypingTraits(
+        prefersNumberPage: false,
+        allowsPredictions: true,
+        allowsAutocorrection: true,
+        autocapitalization: .sentences
+    )
+
+    private init(
+        prefersNumberPage: Bool,
+        allowsPredictions: Bool,
+        allowsAutocorrection: Bool,
+        autocapitalization: UITextAutocapitalizationType
+    ) {
+        self.prefersNumberPage = prefersNumberPage
+        self.allowsPredictions = allowsPredictions
+        self.allowsAutocorrection = allowsAutocorrection
+        self.autocapitalization = autocapitalization
+    }
+
     init(proxy: UITextDocumentProxy) {
         let keyboardType = proxy.keyboardType ?? .default
         let contentType = proxy.textContentType ?? nil
