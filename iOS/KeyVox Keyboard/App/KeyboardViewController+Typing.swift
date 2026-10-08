@@ -92,6 +92,13 @@ extension KeyboardViewController {
         }
     }
 
+    /// Deletes whole words for a held delete key. Returns false when no word could be deleted.
+    func handleDeleteWords(_ count: Int) -> Bool {
+        textInputController.deleteWordsBackward(count) { [weak self] in
+            self?.handleTypingContextChange()
+        }
+    }
+
     /// A first press of space, return, shift, delete, 123, or the globe that landed close to
     /// a letter key types that letter instead when the letter is the likelier intent.
     func resolveContestedTap(_ activation: KeyboardKeyActivation) -> KeyboardKeyActivation {

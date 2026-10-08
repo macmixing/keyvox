@@ -100,6 +100,9 @@ extension KeyboardViewController {
         rootContainerView.keyGridView.onKeyActivated = { [weak self] activation in
             self?.handleKeyActivation(activation) ?? false
         }
+        rootContainerView.keyGridView.onDeleteWords = { [weak self] count in
+            self?.handleDeleteWords(count) ?? false
+        }
         rootContainerView.keyGridView.onCharacterKeyTouchDown = { [weak self] in
             self?.keypressHaptics.emitKeypressIfEnabled()
         }
@@ -167,6 +170,7 @@ extension KeyboardViewController {
             rootContainerView.logoBarView.removeTarget(self, action: #selector(handleMicTap), for: .touchUpInside)
             rootContainerView.fullAccessInfoButton.removeTarget(self, action: #selector(handleFullAccessInfoTap), for: .touchUpInside)
             rootContainerView.keyGridView.onKeyActivated = nil
+            rootContainerView.keyGridView.onDeleteWords = nil
             rootContainerView.keyGridView.onCharacterKeyTouchDown = nil
             rootContainerView.keyGridView.onCharacterGeometryChange = nil
             rootContainerView.suggestionBarView.onItemSelected = nil

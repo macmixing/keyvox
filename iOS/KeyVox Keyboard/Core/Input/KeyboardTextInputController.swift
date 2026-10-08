@@ -80,6 +80,60 @@ final class KeyboardTextInputController {
         self.isPeriodShortcutEnabled = isPeriodShortcutEnabled
     }
 
+    /// Deletes `words` whole words before the cursor, each with the spaces after it, for a held
+    /// delete key, and calls `onFinish` once they are gone. Returns false, without calling it,
+    /// when there is a selection or no text in view before the cursor.
+    func deleteWordsBackward(_ words: Int, onFinish: @escaping () -> Void) -> Bool {
+        guard documentProxy.selectedText?.isEmpty ?? true,
+              let context = documentProxy.documentContextBeforeInput,
+              context.isEmpty == false else {
+            return false
+        }
+        pendingSelectionDeletion = nil
+        emitKeypress()
+        deleteWords(words, endingText: context, onFinish: onFinish)
+        return true
+    }
+
+    /// Some hosts, web views among them, show the keyboard only the text since the start of a
+    /// line, and nothing once that is deleted, until the next edit. When the words run past
+    /// what is shown, one more character is deleted, which always belongs to the next word, so
+    /// the host shows the text before it, and the rest of the words go once it does.
+    private func deleteWords(_ words: Int, endingText context: String, onFinish: @escaping () -> Void) {
+        let span = KeyboardWordDeletion.span(ofWords: words, endingText: context)
+        for _ in 0..<span.characterCount {
+            documentProxy.deleteBackward()
+        }
+        let remainingWords = words - span.wordCount
+        guard remainingWords > 0,
+              documentProxy.documentContextBeforeInput?.isEmpty ?? true,
+              documentProxy.hasText else {
+            onFinish()
+            return
+        }
+        documentProxy.deleteBackward()
+        waitForShownText { [weak self] context in
+            guard let self, let context else {
+                onFinish()
+                return
+            }
+            self.deleteWords(remainingWords, endingText: context, onFinish: onFinish)
+        }
+    }
+
+    private func waitForShownText(checks: Int = 10, then continuation: @escaping (String?) -> Void) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) { [weak self] in
+            guard let self else { return }
+            if let context = self.documentProxy.documentContextBeforeInput, context.isEmpty == false {
+                continuation(context)
+            } else if checks > 1 {
+                self.waitForShownText(checks: checks - 1, then: continuation)
+            } else {
+                continuation(nil)
+            }
+        }
+    }
+
     @discardableResult
     func handleKeyActivation(
         _ kind: KeyboardKeyKind,

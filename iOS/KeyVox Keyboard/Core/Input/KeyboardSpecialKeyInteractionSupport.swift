@@ -203,82 +203,50 @@ final class KeyboardSpaceTrackpadController {
     }
 }
 
+/// Repeats a held delete key on `KeyboardDeleteRepeatSchedule` until it is released or
+/// there is nothing left to delete. Each repeat is due a set time after the one before it was
+/// due, so the time each deletion takes never slows the pace.
 final class KeyboardDeleteRepeatController {
-    private enum State {
-        case inactive
-        case paused
-        case delaying
-        case repeating
-    }
+    private var action: ((KeyboardDeleteGranularity) -> Bool)?
+    private var repeatCount = 0
+    private var nextRepeatDate = Date()
+    private var timer: Timer?
 
-    private let initialDelay: TimeInterval = 0.42
-    private let repeatInterval: TimeInterval = 0.085
-
-    private var state: State = .inactive
-    private var action: (() -> Bool)?
-    private var delayTimer: Timer?
-    private var repeatTimer: Timer?
-
-    func begin(action: @escaping () -> Bool) {
+    /// Deletes a character now, then repeats on the schedule while `action` keeps deleting.
+    func begin(action: @escaping (KeyboardDeleteGranularity) -> Bool) {
         cancel()
         self.action = action
-        guard action() else {
+        nextRepeatDate = Date()
+        guard action(.character) else {
             cancel()
             return
         }
-        scheduleInitialDelay()
-    }
-
-    func pause() {
-        guard state == .delaying || state == .repeating else { return }
-        invalidateTimers()
-        state = .paused
-    }
-
-    func resumeIfNeeded() {
-        guard state == .paused, action != nil else { return }
-        scheduleInitialDelay()
+        scheduleNextRepeat()
     }
 
     func cancel() {
-        invalidateTimers()
+        timer?.invalidate()
+        timer = nil
         action = nil
-        state = .inactive
+        repeatCount = 0
     }
 
-    private func scheduleInitialDelay() {
-        invalidateTimers()
-        state = .delaying
-        let timer = Timer(timeInterval: initialDelay, repeats: false) { [weak self] _ in
-            self?.startRepeating()
+    private func scheduleNextRepeat() {
+        nextRepeatDate += KeyboardDeleteRepeatSchedule.delay(beforeRepeat: repeatCount)
+        let timer = Timer(fire: nextRepeatDate, interval: 0, repeats: false) { [weak self] _ in
+            self?.performRepeat()
         }
-        delayTimer = timer
+        self.timer = timer
         RunLoop.main.add(timer, forMode: .common)
     }
 
-    private func startRepeating() {
-        guard action != nil else {
+    private func performRepeat() {
+        let granularity = KeyboardDeleteRepeatSchedule.granularity(ofRepeat: repeatCount)
+        guard action?(granularity) == true else {
             cancel()
             return
         }
-
-        invalidateTimers()
-        state = .repeating
-        let timer = Timer(timeInterval: repeatInterval, repeats: true) { [weak self] _ in
-            guard let self else { return }
-            guard self.action?() == true else {
-                self.cancel()
-                return
-            }
-        }
-        repeatTimer = timer
-        RunLoop.main.add(timer, forMode: .common)
-    }
-
-    private func invalidateTimers() {
-        delayTimer?.invalidate()
-        repeatTimer?.invalidate()
-        delayTimer = nil
-        repeatTimer = nil
+        repeatCount += 1
+        scheduleNextRepeat()
     }
 }

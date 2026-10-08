@@ -15,6 +15,9 @@ enum KeyboardTopRowAccessorySlot: Int, CaseIterable {
 
 final class KeyboardKeyGridView: UIView {
     var onKeyActivated: ((KeyboardKeyActivation) -> Bool)?
+    /// Deletes whole words for a held delete key; false when none could be, so a character is
+    /// deleted instead.
+    var onDeleteWords: ((Int) -> Bool)?
     /// Called the moment a finger lands on a character key, before it types.
     var onCharacterKeyTouchDown: (() -> Void)?
     var onCompactKeysRequested: (() -> Bool)?

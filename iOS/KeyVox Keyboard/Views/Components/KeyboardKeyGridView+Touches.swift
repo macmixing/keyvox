@@ -4,8 +4,9 @@ import UIKit
 ///
 /// Each finger is followed separately. A character types when its finger lifts, or as
 /// soon as another finger lands (rollover), so overlapping two-thumb taps always type in
-/// the order they landed. Delete repeats while held, a held space bar becomes a cursor
-/// trackpad, and holding the alternate-symbols key opens Compact Keys.
+/// the order they landed. Delete repeats while held, as the system keyboard's does, even once
+/// the finger slides off it; a held space bar becomes a cursor trackpad, and holding the
+/// alternate-symbols key opens Compact Keys.
 extension KeyboardKeyGridView {
     func configureTouchRouter() {
         touchRouter.onTouchesBegan = { [weak self] touches in
@@ -58,9 +59,12 @@ extension KeyboardKeyGridView {
                 showPopup(for: hitKey)
             case .delete:
                 var isRepeat = false
-                deleteRepeatController.begin { [weak self, weak session] in
+                deleteRepeatController.begin { [weak self, weak session] granularity in
                     guard let self, let session else { return false }
                     defer { isRepeat = true }
+                    if case let .words(count) = granularity, self.onDeleteWords?(count) == true {
+                        return true
+                    }
                     return self.deliver(.delete, from: session, isRepeat: isRepeat)
                 }
             case .space:
@@ -86,13 +90,7 @@ extension KeyboardKeyGridView {
             let location = touch.location(in: self)
             switch session.kind {
             case .delete:
-                if keyView(at: location)?.model.kind == .delete {
-                    if let keyView = session.keyView { setVisualState(.pressed, for: keyView) }
-                    deleteRepeatController.resumeIfNeeded()
-                } else {
-                    if let keyView = session.keyView { setVisualState(.normal, for: keyView) }
-                    deleteRepeatController.pause()
-                }
+                continue
             case .space:
                 let update = spaceTrackpadController.update(
                     location: location,
