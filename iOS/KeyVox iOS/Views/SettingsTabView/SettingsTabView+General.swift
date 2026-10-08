@@ -134,11 +134,15 @@ extension SettingsTabView {
             KeyboardSettingsView()
         } label: {
             AppCard {
-                SettingsRow(
-                    icon: "keyboard",
-                    title: KeyboardSettingsCopy.screenTitle,
-                    description: KeyboardSettingsCopy.screenDescription
-                ) {
+                HStack(alignment: .center, spacing: 12) {
+                    SettingsRow(
+                        icon: "keyboard",
+                        title: KeyboardSettingsCopy.screenTitle,
+                        description: KeyboardSettingsCopy.screenDescription
+                    ) {
+                        EmptyView()
+                    }
+
                     Image(systemName: "chevron.right")
                         .font(.system(size: 28, weight: .heavy))
                         .foregroundStyle(.yellow)
