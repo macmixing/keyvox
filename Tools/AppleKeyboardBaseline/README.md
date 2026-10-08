@@ -56,3 +56,14 @@ xcodebuild test -project AppleKeyboardBaseline.xcodeproj -scheme BaselineUITests
 Replay the same plan with `TEST_RUNNER_BASELINE_KEYBOARD_MARKER=Shift` (a key label only
 the KeyVox keyboard has) and `TEST_RUNNER_BASELINE_KEYBOARD_NAME=KeyVox`. Add
 `TEST_RUNNER_BASELINE_DISABLE_AUTOCORRECT=1` to record the raw typed letters instead.
+
+## Delete key timeline
+
+The host app records every change to its text, with the time since it was filled, to
+`Documents/deletion-timeline.json`. Tap Fill (sentences of made-up words), Long (26-letter
+words), or Lines (a sentence per line), hold the keyboard's delete key, then print what
+each step removed and when:
+
+```sh
+python3 print_deletion_timeline.py --simulator <simulator-udid> --save <timeline.json>
+```

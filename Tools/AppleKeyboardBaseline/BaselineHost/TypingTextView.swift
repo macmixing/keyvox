@@ -26,6 +26,7 @@ struct TypingTextView: UIViewRepresentable {
     func updateUIView(_ view: UITextView, context: Context) {
         if view.text != text {
             view.text = text
+            view.selectedRange = NSRange(location: (text as NSString).length, length: 0)
         }
     }
 
@@ -42,6 +43,7 @@ struct TypingTextView: UIViewRepresentable {
 
         func textViewDidChange(_ textView: UITextView) {
             text.wrappedValue = textView.text
+            DeletionTimeline.shared.record(textView.text)
         }
     }
 }
