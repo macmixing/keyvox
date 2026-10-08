@@ -29,3 +29,15 @@ python3 -m venv .venv
 
 The data directory needs about 25 GB. Measure a new model with
 `Tools/KeyVoxTypingHarness` against the bundled one before replacing it.
+
+## Sentence openers
+
+`sentence_openers.txt` holds the words the suggestion bar offers where a sentence begins.
+It is built from the same data directory, after `extract_sentences.py`:
+
+```bash
+xcrun swiftc -O tag_word_kinds.swift -o <scratch>/tag_word_kinds
+<scratch>/tag_word_kinds <data-dir>/word_kinds.tsv <data-dir>/sentences/tatoeba.txt <data-dir>/sentences/oasst2.txt
+.venv/bin/python count_sentence_openers.py <data-dir>
+.venv/bin/python write_sentence_openers.py <data-dir> --weight youtube-commons=0 --weight oasst2=0.3 --weight tatoeba=10 --output <output.txt>
+```

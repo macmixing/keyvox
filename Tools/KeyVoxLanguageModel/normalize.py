@@ -6,6 +6,7 @@ other punctuation are skipped without ending the sentence. Bracketed transcript 
 such as "[Music]" are dropped.
 """
 
+import html
 import re
 from collections.abc import Iterator
 
@@ -19,6 +20,11 @@ _SENTENCE_END = re.compile(r"[.!?\n]+")
 # that reason alone.
 _POSSIBLE_START = re.compile(r"[.!?\n\"“”:(\[{]+")
 _WORD = re.compile(r"[^\W\d_]+(?:'[^\W\d_]+)*")
+# Where a sentence ends for the sentence-opener counts: a run of periods, question marks, or
+# exclamation marks followed by a space or the end of the text, so "example.com" and "3.5"
+# do not end one, or a line break.
+_ENDING = re.compile(r"[.!?]+(?=\s|$)|\n+")
+LINE_BREAK = "\n"
 
 
 def sentences(text: str) -> Iterator[list[str]]:
@@ -27,6 +33,31 @@ def sentences(text: str) -> Iterator[list[str]]:
         words = _WORD.findall(sentence.lower())
         if words:
             yield words
+
+
+def sentences_with_endings(text: str) -> Iterator[tuple[list[str], str | None]]:
+    """Each sentence's words with what ended it: ".", "?", "!", LINE_BREAK, or None when the
+    text runs out first. Three or more periods are an ellipsis, which pauses a sentence
+    rather than ending it, as on the keyboard. HTML entities such as "&nbsp;" are decoded."""
+    text = html.unescape(_BRACKETED.sub(" ", text)).replace("’", "'")
+    words: list[str] = []
+    position = 0
+    for ending in _ENDING.finditer(text):
+        words += _WORD.findall(text[position:ending.start()].lower())
+        position = ending.end()
+        mark = ending.group()
+        if mark.startswith(LINE_BREAK):
+            mark = LINE_BREAK
+        elif set(mark) == {"."} and len(mark) >= 3:
+            continue
+        else:
+            mark = mark[-1]
+        if words:
+            yield words, mark
+        words = []
+    words += _WORD.findall(text[position:].lower())
+    if words:
+        yield words, None
 
 
 def written_runs(text: str) -> Iterator[list[str]]:
