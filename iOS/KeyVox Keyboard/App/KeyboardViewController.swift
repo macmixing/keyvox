@@ -6,6 +6,8 @@ final class KeyboardViewController: UIInputViewController {
     let ipcManager = KeyboardIPCManager()
     let capsLockStateStore = KeyboardCapsLockStateStore()
     let keypressHaptics = KeyboardKeypressHaptics()
+    /// The tap felt on letter and character keys, the system keyboard's text input tap.
+    let characterKeyHaptics = KeyboardKeypressHaptics(generator: KeyboardTextInputHapticPlayer())
     let interactionHaptics = KeyboardInteractionHaptics()
     let indicatorDriver = AudioIndicatorDriver()
     let appSettingsStore = KeyboardAppSettingsStore()

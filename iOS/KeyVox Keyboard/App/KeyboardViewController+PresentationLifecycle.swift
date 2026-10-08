@@ -104,7 +104,7 @@ extension KeyboardViewController {
             self?.handleDeleteWords(count) ?? false
         }
         rootContainerView.keyGridView.onCharacterKeyTouchDown = { [weak self] in
-            self?.keypressHaptics.emitKeypressIfEnabled()
+            self?.characterKeyHaptics.emitKeypressIfEnabled()
         }
         rootContainerView.keyGridView.onCharacterGeometryChange = { [weak self] geometry, size in
             self?.predictionCoordinator.updateGeometry(geometry, keyboardSize: size)
