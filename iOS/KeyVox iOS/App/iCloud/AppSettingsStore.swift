@@ -242,6 +242,12 @@ final class AppSettingsStore: ObservableObject {
         }
     }
 
+    @Published var opensOnNumberPage: Bool {
+        didSet {
+            defaults.set(opensOnNumberPage, forKey: UserDefaultsKeys.opensOnNumberPage)
+        }
+    }
+
     @Published var preferBuiltInMicrophone: Bool {
         didSet {
             defaults.set(preferBuiltInMicrophone, forKey: UserDefaultsKeys.preferBuiltInMicrophone)
@@ -336,6 +342,7 @@ final class AppSettingsStore: ObservableObject {
         shiftCapsLockEnabled = defaults.object(forKey: UserDefaultsKeys.shiftCapsLockEnabled) as? Bool ?? true
         predictiveTextEnabled = defaults.object(forKey: UserDefaultsKeys.predictiveTextEnabled) as? Bool ?? true
         periodShortcutEnabled = defaults.object(forKey: UserDefaultsKeys.periodShortcutEnabled) as? Bool ?? true
+        opensOnNumberPage = defaults.object(forKey: UserDefaultsKeys.opensOnNumberPage) as? Bool ?? false
         preferBuiltInMicrophone = defaults.object(forKey: UserDefaultsKeys.preferBuiltInMicrophone) as? Bool ?? true
         liveActivitiesEnabled = defaults.object(forKey: UserDefaultsKeys.liveActivitiesEnabled) as? Bool ?? true
         if let raw = defaults.string(forKey: UserDefaultsKeys.sessionDisableTiming),

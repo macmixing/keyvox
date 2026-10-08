@@ -4,7 +4,8 @@ import UIKit
 /// allow, narrowed by the user's keyboard settings. A help the field turns off stays off
 /// whatever the settings say.
 struct KeyboardTypingTraits: Equatable {
-    /// The field expects digits first, so the keyboard opens on the number page.
+    /// The field expects digits first, or the user opens the keyboard on 123, so the keyboard
+    /// opens on the number page and stays there until ABC is tapped.
     let prefersNumberPage: Bool
     /// The field allows predictions, so the engine runs for autocorrection and suggestions.
     let allowsPredictions: Bool
@@ -65,7 +66,9 @@ struct KeyboardTypingTraits: Equatable {
         let isAddressLike = [UIKeyboardType.emailAddress, .URL].contains(keyboardType)
             || [UITextContentType.emailAddress, .URL, .username].contains(contentType)
 
-        prefersNumberPage = isNumericOnly || keyboardType == .numbersAndPunctuation
+        prefersNumberPage = isNumericOnly
+            || keyboardType == .numbersAndPunctuation
+            || settings.opensOnNumberPage
         allowsPredictions = isNumericOnly == false && isCredential == false
         showsSuggestions = allowsPredictions && settings.isPredictiveTextEnabled
         allowsAutocorrection = allowsPredictions

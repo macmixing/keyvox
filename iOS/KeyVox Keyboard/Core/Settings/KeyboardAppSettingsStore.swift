@@ -162,6 +162,10 @@ final class KeyboardAppSettingsStore {
         defaults?.object(forKey: UserDefaultsKeys.periodShortcutEnabled) as? Bool ?? true
     }
 
+    var opensOnNumberPage: Bool {
+        defaults?.object(forKey: UserDefaultsKeys.opensOnNumberPage) as? Bool ?? false
+    }
+
     @discardableResult
     func toggleListFormatting() -> Bool {
         let updatedValue = !isListFormattingEnabled

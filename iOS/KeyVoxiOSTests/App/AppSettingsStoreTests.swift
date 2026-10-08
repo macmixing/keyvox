@@ -133,6 +133,19 @@ struct AppSettingsStoreTests {
         #expect(keyboardSettings.isPeriodShortcutEnabled == false)
     }
 
+    @Test func openOnNumberPageDefaultsToOffAndPersistsForTheKeyboard() {
+        let defaults = UserDefaults(suiteName: #function)!
+        defaults.removePersistentDomain(forName: #function)
+        let store = AppSettingsStore(defaults: defaults)
+
+        #expect(store.opensOnNumberPage == false)
+        #expect(KeyboardAppSettingsStore(defaults: defaults).opensOnNumberPage == false)
+
+        store.opensOnNumberPage = true
+
+        #expect(KeyboardAppSettingsStore(defaults: defaults).opensOnNumberPage)
+    }
+
     @Test func selectedVibeDefaultsToNone() {
         let defaults = UserDefaults(suiteName: #function)!
         defaults.removePersistentDomain(forName: #function)

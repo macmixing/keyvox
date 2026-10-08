@@ -14,6 +14,7 @@ nonisolated enum UserDefaultsKeys {
     static let shiftCapsLockEnabled = "KeyVox.ShiftCapsLockEnabled"
     static let predictiveTextEnabled = "KeyVox.PredictiveTextEnabled"
     static let periodShortcutEnabled = "KeyVox.PeriodShortcutEnabled"
+    static let opensOnNumberPage = "KeyVox.OpensOnNumberPage"
     static let preferBuiltInMicrophone = "KeyVox.PreferBuiltInMicrophone"
     static let liveActivitiesEnabled = "KeyVox.LiveActivitiesEnabled"
     static let sessionDisableTiming = "KeyVox.SessionDisableTiming"
