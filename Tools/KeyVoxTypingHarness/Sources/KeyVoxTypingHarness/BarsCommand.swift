@@ -3,11 +3,13 @@ import KeyVoxPredictiveKeyboard
 
 /// `bars`: for each probe, types its context words and the first letters of a word through
 /// the shipping KeyVox typing session, every tap at its key's center, and records the
-/// suggestion bar, in the format the Apple keyboard baseline runner records bars in.
+/// suggestion bar, in the format the Apple keyboard baseline runner records bars in. A probe
+/// with `text` instead reads the bar for that text before the cursor, punctuation included.
 enum BarsCommand {
     struct Probe: Codable {
         let context: [String]
         let prefix: String
+        let text: String?
         var bar: [String]?
     }
 
@@ -33,7 +35,13 @@ enum BarsCommand {
             contestedTaps: ContestedTapPolicy(parameters: ContestedTapPolicy.standardParameters)
         )
         for index in probes.indices {
-            let bar = try typer.bar(afterTyping: probes[index].context, prefix: probes[index].prefix)
+            let bar: SuggestionBar
+            if let text = probes[index].text {
+                let request = PredictiveTypingSession().request(textBeforeCursor: text + probes[index].prefix)
+                bar = try computer.compute(request).bar
+            } else {
+                bar = try typer.bar(afterTyping: probes[index].context, prefix: probes[index].prefix)
+            }
             probes[index].bar = bar.items.map(\.text)
         }
         try JSONEncoder().encode(probes).write(to: URL(fileURLWithPath: options.outputPath))
