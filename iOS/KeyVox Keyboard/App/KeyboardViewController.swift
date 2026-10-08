@@ -155,10 +155,8 @@ final class KeyboardViewController: UIInputViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         extensionHostIsActive = true
-        keysMode = .resolve(
-            isCompactKeysEnabled: appSettingsStore.isCompactKeysEnabled,
-            isCompactKeysActive: appSettingsStore.isCompactKeysActive
-        )
+        // Opens as the user's settings say until the field is read, which can still ask for 123.
+        applyOpeningLayout(prefersNumberPage: appSettingsStore.opensOnNumberPage)
         // The field is read on the next main-thread turn: as a field connects, the system
         // replaces its document state off the main thread, frees the old one, and waits for
         // the main thread to hand over the new one, so a read here can reach freed memory.

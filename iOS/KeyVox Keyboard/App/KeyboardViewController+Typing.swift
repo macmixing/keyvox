@@ -10,11 +10,7 @@ extension KeyboardViewController {
     func prepareTypingForCurrentField() {
         typingTraits = KeyboardTypingTraits(proxy: textDocumentProxy, settings: appSettingsStore)
         fieldHasLetters = fieldHoldsLetters()
-        if keysMode == .compact {
-            symbolPage = .primary
-        } else {
-            symbolPage = typingTraits.prefersNumberPage ? .primary : .letters
-        }
+        applyOpeningLayout(prefersNumberPage: typingTraits.prefersNumberPage)
         predictionCoordinator.reset()
         if typingTraits.allowsPredictions {
             predictionCoordinator.prepare()
@@ -23,6 +19,17 @@ extension KeyboardViewController {
         letterCaseController.reset()
         synchronizeLetterCase()
         refreshPredictions()
+    }
+
+    /// Opens on the page and key size `KeyboardOpeningLayout` picks.
+    func applyOpeningLayout(prefersNumberPage: Bool) {
+        let layout = KeyboardOpeningLayout.resolve(
+            prefersNumberPage: prefersNumberPage,
+            isCompactKeysEnabled: appSettingsStore.isCompactKeysEnabled,
+            isCompactKeysActive: appSettingsStore.isCompactKeysActive
+        )
+        keysMode = layout.keysMode
+        symbolPage = layout.symbolPage
     }
 
     /// Call after any change to the text or cursor, including the keyboard's own edits. A

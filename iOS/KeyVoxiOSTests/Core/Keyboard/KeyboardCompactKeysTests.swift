@@ -27,6 +27,32 @@ struct KeyboardCompactKeysTests {
         #expect(compactRows[1] == fullRows[3])
     }
 
+    @Test func keyboardOpensOnFullLettersWhileCompactKeysAreRemembered() {
+        let layout = KeyboardOpeningLayout.resolve(
+            prefersNumberPage: false,
+            isCompactKeysEnabled: true,
+            isCompactKeysActive: true
+        )
+
+        #expect(layout == KeyboardOpeningLayout(symbolPage: .letters, keysMode: .full))
+    }
+
+    @Test func keyboardOpensOn123InTheRememberedKeysSize() {
+        let compact = KeyboardOpeningLayout.resolve(
+            prefersNumberPage: true,
+            isCompactKeysEnabled: true,
+            isCompactKeysActive: true
+        )
+        let full = KeyboardOpeningLayout.resolve(
+            prefersNumberPage: true,
+            isCompactKeysEnabled: true,
+            isCompactKeysActive: false
+        )
+
+        #expect(compact == KeyboardOpeningLayout(symbolPage: .primary, keysMode: .compact))
+        #expect(full == KeyboardOpeningLayout(symbolPage: .primary, keysMode: .full))
+    }
+
     @Test func compactKeysAvailabilityDefaultsOnAndCanBeDisabled() {
         let suiteName = "KeyboardCompactKeysTests.\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suiteName)!

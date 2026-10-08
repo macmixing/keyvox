@@ -152,6 +152,7 @@
 				Core/KeyboardKeysMode.swift,
 				Core/KeyboardLayoutGeometry.swift,
 				Core/KeyboardModelAvailability.swift,
+				Core/KeyboardOpeningLayout.swift,
 				Core/KeyboardState.swift,
 				Core/KeyboardStyle.swift,
 				Core/KeyboardSymbolLayout.swift,
