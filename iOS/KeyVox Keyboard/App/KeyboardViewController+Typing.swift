@@ -9,6 +9,7 @@ extension KeyboardViewController {
     /// typing session.
     func prepareTypingForCurrentField() {
         typingTraits = KeyboardTypingTraits(proxy: textDocumentProxy)
+        fieldHasLetters = fieldHoldsLetters()
         if keysMode == .compact {
             symbolPage = .primary
         } else {
@@ -33,10 +34,23 @@ extension KeyboardViewController {
             updateActiveInsertionVisualState()
             return
         }
+        fieldHasLetters = fieldHoldsLetters()
         predictionCoordinator.textDidChange()
         synchronizeLetterCase()
         refreshPredictions()
         updateActiveInsertionVisualState()
+    }
+
+    /// Whether the text around the cursor holds any letters; spaces, digits, punctuation, and
+    /// emoji alone do not count.
+    private func fieldHoldsLetters() -> Bool {
+        [
+            textDocumentProxy.documentContextBeforeInput,
+            textDocumentProxy.selectedText,
+            textDocumentProxy.documentContextAfterInput,
+        ].contains { text in
+            text?.contains(where: \.isLetter) ?? false
+        }
     }
 
     /// Handles letter-page keys before the regular text input path. Returns nil when the

@@ -103,6 +103,14 @@ final class KeyboardViewController: UIInputViewController {
             updateUI()
         }
     }
+    /// Whether the focused field holds any letters, read only as the field is set up or its
+    /// text changes. Until it does, the dictation tools show in place of suggestions.
+    var fieldHasLetters = false {
+        didSet {
+            guard fieldHasLetters != oldValue else { return }
+            updateUI()
+        }
+    }
 
     var rootContainerView: KeyboardRootView?
     var popupOverlayView: UIView?
@@ -272,7 +280,7 @@ final class KeyboardViewController: UIInputViewController {
             state: keyboardState,
             symbolPage: symbolPage,
             keysMode: keysMode,
-            allowsPredictions: typingTraits.allowsPredictions,
+            offersPredictions: typingTraits.allowsPredictions && fieldHasLetters,
             isCapsLockEnabled: isCapsLockEnabled,
             isDictationCapsApplied: dictationChangeController.displayedCapsTransformApplied,
             isDictationCapsUppercase: dictationChangeController.displayedCapsTextIsUppercase,
