@@ -16,7 +16,8 @@ import CoreGraphics
 ///
 /// Once the next word is known, a word left as typed can be reconsidered: each candidate
 /// then also scores how likely the next word is after it, and replaces the typed word only
-/// by the revision margin.
+/// by the revision margin. A typed word that is itself a word is only replaced by a word a
+/// single slip away.
 public struct NoisyChannelCorrector: Sendable {
     public struct Parameters: Sendable, Equatable {
         public var touch: TouchAlignmentScorer.Parameters
@@ -160,17 +161,31 @@ public struct NoisyChannelCorrector: Sendable {
         }
         alternatives.sort { $0.score > $1.score }
 
-        let replacement = alternatives.first.flatMap { best in
-            let margin = followingWord == nil
-                ? margin(for: best, typed: typedCandidate)
-                : parameters.revisionMargin
-            return typed.count >= 2 && best.score - typedCandidate.score >= margin ? best.word : nil
-        }
+        let replacement = revisable(alternatives, of: typedCandidate, followingWord: followingWord)
+            .first
+            .flatMap { best in
+                let margin = followingWord == nil
+                    ? margin(for: best, typed: typedCandidate)
+                    : parameters.revisionMargin
+                return typed.count >= 2 && best.score - typedCandidate.score >= margin ? best.word : nil
+            }
         return Decision(
             replacement: replacement,
             rankedAlternatives: alternatives,
             typed: typedCandidate
         )
+    }
+
+    /// The candidates that may replace a finished word once the next word is known. A word
+    /// that is itself a word is only reconsidered as a single slip away ("fan" may become
+    /// "can", "nd" may become "and"), never as a word two slips away ("lol" never "look").
+    private func revisable(
+        _ alternatives: [ScoredCandidate],
+        of typed: ScoredCandidate,
+        followingWord: String?
+    ) -> [ScoredCandidate] {
+        guard followingWord != nil, typed.language.isDictionaryWord else { return alternatives }
+        return alternatives.filter { TypingSlip.isAtMostOne(between: typed.word, and: $0.word) }
     }
 
     private func margin(for best: ScoredCandidate, typed: ScoredCandidate) -> Double {
