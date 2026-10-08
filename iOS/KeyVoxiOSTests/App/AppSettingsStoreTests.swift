@@ -101,7 +101,7 @@ struct AppSettingsStoreTests {
         #expect(defaults.object(forKey: UserDefaultsKeys.compactKeysActive) as? Bool == false)
     }
 
-    @Test func keyboardTypingHelpsDefaultToOn() {
+    @Test func keyboardTypingTogglesDefaultToOn() {
         let defaults = UserDefaults(suiteName: #function)!
         defaults.removePersistentDomain(forName: #function)
 
@@ -114,7 +114,7 @@ struct AppSettingsStoreTests {
         #expect(store.periodShortcutEnabled)
     }
 
-    @Test func disabledKeyboardTypingHelpsPersistForTheKeyboard() {
+    @Test func disabledKeyboardTypingTogglesPersistForTheKeyboard() {
         let defaults = UserDefaults(suiteName: #function)!
         defaults.removePersistentDomain(forName: #function)
         let store = AppSettingsStore(defaults: defaults)

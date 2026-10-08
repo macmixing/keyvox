@@ -1,7 +1,7 @@
 import UIKit
 
 /// What the letter keyboard may do in the focused text field: what the field's text traits
-/// allow, narrowed by the user's keyboard settings. A help the field turns off stays off
+/// allow, narrowed by the user's keyboard settings. A feature the field turns off stays off
 /// whatever the settings say.
 struct KeyboardTypingTraits: Equatable {
     /// The field expects digits first, or the user opens the keyboard on 123, so the keyboard
@@ -18,7 +18,7 @@ struct KeyboardTypingTraits: Equatable {
     /// Two spaces after a word type a period and a space.
     let allowsPeriodShortcut: Bool
 
-    /// A field that allows every typing help, used until the focused field is read.
+    /// A field that allows every typing feature, used until the focused field is read.
     static let standard = KeyboardTypingTraits(
         prefersNumberPage: false,
         allowsPredictions: true,

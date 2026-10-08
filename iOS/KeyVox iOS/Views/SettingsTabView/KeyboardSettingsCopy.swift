@@ -1,7 +1,7 @@
 /// The wording for the KeyVox keyboard's settings screen and the Keyboard row that opens it.
 enum KeyboardSettingsCopy {
     static let screenTitle = "Keyboard"
-    static let screenDescription = "Typing helps, corrections, and layout for the KeyVox keyboard."
+    static let screenDescription = "Corrections, predictions, and layout for the KeyVox keyboard."
     static let autoCapitalizationTitle = "Auto-Capitalization"
     static let autoCorrectionTitle = "Auto-Correction"
     static let capsLockTitle = "Enable Caps Lock"

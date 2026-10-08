@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// The KeyVox keyboard's settings, opened from the Keyboard row in Settings: the typing
-/// helps as single-line switches, then the layout options with their descriptions.
+/// toggles as single-line rows, then the layout options with their descriptions.
 struct KeyboardSettingsView: View {
     @EnvironmentObject private var settingsStore: AppSettingsStore
 
