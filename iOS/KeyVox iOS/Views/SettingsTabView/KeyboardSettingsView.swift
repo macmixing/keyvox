@@ -12,6 +12,7 @@ struct KeyboardSettingsView: View {
                 compactKeysSection
                 openOnNumberPageSection
                 leftHandedLayoutSection
+                englishOnlyNote
             }
         }
         .navigationTitle(KeyboardSettingsCopy.screenTitle)
@@ -98,6 +99,14 @@ struct KeyboardSettingsView: View {
                 isOn: $settingsStore.opensOnNumberPage
             )
         }
+    }
+
+    private var englishOnlyNote: some View {
+        Text(KeyboardSettingsCopy.englishOnlyNote)
+            .font(.appFont(15, variant: .light))
+            .foregroundStyle(.yellow.opacity(0.7))
+            .multilineTextAlignment(.center)
+            .frame(maxWidth: .infinity, alignment: .center)
     }
 
     private var divider: some View {
