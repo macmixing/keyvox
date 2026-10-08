@@ -29,6 +29,20 @@ final class WordRevisionTests: XCTestCase {
         }
     }
 
+    /// A finished word one slip away from a better word is fixed once the next word shows it:
+    /// "I male mistakes" and "I night be".
+    func testWordOneSlipAwayIsFixedByTheNextWord() throws {
+        for (typed, following, expected) in [("male", "mistakes", "make"), ("night", "be", "might")] {
+            let revision = try computer.revision(for: RevisionRequest(
+                word: typed,
+                touches: typed.map { touch(on: $0, offsetBy: .zero) },
+                previousWords: ["i"],
+                followingWord: following
+            ))
+            XCTAssertEqual(revision, expected, "\(typed) before \(following)")
+        }
+    }
+
     /// A tap on `key` of the default layout, moved from its center by fractions of its size.
     private func touch(on key: Character, offsetBy offset: CGVector) -> CGPoint {
         let frame = EnglishKeyboardLayout.defaultGeometry.first { $0.character == key }!.frame
