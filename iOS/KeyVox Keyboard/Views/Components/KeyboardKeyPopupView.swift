@@ -53,6 +53,15 @@ final class KeyboardKeyPopupView: UIView {
         layer.shadowOpacity = KeyboardStyle.popupShadowOpacity
         layer.shadowRadius = KeyboardStyle.popupShadowRadius
         layer.shadowOffset = KeyboardStyle.popupShadowOffset
+        // The fill is opaque, so the shadow is the shape of the bubble's rounded corners (circular,
+        // as the layer draws them); giving it that shape saves tracing the bubble every frame.
+        let cornerRadius = min(KeyboardStyle.popupCornerRadius, bounds.width / 2, bounds.height / 2)
+        layer.shadowPath = CGPath(
+            roundedRect: bounds,
+            cornerWidth: cornerRadius,
+            cornerHeight: cornerRadius,
+            transform: nil
+        )
     }
 
     func present(text: String, from keyView: KeyboardKeyView, in container: UIView) {
@@ -95,13 +104,15 @@ final class KeyboardKeyPopupView: UIView {
         setNeedsLayout()
         layoutIfNeeded()
 
+        isHidden = false
         alpha = 1
         transform = .identity
     }
 
+    /// Hides the bubble, keeping it in place for the next key instead of removing it.
     func dismiss() {
-        guard superview != nil else { return }
-        removeFromSuperview()
+        guard superview != nil, isHidden == false else { return }
+        isHidden = true
     }
 
     private func pixelAlignedFrame(for rect: CGRect) -> CGRect {

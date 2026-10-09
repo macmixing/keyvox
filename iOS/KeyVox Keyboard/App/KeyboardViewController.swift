@@ -586,7 +586,10 @@ final class KeyboardViewController: UIInputViewController {
                 self?.advanceToNextInputMode()
             }
         )
-        symbolPage = updatedSymbolPage
+        // Setting the page redraws the whole keyboard, so only a key that changed it sets it.
+        if updatedSymbolPage != symbolPage {
+            symbolPage = updatedSymbolPage
+        }
         if didHandle {
             recordTypedCharacter(activation)
             handleTypingContextChange()

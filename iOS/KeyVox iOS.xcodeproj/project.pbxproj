@@ -179,6 +179,7 @@
 				Views/Components/KeyboardCancelButton.swift,
 				Views/Components/KeyboardCapsLockButton.swift,
 				Views/Components/KeyboardHitTargetButton.swift,
+				Views/Components/KeyboardKeyGridPage.swift,
 				Views/Components/KeyboardKeyGridView.swift,
 				"Views/Components/KeyboardKeyGridView+Touches.swift",
 				Views/Components/KeyboardKeyPopupView.swift,

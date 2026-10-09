@@ -11,12 +11,14 @@ final class KeyboardCapsLockButton: UIControl {
 
     var isTrackpadModeActive = false {
         didSet {
+            guard isTrackpadModeActive != oldValue else { return }
             updateVisualState(animated: true)
         }
     }
 
     var isLocked = false {
         didSet {
+            guard isLocked != oldValue else { return }
             updateAccessibility()
             updateVisualState(animated: true)
         }
@@ -24,6 +26,7 @@ final class KeyboardCapsLockButton: UIControl {
 
     var isDictationCapsApplied = false {
         didSet {
+            guard isDictationCapsApplied != oldValue else { return }
             updateAccessibility()
             updateVisualState(animated: true)
         }
@@ -31,6 +34,7 @@ final class KeyboardCapsLockButton: UIControl {
 
     var isDictationCapsUppercase = false {
         didSet {
+            guard isDictationCapsUppercase != oldValue else { return }
             updateAccessibility()
             updateVisualState(animated: true)
         }

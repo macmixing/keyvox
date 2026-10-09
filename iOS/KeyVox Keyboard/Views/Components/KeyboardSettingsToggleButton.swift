@@ -24,6 +24,7 @@ final class KeyboardSettingsToggleButton: UIControl {
 
     var isOn = false {
         didSet {
+            guard isOn != oldValue else { return }
             updateAccessibility()
             updateVisualState(animated: true)
         }
@@ -37,6 +38,7 @@ final class KeyboardSettingsToggleButton: UIControl {
 
     var isTrackpadModeActive = false {
         didSet {
+            guard isTrackpadModeActive != oldValue else { return }
             updateVisualState(animated: true)
         }
     }

@@ -57,8 +57,12 @@ final class KeyboardSuggestionBarView: UIView {
     func apply(_ bar: SuggestionBar) {
         let newItems = [bar.leading, bar.primary, bar.trailing]
         guard newItems != items else { return }
+        let oldItems = items
         items = newItems
-        for (button, item) in zip(buttons, items) {
+        // Restyling a button lays it out again, so only slots whose suggestion changed are
+        // restyled; the others already show their suggestion in its colors.
+        for (index, button) in buttons.enumerated() where newItems[index] != oldItems[index] {
+            let item = newItems[index]
             var configuration = button.configuration
             configuration?.attributedTitle = item.map { item in
                 AttributedString(
@@ -74,8 +78,8 @@ final class KeyboardSuggestionBarView: UIView {
             button.configuration = configuration
             button.isEnabled = item != nil
             button.accessibilityLabel = item?.text
+            applyAppearance(to: button)
         }
-        refreshAppearance()
     }
 
     private func refreshAppearance() {

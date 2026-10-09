@@ -15,6 +15,7 @@ final class KeyboardVibesButton: UIControl {
 
     var title = "" {
         didSet {
+            guard title != oldValue else { return }
             titleLabel.text = title
             updateNoneIconVisibility()
             updateAccessibility()
@@ -23,6 +24,7 @@ final class KeyboardVibesButton: UIControl {
 
     var displayedVibeStyle: StyleRewriteStyle = .none {
         didSet {
+            guard displayedVibeStyle != oldValue else { return }
             updateNoneIconVisibility()
             updateVisualState(animated: false)
         }
@@ -30,12 +32,14 @@ final class KeyboardVibesButton: UIControl {
 
     var isDisplayedVibeApplied = true {
         didSet {
+            guard isDisplayedVibeApplied != oldValue else { return }
             updateVisualState(animated: false)
         }
     }
 
     var isTrackpadModeActive = false {
         didSet {
+            guard isTrackpadModeActive != oldValue else { return }
             updateVisualState(animated: true)
         }
     }

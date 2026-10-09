@@ -11,7 +11,10 @@ final class KeyboardKeyView: UIView {
     private let backgroundView = UIView()
     private let blurEffectView = UIVisualEffectView(effect: UIBlurEffect(style: .systemThinMaterial))
     private let tintOverlay = UIView()
-    private let titleLabel = UILabel()
+    /// Two labels taking turns: a letter switching case shows the label that already holds the
+    /// other case instead of laying out new text, so switching case only shows and hides labels.
+    private let titleLabels = [UILabel(), UILabel()]
+    private var visibleTitleLabel: UILabel { titleLabels.first { $0.isHidden == false } ?? titleLabels[0] }
     private let imageView = UIImageView()
     private lazy var borderRenderer = KeyboardRoundedBorderRenderer(containerView: backgroundView)
 
@@ -19,6 +22,16 @@ final class KeyboardKeyView: UIView {
     private(set) var visualState: VisualState = .normal
     private var widthUnits: CGFloat
     private var isTrackpadModeActive = false
+
+    /// Everything the key's look follows; `apply` changes nothing when it is unchanged.
+    private struct Appearance: Equatable {
+        let model: KeyboardKeyModel
+        let state: VisualState
+        let isTrackpadModeActive: Bool
+        let userInterfaceStyle: UIUserInterfaceStyle
+    }
+
+    private var appliedAppearance: Appearance?
 
     override var intrinsicContentSize: CGSize {
         CGSize(width: widthUnits * KeyboardStyle.keyUnitWidth, height: KeyboardStyle.keyHeight)
@@ -49,12 +62,39 @@ final class KeyboardKeyView: UIView {
         isTrackpadModeActive: Bool = false,
         animated: Bool = true
     ) {
+        let appearance = Appearance(
+            model: model,
+            state: state,
+            isTrackpadModeActive: isTrackpadModeActive,
+            userInterfaceStyle: traitCollection.userInterfaceStyle
+        )
+        // Keys are applied again whenever the keyboard updates; one that looks the same is left alone.
+        guard appearance != appliedAppearance else { return }
+        let previousModel = appliedAppearance?.model
+        let isNewModel = previousModel != model
+        appliedAppearance = appearance
         self.model = model
-        self.widthUnits = model.widthUnits
         self.visualState = state
         self.isTrackpadModeActive = isTrackpadModeActive
-        accessibilityLabel = model.accessibilityLabel
-        invalidateIntrinsicContentSize()
+        if isNewModel {
+            accessibilityLabel = model.accessibilityLabel
+            if widthUnits != model.widthUnits {
+                widthUnits = model.widthUnits
+                invalidateIntrinsicContentSize()
+            }
+            // A letter changing case keeps its font and has no symbol, so only its title changes.
+            let titleFont = model.titleFont
+            if previousModel == nil || visibleTitleLabel.font != titleFont {
+                titleLabels.forEach { $0.font = titleFont }
+            }
+            showTitle(model.systemImageName == nil ? model.attributedTitle() : nil)
+            if previousModel == nil || previousModel?.systemImageName != model.systemImageName {
+                imageView.image = model.systemImageName.flatMap { name in
+                    UIImage(systemName: name, withConfiguration: KeyboardStyle.keySymbolConfiguration)
+                }
+                imageView.isHidden = model.systemImageName == nil
+            }
+        }
 
         let colors = colorsForCurrentState(model: model, state: state)
         let resolvedBorderColor = colors.border.resolvedColor(with: traitCollection)
@@ -62,19 +102,8 @@ final class KeyboardKeyView: UIView {
         backgroundView.backgroundColor = .clear
         tintOverlay.backgroundColor = colors.fill.withAlphaComponent(0.3)
         borderRenderer.strokeColor = effectiveBorderColor.cgColor
-        titleLabel.textColor = colors.foreground
+        titleLabels.forEach { $0.textColor = colors.foreground }
         imageView.tintColor = colors.foreground
-
-        titleLabel.font = model.titleFont
-        if model.systemImageName == nil {
-            titleLabel.attributedText = model.attributedTitle()
-        } else {
-            titleLabel.attributedText = nil
-        }
-        imageView.image = model.systemImageName.flatMap { name in
-            UIImage(systemName: name, withConfiguration: KeyboardStyle.keySymbolConfiguration)
-        }
-        imageView.isHidden = model.systemImageName == nil
 
         let shadow = state == .pressed ? KeyboardStyle.pressedKeyShadow : KeyboardStyle.keyShadow
         backgroundView.layer.shadowColor = shadow.color.cgColor
@@ -106,7 +135,7 @@ final class KeyboardKeyView: UIView {
         }
         let titleAlpha: CGFloat = isTrackpadModeActive ? 0 : 1
         let applyGlyphVisibility = {
-            self.titleLabel.alpha = titleAlpha
+            self.titleLabels.forEach { $0.alpha = titleAlpha }
             self.imageView.alpha = titleAlpha
         }
         if animated {
@@ -121,7 +150,7 @@ final class KeyboardKeyView: UIView {
     func resetVisualState() {
         layer.removeAllAnimations()
         backgroundView.layer.removeAllAnimations()
-        titleLabel.layer.removeAllAnimations()
+        titleLabels.forEach { $0.layer.removeAllAnimations() }
         imageView.layer.removeAllAnimations()
         isTrackpadModeActive = false
         apply(model: model, state: .normal, isTrackpadModeActive: false, animated: false)
@@ -146,11 +175,14 @@ final class KeyboardKeyView: UIView {
         tintOverlay.clipsToBounds = true
         tintOverlay.isUserInteractionEnabled = false
 
-        titleLabel.translatesAutoresizingMaskIntoConstraints = false
-        titleLabel.textAlignment = .center
-        titleLabel.adjustsFontSizeToFitWidth = true
-        titleLabel.minimumScaleFactor = 0.7
-        titleLabel.isUserInteractionEnabled = false
+        for (index, titleLabel) in titleLabels.enumerated() {
+            titleLabel.translatesAutoresizingMaskIntoConstraints = false
+            titleLabel.textAlignment = .center
+            titleLabel.adjustsFontSizeToFitWidth = true
+            titleLabel.minimumScaleFactor = 0.7
+            titleLabel.isUserInteractionEnabled = false
+            titleLabel.isHidden = index > 0
+        }
 
         imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.contentMode = .scaleAspectFit
@@ -159,7 +191,7 @@ final class KeyboardKeyView: UIView {
         addSubview(backgroundView)
         backgroundView.addSubview(blurEffectView)
         backgroundView.addSubview(tintOverlay)
-        addSubview(titleLabel)
+        titleLabels.forEach(addSubview)
         addSubview(imageView)
         _ = borderRenderer
 
@@ -179,14 +211,31 @@ final class KeyboardKeyView: UIView {
             tintOverlay.topAnchor.constraint(equalTo: backgroundView.topAnchor),
             tintOverlay.bottomAnchor.constraint(equalTo: backgroundView.bottomAnchor),
 
-            titleLabel.centerXAnchor.constraint(equalTo: centerXAnchor),
-            titleLabel.centerYAnchor.constraint(equalTo: centerYAnchor),
-            titleLabel.leadingAnchor.constraint(greaterThanOrEqualTo: leadingAnchor, constant: 6),
-            titleLabel.trailingAnchor.constraint(lessThanOrEqualTo: trailingAnchor, constant: -6),
-
             imageView.centerXAnchor.constraint(equalTo: centerXAnchor),
             imageView.centerYAnchor.constraint(equalTo: centerYAnchor),
         ])
+        NSLayoutConstraint.activate(titleLabels.flatMap { titleLabel in
+            [
+                titleLabel.centerXAnchor.constraint(equalTo: centerXAnchor),
+                titleLabel.centerYAnchor.constraint(equalTo: centerYAnchor),
+                titleLabel.leadingAnchor.constraint(greaterThanOrEqualTo: leadingAnchor, constant: 6),
+                titleLabel.trailingAnchor.constraint(lessThanOrEqualTo: trailingAnchor, constant: -6),
+            ]
+        })
+    }
+
+    /// Shows `title`, in the label already holding it if one does, otherwise in the label not
+    /// showing, so the title it replaces stays ready for the next switch back.
+    private func showTitle(_ title: NSAttributedString?) {
+        let current = visibleTitleLabel
+        guard current.attributedText != title else { return }
+        let label = titleLabels.first { $0 !== current && $0.attributedText == title }
+            ?? titleLabels.first { $0 !== current }!
+        if label.attributedText != title {
+            label.attributedText = title
+        }
+        label.isHidden = false
+        current.isHidden = true
     }
 
     private func observeBorderAppearanceChanges() {
