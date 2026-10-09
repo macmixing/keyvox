@@ -7944,6 +7944,8 @@ ionesco's	Ionesco's
 ionian	Ionian
 ionian's	Ionian's
 ionic's	Ionic's
+ios	iOS
+ios's	iOS's
 iowa	Iowa
 iowa's	Iowa's
 iowan	Iowan
@@ -10276,6 +10278,8 @@ macmillan	Macmillan
 macmillan's	Macmillan's
 macon	Macon
 macon's	Macon's
+macos	macOS
+macos's	macOS's
 macumba	Macumba
 macumba's	Macumba's
 macy	Macy
