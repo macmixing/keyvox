@@ -293,6 +293,8 @@ extension ModelManager {
             lifecycle.unloadModel()
             if let parakeetLifecycle = lifecycle as? ParakeetService {
                 await parakeetLifecycle.preloadIfNeeded()
+            } else if let whisperLifecycle = lifecycle as? WhisperService {
+                await whisperLifecycle.preloadIfNeeded()
             } else {
                 lifecycle.warmup()
             }

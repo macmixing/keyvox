@@ -1,11 +1,10 @@
 import Foundation
 import KeyVoxParakeet
+import KeyVoxVoiceActivity
 
 extension ParakeetService {
     public func warmup() {
-        if voiceActivityAnalyzer == nil {
-            voiceActivityAnalyzer = voiceActivityAnalyzerFactory()
-        }
+        _ = scheduleVoiceActivityWarmupIfNeeded()
         _ = scheduleWarmupIfNeeded()
     }
 
@@ -13,6 +12,8 @@ extension ParakeetService {
         cancelTranscription()
         warmupHandle?.task.cancel()
         warmupHandle = nil
+        voiceActivityWarmupHandle?.task.cancel()
+        voiceActivityWarmupHandle = nil
         parakeet?.unload()
         logModelUnloadedIfNeeded(parakeet)
         parakeet = nil
@@ -93,6 +94,52 @@ extension ParakeetService {
         }
 
         parakeet = warmedParakeet
+    }
+
+    func scheduleVoiceActivityWarmupIfNeeded() -> VoiceActivityWarmupHandle? {
+        if let voiceActivityWarmupHandle {
+            return voiceActivityWarmupHandle
+        }
+
+        if voiceActivityAnalyzer != nil {
+            return nil
+        }
+
+        let factory = voiceActivityAnalyzerFactory
+        let task = Task.detached(priority: .userInitiated) {
+            await SpeechModelLoadQueue.load(factory)
+        }
+
+        let handle = VoiceActivityWarmupHandle(id: UUID(), task: task)
+        voiceActivityWarmupHandle = handle
+        Task { [weak self] in
+            await self?.installVoiceActivityWarmupResultIfCurrent(handle)
+        }
+        return handle
+    }
+
+    func loadedVoiceActivityAnalyzer() async -> (any VoiceActivityAnalyzing)? {
+        if let voiceActivityAnalyzer {
+            return voiceActivityAnalyzer
+        }
+
+        guard let handle = scheduleVoiceActivityWarmupIfNeeded() else {
+            return voiceActivityAnalyzer
+        }
+
+        await installVoiceActivityWarmupResultIfCurrent(handle)
+        return voiceActivityAnalyzer
+    }
+
+    func installVoiceActivityWarmupResultIfCurrent(_ handle: VoiceActivityWarmupHandle) async {
+        let warmedAnalyzer = await handle.task.value
+
+        guard voiceActivityWarmupHandle?.id == handle.id else { return }
+        voiceActivityWarmupHandle = nil
+
+        if voiceActivityAnalyzer == nil {
+            voiceActivityAnalyzer = warmedAnalyzer
+        }
     }
 
     nonisolated static func makeParakeet(modelURL: URL) throws -> Parakeet? {

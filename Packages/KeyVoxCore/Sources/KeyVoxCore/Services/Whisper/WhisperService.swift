@@ -6,6 +6,16 @@ import KeyVoxState
 
 @MainActor
 public class WhisperService: StatePublishing, DictationProvider {
+    struct WarmupResult {
+        let voiceActivityDetector: VoiceActivityDetector?
+        let whisper: Whisper?
+    }
+
+    struct WarmupHandle {
+        let id: UUID
+        let task: Task<WarmupResult, Never>
+    }
+
     @StateValue public internal(set) var isTranscribing = false
     @StateValue public internal(set) var transcriptionText = ""
     @StateValue public internal(set) var lastResultWasLikelyNoSpeech = false
@@ -34,6 +44,7 @@ public class WhisperService: StatePublishing, DictationProvider {
 
     var transcriptionTask: Task<Void, Never>?
     var voiceActivityDetector: VoiceActivityDetector?
+    var warmupHandle: WarmupHandle?
 
     public init(
         modelPathResolver: @escaping () -> String? = { nil },

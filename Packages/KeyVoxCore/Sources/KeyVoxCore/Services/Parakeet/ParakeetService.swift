@@ -13,6 +13,11 @@ public final class ParakeetService: StatePublishing, DictationProvider {
         let task: Task<Parakeet?, Never>
     }
 
+    struct VoiceActivityWarmupHandle {
+        let id: UUID
+        let task: Task<(any VoiceActivityAnalyzing)?, Never>
+    }
+
     @StateValue public internal(set) var isTranscribing = false
     @StateValue public internal(set) var transcriptionText = ""
     @StateValue public internal(set) var lastResultWasLikelyNoSpeech = false
@@ -22,6 +27,7 @@ public final class ParakeetService: StatePublishing, DictationProvider {
     let voiceActivityAnalyzerFactory: VoiceActivityAnalyzerFactory
     private var activeTranscriptionRequestID = UUID()
     var warmupHandle: WarmupHandle?
+    var voiceActivityWarmupHandle: VoiceActivityWarmupHandle?
 
     var parakeet: Parakeet?
     var transcriptionTask: Task<Void, Never>?

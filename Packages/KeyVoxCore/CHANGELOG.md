@@ -6,6 +6,27 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.3.7] - 2026-10-08
+
+Whisper and Parakeet no longer block app startup while preparing speech detection and dictation models.
+
+### Includes
+
+- Moved Whisper warmup off the main thread, loading the voice activity detector and then the model in the background.
+- Ran voice activity detector and Whisper model loads one at a time across Whisper and Parakeet so their initialization never overlaps.
+- Made Whisper transcription wait for an in-flight warmup instead of starting a second load.
+- Added `WhisperService.preloadIfNeeded()` so model installs can wait until Whisper is fully loaded, matching Parakeet.
+- Moved Parakeet voice activity detector creation off the main thread.
+- Ended cancelled Parakeet requests as soon as the voice activity detector finishes loading, before analyzing audio.
+- Added debug-only timing logs for the Whisper voice activity detector and model loads.
+- Added regression coverage for background warmup, preload completion, and reuse of an in-flight voice activity detector and model load.
+
+### Notes
+
+- `1.3.7` tracks background model warmup in the shared Core dictation services.
+
+---
+
 ## [1.3.6] - 2026-10-06
 
 Dictionary matching no longer merges words across sentence or clause punctuation.
