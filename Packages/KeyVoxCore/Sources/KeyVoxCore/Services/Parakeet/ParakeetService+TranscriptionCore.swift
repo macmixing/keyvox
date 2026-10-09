@@ -31,8 +31,14 @@ extension ParakeetService {
             let paragraphChunker = self.paragraphChunker
 
             do {
+                let voiceActivityAnalyzer = await self.loadedVoiceActivityAnalyzer()
+                if Task.isCancelled {
+                    self.finishCancelledRequest(requestID)
+                    return
+                }
+
                 let voiceActivityAnalysis: VoiceActivityAnalysis?
-                if let voiceActivityAnalyzer = await self.loadedVoiceActivityAnalyzer(),
+                if let voiceActivityAnalyzer,
                    let voiceActivity = await voiceActivityAnalyzer.analyze(
                     audioFrames: audioFrames,
                     configuration: .standard
