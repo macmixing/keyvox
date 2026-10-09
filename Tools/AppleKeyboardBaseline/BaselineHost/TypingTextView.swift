@@ -3,7 +3,8 @@ import UIKit
 
 /// A plain UITextView with system autocorrection on and every other text helper that
 /// could rewrite input off: no auto-capitalization, smart punctuation, or inline
-/// predictions, so the recorded text reflects autocorrect alone.
+/// predictions, so the recorded text reflects autocorrect alone. `SMART_QUOTES=1` turns
+/// smart quotes on, as most apps' text fields have them.
 struct TypingTextView: UIViewRepresentable {
     @Binding var text: String
 
@@ -14,7 +15,7 @@ struct TypingTextView: UIViewRepresentable {
         view.autocorrectionType = isAutocorrectionDisabled ? .no : .yes
         view.spellCheckingType = isAutocorrectionDisabled ? .no : .yes
         view.autocapitalizationType = .none
-        view.smartQuotesType = .no
+        view.smartQuotesType = ProcessInfo.processInfo.environment["SMART_QUOTES"] == "1" ? .yes : .no
         view.smartDashesType = .no
         view.smartInsertDeleteType = .no
         view.inlinePredictionType = .no
