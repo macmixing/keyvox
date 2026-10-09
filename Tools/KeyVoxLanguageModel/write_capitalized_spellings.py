@@ -17,11 +17,14 @@ import argparse
 from collections import Counter, defaultdict
 from pathlib import Path
 
-from extract_sentences import READERS
+from extract_sentences import oasst2_texts, tatoeba_rows
 from normalize import written_runs
 
-# The sources written with care for capitals; video transcripts often are not.
-WRITTEN_SOURCES = ("oasst2", "tatoeba")
+# The sources written with care for capitals; video transcripts often are not. Tatoeba is
+# read whole: the language data leaves out its sentences that mention its recurring
+# characters only so the characters stop opening sentences, and those sentences still show
+# how words are written.
+WRITTEN_SOURCES = {"oasst2": oasst2_texts, "tatoeba": tatoeba_rows}
 
 
 def has_capitals_in_a_row(spelling: str) -> bool:
@@ -61,8 +64,8 @@ def main() -> None:
     spellings = capitals_only_spellings(arguments.scowl_words, arguments.common_words)
     as_spelled: Counter[str] = Counter()
     in_lowercase: Counter[str] = Counter()
-    for name in WRITTEN_SOURCES:
-        for text in READERS[name](arguments.data_dir / "sources" / name):
+    for name, read in WRITTEN_SOURCES.items():
+        for text in read(arguments.data_dir / "sources" / name):
             for run in written_runs(text):
                 for word in run[1:]:
                     key = word.lower()
