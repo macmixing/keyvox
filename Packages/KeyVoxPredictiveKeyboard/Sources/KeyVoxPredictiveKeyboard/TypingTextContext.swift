@@ -35,7 +35,8 @@ public struct TypingTextContext: Sendable, Equatable {
         restOfWord = selected.isEmpty ? String(followingText.prefix(while: Self.isWordCharacter)) : ""
     }
 
-    static func isWordCharacter(_ character: Character) -> Bool {
+    /// Whether `character` belongs inside a word: a letter or an apostrophe.
+    public static func isWordCharacter(_ character: Character) -> Bool {
         character.isLetter || character == "'" || character == "’"
     }
 
