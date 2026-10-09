@@ -106,6 +106,9 @@ extension KeyboardViewController {
         rootContainerView.keyGridView.onCharacterKeyTouchDown = { [weak self] in
             self?.characterKeyHaptics.emitKeypressIfEnabled()
         }
+        rootContainerView.keyGridView.onKeyTouchDown = { [weak self] activation in
+            self?.prepareContestedTap(activation)
+        }
         rootContainerView.keyGridView.onCharacterGeometryChange = { [weak self] geometry, size in
             self?.predictionCoordinator.updateGeometry(geometry, keyboardSize: size)
         }
@@ -172,6 +175,7 @@ extension KeyboardViewController {
             rootContainerView.keyGridView.onKeyActivated = nil
             rootContainerView.keyGridView.onDeleteWords = nil
             rootContainerView.keyGridView.onCharacterKeyTouchDown = nil
+            rootContainerView.keyGridView.onKeyTouchDown = nil
             rootContainerView.keyGridView.onCharacterGeometryChange = nil
             rootContainerView.suggestionBarView.onItemSelected = nil
             rootContainerView.keyGridView.onCompactKeysRequested = nil

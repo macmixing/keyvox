@@ -102,10 +102,7 @@ extension KeyboardViewController {
     /// A first press of space, return, shift, delete, 123, or the globe that landed close to
     /// a letter key types that letter instead when the letter is the likelier intent.
     func resolveContestedTap(_ activation: KeyboardKeyActivation) -> KeyboardKeyActivation {
-        guard symbolPage == .letters,
-              typingTraits.allowsPredictions,
-              activation.isRepeat == false,
-              let otherKey = Self.contestedKey(for: activation.kind),
+        guard let otherKey = contestedOtherKey(for: activation),
               let letter = predictionCoordinator.intendedLetter(
                   forTapAt: activation.location,
                   onKeyWithFrame: activation.keyFrame,
@@ -165,6 +162,28 @@ extension KeyboardViewController {
                 )
             )
         }
+    }
+
+    /// Starts the check `resolveContestedTap` makes when the finger lands rather than when it
+    /// lifts, so the answer is usually ready by then.
+    func prepareContestedTap(_ activation: KeyboardKeyActivation) {
+        guard let otherKey = contestedOtherKey(for: activation) else { return }
+        predictionCoordinator.prepareIntendedLetter(
+            forTapAt: activation.location,
+            onKeyWithFrame: activation.keyFrame,
+            otherKey: otherKey
+        )
+    }
+
+    /// What kind of key `activation` presses, when it is a first press of a key whose taps
+    /// close to a letter key may be meant for that letter.
+    private func contestedOtherKey(for activation: KeyboardKeyActivation) -> ContestedTap.OtherKey? {
+        guard symbolPage == .letters,
+              typingTraits.allowsPredictions,
+              activation.isRepeat == false else {
+            return nil
+        }
+        return Self.contestedKey(for: activation.kind)
     }
 
     private static func contestedKey(for kind: KeyboardKeyKind) -> ContestedTap.OtherKey? {

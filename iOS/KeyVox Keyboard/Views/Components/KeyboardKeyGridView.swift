@@ -20,6 +20,8 @@ final class KeyboardKeyGridView: UIView {
     var onDeleteWords: ((Int) -> Bool)?
     /// Called the moment a finger lands on a character key, before it types.
     var onCharacterKeyTouchDown: (() -> Void)?
+    /// Called the moment a finger lands on any key, with the press it would make now.
+    var onKeyTouchDown: ((KeyboardKeyActivation) -> Void)?
     var onCompactKeysRequested: (() -> Bool)?
     var onSpaceTrackpadEvent: ((KeyboardSpaceTrackpadEvent) -> Void)?
     /// Letter key frames whenever the letter page lays out differently.

@@ -52,6 +52,7 @@ extension KeyboardKeyGridView {
             touchSessions[ObjectIdentifier(touch)] = session
             guard let hitKey else { continue }
             setVisualState(.pressed, for: hitKey)
+            onKeyTouchDown?(activation(hitKey.model.kind, from: session))
 
             switch hitKey.model.kind {
             case .character:
@@ -209,14 +210,21 @@ extension KeyboardKeyGridView {
         from session: KeyboardKeyTouchSession,
         isRepeat: Bool = false
     ) -> Bool {
-        let activation = KeyboardKeyActivation(
+        onKeyActivated?(activation(kind, from: session, isRepeat: isRepeat)) ?? false
+    }
+
+    private func activation(
+        _ kind: KeyboardKeyKind,
+        from session: KeyboardKeyTouchSession,
+        isRepeat: Bool = false
+    ) -> KeyboardKeyActivation {
+        KeyboardKeyActivation(
             kind: kind,
             location: session.activationLocation,
             keyFrame: session.keyView.map { $0.convert($0.bounds, to: self) } ?? .null,
             timestamp: session.timestamp,
             isRepeat: isRepeat
         )
-        return onKeyActivated?(activation) ?? false
     }
 
     private func activateSpaceTrackpad() {

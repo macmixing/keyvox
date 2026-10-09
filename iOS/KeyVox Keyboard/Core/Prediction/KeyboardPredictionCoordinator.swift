@@ -1,3 +1,4 @@
+import CoreGraphics
 import Foundation
 import KeyVoxPredictiveKeyboard
 
@@ -8,12 +9,19 @@ import KeyVoxPredictiveKeyboard
 /// read again when the work finishes: by then the system may be replacing the field's
 /// document state, and reading it mid-replacement reaches freed memory. At a word boundary
 /// the current suggestion result is used, or computed on the spot if it has not arrived
-/// yet, so a fast space never skips an autocorrection.
+/// yet, so a fast space never skips an autocorrection. The typo check of the word before
+/// the current one is worked out in the background after each result in the same way.
+/// Checks of taps close to a letter key run on an engine of their own, so a key that needs
+/// one, such as delete, never waits for suggestions still being worked out.
 final class KeyboardPredictionCoordinator {
     var onBarChange: ((SuggestionBar) -> Void)?
 
     private let session = PredictiveTypingSession()
-    private let queue = DispatchQueue(label: "org.keyvox.keyboard.prediction", qos: .userInitiated)
+    private let engine = KeyboardPredictionEngine(label: "org.keyvox.keyboard.prediction", qos: .userInitiated)
+    private let tapCheckEngine = KeyboardPredictionEngine(
+        label: "org.keyvox.keyboard.prediction.tap-check",
+        qos: .userInteractive
+    )
     private let textBeforeCursor: () -> String?
     private let selectedText: () -> String?
     private let textAfterCursor: () -> String?
@@ -25,11 +33,22 @@ final class KeyboardPredictionCoordinator {
     private var newestRequest: PredictionRequest?
     private var publishedBar = SuggestionBar.empty
 
-    // Owned by `queue`.
-    private var computer: PredictionComputer?
-    private var pendingGeometry: (keys: [PredictionKeyGeometry], size: CGSize)?
-    private var pendingVocabulary: PersonalVocabulary?
-    private var engineUnavailable = false
+    // Owned by `engine.queue`.
+    /// The newest typo check of the word before the current one, worked out ahead of the
+    /// word boundary that needs it.
+    private var latestRevision: (request: RevisionRequest, revision: String?)?
+    // Owned by `tapCheckEngine.queue`.
+    /// The newest check of a tap close to a letter key, worked out when the finger landed.
+    private var latestIntendedLetter: (check: ContestedTapCheck, letter: Character?)?
+
+    /// A tap close to a letter key and the text it landed in; the same check gets the same
+    /// answer.
+    private struct ContestedTapCheck: Equatable {
+        let location: CGPoint
+        let keyFrame: CGRect
+        let otherKey: ContestedTap.OtherKey
+        let request: PredictionRequest
+    }
 
     init(
         textBeforeCursor: @escaping () -> String?,
@@ -41,35 +60,39 @@ final class KeyboardPredictionCoordinator {
         self.textAfterCursor = textAfterCursor
     }
 
-    /// Starts loading the engine so the first word does not wait for it.
+    /// Starts loading the engines so the first word does not wait for them.
     func prepare() {
-        queue.async { [weak self] in
-            _ = self?.resolvedComputer()
+        for engine in [engine, tapCheckEngine] {
+            engine.queue.async {
+                _ = engine.resolvedComputer()
+            }
         }
     }
 
     func updateGeometry(_ geometry: [KeyboardCharacterKeyGeometry], keyboardSize: CGSize) {
         let keys = geometry.map { PredictionKeyGeometry(character: $0.character, frame: $0.frame) }
         letterKeys = KeyCenterMap(geometry: keys)
-        queue.async { [weak self] in
+        engine.queue.async { [engine] in
+            engine.updateKeyboardGeometry(keys, keyboardSize: keyboardSize)
+        }
+        tapCheckEngine.queue.async { [weak self] in
             guard let self else { return }
-            if let computer = self.computer {
-                computer.updateKeyboardGeometry(keys, keyboardSize: keyboardSize)
-            } else {
-                self.pendingGeometry = (keys, keyboardSize)
-            }
+            self.latestIntendedLetter = nil
+            self.tapCheckEngine.updateKeyboardGeometry(keys, keyboardSize: keyboardSize)
         }
     }
 
     func updateVocabulary(_ vocabulary: PersonalVocabulary) {
         latestResult = nil
-        queue.async { [weak self] in
+        engine.queue.async { [weak self] in
             guard let self else { return }
-            if let computer = self.computer {
-                try? computer.updateVocabulary(vocabulary)
-            } else {
-                self.pendingVocabulary = vocabulary
-            }
+            self.latestRevision = nil
+            self.engine.updateVocabulary(vocabulary)
+        }
+        tapCheckEngine.queue.async { [weak self] in
+            guard let self else { return }
+            self.latestIntendedLetter = nil
+            self.tapCheckEngine.updateVocabulary(vocabulary)
         }
     }
 
@@ -84,6 +107,12 @@ final class KeyboardPredictionCoordinator {
     func reset() {
         session.reset()
         latestResult = nil
+        engine.queue.async { [weak self] in
+            self?.latestRevision = nil
+        }
+        tapCheckEngine.queue.async { [weak self] in
+            self?.latestIntendedLetter = nil
+        }
         newestRequest = nil
         publish(.empty)
     }
@@ -95,8 +124,9 @@ final class KeyboardPredictionCoordinator {
 
     /// Requests suggestions for the text as it is now.
     func refresh(allowsAutocorrection: Bool) {
+        let text = textBeforeCursor()
         let request = session.request(
-            textBeforeCursor: textBeforeCursor(),
+            textBeforeCursor: text,
             selectedText: selectedText(),
             textAfterCursor: textAfterCursor()
         )
@@ -107,7 +137,7 @@ final class KeyboardPredictionCoordinator {
         }
         guard request != pendingRequest else { return }
         pendingRequest = request
-        queue.async { [weak self] in
+        engine.queue.async { [weak self] in
             guard let self, let result = self.compute(request) else { return }
             DispatchQueue.main.async { [weak self] in
                 guard let self else { return }
@@ -117,8 +147,32 @@ final class KeyboardPredictionCoordinator {
                 guard self.newestRequest == request else { return }
                 self.latestResult = result
                 self.publish(Self.bar(for: result, allowsAutocorrection: allowsAutocorrection))
+                if allowsAutocorrection, request.currentWord.isEmpty == false {
+                    self.prepareRevision(self.session.revisionRequest(textBeforeCursor: text, result: result))
+                }
             }
         }
+    }
+
+    /// Works out the typo check of the word before the current one in the background, so
+    /// the word boundary that needs it does not wait for it.
+    private func prepareRevision(_ request: RevisionRequest?) {
+        guard let request else { return }
+        engine.queue.async { [weak self] in
+            guard let self, self.latestRevision?.request != request else { return }
+            _ = self.resolvedRevision(for: request)
+        }
+    }
+
+    /// The typo check for `request`: the one already worked out when it matches, otherwise
+    /// worked out now. Runs on `engine.queue`.
+    private func resolvedRevision(for request: RevisionRequest) -> String? {
+        if let latestRevision, latestRevision.request == request {
+            return latestRevision.revision
+        }
+        let revision = try? engine.resolvedComputer()?.revision(for: request)
+        latestRevision = (request, revision)
+        return revision
     }
 
     /// What typing `separator` after the current word inserts, applying any
@@ -135,7 +189,7 @@ final class KeyboardPredictionCoordinator {
         }
         let revision = session.revisionRequest(textBeforeCursor: text, result: result)
             .flatMap { revisionRequest in
-                queue.sync { try? resolvedComputer()?.revision(for: revisionRequest) }
+                engine.queue.sync { resolvedRevision(for: revisionRequest) }
             }
         return session.wordBoundaryEdit(
             separator: separator,
@@ -152,21 +206,66 @@ final class KeyboardPredictionCoordinator {
         onKeyWithFrame keyFrame: CGRect,
         otherKey: ContestedTap.OtherKey
     ) -> Character? {
-        let maximumDistance = contestedTapPolicy.parameters.maximumDistance
+        guard let check = contestedTapCheck(at: location, onKeyWithFrame: keyFrame, otherKey: otherKey) else {
+            return nil
+        }
+        return tapCheckEngine.queue.sync { resolvedIntendedLetter(for: check) }
+    }
+
+    /// Starts working out `intendedLetter` for a finger that just landed, so the answer is
+    /// usually ready when it lifts.
+    func prepareIntendedLetter(
+        forTapAt location: CGPoint,
+        onKeyWithFrame keyFrame: CGRect,
+        otherKey: ContestedTap.OtherKey
+    ) {
+        guard let check = contestedTapCheck(at: location, onKeyWithFrame: keyFrame, otherKey: otherKey) else {
+            return
+        }
+        tapCheckEngine.queue.async { [weak self] in
+            _ = self?.resolvedIntendedLetter(for: check)
+        }
+    }
+
+    /// The tap and text a tap close to a letter key is checked against, or nil when no letter
+    /// key is close enough for the tap to be meant for it.
+    private func contestedTapCheck(
+        at location: CGPoint,
+        onKeyWithFrame keyFrame: CGRect,
+        otherKey: ContestedTap.OtherKey
+    ) -> ContestedTapCheck? {
         guard let letterKeys,
-              letterKeys.letters(near: location, within: maximumDistance).isEmpty == false else {
+              letterKeys.letters(
+                  near: location,
+                  within: contestedTapPolicy.maximumDistance(for: otherKey)
+              ).isEmpty == false else {
             return nil
         }
         let request = session.request(textBeforeCursor: textBeforeCursor())
-        return queue.sync {
-            try? resolvedComputer()?.intendedLetter(
-                forTapAt: location,
-                onKeyWithFrame: keyFrame,
-                otherKey: otherKey,
-                request: request,
-                policy: contestedTapPolicy
-            )
+        guard contestedTapPolicy.keepsOtherKey(
+            startsWord: request.currentWord.isEmpty,
+            landedOnOtherKey: keyFrame.contains(location)
+        ) == false else {
+            return nil
         }
+        return ContestedTapCheck(location: location, keyFrame: keyFrame, otherKey: otherKey, request: request)
+    }
+
+    /// The letter `check` was meant for: the answer already worked out when it matches,
+    /// otherwise worked out now. Runs on `tapCheckEngine.queue`.
+    private func resolvedIntendedLetter(for check: ContestedTapCheck) -> Character? {
+        if let latestIntendedLetter, latestIntendedLetter.check == check {
+            return latestIntendedLetter.letter
+        }
+        let letter = try? tapCheckEngine.resolvedComputer()?.intendedLetter(
+            forTapAt: check.location,
+            onKeyWithFrame: check.keyFrame,
+            otherKey: check.otherKey,
+            request: check.request,
+            policy: contestedTapPolicy
+        )
+        latestIntendedLetter = (check, letter)
+        return letter
     }
 
     func backspaceEdit() -> TextEdit? {
@@ -186,7 +285,7 @@ final class KeyboardPredictionCoordinator {
         if let latestResult, latestResult.request == request {
             return latestResult
         }
-        let result = queue.sync { compute(request) }
+        let result = engine.queue.sync { compute(request) }
         if let result {
             latestResult = result
         }
@@ -211,29 +310,9 @@ final class KeyboardPredictionCoordinator {
         )
     }
 
-    // MARK: - Queue
+    // MARK: - Engine queue
 
     private func compute(_ request: PredictionRequest) -> PredictionResult? {
-        try? resolvedComputer()?.compute(request)
-    }
-
-    private func resolvedComputer() -> PredictionComputer? {
-        if let computer { return computer }
-        guard engineUnavailable == false else { return nil }
-        guard let engine = try? EnglishPredictiveEngine() else {
-            engineUnavailable = true
-            return nil
-        }
-        let computer = PredictionComputer(engine: engine)
-        if let pendingGeometry {
-            computer.updateKeyboardGeometry(pendingGeometry.keys, keyboardSize: pendingGeometry.size)
-            self.pendingGeometry = nil
-        }
-        if let pendingVocabulary {
-            try? computer.updateVocabulary(pendingVocabulary)
-            self.pendingVocabulary = nil
-        }
-        self.computer = computer
-        return computer
+        try? engine.resolvedComputer()?.compute(request)
     }
 }
