@@ -318,6 +318,7 @@ final class KeyboardViewController: UIInputViewController {
             setFullAccessInstructionsPresented(false)
         }
         indicatorDriver.phase = keyboardState.indicatorPhase
+        indicatorDriver.isPlaybackActive = keyboardState.isTTSPlaybackActive
     }
 
     private func currentToolbarMode() -> KeyboardToolbarMode {

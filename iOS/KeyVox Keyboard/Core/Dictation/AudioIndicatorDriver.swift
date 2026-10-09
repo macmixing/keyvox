@@ -60,7 +60,22 @@ final class AudioIndicatorDriver {
                 signalState = .inactive
             }
             publishState()
+            updateFrameDelivery()
         }
+    }
+
+    /// Whether speech playback is showing its progress, which moves in any phase.
+    var isPlaybackActive = false {
+        didSet {
+            guard oldValue != isPlaybackActive else { return }
+            updateFrameDelivery()
+        }
+    }
+
+    /// Only these change from frame to frame; in any other phase every frame draws the same
+    /// indicator, so frames stop until one of them starts.
+    private var needsFrames: Bool {
+        phase == .listening || phase == .processing || phase == .speaking || isPlaybackActive
     }
 
     private var displayLink: CADisplayLink?
@@ -76,9 +91,23 @@ final class AudioIndicatorDriver {
         guard displayLink == nil else { return }
 
         let displayLink = CADisplayLink(target: self, selector: #selector(handleDisplayLinkTick))
+        displayLink.isPaused = needsFrames == false
         displayLink.add(to: .main, forMode: .common)
         self.displayLink = displayLink
         publishState()
+    }
+
+    private func updateFrameDelivery() {
+        guard let displayLink else { return }
+        let isPaused = needsFrames == false
+        guard displayLink.isPaused != isPaused else { return }
+        displayLink.isPaused = isPaused
+        if isPaused {
+            // Where the level settles when frames keep running without a signal.
+            displayedLevel = 0
+            lastFrameTimestamp = nil
+            lastMeterPollTimestamp = nil
+        }
     }
 
     func stop() {
