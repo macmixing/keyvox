@@ -140,6 +140,8 @@
 				Core/Feedback/KeyboardHapticsSettingsStore.swift,
 				Core/Feedback/KeyboardInteractionHaptics.swift,
 				Core/Feedback/KeyboardKeypressHaptics.swift,
+				Core/Feedback/KeyboardTextInputHapticPattern.swift,
+				Core/Feedback/KeyboardTextInputHapticPlayer.swift,
 				Core/Input/KeyboardCompactKeysHoldController.swift,
 				Core/Input/KeyboardCursorTrackpadSupport.swift,
 				Core/Input/KeyboardDeleteRepeatSchedule.swift,
