@@ -1,4 +1,5 @@
 import Foundation
+import KeyVoxPredictiveKeyboard
 import UIKit
 
 enum KeyboardSymbolPage {
@@ -215,7 +216,7 @@ enum KeyboardSymbolLayout {
             key(.character(",")),
             key(.character("?")),
             key(.character("!")),
-            key(.character("‘")),
+            key(.character(SmartQuotes.apostrophe)),
             key(.delete, width: 1.45),
         ],
         [
@@ -234,7 +235,7 @@ enum KeyboardSymbolLayout {
             key(.character(",")),
             key(.character("?")),
             key(.character("!")),
-            key(.character("’")),
+            key(.character(SmartQuotes.apostrophe)),
             key(.delete, width: 1.45),
         ],
         [

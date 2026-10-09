@@ -1,5 +1,8 @@
-/// Returns to the letter page for the space that follows a character typed on a symbol
-/// page, as the system keyboard does after a comma, a number, or any other symbol.
+import KeyVoxPredictiveKeyboard
+
+/// Returns to the letter page as the system keyboard does: right after a character that
+/// belongs inside words, such as the apostrophe, and otherwise for the space that follows a
+/// character typed on a symbol page, such as a comma or a number.
 struct KeyboardSymbolPageReturnTracker {
     private var hasTypedOnSymbolPage = false
 
@@ -10,6 +13,9 @@ struct KeyboardSymbolPageReturnTracker {
             return page
         }
         switch kind {
+        case let .character(value) where value.allSatisfy(TypingTextContext.isWordCharacter):
+            hasTypedOnSymbolPage = false
+            return .letters
         case .character:
             hasTypedOnSymbolPage = true
             return page

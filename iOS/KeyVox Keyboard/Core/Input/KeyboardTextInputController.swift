@@ -144,7 +144,7 @@ final class KeyboardTextInputController {
         switch kind {
         case let .character(value):
             pendingSelectionDeletion = nil
-            documentProxy.insertText(value)
+            documentProxy.insertText(SmartQuotes.text(for: value, after: documentProxy.documentContextBeforeInput))
             return true
         case .delete:
             let selectedTextBeforeDeletion = documentProxy.selectedText
