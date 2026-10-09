@@ -3,22 +3,96 @@ import KeyVoxWhisper
 import KeyVoxVoiceActivity
 
 extension WhisperService {
-    /// Pre-loads the model into memory to eliminate cold-start latency.
+    /// Pre-loads the voice activity detector and model off the main actor to eliminate cold-start latency.
     public func warmup() {
-        if voiceActivityDetector == nil {
-            voiceActivityDetector = voiceActivityDetectorFactory()
+        _ = scheduleWarmupIfNeeded()
+    }
+
+    /// Unloads the currently cached model instance.
+    /// Used when model files are deleted so re-download can warm from disk again.
+    public func unloadModel() {
+        warmupHandle?.task.cancel()
+        warmupHandle = nil
+        guard whisper != nil || voiceActivityDetector != nil else { return }
+        whisper = nil
+        voiceActivityDetector = nil
+        #if DEBUG
+        print("WhisperService: Unloaded model from memory.")
+        #endif
+    }
+
+    public func preloadIfNeeded() async {
+        guard let handle = scheduleWarmupIfNeeded() else { return }
+        await installWarmupResultIfCurrent(handle)
+    }
+
+    func scheduleWarmupIfNeeded() -> WarmupHandle? {
+        if let warmupHandle {
+            return warmupHandle
         }
+
+        let detectorFactory = voiceActivityDetector == nil ? voiceActivityDetectorFactory : nil
+        let modelLoad = pendingModelLoad()
+        guard detectorFactory != nil || modelLoad != nil else { return nil }
+
+        let whisperFactory = self.whisperFactory
+        // Both loads stay sequential: the detector initializes the shared Whisper runtime before the model does.
+        let task = Task.detached(priority: .userInitiated) {
+            await SpeechModelLoadQueue.load {
+                #if DEBUG
+                var loadStartedAt = Date()
+                #endif
+                let detector = detectorFactory?()
+                #if DEBUG
+                if detectorFactory != nil {
+                    print("WhisperService: Voice activity detector loaded in \(WhisperService.elapsedSeconds(since: loadStartedAt))s.")
+                }
+                loadStartedAt = Date()
+                #endif
+                let whisper = modelLoad.map { whisperFactory($0.url, $0.params) }
+                #if DEBUG
+                if modelLoad != nil {
+                    print("WhisperService: Model loaded in \(WhisperService.elapsedSeconds(since: loadStartedAt))s.")
+                }
+                #endif
+                return WarmupResult(voiceActivityDetector: detector, whisper: whisper)
+            }
+        }
+
+        let handle = WarmupHandle(id: UUID(), task: task)
+        warmupHandle = handle
+        Task { [weak self] in
+            await self?.installWarmupResultIfCurrent(handle)
+        }
+        return handle
+    }
+
+    func installWarmupResultIfCurrent(_ handle: WarmupHandle) async {
+        let result = await handle.task.value
+
+        guard warmupHandle?.id == handle.id else { return }
+        warmupHandle = nil
+
+        if voiceActivityDetector == nil {
+            voiceActivityDetector = result.voiceActivityDetector
+        }
+        if whisper == nil {
+            whisper = result.whisper
+        }
+    }
+
+    private func pendingModelLoad() -> (url: URL, params: WhisperParams)? {
         guard whisper == nil else {
             #if DEBUG
             print("WhisperService: Warmup skipped (model already loaded).")
             #endif
-            return
+            return nil
         }
         guard let modelPath = getModelPath() else {
             #if DEBUG
             print("WhisperService: Warmup skipped (model files not found).")
             #endif
-            return
+            return nil
         }
 
         #if DEBUG
@@ -39,18 +113,7 @@ extension WhisperService {
         params.initialPrompt = isPromptHintingEnabled ? dictionaryHintPrompt : ""
         // CoreML is automatic if the model files are present
 
-        whisper = whisperFactory(URL(fileURLWithPath: modelPath), params)
-    }
-
-    /// Unloads the currently cached model instance.
-    /// Used when model files are deleted so re-download can warm from disk again.
-    public func unloadModel() {
-        guard whisper != nil || voiceActivityDetector != nil else { return }
-        whisper = nil
-        voiceActivityDetector = nil
-        #if DEBUG
-        print("WhisperService: Unloaded model from memory.")
-        #endif
+        return (URL(fileURLWithPath: modelPath), params)
     }
 
     private func getModelPath() -> String? {
@@ -60,4 +123,10 @@ extension WhisperService {
         }
         return modelPath
     }
+
+    #if DEBUG
+    private nonisolated static func elapsedSeconds(since date: Date) -> String {
+        String(format: "%.2f", Date().timeIntervalSince(date))
+    }
+    #endif
 }
