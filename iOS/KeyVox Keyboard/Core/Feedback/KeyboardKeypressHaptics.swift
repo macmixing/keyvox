@@ -11,7 +11,7 @@ final class KeyboardImpactFeedbackGeneratorAdapter: KeyboardImpactFeedbackGenera
 
     init(
         style: UIImpactFeedbackGenerator.FeedbackStyle = .light,
-        intensity: CGFloat = 0.80
+        intensity: CGFloat = 0.68
     ) {
         generator = UIImpactFeedbackGenerator(style: style)
         self.intensity = intensity

@@ -4,7 +4,7 @@ import CoreHaptics
 /// keyboard's text input tap. A transient's sharpness picks which recorded tap the device plays,
 /// and full sharpness picks its lightest; the intensity sets how strongly that tap plays.
 enum KeyboardTextInputHapticPattern {
-    static let intensity: Float = 0.57
+    static let intensity: Float = 0.4845
     static let sharpness: Float = 1
 
     static func make() throws -> CHHapticPattern {
