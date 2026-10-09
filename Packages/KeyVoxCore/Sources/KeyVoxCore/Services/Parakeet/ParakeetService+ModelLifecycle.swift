@@ -107,7 +107,7 @@ extension ParakeetService {
 
         let factory = voiceActivityAnalyzerFactory
         let task = Task.detached(priority: .userInitiated) {
-            factory()
+            await SpeechModelLoadQueue.load(factory)
         }
 
         let handle = VoiceActivityWarmupHandle(id: UUID(), task: task)

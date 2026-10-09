@@ -40,6 +40,7 @@ let package = Package(
                 "KeyVoxCore",
                 .product(name: "KeyVoxLinguistics", package: "KeyVoxLinguistics"),
                 .product(name: "KeyVoxVoiceActivity", package: "KeyVoxVoiceActivity"),
+                .product(name: "KeyVoxWhisper", package: "KeyVoxWhisper"),
             ]
         ),
     ]

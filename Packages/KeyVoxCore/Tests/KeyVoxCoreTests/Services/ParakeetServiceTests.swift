@@ -124,6 +124,7 @@ final class ParakeetServiceTests: LinguisticAnalyzerTestCase {
     func testTranscribeRejectsVeryShortNonSpeechBeforeRuntimeBackend() async throws {
         let modelURL = try makeModelFile()
         let service = ParakeetService(modelURLResolver: { modelURL })
+        _ = await service.loadedVoiceActivityAnalyzer()
         let expectation = expectation(description: "very short non-speech completes")
 
         service.transcribe(

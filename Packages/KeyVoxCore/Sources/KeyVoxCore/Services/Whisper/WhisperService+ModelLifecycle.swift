@@ -38,23 +38,25 @@ extension WhisperService {
         let whisperFactory = self.whisperFactory
         // Both loads stay sequential: the detector initializes the shared Whisper runtime before the model does.
         let task = Task.detached(priority: .userInitiated) {
-            #if DEBUG
-            var loadStartedAt = Date()
-            #endif
-            let detector = detectorFactory?()
-            #if DEBUG
-            if detectorFactory != nil {
-                print("WhisperService: Voice activity detector loaded in \(WhisperService.elapsedSeconds(since: loadStartedAt))s.")
+            await SpeechModelLoadQueue.load {
+                #if DEBUG
+                var loadStartedAt = Date()
+                #endif
+                let detector = detectorFactory?()
+                #if DEBUG
+                if detectorFactory != nil {
+                    print("WhisperService: Voice activity detector loaded in \(WhisperService.elapsedSeconds(since: loadStartedAt))s.")
+                }
+                loadStartedAt = Date()
+                #endif
+                let whisper = modelLoad.map { whisperFactory($0.url, $0.params) }
+                #if DEBUG
+                if modelLoad != nil {
+                    print("WhisperService: Model loaded in \(WhisperService.elapsedSeconds(since: loadStartedAt))s.")
+                }
+                #endif
+                return WarmupResult(voiceActivityDetector: detector, whisper: whisper)
             }
-            loadStartedAt = Date()
-            #endif
-            let whisper = modelLoad.map { whisperFactory($0.url, $0.params) }
-            #if DEBUG
-            if modelLoad != nil {
-                print("WhisperService: Model loaded in \(WhisperService.elapsedSeconds(since: loadStartedAt))s.")
-            }
-            #endif
-            return WarmupResult(voiceActivityDetector: detector, whisper: whisper)
         }
 
         let handle = WarmupHandle(id: UUID(), task: task)
