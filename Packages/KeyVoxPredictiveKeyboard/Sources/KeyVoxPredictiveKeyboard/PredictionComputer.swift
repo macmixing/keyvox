@@ -199,24 +199,25 @@ public final class PredictionComputer: @unchecked Sendable {
         request: PredictionRequest,
         policy: ContestedTapPolicy
     ) throws -> Character? {
+        let typed = request.currentWord.replacingOccurrences(of: "’", with: "'").lowercased()
+        let landedOnOtherKey = otherKeyFrame.contains(touch)
+        if policy.keepsOtherKey(startsWord: typed.isEmpty, landedOnOtherKey: landedOnOtherKey) {
+            return nil
+        }
         lock.lock()
         let keys = keys
         let vocabulary = vocabulary
         lock.unlock()
-        let nearby = keys.letters(near: touch, within: policy.parameters.maximumDistance)
+        let nearby = keys.letters(near: touch, within: policy.maximumDistance(for: otherKey))
         guard nearby.isEmpty == false else { return nil }
         let language = ContextLanguageScorer(engine: engine, vocabulary: vocabulary)
-        let typed = request.currentWord.replacingOccurrences(of: "’", with: "'").lowercased()
 
         var letters: [ContestedTap.Letter] = []
         for (letter, distance) in nearby {
             let prefix = typed + String(letter)
-            let completions = try engine.predict(
-                typedWord: prefix,
-                previousWords: request.previousWords,
-                touches: [],
-                mode: .completion
-            ).suggestions.map(\.word)
+            // The likeliest words under the exact letters, not a typo-tolerant prediction: the
+            // tap is waiting on this, and only words that start with the letters count.
+            let completions = try engine.likeliestWords(startingWith: prefix, limit: 8)
                 + engine.personalSuggestions(typedWord: prefix, touches: [])
                 + [prefix]
             var continuation: Double?
@@ -241,7 +242,7 @@ public final class PredictionComputer: @unchecked Sendable {
         }
         return policy.intendedLetter(for: ContestedTap(
             otherKey: otherKey,
-            landedOnOtherKey: otherKeyFrame.contains(touch),
+            landedOnOtherKey: landedOnOtherKey,
             startsWord: typed.isEmpty,
             letters: letters,
             endingLogProbability: ending

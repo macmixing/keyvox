@@ -566,6 +566,31 @@ public:
         return true;
     }
 
+    /// The bundled dictionary's likeliest words that start with `prefix`, likeliest first:
+    /// an exact look under the prefix, without the typo-tolerant search predictions use.
+    bool wordsWithPrefix(const char *prefix, int32_t maxCount, KVPKPredictionResult *result) {
+        if (!result || !prefix) return false;
+        std::lock_guard<std::mutex> lock(mutex_);
+        std::memset(result, 0, sizeof(*result));
+        const std::vector<int> codePoints = utf8CodePoints(prefix);
+        if (codePoints.empty() || codePoints.size() >= MAX_WORD_LENGTH || maxCount <= 0) {
+            return true;
+        }
+        std::vector<std::vector<int>> words;
+        dictionary_->getDictionaryStructurePolicy()->getLikeliestWordsWithPrefix(
+            CodePointArrayView(codePoints.data(), codePoints.size()),
+            std::min<int32_t>(maxCount, KVPK_MAX_SUGGESTIONS), &words
+        );
+        std::vector<NativeCandidate> candidates;
+        for (const std::vector<int> &word : words) {
+            NativeCandidate candidate;
+            for (const int codePoint : word) appendUtf8(codePoint, &candidate.word);
+            candidates.push_back(candidate);
+        }
+        writeSuggestions(candidates, result);
+        return true;
+    }
+
     /// The user's own words the typed letters and touches could be heading for,
     /// completions and near misses alike, searched the way the bundled dictionary is.
     bool predictPersonal(const char *typedWord,
@@ -1184,6 +1209,25 @@ bool KVPKEnginePredictPersonal(
         return false;
     } catch (...) {
         lastError = "unknown personal prediction error";
+        return false;
+    }
+}
+
+bool KVPKEngineWordsWithPrefix(
+    KVPKEngineRef engine,
+    const char *prefix,
+    int32_t maxCount,
+    KVPKPredictionResult *result
+) {
+    if (!engine) return false;
+    try {
+        lastError.clear();
+        return static_cast<Engine *>(engine)->wordsWithPrefix(prefix, maxCount, result);
+    } catch (const std::exception &error) {
+        lastError = error.what();
+        return false;
+    } catch (...) {
+        lastError = "unknown prefix lookup error";
         return false;
     }
 }

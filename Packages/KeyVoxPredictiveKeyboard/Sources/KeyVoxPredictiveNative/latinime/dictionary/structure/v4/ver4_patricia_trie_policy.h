@@ -66,6 +66,9 @@ class Ver4PatriciaTriePolicy : public DictionaryStructureWithBufferPolicy {
 
     int getWordId(const CodePointArrayView wordCodePoints, const bool forceLowerCaseSearch) const;
 
+    void getLikeliestWordsWithPrefix(const CodePointArrayView prefix, const int maxCount,
+            std::vector<std::vector<int>> *const outWords) const;
+
     const WordAttributes getWordAttributesInContext(const WordIdArrayView prevWordIds,
             const int wordId, MultiBigramMap *const multiBigramMap) const;
 
@@ -120,6 +123,20 @@ class Ver4PatriciaTriePolicy : public DictionaryStructureWithBufferPolicy {
 
  private:
     DISALLOW_IMPLICIT_CONSTRUCTORS(Ver4PatriciaTriePolicy);
+
+    // KeyVox: a word found under a prefix, ordered so the least likely kept word is on top of a
+    // heap of the likeliest.
+    struct ProbableWord {
+        int probability;
+        std::vector<int> codePoints;
+        bool operator<(const ProbableWord &other) const { return probability > other.probability; }
+    };
+
+    void collectLikeliestWords(const int ptNodeArrayPos, std::vector<int> *const path,
+            const size_t maxCount, std::vector<ProbableWord> *const heap) const;
+
+    void offerWord(const PtNodeParams &ptNodeParams, const std::vector<int> &path,
+            const size_t maxCount, std::vector<ProbableWord> *const heap) const;
 
     static const char *const UNIGRAM_COUNT_QUERY;
     static const char *const BIGRAM_COUNT_QUERY;

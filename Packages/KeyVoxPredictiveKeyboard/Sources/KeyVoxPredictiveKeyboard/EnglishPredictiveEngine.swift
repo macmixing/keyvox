@@ -172,6 +172,19 @@ public final class EnglishPredictiveEngine: @unchecked Sendable {
         }
     }
 
+    /// The bundled dictionary's likeliest words that start with `prefix`, likeliest first, at
+    /// most `limit`: an exact look under the prefix, much cheaper than a completion prediction.
+    public func likeliestWords(startingWith prefix: String, limit: Int) throws -> [String] {
+        var result = KVPKPredictionResult()
+        let succeeded = prefix.lowercased().withCString { prefix in
+            KVPKEngineWordsWithPrefix(nativeEngine, prefix, Int32(limit), &result)
+        }
+        guard succeeded else {
+            throw PredictiveKeyboardError.nativePredictionFailed(Self.nativeLastError)
+        }
+        return result.suggestionValues.map(\.word)
+    }
+
     /// The user's own words that the typed letters and touches could be heading for,
     /// completions and near misses alike, found the way the bundled dictionary's words are.
     public func personalSuggestions(

@@ -53,13 +53,23 @@ public struct ContestedTapPolicy: Sendable, Equatable {
         self.parameters = parameters
     }
 
+    /// Whether a tap keeps the other key whatever letters are near it: before a word starts,
+    /// a touch on the other key itself is that key. Nothing about the letters need be worked
+    /// out for such a tap.
+    public func keepsOtherKey(startsWord: Bool, landedOnOtherKey: Bool) -> Bool {
+        startsWord && landedOnOtherKey
+    }
+
+    /// Letters farther than this from a touch on `otherKey`, in key pitches, are not considered.
+    public func maximumDistance(for otherKey: ContestedTap.OtherKey) -> Double {
+        otherKey == .wordBoundary ? parameters.boundaryMaximumDistance : parameters.controlMaximumDistance
+    }
+
     /// The letter the tap was meant for, or nil to keep the other key.
     public func intendedLetter(for tap: ContestedTap) -> Character? {
-        if tap.startsWord && tap.landedOnOtherKey { return nil }
+        if keepsOtherKey(startsWord: tap.startsWord, landedOnOtherKey: tap.landedOnOtherKey) { return nil }
         let spread = parameters.touchStandardDeviation
-        let maximumDistance = tap.otherKey == .wordBoundary
-            ? parameters.boundaryMaximumDistance
-            : parameters.controlMaximumDistance
+        let maximumDistance = maximumDistance(for: tap.otherKey)
         let scored = tap.letters
             .filter { $0.distance <= maximumDistance }
             .map { letter in

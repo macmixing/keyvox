@@ -18,6 +18,7 @@
 #define LATINIME_DICTIONARY_STRUCTURE_POLICY_H
 
 #include <memory>
+#include <vector>
 
 #include "defines.h"
 #include "dictionary/property/historical_info.h"
@@ -56,6 +57,13 @@ class DictionaryStructureWithBufferPolicy {
 
     virtual int getWordId(const CodePointArrayView wordCodePoints,
             const bool forceLowerCaseSearch) const = 0;
+
+    // KeyVox: the words that start with `prefix` (lowercase code points), likeliest on their own
+    // first, at most `maxCount`. A structure that cannot list them finds none.
+    virtual void getLikeliestWordsWithPrefix(const CodePointArrayView prefix, const int maxCount,
+            std::vector<std::vector<int>> *const outWords) const {
+        outWords->clear();
+    }
 
     virtual const WordAttributes getWordAttributesInContext(const WordIdArrayView prevWordIds,
             const int wordId, MultiBigramMap *const multiBigramMap) const = 0;

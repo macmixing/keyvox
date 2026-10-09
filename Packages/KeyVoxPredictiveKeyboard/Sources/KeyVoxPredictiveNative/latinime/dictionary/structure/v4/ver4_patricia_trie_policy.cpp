@@ -16,6 +16,7 @@
 
 #include "dictionary/structure/v4/ver4_patricia_trie_policy.h"
 
+#include <algorithm>
 #include <array>
 #include <vector>
 
@@ -102,6 +103,106 @@ int Ver4PatriciaTriePolicy::getWordId(const CodePointArrayView wordCodePoints,
         return NOT_A_WORD_ID;
     }
     return ptNodeParams.getTerminalId();
+}
+
+// KeyVox: walks down to the node where `prefix` ends, which may end partway through the node's
+// code points, then keeps the likeliest words below it.
+void Ver4PatriciaTriePolicy::getLikeliestWordsWithPrefix(const CodePointArrayView prefix,
+        const int maxCount, std::vector<std::vector<int>> *const outWords) const {
+    outWords->clear();
+    if (prefix.empty() || maxCount <= 0) {
+        return;
+    }
+    const size_t limit = static_cast<size_t>(maxCount);
+    DynamicPtReadingHelper readingHelper(&mNodeReader, &mPtNodeArrayReader);
+    readingHelper.initWithPtNodeArrayPos(getRootPosition());
+    std::vector<int> path;
+    size_t matchedCount = 0;
+    while (!readingHelper.isEnd()) {
+        const PtNodeParams ptNodeParams(readingHelper.getPtNodeParams());
+        if (ptNodeParams.isDeleted()
+                || !readingHelper.isMatchedCodePoint(ptNodeParams, 0, prefix[matchedCount])) {
+            readingHelper.readNextSiblingNode(ptNodeParams);
+            continue;
+        }
+        const int nodeCodePointCount = ptNodeParams.getCodePointCount();
+        for (int index = 1; index < nodeCodePointCount && matchedCount + index < prefix.size();
+                ++index) {
+            if (!readingHelper.isMatchedCodePoint(ptNodeParams, index,
+                    prefix[matchedCount + index])) {
+                return;
+            }
+        }
+        path.insert(path.end(), ptNodeParams.getCodePoints(),
+                ptNodeParams.getCodePoints() + nodeCodePointCount);
+        matchedCount += nodeCodePointCount;
+        if (matchedCount >= prefix.size()) {
+            std::vector<ProbableWord> heap;
+            offerWord(ptNodeParams, path, limit, &heap);
+            if (ptNodeParams.hasChildren()) {
+                collectLikeliestWords(ptNodeParams.getChildrenPos(), &path, limit, &heap);
+            }
+            std::sort(heap.begin(), heap.end(), [](const ProbableWord &left,
+                    const ProbableWord &right) {
+                if (left.probability != right.probability) {
+                    return left.probability > right.probability;
+                }
+                return left.codePoints < right.codePoints;
+            });
+            for (const ProbableWord &word : heap) {
+                outWords->push_back(word.codePoints);
+            }
+            return;
+        }
+        if (!ptNodeParams.hasChildren()) {
+            return;
+        }
+        readingHelper.readChildNode(ptNodeParams);
+    }
+}
+
+void Ver4PatriciaTriePolicy::collectLikeliestWords(const int ptNodeArrayPos,
+        std::vector<int> *const path, const size_t maxCount,
+        std::vector<ProbableWord> *const heap) const {
+    DynamicPtReadingHelper readingHelper(&mNodeReader, &mPtNodeArrayReader);
+    readingHelper.initWithPtNodeArrayPos(ptNodeArrayPos);
+    while (!readingHelper.isEnd()) {
+        const PtNodeParams ptNodeParams(readingHelper.getPtNodeParams());
+        if (!ptNodeParams.isDeleted()) {
+            const size_t pathCount = path->size();
+            path->insert(path->end(), ptNodeParams.getCodePoints(),
+                    ptNodeParams.getCodePoints() + ptNodeParams.getCodePointCount());
+            offerWord(ptNodeParams, *path, maxCount, heap);
+            if (ptNodeParams.hasChildren()) {
+                collectLikeliestWords(ptNodeParams.getChildrenPos(), path, maxCount, heap);
+            }
+            path->resize(pathCount);
+        }
+        readingHelper.readNextSiblingNode(ptNodeParams);
+    }
+}
+
+void Ver4PatriciaTriePolicy::offerWord(const PtNodeParams &ptNodeParams,
+        const std::vector<int> &path, const size_t maxCount,
+        std::vector<ProbableWord> *const heap) const {
+    if (!ptNodeParams.isTerminal() || ptNodeParams.isDeleted()) {
+        return;
+    }
+    const int probability = getProbabilityOfWord(WordIdArrayView(), ptNodeParams.getTerminalId());
+    if (probability == NOT_A_PROBABILITY) {
+        return;
+    }
+    if (heap->size() < maxCount) {
+        heap->push_back(ProbableWord{probability, path});
+        std::push_heap(heap->begin(), heap->end());
+        return;
+    }
+    if (probability <= heap->front().probability) {
+        return;
+    }
+    std::pop_heap(heap->begin(), heap->end());
+    heap->back() = ProbableWord{probability, path};
+    std::push_heap(heap->begin(), heap->end());
 }
 
 const WordAttributes Ver4PatriciaTriePolicy::getWordAttributesInContext(

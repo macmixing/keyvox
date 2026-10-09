@@ -111,6 +111,15 @@ bool KVPKEngineSetPersonalWords(
     int32_t wordCount
 );
 
+/// The bundled dictionary's likeliest words that start with `prefix` (lowercase), likeliest
+/// first, at most `maxCount` and at most KVPK_MAX_SUGGESTIONS.
+bool KVPKEngineWordsWithPrefix(
+    KVPKEngineRef engine,
+    const char *prefix,
+    int32_t maxCount,
+    KVPKPredictionResult *result
+);
+
 /// The user's own words that the typed letters and touches could be heading for, found
 /// the way the bundled dictionary's words are.
 bool KVPKEnginePredictPersonal(
