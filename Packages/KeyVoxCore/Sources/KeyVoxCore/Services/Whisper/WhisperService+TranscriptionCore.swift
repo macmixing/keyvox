@@ -29,30 +29,9 @@ extension WhisperService {
         isTranscribing = true
         lastResultWasLikelyNoSpeech = false
 
-        // Ensure model is loaded (if warmup wasn't called/finished)
-        if whisper == nil {
-            warmup()
-        }
-        applyConfiguredLanguage()
-
+        // Ensure model is loading (if warmup wasn't called/finished)
+        let warmupHandle = scheduleWarmupIfNeeded()
         let shouldUseDictionaryHintPrompt = isPromptHintingEnabled && useDictionaryHintPrompt
-
-        if shouldUseDictionaryHintPrompt {
-            whisper?.params.initialPrompt = dictionaryHintPrompt
-        } else {
-            whisper?.params.initialPrompt = ""
-            #if DEBUG
-            let hintReason = isPromptHintingEnabled ? "capture_gated_off" : "globally_disabled"
-            print("WhisperService: Dictionary hint prompt not used (\(hintReason)).")
-            #endif
-        }
-
-        #if DEBUG
-        print(
-            "Transcribing \(audioFrames.count) raw frames " +
-            "language=\(configuredLanguage.rawValue)..."
-        )
-        #endif
 
         let paragraphChunker = self.paragraphChunker
         let speechRangePlanner = WhisperSpeechRangePlanner()
@@ -62,6 +41,36 @@ extension WhisperService {
 
         transcriptionTask = Task { [weak self] in
             guard let self else { return }
+            if let warmupHandle {
+                await self.installWarmupResultIfCurrent(warmupHandle)
+            }
+            if Task.isCancelled {
+                self.finishCancelledRequest(
+                    requestID,
+                    usedDictionaryHintPrompt: shouldUseDictionaryHintPrompt
+                )
+                return
+            }
+
+            self.applyConfiguredLanguage()
+
+            if shouldUseDictionaryHintPrompt {
+                self.whisper?.params.initialPrompt = self.dictionaryHintPrompt
+            } else {
+                self.whisper?.params.initialPrompt = ""
+                #if DEBUG
+                let hintReason = self.isPromptHintingEnabled ? "capture_gated_off" : "globally_disabled"
+                print("WhisperService: Dictionary hint prompt not used (\(hintReason)).")
+                #endif
+            }
+
+            #if DEBUG
+            print(
+                "Transcribing \(audioFrames.count) raw frames " +
+                "language=\(self.configuredLanguage.rawValue)..."
+            )
+            #endif
+
             do {
                 let voiceActivityAnalysis: VoiceActivityAnalysis?
                 if let voiceActivityDetector = self.voiceActivityDetector,

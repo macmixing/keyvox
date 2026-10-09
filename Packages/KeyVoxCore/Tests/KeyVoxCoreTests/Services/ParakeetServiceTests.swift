@@ -105,6 +105,22 @@ final class ParakeetServiceTests: LinguisticAnalyzerTestCase {
         await fulfillment(of: [expectation], timeout: 1.0)
     }
 
+    func testWarmupLoadsVoiceActivityAnalyzerOffMainThread() async {
+        let expectation = expectation(description: "voice activity analyzer factory invoked")
+        let service = ParakeetService(
+            parakeetLoader: { _ in nil },
+            voiceActivityAnalyzerFactory: {
+                XCTAssertFalse(Thread.isMainThread)
+                expectation.fulfill()
+                return nil
+            }
+        )
+
+        service.warmup()
+
+        await fulfillment(of: [expectation], timeout: 1.0)
+    }
+
     func testTranscribeRejectsVeryShortNonSpeechBeforeRuntimeBackend() async throws {
         let modelURL = try makeModelFile()
         let service = ParakeetService(modelURLResolver: { modelURL })

@@ -26,17 +26,13 @@ extension ParakeetService {
         isTranscribing = true
         lastResultWasLikelyNoSpeech = false
 
-        if voiceActivityAnalyzer == nil {
-            voiceActivityAnalyzer = voiceActivityAnalyzerFactory()
-        }
-
         transcriptionTask = Task { [weak self] in
             guard let self else { return }
             let paragraphChunker = self.paragraphChunker
 
             do {
                 let voiceActivityAnalysis: VoiceActivityAnalysis?
-                if let voiceActivityAnalyzer = self.voiceActivityAnalyzer,
+                if let voiceActivityAnalyzer = await self.loadedVoiceActivityAnalyzer(),
                    let voiceActivity = await voiceActivityAnalyzer.analyze(
                     audioFrames: audioFrames,
                     configuration: .standard
