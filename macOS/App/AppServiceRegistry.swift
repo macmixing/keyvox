@@ -132,10 +132,14 @@ final class AppServiceRegistry {
             forceFreshDictionaryInstall: MacRuntimeFlags.forceFreshDictionaryInstall
         )
         promotionCenter = Self.makePromotionCenter(defaults: .standard)
-        ModelDownloader.shared.postInstallPreparation = { [weak parakeetService] modelID in
-            guard modelID == .parakeetTdtV3 else { return }
-            try Task.checkCancellation()
-            await parakeetService?.preloadIfNeeded()
+        ModelDownloader.shared.postInstallPreparation = { [weak whisperService, weak parakeetService] modelID in
+            switch modelID {
+            case .whisperBase:
+                await whisperService?.preloadIfNeeded()
+            case .parakeetTdtV3:
+                try Task.checkCancellation()
+                await parakeetService?.preloadIfNeeded()
+            }
         }
         canSwitchActiveProvider = { true }
         currentActiveProviderSelection = .whisper
