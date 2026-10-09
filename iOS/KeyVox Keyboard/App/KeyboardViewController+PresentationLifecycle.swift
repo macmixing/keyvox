@@ -238,6 +238,7 @@ extension KeyboardViewController {
             self?.extensionHostIsActive = true
             guard let self else { return }
             self.preparePresentationIfNeeded()
+            self.installedModels = KeyboardInstalledModels.check()
             self.configurePrimaryViewHeight()
             self.syncCapsLockState()
             self.rootContainerView?.keyGridView.resetInteractionState()

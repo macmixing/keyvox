@@ -153,6 +153,7 @@
 				Core/Input/KeyboardTouchRouterGestureRecognizer.swift,
 				Core/Input/KeyboardWordDeletion.swift,
 				Core/KeyboardDictationModelStatus.swift,
+				Core/KeyboardInstalledModels.swift,
 				Core/KeyboardKeysMode.swift,
 				Core/KeyboardLayoutGeometry.swift,
 				Core/KeyboardModelAvailability.swift,

@@ -78,6 +78,8 @@ final class KeyboardViewController: UIInputViewController {
     )
     let letterCaseController = KeyboardLetterCaseController()
     var symbolPageReturnTracker = KeyboardSymbolPageReturnTracker()
+    /// Checked when the keyboard comes on screen; see `KeyboardInstalledModels`.
+    var installedModels = KeyboardInstalledModels.check()
     lazy var predictionCoordinator = KeyboardPredictionCoordinator(
         textBeforeCursor: { [weak self] in self?.textDocumentProxy.documentContextBeforeInput },
         selectedText: { [weak self] in self?.textDocumentProxy.selectedText },
@@ -180,6 +182,7 @@ final class KeyboardViewController: UIInputViewController {
             self.prepareTypingForCurrentField()
         }
         preparePresentationIfNeeded()
+        installedModels = KeyboardInstalledModels.check()
         KeyVoxIPCBridge.reportKeyboardOnboardingState(hasFullAccess: hasFullAccess)
         configureDictationBehavior()
         rootContainerView?.keyGridView.resetInteractionState()
@@ -289,9 +292,6 @@ final class KeyboardViewController: UIInputViewController {
         }
 
         let toolbarMode = currentToolbarMode()
-        let preferredTTSVoiceID = UserDefaults(suiteName: KeyVoxIPCBridge.appGroupID)?
-            .string(forKey: UserDefaultsKeys.ttsVoice)
-        let isTTSReady = KeyboardModelAvailability.isTTSReady(preferredVoiceID: preferredTTSVoiceID)
         rootContainerView?.apply(
             state: keyboardState,
             symbolPage: symbolPage,
@@ -309,7 +309,7 @@ final class KeyboardViewController: UIInputViewController {
             isListFormattingEnabled: dictationChangeController.displayedListFormattingEnabled,
             isLeftHandedLayoutEnabled: appSettingsStore.isLeftHandedKeyboardLayoutEnabled,
             toolbarMode: toolbarMode,
-            isTTSReady: isTTSReady,
+            isTTSReady: installedModels.isTTSReady,
             isTrackpadModeActive: isTrackpadModeActive,
             showsNextKeyboardKey: needsInputModeSwitchKey
         )
@@ -323,7 +323,7 @@ final class KeyboardViewController: UIInputViewController {
 
     private func currentToolbarMode() -> KeyboardToolbarMode {
         KeyboardToolbarMode.resolve(
-            modelAvailability: KeyboardDictationModelStatus.availability(),
+            modelAvailability: installedModels.dictation,
             hasFullAccess: hasFullAccess,
             hasMicrophonePermission: hasMicrophonePermission
         )
