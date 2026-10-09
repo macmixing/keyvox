@@ -26,8 +26,10 @@ struct KeyboardKeyMap {
     private init(spaceLabel: String, key: (String) -> XCUIElement) throws {
         var centers: [Character: CGPoint] = [:]
         for letter in Self.letters {
-            let element = key(String(letter))
-            guard element.exists else { throw KeyMapError.missingKey(String(letter)) }
+            // Shifted keyboards label their letter keys with capitals.
+            guard let element = [String(letter), String(letter).uppercased()].lazy.map(key).first(where: \.exists) else {
+                throw KeyMapError.missingKey(String(letter))
+            }
             centers[letter] = CGPoint(x: element.frame.midX, y: element.frame.midY)
         }
         let space = key(spaceLabel)

@@ -27,6 +27,9 @@ final class AppleKeyboardBaselineTests: XCTestCase {
         if environment["BASELINE_DISABLE_AUTOCORRECT"] == "1" {
             app.launchEnvironment["DISABLE_AUTOCORRECT"] = "1"
         }
+        if environment["BASELINE_AUTOCAPITALIZE"] == "1" {
+            app.launchEnvironment["AUTOCAPITALIZE"] = "1"
+        }
         app.launch()
         let input = app.textViews["input"]
         XCTAssertTrue(input.waitForExistence(timeout: 15))

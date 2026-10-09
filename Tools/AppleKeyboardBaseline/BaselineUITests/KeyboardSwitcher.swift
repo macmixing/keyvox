@@ -18,7 +18,8 @@ enum KeyboardSwitcher {
 
     /// Switches back to the system keyboard the same way, if another keyboard is showing.
     static func switchToSystemKeyboard(in app: XCUIApplication) -> Bool {
-        let systemKey = app.keyboards.keys["q"]
+        // Shifted, as in a field that capitalizes sentences, the key reads "Q".
+        let systemKey = app.keyboards.keys.matching(NSPredicate(format: "label IN %@", ["q", "Q"])).firstMatch
         for _ in 0..<4 {
             if systemKey.waitForExistence(timeout: 2) { return true }
             let nextKeyboard = app.buttons["Next keyboard"]
