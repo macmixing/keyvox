@@ -7,7 +7,8 @@ spells it only one way, with capitals. Left out, so they stay as typed:
 - a word the common part of the word list (size 50) also spells in lowercase ("will",
   "bob"), while a rare lowercase sense does not count ("charlie", "batman");
 - a word spelled with capitals in more than one way;
-- a spelling with capitals in a row ("NASA", "CDs");
+- a spelling with capitals in a row ("NASA", "CDs"), unless `measured_spellings.txt` lists
+  it because the system keyboard was measured writing it that way ("iOS");
 - a word the written sources show in lowercase more often than as spelled, away from where
   a sentence or quotation begins ("grey", or "th" after a number).
 Abbreviations ending in a period are skipped, since a typed word never does.
@@ -25,10 +26,21 @@ from normalize import written_runs
 # characters only so the characters stop opening sentences, and those sentences still show
 # how words are written.
 WRITTEN_SOURCES = {"oasst2": oasst2_texts, "tatoeba": tatoeba_rows}
+MEASURED_SPELLINGS = Path(__file__).with_name("measured_spellings.txt")
 
 
 def has_capitals_in_a_row(spelling: str) -> bool:
     return any(first.isupper() and second.isupper() for first, second in zip(spelling, spelling[1:]))
+
+
+def read_measured_spellings(path: Path) -> set[str]:
+    with open(path, encoding="utf-8") as lines:
+        return {line.strip() for line in lines if line.strip() and not line.startswith("#")}
+
+
+def keeps_capitals_in_a_row(spelling: str, measured: set[str]) -> bool:
+    """Whether `spelling`, or the word it is the possessive of, is a measured spelling."""
+    return spelling in measured or spelling.removesuffix("'s") in measured
 
 
 def read_spellings(path: Path) -> list[str]:
@@ -37,7 +49,7 @@ def read_spellings(path: Path) -> list[str]:
     return [spelling for spelling in spellings if spelling and not spelling.endswith(".")]
 
 
-def capitals_only_spellings(scowl_words: Path, common_words: Path) -> dict[str, str]:
+def capitals_only_spellings(scowl_words: Path, common_words: Path, measured: set[str]) -> dict[str, str]:
     """Lowercase word to its one spelling, for words spelled only with capitals unless in a
     rare lowercase sense."""
     spellings = read_spellings(scowl_words)
@@ -49,7 +61,12 @@ def capitals_only_spellings(scowl_words: Path, common_words: Path) -> dict[str, 
     return {
         word: next(iter(forms))
         for word, forms in capitalized.items()
-        if word not in lowercase and len(forms) == 1 and not has_capitals_in_a_row(next(iter(forms)))
+        if word not in lowercase
+        and len(forms) == 1
+        and (
+            not has_capitals_in_a_row(next(iter(forms)))
+            or keeps_capitals_in_a_row(next(iter(forms)), measured)
+        )
     }
 
 
@@ -61,7 +78,11 @@ def main() -> None:
     parser.add_argument("output", type=Path)
     arguments = parser.parse_args()
 
-    spellings = capitals_only_spellings(arguments.scowl_words, arguments.common_words)
+    spellings = capitals_only_spellings(
+        arguments.scowl_words,
+        arguments.common_words,
+        read_measured_spellings(MEASURED_SPELLINGS),
+    )
     as_spelled: Counter[str] = Counter()
     in_lowercase: Counter[str] = Counter()
     for name, read in WRITTEN_SOURCES.items():

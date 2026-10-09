@@ -1,0 +1,5 @@
+# Spellings with capitals in a row that the system keyboard was measured writing as spelled
+# (Tools/AppleKeyboardBaseline, iOS 27), kept by write_capitalized_spellings.py although it
+# otherwise leaves such spellings out. One spelling per line.
+iOS
+macOS
