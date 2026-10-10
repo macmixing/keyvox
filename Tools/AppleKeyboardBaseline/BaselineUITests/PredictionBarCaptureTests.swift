@@ -42,30 +42,7 @@ final class PredictionBarCaptureTests: XCTestCase {
         }
         let origin = app.coordinate(withNormalizedOffset: .zero)
         let clear = app.buttons["clear"]
-        let elementPattern = try NSRegularExpression(
-            pattern: #"\{\{(-?[\d.]+), (-?[\d.]+)\}, \{([\d.]+), ([\d.]+)\}\}.*?label: '(.*?)'(?=, |$)"#,
-            options: .anchorsMatchLines
-        )
-        let barBottom = firstRowKey.frame.minY
-        let barTop = barBottom - 80
-
-        /// The bar's labels from left to right, read from one listing of every element, the
-        /// keyboard's included, as the bar changes while it is read element by element.
-        func readBar() -> [String] {
-            var labels: [(CGFloat, String)] = []
-            let listing = app.debugDescription as NSString
-            for match in elementPattern.matches(in: listing as String, range: NSRange(location: 0, length: listing.length)) {
-                let number = { (index: Int) in CGFloat(Double(listing.substring(with: match.range(at: index))) ?? 0) }
-                let frame = CGRect(x: number(1), y: number(2), width: number(3), height: number(4))
-                let label = listing.substring(with: match.range(at: 5))
-                if frame.midY > barTop, frame.midY < barBottom, frame.width > 20, frame.width < 300,
-                   label.isEmpty == false {
-                    labels.append((frame.midX, label))
-                }
-            }
-            var seen: Set<String> = []
-            return labels.sorted { $0.0 < $1.0 }.map(\.1).filter { seen.insert($0).inserted }
-        }
+        let bar = SuggestionBarReader(app: app, firstRowKey: firstRowKey)
 
         /// Types letters, spaces, and punctuation with the keyboard's own keys, punctuation
         /// from its number page, so the keyboard sees the text as typed. (Typing text through
@@ -104,14 +81,7 @@ final class PredictionBarCaptureTests: XCTestCase {
             }
             try type(probes[index].prefix)
             Thread.sleep(forTimeInterval: 0.8)
-            // An empty bar is read again for a few seconds before it counts as empty, in case
-            // the keyboard is still filling it.
-            var bar = readBar()
-            for _ in 0..<10 where bar.isEmpty {
-                Thread.sleep(forTimeInterval: 0.3)
-                bar = readBar()
-            }
-            probes[index].bar = bar
+            probes[index].bar = bar.readSettled()
             let data = try JSONEncoder().encode(Array(probes[...index]))
             try data.write(to: URL(fileURLWithPath: outputPath), options: .atomic)
             clear.tap()
