@@ -8,6 +8,7 @@ Builds the language data the predictive keyboard bundles in
 | `context_artifact_800k.bin` | `extract_sentences.py`, `count_ngrams.py`, `write_context_model.py` | Every source, through `extract_sentences.py` |
 | `sentence_openers.txt` | `tag_word_kinds.swift`, `count_sentence_openers.py`, `write_sentence_openers.py` | Every source, through `extract_sentences.py`'s readers and its sentences |
 | `capitalized_spellings.txt` | `scowl_words.sh`, `write_capitalized_spellings.py` | SCOWL, `measured_spellings.txt`, and OASST2 and Tatoeba through `extract_sentences.py`'s readers |
+| `unknown_word_followers.txt` | `scowl_words.sh`, `write_unknown_word_followers.py` | SCOWL, `count_ngrams.py`'s counts, and OASST2 and Tatoeba's sentences |
 
 The builders share the source readers (`extract_sentences.py`, `names.py`) and
 `normalize.py`, so a change made for one can change another's output. After changing any
@@ -76,3 +77,14 @@ the written sources in the data directory:
 Spellings with capitals in a row are left out, as the system keyboard leaves acronyms such
 as "nasa" lowercase, except those listed in `measured_spellings.txt`, which the system
 keyboard was measured writing as spelled (`Tools/AppleKeyboardBaseline`).
+
+## Words after an unknown word
+
+`unknown_word_followers.txt` holds the words the suggestion bar offers right after a word the
+dictionary does not know, such as a name or a word the keyboard learned, by the word before
+it. It is built from `count_ngrams.py`'s counts and the written sentences:
+
+```bash
+./scowl_words.sh 60 <scratch>/scowl-60.txt
+.venv/bin/python write_unknown_word_followers.py <data-dir> <scratch>/scowl-60.txt <output.txt>
+```

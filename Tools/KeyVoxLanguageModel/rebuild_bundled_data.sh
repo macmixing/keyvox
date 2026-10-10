@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Rebuilds every file the predictive keyboard bundles from these tools, from the sources in
-# <data-dir>: the context model, the sentence openers, and the words spelled with capitals.
+# <data-dir>: the context model, the sentence openers, the words spelled with capitals, and the
+# words that follow an unknown word.
 # The builders share the source readers and the normalizing code, so a change made for one can
 # change another's output; run this after changing any tool here, never a single builder alone.
 #
@@ -56,8 +57,11 @@ xcrun swiftc -O tag_word_kinds.swift -o "$SCRATCH_DIR/tag_word_kinds"
 "$PYTHON" write_capitalized_spellings.py "$DATA_DIR" "$SCRATCH_DIR/scowl-60.txt" "$SCRATCH_DIR/scowl-50.txt" \
   "$BUILT_DIR/capitalized_spellings.txt"
 
+# Words that follow an unknown word.
+"$PYTHON" write_unknown_word_followers.py "$DATA_DIR" "$SCRATCH_DIR/scowl-60.txt" "$BUILT_DIR/unknown_word_followers.txt"
+
 differ=0
-for file in context_artifact_800k.bin sentence_openers.txt capitalized_spellings.txt; do
+for file in context_artifact_800k.bin sentence_openers.txt capitalized_spellings.txt unknown_word_followers.txt; do
   if cmp -s "$BUILT_DIR/$file" "$BUNDLED_DIR/$file"; then
     echo "$file: same as the bundled file"
     continue
