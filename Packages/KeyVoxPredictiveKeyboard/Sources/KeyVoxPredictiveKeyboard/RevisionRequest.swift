@@ -15,11 +15,21 @@ public struct RevisionRequest: Sendable, Equatable {
     public let previousWords: [String]
     /// The word typed after `word`, as it will be inserted.
     public let followingWord: String
+    /// Corrections of `word` the user turned down, which a revision must not make, in the form
+    /// personal words are compared in.
+    public let heldBackCorrections: Set<String>
 
-    public init(word: String, touches: [CGPoint], previousWords: [String], followingWord: String) {
+    public init(
+        word: String,
+        touches: [CGPoint],
+        previousWords: [String],
+        followingWord: String,
+        heldBackCorrections: Set<String> = []
+    ) {
         self.word = word
         self.touches = touches
         self.previousWords = previousWords
         self.followingWord = followingWord
+        self.heldBackCorrections = heldBackCorrections
     }
 }

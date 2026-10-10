@@ -1,7 +1,6 @@
+import Foundation
 #if canImport(CoreGraphics)
 import CoreGraphics
-#else
-import Foundation
 #endif
 
 /// The typing state of one text field, shared by every KeyVox keyboard host.
@@ -10,12 +9,19 @@ import Foundation
 /// to do (what space, backspace, or a suggestion tap should change). Every answer is a
 /// `TextEdit` the host applies at the cursor. Use from one thread only.
 public final class PredictiveTypingSession {
+    /// A typed word and what an edit replaced it with.
+    private struct Correction {
+        let typed: String
+        let correction: String
+    }
+
     private struct AppliedAutocorrection {
         /// The text the edit replaced, which backspace restores.
         let original: String
         let insertedText: String
-        /// The typed words the edit replaced, kept as typed once the user restores them.
-        let replacedWords: [String]
+        /// The words the edit replaced, which are not corrected that way again once the user
+        /// restores them.
+        let corrections: [Correction]
     }
 
     /// The word the suggestion bar is for: a selected word, the whole word around the cursor
@@ -42,10 +48,15 @@ public final class PredictiveTypingSession {
     private var revisableWord: RevisableWord?
     /// What the last suggestion-bar tap inserted, ending in the space punctuation replaces.
     private var chosenText: String?
-    /// Words whose autocorrection the user undid; space keeps them as typed.
-    private var keptWords: Set<String> = []
+    /// The corrections the user turned down and the words they keep typing, shared with every
+    /// session while the keyboard runs.
+    private let memory: TypingMemory
+    private let now: () -> Date
 
-    public init() {}
+    public init(memory: TypingMemory = TypingMemory(), now: @escaping () -> Date = { Date() }) {
+        self.memory = memory
+        self.now = now
+    }
 
     /// Call after a tapped character has been inserted.
     public func recordTap(at location: CGPoint, textBeforeCursor: String?) {
@@ -77,7 +88,6 @@ public final class PredictiveTypingSession {
         lastAutocorrection = nil
         revisableWord = nil
         chosenText = nil
-        keptWords = []
     }
 
     /// What to suggest for the text around the cursor. A selected word, or one the cursor
@@ -99,9 +109,10 @@ public final class PredictiveTypingSession {
             currentWord: word.text,
             touches: word.endsAtCursor && isAllLetters ? wordTouches.touches(for: word.text) : [],
             previousWords: context.previousWords,
-            keepsTypedWord: word.endsAtCursor == false || keptWords.contains(word.text.lowercased()),
+            keepsTypedWord: word.endsAtCursor == false,
             isAtSentenceStart: context.isAtSentenceStart,
-            previousSentence: context.isAtSentenceStart ? SentenceEnding(before: textBeforeCursor ?? "") : nil
+            previousSentence: context.isAtSentenceStart ? SentenceEnding(before: textBeforeCursor ?? "") : nil,
+            heldBackCorrections: word.endsAtCursor ? memory.rejections.corrections(heldBackFor: word.text, at: now()) : []
         )
     }
 
@@ -131,7 +142,8 @@ public final class PredictiveTypingSession {
             word: revisable.word,
             touches: revisable.touches,
             previousWords: revisable.previousWords,
-            followingWord: autocorrection(in: result, for: context.currentWord) ?? context.currentWord
+            followingWord: autocorrection(in: result, for: context.currentWord) ?? context.currentWord,
+            heldBackCorrections: memory.rejections.corrections(heldBackFor: revisable.word, at: now())
         )
     }
 
@@ -139,12 +151,15 @@ public final class PredictiveTypingSession {
     /// inserts: the autocorrection from `result` when it was computed for this word, and
     /// `revision` in place of the word before it when one was decided, followed by the
     /// separator. Backspace right after can undo what it changed. Punctuation right after a
-    /// suggestion-bar tap replaces the space the tap added.
+    /// suggestion-bar tap replaces the space the tap added. A word left as typed teaches the
+    /// keyboard (see `recordKeptWord`), also where `allowsAutocorrection` is false and `result`
+    /// is only read to tell.
     public func wordBoundaryEdit(
         separator: String,
         textBeforeCursor: String?,
         result: PredictionResult?,
-        revision: String? = nil
+        revision: String? = nil,
+        allowsAutocorrection: Bool = true
     ) -> TextEdit {
         let context = TypingTextContext(textBeforeCursor: textBeforeCursor)
         let currentWord = context.currentWord
@@ -154,16 +169,24 @@ public final class PredictiveTypingSession {
             && chosenText.map { textBeforeCursor?.hasSuffix($0) == true } == true
         let revised = revisableWord(before: context, textBeforeCursor: textBeforeCursor)
             .flatMap { revisable in
-                revision.flatMap { $0 != revisable.word ? (revisable, $0) : nil }
+                revision.flatMap { $0 != revisable.word && allowsAutocorrection ? (revisable, $0) : nil }
             }
-        let autocorrection = autocorrection(in: result, for: currentWord)
+        let autocorrection = allowsAutocorrection ? autocorrection(in: result, for: currentWord) : nil
         wordTouches.reset()
         lastAutocorrection = nil
         revisableWord = nil
         chosenText = nil
 
+        if autocorrection == nil {
+            recordKeptWord(currentWord, result: result)
+        } else if let autocorrection, autocorrection.lowercased() == currentWord.lowercased(),
+                  result?.typedWordKind == .unknown {
+            // A learned word given the user's capitals is still a use of it.
+            recordKeptWord(currentWord, writtenAs: autocorrection, result: result)
+        }
+        // A word the user turned a correction of down is not revised by the word after it.
         if autocorrection == nil, separator == " ", currentWord.isEmpty == false,
-           keptWords.contains(currentWord.lowercased()) == false {
+           memory.rejections.corrections(heldBackFor: currentWord, at: now()).isEmpty {
             revisableWord = RevisableWord(
                 word: currentWord,
                 touches: touches,
@@ -180,7 +203,7 @@ public final class PredictiveTypingSession {
             lastAutocorrection = AppliedAutocorrection(
                 original: currentWord,
                 insertedText: inserted,
-                replacedWords: [currentWord]
+                corrections: [Correction(typed: currentWord, correction: autocorrection)]
             )
             return TextEdit(deleteCount: currentWord.count, insertText: inserted)
         }
@@ -190,13 +213,15 @@ public final class PredictiveTypingSession {
         lastAutocorrection = AppliedAutocorrection(
             original: original,
             insertedText: inserted,
-            replacedWords: autocorrection == nil ? [previous.word] : [previous.word, currentWord]
+            corrections: [Correction(typed: previous.word, correction: replacement)]
+                + (autocorrection.map { [Correction(typed: currentWord, correction: $0)] } ?? [])
         )
         return TextEdit(deleteCount: original.count, insertText: inserted)
     }
 
     /// What backspace does instead of deleting one character, if anything: right after an
-    /// autocorrection or revision it restores the typed words and remembers to keep them.
+    /// autocorrection or revision it restores the typed words, and those corrections are not
+    /// made again while the keyboard runs.
     public func backspaceEdit(textBeforeCursor: String?) -> TextEdit? {
         guard let lastAutocorrection,
               textBeforeCursor?.hasSuffix(lastAutocorrection.insertedText) == true else {
@@ -204,7 +229,9 @@ public final class PredictiveTypingSession {
         }
         self.lastAutocorrection = nil
         revisableWord = nil
-        keptWords.formUnion(lastAutocorrection.replacedWords.map { $0.lowercased() })
+        for correction in lastAutocorrection.corrections {
+            memory.recordUndo(of: correction.correction, typed: correction.typed)
+        }
         wordTouches.reset()
         return TextEdit(
             deleteCount: lastAutocorrection.insertedText.count,
@@ -214,11 +241,20 @@ public final class PredictiveTypingSession {
 
     /// What tapping a suggestion-bar item inserts in place of the word the bar is for,
     /// followed by a space unless a space or punctuation already follows that word.
+    ///
+    /// Keeping the typed word while `result` waits to correct it turns that correction down for
+    /// good, and teaches the keyboard the word as typed (see `recordKeptWord`); choosing a
+    /// correction the user turned down lets it apply again.
+    /// - Parameters:
+    ///   - result: The suggestions the bar shows, if computed for the text as it is now.
+    ///   - allowsAutocorrection: Whether space applies the bar's autocorrection here.
     public func choiceEdit(
         _ item: SuggestionBar.Item,
         textBeforeCursor: String?,
         selectedText: String? = nil,
-        textAfterCursor: String? = nil
+        textAfterCursor: String? = nil,
+        result: PredictionResult? = nil,
+        allowsAutocorrection: Bool = true
     ) -> TextEdit {
         let context = TypingTextContext(
             textBeforeCursor: textBeforeCursor,
@@ -234,9 +270,15 @@ public final class PredictiveTypingSession {
         let space = isSeparated ? "" : " "
         let written: String
         if item.kind == .typed {
-            keptWords.insert(word.text.lowercased())
+            if word.endsAtCursor {
+                if allowsAutocorrection, let correction = autocorrection(in: result, for: word.text) {
+                    memory.recordRejection(of: correction, typed: word.text, at: now())
+                }
+                recordKeptWord(word.text, result: result)
+            }
             written = word.text
         } else {
+            memory.recordAcceptance(of: item.text, typed: word.text)
             written = item.text
         }
         chosenText = textAfterWord.isEmpty ? written + space : nil
@@ -287,6 +329,25 @@ public final class PredictiveTypingSession {
             return nil
         }
         return revisableWord
+    }
+
+    /// What `word`, left as typed or `written` with a learned word's capitals, teaches the
+    /// keyboard when `result` was computed for it: a word it does not know counts toward learning
+    /// it, after the word before it, as written, even with a capital that only starts the
+    /// sentence, as on the system keyboard; a dictionary word written with capitals within a
+    /// sentence teaches how the user writes it.
+    private func recordKeptWord(_ word: String, writtenAs written: String? = nil, result: PredictionResult?) {
+        guard let result, result.request.currentWord == word,
+              word.count > 1, word.contains(where: \.isLetter) else { return }
+        let request = result.request
+        switch result.typedWordKind {
+        case .unknown:
+            memory.recordUse(of: written ?? word, after: request.isAtSentenceStart ? nil : request.previousWords.first, at: now())
+        case .dictionaryWord where request.isAtSentenceStart == false && word != word.lowercased():
+            memory.recordCapitalUse(of: word, at: now())
+        case .dictionaryWord, .usersWord:
+            break
+        }
     }
 
     private func autocorrection(in result: PredictionResult?, for currentWord: String) -> String? {

@@ -9,9 +9,17 @@ public final class PredictionComputer: @unchecked Sendable {
     private let engine: EnglishPredictiveEngine
     private let parameters: NoisyChannelCorrector.Parameters
     private let lock = NSLock()
+    /// How much likelier than usual the words before must make a dictionary word for the bar to
+    /// keep it as the dictionary writes it rather than with the capitals the user gave it, as the
+    /// natural log of the ratio (`suggestionForm`): half again as likely. Measured against the
+    /// system keyboard after the user wrote "Rose" (Tools/AppleKeyboardBaseline): it kept "rose"
+    /// after words that make it 1.7 to 51 times likelier ("the", "a", "red"), and offered "Rose"
+    /// after words at 1.4 times or less ("and", "with", "like").
+    static let everydayWordContextLogLift = log(1.5)
     private var keys: KeyCenterMap
     private var vocabulary = PersonalVocabulary.empty
     private var forms = PersonalWordForms.empty
+    private var learned = LearnedVocabulary.empty
 
     public init(
         engine: EnglishPredictiveEngine,
@@ -50,9 +58,24 @@ public final class PredictionComputer: @unchecked Sendable {
         lock.lock()
         self.vocabulary = vocabulary
         self.forms = forms
+        let learned = learned
         lock.unlock()
-        // Searched in lowercase; `PersonalWordForms` decides how the words are written.
-        try engine.setPersonalWords(vocabulary.words.map(PersonalVocabulary.key))
+        try searchPersonalWords(vocabulary: vocabulary, learned: learned)
+    }
+
+    /// Call whenever what the keyboard learned from the user's typing changes.
+    public func updateLearnedWords(_ learned: LearnedVocabulary) throws {
+        lock.lock()
+        self.learned = learned
+        let vocabulary = vocabulary
+        lock.unlock()
+        try searchPersonalWords(vocabulary: vocabulary, learned: learned)
+    }
+
+    /// Searched in lowercase; `PersonalWordForms` and `LearnedVocabulary` decide how the words
+    /// are written.
+    private func searchPersonalWords(vocabulary: PersonalVocabulary, learned: LearnedVocabulary) throws {
+        try engine.setPersonalWords(Array(Set(vocabulary.words.map(PersonalVocabulary.key) + learned.keys)).sorted())
     }
 
     public func compute(_ request: PredictionRequest) throws -> PredictionResult {
@@ -60,6 +83,7 @@ public final class PredictionComputer: @unchecked Sendable {
         let keys = keys
         let vocabulary = vocabulary
         let forms = forms
+        let learned = learned
         lock.unlock()
         let language = ContextLanguageScorer(engine: engine, vocabulary: vocabulary)
         let ranker = SuggestionCandidateRanker(parameters: parameters, keys: keys, language: language)
@@ -67,7 +91,7 @@ public final class PredictionComputer: @unchecked Sendable {
         guard request.currentWord.isEmpty == false else {
             return PredictionResult(
                 request: request,
-                bar: try nextWordBar(for: request, vocabulary: vocabulary, ranker: ranker),
+                bar: try nextWordBar(for: request, vocabulary: vocabulary, learned: learned, ranker: ranker),
                 autocorrection: nil
             )
         }
@@ -86,10 +110,12 @@ public final class PredictionComputer: @unchecked Sendable {
             touches: engineTouches,
             mode: .correction
         )
-        let personalCandidates = try engine.personalSuggestions(
+        let personalSuggestions = try engine.personalSuggestions(
             typedWord: typed,
             touches: engineTouches
         )
+        let personalCandidates = personalSuggestions.filter { vocabulary.contains($0) }
+        let learnedCandidates = personalSuggestions.filter { vocabulary.contains($0) == false && learned.word($0)?.isOffered == true }
         let corrector = NoisyChannelCorrector(parameters: parameters, keys: keys, language: language)
         let decision = try corrector.decide(
             typedWord: typed,
@@ -121,6 +147,7 @@ public final class PredictionComputer: @unchecked Sendable {
             readings: correction.twoWordSuggestions,
             request: request,
             vocabulary: vocabulary,
+            learned: learned,
             decision: decision,
             keys: keys,
             language: language
@@ -130,37 +157,93 @@ public final class PredictionComputer: @unchecked Sendable {
             request: request,
             vocabulary: vocabulary,
             forms: forms,
+            learned: learned,
             decision: decision,
             ranked: ranked,
             split: split
+        ).flatMap { request.heldBackCorrections.contains(PersonalVocabulary.key($0)) ? nil : $0 }
+        let suggested = try suggestedWords(
+            ranked: ranked.map(\.word),
+            learnedCandidates: learnedCandidates,
+            request: request,
+            learned: learned
         )
+        // Where a learned word comes first, space leaves the typed letters alone, as on the
+        // system keyboard; it may still expand a text replacement or fix capitals.
+        let autocorrection = suggested.leadsWithLearnedWord && vocabulary.expansion(for: typed) == nil
+            ? replacement.flatMap { $0.lowercased() == typed.lowercased() ? $0 : nil }
+            : replacement
+        let isUsersWord = vocabulary.contains(typed) || vocabulary.expansion(for: typed) != nil
         return PredictionResult(
             request: request,
             bar: SuggestionBarComposer.compose(
                 typedWord: typed,
-                autocorrection: replacement,
-                rankedWords: ranked.map { WordCasing.apply(of: typed, to: $0.word) }
+                autocorrection: autocorrection,
+                rankedWords: suggested.words.map { WordCasing.apply(of: typed, to: $0) }
             ),
-            autocorrection: replacement
+            autocorrection: autocorrection,
+            typedWordKind: isUsersWord ? .usersWord
+                : decision.typed.language.isDictionaryWord && learned.word(typed) == nil ? .dictionaryWord
+                : .unknown
         )
+    }
+
+    /// The words the bar offers while a word is typed, best first: learned words that often
+    /// follow the word before, the ranked words in the user's capitals where the user gave a
+    /// dictionary word capitals and the words before do not call for the everyday word, and then
+    /// the other learned words, as the user first wrote them; and whether a learned word leads.
+    private func suggestedWords(
+        ranked: [String],
+        learnedCandidates: [String],
+        request: PredictionRequest,
+        learned: LearnedVocabulary
+    ) throws -> (words: [String], leadsWithLearnedWord: Bool) {
+        let previous = request.isAtSentenceStart
+            ? ContextLanguageScorer.sentenceStart
+            : request.previousWords.first.map(PersonalVocabulary.key) ?? ContextLanguageScorer.sentenceStart
+        let learnedWords = learnedCandidates.compactMap(learned.word)
+        let first = learnedWords.filter { $0.oftenFollowed.contains(previous) }.map(\.suggestedForm)
+        let later = learnedWords.filter { $0.oftenFollowed.contains(previous) == false }.map(\.suggestedForm)
+        let words = try first + ranked.map { try suggestionForm(of: $0, previousWords: request.previousWords, learned: learned) } + later
+        return (words, first.isEmpty == false)
+    }
+
+    /// How the bar writes the dictionary word `word` after `previousWords`: the user's capitals
+    /// when they gave it capitals, unless the words before make the everyday word much likelier
+    /// than usual ("a red rose"), as the system keyboard keeps it there.
+    private func suggestionForm(of word: String, previousWords: [String], learned: LearnedVocabulary) throws -> String {
+        guard let capitalForm = learned.capitalForm(of: word), word == word.lowercased() else { return word }
+        let analysis = try engine.analyze(word: word, previousWords: previousWords)
+        let lift = analysis.precedingPairObserved
+            ? analysis.precedingLogProbability - analysis.unigramLogProbability
+            : -.infinity
+        return lift >= Self.everydayWordContextLogLift ? word : capitalForm
     }
 
     /// What should replace a word the user finished as typed, now that the word after it is
     /// known, or nil to leave it. A word that starts one of the user's phrases takes the
     /// phrase's capitals once the phrase's next word follows; the user's words are otherwise
-    /// left alone.
+    /// left alone, as are corrections the user turned down.
     public func revision(for request: RevisionRequest) throws -> String? {
+        try proposedRevision(for: request).flatMap {
+            request.heldBackCorrections.contains(PersonalVocabulary.key($0)) ? nil : $0
+        }
+    }
+
+    private func proposedRevision(for request: RevisionRequest) throws -> String? {
         lock.lock()
         let keys = keys
         let vocabulary = vocabulary
         let forms = forms
+        let learned = learned
         lock.unlock()
         let typed = request.word.replacingOccurrences(of: "’", with: "'")
         if let phraseStart = vocabulary.phraseForm(of: typed, before: request.followingWord) {
             let written = WordCasing.apply(of: typed, to: phraseStart)
             return written == typed ? nil : written
         }
-        guard vocabulary.contains(typed) == false, vocabulary.keepsAsTyped(typed) == false else { return nil }
+        guard vocabulary.contains(typed) == false, vocabulary.keepsAsTyped(typed) == false,
+              learned.word(typed) == nil else { return nil }
         let engineTouches = request.touches.map(PredictionTouch.init(location:))
         let correction = try engine.predict(
             typedWord: typed,
@@ -169,6 +252,7 @@ public final class PredictionComputer: @unchecked Sendable {
             mode: .correction
         )
         let personalCandidates = try engine.personalSuggestions(typedWord: typed, touches: engineTouches)
+            .filter { vocabulary.contains($0) }
         let corrector = NoisyChannelCorrector(
             parameters: parameters,
             keys: keys,
@@ -249,10 +333,11 @@ public final class PredictionComputer: @unchecked Sendable {
         ))
     }
 
-    /// Text replacements always expand; words the user kept and known names are never
-    /// replaced, and the user's words are only ever written the user's way. A typed word
-    /// the dictionary lacks becomes the best suggestion when that is one of the user's
-    /// words it begins, as the system keyboard completes a contact's name. Otherwise the
+    /// Text replacements always expand; words the cursor is in and known names are never
+    /// replaced, and the user's words are only ever written the user's way. A learned word is
+    /// left as typed, with the user's capitals once they write it with them (`LearnedWords`). A
+    /// typed word the dictionary lacks becomes the best suggestion when that is one of the
+    /// user's words it begins, as the system keyboard completes a contact's name. Otherwise the
     /// corrector's choice, or the typed word itself, is spelled with its capitals when it
     /// has them, with the typed capitalization, and with a capital pronoun "I" ("i'm"
     /// becomes "I'm").
@@ -261,6 +346,7 @@ public final class PredictionComputer: @unchecked Sendable {
         request: PredictionRequest,
         vocabulary: PersonalVocabulary,
         forms: PersonalWordForms,
+        learned: LearnedVocabulary,
         decision: NoisyChannelCorrector.Decision,
         ranked: [SuggestionCandidateRanker.RankedWord],
         split: MissingSpaceCorrector.Split?
@@ -279,6 +365,8 @@ public final class PredictionComputer: @unchecked Sendable {
             chosen = forms.written(typed, after: request.previousWords.first)
         } else if vocabulary.keepsAsTyped(typed) {
             chosen = typed
+        } else if let learnedWord = learned.word(typed) {
+            chosen = learnedWord.written(ofTyped: typed)
         } else if decision.typed.language.isDictionaryWord == false
                     || decision.typed.language.isEverydayWord,
                   let best = ranked.first?.word,
@@ -292,9 +380,13 @@ public final class PredictionComputer: @unchecked Sendable {
         return written == typed ? nil : written
     }
 
+    /// The likeliest next words, or, after a word the bundled data has nothing to follow, such as
+    /// a name or a learned word, what usually follows such a word after the word before it
+    /// (`UnknownWordFollowers`), as the system keyboard never leaves the bar empty there.
     private func nextWordBar(
         for request: PredictionRequest,
         vocabulary: PersonalVocabulary,
+        learned: LearnedVocabulary,
         ranker: SuggestionCandidateRanker
     ) throws -> SuggestionBar {
         guard let previousWord = request.previousWords.first else {
@@ -310,12 +402,19 @@ public final class PredictionComputer: @unchecked Sendable {
             touches: [],
             mode: .nextWord
         )
-        let ranked = try ranker.rankNextWords(
+        var ranked = try ranker.rankNextWords(
             previousWords: request.previousWords,
             candidates: vocabulary.continuations(after: previousWord)
                 + response.suggestions.map { engine.capitalizedSpellings.written($0.word) }
-        )
-        return SuggestionBarComposer.composeNextWords(ranked.map { WordCasing.capitalizingPronoun($0.word) })
+        ).map(\.word)
+        if ranked.isEmpty {
+            ranked = engine.unknownWordFollowers
+                .words(afterUnknownWordFollowing: request.previousWords.dropFirst().first)
+                .map { engine.capitalizedSpellings.written($0) }
+        }
+        return SuggestionBarComposer.composeNextWords(try ranked.map {
+            WordCasing.capitalizingPronoun(try suggestionForm(of: $0, previousWords: request.previousWords, learned: learned))
+        })
     }
 
     /// Candidates written the user's way when they are the user's words, and otherwise spelled
@@ -334,12 +433,13 @@ public final class PredictionComputer: @unchecked Sendable {
     }
 
     /// The two words a typed word the dictionary does not know was meant as, when that reads
-    /// clearly better than any one word; the user's own words are never split.
+    /// clearly better than any one word; the user's own words and learned words are never split.
     private func missingSpaceSplit(
         typed: String,
         readings: [String],
         request: PredictionRequest,
         vocabulary: PersonalVocabulary,
+        learned: LearnedVocabulary,
         decision: NoisyChannelCorrector.Decision,
         keys: KeyCenterMap,
         language: ContextLanguageScorer
@@ -348,7 +448,8 @@ public final class PredictionComputer: @unchecked Sendable {
               decision.typed.language.isDictionaryWord == false,
               vocabulary.expansion(for: typed) == nil,
               vocabulary.contains(typed) == false,
-              vocabulary.keepsAsTyped(typed) == false else { return nil }
+              vocabulary.keepsAsTyped(typed) == false,
+              learned.word(typed) == nil else { return nil }
         return try MissingSpaceCorrector(parameters: parameters, keys: keys, language: language).split(
             of: readings,
             touches: request.touches,
