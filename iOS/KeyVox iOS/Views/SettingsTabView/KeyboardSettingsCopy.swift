@@ -16,5 +16,7 @@ enum KeyboardSettingsCopy {
     static let compactKeysDescription = "Long-press #+= to use a shorter keyboard."
     static let openOnNumberPageTitle = "Open on 123"
     static let openOnNumberPageDescription = "Show numbers and symbols when the keyboard opens. Tap ABC for letters."
+    static let resetLearnedWordsTitle = "Reset Learned Words"
+    static let resetLearnedWordsHint = "To forget a single word, press and hold it in the suggestion bar."
     static let englishOnlyNote = "Auto-Correction and Predictive Text currently support English only."
 }

@@ -215,6 +215,8 @@ struct MainTabView: View {
             pocketTTSModelManager.deleteSharedModel()
         case .ttsVoice(let voice):
             pocketTTSModelManager.deleteVoice(voice)
+        case .learnedWords:
+            KeyboardTypingMemoryReset.reset()
         }
     }
 

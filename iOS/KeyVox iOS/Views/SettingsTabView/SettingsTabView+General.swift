@@ -131,7 +131,7 @@ extension SettingsTabView {
     @ViewBuilder
     var keyboardSection: some View {
         NavigationLink {
-            KeyboardSettingsView()
+            KeyboardSettingsView(pendingDeletionConfirmation: $pendingDeletionConfirmation)
         } label: {
             AppCard {
                 HStack(alignment: .center, spacing: 12) {

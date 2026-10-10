@@ -5,6 +5,8 @@ enum SettingsPendingDeletionConfirmation: Identifiable, Equatable {
     case keyVoxVibesAI
     case sharedTTSModel
     case ttsVoice(AppSettingsStore.TTSVoice)
+    /// What the KeyVox keyboard learned from the user's typing.
+    case learnedWords
 
     var id: String {
         switch self {
@@ -16,6 +18,8 @@ enum SettingsPendingDeletionConfirmation: Identifiable, Equatable {
             return "tts-shared"
         case .ttsVoice(let voice):
             return "tts-voice-\(voice.rawValue)"
+        case .learnedWords:
+            return "learned-words"
         }
     }
 
@@ -29,6 +33,8 @@ enum SettingsPendingDeletionConfirmation: Identifiable, Equatable {
             return "Delete Speak Engine?"
         case .ttsVoice:
             return "Delete Voice?"
+        case .learnedWords:
+            return "Reset Learned Words?"
         }
     }
 
@@ -42,6 +48,18 @@ enum SettingsPendingDeletionConfirmation: Identifiable, Equatable {
             return "Delete the KeyVox Speak engine and all downloaded voices from this device?"
         case .ttsVoice(let voice):
             return "Delete the \(voice.displayName) voice from this device?"
+        case .learnedWords:
+            return "KeyVox will forget the words it learned from your typing and the corrections you undid. Your KeyVox Dictionary isn't affected."
+        }
+    }
+
+    /// The title of the red button that goes ahead.
+    var confirmTitle: String {
+        switch self {
+        case .dictationModel, .keyVoxVibesAI, .sharedTTSModel, .ttsVoice:
+            return "Delete"
+        case .learnedWords:
+            return "Reset"
         }
     }
 }
@@ -98,7 +116,7 @@ private struct SettingsDeletionConfirmationModifier: ViewModifier {
                                 .accessibilityFocused($isConfirmFocused)
 
                                 AppActionButton(
-                                    title: "Delete",
+                                    title: confirmation.confirmTitle,
                                     style: .destructive,
                                     fillsWidth: true,
                                     size: .regular,

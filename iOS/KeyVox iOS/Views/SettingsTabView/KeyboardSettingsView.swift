@@ -1,9 +1,11 @@
 import SwiftUI
 
 /// The KeyVox keyboard's settings, opened from the Keyboard row in Settings: the typing
-/// toggles as single-line rows, then the layout options with their descriptions.
+/// toggles as single-line rows, then the layout options with their descriptions, then resetting
+/// what the keyboard learned from the user's typing.
 struct KeyboardSettingsView: View {
     @EnvironmentObject private var settingsStore: AppSettingsStore
+    @Binding var pendingDeletionConfirmation: SettingsPendingDeletionConfirmation?
 
     var body: some View {
         AppScrollScreen(additionalTopContentInset: AppScreenContentInset.tabPageTop) {
@@ -12,6 +14,7 @@ struct KeyboardSettingsView: View {
                 compactKeysSection
                 openOnNumberPageSection
                 leftHandedLayoutSection
+                resetLearnedWordsSection
                 englishOnlyNote
             }
         }
@@ -98,6 +101,25 @@ struct KeyboardSettingsView: View {
                 description: KeyboardSettingsCopy.openOnNumberPageDescription,
                 isOn: $settingsStore.opensOnNumberPage
             )
+        }
+    }
+
+    private var resetLearnedWordsSection: some View {
+        VStack(spacing: 8) {
+            AppActionButton(
+                title: KeyboardSettingsCopy.resetLearnedWordsTitle,
+                style: .secondary,
+                fillsWidth: true,
+                size: .regular,
+                fontSize: 16,
+                action: { pendingDeletionConfirmation = .learnedWords }
+            )
+
+            Text(KeyboardSettingsCopy.resetLearnedWordsHint)
+                .font(.appFont(15, variant: .light))
+                .foregroundStyle(.white.opacity(0.7))
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity, alignment: .center)
         }
     }
 
