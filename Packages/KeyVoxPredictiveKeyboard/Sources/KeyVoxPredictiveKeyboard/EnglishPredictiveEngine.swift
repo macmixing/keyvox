@@ -10,6 +10,7 @@ public final class EnglishPredictiveEngine: @unchecked Sendable {
     /// Words spelled only with capitals, such as names.
     public let capitalizedSpellings: CapitalizedSpellings
     public let sentenceOpeners: SentenceOpeners
+    public let unknownWordFollowers: UnknownWordFollowers
 
     public init() throws {
         let locator = PredictiveArtifactLocator()
@@ -28,6 +29,9 @@ public final class EnglishPredictiveEngine: @unchecked Sendable {
         )
         sentenceOpeners = try SentenceOpeners(
             contentsOf: locator.url(name: "sentence_openers", extension: "txt")
+        )
+        unknownWordFollowers = try UnknownWordFollowers(
+            contentsOf: locator.url(name: "unknown_word_followers", extension: "txt")
         )
 
         let defaultGeometry = EnglishKeyboardLayout.defaultGeometry

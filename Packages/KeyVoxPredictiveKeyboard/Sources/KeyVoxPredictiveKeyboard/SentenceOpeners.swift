@@ -34,7 +34,7 @@ public struct SentenceOpeners: Sendable {
 
         data.withUnsafeBytes { (bytes: UnsafeRawBufferPointer) in
             let endingPrefix = Array("ending ".utf8)
-            for line in Self.lines(in: bytes) {
+            for line in ScoredWordLines.lines(in: bytes) {
                 guard let tab = bytes[line].firstIndex(of: UInt8(ascii: "\t")) else { continue }
                 let values = (tab + 1)..<line.upperBound
                 guard bytes[line].starts(with: endingPrefix) else {
@@ -42,7 +42,7 @@ public struct SentenceOpeners: Sendable {
                     continue
                 }
                 let name = String(decoding: bytes[(line.lowerBound + endingPrefix.count)..<tab], as: UTF8.self)
-                let pairs = Self.pairs(in: bytes, values)
+                let pairs = ScoredWordLines.pairs(in: bytes, values)
                 if openers.isEmpty {
                     openers = pairs.map(\.word)
                     for (index, opener) in openers.enumerated() {
@@ -62,7 +62,7 @@ public struct SentenceOpeners: Sendable {
             for line in boostLines {
                 boostHashes.append(line.hash)
                 boostStarts.append(boostOpeners.count)
-                for pair in Self.pairs(in: bytes, line.values) {
+                for pair in ScoredWordLines.pairs(in: bytes, line.values) {
                     if let index = openerIndices[pair.word] {
                         boostOpeners.append(index)
                         boostValues.append(pair.value)
@@ -111,27 +111,6 @@ public struct SentenceOpeners: Sendable {
         guard low < boostHashes.count, boostHashes[low] == hash else { return }
         for index in boostStarts[low]..<boostStarts[low + 1] {
             scores[Int(boostOpeners[index])] += boostValues[index]
-        }
-    }
-
-    private static func lines(in bytes: UnsafeRawBufferPointer) -> [Range<Int>] {
-        var lines: [Range<Int>] = []
-        var start = 0
-        for index in bytes.indices where bytes[index] == UInt8(ascii: "\n") {
-            if index > start {
-                lines.append(start..<index)
-            }
-            start = index + 1
-        }
-        return lines
-    }
-
-    /// The `word:value` pairs, separated by spaces, in `range`.
-    private static func pairs(in bytes: UnsafeRawBufferPointer, _ range: Range<Int>) -> [(word: String, value: Float)] {
-        bytes[range].split(separator: UInt8(ascii: " ")).compactMap { pair in
-            guard let colon = pair.lastIndex(of: UInt8(ascii: ":")),
-                  let value = Float(String(decoding: pair[(colon + 1)...], as: UTF8.self)) else { return nil }
-            return (String(decoding: pair[..<colon], as: UTF8.self), value)
         }
     }
 
