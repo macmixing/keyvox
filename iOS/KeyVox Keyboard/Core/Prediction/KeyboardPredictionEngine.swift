@@ -3,13 +3,15 @@ import Foundation
 import KeyVoxPredictiveKeyboard
 
 /// A prediction engine with a serial queue of its own. It is created the first time work on
-/// `queue` needs it and is kept up to date with the letter keys' layout and the user's
-/// vocabulary from the start. Everything other than `queue` is owned by `queue`.
+/// `queue` needs it and is kept up to date with the letter keys' layout, the user's vocabulary,
+/// and what the keyboard learned from the user's typing from the start. Everything other than
+/// `queue` is owned by `queue`.
 final class KeyboardPredictionEngine {
     let queue: DispatchQueue
     private var computer: PredictionComputer?
     private var pendingGeometry: (keys: [PredictionKeyGeometry], size: CGSize)?
     private var pendingVocabulary: PersonalVocabulary?
+    private var pendingLearnedWords: LearnedVocabulary?
     private var isUnavailable = false
 
     init(label: String, qos: DispatchQoS) {
@@ -33,6 +35,10 @@ final class KeyboardPredictionEngine {
             try? computer.updateVocabulary(pendingVocabulary)
             self.pendingVocabulary = nil
         }
+        if let pendingLearnedWords {
+            try? computer.updateLearnedWords(pendingLearnedWords)
+            self.pendingLearnedWords = nil
+        }
         self.computer = computer
         return computer
     }
@@ -52,6 +58,15 @@ final class KeyboardPredictionEngine {
             try? computer.updateVocabulary(vocabulary)
         } else {
             pendingVocabulary = vocabulary
+        }
+    }
+
+    /// Call on `queue`.
+    func updateLearnedWords(_ learned: LearnedVocabulary) {
+        if let computer {
+            try? computer.updateLearnedWords(learned)
+        } else {
+            pendingLearnedWords = learned
         }
     }
 }

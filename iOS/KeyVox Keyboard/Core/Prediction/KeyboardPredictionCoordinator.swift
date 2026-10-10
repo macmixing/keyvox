@@ -16,7 +16,7 @@ import KeyVoxPredictiveKeyboard
 final class KeyboardPredictionCoordinator {
     var onBarChange: ((SuggestionBar) -> Void)?
 
-    private let session = PredictiveTypingSession()
+    private let session: PredictiveTypingSession
     private let engine = KeyboardPredictionEngine(label: "org.keyvox.keyboard.prediction", qos: .userInitiated)
     private let tapCheckEngine = KeyboardPredictionEngine(
         label: "org.keyvox.keyboard.prediction.tap-check",
@@ -50,11 +50,15 @@ final class KeyboardPredictionCoordinator {
         let request: PredictionRequest
     }
 
+    /// - Parameter memory: What the keyboard learned from the user's typing, shared with every
+    ///   field's session while the keyboard runs.
     init(
+        memory: TypingMemory,
         textBeforeCursor: @escaping () -> String?,
         selectedText: @escaping () -> String?,
         textAfterCursor: @escaping () -> String?
     ) {
+        session = PredictiveTypingSession(memory: memory)
         self.textBeforeCursor = textBeforeCursor
         self.selectedText = selectedText
         self.textAfterCursor = textAfterCursor
@@ -93,6 +97,17 @@ final class KeyboardPredictionCoordinator {
             guard let self else { return }
             self.latestIntendedLetter = nil
             self.tapCheckEngine.updateVocabulary(vocabulary)
+        }
+    }
+
+    /// Call whenever what the keyboard learned from the user's typing changes. Only suggestions
+    /// use it; a tap close to a letter key is judged by dictionary and personal words alone.
+    func updateLearnedWords(_ learned: LearnedVocabulary) {
+        latestResult = nil
+        engine.queue.async { [weak self] in
+            guard let self else { return }
+            self.latestRevision = nil
+            self.engine.updateLearnedWords(learned)
         }
     }
 
@@ -182,10 +197,18 @@ final class KeyboardPredictionCoordinator {
     func wordBoundaryEdit(separator: String, allowsAutocorrection: Bool) -> TextEdit {
         let text = textBeforeCursor()
         let request = session.request(textBeforeCursor: text)
-        guard request.currentWord.isEmpty == false,
-              allowsAutocorrection,
-              let result = currentResult(for: request) else {
+        guard request.currentWord.isEmpty == false else {
             return session.wordBoundaryEdit(separator: separator, textBeforeCursor: text, result: nil)
+        }
+        guard allowsAutocorrection, let result = currentResult(for: request) else {
+            // Without autocorrection space waits for nothing; the suggestions already worked
+            // out only tell whether the word counts toward learning it.
+            return session.wordBoundaryEdit(
+                separator: separator,
+                textBeforeCursor: text,
+                result: latestResult?.request == request ? latestResult : nil,
+                allowsAutocorrection: false
+            )
         }
         let revision = session.revisionRequest(textBeforeCursor: text, result: result)
             .flatMap { revisionRequest in
@@ -272,12 +295,20 @@ final class KeyboardPredictionCoordinator {
         session.backspaceEdit(textBeforeCursor: textBeforeCursor())
     }
 
-    func choiceEdit(_ item: SuggestionBar.Item) -> TextEdit {
-        session.choiceEdit(
+    /// What tapping `item` inserts. Tapping the typed word while the bar shows a correction
+    /// turns that correction down; `allowsAutocorrection` says whether the bar showed one.
+    func choiceEdit(_ item: SuggestionBar.Item, allowsAutocorrection: Bool) -> TextEdit {
+        let text = textBeforeCursor()
+        let selected = selectedText()
+        let after = textAfterCursor()
+        let request = session.request(textBeforeCursor: text, selectedText: selected, textAfterCursor: after)
+        return session.choiceEdit(
             item,
-            textBeforeCursor: textBeforeCursor(),
-            selectedText: selectedText(),
-            textAfterCursor: textAfterCursor()
+            textBeforeCursor: text,
+            selectedText: selected,
+            textAfterCursor: after,
+            result: latestResult?.request == request ? latestResult : nil,
+            allowsAutocorrection: allowsAutocorrection
         )
     }
 

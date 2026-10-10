@@ -167,6 +167,7 @@
 				Core/Prediction/KeyboardPersonalVocabularyBuilder.swift,
 				Core/Prediction/KeyboardPredictionCoordinator.swift,
 				Core/Prediction/KeyboardPredictionEngine.swift,
+				Core/Prediction/KeyboardTypingMemory.swift,
 				Core/Prediction/KeyboardTypingTraits.swift,
 				Core/Settings/KeyboardAppSettingsStore.swift,
 				Core/Text/KeyboardCapsLockStateStore.swift,
@@ -215,6 +216,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				App/iCloud/UserDefaultsKeys.swift,
+				App/Integration/KeyboardTypingMemoryLocation.swift,
 				App/Integration/KeyVoxIPCBridge.swift,
 				App/Integration/KeyVoxTTSRequest.swift,
 				App/KeyVoxVibes/KeyVoxVibesTrialPolicy.swift,
@@ -232,6 +234,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				App/iCloud/UserDefaultsKeys.swift,
+				App/Integration/KeyboardTypingMemoryLocation.swift,
 				App/Integration/KeyVoxIPCBridge.swift,
 				App/Integration/KeyVoxTTSRequest.swift,
 				App/KeyVoxVibes/KeyVoxVibesTrialPolicy.swift,

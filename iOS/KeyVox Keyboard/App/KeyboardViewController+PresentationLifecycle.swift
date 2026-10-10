@@ -115,6 +115,9 @@ extension KeyboardViewController {
         rootContainerView.suggestionBarView.onItemSelected = { [weak self] item in
             self?.handleSuggestionSelected(item)
         }
+        rootContainerView.suggestionBarView.onItemLongPressed = { [weak self] item in
+            self?.handleSuggestionLongPressed(item)
+        }
         predictionCoordinator.onBarChange = { [weak self] bar in
             self?.rootContainerView?.suggestionBarView.apply(bar)
         }
@@ -178,6 +181,7 @@ extension KeyboardViewController {
             rootContainerView.keyGridView.onKeyTouchDown = nil
             rootContainerView.keyGridView.onCharacterGeometryChange = nil
             rootContainerView.suggestionBarView.onItemSelected = nil
+            rootContainerView.suggestionBarView.onItemLongPressed = nil
             rootContainerView.keyGridView.onCompactKeysRequested = nil
             rootContainerView.keyGridView.onSpaceTrackpadEvent = nil
             rootContainerView.keyGridView.setPopupContainerView(nil)
@@ -241,6 +245,7 @@ extension KeyboardViewController {
         ) { [weak self] _ in
             self?.extensionHostIsActive = true
             guard let self else { return }
+            KeyboardTypingMemory.shared.adoptResetIfNeeded()
             self.preparePresentationIfNeeded()
             self.installedModels = KeyboardInstalledModels.check()
             self.configurePrimaryViewHeight()

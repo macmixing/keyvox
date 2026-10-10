@@ -5,6 +5,8 @@ import UIKit
 /// and trailing. The autocorrection space will apply is shown in a heavier weight.
 final class KeyboardSuggestionBarView: UIView {
     var onItemSelected: ((SuggestionBar.Item) -> Void)?
+    /// Called when a suggestion is pressed and held, instead of selecting it.
+    var onItemLongPressed: ((SuggestionBar.Item) -> Void)?
 
     private let stackView = UIStackView()
     private var buttons: [UIButton] = []
@@ -28,6 +30,12 @@ final class KeyboardSuggestionBarView: UIView {
             let button = UIButton(configuration: configuration)
             button.tag = index
             button.addTarget(self, action: #selector(handleTap(_:)), for: .touchUpInside)
+            // Recognizing the hold cancels the button's touch, so a held suggestion is not
+            // also selected.
+            button.addGestureRecognizer(UILongPressGestureRecognizer(
+                target: self,
+                action: #selector(handleLongPress(_:))
+            ))
             button.layer.cornerRadius = KeyboardStyle.keyCornerRadius
             button.layer.borderWidth = KeyboardStyle.keyBorderWidth
             button.configurationUpdateHandler = { [weak self] button in
@@ -107,5 +115,14 @@ final class KeyboardSuggestionBarView: UIView {
     private func handleTap(_ sender: UIButton) {
         guard items.indices.contains(sender.tag), let item = items[sender.tag] else { return }
         onItemSelected?(item)
+    }
+
+    @objc
+    private func handleLongPress(_ recognizer: UILongPressGestureRecognizer) {
+        guard recognizer.state == .began,
+              let tag = recognizer.view?.tag,
+              items.indices.contains(tag),
+              let item = items[tag] else { return }
+        onItemLongPressed?(item)
     }
 }

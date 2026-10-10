@@ -1,5 +1,6 @@
 import AVFoundation
 import KeyVoxCore
+import KeyVoxPredictiveKeyboard
 import UIKit
 
 final class KeyboardViewController: UIInputViewController {
@@ -81,11 +82,17 @@ final class KeyboardViewController: UIInputViewController {
     /// Checked when the keyboard comes on screen; see `KeyboardInstalledModels`.
     var installedModels = KeyboardInstalledModels.check()
     lazy var predictionCoordinator = KeyboardPredictionCoordinator(
+        memory: KeyboardTypingMemory.shared.memory,
         textBeforeCursor: { [weak self] in self?.textDocumentProxy.documentContextBeforeInput },
         selectedText: { [weak self] in self?.textDocumentProxy.selectedText },
         textAfterCursor: { [weak self] in self?.textDocumentProxy.documentContextAfterInput }
     )
     var typingTraits = KeyboardTypingTraits.standard
+    /// The user's KeyVox Dictionary, contact names, and text replacements, without what the
+    /// keyboard learned from their typing.
+    var userVocabulary = PersonalVocabulary.empty
+    /// The system's names and text replacements, as last sent (`loadPersonalVocabulary`).
+    var supplementaryLexicon: UILexicon?
     var primaryHeightConstraint: NSLayoutConstraint?
     var keyboardState: KeyboardState = .idle {
         didSet {
@@ -156,6 +163,9 @@ final class KeyboardViewController: UIInputViewController {
         configureTraitChangeObservation()
         configureHostLifecycleObservers()
         configureControllerBindingsIfNeeded()
+        KeyboardTypingMemory.shared.onLearnedVocabularyChange = { [weak self] in
+            self?.learnedVocabularyDidChange()
+        }
         KeyVoxIPCBridge.reportKeyboardOnboardingState(hasFullAccess: hasFullAccess)
         appSettingsStore.normalizeSelectedVibeIfNeeded()
         syncCapsLockState()
@@ -172,6 +182,7 @@ final class KeyboardViewController: UIInputViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         extensionHostIsActive = true
+        KeyboardTypingMemory.shared.adoptResetIfNeeded()
         // Opens as the user's settings say until the field is read, which can still ask for 123.
         applyOpeningLayout(prefersNumberPage: appSettingsStore.opensOnNumberPage)
         // The field is read on the next main-thread turn: as a field connects, the system

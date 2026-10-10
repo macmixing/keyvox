@@ -14,6 +14,7 @@ extension KeyboardViewController {
         predictionCoordinator.reset()
         if typingTraits.allowsPredictions {
             predictionCoordinator.prepare()
+            applyLearnedVocabulary()
             loadPersonalVocabulary()
         }
         letterCaseController.reset()
@@ -147,21 +148,54 @@ extension KeyboardViewController {
 
     func handleSuggestionSelected(_ item: SuggestionBar.Item) {
         interactionHaptics.emitLightIfEnabled()
-        textInputController.apply(predictionCoordinator.choiceEdit(item))
+        textInputController.apply(
+            predictionCoordinator.choiceEdit(item, allowsAutocorrection: typingTraits.allowsAutocorrection)
+        )
         handleTypingContextChange()
     }
 
-    /// Hands the engine the user's KeyVox Dictionary, contact names, and text replacements.
-    private func loadPersonalVocabulary() {
-        let dictionaryPhrases = dictionaryCasingStore.dictionaryPhrases()
-        requestSupplementaryLexicon { [weak self] lexicon in
-            self?.predictionCoordinator.updateVocabulary(
-                KeyboardPersonalVocabularyBuilder.vocabulary(
-                    dictionaryPhrases: dictionaryPhrases,
-                    lexicon: lexicon
-                )
-            )
+    /// Forgets a word the keyboard learned from the user's typing, or the capitals it learned
+    /// for a dictionary word, when the user presses and holds it in the suggestion bar, with the
+    /// toolbar's thump; the user's own words stay, and nothing is felt.
+    func handleSuggestionLongPressed(_ item: SuggestionBar.Item) {
+        guard userVocabulary.contains(item.text) == false,
+              KeyboardTypingMemory.shared.memory.forget(item.text) else {
+            return
         }
+        interactionHaptics.emitMediumIfEnabled()
+    }
+
+    /// Hands the suggestions the user's vocabulary: their KeyVox Dictionary at once, with the
+    /// system's names and text replacements as last sent, and again whenever the system sends
+    /// them, since it may take long to or never answer.
+    func loadPersonalVocabulary() {
+        guard typingTraits.allowsPredictions else { return }
+        let dictionaryPhrases = dictionaryCasingStore.dictionaryPhrases()
+        applyPersonalVocabulary(dictionaryPhrases: dictionaryPhrases, lexicon: supplementaryLexicon)
+        requestSupplementaryLexicon { [weak self] lexicon in
+            guard let self else { return }
+            self.supplementaryLexicon = lexicon
+            self.applyPersonalVocabulary(dictionaryPhrases: dictionaryPhrases, lexicon: lexicon)
+        }
+    }
+
+    /// Call when what the keyboard learned from the user's typing changes: suggests with it at
+    /// once.
+    func learnedVocabularyDidChange() {
+        applyLearnedVocabulary()
+        refreshPredictions()
+    }
+
+    /// Hands the suggestions what the keyboard learned from the user's typing.
+    private func applyLearnedVocabulary() {
+        predictionCoordinator.updateLearnedWords(KeyboardTypingMemory.shared.memory.learnedVocabulary)
+    }
+
+    private func applyPersonalVocabulary(dictionaryPhrases: [String], lexicon: UILexicon?) {
+        let vocabulary = KeyboardPersonalVocabularyBuilder.vocabulary(dictionaryPhrases: dictionaryPhrases, lexicon: lexicon)
+        userVocabulary = vocabulary
+        predictionCoordinator.updateVocabulary(vocabulary)
+        refreshPredictions()
     }
 
     /// Starts the check `resolveContestedTap` makes when the finger lands rather than when it

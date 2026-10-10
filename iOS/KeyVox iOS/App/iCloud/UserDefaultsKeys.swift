@@ -15,6 +15,8 @@ nonisolated enum UserDefaultsKeys {
     static let predictiveTextEnabled = "KeyVox.PredictiveTextEnabled"
     static let periodShortcutEnabled = "KeyVox.PeriodShortcutEnabled"
     static let opensOnNumberPage = "KeyVox.OpensOnNumberPage"
+    /// How many times the user reset what the keyboard learned from their typing.
+    static let keyboardTypingMemoryResetGeneration = "KeyVox.KeyboardTypingMemoryResetGeneration"
     static let preferBuiltInMicrophone = "KeyVox.PreferBuiltInMicrophone"
     static let liveActivitiesEnabled = "KeyVox.LiveActivitiesEnabled"
     static let sessionDisableTiming = "KeyVox.SessionDisableTiming"
