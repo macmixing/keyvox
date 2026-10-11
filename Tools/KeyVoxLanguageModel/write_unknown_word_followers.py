@@ -16,50 +16,16 @@ starts a sentence, or `*` for any word before it, which comes first.
 """
 
 import argparse
-import math
-from collections import Counter
 from pathlib import Path
 
 import numpy as np
 
+from followers import followers_line, grouped, written_sentence_ends
 from normalize import SENTENCE_START
 
 ID_BITS = 21
 ID_MASK = np.uint64((1 << ID_BITS) - 1)
 ANY_CONTEXT = "*"
-
-
-def grouped(keys: np.ndarray, counts: np.ndarray):
-    unique, inverse = np.unique(keys, return_inverse=True)
-    return unique, np.bincount(inverse, weights=counts)
-
-
-def written_sentence_ends(paths: list[Path], is_unknown) -> tuple[float, Counter]:
-    """How often an unknown word ends a written sentence, and how often each word starts one."""
-    unknown_words = 0
-    unknown_endings = 0
-    openers: Counter = Counter()
-    for path in paths:
-        with open(path, encoding="utf-8") as sentences:
-            for sentence in sentences:
-                words = sentence.split()
-                if not words:
-                    continue
-                openers[words[0]] += 1
-                unknown = [is_unknown(word) for word in words]
-                unknown_words += sum(unknown)
-                unknown_endings += unknown[-1]
-    return unknown_endings / max(unknown_words, 1), openers
-
-
-def followers_line(context: str, follower_ids: np.ndarray, follower_counts: np.ndarray, total: float,
-                   opener_shares: np.ndarray, ending_share: float, vocabulary: list[str], limit: int) -> str:
-    """Followers after taking off the sentence starts `total` uses would bring in transcripts."""
-    adjusted = follower_counts - ending_share * total * opener_shares[follower_ids]
-    kept_total = total * (1 - ending_share)
-    order = [index for index in np.argsort(-adjusted, kind="stable") if adjusted[index] > 0][:limit]
-    pairs = " ".join(f"{vocabulary[follower_ids[index]]}:{math.log(adjusted[index] / kept_total):.3f}" for index in order)
-    return f"{context}\t{pairs}\n"
 
 
 def main() -> None:
@@ -89,7 +55,8 @@ def main() -> None:
     context_allowed[sentence_start] = True
 
     written = [arguments.data_dir / "sentences" / f"{name}.txt" for name in arguments.written or ["oasst2", "tatoeba"]]
-    ending_share, openers = written_sentence_ends(written, is_unknown)
+    uses, endings, openers = written_sentence_ends(written)
+    ending_share = sum(endings[word] for word in endings if is_unknown(word)) / max(sum(uses[word] for word in uses if is_unknown(word)), 1)
     opener_total = sum(openers.values())
     opener_shares = np.array([openers.get(word, 0) / opener_total for word in vocabulary])
 

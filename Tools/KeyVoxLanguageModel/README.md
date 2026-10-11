@@ -9,6 +9,8 @@ Builds the language data the predictive keyboard bundles in
 | `sentence_openers.txt` | `tag_word_kinds.swift`, `count_sentence_openers.py`, `write_sentence_openers.py` | Every source, through `extract_sentences.py`'s readers and its sentences |
 | `capitalized_spellings.txt` | `scowl_words.sh`, `write_capitalized_spellings.py` | SCOWL, `measured_spellings.txt`, and OASST2 and Tatoeba through `extract_sentences.py`'s readers |
 | `unknown_word_followers.txt` | `scowl_words.sh`, `write_unknown_word_followers.py` | SCOWL, `count_ngrams.py`'s counts, and OASST2 and Tatoeba's sentences |
+| `word_followers.txt` | `scowl_words.sh`, `write_word_followers.py` | SCOWL, `count_ngrams.py`'s counts, and OASST2 and Tatoeba's sentences |
+| `grammar_words.txt` | `tag_word_kinds.swift`, `write_grammar_words.py` | `count_ngrams.py`'s vocabulary and `tag_word_kinds.swift`'s word kinds |
 
 The builders share the source readers (`extract_sentences.py`, `names.py`) and
 `normalize.py`, so a change made for one can change another's output. After changing any
@@ -87,4 +89,27 @@ it. It is built from `count_ngrams.py`'s counts and the written sentences:
 ```bash
 ./scowl_words.sh 60 <scratch>/scowl-60.txt
 .venv/bin/python write_unknown_word_followers.py <data-dir> <scratch>/scowl-60.txt <output.txt>
+```
+
+The builders share `followers.py`, which takes off the sentence starts transcripts count as
+followers.
+
+## Words after a common word
+
+`word_followers.txt` holds the words that most often follow each common word, which the
+suggestion bar adds to the dictionary's few next words while the user picks its words in a row:
+
+```bash
+./scowl_words.sh 60 <scratch>/scowl-60.txt
+.venv/bin/python write_word_followers.py <data-dir> <scratch>/scowl-60.txt <output.txt>
+```
+
+## Grammar words
+
+`grammar_words.txt` holds the determiners, pronouns, prepositions, conjunctions, and particles
+among the most common words, which the suggestion bar lets come back while the user picks its
+words in a row. It is built after `count_ngrams.py` and `tag_word_kinds.swift`:
+
+```bash
+.venv/bin/python write_grammar_words.py <data-dir> <output.txt>
 ```
