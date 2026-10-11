@@ -18,4 +18,11 @@ public struct PredictionRequest: Sendable, Equatable {
     /// Corrections of this word the user turned down, which space must not make, in the form
     /// personal words are compared in.
     public var heldBackCorrections: Set<String> = []
+    /// Between words, the words the user picked from the suggestion bar in a row right before
+    /// the cursor, newest first, which the next-word bar does not lead with again
+    /// (`RepeatedPicks`).
+    public var pickedWords: [String] = []
+    /// A number drawn when the user started picking the bar's words in a row, which varies the
+    /// order of about equally likely next words from one run of picks to the next (`PickVariety`).
+    public var pickRun = 0
 }

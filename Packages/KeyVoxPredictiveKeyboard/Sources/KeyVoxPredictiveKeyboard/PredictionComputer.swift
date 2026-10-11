@@ -384,7 +384,10 @@ public final class PredictionComputer: @unchecked Sendable {
 
     /// The likeliest next words, or, after a word the bundled data has nothing to follow, such as
     /// a name or a learned word, what usually follows such a word after the word before it
-    /// (`UnknownWordFollowers`), as the system keyboard never leaves the bar empty there.
+    /// (`UnknownWordFollowers`), as the system keyboard never leaves the bar empty there. Words
+    /// that would repeat what the user picked from the bar in a row come after the others
+    /// (`RepeatedPicks`), and which of the about equally likely others leads depends on those
+    /// picks (`PickVariety`).
     private func nextWordBar(
         for request: PredictionRequest,
         vocabulary: PersonalVocabulary,
@@ -404,15 +407,27 @@ public final class PredictionComputer: @unchecked Sendable {
             touches: [],
             mode: .nextWord
         )
-        var ranked = try ranker.rankNextWords(
+        // While the user picks the bar's words in a row, the words that most often follow the last
+        // word join the dictionary's few, so the picks do not run out of new words.
+        let followers = request.pickedWords.isEmpty ? [] : engine.wordFollowers.words(after: previousWord)
+        let scored = try ranker.rankNextWords(
             previousWords: request.previousWords,
             candidates: vocabulary.continuations(after: previousWord)
-                + response.suggestions.map { engine.capitalizedSpellings.written($0.word) }
-        ).map(\.word)
-        if ranked.isEmpty {
-            ranked = engine.unknownWordFollowers
-                .words(afterUnknownWordFollowing: request.previousWords.dropFirst().first)
-                .map { engine.capitalizedSpellings.written($0) }
+                + (response.suggestions.map(\.word) + followers).map { engine.capitalizedSpellings.written($0) }
+        )
+        let picks = RepeatedPicks(pickedWords: request.pickedWords, grammarWords: engine.grammarWords)
+        let ranked: [String]
+        if scored.isEmpty {
+            ranked = picks.ordering(
+                engine.unknownWordFollowers
+                    .words(afterUnknownWordFollowing: request.previousWords.dropFirst().first)
+                    .map { engine.capitalizedSpellings.written($0) },
+                after: request.previousWords
+            )
+        } else {
+            let fresh = scored.filter { picks.repeats($0.word, after: request.previousWords) == false }
+            ranked = PickVariety(pickedWords: request.pickedWords, pickRun: request.pickRun).ordering(fresh)
+                + scored.filter { picks.repeats($0.word, after: request.previousWords) }.map(\.word)
         }
         return SuggestionBarComposer.composeNextWords(try ranked.map {
             WordCasing.capitalizingPronoun(try suggestionForm(of: $0, previousWords: request.previousWords, learned: learned))

@@ -35,6 +35,11 @@ public struct TypingTextContext: Sendable, Equatable {
         restOfWord = selected.isEmpty ? String(followingText.prefix(while: Self.isWordCharacter)) : ""
     }
 
+    /// The words of `text`, across sentences, newest first.
+    public static func wordsNewestFirst(in text: String) -> [String] {
+        text.split { isWordCharacter($0) == false }.reversed().map(String.init)
+    }
+
     /// Whether `character` belongs inside a word: a letter or an apostrophe.
     public static func isWordCharacter(_ character: Character) -> Bool {
         character.isLetter || character == "'" || character == "’"

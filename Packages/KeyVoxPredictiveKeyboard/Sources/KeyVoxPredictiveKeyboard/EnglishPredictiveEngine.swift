@@ -11,6 +11,8 @@ public final class EnglishPredictiveEngine: @unchecked Sendable {
     public let capitalizedSpellings: CapitalizedSpellings
     public let sentenceOpeners: SentenceOpeners
     public let unknownWordFollowers: UnknownWordFollowers
+    public let grammarWords: GrammarWords
+    public let wordFollowers: WordFollowers
 
     public init() throws {
         let locator = PredictiveArtifactLocator()
@@ -33,6 +35,8 @@ public final class EnglishPredictiveEngine: @unchecked Sendable {
         unknownWordFollowers = try UnknownWordFollowers(
             contentsOf: locator.url(name: "unknown_word_followers", extension: "txt")
         )
+        grammarWords = try GrammarWords(contentsOf: locator.url(name: "grammar_words", extension: "txt"))
+        wordFollowers = try WordFollowers(contentsOf: locator.url(name: "word_followers", extension: "txt"))
 
         let defaultGeometry = EnglishKeyboardLayout.defaultGeometry
         let nativeGeometry = defaultGeometry.compactMap(Self.nativeGeometry)

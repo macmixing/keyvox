@@ -48,6 +48,11 @@ public final class PredictiveTypingSession {
     private var revisableWord: RevisableWord?
     /// What the last suggestion-bar tap inserted, ending in the space punctuation replaces.
     private var chosenText: String?
+    /// The words the user picked from the suggestion bar in a row, as their taps inserted them;
+    /// they count while the text before the cursor still ends with them (`RepeatedPicks`).
+    private var pickedText = ""
+    /// Drawn when a run of picks starts (`PredictionRequest.pickRun`).
+    private var pickRun = 0
     /// The corrections the user turned down and the words they keep typing, shared with every
     /// session while the keyboard runs.
     private let memory: TypingMemory
@@ -88,6 +93,7 @@ public final class PredictiveTypingSession {
         lastAutocorrection = nil
         revisableWord = nil
         chosenText = nil
+        pickedText = ""
     }
 
     /// What to suggest for the text around the cursor. A selected word, or one the cursor
@@ -112,7 +118,11 @@ public final class PredictiveTypingSession {
             keepsTypedWord: word.endsAtCursor == false,
             isAtSentenceStart: context.isAtSentenceStart,
             previousSentence: context.isAtSentenceStart ? SentenceEnding(before: textBeforeCursor ?? "") : nil,
-            heldBackCorrections: word.endsAtCursor ? memory.rejections.corrections(heldBackFor: word.text, at: now()) : []
+            heldBackCorrections: word.endsAtCursor ? memory.rejections.corrections(heldBackFor: word.text, at: now()) : [],
+            pickedWords: word.text.isEmpty && pickedText.isEmpty == false && (textBeforeCursor ?? "").hasSuffix(pickedText)
+                ? TypingTextContext.wordsNewestFirst(in: pickedText)
+                : [],
+            pickRun: pickRun
         )
     }
 
@@ -282,6 +292,15 @@ public final class PredictiveTypingSession {
             written = item.text
         }
         chosenText = textAfterWord.isEmpty ? written + space : nil
+        // A pick right after the earlier picks continues them; one anywhere else starts over.
+        let textBeforeWord = (textBeforeCursor ?? "").dropLast(word.charactersBeforeCursor)
+        let continuesPicks = pickedText.isEmpty == false && textBeforeWord.hasSuffix(pickedText)
+        if continuesPicks == false {
+            pickRun = Int.random(in: Int.min...Int.max)
+        }
+        pickedText = word.endsAtCursor && textAfterWord.isEmpty
+            ? (continuesPicks ? pickedText : "") + written + space
+            : ""
         if item.kind == .typed, word.endsAtCursor {
             return TextEdit(deleteCount: 0, insertText: space)
         }
