@@ -11,44 +11,10 @@ public struct UnknownWordFollowers: Sendable {
     /// the backoff `ContextLanguageScorer` applies to a shorter context.
     private static let backoffLogFactor = Float(log(0.4))
 
-    /// Every follower, written once; the lists below refer to them by index.
-    private let followers: [String]
-    /// The followers' indices and log probabilities, each context's run in a row.
-    private let followerIndices: [UInt16]
-    private let followerScores: [Float]
-    /// Each context's run of followers.
-    private let contextRuns: [String: Range<Int>]
+    private let table: FollowerTable
 
-    /// Reads the file, mapped rather than copied, without keeping its text.
     public init(contentsOf url: URL) throws {
-        let data = try Data(contentsOf: url, options: .alwaysMapped)
-        var followers: [String] = []
-        var indicesByFollower: [String: UInt16] = [:]
-        var followerIndices: [UInt16] = []
-        var followerScores: [Float] = []
-        var contextRuns: [String: Range<Int>] = [:]
-        data.withUnsafeBytes { (bytes: UnsafeRawBufferPointer) in
-            for line in ScoredWordLines.lines(in: bytes) {
-                guard let tab = bytes[line].firstIndex(of: UInt8(ascii: "\t")) else { continue }
-                let context = String(decoding: bytes[line.lowerBound..<tab], as: UTF8.self)
-                let start = followerIndices.count
-                for pair in ScoredWordLines.pairs(in: bytes, (tab + 1)..<line.upperBound) {
-                    let index = indicesByFollower[pair.word] ?? {
-                        let index = UInt16(followers.count)
-                        followers.append(pair.word)
-                        indicesByFollower[pair.word] = index
-                        return index
-                    }()
-                    followerIndices.append(index)
-                    followerScores.append(pair.value)
-                }
-                contextRuns[context] = start..<followerIndices.count
-            }
-        }
-        self.followers = followers
-        self.followerIndices = followerIndices
-        self.followerScores = followerScores
-        self.contextRuns = contextRuns
+        table = try FollowerTable(contentsOf: url)
     }
 
     /// The likeliest words right after an unknown word, likeliest first.
@@ -56,16 +22,15 @@ public struct UnknownWordFollowers: Sendable {
     ///   starts a sentence.
     public func words(afterUnknownWordFollowing wordBefore: String?) -> [String] {
         let context = wordBefore?.lowercased() ?? ContextLanguageScorer.sentenceStart
-        var scores: [UInt16: Float] = [:]
-        for index in contextRuns[context] ?? 0..<0 {
-            scores[followerIndices[index]] = followerScores[index]
+        var scores: [String: Float] = [:]
+        for follower in table.followers(of: context) {
+            scores[follower.word] = follower.logProbability
         }
-        for index in contextRuns[Self.anyContext] ?? 0..<0 {
-            let backedOff = followerScores[index] + Self.backoffLogFactor
-            scores[followerIndices[index]] = max(scores[followerIndices[index]] ?? -.infinity, backedOff)
+        for follower in table.followers(of: Self.anyContext) {
+            scores[follower.word] = max(scores[follower.word] ?? -.infinity, follower.logProbability + Self.backoffLogFactor)
         }
         return scores.sorted { left, right in
-            left.value != right.value ? left.value > right.value : followers[Int(left.key)] < followers[Int(right.key)]
-        }.map { followers[Int($0.key)] }
+            left.value != right.value ? left.value > right.value : left.key < right.key
+        }.map(\.key)
     }
 }
