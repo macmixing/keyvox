@@ -357,7 +357,9 @@ public final class PredictionComputer: @unchecked Sendable {
         }
         if let split {
             let left = WordCasing.apply(of: typed, to: engine.capitalizedSpellings.written(split.left))
-            let right = WordCasing.capitalizingPronoun(engine.capitalizedSpellings.written(split.right))
+            let right = WordCasing.capitalizingPronoun(
+                WordCasing.carryingAllCapitals(of: typed, to: engine.capitalizedSpellings.written(split.right))
+            )
             return left + " " + right
         }
         let chosen: String

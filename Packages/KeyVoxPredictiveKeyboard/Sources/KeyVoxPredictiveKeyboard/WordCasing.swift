@@ -5,16 +5,25 @@ public enum WordCasing {
         capitalizingPronoun(carryingCapitalization(of: typedWord, to: suggestion))
     }
 
+    /// `word` in capitals when `typedWord`, of more than one letter, was typed all in capitals,
+    /// as with caps lock on.
+    public static func carryingAllCapitals(of typedWord: String, to word: String) -> String {
+        isAllCapitals(typedWord) ? word.uppercased() : word
+    }
+
     private static func carryingCapitalization(of typedWord: String, to suggestion: String) -> String {
-        let letters = typedWord.filter(\.isLetter)
-        guard letters.isEmpty == false else { return suggestion }
-        if letters.count > 1, letters == letters.uppercased(), letters != letters.lowercased() {
+        if isAllCapitals(typedWord) {
             return suggestion.uppercased()
         }
-        guard letters.first?.isUppercase == true, let first = suggestion.first else {
+        guard typedWord.first(where: \.isLetter)?.isUppercase == true, let first = suggestion.first else {
             return suggestion
         }
         return first.uppercased() + suggestion.dropFirst()
+    }
+
+    private static func isAllCapitals(_ typedWord: String) -> Bool {
+        let letters = typedWord.filter(\.isLetter)
+        return letters.count > 1 && letters == letters.uppercased() && letters != letters.lowercased()
     }
 
     /// `word` written as the first word of a sentence.

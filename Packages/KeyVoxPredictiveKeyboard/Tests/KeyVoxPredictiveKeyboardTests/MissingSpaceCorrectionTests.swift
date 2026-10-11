@@ -2,7 +2,8 @@ import XCTest
 @testable import KeyVoxPredictiveKeyboard
 
 /// A word typed with its space missed, with or without typos in either word, is corrected
-/// to the two words on space; a name the dictionary does not know is left as typed.
+/// to the two words on space, both in capitals when typed in capitals; a name the dictionary
+/// does not know is left as typed.
 final class MissingSpaceCorrectionTests: XCTestCase {
     private var computer: PredictionComputer!
 
@@ -29,6 +30,13 @@ final class MissingSpaceCorrectionTests: XCTestCase {
 
     func testMergedWordsWithTypoInSecondWordSplit() throws {
         XCTAssertEqual(try autocorrection(typing: "the bicycle is nltfor"), "not for")
+    }
+
+    func testMergedWordsTypedInCapitalsSplitIntoTwoWordsInCapitals() throws {
+        let typed = "probalywroks"
+        let split = try XCTUnwrap(try computer.compute(PredictiveTypingSession().request(textBeforeCursor: typed)).autocorrection)
+        let request = PredictiveTypingSession().request(textBeforeCursor: typed.uppercased())
+        XCTAssertEqual(try computer.compute(request).autocorrection, split.uppercased())
     }
 
     func testUnknownNameTypedExactlyIsNotSplit() throws {
