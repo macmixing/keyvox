@@ -14,6 +14,8 @@ import XCTest
 /// - `space`, `delete`, `shift`: taps that key; `shift` before a letter types it as a capital.
 /// - `tapBar` with `label`: taps the suggestion bar's entry with that label.
 /// - `holdBar` with `label`: presses and holds that entry for a second.
+/// - `tapBarAt` with `index`: taps the suggestion bar's entry at that place, counted from the
+///   left, whatever it reads.
 /// - `tapRevert` with `label`: taps the bubble under a corrected word that puts back the word
 ///   as typed, labeled with that word.
 /// - `clear`: empties the text view.
@@ -31,6 +33,7 @@ final class CorrectionMemoryProbeTests: XCTestCase {
         let label: String?
         let seconds: Double?
         let name: String?
+        let index: Int?
     }
 
     private struct Record: Encodable {
@@ -100,6 +103,15 @@ final class CorrectionMemoryProbeTests: XCTestCase {
                 } else {
                     point.tap()
                 }
+            case "tapBarAt":
+                let index = try XCTUnwrap(step.index, context)
+                let entries = current.bar.readSettled()
+                let label = try XCTUnwrap(entries.indices.contains(index) ? entries[index] : nil, "\(context): bar is \(entries)")
+                let entry = try XCTUnwrap(
+                    element(labeled: label, in: current.app) { current.bar.contains($0) },
+                    "\(context): no bar entry \(label)"
+                )
+                current.origin.withOffset(CGVector(dx: entry.midX, dy: entry.midY)).tap()
             case "tapRevert":
                 let label = try XCTUnwrap(step.label, context)
                 let bubble = try XCTUnwrap(
