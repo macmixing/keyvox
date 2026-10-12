@@ -590,6 +590,8 @@ final class KeyboardViewController: UIInputViewController {
         let didHandle = textInputController.handleKeyActivation(
             kind,
             typesExactly: activation.isHeldKeyChoice,
+            // The delete key's press plays its haptic when the finger lifts; repeats play theirs now.
+            emitsKeypress: kind != .delete || activation.isRepeat,
             symbolPage: &updatedSymbolPage,
             resetCapsLockStateIfNeeded: { [weak self] in
                 self?.resetCapsLockStateIfNeeded()

@@ -134,12 +134,15 @@ final class KeyboardTextInputController {
         }
     }
 
-    /// - Parameter typesExactly: Whether a character types exactly as shown, as one picked from a
-    ///   held key's popup does, instead of becoming a curly quote.
+    /// - Parameters:
+    ///   - typesExactly: Whether a character types exactly as shown, as one picked from a held
+    ///     key's popup does, instead of becoming a curly quote.
+    ///   - emitsKeypress: Whether a deletion plays the keypress haptic now.
     @discardableResult
     func handleKeyActivation(
         _ kind: KeyboardKeyKind,
         typesExactly: Bool = false,
+        emitsKeypress: Bool = true,
         symbolPage: inout KeyboardSymbolPage,
         resetCapsLockStateIfNeeded: () -> Void,
         advanceToNextInputMode: () -> Void
@@ -171,13 +174,15 @@ final class KeyboardTextInputController {
                     selectedText: selectedTextBeforeDeletion,
                     documentContextBeforeInput: contextBeforeDeletion
                 )
-                emitKeypress()
+                if emitsKeypress {
+                    emitKeypress()
+                }
                 documentProxy.deleteBackward()
                 return true
             } else {
                 pendingSelectionDeletion = nil
                 if emptyContextDeleteAttempts < 3 {
-                    if emptyContextDeleteAttempts == 0 && isNewDeleteSession {
+                    if emptyContextDeleteAttempts == 0 && isNewDeleteSession && emitsKeypress {
                         emitKeypress()
                     }
                     emptyContextDeleteAttempts += 1

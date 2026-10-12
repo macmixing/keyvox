@@ -18,8 +18,12 @@ final class KeyboardKeyGridView: UIView {
     /// Deletes whole words for a held delete key; false when none could be, so a character is
     /// deleted instead.
     var onDeleteWords: ((Int) -> Bool)?
-    /// Called the moment a finger lands on a character key, before it types.
-    var onCharacterKeyTouchDown: (() -> Void)?
+    /// Called the moment a character key types, as its finger lifts or another finger lands.
+    var onCharacterKeyTyped: (() -> Void)?
+    /// Called the moment a held key's popup opens.
+    var onHeldKeyPopupOpened: (() -> Void)?
+    /// Called the moment the finger lifts off the delete key.
+    var onDeleteKeyUp: (() -> Void)?
     /// Called the moment a finger lands on any key, with the press it would make now.
     var onKeyTouchDown: ((KeyboardKeyActivation) -> Void)?
     var onCompactKeysRequested: (() -> Bool)?

@@ -59,7 +59,6 @@ extension KeyboardKeyGridView {
 
             switch hitKey.model.kind {
             case .character:
-                onCharacterKeyTouchDown?()
                 showPopup(for: hitKey)
                 beginHeldKey(for: session)
             case .delete:
@@ -157,6 +156,7 @@ extension KeyboardKeyGridView {
             switch session.kind {
             case .delete:
                 deleteRepeatController.cancel()
+                onDeleteKeyUp?()
             case .alternateSymbols:
                 if compactKeysHoldController.end() == false {
                     deliver(.alternateSymbols, from: session)
@@ -232,7 +232,10 @@ extension KeyboardKeyGridView {
         isRepeat: Bool = false,
         isHeldKeyChoice: Bool = false
     ) -> Bool {
-        onKeyActivated?(activation(kind, from: session, isRepeat: isRepeat, isHeldKeyChoice: isHeldKeyChoice)) ?? false
+        if case .character = kind {
+            onCharacterKeyTyped?()
+        }
+        return onKeyActivated?(activation(kind, from: session, isRepeat: isRepeat, isHeldKeyChoice: isHeldKeyChoice)) ?? false
     }
 
     private func activation(
@@ -287,6 +290,7 @@ extension KeyboardKeyGridView {
         )
         dismissPopup(ownedBy: popupOwnerKeyView)
         heldKeyPopupView.present(layout, in: container)
+        onHeldKeyPopupOpened?()
         return layout
     }
 

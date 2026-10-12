@@ -84,7 +84,10 @@ extension KeyboardViewController {
                   let edit = predictionCoordinator.backspaceEdit() else {
                 return nil
             }
-            keypressHaptics.emitKeypressIfEnabled()
+            // The press itself plays its haptic when the finger lifts; repeats play theirs now.
+            if activation.isRepeat {
+                keypressHaptics.emitKeypressIfEnabled()
+            }
             textInputController.apply(edit)
             handleTypingContextChange()
             return true
