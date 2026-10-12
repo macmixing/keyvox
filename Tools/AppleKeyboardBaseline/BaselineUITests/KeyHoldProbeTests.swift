@@ -6,8 +6,9 @@ import XCTest
 ///
 /// `TEST_RUNNER_KEY_HOLD_SCRIPT` names a file holding a JSON array of holds, or
 /// `TEST_RUNNER_KEY_HOLD_SCRIPT_JSON` holds the array itself. Each hold is
-/// `{"page", "key", "seconds", "beforeType"?, "shift"?, "dx"?, "dy"?, "velocity"?, "thenHold"?,
-/// "thenType"?}`: after tapping the letter keys of `beforeType`, on `page` ("letters", "numbers",
+/// `{"page", "key", "seconds", "beforeType"?, "tapBarAt"?, "shift"?, "dx"?, "dy"?, "velocity"?,
+/// "thenHold"?, "thenType"?}`: after tapping the letter keys of `beforeType` and then the
+/// suggestion bar's entry at `tapBarAt`, counted from the left, on `page` ("letters", "numbers",
 /// or "symbols"), after tapping shift when `shift` is true, presses the key labeled `key` for
 /// `seconds`, then, when `dx` or `dy` is set, slides that many points from the key's center, at
 /// `velocity` points a second or slowly, and stays there for `thenHold` seconds before lifting,
@@ -29,6 +30,7 @@ final class KeyHoldProbeTests: XCTestCase {
         let key: String
         let seconds: Double
         let beforeType: String?
+        let tapBarAt: Int?
         let shift: Bool?
         let dx: Double?
         let dy: Double?
@@ -110,6 +112,18 @@ final class KeyHoldProbeTests: XCTestCase {
             try keys.open("letters")
             for character in hold.beforeType ?? "" {
                 keys.key(String(character)).tap()
+            }
+            if let index = hold.tapBarAt {
+                let bar = SuggestionBarReader(app: app, firstRowKey: keys.key("q"))
+                let entries = bar.readSettled()
+                let label = try XCTUnwrap(entries.indices.contains(index) ? entries[index] : nil, "\(context): bar is \(entries)")
+                let entry = try XCTUnwrap(
+                    app.descendants(matching: .any).matching(NSPredicate(format: "label == %@", label))
+                        .allElementsBoundByIndex.map(\.frame).first(where: bar.contains),
+                    "\(context): no bar entry \(label)"
+                )
+                app.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(dx: entry.midX, dy: entry.midY)).tap()
+                Thread.sleep(forTimeInterval: 0.3)
             }
             try keys.open(hold.page)
             if hold.shift == true {
