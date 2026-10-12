@@ -1,0 +1,47 @@
+a	right	a à á â ä ǎ æ ã å ā ă ą
+c	right	c ç ć č ċ
+d	right	d ď ð
+e	right	e è é ê ë ě ẽ ē ė ę
+g	right	g ğ ġ
+h	right	h ħ
+i	left	i ì í î ï ǐ ĩ ī ı į
+k	left	k ķ
+l	left	l ł ļ ľ
+n	left	n ñ ń ņ ň
+o	left	o ò ó ô ö ǒ œ ø õ ō ő
+r	right	r ř
+s	right	s ß ş ș ś š
+t	right	t ț ť þ
+u	left	u ù ú û ü ǔ ũ ū ű ů ų
+w	right	w ŵ
+y	left	y ý ŷ ÿ
+z	right	z ź ž ż
+A	right	A À Á Â Ä Ǎ Æ Ã Å Ā Ă Ą
+C	right	C Ç Ć Č Ċ
+D	right	D Ď Ð
+E	right	E È É Ê Ë Ě Ẽ Ē Ė Ę
+G	right	G Ğ Ġ
+H	right	H Ħ
+I	left	I Ì Í Î Ï Ǐ Ĩ Ī İ Į
+K	left	K Ķ
+L	left	L Ł Ļ Ľ
+N	left	N Ñ Ń Ņ Ň
+O	left	O Ò Ó Ô Ö Ǒ Œ Ø Õ Ō Ő
+R	right	R Ř
+S	right	S ẞ Ś Š Ş Ș
+T	right	T Ț Ť Þ
+U	left	U Ù Ú Û Ü Ǔ Ũ Ū Ű Ů Ų
+W	right	W Ŵ
+Y	left	Y Ý Ŷ Ÿ
+Z	right	Z Ź Ž Ż
+0	left	0 °
+-	right	- – — •
+/	right	/ \
+$	right	$ ¢ € £ ¥ ₩ ₽
+&	right	& §
+"	strictly-left	" ” “ „ » «
+.	right	. …
+?	right	? ¿
+!	right	! ¡
+’	left	' ’ ‘ `
+%	right	% ‰

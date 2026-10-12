@@ -97,4 +97,5 @@ public enum PredictiveKeyboardError: Error, Equatable {
     case nativeEngineInitializationFailed(String)
     case nativePredictionFailed(String)
     case invalidAccentOverlay
+    case invalidHeldKeyCharacters
 }
