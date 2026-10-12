@@ -43,6 +43,8 @@ public final class PredictiveTypingSession {
         let previousWords: [String]
     }
 
+    private static let pickedWordSpaceCharacters = try? CharacterList.takingPickedWordSpace()
+
     private var wordTouches = TypedWordTouches()
     private var lastAutocorrection: AppliedAutocorrection?
     private var revisableWord: RevisableWord?
@@ -174,9 +176,7 @@ public final class PredictiveTypingSession {
         let context = TypingTextContext(textBeforeCursor: textBeforeCursor)
         let currentWord = context.currentWord
         let touches = wordTouches.touches(for: currentWord)
-        let replacesChosenSpace = currentWord.isEmpty
-            && separator.allSatisfy(\.isWhitespace) == false
-            && chosenText.map { textBeforeCursor?.hasSuffix($0) == true } == true
+        let replacesChosenSpace = takesChosenSpace(separator, currentWord: currentWord, textBeforeCursor: textBeforeCursor)
         let revised = revisableWord(before: context, textBeforeCursor: textBeforeCursor)
             .flatMap { revisable in
                 revision.flatMap { $0 != revisable.word && allowsAutocorrection ? (revisable, $0) : nil }
@@ -227,6 +227,31 @@ public final class PredictiveTypingSession {
                 + (autocorrection.map { [Correction(typed: currentWord, correction: $0)] } ?? [])
         )
         return TextEdit(deleteCount: original.count, insertText: inserted)
+    }
+
+    /// What typing `character`, one that does not end a word, does right after a word picked from
+    /// the suggestion bar when it takes the place of the space the pick added, as an apostrophe
+    /// or a closing square bracket does; nil when it follows the space.
+    /// - Parameter typesExactly: Whether the character types as shown instead of as a curly quote.
+    public func pickedWordSpaceEdit(character: String, typesExactly: Bool, textBeforeCursor: String?) -> TextEdit? {
+        let currentWord = TypingTextContext(textBeforeCursor: textBeforeCursor).currentWord
+        guard takesChosenSpace(character, currentWord: currentWord, textBeforeCursor: textBeforeCursor) else {
+            return nil
+        }
+        chosenText = nil
+        let textBeforeSpace = textBeforeCursor.map { String($0.dropLast()) }
+        return TextEdit(
+            deleteCount: 1,
+            insertText: typesExactly ? character : SmartQuotes.text(for: character, after: textBeforeSpace)
+        )
+    }
+
+    /// Whether `character`, typed with no word begun, takes the place of the space the last
+    /// suggestion-bar tap added.
+    private func takesChosenSpace(_ character: String, currentWord: String, textBeforeCursor: String?) -> Bool {
+        currentWord.isEmpty
+            && Self.pickedWordSpaceCharacters?.contains(character) == true
+            && chosenText.map { textBeforeCursor?.hasSuffix($0) == true } == true
     }
 
     /// What backspace does instead of deleting one character, if anything: right after an
