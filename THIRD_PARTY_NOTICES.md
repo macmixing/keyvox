@@ -152,7 +152,7 @@ Copyright (c) 2008, The Android Open Source Project
 - Upstream: <https://github.com/en-wl/wordlist>
 - Upstream revision: `1e5b7d3a72f47a71da5d28686c1dd4b397178485`
 - License: ESDB permissive notice
-- Note: KeyVox uses a generated size-60 American English word list in its dictionary and accent-suggestion artifacts.
+- Note: KeyVox uses a generated size-60 American English word list in its dictionary and accent-suggestion artifacts, its capitalized-spelling list, and its next-word lists.
 
 Copyright 2000-2026 by Kevin Atkinson
 
@@ -168,7 +168,7 @@ provided "as is" without express or implied warranty.
 - Source: <https://tatoeba.org/en/downloads>
 - License: CC BY 2.0 FR
 - License URL: <https://creativecommons.org/licenses/by/2.0/fr/deed.en>
-- Note: English sentences were normalized, aggregated, and transformed into non-reversible dictionary-frequency and previous-word count artifacts bundled with `Packages/KeyVoxPredictiveKeyboard`.
+- Note: English sentences were normalized, aggregated, and transformed into non-reversible dictionary-frequency and previous-word count artifacts bundled with `Packages/KeyVoxPredictiveKeyboard`, and into its non-reversible word, word-pair, and word-sequence count artifact and sentence-opener, capitalized-spelling, next-word, and grammar-word lists. `Tools/KeyVoxLanguageModel` rebuilds the count artifact and the lists.
 
 Attribution: Based on sentence data contributed by the Tatoeba community.
 
@@ -184,7 +184,7 @@ Attribution: Based on the OpenAssistant OASST1 dataset created by the OpenAssist
 - Source: <https://huggingface.co/datasets/OpenAssistant/oasst2>
 - License: Apache License 2.0
 - License URL: <https://www.apache.org/licenses/LICENSE-2.0>
-- Note: English messages were normalized, aggregated, and transformed into the non-reversible word, word-pair, and word-sequence count artifact bundled with `Packages/KeyVoxPredictiveKeyboard`. `Tools/KeyVoxLanguageModel` rebuilds it.
+- Note: English messages were normalized, aggregated, and transformed into the non-reversible word, word-pair, and word-sequence count artifact and the non-reversible sentence-opener, capitalized-spelling, next-word, and grammar-word lists bundled with `Packages/KeyVoxPredictiveKeyboard`. `Tools/KeyVoxLanguageModel` rebuilds them.
 
 Attribution: Based on the OpenAssistant OASST2 dataset created by the OpenAssistant contributors.
 
@@ -192,7 +192,7 @@ Attribution: Based on the OpenAssistant OASST2 dataset created by the OpenAssist
 - Source: <https://huggingface.co/datasets/PleIAs/YouTube-Commons>
 - License: CC BY 4.0
 - License URL: <https://creativecommons.org/licenses/by/4.0/>
-- Note: English transcripts were normalized, aggregated, and transformed into the non-reversible word, word-pair, and word-sequence count artifact bundled with `Packages/KeyVoxPredictiveKeyboard`. The dataset credits each transcript to its creator's channel, title, and link. `Tools/KeyVoxLanguageModel` rebuilds the artifact.
+- Note: English transcripts were normalized, aggregated, and transformed into the non-reversible word, word-pair, and word-sequence count artifact and the non-reversible sentence-opener, next-word, and grammar-word lists bundled with `Packages/KeyVoxPredictiveKeyboard`. The dataset credits each transcript to its creator's channel, title, and link. `Tools/KeyVoxLanguageModel` rebuilds them.
 
 Attribution: Based on YouTube-Commons by PleIAs: transcripts of videos their creators published under the Creative Commons Attribution license, each credited to its channel in the dataset.
 
