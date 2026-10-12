@@ -190,10 +190,16 @@ final class KeyboardPredictionCoordinator {
         return revision
     }
 
+    /// What typing `character`, one that does not end a word, does right after a suggestion tap
+    /// when it takes the place of the space the tap added; nil when it follows the space.
+    func pickedWordSpaceEdit(character: String, typesExactly: Bool) -> TextEdit? {
+        session.pickedWordSpaceEdit(character: character, typesExactly: typesExactly, textBeforeCursor: textBeforeCursor())
+    }
+
     /// What typing `separator` after the current word inserts, applying any
     /// autocorrection first, and revising the word before it when the current word shows
-    /// it was a typo. Punctuation right after a suggestion tap replaces the space the tap
-    /// added.
+    /// it was a typo. A separator that takes the place of a suggestion tap's space, right after
+    /// the tap, replaces that space.
     func wordBoundaryEdit(separator: String, allowsAutocorrection: Bool) -> TextEdit {
         let text = textBeforeCursor()
         let request = session.request(textBeforeCursor: text)

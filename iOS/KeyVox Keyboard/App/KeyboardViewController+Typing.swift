@@ -3,7 +3,7 @@ import UIKit
 
 /// Letter-page typing: shift state, predictions, and autocorrection at word boundaries.
 extension KeyboardViewController {
-    private static let wordEndingPunctuation: Set<String> = [".", ",", "!", "?", ";", ":"]
+    private static let wordEndingCharacters = try? CharacterList.wordEnding()
 
     /// Reads the focused field's traits and starts it on the right page with a fresh
     /// typing session.
@@ -77,8 +77,13 @@ extension KeyboardViewController {
             return applyWordBoundary(separator: " ", emitsKeypress: true)
         case .returnKey:
             return applyWordBoundary(separator: "\n", emitsKeypress: true)
-        case let .character(value) where Self.wordEndingPunctuation.contains(value):
-            return applyWordBoundary(separator: value, emitsKeypress: false)
+        case let .character(value) where Self.wordEndingCharacters?.contains(value) == true:
+            let separator = activation.isHeldKeyChoice
+                ? value
+                : SmartQuotes.text(for: value, after: textDocumentProxy.documentContextBeforeInput)
+            return applyWordBoundary(separator: separator, emitsKeypress: false)
+        case let .character(value):
+            return applyPickedWordSpace(value, typesExactly: activation.isHeldKeyChoice)
         case .delete:
             guard typingTraits.allowsPredictions,
                   let edit = predictionCoordinator.backspaceEdit() else {
@@ -257,6 +262,18 @@ extension KeyboardViewController {
             return
         }
         predictionCoordinator.refresh(allowsAutocorrection: typingTraits.allowsAutocorrection)
+    }
+
+    /// Puts a character that takes the place of the space after a suggestion tap in that space.
+    /// Returns nil when the character follows the space, for the regular path to type it.
+    private func applyPickedWordSpace(_ character: String, typesExactly: Bool) -> Bool? {
+        guard typingTraits.allowsPredictions,
+              let edit = predictionCoordinator.pickedWordSpaceEdit(character: character, typesExactly: typesExactly) else {
+            return nil
+        }
+        textInputController.apply(edit)
+        handleTypingContextChange()
+        return true
     }
 
     /// Applies an autocorrection, if one is due, together with the separator that ended
