@@ -40,20 +40,35 @@ public final class PredictionComputer: @unchecked Sendable {
 
     /// Call whenever the user's dictionary, contacts, or text replacements change. Known
     /// names the dictionary also has as everyday lowercase words ("Care", "OLD") are only kept
-    /// as typed, as the system keyboard keeps them; the rest are used like one-word entries.
+    /// as typed, as the system keyboard keeps them; known names that are dictionary words
+    /// written without their apostrophe ("Dont") are left out, so typing one is corrected like
+    /// any common word; the rest are used like one-word entries. Such a word in an entry phrase
+    /// is ordinary typing on its own too.
     public func updateVocabulary(_ givenVocabulary: PersonalVocabulary) throws {
         var names: [String] = []
+        var commonWords: [String] = []
         for name in givenVocabulary.knownNames {
-            let isDictionaryWord = try engine.analyze(word: name).wordIsValid
-            if engine.capitalizedSpellings.spelling(of: name) != nil || isDictionaryWord == false {
+            if engine.capitalizedSpellings.spelling(of: name) != nil {
+                names.append(name)
+            } else if try engine.analyze(word: name).wordIsValid {
+                continue
+            } else if try missesItsApostrophe(name) {
+                commonWords.append(name)
+            } else {
                 names.append(name)
             }
         }
-        let vocabulary = givenVocabulary.addingNamesAsEntries(names)
+        let withNames = givenVocabulary.droppingKnownNames(commonWords).addingNamesAsEntries(names)
         var everydayWords: Set<String> = []
-        for word in vocabulary.phraseWords where try engine.analyze(word: word).wordIsValid {
-            everydayWords.insert(word)
+        var ordinaryWords: [String] = []
+        for word in withNames.phraseWords {
+            if try engine.analyze(word: word).wordIsValid {
+                everydayWords.insert(word)
+            } else if try missesItsApostrophe(word) {
+                ordinaryWords.append(word)
+            }
         }
+        let vocabulary = withNames.treatingPhraseWordsAsOrdinary(ordinaryWords)
         let forms = PersonalWordForms(vocabulary: vocabulary, everydayWords: everydayWords)
         lock.lock()
         self.vocabulary = vocabulary
@@ -61,6 +76,18 @@ public final class PredictionComputer: @unchecked Sendable {
         let learned = learned
         lock.unlock()
         try searchPersonalWords(vocabulary: vocabulary, learned: learned)
+    }
+
+    /// Whether `word` is a dictionary word written without its apostrophe, as "dont" is.
+    private func missesItsApostrophe(_ word: String) throws -> Bool {
+        let letters = Array(PersonalVocabulary.key(word))
+        guard letters.count > 1, letters.contains("'") == false else { return false }
+        for index in 1..<letters.count {
+            if try engine.analyze(word: String(letters[..<index]) + "'" + String(letters[index...])).wordIsValid {
+                return true
+            }
+        }
+        return false
     }
 
     /// Call whenever what the keyboard learned from the user's typing changes.

@@ -37,6 +37,8 @@ public struct PersonalVocabulary: Sendable, Equatable {
     private let expansionsByShortcut: [String: String]
     /// Lowercased words of the known names.
     private let knownNameKeys: Set<String>
+    /// Lowercased words of entry phrases that count as ordinary typing on their own.
+    private var ordinaryPhraseWordKeys: Set<String> = []
 
     /// - Parameters:
     ///   - words: KeyVox Dictionary entries, single words or phrases; each word of a phrase
@@ -103,9 +105,30 @@ public struct PersonalVocabulary: Sendable, Equatable {
         )
     }
 
+    /// This vocabulary without `names`, words of its known names, which then count as ordinary
+    /// typing.
+    func droppingKnownNames(_ names: [String]) -> PersonalVocabulary {
+        let nameKeys = Set(names.map(Self.key))
+        return PersonalVocabulary(
+            words: entries,
+            knownNames: knownNames.filter { nameKeys.contains(Self.key($0)) == false },
+            textReplacements: textReplacements
+        )
+    }
+
+    /// This vocabulary with `words`, words of its entry phrases, counting as ordinary typing on
+    /// their own: not the user's words and not written the phrase's way, while a phrase still
+    /// writes them after the phrase word before them. A word that is also an entry on its own
+    /// stays the user's.
+    func treatingPhraseWordsAsOrdinary(_ words: [String]) -> PersonalVocabulary {
+        var vocabulary = self
+        vocabulary.ordinaryPhraseWordKeys = Set(words.map(Self.key)).subtracting(singleWordEntryFormsByKey.keys)
+        return vocabulary
+    }
+
     /// Every word of every entry, as written there.
     public var words: [String] {
-        entryFormsByKey.values.sorted()
+        entryFormsByKey.filter { ordinaryPhraseWordKeys.contains($0.key) == false }.values.sorted()
     }
 
     /// The words of entry phrases, as written there.
@@ -115,7 +138,7 @@ public struct PersonalVocabulary: Sendable, Equatable {
 
     /// Whether `word` is a word of one of the user's entries.
     public func contains(_ word: String) -> Bool {
-        entryFormsByKey[Self.key(word)] != nil
+        entryForm(of: word) != nil
     }
 
     /// Whether `word` is a word of a known name, which is kept as typed.
@@ -125,7 +148,8 @@ public struct PersonalVocabulary: Sendable, Equatable {
 
     /// How an entry writes `word`, if it is an entry word.
     public func entryForm(of word: String) -> String? {
-        entryFormsByKey[Self.key(word)]
+        let key = Self.key(word)
+        return ordinaryPhraseWordKeys.contains(key) ? nil : entryFormsByKey[key]
     }
 
     /// How the user writes `word`, if it is an entry on its own.
