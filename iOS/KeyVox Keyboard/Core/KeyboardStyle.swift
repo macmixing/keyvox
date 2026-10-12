@@ -46,6 +46,28 @@ enum KeyboardStyle {
     static let popupLabelColor = UIColor.black
     static let popupFont = UIFont.systemFont(ofSize: 32, weight: .medium)
 
+    // A held key's popup, as the system keyboard draws it on an iPhone: the same height upright
+    // and on its side, with cells a little narrower than the keys' spacing.
+    /// How long a finger stays on a key before its popup opens.
+    static let heldKeyPopupHoldDuration: TimeInterval = 0.34
+    /// How much narrower a cell is than the distance from one key to the next.
+    static let heldKeyPopupCellWidthReduction: CGFloat = 2.1
+    static let heldKeyPopupCellHeight: CGFloat = 47
+    static let heldKeyPopupPadding: CGFloat = 10.2
+    static let heldKeyPopupGapAboveKey: CGFloat = 4.4
+    static let landscapeHeldKeyPopupGapAboveKey: CGFloat = 3.3
+    /// How far below the popup the finger goes before the popup closes without typing.
+    static let heldKeyPopupClosingDistance: CGFloat = 87.8
+    static let landscapeHeldKeyPopupClosingDistance: CGFloat = 93.3
+    static let heldKeyPopupCornerRadius: CGFloat = 20
+    static let heldKeyPopupHighlightCornerRadius: CGFloat = 9
+    static let heldKeyPopupHighlightInset: CGFloat = 0.2
+    /// Darkens the popup under the selected character as the system keyboard's gray darkens its
+    /// white popup.
+    static let heldKeyPopupHighlightColor = UIColor.black.withAlphaComponent(0.106)
+    /// How large the popup's characters are next to the same characters on the keys.
+    static let heldKeyPopupFontScale: CGFloat = 0.88
+
     static let backgroundColor = UIColor.clear
     /// Invisible, but not fully transparent: keyboard extensions only receive touches on
     /// pixels that are not fully clear, so areas that must take taps use this.

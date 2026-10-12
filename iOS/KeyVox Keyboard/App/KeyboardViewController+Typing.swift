@@ -119,7 +119,8 @@ extension KeyboardViewController {
             location: activation.location,
             keyFrame: activation.keyFrame,
             timestamp: activation.timestamp,
-            isRepeat: false
+            isRepeat: false,
+            isHeldKeyChoice: false
         )
     }
 
@@ -133,14 +134,16 @@ extension KeyboardViewController {
         }
     }
 
-    /// Records a typed letter's touch for prediction and ends a one-letter shift.
+    /// Records a typed letter's touch for prediction and ends a one-letter shift. A letter picked
+    /// from a held key's popup was not tapped where it sits, so the word's touches stop lining up
+    /// and it is scored from key centers.
     func recordTypedCharacter(_ activation: KeyboardKeyActivation) {
         guard case let .character(value) = activation.kind,
               value.count == 1,
               value.first?.isLetter == true else {
             return
         }
-        if symbolPage == .letters {
+        if symbolPage == .letters, activation.isHeldKeyChoice == false {
             predictionCoordinator.recordTap(at: activation.location)
         }
         letterCaseController.consumeTypedLetter()

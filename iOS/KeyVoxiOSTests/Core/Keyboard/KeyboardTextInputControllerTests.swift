@@ -1,4 +1,5 @@
 import Foundation
+import KeyVoxPredictiveKeyboard
 import Testing
 @testable import KeyVox_iOS
 
@@ -23,6 +24,34 @@ struct KeyboardTextInputControllerTests {
         #expect(documentProxy.insertedTexts == ["A"])
         #expect(haptics.emissionCount == 0)
         #expect(symbolPage == .primary)
+    }
+
+    @Test func heldKeyChoiceTypesExactlyAsShown() {
+        let documentProxy = KeyboardTextDocumentProxySpy()
+        let haptics = KeyboardKeypressHapticsSpy()
+        let controller = KeyboardTextInputController(
+            documentProxy: documentProxy,
+            emitKeypress: haptics.emitKeypressIfEnabled
+        )
+        var symbolPage = KeyboardSymbolPage.primary
+        let tapped = SmartQuotes.text(for: SmartQuotes.apostrophe, after: nil)
+
+        _ = controller.handleKeyActivation(
+            .character(SmartQuotes.apostrophe),
+            symbolPage: &symbolPage,
+            resetCapsLockStateIfNeeded: {},
+            advanceToNextInputMode: {}
+        )
+        _ = controller.handleKeyActivation(
+            .character(SmartQuotes.apostrophe),
+            typesExactly: true,
+            symbolPage: &symbolPage,
+            resetCapsLockStateIfNeeded: {},
+            advanceToNextInputMode: {}
+        )
+
+        #expect(tapped != SmartQuotes.apostrophe)
+        #expect(documentProxy.insertedTexts == [tapped, SmartQuotes.apostrophe])
     }
 
     @Test func secondSpaceAfterWordInsertsPeriodAndSpace() {

@@ -9,6 +9,9 @@ struct KeyboardKeyActivation: Equatable {
     let timestamp: TimeInterval
     /// Whether a held key is repeating rather than being freshly pressed.
     let isRepeat: Bool
+    /// Whether the character was picked from a held key's popup, which types it exactly as
+    /// shown: a straight quote stays straight.
+    let isHeldKeyChoice: Bool
 }
 
 /// A letter key's frame in key-grid points, reported for the prediction engine.

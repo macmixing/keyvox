@@ -1,3 +1,4 @@
+import KeyVoxPredictiveKeyboard
 import UIKit
 
 /// Multi-finger key handling.
@@ -5,8 +6,9 @@ import UIKit
 /// Each finger is followed separately. A character types when its finger lifts, or as
 /// soon as another finger lands (rollover), so overlapping two-thumb taps always type in
 /// the order they landed. Delete repeats while held, as the system keyboard's does, even once
-/// the finger slides off it; a held space bar becomes a cursor trackpad, and holding the
-/// alternate-symbols key opens Compact Keys.
+/// the finger slides off it; a held space bar becomes a cursor trackpad, holding the
+/// alternate-symbols key opens Compact Keys, and holding a key that offers more characters, such
+/// as accented letters, opens their popup, where the finger picks one.
 extension KeyboardKeyGridView {
     func configureTouchRouter() {
         touchRouter.onTouchesBegan = { [weak self] touches in
@@ -29,6 +31,7 @@ extension KeyboardKeyGridView {
         trackpadOriginKeyView = nil
         compactKeysHoldController.cancel()
         deleteRepeatController.cancel()
+        cancelHeldKey()
         touchSessions.removeAll()
         popupOwnerKeyView = nil
         popupView.dismiss()
@@ -58,6 +61,7 @@ extension KeyboardKeyGridView {
             case .character:
                 onCharacterKeyTouchDown?()
                 showPopup(for: hitKey)
+                beginHeldKey(for: session)
             case .delete:
                 var isRepeat = false
                 deleteRepeatController.begin { [weak self, weak session] granularity in
@@ -107,6 +111,10 @@ extension KeyboardKeyGridView {
                         == .alternateSymbols
                 )
             default:
+                if session === heldKeyTouchSession, heldKeyController.hasOpened {
+                    followHeldKey(to: location)
+                    continue
+                }
                 guard session.hasTyped == false,
                       let hitKey = keyView(at: location),
                       hitKey !== session.keyView,
@@ -121,8 +129,12 @@ extension KeyboardKeyGridView {
                 setVisualState(.pressed, for: hitKey)
                 if case .character = hitKey.model.kind {
                     showPopup(for: hitKey)
+                    beginHeldKey(for: session)
                 } else {
                     dismissPopup(ownedBy: popupOwnerKeyView)
+                    if session === heldKeyTouchSession {
+                        cancelHeldKey()
+                    }
                 }
             }
         }
@@ -137,6 +149,10 @@ extension KeyboardKeyGridView {
                 setVisualState(.normal, for: keyView)
             }
             dismissPopup(ownedBy: session.keyView)
+            if session === heldKeyTouchSession {
+                deliverHeldKey(from: session)
+                continue
+            }
 
             switch session.kind {
             case .delete:
@@ -172,6 +188,9 @@ extension KeyboardKeyGridView {
                 setVisualState(.normal, for: keyView)
             }
             dismissPopup(ownedBy: session.keyView)
+            if session === heldKeyTouchSession {
+                cancelHeldKey()
+            }
             switch session.kind {
             case .delete:
                 deleteRepeatController.cancel()
@@ -198,7 +217,9 @@ extension KeyboardKeyGridView {
             .sorted { $0.timestamp < $1.timestamp }
         for session in pending {
             session.hasTyped = true
-            if let kind = session.kind {
+            if session === heldKeyTouchSession {
+                deliverHeldKey(from: session)
+            } else if let kind = session.kind {
                 deliver(kind, from: session)
             }
         }
@@ -208,23 +229,101 @@ extension KeyboardKeyGridView {
     private func deliver(
         _ kind: KeyboardKeyKind,
         from session: KeyboardKeyTouchSession,
-        isRepeat: Bool = false
+        isRepeat: Bool = false,
+        isHeldKeyChoice: Bool = false
     ) -> Bool {
-        onKeyActivated?(activation(kind, from: session, isRepeat: isRepeat)) ?? false
+        onKeyActivated?(activation(kind, from: session, isRepeat: isRepeat, isHeldKeyChoice: isHeldKeyChoice)) ?? false
     }
 
     private func activation(
         _ kind: KeyboardKeyKind,
         from session: KeyboardKeyTouchSession,
-        isRepeat: Bool = false
+        isRepeat: Bool = false,
+        isHeldKeyChoice: Bool = false
     ) -> KeyboardKeyActivation {
         KeyboardKeyActivation(
             kind: kind,
             location: session.activationLocation,
             keyFrame: session.keyView.map { $0.convert($0.bounds, to: self) } ?? .null,
             timestamp: session.timestamp,
-            isRepeat: isRepeat
+            isRepeat: isRepeat,
+            isHeldKeyChoice: isHeldKeyChoice
         )
+    }
+
+    /// Starts timing the finger on its key when the key offers characters when held.
+    private func beginHeldKey(for session: KeyboardKeyTouchSession) {
+        cancelHeldKey()
+        guard case let .character(value) = session.kind,
+              let offer = heldKeyController.offer(forKey: value),
+              let keyView = session.keyView else {
+            return
+        }
+        heldKeyTouchSession = session
+        heldKeyController.begin { [weak self, weak keyView] in
+            guard let self, let keyView else { return nil }
+            return self.openHeldKeyPopup(offer, from: keyView)
+        }
+    }
+
+    /// Shows the popup in place of the key's bubble and returns its layout.
+    private func openHeldKeyPopup(_ offer: HeldKeyCharacters.Offer, from keyView: KeyboardKeyView) -> HeldKeyPopupLayout {
+        let container = popupContainerView ?? self
+        let isLandscape = window?.windowScene?.interfaceOrientation.isLandscape ?? false
+        let metrics = HeldKeyPopupLayout.Metrics(
+            cellWidth: keyView.bounds.width + KeyboardStyle.keySpacing - KeyboardStyle.heldKeyPopupCellWidthReduction,
+            cellHeight: KeyboardStyle.heldKeyPopupCellHeight,
+            padding: KeyboardStyle.heldKeyPopupPadding,
+            gapAboveKey: isLandscape ? KeyboardStyle.landscapeHeldKeyPopupGapAboveKey : KeyboardStyle.heldKeyPopupGapAboveKey,
+            closingDistance: isLandscape
+                ? KeyboardStyle.landscapeHeldKeyPopupClosingDistance
+                : KeyboardStyle.heldKeyPopupClosingDistance
+        )
+        let layout = HeldKeyPopupLayout(
+            offer: offer,
+            keyFrame: keyView.convert(keyView.bounds, to: container),
+            bounds: container.bounds,
+            metrics: metrics
+        )
+        dismissPopup(ownedBy: popupOwnerKeyView)
+        heldKeyPopupView.present(layout, in: container)
+        return layout
+    }
+
+    private func followHeldKey(to location: CGPoint) {
+        let container = popupContainerView ?? self
+        switch heldKeyController.update(location: convert(location, to: container)) {
+        case .unchanged:
+            break
+        case let .selected(cell):
+            heldKeyPopupView.select(cell)
+        case .closed:
+            heldKeyPopupView.dismiss()
+        }
+    }
+
+    /// Types what the held key's finger picked: the key itself when the popup never opened,
+    /// the character it lifted on, or nothing once it closed the popup.
+    private func deliverHeldKey(from session: KeyboardKeyTouchSession) {
+        let outcome = heldKeyController.end()
+        heldKeyTouchSession = nil
+        heldKeyPopupView.dismiss()
+        switch outcome {
+        case .notOpened:
+            if let kind = session.kind {
+                deliver(kind, from: session)
+            }
+        case let .chose(character):
+            deliver(.character(character), from: session, isHeldKeyChoice: true)
+        case .closed:
+            break
+        }
+    }
+
+    func cancelHeldKey() {
+        heldKeyController.cancel()
+        heldKeyTouchSession = nil
+        heldKeyPopupView.dismiss()
     }
 
     private func activateSpaceTrackpad() {

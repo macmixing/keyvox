@@ -34,6 +34,7 @@ final class KeyboardKeyGridView: UIView {
     private var topRowAccessoryReferenceViews: [UIView] = []
     private var topRowAccessoryReferenceHeightConstraint: NSLayoutConstraint?
     let popupView = KeyboardKeyPopupView()
+    let heldKeyPopupView = KeyboardHeldKeyPopupView()
     let touchRouter = KeyboardTouchRouterGestureRecognizer()
     /// The keys of the page showing.
     var keyViews: [KeyboardKeyView] { currentPage?.keyViews ?? [] }
@@ -48,6 +49,9 @@ final class KeyboardKeyGridView: UIView {
     var touchSessions: [ObjectIdentifier: KeyboardKeyTouchSession] = [:]
     let spaceTrackpadController = KeyboardSpaceTrackpadController()
     let compactKeysHoldController = KeyboardCompactKeysHoldController()
+    let heldKeyController = KeyboardHeldKeyController()
+    /// The finger on a key that offers characters when held, while its popup is coming or open.
+    weak var heldKeyTouchSession: KeyboardKeyTouchSession?
     let trackpadActivationFeedback = UIImpactFeedbackGenerator(style: .medium)
     let deleteRepeatController = KeyboardDeleteRepeatController()
     private var lastReportedCharacterGeometry: [KeyboardCharacterKeyGeometry] = []
@@ -104,6 +108,7 @@ final class KeyboardKeyGridView: UIView {
         compactKeysHoldController.cancel()
         deleteRepeatController.cancel()
         popupView.dismiss()
+        cancelHeldKey()
         for keyView in keyViews {
             keyView.resetVisualState()
         }
@@ -112,6 +117,7 @@ final class KeyboardKeyGridView: UIView {
     func refreshAppearance() {
         updateAllKeyStates()
         popupView.refreshAppearance()
+        heldKeyPopupView.refreshAppearance()
     }
 
     /// Matches the top-row reference views to the keys' height, which the landscape toolbar

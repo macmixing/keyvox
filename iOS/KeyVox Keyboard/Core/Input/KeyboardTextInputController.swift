@@ -134,9 +134,12 @@ final class KeyboardTextInputController {
         }
     }
 
+    /// - Parameter typesExactly: Whether a character types exactly as shown, as one picked from a
+    ///   held key's popup does, instead of becoming a curly quote.
     @discardableResult
     func handleKeyActivation(
         _ kind: KeyboardKeyKind,
+        typesExactly: Bool = false,
         symbolPage: inout KeyboardSymbolPage,
         resetCapsLockStateIfNeeded: () -> Void,
         advanceToNextInputMode: () -> Void
@@ -144,7 +147,9 @@ final class KeyboardTextInputController {
         switch kind {
         case let .character(value):
             pendingSelectionDeletion = nil
-            documentProxy.insertText(SmartQuotes.text(for: value, after: documentProxy.documentContextBeforeInput))
+            documentProxy.insertText(
+                typesExactly ? value : SmartQuotes.text(for: value, after: documentProxy.documentContextBeforeInput)
+            )
             return true
         case .delete:
             let selectedTextBeforeDeletion = documentProxy.selectedText

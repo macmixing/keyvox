@@ -589,6 +589,7 @@ final class KeyboardViewController: UIInputViewController {
         var updatedSymbolPage = symbolPage
         let didHandle = textInputController.handleKeyActivation(
             kind,
+            typesExactly: activation.isHeldKeyChoice,
             symbolPage: &updatedSymbolPage,
             resetCapsLockStateIfNeeded: { [weak self] in
                 self?.resetCapsLockStateIfNeeded()
