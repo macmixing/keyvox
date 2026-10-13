@@ -26,6 +26,19 @@ public struct CharacterList: Sendable {
         try bundled("picked_word_space_characters")
     }
 
+    /// The characters a word picked from the suggestion bar is spaced away from, such as a comma
+    /// or a closing bracket: tapping a suggestion right after one first adds the space, and the
+    /// next tap picks; the rest take the picked word right after them.
+    public static func spacedFromPickedWord() throws -> CharacterList {
+        try bundled("spaced_from_picked_word_characters")
+    }
+
+    /// The characters the suggestion bar offers no next words right after, such as a hyphen, a
+    /// slash, or a currency sign.
+    public static func withoutNextWords() throws -> CharacterList {
+        try bundled("no_next_word_characters")
+    }
+
     public func contains(_ character: String) -> Bool {
         characters.contains(character)
     }

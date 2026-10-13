@@ -118,7 +118,9 @@ public final class PredictionComputer: @unchecked Sendable {
         guard request.currentWord.isEmpty == false else {
             return PredictionResult(
                 request: request,
-                bar: try nextWordBar(for: request, vocabulary: vocabulary, learned: learned, ranker: ranker),
+                bar: request.offersNextWords
+                    ? try nextWordBar(for: request, vocabulary: vocabulary, learned: learned, ranker: ranker)
+                    : .empty,
                 autocorrection: nil
             )
         }

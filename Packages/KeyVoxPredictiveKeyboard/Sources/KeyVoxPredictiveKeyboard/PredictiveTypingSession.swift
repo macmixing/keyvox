@@ -44,6 +44,8 @@ public final class PredictiveTypingSession {
     }
 
     private static let pickedWordSpaceCharacters = try? CharacterList.takingPickedWordSpace()
+    private static let spacedFromPickedWordCharacters = try? CharacterList.spacedFromPickedWord()
+    private static let noNextWordCharacters = try? CharacterList.withoutNextWords()
 
     private var wordTouches = TypedWordTouches()
     private var lastAutocorrection: AppliedAutocorrection?
@@ -124,7 +126,9 @@ public final class PredictiveTypingSession {
             pickedWords: word.text.isEmpty && pickedText.isEmpty == false && (textBeforeCursor ?? "").hasSuffix(pickedText)
                 ? TypingTextContext.wordsNewestFirst(in: pickedText)
                 : [],
-            pickRun: pickRun
+            pickRun: pickRun,
+            offersNextWords: word.text.isEmpty == false
+                || textBeforeCursor?.last.map { Self.noNextWordCharacters?.contains(String($0)) != true } ?? true
         )
     }
 
@@ -275,7 +279,8 @@ public final class PredictiveTypingSession {
     }
 
     /// What tapping a suggestion-bar item inserts in place of the word the bar is for,
-    /// followed by a space unless a space or punctuation already follows that word.
+    /// followed by a space unless a space or punctuation already follows that word. Right after
+    /// a mark a picked word is spaced away from, such as a comma, the tap only adds the space.
     ///
     /// Keeping the typed word while `result` waits to correct it turns that correction down for
     /// good, and teaches the keyboard the word as typed (see `recordKeptWord`); choosing a
@@ -297,6 +302,12 @@ public final class PredictiveTypingSession {
             textAfterCursor: textAfterCursor
         )
         let word = Self.suggestedWord(in: context)
+        // Right after a mark a picked word is spaced away from, the first tap only adds the
+        // space, as on the system keyboard; the next tap picks.
+        if word.text.isEmpty, let mark = textBeforeCursor?.last,
+           Self.spacedFromPickedWordCharacters?.contains(String(mark)) == true {
+            return TextEdit(deleteCount: 0, insertText: " ")
+        }
         lastAutocorrection = nil
         revisableWord = nil
         wordTouches.reset()

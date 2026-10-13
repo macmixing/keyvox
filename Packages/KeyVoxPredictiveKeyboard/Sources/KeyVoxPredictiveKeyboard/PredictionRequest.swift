@@ -25,4 +25,7 @@ public struct PredictionRequest: Sendable, Equatable {
     /// A number drawn when the user started picking the bar's words in a row, which varies the
     /// order of about equally likely next words from one run of picks to the next (`PickVariety`).
     public var pickRun = 0
+    /// Between words, whether the bar offers next words: not right after a mark the system
+    /// keyboard offers none after, such as a hyphen or a slash.
+    public var offersNextWords = true
 }
