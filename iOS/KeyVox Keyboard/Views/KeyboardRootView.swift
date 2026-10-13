@@ -181,9 +181,10 @@ final class KeyboardRootView: UIView {
         let showsToolbarWarning = warningText != nil
         let shouldShowCancel = showsBrandedToolbar && state.showsCancelButton
         // The full keyboard's letter page shows its suggestion bar while predictions are
-        // offered (the field allows them and holds letters); the dictation buttons show on the
-        // number and symbol pages, in a field without letters or predictions, in Compact
-        // Keys, and while dictating.
+        // offered (the field allows them and holds letters, and no dictation is still as it
+        // landed); the dictation buttons show on the number and symbol pages, in a field without
+        // letters or predictions, in Compact Keys, while dictating, and until the user changes
+        // the text after a dictation.
         let showsSuggestionBar = showsBrandedToolbar
             && !shouldShowCancel
             && keysMode == .full

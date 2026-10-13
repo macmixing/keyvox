@@ -136,6 +136,14 @@ final class KeyboardViewController: UIInputViewController {
             updateUI()
         }
     }
+    /// Whether the last dictation is still as it landed, so the toolbar offers the dictation
+    /// buttons, such as Vibes, to change it in place of suggestions.
+    var isLastDictationUntouched = false {
+        didSet {
+            guard isLastDictationUntouched != oldValue else { return }
+            updateUI()
+        }
+    }
 
     var rootContainerView: KeyboardRootView?
     var popupOverlayView: UIView?
@@ -315,7 +323,7 @@ final class KeyboardViewController: UIInputViewController {
             symbolPage: symbolPage,
             keysMode: keysMode,
             isLandscape: isLandscape,
-            offersPredictions: typingTraits.showsSuggestions && fieldHasLetters,
+            offersPredictions: typingTraits.showsSuggestions && fieldHasLetters && isLastDictationUntouched == false,
             isCapsLockEnabled: isCapsLockEnabled,
             isDictationCapsApplied: dictationChangeController.displayedCapsTransformApplied,
             isDictationCapsUppercase: dictationChangeController.displayedCapsTextIsUppercase,
@@ -695,6 +703,8 @@ final class KeyboardViewController: UIInputViewController {
         } else {
             interactionHaptics.emitMediumIfEnabled()
         }
+        // A change that could not apply stops tracking the dictation.
+        isLastDictationUntouched = dictationChangeController.hasActiveUntouchedInsertion
     }
 
     private func updateTranscriptionLandingHapticStart(previousState: KeyboardState) {

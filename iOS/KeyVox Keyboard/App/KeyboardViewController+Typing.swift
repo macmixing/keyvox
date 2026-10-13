@@ -37,6 +37,7 @@ extension KeyboardViewController {
     /// change of the field's traits means the cursor moved to another field while the
     /// keyboard stayed up, which starts that field fresh.
     func handleTypingContextChange() {
+        isLastDictationUntouched = dictationChangeController.hasActiveUntouchedInsertion
         guard KeyboardTypingTraits(proxy: textDocumentProxy, settings: appSettingsStore) == typingTraits else {
             prepareTypingForCurrentField()
             updateActiveInsertionVisualState()
