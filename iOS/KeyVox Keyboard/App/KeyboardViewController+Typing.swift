@@ -84,18 +84,6 @@ extension KeyboardViewController {
             return applyWordBoundary(separator: separator, emitsKeypress: false)
         case let .character(value):
             return applyPickedWordSpace(value, typesExactly: activation.isHeldKeyChoice)
-        case .delete:
-            guard typingTraits.allowsPredictions,
-                  let edit = predictionCoordinator.backspaceEdit() else {
-                return nil
-            }
-            // The press itself plays its haptic when the finger lifts; repeats play theirs now.
-            if activation.isRepeat {
-                keypressHaptics.emitKeypressIfEnabled()
-            }
-            textInputController.apply(edit)
-            handleTypingContextChange()
-            return true
         default:
             return nil
         }

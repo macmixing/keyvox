@@ -7,6 +7,9 @@ public struct SuggestionBar: Sendable, Equatable {
         case autocorrection
         case suggestion
         case nextWord
+        /// What was typed before the autocorrection right before the cursor, which tapping puts
+        /// back.
+        case revert
     }
 
     public struct Item: Sendable, Equatable {

@@ -28,6 +28,12 @@ public enum SuggestionBarComposer {
         )
     }
 
+    /// Right after the user deleted the separator that ended an autocorrection: only what was
+    /// typed before it, as on the system keyboard.
+    public static func composeRevert(_ typedText: String) -> SuggestionBar {
+        SuggestionBar(primary: SuggestionBar.Item(text: typedText, kind: .revert), leading: nil, trailing: nil)
+    }
+
     public static func composeNextWords(_ rankedWords: [String]) -> SuggestionBar {
         let items = rankedWords.prefix(3).map { SuggestionBar.Item(text: $0, kind: .nextWord) }
         return SuggestionBar(

@@ -28,4 +28,7 @@ public struct PredictionRequest: Sendable, Equatable {
     /// Between words, whether the bar offers next words: not right after a mark the system
     /// keyboard offers none after, such as a hyphen or a slash.
     public var offersNextWords = true
+    /// Right after the user deleted the separator that ended an autocorrection, what was typed
+    /// before it, which the bar offers in place of suggestions.
+    public var revertibleText: String?
 }

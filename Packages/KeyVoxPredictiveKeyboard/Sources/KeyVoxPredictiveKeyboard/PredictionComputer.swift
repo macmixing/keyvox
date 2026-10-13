@@ -205,7 +205,7 @@ public final class PredictionComputer: @unchecked Sendable {
         let isUsersWord = vocabulary.contains(typed) || vocabulary.expansion(for: typed) != nil
         return PredictionResult(
             request: request,
-            bar: SuggestionBarComposer.compose(
+            bar: request.revertibleText.map(SuggestionBarComposer.composeRevert) ?? SuggestionBarComposer.compose(
                 typedWord: typed,
                 autocorrection: autocorrection,
                 rankedWords: suggested.words.map { WordCasing.apply(of: typed, to: $0) }

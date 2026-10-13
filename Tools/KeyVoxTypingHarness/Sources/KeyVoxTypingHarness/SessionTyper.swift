@@ -109,9 +109,7 @@ struct SessionTyper {
                 to: &text
             )
         case .delete:
-            if let edit = session.backspaceEdit(textBeforeCursor: text) {
-                Self.apply(edit, to: &text)
-            } else if text.isEmpty == false {
+            if text.isEmpty == false {
                 text.removeLast()
                 session.textDidChange(textBeforeCursor: text)
             }

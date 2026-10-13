@@ -16,12 +16,16 @@ public final class PredictiveTypingSession {
     }
 
     private struct AppliedAutocorrection {
-        /// The text the edit replaced, which backspace restores.
+        /// The text the edit replaced, which the suggestion bar offers to put back.
         let original: String
-        let insertedText: String
+        /// The words the edit inserted, without the separator after them.
+        let correctedText: String
+        let separator: String
         /// The words the edit replaced, which are not corrected that way again once the user
-        /// restores them.
+        /// puts them back.
         let corrections: [Correction]
+
+        var insertedText: String { correctedText + separator }
     }
 
     /// The word the suggestion bar is for: a selected word, the whole word around the cursor
@@ -49,6 +53,9 @@ public final class PredictiveTypingSession {
 
     private var wordTouches = TypedWordTouches()
     private var lastAutocorrection: AppliedAutocorrection?
+    /// The last autocorrection once the user deleted the separator after it, which the suggestion
+    /// bar offers to undo while the text still ends with the corrected words.
+    private var revertibleAutocorrection: AppliedAutocorrection?
     private var revisableWord: RevisableWord?
     /// What the last suggestion-bar tap inserted, ending in the space punctuation replaces.
     private var chosenText: String?
@@ -70,6 +77,7 @@ public final class PredictiveTypingSession {
     /// Call after a tapped character has been inserted.
     public func recordTap(at location: CGPoint, textBeforeCursor: String?) {
         lastAutocorrection = nil
+        revertibleAutocorrection = nil
         chosenText = nil
         let context = TypingTextContext(textBeforeCursor: textBeforeCursor)
         if context.currentWord.isEmpty {
@@ -83,7 +91,16 @@ public final class PredictiveTypingSession {
     public func textDidChange(textBeforeCursor: String?) {
         if let lastAutocorrection,
            textBeforeCursor?.hasSuffix(lastAutocorrection.insertedText) != true {
+            // Deleting the separator keeps the correction, as on the system keyboard; the bar
+            // then offers to put back what was typed.
+            revertibleAutocorrection = textBeforeCursor?.hasSuffix(lastAutocorrection.correctedText) == true
+                ? lastAutocorrection
+                : nil
             self.lastAutocorrection = nil
+        }
+        if let revertibleAutocorrection,
+           textBeforeCursor?.hasSuffix(revertibleAutocorrection.correctedText) != true {
+            self.revertibleAutocorrection = nil
         }
         if let chosenText, textBeforeCursor?.hasSuffix(chosenText) != true {
             self.chosenText = nil
@@ -95,6 +112,7 @@ public final class PredictiveTypingSession {
     public func reset() {
         wordTouches.reset()
         lastAutocorrection = nil
+        revertibleAutocorrection = nil
         revisableWord = nil
         chosenText = nil
         pickedText = ""
@@ -128,8 +146,19 @@ public final class PredictiveTypingSession {
                 : [],
             pickRun: pickRun,
             offersNextWords: word.text.isEmpty == false
-                || textBeforeCursor?.last.map { Self.noNextWordCharacters?.contains(String($0)) != true } ?? true
+                || textBeforeCursor?.last.map { Self.noNextWordCharacters?.contains(String($0)) != true } ?? true,
+            revertibleText: word.endsAtCursor ? revertibleAutocorrection(endingAt: textBeforeCursor)?.original : nil
         )
+    }
+
+    /// The autocorrection whose separator the user deleted, while the text still ends with the
+    /// corrected words.
+    private func revertibleAutocorrection(endingAt textBeforeCursor: String?) -> AppliedAutocorrection? {
+        guard let revertibleAutocorrection,
+              textBeforeCursor?.hasSuffix(revertibleAutocorrection.correctedText) == true else {
+            return nil
+        }
+        return revertibleAutocorrection
     }
 
     /// Whether `result` was computed for the text as it is now.
@@ -166,7 +195,8 @@ public final class PredictiveTypingSession {
     /// What typing `separator` (a space, return, or punctuation) after the current word
     /// inserts: the autocorrection from `result` when it was computed for this word, and
     /// `revision` in place of the word before it when one was decided, followed by the
-    /// separator. Backspace right after can undo what it changed. Punctuation right after a
+    /// separator. Deleting the separator right after keeps what it changed, and the suggestion bar
+    /// then offers to put back what was typed (see `choiceEdit`). Punctuation right after a
     /// suggestion-bar tap replaces the space the tap added. A word left as typed teaches the
     /// keyboard (see `recordKeptWord`), also where `allowsAutocorrection` is false and `result`
     /// is only read to tell.
@@ -188,6 +218,7 @@ public final class PredictiveTypingSession {
         let autocorrection = allowsAutocorrection ? autocorrection(in: result, for: currentWord) : nil
         wordTouches.reset()
         lastAutocorrection = nil
+        revertibleAutocorrection = nil
         revisableWord = nil
         chosenText = nil
 
@@ -213,24 +244,26 @@ public final class PredictiveTypingSession {
             guard let autocorrection else {
                 return TextEdit(deleteCount: replacesChosenSpace ? 1 : 0, insertText: separator)
             }
-            let inserted = autocorrection + separator
-            lastAutocorrection = AppliedAutocorrection(
+            let applied = AppliedAutocorrection(
                 original: currentWord,
-                insertedText: inserted,
+                correctedText: autocorrection,
+                separator: separator,
                 corrections: [Correction(typed: currentWord, correction: autocorrection)]
             )
-            return TextEdit(deleteCount: currentWord.count, insertText: inserted)
+            lastAutocorrection = applied
+            return TextEdit(deleteCount: currentWord.count, insertText: applied.insertedText)
         }
         let (previous, replacement) = revised
         let original = previous.word + " " + currentWord
-        let inserted = replacement + " " + (autocorrection ?? currentWord) + separator
-        lastAutocorrection = AppliedAutocorrection(
+        let applied = AppliedAutocorrection(
             original: original,
-            insertedText: inserted,
+            correctedText: replacement + " " + (autocorrection ?? currentWord),
+            separator: separator,
             corrections: [Correction(typed: previous.word, correction: replacement)]
                 + (autocorrection.map { [Correction(typed: currentWord, correction: $0)] } ?? [])
         )
-        return TextEdit(deleteCount: original.count, insertText: inserted)
+        lastAutocorrection = applied
+        return TextEdit(deleteCount: original.count, insertText: applied.insertedText)
     }
 
     /// What typing `character`, one that does not end a word, does right after a word picked from
@@ -258,29 +291,11 @@ public final class PredictiveTypingSession {
             && chosenText.map { textBeforeCursor?.hasSuffix($0) == true } == true
     }
 
-    /// What backspace does instead of deleting one character, if anything: right after an
-    /// autocorrection or revision it restores the typed words, and those corrections are not
-    /// made again while the keyboard runs.
-    public func backspaceEdit(textBeforeCursor: String?) -> TextEdit? {
-        guard let lastAutocorrection,
-              textBeforeCursor?.hasSuffix(lastAutocorrection.insertedText) == true else {
-            return nil
-        }
-        self.lastAutocorrection = nil
-        revisableWord = nil
-        for correction in lastAutocorrection.corrections {
-            memory.recordUndo(of: correction.correction, typed: correction.typed)
-        }
-        wordTouches.reset()
-        return TextEdit(
-            deleteCount: lastAutocorrection.insertedText.count,
-            insertText: lastAutocorrection.original
-        )
-    }
-
     /// What tapping a suggestion-bar item inserts in place of the word the bar is for,
     /// followed by a space unless a space or punctuation already follows that word. Right after
     /// a mark a picked word is spaced away from, such as a comma, the tap only adds the space.
+    /// Tapping what was typed before an autocorrection whose separator the user deleted puts
+    /// the typed words back, and those corrections are not made again while the keyboard runs.
     ///
     /// Keeping the typed word while `result` waits to correct it turns that correction down for
     /// good, and teaches the keyboard the word as typed (see `recordKeptWord`); choosing a
@@ -302,6 +317,10 @@ public final class PredictiveTypingSession {
             textAfterCursor: textAfterCursor
         )
         let word = Self.suggestedWord(in: context)
+        if item.kind == .revert, word.endsAtCursor,
+           let reverted = revertibleAutocorrection(endingAt: textBeforeCursor) {
+            return revertEdit(reverted, followingText: context.followingText)
+        }
         // Right after a mark a picked word is spaced away from, the first tap only adds the
         // space, as on the system keyboard; the next tap picks.
         if word.text.isEmpty, let mark = textBeforeCursor?.last,
@@ -345,6 +364,23 @@ public final class PredictiveTypingSession {
             insertText: written + space,
             deleteAfterCount: word.charactersAfterCursor
         )
+    }
+
+    /// Puts back the words `reverted` replaced, followed by a space like any pick, and holds its
+    /// corrections back while the keyboard runs.
+    private func revertEdit(_ reverted: AppliedAutocorrection, followingText: String) -> TextEdit {
+        revertibleAutocorrection = nil
+        lastAutocorrection = nil
+        revisableWord = nil
+        wordTouches.reset()
+        pickedText = ""
+        for correction in reverted.corrections {
+            memory.recordUndo(of: correction.correction, typed: correction.typed)
+        }
+        let isSeparated = followingText.first.map { TypingTextContext.isWordCharacter($0) == false } ?? false
+        let space = isSeparated ? "" : " "
+        chosenText = followingText.isEmpty ? reverted.original + space : nil
+        return TextEdit(deleteCount: reverted.correctedText.count, insertText: reverted.original + space)
     }
 
     private static func suggestedWord(in context: TypingTextContext) -> SuggestedWord {

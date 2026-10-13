@@ -297,10 +297,6 @@ final class KeyboardPredictionCoordinator {
         return letter
     }
 
-    func backspaceEdit() -> TextEdit? {
-        session.backspaceEdit(textBeforeCursor: textBeforeCursor())
-    }
-
     /// What tapping `item` inserts. Tapping the typed word while the bar shows a correction
     /// turns that correction down; `allowsAutocorrection` says whether the bar showed one.
     func choiceEdit(_ item: SuggestionBar.Item, allowsAutocorrection: Bool) -> TextEdit {

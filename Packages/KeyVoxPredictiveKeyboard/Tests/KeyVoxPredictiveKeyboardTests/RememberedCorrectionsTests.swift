@@ -19,12 +19,27 @@ final class RememberedCorrectionsTests: XCTestCase {
         let session = PredictiveTypingSession(memory: memory, now: { self.start })
         let correction = try spaceCorrection(of: "teh", session: session)
         XCTAssertNotNil(correction)
-        let space = session.wordBoundaryEdit(separator: " ", textBeforeCursor: "teh", result: try result(for: "teh", session: session))
-        XCTAssertNotNil(session.backspaceEdit(textBeforeCursor: space.insertText))
+        let deleted = try correctedAndSeparatorDeleted("teh", session: session)
+        let bar = try result(for: deleted, session: session).bar
+        XCTAssertEqual(bar, SuggestionBarComposer.composeRevert("teh"))
+        let revert = session.choiceEdit(try XCTUnwrap(bar.primary), textBeforeCursor: deleted)
+        XCTAssertEqual(String(deleted.dropLast(revert.deleteCount)) + revert.insertText, "teh ")
 
         XCTAssertNil(try spaceCorrection(of: "teh", session: PredictiveTypingSession(memory: memory, now: { self.start })))
         let restarted = PredictiveTypingSession(memory: TypingMemory(saved: memory.saved), now: { self.start })
         XCTAssertEqual(try spaceCorrection(of: "teh", session: restarted), correction)
+    }
+
+    /// Deleting the space after a correction leaves the correction and holds nothing back, as on
+    /// the system keyboard, so "i" keeps becoming "I".
+    func testDeletingTheSpaceAfterACorrectionKeepsIt() throws {
+        let memory = TypingMemory()
+        let session = PredictiveTypingSession(memory: memory, now: { self.start })
+        let correction = try XCTUnwrap(try spaceCorrection(of: "so i", session: session))
+        let deleted = try correctedAndSeparatorDeleted("so i", session: session)
+        XCTAssertEqual(deleted, "so " + correction)
+
+        XCTAssertEqual(try spaceCorrection(of: "so i", session: PredictiveTypingSession(memory: memory, now: { self.start })), correction)
     }
 
     func testKeptTypedWordStaysOffAfterARestartUntilChosen() throws {
@@ -104,6 +119,16 @@ final class RememberedCorrectionsTests: XCTestCase {
     /// What space would insert for the last word of `text`.
     private func spaceCorrection(of text: String, session: PredictiveTypingSession) throws -> String? {
         try result(for: text, session: session).autocorrection
+    }
+
+    /// Types space after `text`, which autocorrects its last word, then deletes the space.
+    private func correctedAndSeparatorDeleted(_ text: String, session: PredictiveTypingSession) throws -> String {
+        let space = session.wordBoundaryEdit(separator: " ", textBeforeCursor: text, result: try result(for: text, session: session))
+        let corrected = String(text.dropLast(space.deleteCount)) + space.insertText
+        session.textDidChange(textBeforeCursor: corrected)
+        let deleted = String(corrected.dropLast())
+        session.textDidChange(textBeforeCursor: deleted)
+        return deleted
     }
 
     /// A result for a word the keyboard does not know and leaves as typed.
