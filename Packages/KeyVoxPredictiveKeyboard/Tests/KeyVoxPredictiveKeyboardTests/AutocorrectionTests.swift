@@ -15,6 +15,12 @@ final class AutocorrectionTests: XCTestCase {
         XCTAssertEqual(try autocorrection(typing: "i dont"), "don't")
     }
 
+    /// Two neighboring letters typed in the wrong order beat a word that needs two keys missed.
+    func testSwappedLettersAreCorrectedBeforeMissedKeys() throws {
+        XCTAssertEqual(try autocorrection(typing: "while tpying"), "typing")
+        XCTAssertEqual(try autocorrection(typing: "thne"), "then")
+    }
+
     func testMissingApostropheInImIsRestored() throws {
         XCTAssertEqual(try autocorrection(typing: "im"), "I'm")
         XCTAssertEqual(try autocorrection(typing: "Im"), "I'm")

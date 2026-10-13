@@ -85,7 +85,10 @@ public struct NoisyChannelCorrector: Sendable {
             extraTouchCost: 6,
             skippedLetterCost: 4,
             skippedRepeatedLetterCost: 2,
-            swappedLettersCost: 6
+            // Two neighboring letters typed in the wrong order cost no more than one near-miss
+            // key, as every key was hit; measured against 82 typos the system keyboard corrected
+            // (Tools/AppleKeyboardBaseline), this matches 5 more and none fewer than 6 did.
+            swappedLettersCost: 3
         ),
         languageWeight: 0.8,
         unknownWordPenalty: 0,
