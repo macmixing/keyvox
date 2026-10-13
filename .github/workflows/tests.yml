@@ -109,3 +109,6 @@ jobs:
 
       - name: Run KeyVoxVibesAdapters package tests
         run: swift test --package-path Packages/KeyVoxVibesAdapters --scratch-path /tmp/keyvox-vibes-adapters-ci
+
+      - name: Run KeyVoxPredictiveKeyboard package tests
+        run: swift test --package-path Packages/KeyVoxPredictiveKeyboard --scratch-path /tmp/keyvox-predictive-keyboard-ci
