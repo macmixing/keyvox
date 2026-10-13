@@ -24,6 +24,19 @@ final class ContactNameTests: XCTestCase {
         XCTAssertEqual(try autocorrection(typing: "hi ahle"), "Ahleah")
     }
 
+    /// Typed letters that begin a contact name but are a typo of a word that fits the words before
+    /// better are corrected as if no contact had the name.
+    func testPartlyTypedContactNameGivesWayToABetterFittingCorrection() throws {
+        try computer.updateVocabulary(PersonalVocabulary(words: [], knownNames: ["Tehya Old"], textReplacements: []))
+        let withoutContacts = PredictionComputer(engine: try EnglishPredictiveEngine())
+        for text in ["teh", "I like teh"] {
+            let request = PredictiveTypingSession().request(textBeforeCursor: text)
+            let expected = try withoutContacts.compute(request).autocorrection
+            XCTAssertNotNil(expected)
+            XCTAssertEqual(try autocorrection(typing: text), expected, text)
+        }
+    }
+
     func testEverydayContactWordStaysAsTyped() throws {
         XCTAssertNil(try autocorrection(typing: "my old"))
     }

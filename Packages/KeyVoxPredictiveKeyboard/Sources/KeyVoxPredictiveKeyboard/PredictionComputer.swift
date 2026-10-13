@@ -402,13 +402,29 @@ public final class PredictionComputer: @unchecked Sendable {
                     || decision.typed.language.isEverydayWord,
                   let best = ranked.first?.word,
                   vocabulary.contains(best),
-                  PersonalVocabulary.key(best).hasPrefix(PersonalVocabulary.key(typed)) {
+                  PersonalVocabulary.key(best).hasPrefix(PersonalVocabulary.key(typed)),
+                  fitsAsWellAsCorrection(best, decision: decision) {
             chosen = best
         } else {
             chosen = decision.replacement ?? engine.capitalizedSpellings.written(typed)
         }
         let written = WordCasing.apply(of: typed, to: chosen)
         return written == typed ? nil : written
+    }
+
+    /// Whether the user's word `word`, which the typed letters begin, fits the words before at
+    /// least as well as the word `decision` would correct the typing to, so space completes it
+    /// only then. Measured against the system keyboard (Tools/AppleKeyboardBaseline): contact
+    /// names typed partly after 17 different words were completed only where the everyday word the
+    /// letters were also a typo of fit the words before less well.
+    private func fitsAsWellAsCorrection(_ word: String, decision: NoisyChannelCorrector.Decision) -> Bool {
+        let wordKey = PersonalVocabulary.key(word)
+        guard let replacement = decision.replacement.map(PersonalVocabulary.key), replacement != wordKey,
+              let correction = decision.rankedAlternatives.first(where: { PersonalVocabulary.key($0.word) == replacement }),
+              let completion = decision.rankedAlternatives.first(where: { PersonalVocabulary.key($0.word) == wordKey }) else {
+            return true
+        }
+        return completion.language.logProbability >= correction.language.logProbability
     }
 
     /// The likeliest next words, or, after a word the bundled data has nothing to follow, such as
