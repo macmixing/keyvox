@@ -9,9 +9,14 @@ import XCTest
 /// Mac's files. Each step is `{"do": action, ...}`:
 /// - `launch`: starts the host app fresh and shows the system keyboard, or the third-party
 ///   keyboard that has a key labeled `TEST_RUNNER_BASELINE_KEYBOARD_MARKER` when that is set. Set
-///   `TEST_RUNNER_BASELINE_AUTOCAPITALIZE=1` to capitalize sentences, as most apps do.
+///   `TEST_RUNNER_BASELINE_AUTOCAPITALIZE=1` to capitalize sentences, as most apps do, and
+///   `TEST_RUNNER_BASELINE_SMART_QUOTES=1` to turn the text view's smart quotes on.
 /// - `type` with `text`: taps the letters at their key centers.
 /// - `space`, `delete`, `shift`: taps that key; `shift` before a letter types it as a capital.
+/// - `page` with `name`: shows the keyboard's `letters`, `numbers`, or `symbols` page.
+/// - `tapKey` with `label`: taps the key with that label on the page showing.
+/// - `holdKey` with `label`, `dx`, and `dy`: holds that key until its popup opens, then slides
+///   that many points from the key's center and lifts there.
 /// - `tapBar` with `label`: taps the suggestion bar's entry with that label.
 /// - `holdBar` with `label`: presses and holds that entry for a second.
 /// - `tapBarAt` with `index`: taps the suggestion bar's entry at that place, counted from the
@@ -34,6 +39,8 @@ final class CorrectionMemoryProbeTests: XCTestCase {
         let seconds: Double?
         let name: String?
         let index: Int?
+        let dx: Double?
+        let dy: Double?
     }
 
     private struct Record: Encodable {
@@ -49,6 +56,9 @@ final class CorrectionMemoryProbeTests: XCTestCase {
         let keyMap: KeyboardKeyMap
         let bar: SuggestionBarReader
         let origin: XCUICoordinate
+        /// Finds a key on the page showing, and moves the keyboard to a page.
+        let key: (String) -> XCUIElement
+        let openPage: (String) throws -> Void
 
         func tap(at point: CGPoint) {
             origin.withOffset(CGVector(dx: point.x, dy: point.y)).tap()
@@ -91,6 +101,23 @@ final class CorrectionMemoryProbeTests: XCTestCase {
                     .matching(NSPredicate(format: "label IN %@", [step.do, step.do.capitalized]))
                     .firstMatch
                     .tap()
+            case "page":
+                try current.openPage(try XCTUnwrap(step.name, context))
+            case "tapKey":
+                let label = try XCTUnwrap(step.label, context)
+                let key = current.key(label)
+                try XCTUnwrap(key.exists ? key : nil, "\(context): no key \(label)").tap()
+            case "holdKey":
+                let label = try XCTUnwrap(step.label, context)
+                let key = current.key(label)
+                let center = try XCTUnwrap(key.exists ? key : nil, "\(context): no key \(label)")
+                    .coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+                center.press(
+                    forDuration: 1,
+                    thenDragTo: center.withOffset(CGVector(dx: step.dx ?? 0, dy: step.dy ?? 0)),
+                    withVelocity: .slow,
+                    thenHoldForDuration: 0.4
+                )
             case "tapBar", "holdBar":
                 let label = try XCTUnwrap(step.label, context)
                 let entry = try XCTUnwrap(
@@ -150,6 +177,9 @@ final class CorrectionMemoryProbeTests: XCTestCase {
         if capitalizes {
             app.launchEnvironment["AUTOCAPITALIZE"] = "1"
         }
+        if ProcessInfo.processInfo.environment["BASELINE_SMART_QUOTES"] == "1" {
+            app.launchEnvironment["SMART_QUOTES"] = "1"
+        }
         app.launch()
         let input = app.textViews["input"]
         XCTAssertTrue(input.waitForExistence(timeout: 15))
@@ -157,22 +187,30 @@ final class CorrectionMemoryProbeTests: XCTestCase {
         let firstRowLetters = NSPredicate(format: "label IN %@", ["q", "Q"])
         let keyMap: KeyboardKeyMap
         let firstRowKey: XCUIElement
+        let key: (String) -> XCUIElement
+        let openPage: (String) throws -> Void
         if let customKeyboardMarker {
             XCTAssertTrue(KeyboardSwitcher.switchToKeyboard(withKey: customKeyboardMarker, in: app))
             keyMap = try KeyboardKeyMap(customKeyboardIn: app)
             firstRowKey = app.descendants(matching: .any).matching(firstRowLetters).firstMatch
+            key = { KeyVoxKeyboardPages.key($0, in: app) }
+            openPage = { try KeyVoxKeyboardPages.open($0, in: app) }
         } else {
             XCTAssertTrue(KeyboardSwitcher.switchToSystemKeyboard(in: app))
             let keyboard = app.keyboards.element
             keyMap = try KeyboardKeyMap(systemKeyboard: keyboard)
             firstRowKey = keyboard.keys.matching(firstRowLetters).firstMatch
+            key = { keyboard.keys[$0].firstMatch }
+            openPage = { try SystemKeyboardPages.open($0, on: keyboard) }
         }
         return Session(
             app: app,
             input: input,
             keyMap: keyMap,
             bar: SuggestionBarReader(app: app, firstRowKey: firstRowKey),
-            origin: app.coordinate(withNormalizedOffset: .zero)
+            origin: app.coordinate(withNormalizedOffset: .zero),
+            key: key,
+            openPage: openPage
         )
     }
 
