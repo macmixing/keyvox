@@ -88,6 +88,9 @@ final class KeyboardViewController: UIInputViewController {
         textAfterCursor: { [weak self] in self?.textDocumentProxy.documentContextAfterInput }
     )
     var typingTraits = KeyboardTypingTraits.standard
+    /// Whether the keyboard appeared and has yet to read the field, which waits for the system to
+    /// hand over the field's document state.
+    var awaitsFieldState = false
     /// The user's KeyVox Dictionary, contact names, and text replacements, without what the
     /// keyboard learned from their typing.
     var userVocabulary = PersonalVocabulary.empty
@@ -185,13 +188,12 @@ final class KeyboardViewController: UIInputViewController {
         KeyboardTypingMemory.shared.adoptResetIfNeeded()
         // Opens as the user's settings say until the field is read, which can still ask for 123.
         applyOpeningLayout(prefersNumberPage: appSettingsStore.opensOnNumberPage)
-        // The field is read on the next main-thread turn: as a field connects, the system
-        // replaces its document state off the main thread, frees the old one, and waits for
-        // the main thread to hand over the new one, so a read here can reach freed memory.
-        DispatchQueue.main.async { [weak self] in
-            guard let self, self.rootContainerView != nil else { return }
-            self.prepareTypingForCurrentField()
-        }
+        // The field is read once the system hands over its document state, which it ends with
+        // `textDidChange(_:)`: as a field connects, the system replaces the document state off
+        // the main thread, frees the old one, and waits on the main thread to hand over the
+        // new one, so a read before then, even on a later main-thread turn, can reach freed
+        // memory.
+        awaitsFieldState = true
         preparePresentationIfNeeded()
         installedModels = KeyboardInstalledModels.check()
         KeyVoxIPCBridge.reportKeyboardOnboardingState(hasFullAccess: hasFullAccess)
@@ -213,6 +215,11 @@ final class KeyboardViewController: UIInputViewController {
 
     override func textDidChange(_ textInput: UITextInput?) {
         super.textDidChange(textInput)
+        if awaitsFieldState, rootContainerView != nil {
+            awaitsFieldState = false
+            prepareTypingForCurrentField()
+            return
+        }
         handleTypingContextChange()
     }
 
