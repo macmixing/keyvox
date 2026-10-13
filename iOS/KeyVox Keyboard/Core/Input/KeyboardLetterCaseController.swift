@@ -36,7 +36,11 @@ final class KeyboardLetterCaseController {
         case .lowercase:
             letterCase = .shifted
             lastShiftTapTimestamp = timestamp
-        case .shifted, .capsLocked:
+        case .shifted:
+            // A quick second tap locks caps whether the user or the field shifted the letters.
+            letterCase = .lowercase
+            lastShiftTapTimestamp = timestamp
+        case .capsLocked:
             letterCase = .lowercase
             lastShiftTapTimestamp = nil
         }
