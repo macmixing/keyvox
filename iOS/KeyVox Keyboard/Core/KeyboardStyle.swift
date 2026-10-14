@@ -88,6 +88,10 @@ enum KeyboardStyle {
     static let specialKeyFillColor = UIColor(red: 0.35, green: 0.36, blue: 0.66, alpha: 1)
     static let specialKeyPressedFillColor = UIColor(red: 0.19, green: 0.20, blue: 0.36, alpha: 1)
     static let keyDisabledFillColor = UIColor.tertiarySystemFill
+    /// The emoji search's done key, as the system keyboard draws it, light and dark, measured with
+    /// Tools/AppleKeyboardBaseline (`EmojiFrequentlyUsedProbeTests`).
+    static let emojiSearchDoneFillColor = UIColor(red: 0, green: 122 / 255, blue: 1, alpha: 1)
+    static let emojiSearchDoneLabelColor = UIColor.white
     static let specialKeyDisabledFillColor = UIColor.quaternarySystemFill
     static let keyBorderColor = UIColor { trait in
         trait.userInterfaceStyle == .light

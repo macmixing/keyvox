@@ -100,6 +100,8 @@ extension KeyboardViewController {
         rootContainerView.keyGridView.onKeyActivated = { [weak self] activation in
             self?.handleKeyActivation(activation) ?? false
         }
+        configureEmojiPage(in: rootContainerView)
+        configureEmojiSearch(in: rootContainerView)
         rootContainerView.keyGridView.onDeleteWords = { [weak self] count in
             self?.handleDeleteWords(count) ?? false
         }
@@ -182,6 +184,8 @@ extension KeyboardViewController {
             rootContainerView.logoBarView.removeTarget(self, action: #selector(handleMicTap), for: .touchUpInside)
             rootContainerView.fullAccessInfoButton.removeTarget(self, action: #selector(handleFullAccessInfoTap), for: .touchUpInside)
             rootContainerView.keyGridView.onKeyActivated = nil
+            unconfigureEmojiPage(rootContainerView.emojiPageView)
+            unconfigureEmojiSearch(in: rootContainerView)
             rootContainerView.keyGridView.onDeleteWords = nil
             rootContainerView.keyGridView.onCharacterKeyTyped = nil
             rootContainerView.keyGridView.onHeldKeyPopupOpened = nil

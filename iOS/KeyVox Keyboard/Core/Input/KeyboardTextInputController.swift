@@ -143,9 +143,7 @@ final class KeyboardTextInputController {
         _ kind: KeyboardKeyKind,
         typesExactly: Bool = false,
         emitsKeypress: Bool = true,
-        symbolPage: inout KeyboardSymbolPage,
-        resetCapsLockStateIfNeeded: () -> Void,
-        advanceToNextInputMode: () -> Void
+        symbolPage: inout KeyboardSymbolPage
     ) -> Bool {
         switch kind {
         case let .character(value):
@@ -221,13 +219,7 @@ final class KeyboardTextInputController {
             emitKeypress()
             symbolPage = .primary
             return true
-        case .nextKeyboard:
-            pendingSelectionDeletion = nil
-            emitKeypress()
-            resetCapsLockStateIfNeeded()
-            advanceToNextInputMode()
-            return true
-        case .restoreFullKeyboard, .shift:
+        case .restoreFullKeyboard, .shift, .emoji, .emojiSearchDone:
             return false
         }
     }

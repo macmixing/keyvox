@@ -112,30 +112,19 @@ enum KeyboardLayoutGeometry {
             let sideKeyWidth = isLandscape
                 ? (topRowKeyWidth * 2) + spacing
                 : (topRowKeyWidth * 2.5) + (spacing * 1.5)
-            let keyCount = rowStack.arrangedSubviews.count
-
-            if keyCount == 4 {
-                let leadingKeyWidth = sideKeyWidth - topRowKeyWidth - spacing
-                let spaceKeyWidth = rowWidth - leadingKeyWidth - topRowKeyWidth - sideKeyWidth - (spacing * 3)
-                guard leadingKeyWidth > 0, spaceKeyWidth > 0 else { return }
-                applyLayout(
-                    expectedKeyCount: 4,
-                    targetWidths: [leadingKeyWidth, topRowKeyWidth, spaceKeyWidth, sideKeyWidth]
-                )
-                return
-            }
-
+            // The page key and the emoji key share a side key's width, as on Apple's keyboard
+            // (measured with Tools/AppleKeyboardBaseline, `EmojiKeyboardProbeTests`); in the emoji
+            // search's row, without the emoji key, the page key takes the side key's width
+            // (`EmojiFrequentlyUsedProbeTests`).
+            let pairedKeyWidth = (sideKeyWidth - spacing) / 2
             let spaceKeyWidth = rowWidth - (sideKeyWidth * 2) - (spacing * 2)
 
-            guard sideKeyWidth > 0, spaceKeyWidth > 0 else { return }
+            guard pairedKeyWidth > 0, spaceKeyWidth > 0 else { return }
 
-            let targetWidths = [
-                sideKeyWidth,
-                spaceKeyWidth,
-                sideKeyWidth,
-            ]
-
-            applyLayout(expectedKeyCount: 3, targetWidths: targetWidths)
+            let targetWidths = rowStack.arrangedSubviews.count == 3
+                ? [sideKeyWidth, spaceKeyWidth, sideKeyWidth]
+                : [pairedKeyWidth, pairedKeyWidth, spaceKeyWidth, sideKeyWidth]
+            applyLayout(expectedKeyCount: targetWidths.count, targetWidths: targetWidths)
         }
     }
 }

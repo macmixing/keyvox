@@ -44,7 +44,11 @@ final class KeyboardKeyGridView: UIView {
     var keyViews: [KeyboardKeyView] { currentPage?.keyViews ?? [] }
     private(set) var symbolPage: KeyboardSymbolPage = .letters
     private(set) var keysMode: KeyboardKeysMode = .full
-    private(set) var showsNextKeyboardKey = false
+    /// Whether the keys type into the emoji search, which shows its own bottom row.
+    private(set) var isEmojiSearch = false
+    /// Whether holding the space bar turns the keyboard into a trackpad for the cursor; the emoji
+    /// search has no cursor to move.
+    var allowsSpaceTrackpad = true
     private(set) var letterCase: KeyboardLetterCase = .lowercase
     private(set) var isKeyboardEnabled = true
     weak var popupContainerView: UIView?
@@ -71,17 +75,11 @@ final class KeyboardKeyGridView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
-    func setLayout(
-        symbolPage page: KeyboardSymbolPage,
-        keysMode: KeyboardKeysMode,
-        showsNextKeyboardKey: Bool
-    ) {
-        guard page != symbolPage
-                || keysMode != self.keysMode
-                || showsNextKeyboardKey != self.showsNextKeyboardKey else { return }
+    func setLayout(symbolPage page: KeyboardSymbolPage, keysMode: KeyboardKeysMode, isEmojiSearch: Bool) {
+        guard page != symbolPage || keysMode != self.keysMode || isEmojiSearch != self.isEmojiSearch else { return }
         symbolPage = page
         self.keysMode = keysMode
-        self.showsNextKeyboardKey = showsNextKeyboardKey
+        self.isEmojiSearch = isEmojiSearch
         showPage()
     }
 
@@ -89,6 +87,19 @@ final class KeyboardKeyGridView: UIView {
         guard letterCase != self.letterCase else { return }
         self.letterCase = letterCase
         currentPage?.apply(letterCase: letterCase, isTrackpadModeActive: spaceTrackpadController.isActive)
+    }
+
+    /// Whether the keys are hidden while another page shows in the grid's place; the grid keeps
+    /// its size, so nothing around it moves.
+    var isContentHidden = false {
+        didSet {
+            guard isContentHidden != oldValue else { return }
+            if isContentHidden {
+                resetInteractionState()
+            }
+            isUserInteractionEnabled = isContentHidden == false
+            alpha = isContentHidden ? 0 : 1
+        }
     }
 
     func setKeyboardEnabled(_ enabled: Bool) {
@@ -213,7 +224,7 @@ final class KeyboardKeyGridView: UIView {
                 isTrackpadModeActive: isTrackpadModeActive
             )
         }
-        alpha = 1.0
+        alpha = isContentHidden ? 0 : 1
     }
 
     private func configureView() {
@@ -256,11 +267,7 @@ final class KeyboardKeyGridView: UIView {
     /// Shows the page for the current layout, building it the first time it is needed.
     private func showPage() {
         cancelAllTouches()
-        let layout = KeyboardKeyGridPage.Layout(
-            symbolPage: symbolPage,
-            keysMode: keysMode,
-            showsNextKeyboardKey: showsNextKeyboardKey
-        )
+        let layout = KeyboardKeyGridPage.Layout(symbolPage: symbolPage, keysMode: keysMode, isEmojiSearch: isEmojiSearch)
         let page = pages[layout] ?? makePage(for: layout)
         if page !== currentPage {
             currentPage?.view.isHidden = true

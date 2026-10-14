@@ -90,9 +90,13 @@ extension KeyboardViewController {
         }
     }
 
-    /// Deletes whole words for a held delete key. Returns false when no word could be deleted.
+    /// Deletes whole words for a held delete key, from the emoji search while searching. Returns
+    /// false when no word could be deleted.
     func handleDeleteWords(_ count: Int) -> Bool {
-        textInputController.deleteWordsBackward(count) { [weak self] in
+        if emojiPanel == .searching {
+            return deleteEmojiSearchWords(count)
+        }
+        return textInputController.deleteWordsBackward(count) { [weak self] in
             self?.handleTypingContextChange()
         }
     }
@@ -212,7 +216,9 @@ extension KeyboardViewController {
     /// What kind of key `activation` presses, when it is a first press of a key whose taps
     /// close to a letter key may be meant for that letter.
     private func contestedOtherKey(for activation: KeyboardKeyActivation) -> ContestedTap.OtherKey? {
+        // The emoji search's keys type into the search, which predictions know nothing about.
         guard symbolPage == .letters,
+              emojiPanel != .searching,
               typingTraits.allowsPredictions,
               activation.isRepeat == false else {
             return nil
@@ -224,7 +230,7 @@ extension KeyboardViewController {
         switch kind {
         case .space, .returnKey:
             return .wordBoundary
-        case .shift, .delete, .numberSymbols, .nextKeyboard:
+        case .shift, .delete, .numberSymbols, .emoji:
             return .control
         default:
             return nil
@@ -235,7 +241,9 @@ extension KeyboardViewController {
         rootContainerView?.keyGridView.setLetterCase(letterCaseController.letterCase)
     }
 
+    /// Matches the letter case to the text; the emoji search keeps its own.
     private func synchronizeLetterCase() {
+        guard emojiPanel != .searching else { return }
         letterCaseController.synchronize(
             textBeforeCursor: textDocumentProxy.documentContextBeforeInput,
             autocapitalization: typingTraits.autocapitalization

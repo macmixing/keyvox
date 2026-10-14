@@ -15,9 +15,7 @@ struct KeyboardTextInputControllerTests {
 
         let handled = controller.handleKeyActivation(
             .character("A"),
-            symbolPage: &symbolPage,
-            resetCapsLockStateIfNeeded: {},
-            advanceToNextInputMode: {}
+            symbolPage: &symbolPage
         )
 
         #expect(handled == true)
@@ -38,16 +36,12 @@ struct KeyboardTextInputControllerTests {
 
         _ = controller.handleKeyActivation(
             .character(SmartQuotes.apostrophe),
-            symbolPage: &symbolPage,
-            resetCapsLockStateIfNeeded: {},
-            advanceToNextInputMode: {}
+            symbolPage: &symbolPage
         )
         _ = controller.handleKeyActivation(
             .character(SmartQuotes.apostrophe),
             typesExactly: true,
-            symbolPage: &symbolPage,
-            resetCapsLockStateIfNeeded: {},
-            advanceToNextInputMode: {}
+            symbolPage: &symbolPage
         )
 
         #expect(tapped != SmartQuotes.apostrophe)
@@ -66,9 +60,7 @@ struct KeyboardTextInputControllerTests {
 
         let handled = controller.handleKeyActivation(
             .space,
-            symbolPage: &symbolPage,
-            resetCapsLockStateIfNeeded: {},
-            advanceToNextInputMode: {}
+            symbolPage: &symbolPage
         )
 
         #expect(handled == true)
@@ -89,9 +81,7 @@ struct KeyboardTextInputControllerTests {
 
         _ = controller.handleKeyActivation(
             .space,
-            symbolPage: &symbolPage,
-            resetCapsLockStateIfNeeded: {},
-            advanceToNextInputMode: {}
+            symbolPage: &symbolPage
         )
 
         #expect(documentProxy.deleteBackwardCallCount == 0)
@@ -110,9 +100,7 @@ struct KeyboardTextInputControllerTests {
 
         let handled = controller.handleKeyActivation(
             .delete,
-            symbolPage: &symbolPage,
-            resetCapsLockStateIfNeeded: {},
-            advanceToNextInputMode: {}
+            symbolPage: &symbolPage
         )
 
         #expect(handled == true)
@@ -134,9 +122,7 @@ struct KeyboardTextInputControllerTests {
 
         let handled = controller.handleKeyActivation(
             .delete,
-            symbolPage: &symbolPage,
-            resetCapsLockStateIfNeeded: {},
-            advanceToNextInputMode: {}
+            symbolPage: &symbolPage
         )
 
         #expect(handled == true)
@@ -157,25 +143,25 @@ struct KeyboardTextInputControllerTests {
         var symbolPage = KeyboardSymbolPage.primary
 
         // Attempt 1: Ghost delete, emits haptic
-        let handled1 = controller.handleKeyActivation(.delete, symbolPage: &symbolPage, resetCapsLockStateIfNeeded: {}, advanceToNextInputMode: {})
+        let handled1 = controller.handleKeyActivation(.delete, symbolPage: &symbolPage)
         #expect(handled1 == true)
         #expect(documentProxy.deleteBackwardCallCount == 1)
         #expect(haptics.emissionCount == 1)
 
         // Attempt 2: Ghost delete, silent
-        let handled2 = controller.handleKeyActivation(.delete, symbolPage: &symbolPage, resetCapsLockStateIfNeeded: {}, advanceToNextInputMode: {})
+        let handled2 = controller.handleKeyActivation(.delete, symbolPage: &symbolPage)
         #expect(handled2 == true)
         #expect(documentProxy.deleteBackwardCallCount == 2)
         #expect(haptics.emissionCount == 1)
 
         // Attempt 3: Ghost delete, silent
-        let handled3 = controller.handleKeyActivation(.delete, symbolPage: &symbolPage, resetCapsLockStateIfNeeded: {}, advanceToNextInputMode: {})
+        let handled3 = controller.handleKeyActivation(.delete, symbolPage: &symbolPage)
         #expect(handled3 == true)
         #expect(documentProxy.deleteBackwardCallCount == 3)
         #expect(haptics.emissionCount == 1)
 
         // Attempt 4: Exhausted phantom deletes, cancels repeater
-        let handled4 = controller.handleKeyActivation(.delete, symbolPage: &symbolPage, resetCapsLockStateIfNeeded: {}, advanceToNextInputMode: {})
+        let handled4 = controller.handleKeyActivation(.delete, symbolPage: &symbolPage)
         #expect(handled4 == false)
         #expect(documentProxy.deleteBackwardCallCount == 3)
         #expect(haptics.emissionCount == 1)
@@ -194,7 +180,7 @@ struct KeyboardTextInputControllerTests {
         var symbolPage = KeyboardSymbolPage.primary
 
         // Should return true to allow deletion logic to proceed, bypassing buggy trailing contexts
-        let handled = controller.handleKeyActivation(.delete, symbolPage: &symbolPage, resetCapsLockStateIfNeeded: {}, advanceToNextInputMode: {})
+        let handled = controller.handleKeyActivation(.delete, symbolPage: &symbolPage)
 
         #expect(handled == true)
         #expect(documentProxy.deleteBackwardCallCount == 1)
@@ -209,53 +195,14 @@ struct KeyboardTextInputControllerTests {
             emitKeypress: haptics.emitKeypressIfEnabled
         )
         var symbolPage = KeyboardSymbolPage.primary
-        var resetCount = 0
-        var advanceCount = 0
 
         let handled = controller.handleKeyActivation(
             .abc,
-            symbolPage: &symbolPage,
-            resetCapsLockStateIfNeeded: {
-                resetCount += 1
-            },
-            advanceToNextInputMode: {
-                advanceCount += 1
-            }
+            symbolPage: &symbolPage
         )
 
         #expect(handled == true)
         #expect(symbolPage == .letters)
-        #expect(resetCount == 0)
-        #expect(advanceCount == 0)
-        #expect(haptics.emissionCount == 1)
-    }
-
-    @Test func nextKeyboardKeyTriggersCapsResetAndInputModeAdvance() {
-        let documentProxy = KeyboardTextDocumentProxySpy()
-        let haptics = KeyboardKeypressHapticsSpy()
-        let controller = KeyboardTextInputController(
-            documentProxy: documentProxy,
-            emitKeypress: haptics.emitKeypressIfEnabled
-        )
-        var symbolPage = KeyboardSymbolPage.letters
-        var resetCount = 0
-        var advanceCount = 0
-
-        let handled = controller.handleKeyActivation(
-            .nextKeyboard,
-            symbolPage: &symbolPage,
-            resetCapsLockStateIfNeeded: {
-                resetCount += 1
-            },
-            advanceToNextInputMode: {
-                advanceCount += 1
-            }
-        )
-
-        #expect(handled == true)
-        #expect(symbolPage == .letters)
-        #expect(resetCount == 1)
-        #expect(advanceCount == 1)
         #expect(haptics.emissionCount == 1)
     }
 
@@ -270,9 +217,7 @@ struct KeyboardTextInputControllerTests {
 
         let handled = controller.handleKeyActivation(
             .alternateSymbols,
-            symbolPage: &symbolPage,
-            resetCapsLockStateIfNeeded: {},
-            advanceToNextInputMode: {}
+            symbolPage: &symbolPage
         )
 
         #expect(handled == true)
@@ -451,9 +396,7 @@ struct KeyboardTextInputControllerTests {
 
         let deleted = controller.handleKeyActivation(
             .delete,
-            symbolPage: &symbolPage,
-            resetCapsLockStateIfNeeded: {},
-            advanceToNextInputMode: {}
+            symbolPage: &symbolPage
         )
         documentProxy.selectedText = nil
         let insertion = controller.insertTranscriptionWithResult("Replacement sentence.")
@@ -477,16 +420,12 @@ struct KeyboardTextInputControllerTests {
 
         _ = controller.handleKeyActivation(
             .delete,
-            symbolPage: &symbolPage,
-            resetCapsLockStateIfNeeded: {},
-            advanceToNextInputMode: {}
+            symbolPage: &symbolPage
         )
         documentProxy.selectedText = nil
         _ = controller.handleKeyActivation(
             .space,
-            symbolPage: &symbolPage,
-            resetCapsLockStateIfNeeded: {},
-            advanceToNextInputMode: {}
+            symbolPage: &symbolPage
         )
 
         #expect(documentProxy.deleteBackwardCallCount == 1)
@@ -507,9 +446,7 @@ struct KeyboardTextInputControllerTests {
 
         _ = controller.handleKeyActivation(
             .space,
-            symbolPage: &symbolPage,
-            resetCapsLockStateIfNeeded: {},
-            advanceToNextInputMode: {}
+            symbolPage: &symbolPage
         )
 
         #expect(documentProxy.deleteBackwardCallCount == 0)
@@ -529,16 +466,12 @@ struct KeyboardTextInputControllerTests {
 
         _ = controller.handleKeyActivation(
             .delete,
-            symbolPage: &symbolPage,
-            resetCapsLockStateIfNeeded: {},
-            advanceToNextInputMode: {}
+            symbolPage: &symbolPage
         )
         documentProxy.selectedText = nil
         _ = controller.handleKeyActivation(
             .character("x"),
-            symbolPage: &symbolPage,
-            resetCapsLockStateIfNeeded: {},
-            advanceToNextInputMode: {}
+            symbolPage: &symbolPage
         )
         _ = controller.insertTranscription("Replacement sentence.")
 

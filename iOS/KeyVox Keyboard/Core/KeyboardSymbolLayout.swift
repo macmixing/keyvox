@@ -16,9 +16,11 @@ enum KeyboardKeyKind: Equatable {
     case abc
     case alternateSymbols
     case numberSymbols
+    case emoji
+    /// Ends the emoji search, in the return key's place while searching.
+    case emojiSearchDone
     case restoreFullKeyboard
     case shift
-    case nextKeyboard
 }
 
 struct KeyboardKeyModel: Equatable {
@@ -43,7 +45,7 @@ struct KeyboardKeyModel: Equatable {
             return "#+="
         case .numberSymbols:
             return "123"
-        case .restoreFullKeyboard, .shift, .nextKeyboard:
+        case .emoji, .emojiSearchDone, .restoreFullKeyboard, .shift:
             return ""
         }
     }
@@ -63,8 +65,10 @@ struct KeyboardKeyModel: Equatable {
             case .capsLocked:
                 return "capslock.fill"
             }
-        case .nextKeyboard:
-            return "globe"
+        case .emoji:
+            return "face.smiling"
+        case .emojiSearchDone:
+            return "checkmark"
         default:
             return nil
         }
@@ -86,12 +90,15 @@ struct KeyboardKeyModel: Equatable {
             return "Alternate Symbols"
         case .numberSymbols:
             return "Number Symbols"
+        case .emoji:
+            return "Emoji"
+        case .emojiSearchDone:
+            // Named as the system keyboard names its key.
+            return "done"
         case .restoreFullKeyboard:
             return "Full Keyboard"
         case .shift:
             return "Shift"
-        case .nextKeyboard:
-            return "Next Keyboard"
         }
     }
 
@@ -99,8 +106,8 @@ struct KeyboardKeyModel: Equatable {
         switch kind {
         case .character:
             return true
-        case .delete, .space, .returnKey, .abc, .alternateSymbols, .numberSymbols, .restoreFullKeyboard,
-             .shift, .nextKeyboard:
+        case .delete, .space, .returnKey, .abc, .alternateSymbols, .numberSymbols, .emoji, .emojiSearchDone,
+             .restoreFullKeyboard, .shift:
             return false
         }
     }
@@ -109,8 +116,8 @@ struct KeyboardKeyModel: Equatable {
         switch kind {
         case .character:
             return false
-        case .delete, .space, .returnKey, .abc, .alternateSymbols, .numberSymbols, .restoreFullKeyboard,
-             .shift, .nextKeyboard:
+        case .delete, .space, .returnKey, .abc, .alternateSymbols, .numberSymbols, .emoji, .emojiSearchDone,
+             .restoreFullKeyboard, .shift:
             return true
         }
     }
@@ -162,10 +169,12 @@ struct KeyboardKeyModel: Equatable {
 }
 
 enum KeyboardSymbolLayout {
+    /// The rows of `page`; while the emoji search shows, the bottom row is the system emoji
+    /// keyboard's search row: the page key, space, and done.
     static func rows(
         for page: KeyboardSymbolPage,
         keysMode: KeyboardKeysMode = .full,
-        showsNextKeyboardKey: Bool = false
+        isEmojiSearch: Bool = false
     ) -> [[KeyboardKeyModel]] {
         var rows: [[KeyboardKeyModel]]
         switch page {
@@ -176,8 +185,12 @@ enum KeyboardSymbolLayout {
         case .alternate:
             rows = alternateRows
         }
-        if showsNextKeyboardKey, let bottomRow = rows.indices.last {
-            rows[bottomRow].insert(key(.nextKeyboard, width: 1.0), at: 1)
+        if isEmojiSearch, keysMode == .full {
+            rows[rows.count - 1] = [
+                key(page == .letters ? .numberSymbols : .abc, width: 2.5),
+                key(.space, width: 5.0),
+                key(.emojiSearchDone, width: 2.5),
+            ]
         }
 
         switch keysMode {
@@ -201,9 +214,10 @@ enum KeyboardSymbolLayout {
             + characterRow(["z", "x", "c", "v", "b", "n", "m"])
             + [key(.delete, width: 1.45)],
         [
-            key(.numberSymbols, width: 1.55),
-            key(.space, width: 4.8),
-            key(.returnKey, width: 2.0),
+            key(.numberSymbols, width: 1.25),
+            key(.emoji, width: 1.25),
+            key(.space, width: 5.0),
+            key(.returnKey, width: 2.5),
         ],
     ]
 
@@ -220,9 +234,10 @@ enum KeyboardSymbolLayout {
             key(.delete, width: 1.45),
         ],
         [
-            key(.abc, width: 1.55),
-            key(.space, width: 4.8),
-            key(.returnKey, width: 2.0),
+            key(.abc, width: 1.25),
+            key(.emoji, width: 1.25),
+            key(.space, width: 5.0),
+            key(.returnKey, width: 2.5),
         ],
     ]
 
@@ -239,9 +254,10 @@ enum KeyboardSymbolLayout {
             key(.delete, width: 1.45),
         ],
         [
-            key(.abc, width: 1.55),
-            key(.space, width: 4.8),
-            key(.returnKey, width: 2.0),
+            key(.abc, width: 1.25),
+            key(.emoji, width: 1.25),
+            key(.space, width: 5.0),
+            key(.returnKey, width: 2.5),
         ],
     ]
 

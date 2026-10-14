@@ -1,0 +1,123 @@
+import KeyVoxEmoji
+import UIKit
+
+/// The emoji page: the emoji key opens it in the key grid's place, an emoji tapped there types as
+/// a key does, its delete key deletes as the grid's does, and its letters key returns to the
+/// letter page.
+extension KeyboardViewController {
+    func openEmojiPage() {
+        keypressHaptics.emitKeypressIfEnabled()
+        emojiPanel = .browsing
+        loadEmojiPage()
+    }
+
+    /// Binds `rootView`'s emoji page, open when the page was open before the views were built again.
+    func configureEmojiPage(in rootView: KeyboardRootView) {
+        let emojiPageView = rootView.emojiPageView
+        if emojiPanel == .browsing {
+            loadEmojiPage()
+        }
+        emojiPageView.popupContainer = popupOverlayView
+        emojiPageView.chosenTones = emojiSkinToneStore.chosenTones
+        emojiPageView.onEmojiSelected = { [weak self] emoji in
+            self?.typeEmoji(emoji)
+        }
+        emojiPageView.onSkinTonePickerOpened = { [weak self] in
+            self?.characterKeyHaptics.emitKeypressIfEnabled()
+        }
+        emojiPageView.onSkinToneChosen = { [weak self] emoji, version in
+            self?.chooseEmojiSkinTone(version, for: emoji)
+        }
+        emojiPageView.onLetters = { [weak self] in
+            self?.closeEmojiPage()
+        }
+        emojiPageView.onDeleteBegan = { [weak self] in
+            self?.beginEmojiPageDelete()
+        }
+        emojiPageView.onDeleteEnded = { [weak self] in
+            self?.endEmojiPageDelete()
+        }
+    }
+
+    func unconfigureEmojiPage(_ emojiPageView: KeyboardEmojiPageView) {
+        emojiPageView.onEmojiSelected = nil
+        emojiPageView.onSkinTonePickerOpened = nil
+        emojiPageView.onSkinToneChosen = nil
+        emojiPageView.popupContainer = nil
+        emojiPageView.onLetters = nil
+        emojiPageView.onDeleteBegan = nil
+        emojiPageView.onDeleteEnded = nil
+        emojiDeleteRepeatController.cancel()
+    }
+
+    /// Shows the page's sections with the emoji the user used most as they stand now; the
+    /// section changes only when the page opens again, as on the system keyboard.
+    private func loadEmojiPage() {
+        KeyboardEmojiSections.shared.load { [weak self] in
+            guard let self else { return }
+            rootContainerView?.emojiPageView.show(
+                KeyboardEmojiSections.shared.sections(frequentlyUsed: emojiFrequentlyUsedStore.frequentlyUsed)
+            )
+        }
+    }
+
+    private func closeEmojiPage() {
+        keypressHaptics.emitKeypressIfEnabled()
+        emojiDeleteRepeatController.cancel()
+        if keysMode == .compact {
+            keysMode = .full
+        }
+        symbolPage = .letters
+        emojiPanel = .closed
+    }
+
+    /// Remembers `version` for `emoji`, which the page and the search then show it in.
+    func chooseEmojiSkinTone(_ version: String, for emoji: String) {
+        emojiSkinToneStore.choose(version, for: emoji)
+        rootContainerView?.emojiPageView.chosenTones = emojiSkinToneStore.chosenTones
+        rootContainerView?.emojiSearchResultsView.chosenTones = emojiSkinToneStore.chosenTones
+    }
+
+    /// Types `emoji` as a key types its character, exactly as shown, with the key's haptic.
+    func typeEmoji(_ emoji: String) {
+        var page = symbolPage
+        guard textInputController.handleKeyActivation(
+            .character(emoji),
+            typesExactly: true,
+            symbolPage: &page
+        ) else {
+            return
+        }
+        characterKeyHaptics.emitKeypressIfEnabled()
+        emojiFrequentlyUsedStore.recordUse(of: emoji)
+        handleTypingContextChange()
+    }
+
+    /// Deletes as a held delete key on the grid does; the press plays its haptic when the finger
+    /// lifts, repeats as they delete.
+    private func beginEmojiPageDelete() {
+        var isRepeat = false
+        emojiDeleteRepeatController.begin { [weak self] granularity in
+            guard let self else { return false }
+            defer { isRepeat = true }
+            if case let .words(count) = granularity {
+                return self.handleDeleteWords(count)
+            }
+            var page = self.symbolPage
+            let didDelete = self.textInputController.handleKeyActivation(
+                .delete,
+                emitsKeypress: isRepeat,
+                symbolPage: &page
+            )
+            if didDelete {
+                self.handleTypingContextChange()
+            }
+            return didDelete
+        }
+    }
+
+    private func endEmojiPageDelete() {
+        emojiDeleteRepeatController.cancel()
+        keypressHaptics.emitKeypressIfEnabled()
+    }
+}

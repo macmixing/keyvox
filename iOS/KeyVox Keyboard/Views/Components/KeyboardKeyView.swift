@@ -100,7 +100,7 @@ final class KeyboardKeyView: UIView {
         let resolvedBorderColor = colors.border.resolvedColor(with: traitCollection)
         let effectiveBorderColor = isTrackpadModeActive ? UIColor.clear : resolvedBorderColor
         backgroundView.backgroundColor = .clear
-        tintOverlay.backgroundColor = colors.fill.withAlphaComponent(0.3)
+        tintOverlay.backgroundColor = colors.fill.withAlphaComponent(colors.fillOpacity)
         borderRenderer.strokeColor = effectiveBorderColor.cgColor
         titleLabels.forEach { $0.textColor = colors.foreground }
         imageView.tintColor = colors.foreground
@@ -256,29 +256,56 @@ final class KeyboardKeyView: UIView {
         )
     }
 
-    private func colorsForCurrentState(model: KeyboardKeyModel, state: VisualState) -> (fill: UIColor, border: UIColor, foreground: UIColor) {
+    private func colorsForCurrentState(
+        model: KeyboardKeyModel,
+        state: VisualState
+    ) -> (fill: UIColor, fillOpacity: CGFloat, border: UIColor, foreground: UIColor) {
+        // How strongly a key's fill tints the blur behind it.
+        let fillOpacity: CGFloat = 0.3
+        // The emoji search's done key is solid blue, and pressed it looks like a letter key, as the
+        // system keyboard's does.
+        if model.kind == .emojiSearchDone, state == .normal || state == .trackpadActive {
+            return (
+                fill: KeyboardStyle.emojiSearchDoneFillColor,
+                fillOpacity: 1,
+                border: .clear,
+                foreground: KeyboardStyle.emojiSearchDoneLabelColor
+            )
+        }
+        if model.kind == .emojiSearchDone, state == .pressed {
+            return (
+                fill: KeyboardStyle.keyFillColor,
+                fillOpacity: fillOpacity,
+                border: KeyboardStyle.keyBorderColor,
+                foreground: KeyboardStyle.keyLabelColor
+            )
+        }
         switch state {
         case .disabled:
             return (
                 fill: model.isSpecialKey ? KeyboardStyle.specialKeyDisabledFillColor : KeyboardStyle.keyDisabledFillColor,
+                fillOpacity: fillOpacity,
                 border: KeyboardStyle.keyDisabledBorderColor,
                 foreground: KeyboardStyle.keyDisabledLabelColor
             )
         case .normal:
             return (
                 fill: model.isSpecialKey ? KeyboardStyle.specialKeyFillColor : KeyboardStyle.keyFillColor,
+                fillOpacity: fillOpacity,
                 border: KeyboardStyle.keyBorderColor,
                 foreground: KeyboardStyle.keyLabelColor
             )
         case .pressed:
             return (
                 fill: model.isSpecialKey ? KeyboardStyle.specialKeyPressedFillColor : KeyboardStyle.keyPressedFillColor,
+                fillOpacity: fillOpacity,
                 border: KeyboardStyle.keyPressedBorderColor,
                 foreground: KeyboardStyle.keyLabelColor
             )
         case .trackpadActive:
             return (
                 fill: model.isSpecialKey ? KeyboardStyle.specialKeyFillColor : KeyboardStyle.keyFillColor,
+                fillOpacity: fillOpacity,
                 border: .clear,
                 foreground: KeyboardStyle.keyLabelColor
             )

@@ -74,7 +74,7 @@ extension KeyboardKeyGridView {
             case .space:
                 trackpadOriginKeyView = hitKey
                 trackpadActivationFeedback.prepare()
-                spaceTrackpadController.begin(onSpaceKey: true, location: location) { [weak self] in
+                spaceTrackpadController.begin(onSpaceKey: allowsSpaceTrackpad, location: location) { [weak self] in
                     self?.activateSpaceTrackpad()
                 }
             case .alternateSymbols:
