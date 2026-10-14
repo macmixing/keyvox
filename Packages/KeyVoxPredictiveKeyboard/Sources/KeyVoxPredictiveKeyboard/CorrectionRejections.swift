@@ -4,7 +4,8 @@ import Foundation
 /// have become, remembered the way the system keyboard remembers them (measured on iOS 27 with
 /// `Tools/AppleKeyboardBaseline`).
 ///
-/// Undoing a correction right after it was made holds that correction back only for as long
+/// Undoing a correction, by putting the typed word back from the suggestion bar right after it
+/// was made or by deleting into the word it made, holds that correction back only for as long
 /// as the keyboard keeps running. Keeping the typed word in the suggestion bar while the
 /// correction waits turns it down for good: it is held back for a day, and each further time
 /// for four times as long as the time before, up to 180 days. Choosing the correction again
