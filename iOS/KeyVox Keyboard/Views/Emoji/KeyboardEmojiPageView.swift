@@ -67,6 +67,11 @@ final class KeyboardEmojiPageView: UIView {
         // Prefetching keeps the emoji scrolled past, which a jump to a category never shows again:
         // measured, every jump added 36 emoji views and about 5.7 MB.
         collectionView.isPrefetchingEnabled = false
+        // The grid scrolls only sideways; the blur iOS draws along a scrolling view's top edge
+        // would only cover the section titles under the search field.
+        if #available(iOS 26.0, *) {
+            collectionView.topEdgeEffect.isHidden = true
+        }
         collectionView.dataSource = self
         collectionView.delegate = self
         collectionView.register(KeyboardEmojiCell.self, forCellWithReuseIdentifier: KeyboardEmojiCell.reuseIdentifier)

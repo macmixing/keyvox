@@ -16,12 +16,26 @@ struct KeyboardEmojiGridGeometryTests {
         #expect(geometry.scale == 1)
     }
 
-    @Test func aShorterGridDrawsFewerRowsAtNearlyTheSystemsSize() {
-        let height = Self.height(rowCount: 5) * KeyboardEmojiGridGeometry.smallestScale - 1
-        let geometry = KeyboardEmojiGridGeometry(gridHeight: height)
+    @Test func aShorterGridDrawsFewerRowsAtTheSystemsSize() {
+        let geometry = KeyboardEmojiGridGeometry(gridHeight: Self.height(rowCount: 5) - 1)
         #expect(geometry.rowCount == 4)
-        #expect(geometry.scale >= KeyboardEmojiGridGeometry.smallestScale)
-        #expect(geometry.scale <= 1)
+        #expect(geometry.scale == 1)
+    }
+
+    @Test func aGridTooShortForOneRowDrawsItSmaller() {
+        let geometry = KeyboardEmojiGridGeometry(gridHeight: Self.height(rowCount: 1) / 2)
+        #expect(geometry.rowCount == 1)
+        #expect(geometry.scale == 0.5)
+    }
+
+    @Test func rowsThatFitAtTheSystemsSizeShareTheHeightLeftBetweenThem() {
+        let leftOver: CGFloat = 12
+        let geometry = KeyboardEmojiGridGeometry(gridHeight: Self.height(rowCount: 4) + leftOver)
+        #expect(geometry.rowCount == 4)
+        #expect(geometry.scale == 1)
+        #expect(geometry.rowPitch == Measured.rowPitch + leftOver / 3)
+        let frames = geometry.layout(emojiCounts: [4]).emojiFrames[0]
+        #expect(frames[3].midY + Measured.emojiSize / 2 == Self.height(rowCount: 4) + leftOver)
     }
 
     @Test func emojiFillColumnsTopToBottomAtTheSystemsSpacing() {

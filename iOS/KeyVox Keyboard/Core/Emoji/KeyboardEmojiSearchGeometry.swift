@@ -2,18 +2,23 @@ import CoreGraphics
 
 /// Where the emoji search shows its field and results, as the system emoji keyboard's search shows
 /// them on a 402-point-wide iPhone, measured with Tools/AppleKeyboardBaseline
-/// (`EmojiFrequentlyUsedProbeTests`): the field in the toolbar's row, and while searching a row of
-/// results between it and the keys, which makes the keyboard taller.
+/// (`EmojiFrequentlyUsedProbeTests`): the field at the top of the emoji page, and while searching a
+/// row of results between it and the keys, which makes the keyboard taller. The field's round ends
+/// and the places of its magnifying glass and text are the system field's with Apple Intelligence
+/// on, read from an iPhone 18 Pro Max screenshot to about a point; without it the system field has
+/// 12-point corners and its glass and text sit about 8 points further in.
 enum KeyboardEmojiSearchGeometry {
     enum Measured {
         /// From each side of the keyboard to the field.
         static let fieldInset: CGFloat = 9
         static let fieldHeight: CGFloat = 40
-        static let fieldCornerRadius: CGFloat = 12
+        static let fieldCornerRadius: CGFloat = fieldHeight / 2
         /// From the field's leading edge to the magnifying glass's center.
-        static let magnifierCenter: CGFloat = 28
+        static let magnifierCenter: CGFloat = 20.5
         /// From the field's leading edge to where its text starts.
-        static let textStart: CGFloat = 43.3
+        static let textStart: CGFloat = 37
+        /// Between the field and the top of the emoji page's section titles.
+        static let pageGapBelowField: CGFloat = 3
         /// From the field's trailing edge to the clear button's center.
         static let clearCenterInset: CGFloat = 15.2
         static let caretWidth: CGFloat = 2

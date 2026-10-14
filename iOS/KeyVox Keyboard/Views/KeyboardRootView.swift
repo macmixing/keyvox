@@ -32,9 +32,9 @@ final class KeyboardRootView: UIView {
     private let contentStack = UIStackView()
     private let mainStack = UIStackView()
     private var mainStackTopConstraint: NSLayoutConstraint?
-    /// The search field sits in the toolbar's row on the emoji page, and over the results while
-    /// searching.
-    private var emojiSearchFieldInToolbarConstraint: NSLayoutConstraint?
+    /// The search field sits at the top of the keyboard on the emoji page, and over the results
+    /// while searching.
+    private var emojiSearchFieldAtTopConstraint: NSLayoutConstraint?
     private var emojiSearchFieldOverResultsConstraint: NSLayoutConstraint?
     private let fullAccessWarningContainer = UIView()
     private let fullAccessWarningLabel = UILabel()
@@ -167,8 +167,9 @@ final class KeyboardRootView: UIView {
         suggestionBarTrailingConstraint = trailing
     }
 
-    /// Shows the emoji page in the key grid's place, keeping the grid's size so nothing else moves,
-    /// with the search field in the toolbar's place; or, while searching, the field and the results
+    /// Shows the emoji page from under the search field to the key grid's bottom, the field at the
+    /// keyboard's top in the toolbar's place, so the keyboard keeps its height; or, while searching,
+    /// the field and the results
     /// above the keys, in the room the taller keyboard makes above the toolbar's row, which keeps its
     /// place over the keys.
     private func applyEmojiPanel(_ panel: KeyboardEmojiPanel) {
@@ -181,7 +182,7 @@ final class KeyboardRootView: UIView {
         emojiSearchResultsView.isHidden = isSearching == false
         mainStackTopConstraint?.constant = KeyboardStyle.topPadding
             + (isSearching ? KeyboardEmojiSearchGeometry.addedKeyboardHeight : 0)
-        emojiSearchFieldInToolbarConstraint?.isActive = isSearching == false
+        emojiSearchFieldAtTopConstraint?.isActive = isSearching == false
         emojiSearchFieldOverResultsConstraint?.isActive = isSearching
     }
 
@@ -513,7 +514,10 @@ final class KeyboardRootView: UIView {
 
             emojiPageView.leadingAnchor.constraint(equalTo: keyGridView.leadingAnchor),
             emojiPageView.trailingAnchor.constraint(equalTo: keyGridView.trailingAnchor),
-            emojiPageView.topAnchor.constraint(equalTo: keyGridView.topAnchor),
+            emojiPageView.topAnchor.constraint(
+                equalTo: emojiSearchFieldView.bottomAnchor,
+                constant: KeyboardEmojiSearchGeometry.Measured.pageGapBelowField
+            ),
             emojiPageView.bottomAnchor.constraint(equalTo: keyGridView.bottomAnchor),
 
             mainStack.leadingAnchor.constraint(equalTo: leadingAnchor, constant: KeyboardStyle.horizontalPadding),
@@ -524,9 +528,10 @@ final class KeyboardRootView: UIView {
         let mainStackTopConstraint = mainStack.topAnchor.constraint(equalTo: topAnchor, constant: KeyboardStyle.topPadding)
         mainStackTopConstraint.isActive = true
         self.mainStackTopConstraint = mainStackTopConstraint
-        let fieldInToolbar = emojiSearchFieldView.centerYAnchor.constraint(equalTo: contentStack.centerYAnchor)
-        fieldInToolbar.isActive = true
-        emojiSearchFieldInToolbarConstraint = fieldInToolbar
+        // As far from the keyboard's top as the toolbar's row sits.
+        let fieldAtTop = emojiSearchFieldView.topAnchor.constraint(equalTo: topAnchor, constant: KeyboardStyle.topPadding)
+        fieldAtTop.isActive = true
+        emojiSearchFieldAtTopConstraint = fieldAtTop
         emojiSearchFieldOverResultsConstraint = emojiSearchFieldView.bottomAnchor.constraint(
             equalTo: emojiSearchResultsView.topAnchor,
             constant: -KeyboardEmojiSearchGeometry.Measured.resultsGapBelowField
