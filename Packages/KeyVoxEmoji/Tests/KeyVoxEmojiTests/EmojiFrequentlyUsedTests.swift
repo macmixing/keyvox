@@ -36,4 +36,13 @@ final class EmojiFrequentlyUsedTests: XCTestCase {
         (0..<(EmojiFrequentlyUsed.capacity * 2)).forEach { frequentlyUsed.recordUse(of: "e\($0)") }
         XCTAssertEqual(frequentlyUsed.shown(starters: starters).count, EmojiFrequentlyUsed.capacity)
     }
+
+    /// A word's emoji in the suggestion bar put the one used last first, then the rest in order.
+    func testOrderingPutsTheLastUsedFirst() {
+        var frequentlyUsed = EmojiFrequentlyUsed()
+        XCTAssertEqual(frequentlyUsed.ordering(["a", "b", "c"]), ["a", "b", "c"])
+        frequentlyUsed.recordUse(of: "b")
+        frequentlyUsed.recordUse(of: "c")
+        XCTAssertEqual(frequentlyUsed.ordering(["a", "b", "c"]), ["c", "b", "a"])
+    }
 }

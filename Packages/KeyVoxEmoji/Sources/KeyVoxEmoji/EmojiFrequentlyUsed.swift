@@ -47,6 +47,14 @@ public struct EmojiFrequentlyUsed: Codable, Equatable, Sendable {
         }
     }
 
+    /// `emoji` with the used ones first, best first, then the rest in their order, as the system
+    /// keyboard's suggestion bar was seen putting a word's emoji the user last picked first.
+    public func ordering(_ emoji: [String]) -> [String] {
+        let scores = Dictionary(uses.map { ($0.emoji, $0.score) }, uniquingKeysWith: max)
+        let used = emoji.filter { scores[$0] != nil }.sorted { scores[$0, default: 0] > scores[$1, default: 0] }
+        return used + emoji.filter { scores[$0] == nil }
+    }
+
     /// What the section shows: the used emoji, best first, then `starters` the used emoji leave
     /// room for, in order.
     public func shown(starters: [String]) -> [String] {
