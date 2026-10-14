@@ -13,6 +13,8 @@ public final class PredictiveTypingSession {
     private struct Correction {
         let typed: String
         let correction: String
+        /// Where the replacement sits in the edit's corrected words.
+        let range: Range<Int>
     }
 
     private struct AppliedAutocorrection {
@@ -40,6 +42,57 @@ public final class PredictiveTypingSession {
         let endsAtCursor: Bool
     }
 
+    /// The text before a watched spot: its last `watchedContext` characters, which tell where the
+    /// spot is, and how long all of it is.
+    private struct PrecedingText {
+        let suffix: String
+        let count: Int
+
+        init(_ text: String) {
+            suffix = String(text.suffix(PredictiveTypingSession.watchedContext))
+            count = text.count
+        }
+
+        var isWhole: Bool { suffix.count == count }
+
+        /// Whether the user deleted on past the spot into this text, as a held delete does a word
+        /// at a time.
+        func isDeletedPast(in text: String) -> Bool {
+            let deleted = count - text.count
+            return deleted > 0 && deleted < suffix.count && text.hasSuffix(suffix.dropLast(deleted))
+        }
+    }
+
+    /// A recent autocorrection the user may delete back to, as the system keyboard watches it
+    /// (measured with `Tools/AppleKeyboardBaseline`): deleting into a word it changed, or past it,
+    /// even after typing on, holds that change back while the keyboard runs, for the word typed
+    /// in the same capitals, except the capital of the pronoun "I".
+    private struct WatchedCorrection {
+        /// The text before the corrected words.
+        let precedingText: PrecedingText
+        let insertedText: String
+        /// The changes not deleted into yet.
+        var corrections: [Correction]
+
+        /// How many characters of what the autocorrection inserted `text` still ends with, when
+        /// the user deleted back into them.
+        func keptCount(in text: String) -> Int? {
+            (0...insertedText.count).reversed().first { count in
+                let kept = precedingText.suffix + insertedText.prefix(count)
+                return precedingText.isWhole ? text == kept : text.hasSuffix(kept)
+            }
+        }
+    }
+
+    /// A word typed in place of changes the user deleted into, as the system keyboard watches it:
+    /// deleting on past its start lets those changes apply again, while deleting back only to its
+    /// start or into it does not.
+    private struct ReplacementWord {
+        /// The text before the word.
+        let precedingText: PrecedingText
+        let corrections: [Correction]
+    }
+
     /// A word space finished as typed, which the word after it may still revise.
     private struct RevisableWord {
         let word: String
@@ -50,6 +103,10 @@ public final class PredictiveTypingSession {
     private static let pickedWordSpaceCharacters = try? CharacterList.takingPickedWordSpace()
     private static let spacedFromPickedWordCharacters = try? CharacterList.spacedFromPickedWord()
     private static let noNextWordCharacters = try? CharacterList.withoutNextWords()
+    private static let watchedContext = 24
+    /// How many recent autocorrections, and words typed in place of them, are watched; older ones
+    /// drop off.
+    private static let watchedCorrectionsLimit = 20
 
     private var wordTouches = TypedWordTouches()
     private var lastAutocorrection: AppliedAutocorrection?
@@ -57,6 +114,17 @@ public final class PredictiveTypingSession {
     /// bar offers to undo while the text still ends with the corrected words.
     private var revertibleAutocorrection: AppliedAutocorrection?
     private var revisableWord: RevisableWord?
+    private var watchedCorrections: [WatchedCorrection] = []
+    private var replacementWords: [ReplacementWord] = []
+    /// How long the text before the cursor was when last told, which tells a deletion.
+    private var lastTextCount = 0
+    /// Once the user deleted into or past a word the keyboard changed, the text before the word at
+    /// the cursor, or its last `watchedContext` characters: the word typed there next, unless the
+    /// text is emptied first, takes the change's place, and keeps as typed, at its space and when
+    /// the next word follows, when it is a slip from the change, as on the system keyboard.
+    private var textBeforeReplacedWord: String?
+    /// The changes the user deleted into that the word typed next takes the place of.
+    private var replacedCorrections: [Correction] = []
     /// What the last suggestion-bar tap inserted, ending in the space punctuation replaces.
     private var chosenText: String?
     /// The words the user picked from the suggestion bar in a row, as their taps inserted them;
@@ -105,7 +173,53 @@ public final class PredictiveTypingSession {
         if let chosenText, textBeforeCursor?.hasSuffix(chosenText) != true {
             self.chosenText = nil
         }
+        let text = textBeforeCursor ?? ""
+        // Only a deletion reaches back into a change; emptying the text, as clearing it or
+        // deleting all of it does, turns nothing down and ends the watch on what it held.
+        if text.isEmpty {
+            watchedCorrections = []
+            replacementWords = []
+            textBeforeReplacedWord = nil
+            replacedCorrections = []
+        } else if text.count < lastTextCount {
+            watchDeletion(textBeforeCursor: text)
+        }
+        lastTextCount = text.count
         wordTouches.synchronize(currentWord: TypingTextContext(textBeforeCursor: textBeforeCursor).currentWord)
+    }
+
+    /// Lets changes apply again once the user deletes on past the word typed in their place
+    /// (`ReplacementWord`), holds back each change of a recent autocorrection the user deleted
+    /// into or past (`WatchedCorrection`), and from then on marks where the word typed next starts.
+    private func watchDeletion(textBeforeCursor text: String) {
+        for replacement in replacementWords where replacement.precedingText.isDeletedPast(in: text) {
+            for correction in replacement.corrections {
+                memory.withdrawDeletion(of: correction.correction, typed: correction.typed)
+            }
+        }
+        replacementWords.removeAll { $0.precedingText.isDeletedPast(in: text) }
+
+        var reachedAny = false
+        for index in watchedCorrections.indices {
+            var watched = watchedCorrections[index]
+            guard let kept = watched.keptCount(in: text) ?? (watched.precedingText.isDeletedPast(in: text) ? 0 : nil) else {
+                continue
+            }
+            let deletedInto = watched.corrections.filter { kept < $0.range.upperBound }
+            guard deletedInto.isEmpty == false else { continue }
+            watched.corrections.removeAll { kept < $0.range.upperBound }
+            watchedCorrections[index] = watched
+            for correction in deletedInto where WordCasing.capitalizingPronoun(correction.typed) != correction.correction {
+                memory.recordDeletion(of: correction.correction, typed: correction.typed)
+            }
+            replacedCorrections += deletedInto
+            reachedAny = true
+        }
+        watchedCorrections.removeAll { $0.corrections.isEmpty }
+        if reachedAny || textBeforeReplacedWord != nil {
+            let currentWord = TypingTextContext(textBeforeCursor: text).currentWord
+            textBeforeReplacedWord = String(text.dropLast(currentWord.count).suffix(Self.watchedContext))
+        }
     }
 
     /// Call when the field changes or the keyboard reappears.
@@ -114,6 +228,11 @@ public final class PredictiveTypingSession {
         lastAutocorrection = nil
         revertibleAutocorrection = nil
         revisableWord = nil
+        watchedCorrections = []
+        replacementWords = []
+        lastTextCount = 0
+        textBeforeReplacedWord = nil
+        replacedCorrections = []
         chosenText = nil
         pickedText = ""
     }
@@ -196,7 +315,9 @@ public final class PredictiveTypingSession {
     /// inserts: the autocorrection from `result` when it was computed for this word, and
     /// `revision` in place of the word before it when one was decided, followed by the
     /// separator. Deleting the separator right after keeps what it changed, and the suggestion bar
-    /// then offers to put back what was typed (see `choiceEdit`). Punctuation right after a
+    /// then offers to put back what was typed (see `choiceEdit`); deleting into a word it changed
+    /// holds that change back while the keyboard runs, and a word typed in its place that is a slip
+    /// from it keeps as typed (`WatchedCorrection`). Punctuation right after a
     /// suggestion-bar tap replaces the space the tap added. A word left as typed teaches the
     /// keyboard (see `recordKeptWord`), also where `allowsAutocorrection` is false and `result`
     /// is only read to tell.
@@ -215,22 +336,59 @@ public final class PredictiveTypingSession {
             .flatMap { revisable in
                 revision.flatMap { $0 != revisable.word && allowsAutocorrection ? (revisable, $0) : nil }
             }
-        let autocorrection = allowsAutocorrection ? autocorrection(in: result, for: currentWord) : nil
+        let isTypedInPlace = currentWord.isEmpty == false
+            && textBeforeReplacedWord.map { textBeforeCursor?.hasSuffix($0 + currentWord) == true } == true
+        // The word typed in place of a change keeps as typed when it is a slip from what was typed
+        // there or from the change, and its own correction is held back like one deleted into;
+        // any other word is corrected as usual, as on the system keyboard.
+        let replacesDeletedChange = isTypedInPlace && replacedCorrections.contains { replaced in
+            TypingSlip.isAtMostOne(between: currentWord, and: replaced.typed)
+                || TypingSlip.isAtMostOne(between: currentWord, and: replaced.correction)
+        }
+        let turnedDown = replacesDeletedChange
+            ? self.autocorrection(in: result, for: currentWord)
+                .flatMap { WordCasing.capitalizingPronoun(currentWord) == $0 ? nil : $0 }
+                .map { Correction(typed: currentWord, correction: $0, range: 0..<$0.count) }
+            : nil
+        let autocorrection = allowsAutocorrection && replacesDeletedChange == false
+            ? autocorrection(in: result, for: currentWord)
+            : nil
+        if let turnedDown {
+            memory.recordUndo(of: turnedDown.correction, typed: turnedDown.typed)
+        }
+        if isTypedInPlace {
+            replacementWords.append(ReplacementWord(
+                precedingText: PrecedingText(String((textBeforeCursor ?? "").dropLast(currentWord.count))),
+                corrections: replacedCorrections + (turnedDown.map { [$0] } ?? [])
+            ))
+            if replacementWords.count > Self.watchedCorrectionsLimit {
+                replacementWords.removeFirst(replacementWords.count - Self.watchedCorrectionsLimit)
+            }
+        }
+        textBeforeReplacedWord = nil
+        replacedCorrections = []
         wordTouches.reset()
         lastAutocorrection = nil
         revertibleAutocorrection = nil
         revisableWord = nil
         chosenText = nil
 
-        if autocorrection == nil {
+        // A word kept only because the user deleted into a change of it, there or before, teaches
+        // nothing, as on the system keyboard, and that change is held back for it in any capitals
+        // from then on.
+        let keptForTurnedDownChange = replacesDeletedChange || memory.rejections.hasUndone(currentWord)
+        if autocorrection == nil, keptForTurnedDownChange {
+            memory.recordKeep(of: currentWord)
+        } else if autocorrection == nil {
             recordKeptWord(currentWord, result: result)
         } else if let autocorrection, autocorrection.lowercased() == currentWord.lowercased(),
                   result?.typedWordKind == .unknown {
             // A learned word given the user's capitals is still a use of it.
             recordKeptWord(currentWord, writtenAs: autocorrection, result: result)
         }
-        // A word the user turned a correction of down is not revised by the word after it.
-        if autocorrection == nil, separator == " ", currentWord.isEmpty == false,
+        // A word the user turned a correction of down, or typed in place of a change they
+        // deleted into, is not revised by the word after it.
+        if autocorrection == nil, separator == " ", currentWord.isEmpty == false, replacesDeletedChange == false,
            memory.rejections.corrections(heldBackFor: currentWord, at: now()).isEmpty {
             revisableWord = RevisableWord(
                 word: currentWord,
@@ -248,22 +406,40 @@ public final class PredictiveTypingSession {
                 original: currentWord,
                 correctedText: autocorrection,
                 separator: separator,
-                corrections: [Correction(typed: currentWord, correction: autocorrection)]
+                corrections: [Correction(typed: currentWord, correction: autocorrection, range: 0..<autocorrection.count)]
             )
             lastAutocorrection = applied
+            watchDeletion(from: applied, textBefore: String((textBeforeCursor ?? "").dropLast(currentWord.count)))
             return TextEdit(deleteCount: currentWord.count, insertText: applied.insertedText)
         }
         let (previous, replacement) = revised
         let original = previous.word + " " + currentWord
+        let correctedText = replacement + " " + (autocorrection ?? currentWord)
         let applied = AppliedAutocorrection(
             original: original,
-            correctedText: replacement + " " + (autocorrection ?? currentWord),
+            correctedText: correctedText,
             separator: separator,
-            corrections: [Correction(typed: previous.word, correction: replacement)]
-                + (autocorrection.map { [Correction(typed: currentWord, correction: $0)] } ?? [])
+            corrections: [Correction(typed: previous.word, correction: replacement, range: 0..<replacement.count)]
+                + (autocorrection.map {
+                    [Correction(typed: currentWord, correction: $0, range: (replacement.count + 1)..<correctedText.count)]
+                } ?? [])
         )
         lastAutocorrection = applied
+        watchDeletion(from: applied, textBefore: String((textBeforeCursor ?? "").dropLast(original.count)))
         return TextEdit(deleteCount: original.count, insertText: applied.insertedText)
+    }
+
+    /// Watches for the user deleting back into `applied`, which follows `textBefore`
+    /// (`WatchedCorrection`).
+    private func watchDeletion(from applied: AppliedAutocorrection, textBefore: String) {
+        watchedCorrections.append(WatchedCorrection(
+            precedingText: PrecedingText(textBefore),
+            insertedText: applied.insertedText,
+            corrections: applied.corrections
+        ))
+        if watchedCorrections.count > Self.watchedCorrectionsLimit {
+            watchedCorrections.removeFirst(watchedCorrections.count - Self.watchedCorrectionsLimit)
+        }
     }
 
     /// What typing `character`, one that does not end a word, does right after a word picked from
