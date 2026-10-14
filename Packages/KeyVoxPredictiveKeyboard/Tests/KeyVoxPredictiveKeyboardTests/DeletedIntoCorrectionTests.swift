@@ -1,10 +1,10 @@
 import XCTest
 @testable import KeyVoxPredictiveKeyboard
 
-/// Deleting into a word the keyboard changed, as the system keyboard was seen handling it: the
-/// change is held back while the keyboard runs, and the word typed in its place keeps as typed.
-/// Nothing is saved, so the change applies again once the keyboard restarts. The pronoun "I"'s
-/// capital is not held back.
+/// Deleting into a word the keyboard changed, or past it, even after typing on, as the system
+/// keyboard was seen handling it: the change is held back while the keyboard runs, and the word
+/// typed in its place keeps as typed. Nothing is saved or learned, so the change applies again
+/// once the keyboard restarts. The pronoun "I"'s capital is not held back.
 final class DeletedIntoCorrectionTests: XCTestCase {
     private var computer: PredictionComputer!
 
@@ -65,6 +65,80 @@ final class DeletedIntoCorrectionTests: XCTestCase {
         XCTAssertEqual(typing.text, "so i I ")
     }
 
+    /// Typing on after a change and deleting back into it holds the change back, also after a
+    /// comma.
+    func testDeletingBackIntoAChangeAfterTypingOnHoldsItBack() throws {
+        let typing = typing(TypingMemory())
+        try typing.words(["so", "recieve"])
+        typing.type("the")
+        typing.delete("the".count + "eive ".count)
+        typing.type("ieve")
+        try typing.space()
+        try typing.words(["recieve"])
+        XCTAssertEqual(typing.text, "so recieve recieve ")
+
+        let comma = self.typing(TypingMemory())
+        try comma.words(["so"])
+        comma.type("recieve")
+        try comma.end(with: ",")
+        comma.type(" ")
+        XCTAssertEqual(comma.text, "so receive, ")
+        comma.delete(", ".count + "eive".count)
+        comma.type("ieve")
+        try comma.end(with: ",")
+        XCTAssertEqual(comma.text, "so recieve,")
+    }
+
+    /// Deleting back through a later change into an earlier one holds both back.
+    func testDeletingIntoTheEarlierOfTwoChangesHoldsBoth() throws {
+        let typing = typing(TypingMemory())
+        try typing.words(["so", "recieve", "teh"])
+        XCTAssertEqual(typing.text, "so receive the ")
+        typing.delete("the ".count + "eive ".count)
+        typing.type("ieve")
+        try typing.space()
+        try typing.words(["teh", "recieve"])
+        XCTAssertEqual(typing.text, "so recieve teh recieve ")
+    }
+
+    /// Deleting on past the start of a change holds it back, and the word typed in its place
+    /// keeps.
+    func testDeletingPastAChangeHoldsItBack() throws {
+        let typing = typing(TypingMemory())
+        try typing.words(["so", "the", "recieve"])
+        typing.delete(" receive ".count)
+        try typing.space()
+        try typing.words(["recieve", "recieve"])
+        XCTAssertEqual(typing.text, "so the recieve recieve ")
+    }
+
+    /// A word kept because its change was held back is not learned, so the change applies again
+    /// once the keyboard restarts.
+    func testWordKeptForAHeldBackChangeIsNotLearned() throws {
+        let memory = TypingMemory()
+        let typing = typing(memory)
+        try typing.words(["so", "recieve"])
+        typing.delete("eive ".count)
+        typing.type("ieve")
+        try typing.space()
+        try typing.words(["recieve", "recieve"])
+        XCTAssertFalse(memory.learnedWords.contains("recieve"))
+
+        let restarted = self.typing(TypingMemory(saved: memory.saved))
+        try restarted.words(["so", "recieve"])
+        XCTAssertEqual(restarted.text, "so receive ")
+    }
+
+    /// Clearing the text, or typing a new text that starts as an earlier one did, turns no change
+    /// down.
+    func testClearingOrRetypingTheStartOfATextHoldsNothingBack() throws {
+        let typing = typing(TypingMemory())
+        try typing.words(["so", "recieve"])
+        typing.clear()
+        try typing.words(["so", "recieve"])
+        XCTAssertEqual(typing.text, "so receive ")
+    }
+
     /// Deleting only the space after a change holds nothing back.
     func testDeletingOnlyTheSpaceHoldsNothingBack() throws {
         let typing = typing(TypingMemory())
@@ -99,6 +173,12 @@ final class DeletedIntoCorrectionTests: XCTestCase {
             }
         }
 
+        /// Empties the text at once, as a field's clear button does.
+        func clear() {
+            text = ""
+            session.textDidChange(textBeforeCursor: text)
+        }
+
         func delete(_ count: Int) {
             for _ in 0..<count {
                 text.removeLast()
@@ -107,10 +187,15 @@ final class DeletedIntoCorrectionTests: XCTestCase {
         }
 
         func space() throws {
+            try end(with: " ")
+        }
+
+        /// Ends the word with `separator`, as space or punctuation does.
+        func end(with separator: String) throws {
             let result = try computer.compute(session.request(textBeforeCursor: text))
             let revision = try session.revisionRequest(textBeforeCursor: text, result: result)
                 .flatMap { try computer.revision(for: $0) }
-            let edit = session.wordBoundaryEdit(separator: " ", textBeforeCursor: text, result: result, revision: revision)
+            let edit = session.wordBoundaryEdit(separator: separator, textBeforeCursor: text, result: result, revision: revision)
             text = String(text.dropLast(edit.deleteCount)) + edit.insertText
             session.textDidChange(textBeforeCursor: text)
         }

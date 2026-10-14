@@ -92,6 +92,12 @@ public struct CorrectionRejections: Sendable, Equatable {
         rejections[pair] = nil
     }
 
+    /// Whether the user undid a correction of `typed` while the keyboard ran.
+    public func hasUndone(_ typed: String) -> Bool {
+        let typedKey = PersonalVocabulary.key(typed)
+        return undone.contains { $0.typed == typedKey }
+    }
+
     /// Whether the user turned `correction` of `typed` down, for now or for good.
     public func remembers(_ correction: String, of typed: String) -> Bool {
         let pair = Pair(typed: typed, correction: correction)
