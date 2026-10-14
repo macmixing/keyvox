@@ -239,11 +239,19 @@ final class KeyboardTextInputController {
             let following = (documentProxy.documentContextAfterInput ?? "").prefix(edit.deleteAfterCount)
             documentProxy.adjustTextPosition(byCharacterOffset: following.utf16.count)
         }
-        for _ in 0..<(edit.deleteCount + edit.deleteAfterCount) {
+        // Only the end of the replaced text that the edit changes is deleted and typed again, so an
+        // edit that keeps the start of a field never empties it: Gmail's message body dropped the
+        // space after "I'm" when the edit deleted "Im" whole first.
+        let replaced = (documentProxy.documentContextBeforeInput ?? "").suffix(edit.deleteCount)
+        let keptCount = edit.deleteAfterCount == 0 && replaced.count == edit.deleteCount
+            ? zip(replaced, edit.insertText).prefix { $0 == $1 }.count
+            : 0
+        for _ in 0..<(edit.deleteCount - keptCount + edit.deleteAfterCount) {
             documentProxy.deleteBackward()
         }
-        if edit.insertText.isEmpty == false {
-            documentProxy.insertText(edit.insertText)
+        let inserted = edit.insertText.dropFirst(keptCount)
+        if inserted.isEmpty == false {
+            documentProxy.insertText(String(inserted))
         }
     }
 
