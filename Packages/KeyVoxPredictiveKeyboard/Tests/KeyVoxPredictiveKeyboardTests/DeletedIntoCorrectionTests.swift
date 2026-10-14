@@ -4,7 +4,8 @@ import XCTest
 /// Deleting into a word the keyboard changed, or past it, even after typing on, as the system
 /// keyboard was seen handling it: the change is held back while the keyboard runs, and the word
 /// typed in its place keeps as typed. Nothing is saved or learned, so the change applies again
-/// once the keyboard restarts. The pronoun "I"'s capital is not held back.
+/// once the keyboard restarts, or once the user deletes on past the word typed in its place. The
+/// pronoun "I"'s capital is not held back.
 final class DeletedIntoCorrectionTests: XCTestCase {
     private var computer: PredictionComputer!
 
@@ -137,6 +138,79 @@ final class DeletedIntoCorrectionTests: XCTestCase {
         typing.clear()
         try typing.words(["so", "recieve"])
         XCTAssertEqual(typing.text, "so receive ")
+    }
+
+    /// A change deleted into is held back only for the word typed in the same capitals until the
+    /// user keeps the word for it, and then in any capitals; the word typed first after emptying
+    /// the text is not typed in its place.
+    func testHeldBackChangeReachesOtherCapitalsOnceTheWordIsKept() throws {
+        let typing = typing(TypingMemory())
+        try typing.words(["so", "the", "recieve"])
+        typing.delete(typing.text.count)
+        try typing.words(["Recieve"])
+        XCTAssertEqual(typing.text, "Receive ")
+        try typing.words(["recieve"])
+        XCTAssertEqual(typing.text, "Receive recieve ")
+        typing.clear()
+        try typing.words(["Recieve"])
+        XCTAssertEqual(typing.text, "Recieve ")
+    }
+
+    /// The word typed first after deleting past a change keeps as typed wherever it starts, even
+    /// in other capitals.
+    func testWordTypedFirstAfterDeletingPastAChangeKeeps() throws {
+        let typing = typing(TypingMemory())
+        typing.type("Ok")
+        try typing.end(with: ".")
+        typing.type(" ")
+        try typing.words(["the", "recieve"])
+        XCTAssertEqual(typing.text, "Ok. the receive ")
+        typing.delete("the receive ".count)
+        try typing.words(["Recieve"])
+        XCTAssertEqual(typing.text, "Ok. Recieve ")
+    }
+
+    /// Deleting on past the start of the word typed in place of a change lets the change apply
+    /// again; deleting back only to its start does not.
+    func testDeletingPastTheWordTypedInPlaceLetsTheChangeApplyAgain() throws {
+        let past = typing(TypingMemory())
+        try past.words(["so", "the", "recieve"])
+        past.delete("eive ".count)
+        past.type("ieve")
+        try past.space()
+        past.delete("he recieve ".count)
+        past.type("he")
+        try past.space()
+        try past.words(["recieve"])
+        XCTAssertEqual(past.text, "so the receive ")
+
+        let toStart = typing(TypingMemory())
+        try toStart.words(["so", "recieve"])
+        toStart.delete("eive ".count)
+        toStart.type("ieve")
+        try toStart.space()
+        toStart.delete("recieve ".count)
+        try toStart.words(["recieve"])
+        XCTAssertEqual(toStart.text, "so recieve ")
+    }
+
+    /// The word typed in place of a change keeps as typed when it is a slip from the word typed
+    /// there or from the change, and keeps later too; another word is corrected as usual.
+    func testWordTypedInPlaceKeepsOnlyWhenASlipFromTheChange() throws {
+        let slip = typing(TypingMemory())
+        try slip.words(["so", "recieve"])
+        slip.delete("eive ".count)
+        slip.type("ive")
+        try slip.space()
+        try slip.words(["recive"])
+        XCTAssertEqual(slip.text, "so recive recive ")
+
+        let other = typing(TypingMemory())
+        try other.words(["so", "recieve"])
+        other.delete("eive ".count)
+        other.type("cent")
+        try other.space()
+        XCTAssertEqual(other.text, "so recent ")
     }
 
     /// Deleting only the space after a change holds nothing back.

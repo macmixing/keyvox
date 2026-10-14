@@ -117,6 +117,18 @@ public final class TypingMemory {
         rejections.recordUndo(of: correction, typed: typed)
     }
 
+    func recordDeletion(of correction: String, typed: String) {
+        rejections.recordDeletion(of: correction, typed: typed)
+    }
+
+    func recordKeep(of typed: String) {
+        rejections.recordKeep(of: typed)
+    }
+
+    func withdrawDeletion(of correction: String, typed: String) {
+        rejections.withdrawDeletion(of: correction, typed: typed)
+    }
+
     func recordRejection(of correction: String, typed: String, at date: Date) {
         rejections.recordRejection(of: correction, typed: typed, at: date)
         onChange?(false)
