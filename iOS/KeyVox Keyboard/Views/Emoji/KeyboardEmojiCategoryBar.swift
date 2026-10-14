@@ -25,12 +25,22 @@ final class KeyboardEmojiCategoryBar: UIView {
     var onCategory: ((EmojiKeyboardCategory) -> Void)?
     var onDeleteBegan: (() -> Void)?
     var onDeleteEnded: (() -> Void)?
+    /// Called as a finger slides along the category buttons, with how far along it is: 0 at the
+    /// first button's leading edge, 1 at the last one's trailing edge (`KeyboardEmojiCategoryBar+Scrub`).
+    var onScrub: ((CGFloat) -> Void)?
+    /// Called when the sliding finger lifts, before the bar circles the category showing.
+    var onScrubEnded: (() -> Void)?
 
     private let lettersButton = UIButton(type: .system)
     private let deleteButton = UIButton(type: .system)
-    private let categoryStack = UIStackView()
-    private var categoryButtons: [(category: EmojiKeyboardCategory, button: UIButton)] = []
-    private let selectionView = UIView()
+    let categoryStack = UIStackView()
+    private(set) var categoryButtons: [(category: EmojiKeyboardCategory, button: UIButton)] = []
+    let selectionView = UIView()
+    /// The band behind every category button while a finger slides along them.
+    let scrubView = UIView()
+    var isScrubbing = false
+    /// The category circled, or to circle once a slide ends.
+    private(set) var selectedCategory: EmojiKeyboardCategory?
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -54,12 +64,18 @@ final class KeyboardEmojiCategoryBar: UIView {
         selectionView.layer.cornerRadius = Drawn.selectionDiameter / 2
         selectionView.isUserInteractionEnabled = false
         selectionView.isHidden = true
+        scrubView.backgroundColor = .tertiarySystemFill
+        scrubView.layer.cornerRadius = Drawn.selectionDiameter / 2
+        scrubView.isUserInteractionEnabled = false
+        scrubView.isHidden = true
 
         for view in [lettersButton, categoryStack, deleteButton] as [UIView] {
             view.translatesAutoresizingMaskIntoConstraints = false
             addSubview(view)
         }
         insertSubview(selectionView, belowSubview: categoryStack)
+        insertSubview(scrubView, belowSubview: categoryStack)
+        configureScrub()
         NSLayoutConstraint.activate([
             lettersButton.leadingAnchor.constraint(equalTo: leadingAnchor),
             lettersButton.topAnchor.constraint(equalTo: topAnchor),
@@ -95,24 +111,33 @@ final class KeyboardEmojiCategoryBar: UIView {
         }
     }
 
-    /// Circles `category`'s button, or none.
+    /// Circles `category`'s button, or none; while a finger slides along the buttons, only once it
+    /// lifts.
     func select(_ category: EmojiKeyboardCategory?) {
-        guard let button = categoryButtons.first(where: { $0.category == category })?.button else {
+        selectedCategory = category
+        for (other, otherButton) in categoryButtons {
+            otherButton.accessibilityTraits = other == category ? [.button, .selected] : .button
+        }
+        guard isScrubbing == false else { return }
+        guard let frame = selectionFrame(for: category) else {
             selectionView.isHidden = true
             return
         }
+        selectionView.frame = frame
+        selectionView.isHidden = false
+    }
+
+    /// Where the circle around `category`'s button goes, in the bar's coordinates.
+    func selectionFrame(for category: EmojiKeyboardCategory?) -> CGRect? {
+        guard let button = categoryButtons.first(where: { $0.category == category })?.button else { return nil }
         layoutIfNeeded()
         let center = categoryStack.convert(button.center, to: self)
-        selectionView.frame = CGRect(
+        return CGRect(
             x: center.x - (Drawn.selectionDiameter / 2),
             y: center.y - (Drawn.selectionDiameter / 2),
             width: Drawn.selectionDiameter,
             height: Drawn.selectionDiameter
         )
-        selectionView.isHidden = false
-        for (other, otherButton) in categoryButtons {
-            otherButton.accessibilityTraits = other == category ? [.button, .selected] : .button
-        }
     }
 
     @objc private func handleLetters() {

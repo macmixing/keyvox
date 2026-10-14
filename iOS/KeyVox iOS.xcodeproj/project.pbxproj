@@ -213,6 +213,7 @@
 				Views/Components/KeyboardSuggestionBarView.swift,
 				Views/Components/KeyboardVibesButton.swift,
 				Views/Emoji/KeyboardEmojiCategoryBar.swift,
+				"Views/Emoji/KeyboardEmojiCategoryBar+Scrub.swift",
 				Views/Emoji/KeyboardEmojiCategoryStyle.swift,
 				Views/Emoji/KeyboardEmojiCell.swift,
 				Views/Emoji/KeyboardEmojiGridLayout.swift,

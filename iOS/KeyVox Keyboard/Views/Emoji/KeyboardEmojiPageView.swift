@@ -84,6 +84,12 @@ final class KeyboardEmojiPageView: UIView {
         categoryBar.onCategory = { [weak self] category in
             self?.scroll(to: category)
         }
+        categoryBar.onScrub = { [weak self] fraction in
+            self?.scrub(to: fraction)
+        }
+        categoryBar.onScrubEnded = { [weak self] in
+            self?.selectCategory()
+        }
         addSubview(collectionView)
         addSubview(categoryBar)
         configureSkinTonePicker()
@@ -135,6 +141,13 @@ final class KeyboardEmojiPageView: UIView {
         let maximumOffset = max(0, collectionView.contentSize.width - collectionView.bounds.width)
         collectionView.setContentOffset(CGPoint(x: min(offset, maximumOffset), y: 0), animated: false)
         selectCategory()
+    }
+
+    /// Scrolls the grid as far along its emoji as a finger sliding along the category bar is along
+    /// the bar, as on the system keyboard (`KeyboardEmojiCategoryBar+Scrub`).
+    private func scrub(to fraction: CGFloat) {
+        let maximumOffset = max(0, collectionView.contentSize.width - collectionView.bounds.width)
+        collectionView.setContentOffset(CGPoint(x: (fraction * maximumOffset).rounded(), y: 0), animated: false)
     }
 
     /// Circles the category at the grid's leading edge and remembers where the grid is in it.
