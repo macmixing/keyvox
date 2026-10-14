@@ -12,7 +12,10 @@ import XCTest
 ///   `TEST_RUNNER_BASELINE_AUTOCAPITALIZE=1` to capitalize sentences, as most apps do, and
 ///   `TEST_RUNNER_BASELINE_SMART_QUOTES=1` to turn the text view's smart quotes on.
 /// - `type` with `text`: taps the letters at their key centers.
+/// - `tapLetter` with `text`, `dx`, and `dy`: taps that letter's key that many key widths and
+///   heights from its center, as a slip toward a neighboring key lands.
 /// - `space`, `delete`, `shift`: taps that key; `shift` before a letter types it as a capital.
+/// - `holdDelete` with `seconds`: holds the delete key down that long.
 /// - `page` with `name`: shows the keyboard's `letters`, `numbers`, or `symbols` page.
 /// - `tapKey` with `label`: taps the key with that label on the page showing.
 /// - `holdKey` with `label`, `dx`, and `dy`: holds that key until its popup opens, then slides
@@ -93,6 +96,9 @@ final class CorrectionMemoryProbeTests: XCTestCase {
                 for letter in try XCTUnwrap(step.text, context) {
                     current.tap(at: try XCTUnwrap(current.keyMap.point(for: letter, offset: [0, 0]), context))
                 }
+            case "tapLetter":
+                let letter = try XCTUnwrap(step.text?.first, context)
+                current.tap(at: try XCTUnwrap(current.keyMap.point(for: letter, offset: [step.dx ?? 0, step.dy ?? 0]), context))
             case "space":
                 current.tap(at: current.keyMap.spaceCenter)
             case "delete", "shift":
@@ -101,6 +107,11 @@ final class CorrectionMemoryProbeTests: XCTestCase {
                     .matching(NSPredicate(format: "label IN %@", [step.do, step.do.capitalized]))
                     .firstMatch
                     .tap()
+            case "holdDelete":
+                current.app.descendants(matching: .any)
+                    .matching(NSPredicate(format: "label IN %@", ["delete", "Delete"]))
+                    .firstMatch
+                    .press(forDuration: try XCTUnwrap(step.seconds, context))
             case "page":
                 try current.openPage(try XCTUnwrap(step.name, context))
             case "tapKey":
