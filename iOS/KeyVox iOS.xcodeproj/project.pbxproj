@@ -145,6 +145,7 @@
 				Core/Emoji/KeyboardEmojiFrequentlyUsedStore.swift,
 				Core/Emoji/KeyboardEmojiGridGeometry.swift,
 				Core/Emoji/KeyboardEmojiPanel.swift,
+				Core/Emoji/KeyboardEmojiPredictionsIndex.swift,
 				Core/Emoji/KeyboardEmojiSearchGeometry.swift,
 				Core/Emoji/KeyboardEmojiSearchIndex.swift,
 				Core/Emoji/KeyboardEmojiSearchSkinTonePickerLayout.swift,

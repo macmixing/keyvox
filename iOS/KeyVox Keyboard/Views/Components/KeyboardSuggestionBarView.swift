@@ -2,28 +2,36 @@ import KeyVoxPredictiveKeyboard
 import UIKit
 
 /// The three suggestion slots shown above the letter keys: leading, primary (center),
-/// and trailing. The autocorrection space will apply is shown in a heavier weight.
+/// and trailing. The autocorrection space will apply is shown in a heavier weight. The trailing
+/// slot splits evenly among the bar's emoji when it has any, as on the system keyboard.
 final class KeyboardSuggestionBarView: UIView {
     var onItemSelected: ((SuggestionBar.Item) -> Void)?
     /// Called when a suggestion is pressed and held, instead of selecting it.
     var onItemLongPressed: ((SuggestionBar.Item) -> Void)?
 
+    /// The most emoji the trailing slot holds.
+    private static let emojiSlots = 3
+
     private let stackView = UIStackView()
+    private let trailingSlot = UIStackView()
+    /// The leading, primary, and trailing buttons, then the trailing slot's emoji buttons.
     private var buttons: [UIButton] = []
-    private var items: [SuggestionBar.Item?] = [nil, nil, nil]
+    private var items: [SuggestionBar.Item?] = Array(repeating: nil, count: 3 + emojiSlots)
 
     override init(frame: CGRect) {
         super.init(frame: frame)
         translatesAutoresizingMaskIntoConstraints = false
 
-        stackView.axis = .horizontal
-        stackView.alignment = .fill
-        stackView.distribution = .fillEqually
-        stackView.spacing = KeyboardStyle.keySpacing
+        for stack in [stackView, trailingSlot] {
+            stack.axis = .horizontal
+            stack.alignment = .fill
+            stack.distribution = .fillEqually
+            stack.spacing = KeyboardStyle.keySpacing
+        }
         stackView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(stackView)
 
-        for index in 0..<3 {
+        for index in 0..<(3 + Self.emojiSlots) {
             var configuration = UIButton.Configuration.plain()
             configuration.contentInsets = NSDirectionalEdgeInsets(top: 4, leading: 6, bottom: 4, trailing: 6)
             configuration.titleLineBreakMode = .byTruncatingTail
@@ -41,9 +49,15 @@ final class KeyboardSuggestionBarView: UIView {
             button.configurationUpdateHandler = { [weak self] button in
                 self?.applyAppearance(to: button)
             }
-            stackView.addArrangedSubview(button)
+            if index < 2 {
+                stackView.addArrangedSubview(button)
+            } else {
+                trailingSlot.addArrangedSubview(button)
+                button.isHidden = index > 2
+            }
             buttons.append(button)
         }
+        stackView.addArrangedSubview(trailingSlot)
 
         NSLayoutConstraint.activate([
             stackView.leadingAnchor.constraint(equalTo: leadingAnchor),
@@ -63,10 +77,17 @@ final class KeyboardSuggestionBarView: UIView {
     }
 
     func apply(_ bar: SuggestionBar) {
+        let emoji = bar.emoji.prefix(Self.emojiSlots)
         let newItems = [bar.leading, bar.primary, bar.trailing]
+            + (0..<Self.emojiSlots).map { emoji.indices.contains($0) ? emoji[$0] : nil }
         guard newItems != items else { return }
         let oldItems = items
         items = newItems
+        // The trailing slot shows its word, or as many emoji buttons as there are emoji.
+        buttons[2].isHidden = emoji.isEmpty == false
+        for slot in 0..<Self.emojiSlots {
+            buttons[3 + slot].isHidden = slot >= emoji.count
+        }
         // Restyling a button lays it out again, so only slots whose suggestion changed are
         // restyled; the others already show their suggestion in its colors.
         for (index, button) in buttons.enumerated() where newItems[index] != oldItems[index] {

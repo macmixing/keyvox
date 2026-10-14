@@ -71,6 +71,13 @@ extension KeyboardViewController {
         emojiPanel = .closed
     }
 
+    /// The emoji the suggestion bar offers for `word`, in the skin tones the user chose, the ones
+    /// they used most first, as on the system keyboard.
+    func barEmoji(for word: String) -> [String] {
+        let emoji = KeyboardEmojiPredictionsIndex.shared.emoji(for: word).map { emojiSkinToneStore.chosenTones[$0] ?? $0 }
+        return emojiFrequentlyUsedStore.frequentlyUsed.ordering(emoji)
+    }
+
     /// Remembers `version` for `emoji`, which the page and the search then show it in.
     func chooseEmojiSkinTone(_ version: String, for emoji: String) {
         emojiSkinToneStore.choose(version, for: emoji)
@@ -90,6 +97,7 @@ extension KeyboardViewController {
         }
         characterKeyHaptics.emitKeypressIfEnabled()
         emojiFrequentlyUsedStore.recordUse(of: emoji)
+        KeyboardEmojiPredictionsIndex.shared.recordTypedEmoji()
         handleTypingContextChange()
     }
 

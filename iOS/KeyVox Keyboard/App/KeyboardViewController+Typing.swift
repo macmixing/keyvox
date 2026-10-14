@@ -16,6 +16,7 @@ extension KeyboardViewController {
             predictionCoordinator.prepare()
             applyLearnedVocabulary()
             loadPersonalVocabulary()
+            loadEmojiPredictions()
         }
         letterCaseController.reset()
         synchronizeLetterCase()
@@ -155,6 +156,10 @@ extension KeyboardViewController {
         textInputController.apply(
             predictionCoordinator.choiceEdit(item, allowsAutocorrection: typingTraits.allowsAutocorrection)
         )
+        // An emoji picked from the bar counts toward Frequently Used, as on the system keyboard.
+        if item.kind == .emoji {
+            emojiFrequentlyUsedStore.recordUse(of: item.text)
+        }
         handleTypingContextChange()
     }
 
@@ -188,6 +193,17 @@ extension KeyboardViewController {
     func learnedVocabularyDidChange() {
         applyLearnedVocabulary()
         refreshPredictions()
+    }
+
+    /// Hands the suggestions the emoji the bar offers for a word (`barEmoji(for:)`), and shows them
+    /// once they are read.
+    private func loadEmojiPredictions() {
+        predictionCoordinator.emojiForWord = { [weak self] word in
+            self?.barEmoji(for: word) ?? []
+        }
+        KeyboardEmojiPredictionsIndex.shared.load { [weak self] in
+            self?.refreshPredictions()
+        }
     }
 
     /// Hands the suggestions what the keyboard learned from the user's typing.

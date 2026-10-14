@@ -15,6 +15,8 @@ import KeyVoxPredictiveKeyboard
 /// one, such as delete, never waits for suggestions still being worked out.
 final class KeyboardPredictionCoordinator {
     var onBarChange: ((SuggestionBar) -> Void)?
+    /// The emoji the suggestion bar shows for a word, in the order to show them.
+    var emojiForWord: (String) -> [String] = { _ in [] }
 
     private let session: PredictiveTypingSession
     private let engine = KeyboardPredictionEngine(label: "org.keyvox.keyboard.prediction", qos: .userInitiated)
@@ -140,14 +142,14 @@ final class KeyboardPredictionCoordinator {
     /// Requests suggestions for the text as it is now.
     func refresh(allowsAutocorrection: Bool) {
         let text = textBeforeCursor()
-        let request = session.request(
-            textBeforeCursor: text,
-            selectedText: selectedText(),
-            textAfterCursor: textAfterCursor()
-        )
+        let selected = selectedText()
+        let after = textAfterCursor()
+        let request = session.request(textBeforeCursor: text, selectedText: selected, textAfterCursor: after)
+        let emoji = session.emojiWord(textBeforeCursor: text, selectedText: selected, textAfterCursor: after)
+            .map(emojiForWord) ?? []
         newestRequest = request
         if let latestResult, latestResult.request == request {
-            publish(Self.bar(for: latestResult, allowsAutocorrection: allowsAutocorrection))
+            publish(Self.bar(for: latestResult, allowsAutocorrection: allowsAutocorrection).showing(emoji: emoji))
             return
         }
         guard request != pendingRequest else { return }
@@ -161,7 +163,7 @@ final class KeyboardPredictionCoordinator {
                 }
                 guard self.newestRequest == request else { return }
                 self.latestResult = result
-                self.publish(Self.bar(for: result, allowsAutocorrection: allowsAutocorrection))
+                self.publish(Self.bar(for: result, allowsAutocorrection: allowsAutocorrection).showing(emoji: emoji))
                 if allowsAutocorrection, request.currentWord.isEmpty == false {
                     self.prepareRevision(self.session.revisionRequest(textBeforeCursor: text, result: result))
                 }
