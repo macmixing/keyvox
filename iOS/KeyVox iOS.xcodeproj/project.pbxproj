@@ -34,8 +34,6 @@
 		9B5200042FB2000100AA0001 /* KeyVoxVibesAdapters in Frameworks */ = {isa = PBXBuildFile; productRef = 9B5200032FB2000100AA0001 /* KeyVoxVibesAdapters */; };
 		A7E100032FF5000100AA0001 /* KeyVoxPredictiveKeyboard in Frameworks */ = {isa = PBXBuildFile; productRef = A7E100022FF5000100AA0001 /* KeyVoxPredictiveKeyboard */; };
 		A7E100042FF5000100AA0001 /* KeyVoxPredictiveKeyboard in Frameworks */ = {isa = PBXBuildFile; productRef = A7E100022FF5000100AA0001 /* KeyVoxPredictiveKeyboard */; };
-		E3A100032FF6000100AA0001 /* KeyVoxEmoji in Frameworks */ = {isa = PBXBuildFile; productRef = E3A100022FF6000100AA0001 /* KeyVoxEmoji */; };
-		E3A100042FF6000100AA0001 /* KeyVoxEmoji in Frameworks */ = {isa = PBXBuildFile; productRef = E3A100022FF6000100AA0001 /* KeyVoxEmoji */; };
 		B4C200012FF2000100AA0001 /* KeyVoxTextComposition in Frameworks */ = {isa = PBXBuildFile; productRef = B4C200032FF2000100AA0001 /* KeyVoxTextComposition */; };
 		B4C200022FF2000100AA0001 /* KeyVoxTextComposition in Frameworks */ = {isa = PBXBuildFile; productRef = B4C200032FF2000100AA0001 /* KeyVoxTextComposition */; };
 		C10000012FF0000100AA0001 /* KeyVoxCore in Frameworks */ = {isa = PBXBuildFile; productRef = 8E9E38952F5BF56600EAFA72 /* KeyVoxCore */; };
@@ -45,6 +43,8 @@
 		D10000032FF4000100AA0001 /* KeyVoxVoiceActivity in Frameworks */ = {isa = PBXBuildFile; productRef = D10000092FF4000100AA0001 /* KeyVoxVoiceActivity */; };
 		D20000012FF5000100AA0001 /* averaged-perceptron-tagger-eng in Resources */ = {isa = PBXBuildFile; fileRef = D20000032FF5000100AA0001 /* averaged-perceptron-tagger-eng */; };
 		D20000022FF5000100AA0001 /* wordnet-3.0 in Resources */ = {isa = PBXBuildFile; fileRef = D20000042FF5000100AA0001 /* wordnet-3.0 */; };
+		E3A100032FF6000100AA0001 /* KeyVoxEmoji in Frameworks */ = {isa = PBXBuildFile; productRef = E3A100022FF6000100AA0001 /* KeyVoxEmoji */; };
+		E3A100042FF6000100AA0001 /* KeyVoxEmoji in Frameworks */ = {isa = PBXBuildFile; productRef = E3A100022FF6000100AA0001 /* KeyVoxEmoji */; };
 		F41000012FF3000100AA0001 /* KeyVoxPromotions in Frameworks */ = {isa = PBXBuildFile; productRef = F41000032FF3000100AA0001 /* KeyVoxPromotions */; };
 /* End PBXBuildFile section */
 
@@ -1363,10 +1363,6 @@
 			isa = XCLocalSwiftPackageReference;
 			relativePath = ../Packages/KeyVoxPredictiveKeyboard;
 		};
-		E3A100012FF6000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxEmoji" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = ../Packages/KeyVoxEmoji;
-		};
 		B4C200042FF2000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxTextComposition" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = ../Packages/KeyVoxTextComposition;
@@ -1382,6 +1378,10 @@
 		D10000062FF4000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxVoiceActivity" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = ../Packages/KeyVoxVoiceActivity;
+		};
+		E3A100012FF6000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxEmoji" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../Packages/KeyVoxEmoji;
 		};
 		F41000022FF3000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxPromotions" */ = {
 			isa = XCLocalSwiftPackageReference;
@@ -1453,11 +1453,6 @@
 			package = A7E100012FF5000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxPredictiveKeyboard" */;
 			productName = KeyVoxPredictiveKeyboard;
 		};
-		E3A100022FF6000100AA0001 /* KeyVoxEmoji */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = E3A100012FF6000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxEmoji" */;
-			productName = KeyVoxEmoji;
-		};
 		B4C200032FF2000100AA0001 /* KeyVoxTextComposition */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = B4C200042FF2000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxTextComposition" */;
@@ -1477,6 +1472,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = D10000062FF4000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxVoiceActivity" */;
 			productName = KeyVoxVoiceActivity;
+		};
+		E3A100022FF6000100AA0001 /* KeyVoxEmoji */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E3A100012FF6000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxEmoji" */;
+			productName = KeyVoxEmoji;
 		};
 		F41000032FF3000100AA0001 /* KeyVoxPromotions */ = {
 			isa = XCSwiftPackageProductDependency;
