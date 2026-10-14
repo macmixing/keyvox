@@ -7,6 +7,9 @@ import XCTest
 /// "reopen" goes to the letters and back to the emoji keyboard, and "record:<name>" scrolls to
 /// the section and records its emoji, column by column, and "shot:<name>" saves a screenshot next
 /// to the output; "wait:<seconds>" waits; "swipe" scrolls the grid about 200 points onward;
+/// "drag:<x1>:<y1>:<x2>:<y2>:<slide seconds>:<rest seconds>" slides a finger between two points;
+/// "seek:<emoji>[:<y>]" swipes onward until that emoji shows, with "swipe:<y>" dragging at the
+/// section titles' height on a keyboard whose titles sit elsewhere;
 /// "press:<emoji>:<seconds>" holds a finger on an emoji shown on screen;
 /// "slide:<emoji>:<seconds>:<x>:<y>" holds it that long, then slides to that screen point and lifts;
 /// "slideby:<emoji>:<seconds>:<dx>:<dy>:<rest>" holds it, slides that far from its center, and rests
@@ -38,6 +41,13 @@ final class EmojiFrequentlyUsedProbeTests: XCTestCase {
             XCTAssertTrue(KeyboardSwitcher.switchToSystemKeyboard(in: app))
         }
 
+        func swipe(atY y: Double = 553) {
+            // In the band of section titles, so the drag scrolls rather than presses an emoji; on the
+            // system keyboard of a 402-point-wide iPhone that band sits at 553 points.
+            let start = app.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(dx: 340, dy: y))
+            start.press(forDuration: 0.05, thenDragTo: start.withOffset(CGVector(dx: -200, dy: 0)), withVelocity: 300, thenHoldForDuration: 0.8)
+            Thread.sleep(forTimeInterval: 0.5)
+        }
         func element(_ label: String) -> XCUIElement {
             app.descendants(matching: .any).matching(NSPredicate(format: "label == %@", label)).firstMatch
         }
@@ -74,7 +84,7 @@ final class EmojiFrequentlyUsedProbeTests: XCTestCase {
                 let parts = argument.split(separator: ":", maxSplits: 1).map(String.init)
                 let key = app.keys.matching(NSPredicate(format: "label == %@", parts[0])).firstMatch
                 XCTAssertTrue(key.waitForExistence(timeout: 3), "no \(parts[0])")
-                print("EMOJI-FREQUENT press \(parts[0]) at \(Date().timeIntervalSince1970)")
+                print("EMOJI-FREQUENT press \(parts[0]) from \(key.frame) at \(Date().timeIntervalSince1970)")
                 key.press(forDuration: Double(parts.count > 1 ? parts[1] : "1") ?? 1)
                 print("EMOJI-FREQUENT released \(parts[0]) at \(Date().timeIntervalSince1970)")
                 Thread.sleep(forTimeInterval: 0.6)
@@ -142,10 +152,43 @@ final class EmojiFrequentlyUsedProbeTests: XCTestCase {
                 start.press(forDuration: 0.05, thenDragTo: start.withOffset(CGVector(dx: -200, dy: 0)), withVelocity: 300, thenHoldForDuration: 0.8)
                 Thread.sleep(forTimeInterval: 0.5)
             case "swipe":
-                // In the band of section titles, so the drag scrolls rather than presses an emoji.
-                let start = app.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(dx: 340, dy: 553))
-                start.press(forDuration: 0.05, thenDragTo: start.withOffset(CGVector(dx: -200, dy: 0)), withVelocity: 300, thenHoldForDuration: 0.8)
-                Thread.sleep(forTimeInterval: 0.5)
+                swipe(atY: Double(argument) ?? 553)
+            case "drag":
+                // Touches down at one screen point, slides to another, and rests there before
+                // lifting: drag:<x1>:<y1>:<x2>:<y2>:<seconds to slide>:<seconds resting>.
+                let parts = argument.split(separator: ":").compactMap { Double($0) }
+                let origin = app.coordinate(withNormalizedOffset: .zero)
+                let start = origin.withOffset(CGVector(dx: parts[0], dy: parts[1]))
+                let end = origin.withOffset(CGVector(dx: parts[2], dy: parts[3]))
+                let velocity = XCUIGestureVelocity(abs(parts[2] - parts[0]) / max(parts[4], 0.01))
+                print("EMOJI-FREQUENT drag at \(Date().timeIntervalSince1970)")
+                start.press(forDuration: 0.1, thenDragTo: end, withVelocity: velocity, thenHoldForDuration: parts[5])
+                print("EMOJI-FREQUENT lifted at \(Date().timeIntervalSince1970)")
+                Thread.sleep(forTimeInterval: 0.6)
+            case "panel":
+                // Taps the two-person skin-tone panel of a held emoji: panel:<emoji>:<dx>:<dy>, from
+                // the panel's top center, which sits centered over the emoji, kept 6 points inside
+                // the screen, with its bottom 18 points above the emoji (measured in screenshots).
+                let parts = argument.split(separator: ":").map(String.init)
+                let key = app.keys.matching(NSPredicate(format: "label == %@", parts[0])).firstMatch
+                XCTAssertTrue(key.waitForExistence(timeout: 3), "no \(parts[0])")
+                let (width, height): (Double, Double) = (247.2, 199.2)
+                let screenWidth = app.frame.width
+                let centerX = min(max(key.frame.midX, 6 + width / 2), screenWidth - 6 - width / 2)
+                let top = key.frame.minY - 18 - height
+                app.coordinate(withNormalizedOffset: .zero)
+                    .withOffset(CGVector(dx: centerX + (Double(parts[1]) ?? 0), dy: top + (Double(parts[2]) ?? 0)))
+                    .tap()
+                Thread.sleep(forTimeInterval: 0.6)
+            case "seek":
+                // Scrolls the grid onward until the emoji shows, at most 150 swipes:
+                // seek:<emoji>[:<y of the section titles>].
+                let parts = argument.split(separator: ":").map(String.init)
+                let key = app.keys.matching(NSPredicate(format: "label == %@", parts[0])).firstMatch
+                for _ in 0..<150 where (key.exists && key.isHittable) == false {
+                    swipe(atY: parts.count > 1 ? Double(parts[1]) ?? 553 : 553)
+                }
+                XCTAssertTrue(key.exists && key.isHittable, "no \(parts[0])")
             case "hold":
                 // Holds any element by its label, a button as well as a key: hold:<label>:<seconds>.
                 let parts = argument.split(separator: ":").map(String.init)
