@@ -36,6 +36,14 @@ public struct NoisyChannelCorrector: Sendable {
         public var apostropheRestorationMargin: Double
         /// The margin for replacing a finished word once the word after it is known.
         public var revisionMargin: Double
+        /// How much more the word after a finished dictionary word must score after a
+        /// replacement than after the word as typed for that word to be replaced: watching the
+        /// system keyboard (Tools/AppleKeyboardBaseline, `CorrectionMemoryProbeTests`) across 49
+        /// phrases, it replaced such a word only where the next word showed the replacement ("I
+        /// male mistakes", "we ate going"), never merely because a likelier word was a slip away
+        /// ("or ant like", "I do hot know"). This lies between the most support it was seen
+        /// leaving alone and the least it was seen acting on.
+        public var revisionNextWordSupport: Double
         /// How much a reading of the typed letters as two words whose space was missed must
         /// beat the best one-word candidate.
         public var missingSpaceMargin: Double
@@ -59,6 +67,7 @@ public struct NoisyChannelCorrector: Sendable {
             everydayWordCorrectionMargin: Double,
             apostropheRestorationMargin: Double,
             revisionMargin: Double,
+            revisionNextWordSupport: Double,
             missingSpaceMargin: Double,
             missingSpaceCorrectionMargin: Double,
             correctedMissingSpaceCorrectionMargin: Double,
@@ -72,6 +81,7 @@ public struct NoisyChannelCorrector: Sendable {
             self.everydayWordCorrectionMargin = everydayWordCorrectionMargin
             self.apostropheRestorationMargin = apostropheRestorationMargin
             self.revisionMargin = revisionMargin
+            self.revisionNextWordSupport = revisionNextWordSupport
             self.missingSpaceMargin = missingSpaceMargin
             self.missingSpaceCorrectionMargin = missingSpaceCorrectionMargin
             self.correctedMissingSpaceCorrectionMargin = correctedMissingSpaceCorrectionMargin
@@ -97,6 +107,7 @@ public struct NoisyChannelCorrector: Sendable {
         everydayWordCorrectionMargin: 2,
         apostropheRestorationMargin: 1,
         revisionMargin: 2,
+        revisionNextWordSupport: 3.75,
         missingSpaceMargin: 6,
         missingSpaceCorrectionMargin: -4,
         correctedMissingSpaceCorrectionMargin: 5,
@@ -107,6 +118,8 @@ public struct NoisyChannelCorrector: Sendable {
         public let word: String
         public let touchCost: Double
         public let language: ContextLanguageScorer.Score
+        /// How likely the word after this one is after it, when reconsidering a finished word.
+        public let followingLogProbability: Double
         public let score: Double
     }
 
@@ -180,15 +193,21 @@ public struct NoisyChannelCorrector: Sendable {
     }
 
     /// The candidates that may replace a finished word once the next word is known. A word
-    /// that is itself a word is only reconsidered as a single slip away ("fan" may become
-    /// "can", "nd" may become "and"), never as a word two slips away ("lol" never "look").
+    /// that is itself a word is only reconsidered as a single slip away ("male" may become
+    /// "make", "nd" may become "and"), never as a word two slips away ("lol" never "look"),
+    /// and only where the next word shows the replacement ("I male mistakes"), not merely
+    /// because the replacement is likelier ("or ant like").
     private func revisable(
         _ alternatives: [ScoredCandidate],
         of typed: ScoredCandidate,
         followingWord: String?
     ) -> [ScoredCandidate] {
         guard followingWord != nil, typed.language.isDictionaryWord else { return alternatives }
-        return alternatives.filter { TypingSlip.isAtMostOne(between: typed.word, and: $0.word) }
+        return alternatives.filter { candidate in
+            let support = parameters.languageWeight * (candidate.followingLogProbability - typed.followingLogProbability)
+            return TypingSlip.isAtMostOne(between: typed.word, and: candidate.word)
+                && support >= parameters.revisionNextWordSupport
+        }
     }
 
     private func margin(for best: ScoredCandidate, typed: ScoredCandidate) -> Double {
@@ -220,6 +239,7 @@ public struct NoisyChannelCorrector: Sendable {
             word: word,
             touchCost: touchCost,
             language: languageScore,
+            followingLogProbability: followingLogProbability,
             score: parameters.languageWeight * logProbability - touchCost
         )
     }

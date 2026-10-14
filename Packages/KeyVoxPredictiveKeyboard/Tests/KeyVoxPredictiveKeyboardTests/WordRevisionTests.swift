@@ -43,6 +43,28 @@ final class WordRevisionTests: XCTestCase {
         }
     }
 
+    /// A finished word a likelier word is a slip away from is kept unless the next word shows the
+    /// likelier one, as the system keyboard keeps "or ant like", "I do hot know", "bow are you",
+    /// and "I fan do it" but makes "we ate going" "we are going".
+    func testNextWordReplacesAWordOnlyWhereItShowsTheReplacement() throws {
+        let cases: [(previous: [String], typed: String, following: String, expected: String?)] = [
+            (["or", "swarm", "with"], "ant", "like", nil),
+            (["do", "i"], "hot", "know", nil),
+            ([], "bow", "are", nil),
+            (["i"], "fan", "do", nil),
+            (["we"], "ate", "going", "are"),
+        ]
+        for (previous, typed, following, expected) in cases {
+            let revision = try computer.revision(for: RevisionRequest(
+                word: typed,
+                touches: typed.map { touch(on: $0, offsetBy: .zero) },
+                previousWords: previous,
+                followingWord: following
+            ))
+            XCTAssertEqual(revision, expected, "\(typed) before \(following)")
+        }
+    }
+
     /// A tap on `key` of the default layout, moved from its center by fractions of its size.
     private func touch(on key: Character, offsetBy offset: CGVector) -> CGPoint {
         let frame = EnglishKeyboardLayout.defaultGeometry.first { $0.character == key }!.frame
