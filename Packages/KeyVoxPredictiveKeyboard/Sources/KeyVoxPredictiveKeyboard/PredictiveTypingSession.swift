@@ -270,6 +270,19 @@ public final class PredictiveTypingSession {
         )
     }
 
+    /// The word the suggestion bar's emoji are for, as on the system keyboard: the word typed right
+    /// before the cursor, or the last word before it when only spaces and punctuation follow it,
+    /// as "pizza " and "dog. " leave it; nil inside a word, with text selected, and while the bar
+    /// offers to put back a correction.
+    public func emojiWord(textBeforeCursor: String?, selectedText: String? = nil, textAfterCursor: String? = nil) -> String? {
+        guard selectedText?.isEmpty ?? true, revertibleAutocorrection(endingAt: textBeforeCursor) == nil else {
+            return nil
+        }
+        let context = TypingTextContext(textBeforeCursor: textBeforeCursor, textAfterCursor: textAfterCursor)
+        guard context.currentWord.isEmpty == false else { return context.wordBeforeSeparators }
+        return context.restOfWord.isEmpty ? context.currentWord : nil
+    }
+
     /// The autocorrection whose separator the user deleted, while the text still ends with the
     /// corrected words.
     private func revertibleAutocorrection(endingAt textBeforeCursor: String?) -> AppliedAutocorrection? {

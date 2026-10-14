@@ -10,6 +10,9 @@ public struct TypingTextContext: Sendable, Equatable {
     public let followingText: String
     /// Earlier words in the same sentence, newest first, at most three.
     public let previousWords: [String]
+    /// The last word before the cursor when only spaces and punctuation on its line follow it, as
+    /// "pizza " and "dog. " leave it.
+    public let wordBeforeSeparators: String?
     /// No earlier words in the current sentence.
     public var isAtSentenceStart: Bool { previousWords.isEmpty }
 
@@ -28,6 +31,15 @@ public struct TypingTextContext: Sendable, Equatable {
             .split { Self.isWordCharacter($0) == false }
             .map(String.init)
         previousWords = Array(words.reversed().prefix(3))
+        let separators = text.reversed().prefix { character in
+            (character.isWhitespace && character.isNewline == false) || character.isPunctuation
+        }
+        let wordBeforeSeparators = String(
+            text.dropLast(separators.count).reversed().prefix(while: Self.isWordCharacter).reversed()
+        )
+        self.wordBeforeSeparators = currentWord.isEmpty && wordBeforeSeparators.isEmpty == false
+            ? wordBeforeSeparators
+            : nil
 
         let selected = selectedText ?? ""
         selectedWord = selected.isEmpty == false && selected.allSatisfy(Self.isWordCharacter) ? selected : nil
