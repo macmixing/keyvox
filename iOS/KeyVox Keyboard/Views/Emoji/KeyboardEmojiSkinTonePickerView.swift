@@ -93,14 +93,12 @@ final class KeyboardEmojiSkinTonePickerView: UIView {
     ) {
         self.choiceCenters = choiceCenters
         self.style = style
-        let radius = style.stemCornerRadius
-        let path = UIBezierPath(roundedRect: panel, cornerRadius: style.panelCornerRadius)
-        // The stem starts under the panel so the two fill as one shape.
-        path.append(UIBezierPath(
-            roundedRect: CGRect(x: stem.minX, y: stem.minY - radius, width: stem.width, height: stem.height + radius),
-            byRoundingCorners: [.bottomLeft, .bottomRight],
-            cornerRadii: CGSize(width: radius, height: radius)
-        ))
+        let path = KeyboardEmojiPickerPanelShape.path(
+            panel: panel,
+            stem: stem,
+            panelCornerRadius: style.panelCornerRadius,
+            stemCornerRadius: style.stemCornerRadius
+        )
         shapeLayer.path = path.cgPath
         shapeLayer.shadowPath = path.cgPath
         shapeLayer.shadowColor = style.shadow?.color.cgColor

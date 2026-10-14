@@ -40,6 +40,7 @@ extension KeyboardViewController {
     }
 
     func unconfigureEmojiPage(_ emojiPageView: KeyboardEmojiPageView) {
+        emojiPageView.closeTwoPersonPicker()
         emojiPageView.onEmojiSelected = nil
         emojiPageView.onSkinTonePickerOpened = nil
         emojiPageView.onSkinToneChosen = nil

@@ -5,12 +5,19 @@ import UIKit
 /// (Tools/AppleKeyboardBaseline, `EmojiFrequentlyUsedProbeTests`): after as long as a letter key
 /// takes to open its popup, an emoji that comes in skin tones opens its picker, and lifting the
 /// finger on a choice types it and remembers it for that emoji; lifting anywhere else, or holding an
-/// emoji without skin tones, types nothing.
+/// emoji without skin tones, types nothing. An emoji of two people opens a picker that stays open
+/// for taps (`KeyboardEmojiTwoPersonPickerView`).
 extension KeyboardEmojiPageView {
     func configureSkinTonePicker() {
         let recognizer = UILongPressGestureRecognizer(target: self, action: #selector(handleHold(_:)))
         recognizer.minimumPressDuration = KeyboardStyle.heldKeyPopupHoldDuration
         collectionView.addGestureRecognizer(recognizer)
+    }
+
+    /// Closes the two-person picker, if open, and gives its container's touches back to the keys.
+    func closeTwoPersonPicker() {
+        twoPersonPicker.dismiss()
+        popupContainer?.isUserInteractionEnabled = false
     }
 
     @objc private func handleHold(_ recognizer: UILongPressGestureRecognizer) {
@@ -34,8 +41,10 @@ extension KeyboardEmojiPageView {
             return
         }
         let emoji = sections[indexPath.section].emoji[indexPath.item]
-        // The two-person emoji's picker, two rows of tones, is not drawn yet; holding one types
-        // nothing, as holding an emoji without skin tones does.
+        if let tones = EmojiTwoPersonTones(emoji) {
+            presentTwoPersonPicker(emoji, tones: tones, at: collectionView.convert(cell.center, to: container), in: container)
+            return
+        }
         guard emoji.skinToneVariants.count == 5 else { return }
         let layout = KeyboardEmojiSkinTonePickerLayout(
             emojiCenter: collectionView.convert(cell.center, to: container),
@@ -58,6 +67,33 @@ extension KeyboardEmojiPageView {
             style: .page
         )
         heldEmoji = (emoji, layout, choices, nil)
+        onSkinTonePickerOpened?()
+    }
+
+    private func presentTwoPersonPicker(_ emoji: Emoji, tones: EmojiTwoPersonTones, at center: CGPoint, in container: UIView) {
+        if twoPersonPicker.superview !== container {
+            twoPersonPicker.removeFromSuperview()
+            container.addSubview(twoPersonPicker)
+        }
+        twoPersonPicker.frame = container.bounds
+        twoPersonPicker.onChosen = { [weak self] version in
+            self?.closeTwoPersonPicker()
+            self?.onSkinToneChosen?(emoji.text, version)
+            self?.onEmojiSelected?(version)
+        }
+        twoPersonPicker.onDismissed = { [weak self] in
+            self?.closeTwoPersonPicker()
+        }
+        twoPersonPicker.present(
+            emoji,
+            tones: tones,
+            chosenVersion: chosenTones[emoji.text],
+            layout: KeyboardEmojiTwoPersonPickerLayout(emojiCenter: center, bounds: container.bounds),
+            font: emojiFont,
+            style: .page
+        )
+        // The picker stays open after the finger lifts, so its container takes the taps meant for it.
+        container.isUserInteractionEnabled = true
         onSkinTonePickerOpened?()
     }
 

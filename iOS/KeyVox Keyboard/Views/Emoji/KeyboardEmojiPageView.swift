@@ -52,6 +52,7 @@ final class KeyboardEmojiPageView: UIView {
     private let categoryBar = KeyboardEmojiCategoryBar()
     private(set) var sections: [EmojiKeyboardSection] = []
     let skinTonePicker = KeyboardEmojiSkinTonePickerView()
+    let twoPersonPicker = KeyboardEmojiTwoPersonPickerView()
     /// The emoji held with its skin-tone picker open, the picker's layout, and the choice under the finger.
     var heldEmoji: (emoji: Emoji, layout: KeyboardEmojiSkinTonePickerLayout, choices: [String], choice: Int?)?
     private var categoryMemory = KeyboardEmojiCategoryMemory()
