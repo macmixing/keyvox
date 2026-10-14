@@ -381,6 +381,12 @@ END OF TERMS AND CONDITIONS
 - Full MIT and nginx notices, the unchanged JSON and checksummed provenance are bundled in `Packages/KeyVoxCore/Sources/KeyVoxCore/Resources/FileTypes`.
 - Source terms: [IANA](https://www.iana.org/help/licensing-terms), [Apache mapping header](https://raw.githubusercontent.com/apache/httpd/trunk/docs/conf/mime.types), [nginx](https://nginx.org/LICENSE).
 
+### Unicode emoji data and CLDR annotations
+
+- Upstream: Unicode's `emoji-test.txt`, Emoji 18.0 (<https://unicode.org/Public/emoji/latest/emoji-test.txt>); CLDR's English annotations and derived annotations from <https://github.com/unicode-org/cldr-json> (`cldr-annotations-full` and `cldr-annotations-derived-full`, version 48.2.3); and Unicode's emoji frequency ranking (<https://www.unicode.org/emoji/frequency.html>).
+- License: Unicode License v3 (Unicode-3.0), copyright © 1991–2026 Unicode, Inc. Full text: <https://www.unicode.org/license.txt>.
+- Use: `KeyVoxEmoji` bundles data written from these sources by `Tools/KeyVoxEmojiData`: each emoji's name and skin-tone versions (`emoji_catalog.txt`), the words that find it in search (`emoji_search.txt`), and the emoji the suggestion bar offers for a word (`emoji_predictions.txt`). The frequency ranking only orders them.
+
 Pronunciation-data notices for `KeyVoxCore` are bundled with the package resources:
 
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Resources/Pronunciation/LICENSES.md`

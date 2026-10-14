@@ -112,3 +112,6 @@ jobs:
 
       - name: Run KeyVoxPredictiveKeyboard package tests
         run: swift test --package-path Packages/KeyVoxPredictiveKeyboard --scratch-path /tmp/keyvox-predictive-keyboard-ci
+
+      - name: Run KeyVoxEmoji package tests
+        run: swift test --package-path Packages/KeyVoxEmoji --scratch-path /tmp/keyvox-emoji-ci
