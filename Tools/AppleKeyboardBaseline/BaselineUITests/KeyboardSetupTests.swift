@@ -15,7 +15,8 @@ final class KeyboardSetupTests: XCTestCase {
         settings.launch()
 
         try tap(labeled: "General", in: settings)
-        try tap(labeled: "Keyboard", in: settings)
+        // Below the fold on a small iPhone.
+        try tap(labeled: "Keyboard", in: settings, scrolling: true)
         let keyboardsRow = settings.cells["KEYBOARDS"]
         XCTAssertTrue(keyboardsRow.waitForExistence(timeout: 10))
         keyboardsRow.tap()
@@ -33,7 +34,8 @@ final class KeyboardSetupTests: XCTestCase {
         let fullAccess = settings.switches.firstMatch
         XCTAssertTrue(fullAccess.waitForExistence(timeout: 5))
         if (fullAccess.value as? String) != "1" {
-            fullAccess.tap()
+            // The switch's frame spans its row; only the toggle at its trailing end flips it.
+            fullAccess.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5)).tap()
             let allow = settings.alerts.buttons["Allow"]
             if allow.waitForExistence(timeout: 5) {
                 allow.tap()

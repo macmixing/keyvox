@@ -57,7 +57,8 @@ final class EmojiFrequentlyUsedProbeTests: XCTestCase {
             target.tap()
             Thread.sleep(forTimeInterval: 0.6)
         }
-        tap("Emoji")
+        // A home-button iPhone with other keyboards shows its globe in the emoji key's place.
+        tap(element("Emoji").waitForExistence(timeout: 2) ? "Emoji" : "Next keyboard")
 
         var records: [Record] = []
         for step in steps {
