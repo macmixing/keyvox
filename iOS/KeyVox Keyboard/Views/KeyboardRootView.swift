@@ -518,8 +518,8 @@ final class KeyboardRootView: UIView {
             ),
             emojiSearchResultsView.heightAnchor.constraint(equalToConstant: KeyboardEmojiSearchGeometry.Measured.resultsHeight),
 
-            emojiPageView.leadingAnchor.constraint(equalTo: keyGridView.leadingAnchor),
-            emojiPageView.trailingAnchor.constraint(equalTo: keyGridView.trailingAnchor),
+            emojiPageView.leadingAnchor.constraint(equalTo: leadingAnchor),
+            emojiPageView.trailingAnchor.constraint(equalTo: trailingAnchor),
             emojiPageView.topAnchor.constraint(
                 equalTo: emojiSearchFieldView.bottomAnchor,
                 constant: KeyboardEmojiSearchGeometry.Measured.pageGapBelowField

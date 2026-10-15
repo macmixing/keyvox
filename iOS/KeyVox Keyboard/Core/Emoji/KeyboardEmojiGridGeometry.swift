@@ -1,52 +1,51 @@
 import CoreGraphics
 
-/// Where the emoji page puts its emoji and section titles: columns of emoji filled top to bottom,
-/// sections side by side, each with its title above, spaced as on the system emoji keyboard and
-/// with as many rows as fit the grid's height at the system's size, sharing the height left over
-/// between them, as the system keyboard spreads its rows when it has room for no more; a grid too
-/// short for one row draws it smaller.
+/// Where the emoji page puts its emoji: columns of emoji filled top to bottom, sections side by side,
+/// spaced as on the system emoji keyboard, which titles no section; as many rows as fit the grid's
+/// height at the system's size, up to its four, with the height left over shared equally above each
+/// row; a grid too short for one row draws it smaller.
 struct KeyboardEmojiGridGeometry: Equatable {
-    /// The system emoji keyboard on a 402-point-wide iPhone, in points, measured with
-    /// Tools/AppleKeyboardBaseline (`EmojiKeyboardProbeTests`).
+    /// The system emoji keyboard on a 390-point-wide iPhone 13 Pro, in points, measured from its
+    /// screenshots (Tools/AppleKeyboardBaseline, `EmojiFrequentlyUsedProbeTests`).
     enum Measured {
-        static let emojiSize: CGFloat = 32
-        static let columnPitch: CGFloat = 46
-        /// The first and fifth rows' emoji are 154 points apart.
-        static let rowPitch: CGFloat = 38.5
-        static let leadingInset: CGFloat = 10
+        static let emojiSize: CGFloat = 38
+        static let columnPitch: CGFloat = 53.2
+        static let maximumRowCount = 4
+        /// From the grid's leading edge to its first column; once the grid stops scrolling, a
+        /// column always rests here too.
+        static let leadingInset: CGFloat = 14.7
         /// Between a section's last column and the next section's first, beyond a column.
-        static let sectionGap: CGFloat = 14
-        /// From the top of a section's title to the top of its first row of emoji.
-        static let titleHeight: CGFloat = 30
-        /// From a section's first column to its title.
-        static let titleInset: CGFloat = 2
+        static let sectionGap: CGFloat = 23
     }
 
     struct Layout: Equatable {
-        /// Each section's title frame.
-        let titleFrames: [CGRect]
         /// Each section's emoji frames, in order; each covers its share of the grid around its emoji.
         let emojiFrames: [[CGRect]]
         /// Where the grid scrolls to show each section from its start.
         let sectionOffsets: [CGFloat]
-        /// Where each section's last emoji ends.
-        let sectionEnds: [CGFloat]
-        /// How far a title kept at the grid's leading edge sits from it.
-        let pinnedTitleInset: CGFloat
+        /// Where each column's emoji start, in order.
+        let columnStarts: [CGFloat]
+        /// How far from the grid's leading edge a column rests once the grid stops scrolling.
+        let restingColumnInset: CGFloat
         let contentSize: CGSize
 
-        /// Where `section`'s title, `width` wide, shows with the grid scrolled to `offset`: at its
-        /// section's start, then kept at the grid's leading edge while the section shows there,
-        /// until the section's end pushes it off, as the system keyboard keeps its titles.
-        func titleFrame(section: Int, contentOffset offset: CGFloat, width: CGFloat) -> CGRect {
-            let start = titleFrames[section]
-            let x = max(start.minX, min(offset + pinnedTitleInset, sectionEnds[section] - width))
-            return CGRect(x: x, y: start.minY, width: width, height: start.height)
+        /// Where the grid comes to rest when scrolling would stop at `proposed`: with the column
+        /// nearest there resting its inset from the leading edge, as the system keyboard's grid
+        /// does, kept between the grid's start and `maximum`.
+        func restingContentOffset(near proposed: CGFloat, maximum: CGFloat) -> CGFloat {
+            guard let column = columnStarts.min(by: {
+                abs($0 - restingColumnInset - proposed) < abs($1 - restingColumnInset - proposed)
+            }) else {
+                return proposed
+            }
+            return min(max(column - restingColumnInset, 0), maximum)
         }
     }
 
     let rowCount: Int
     let scale: CGFloat
+    /// Above each row's emoji: its share of the height the rows leave.
+    let rowGap: CGFloat
     /// From one row's emoji to the next one's.
     let rowPitch: CGFloat
     /// The grid's height, which its content never exceeds, so the grid never scrolls up and down.
@@ -54,16 +53,11 @@ struct KeyboardEmojiGridGeometry: Equatable {
 
     init(gridHeight: CGFloat) {
         self.gridHeight = gridHeight
-        var rowCount = 1
-        while Self.height(rowCount: rowCount + 1) <= gridHeight {
-            rowCount += 1
-        }
-        self.rowCount = rowCount
-        scale = min(1, gridHeight / Self.height(rowCount: rowCount))
-        let leftOver = gridHeight - Self.height(rowCount: rowCount)
-        rowPitch = scale == 1 && rowCount > 1
-            ? Measured.rowPitch + (leftOver / CGFloat(rowCount - 1))
-            : Measured.rowPitch * scale
+        let fittingRowCount = Int((gridHeight / Measured.emojiSize).rounded(.down))
+        rowCount = min(Measured.maximumRowCount, max(1, fittingRowCount))
+        scale = min(1, gridHeight / (CGFloat(rowCount) * Measured.emojiSize))
+        rowGap = max(0, gridHeight - (CGFloat(rowCount) * Measured.emojiSize * scale)) / CGFloat(rowCount)
+        rowPitch = (Measured.emojiSize * scale) + rowGap
     }
 
     var emojiSize: CGFloat { Measured.emojiSize * scale }
@@ -71,24 +65,17 @@ struct KeyboardEmojiGridGeometry: Equatable {
     /// Frames for sections of `emojiCounts` emoji each.
     func layout(emojiCounts: [Int]) -> Layout {
         let columnPitch = Measured.columnPitch * scale
-        let titleHeight = Measured.titleHeight * scale
-        var sectionX = Measured.leadingInset * scale
-        var titleFrames: [CGRect] = []
+        let leadingInset = Measured.leadingInset * scale
+        var sectionX = leadingInset
         var emojiFrames: [[CGRect]] = []
         var sectionOffsets: [CGFloat] = []
-        var sectionEnds: [CGFloat] = []
+        var columnStarts: [CGFloat] = []
         for count in emojiCounts {
-            sectionOffsets.append(sectionX - (Measured.leadingInset * scale))
+            sectionOffsets.append(sectionX - leadingInset)
             let columns = max(1, Int((Double(count) / Double(rowCount)).rounded(.up)))
-            titleFrames.append(CGRect(
-                x: sectionX + (Measured.titleInset * scale),
-                y: 0,
-                width: (CGFloat(columns) * columnPitch) - (Measured.titleInset * scale),
-                height: titleHeight
-            ))
             emojiFrames.append((0..<count).map { index in
                 let centerX = sectionX + (emojiSize / 2) + (CGFloat(index / rowCount) * columnPitch)
-                let centerY = titleHeight + (emojiSize / 2) + (CGFloat(index % rowCount) * rowPitch)
+                let centerY = rowGap + (emojiSize / 2) + (CGFloat(index % rowCount) * rowPitch)
                 return CGRect(
                     x: centerX - (columnPitch / 2),
                     y: centerY - (rowPitch / 2),
@@ -96,26 +83,19 @@ struct KeyboardEmojiGridGeometry: Equatable {
                     height: rowPitch
                 )
             })
-            sectionEnds.append(sectionX + (CGFloat(columns - 1) * columnPitch) + emojiSize)
+            columnStarts += (0..<columns).map { sectionX + (CGFloat($0) * columnPitch) }
             sectionX += (CGFloat(columns) * columnPitch) + (Measured.sectionGap * scale)
         }
-        let contentWidth = sectionX - (Measured.sectionGap * scale) - columnPitch + emojiSize
-            + (Measured.leadingInset * scale)
+        let contentWidth = sectionX - (Measured.sectionGap * scale) - columnPitch + emojiSize + leadingInset
         return Layout(
-            titleFrames: titleFrames,
             emojiFrames: emojiFrames,
             sectionOffsets: sectionOffsets,
-            sectionEnds: sectionEnds,
-            pinnedTitleInset: (Measured.leadingInset + Measured.titleInset) * scale,
+            columnStarts: columnStarts,
+            restingColumnInset: leadingInset,
             contentSize: CGSize(
                 width: contentWidth,
-                height: min(gridHeight, titleHeight + (CGFloat(rowCount - 1) * rowPitch) + emojiSize)
+                height: min(gridHeight, (CGFloat(rowCount) * rowPitch))
             )
         )
-    }
-
-    /// The height `rowCount` rows take at the system's size, with the title above them.
-    private static func height(rowCount: Int) -> CGFloat {
-        Measured.titleHeight + (CGFloat(rowCount - 1) * Measured.rowPitch) + Measured.emojiSize
     }
 }

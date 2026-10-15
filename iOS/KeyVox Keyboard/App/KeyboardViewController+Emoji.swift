@@ -25,6 +25,9 @@ extension KeyboardViewController {
         emojiPageView.onSkinTonePickerOpened = { [weak self] in
             self?.characterKeyHaptics.emitKeypressIfEnabled()
         }
+        emojiPageView.onCategoryReached = { [weak self] in
+            self?.characterKeyHaptics.emitKeypressIfEnabled()
+        }
         emojiPageView.onSkinToneChosen = { [weak self] emoji, version in
             self?.chooseEmojiSkinTone(version, for: emoji)
         }
@@ -43,6 +46,7 @@ extension KeyboardViewController {
         emojiPageView.closeTwoPersonPicker()
         emojiPageView.onEmojiSelected = nil
         emojiPageView.onSkinTonePickerOpened = nil
+        emojiPageView.onCategoryReached = nil
         emojiPageView.onSkinToneChosen = nil
         emojiPageView.popupContainer = nil
         emojiPageView.onLetters = nil

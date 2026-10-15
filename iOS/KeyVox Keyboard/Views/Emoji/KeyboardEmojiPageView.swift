@@ -1,10 +1,10 @@
 import KeyVoxEmoji
 import UIKit
 
-/// The emoji page: the emoji in a grid that scrolls sideways through its sections, each under its
-/// title, over the bar with the letters key, the categories, and delete, as on the system emoji
-/// keyboard. Each emoji shows and types in the skin tone last chosen for it; holding one opens its
-/// skin-tone picker (`KeyboardEmojiPageView+SkinTones`).
+/// The emoji page: the emoji in a grid that scrolls sideways through its sections, from one edge of
+/// the keyboard to the other, over the bar with the letters key, the categories, and delete, as on
+/// the system emoji keyboard. Each emoji shows and types in the skin tone last chosen for it;
+/// holding one opens its skin-tone picker (`KeyboardEmojiPageView+SkinTones`).
 final class KeyboardEmojiPageView: UIView {
     /// The system emoji keyboard on a 402-point-wide iPhone, in points, measured with
     /// Tools/AppleKeyboardBaseline (`EmojiKeyboardProbeTests`).
@@ -15,8 +15,8 @@ final class KeyboardEmojiPageView: UIView {
 
     /// Matched to the system keyboard's screenshot from the same measurement.
     enum Drawn {
-        /// The font size that draws an emoji as wide as the system keyboard does, about 31 points
-        /// at its size, for the size `KeyboardEmojiGridGeometry` gives it.
+        /// The font size that draws an emoji as wide as the system keyboard does, for the size
+        /// `KeyboardEmojiGridGeometry` gives it.
         static let emojiFontRatio: CGFloat = 0.98
     }
 
@@ -25,6 +25,9 @@ final class KeyboardEmojiPageView: UIView {
     var onSkinToneChosen: ((_ emoji: String, _ version: String) -> Void)?
     /// Called the moment a held emoji's skin-tone picker opens.
     var onSkinTonePickerOpened: (() -> Void)?
+    /// Called when a category is tapped, and each time another category reaches the grid's leading
+    /// edge as a finger slides along the category bar.
+    var onCategoryReached: (() -> Void)?
     /// Each emoji as it comes, by the skin-tone version last chosen for it.
     var chosenTones: [String: String] = [:] {
         didSet {
@@ -68,20 +71,16 @@ final class KeyboardEmojiPageView: UIView {
         // measured, every jump added 36 emoji views and about 5.7 MB.
         collectionView.isPrefetchingEnabled = false
         // The grid scrolls only sideways; the blur iOS draws along a scrolling view's top edge
-        // would only cover the section titles under the search field.
+        // would only cover the top row under the search field.
         if #available(iOS 26.0, *) {
             collectionView.topEdgeEffect.isHidden = true
         }
         collectionView.dataSource = self
         collectionView.delegate = self
         collectionView.register(KeyboardEmojiCell.self, forCellWithReuseIdentifier: KeyboardEmojiCell.reuseIdentifier)
-        collectionView.register(
-            KeyboardEmojiSectionTitleView.self,
-            forSupplementaryViewOfKind: KeyboardEmojiSectionTitleView.kind,
-            withReuseIdentifier: KeyboardEmojiSectionTitleView.reuseIdentifier
-        )
         categoryBar.translatesAutoresizingMaskIntoConstraints = false
         categoryBar.onCategory = { [weak self] category in
+            self?.onCategoryReached?()
             self?.scroll(to: category)
         }
         categoryBar.onScrub = { [weak self] fraction in
@@ -98,8 +97,9 @@ final class KeyboardEmojiPageView: UIView {
             collectionView.trailingAnchor.constraint(equalTo: trailingAnchor),
             collectionView.topAnchor.constraint(equalTo: topAnchor),
             collectionView.bottomAnchor.constraint(equalTo: categoryBar.topAnchor, constant: -Measured.barGap),
-            categoryBar.leadingAnchor.constraint(equalTo: leadingAnchor),
-            categoryBar.trailingAnchor.constraint(equalTo: trailingAnchor),
+            // The bar keeps the keys' margins; the grid runs to the keyboard's edges.
+            categoryBar.leadingAnchor.constraint(equalTo: leadingAnchor, constant: KeyboardStyle.horizontalPadding),
+            categoryBar.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -KeyboardStyle.horizontalPadding),
             categoryBar.bottomAnchor.constraint(equalTo: bottomAnchor),
             categoryBar.heightAnchor.constraint(equalToConstant: KeyboardEmojiCategoryBar.Measured.height),
         ])
@@ -114,7 +114,6 @@ final class KeyboardEmojiPageView: UIView {
         guard sections != self.sections else { return }
         self.sections = sections
         gridLayout.emojiCounts = sections.map(\.emoji.count)
-        gridLayout.titleWidths = sections.map { KeyboardEmojiSectionTitleView.width(of: $0.category.sectionTitle) }
         categoryBar.setCategories(sections.map(\.category))
         collectionView.reloadData()
         collectionView.layoutIfNeeded()
@@ -144,10 +143,16 @@ final class KeyboardEmojiPageView: UIView {
     }
 
     /// Scrolls the grid as far along its emoji as a finger sliding along the category bar is along
-    /// the bar, as on the system keyboard (`KeyboardEmojiCategoryBar+Scrub`).
+    /// the bar, a column at a time, each where the grid rests, as on the system keyboard
+    /// (`KeyboardEmojiCategoryBar+Scrub`).
     private func scrub(to fraction: CGFloat) {
         let maximumOffset = max(0, collectionView.contentSize.width - collectionView.bounds.width)
-        collectionView.setContentOffset(CGPoint(x: (fraction * maximumOffset).rounded(), y: 0), animated: false)
+        let offset = gridLayout.restingContentOffset(near: fraction * maximumOffset)
+        let shownBefore = shownCategory
+        collectionView.setContentOffset(CGPoint(x: offset, y: 0), animated: false)
+        if shownCategory != shownBefore {
+            onCategoryReached?()
+        }
     }
 
     /// Circles the category at the grid's leading edge and remembers where the grid is in it.
@@ -174,20 +179,6 @@ extension KeyboardEmojiPageView: UICollectionViewDataSource {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: KeyboardEmojiCell.reuseIdentifier, for: indexPath)
         (cell as? KeyboardEmojiCell)?.show(shown(sections[indexPath.section].emoji[indexPath.item]), font: emojiFont)
         return cell
-    }
-
-    func collectionView(
-        _ collectionView: UICollectionView,
-        viewForSupplementaryElementOfKind kind: String,
-        at indexPath: IndexPath
-    ) -> UICollectionReusableView {
-        let view = collectionView.dequeueReusableSupplementaryView(
-            ofKind: kind,
-            withReuseIdentifier: KeyboardEmojiSectionTitleView.reuseIdentifier,
-            for: indexPath
-        )
-        (view as? KeyboardEmojiSectionTitleView)?.show(sections[indexPath.section].category.sectionTitle)
-        return view
     }
 }
 

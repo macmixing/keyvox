@@ -1,16 +1,10 @@
 import UIKit
 
-/// Lays the emoji page's grid out where `KeyboardEmojiGridGeometry` puts each emoji and section
-/// title, for the grid's height, keeping each section's title at the grid's leading edge while the
-/// section shows there.
+/// Lays the emoji page's grid out where `KeyboardEmojiGridGeometry` puts each emoji, for the grid's
+/// height.
 final class KeyboardEmojiGridLayout: UICollectionViewLayout {
     /// How many emoji each section shows, in order.
     var emojiCounts: [Int] = [] {
-        didSet { invalidateLayout() }
-    }
-
-    /// How wide each section's title is drawn, in order.
-    var titleWidths: [CGFloat] = [] {
         didSet { invalidateLayout() }
     }
 
@@ -33,29 +27,14 @@ final class KeyboardEmojiGridLayout: UICollectionViewLayout {
         layout.contentSize
     }
 
-    /// Scrolling moves the titles kept at the leading edge; a new height moves everything.
-    override func shouldInvalidateLayout(forBoundsChange _: CGRect) -> Bool {
-        true
-    }
-
-    override func invalidationContext(forBoundsChange newBounds: CGRect) -> UICollectionViewLayoutInvalidationContext {
-        let context = super.invalidationContext(forBoundsChange: newBounds)
-        if newBounds.height == preparedHeight {
-            context.invalidateSupplementaryElements(
-                ofKind: KeyboardEmojiSectionTitleView.kind,
-                at: layout.titleFrames.indices.map { IndexPath(item: 0, section: $0) }
-            )
-        }
-        return context
+    /// Scrolling moves nothing within the grid; a new size lays it out again.
+    override func shouldInvalidateLayout(forBoundsChange newBounds: CGRect) -> Bool {
+        newBounds.size != collectionView?.bounds.size
     }
 
     override func layoutAttributesForElements(in rect: CGRect) -> [UICollectionViewLayoutAttributes]? {
         var attributes: [UICollectionViewLayoutAttributes] = []
         for (section, frames) in layout.emojiFrames.enumerated() {
-            let title = titleAttributes(section: section)
-            if title.frame.intersects(rect) {
-                attributes.append(title)
-            }
             for (item, frame) in frames.enumerated() where frame.intersects(rect) {
                 let itemAttributes = UICollectionViewLayoutAttributes(forCellWith: IndexPath(item: item, section: section))
                 itemAttributes.frame = frame
@@ -75,15 +54,18 @@ final class KeyboardEmojiGridLayout: UICollectionViewLayout {
         return attributes
     }
 
-    override func layoutAttributesForSupplementaryView(
-        ofKind elementKind: String,
-        at indexPath: IndexPath
-    ) -> UICollectionViewLayoutAttributes? {
-        guard elementKind == KeyboardEmojiSectionTitleView.kind,
-              layout.titleFrames.indices.contains(indexPath.section) else {
-            return nil
-        }
-        return titleAttributes(section: indexPath.section)
+    /// Brings the grid to rest on a column when a drag or flick ends, as the system keyboard does.
+    override func targetContentOffset(
+        forProposedContentOffset proposedContentOffset: CGPoint,
+        withScrollingVelocity _: CGPoint
+    ) -> CGPoint {
+        CGPoint(x: restingContentOffset(near: proposedContentOffset.x), y: proposedContentOffset.y)
+    }
+
+    /// Where the grid rests near `offset`: on the column nearest there, within the grid's ends.
+    func restingContentOffset(near offset: CGFloat) -> CGFloat {
+        let maximum = max(0, layout.contentSize.width - (collectionView?.bounds.width ?? 0))
+        return layout.restingContentOffset(near: offset, maximum: maximum)
     }
 
     /// Where the grid scrolls to show `section` from its start.
@@ -94,16 +76,5 @@ final class KeyboardEmojiGridLayout: UICollectionViewLayout {
     /// The section showing at the grid's leading edge when scrolled to `offset`.
     func section(atContentOffset offset: CGFloat) -> Int? {
         layout.sectionOffsets.lastIndex { $0 <= offset + 1 }
-    }
-
-    private func titleAttributes(section: Int) -> UICollectionViewLayoutAttributes {
-        let attributes = UICollectionViewLayoutAttributes(
-            forSupplementaryViewOfKind: KeyboardEmojiSectionTitleView.kind,
-            with: IndexPath(item: 0, section: section)
-        )
-        let width = titleWidths.indices.contains(section) ? titleWidths[section] : layout.titleFrames[section].width
-        attributes.frame = layout.titleFrame(section: section, contentOffset: collectionView?.contentOffset.x ?? 0, width: width)
-        attributes.zIndex = 1
-        return attributes
     }
 }

@@ -223,7 +223,6 @@
 				Views/Emoji/KeyboardEmojiSearchFieldView.swift,
 				Views/Emoji/KeyboardEmojiSearchResultsView.swift,
 				"Views/Emoji/KeyboardEmojiSearchResultsView+SkinTones.swift",
-				Views/Emoji/KeyboardEmojiSectionTitleView.swift,
 				Views/Emoji/KeyboardEmojiSkinTonePickerView.swift,
 				Views/Emoji/KeyboardEmojiTwoPersonPickerView.swift,
 				Views/FullAccessView.swift,

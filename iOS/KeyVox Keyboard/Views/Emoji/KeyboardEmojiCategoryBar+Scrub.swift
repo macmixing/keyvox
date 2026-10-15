@@ -3,7 +3,8 @@ import UIKit
 /// Sliding a finger along the category buttons, as on the system emoji keyboard, recorded by
 /// watching it (Tools/AppleKeyboardBaseline, `EmojiFrequentlyUsedProbeTests`): once the finger moves,
 /// a band grows behind every button in about a fifth of a second and every button darkens; the
-/// grid follows the finger, its scroll offset in step with how far along the buttons the finger is;
+/// grid follows the finger a column at a time, its scroll offset in step with how far along the
+/// buttons the finger is, so no emoji shows cut at its leading edge;
 /// and when the finger lifts the band shrinks into the circle around the category showing in
 /// about a third of a second, the grid staying where the finger left it.
 extension KeyboardEmojiCategoryBar {

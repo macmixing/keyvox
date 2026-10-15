@@ -17,7 +17,7 @@ enum KeyboardEmojiSearchGeometry {
         static let magnifierCenter: CGFloat = 20.5
         /// From the field's leading edge to where its text starts.
         static let textStart: CGFloat = 37
-        /// Between the field and the top of the emoji page's section titles.
+        /// Between the field and the top of the emoji page's grid.
         static let pageGapBelowField: CGFloat = 3
         /// From the field's trailing edge to the clear button's center.
         static let clearCenterInset: CGFloat = 15.2
