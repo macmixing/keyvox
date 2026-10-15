@@ -13,7 +13,7 @@ extension EmojiKeyboardCategory {
         case .activity: "soccerball"
         case .travelPlaces: "car"
         case .objects: "lightbulb"
-        case .symbols: "music.note"
+        case .symbols: "heart"
         case .flags: "flag"
         }
     }
