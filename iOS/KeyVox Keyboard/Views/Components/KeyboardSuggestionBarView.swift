@@ -3,14 +3,16 @@ import UIKit
 
 /// The three suggestion slots shown above the letter keys: leading, primary (center),
 /// and trailing. The autocorrection space will apply is shown in a heavier weight. The trailing
-/// slot splits evenly among the bar's emoji when it has any, as on the system keyboard.
+/// slot splits evenly among the bar's first emoji when it has any, as on the system keyboard.
 final class KeyboardSuggestionBarView: UIView {
     var onItemSelected: ((SuggestionBar.Item) -> Void)?
     /// Called when a suggestion is pressed and held, instead of selecting it.
     var onItemLongPressed: ((SuggestionBar.Item) -> Void)?
 
-    /// The most emoji the trailing slot holds.
-    private static let emojiSlots = 3
+    /// The most emoji the trailing slot holds: between the settings button and the mic it is about
+    /// 81 points wide on a 375-point-wide iPhone and 96 on a 440-point-wide one, room for two emoji
+    /// buttons, each an emoji's 23 points with its insets, but not three.
+    private static let emojiSlots = 2
 
     private let stackView = UIStackView()
     private let trailingSlot = UIStackView()
