@@ -144,11 +144,11 @@ final class KeyboardRootView: UIView {
         updateSuggestionBarHorizontalConstraints()
     }
 
-    /// Spans the top-row slots between the settings button and the mic, which swap sides
-    /// in the left-handed layout.
+    /// Spans the top-row slots from the keyboard's edge to the mic, which swap sides in the
+    /// left-handed layout; the settings button hides while the bar shows.
     private func updateSuggestionBarHorizontalConstraints() {
         let slots: (leading: KeyboardTopRowAccessorySlot, trailing: KeyboardTopRowAccessorySlot) =
-            isLeftHandedLayoutEnabled ? (.three, .nine) : (.two, .eight)
+            isLeftHandedLayoutEnabled ? (.three, .zero) : (.one, .eight)
         guard let leadingReference = keyGridView.topRowKeyView(for: slots.leading),
               let trailingReference = keyGridView.topRowKeyView(for: slots.trailing) else {
             return
@@ -239,8 +239,8 @@ final class KeyboardRootView: UIView {
         }
 
         settingsButton.isTrackpadModeActive = isTrackpadModeActive
-        settingsButton.isEnabled = showsBrandedToolbar && !shouldShowCancel && !isTrackpadModeActive
-        settingsButton.isHidden = !showsBrandedToolbar || shouldShowCancel
+        settingsButton.isEnabled = showsToolbarAccessories && !shouldShowCancel && !isTrackpadModeActive
+        settingsButton.isHidden = !showsToolbarAccessories || shouldShowCancel
         speakButton.isHidden = !shouldShowSpeak
         speakButton.alpha = 1
         speakButton.transform = .identity

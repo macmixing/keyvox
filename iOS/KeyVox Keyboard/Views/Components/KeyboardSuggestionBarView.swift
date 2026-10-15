@@ -9,10 +9,9 @@ final class KeyboardSuggestionBarView: UIView {
     /// Called when a suggestion is pressed and held, instead of selecting it.
     var onItemLongPressed: ((SuggestionBar.Item) -> Void)?
 
-    /// The most emoji the trailing slot holds: between the settings button and the mic it is about
-    /// 81 points wide on a 375-point-wide iPhone and 96 on a 440-point-wide one, room for two emoji
-    /// buttons, each an emoji's 23 points with its insets, but not three.
-    private static let emojiSlots = 2
+    /// The most emoji the trailing slot holds, as on the system keyboard; with the bar running to the
+    /// keyboard's edge, they fit drawn without side insets.
+    private static let emojiSlots = 3
 
     private let stackView = UIStackView()
     private let trailingSlot = UIStackView()
@@ -35,7 +34,8 @@ final class KeyboardSuggestionBarView: UIView {
 
         for index in 0..<(3 + Self.emojiSlots) {
             var configuration = UIButton.Configuration.plain()
-            configuration.contentInsets = NSDirectionalEdgeInsets(top: 4, leading: 6, bottom: 4, trailing: 6)
+            let sideInset: CGFloat = index < 3 ? 6 : 0
+            configuration.contentInsets = NSDirectionalEdgeInsets(top: 4, leading: sideInset, bottom: 4, trailing: sideInset)
             configuration.titleLineBreakMode = .byTruncatingTail
             let button = UIButton(configuration: configuration)
             button.tag = index
