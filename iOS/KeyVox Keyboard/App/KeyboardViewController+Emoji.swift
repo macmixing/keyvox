@@ -2,8 +2,9 @@ import KeyVoxEmoji
 import UIKit
 
 /// The emoji page: the emoji key opens it in the key grid's place, an emoji tapped there types as
-/// a key does, its delete key deletes as the grid's does, and its letters key returns to the
-/// letter page.
+/// a key does, its delete key deletes as the grid's does, and its bar's first key returns to the
+/// keys the user types on: Compact Keys or the 123 page for those who use them, the letters
+/// otherwise.
 extension KeyboardViewController {
     func openEmojiPage() {
         keypressHaptics.emitKeypressIfEnabled()
@@ -69,11 +70,17 @@ extension KeyboardViewController {
     private func closeEmojiPage() {
         keypressHaptics.emitKeypressIfEnabled()
         emojiDeleteRepeatController.cancel()
-        if keysMode == .compact {
-            keysMode = .full
+        // Compact Keys stay as they were; otherwise the page the return key named.
+        if keysMode == .full {
+            symbolPage = emojiPageReturnKey == .numberSymbols ? .primary : .letters
         }
-        symbolPage = .letters
         emojiPanel = .closed
+    }
+
+    /// The key that leaves the emoji page: 123 back to Compact Keys or to the 123 page the user
+    /// opens on, ABC back to the letters otherwise.
+    var emojiPageReturnKey: KeyboardKeyKind {
+        keysMode == .compact || appSettingsStore.opensOnNumberPage ? .numberSymbols : .abc
     }
 
     /// The emoji the suggestion bar offers for `word`, in the skin tones the user chose, the ones

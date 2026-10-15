@@ -41,6 +41,13 @@ final class KeyboardEmojiPageView: UIView {
         get { categoryBar.onLetters }
         set { categoryBar.onLetters = newValue }
     }
+    /// The key that leaves the page, shown as the keyboard's own key of that kind.
+    var returnKey: KeyboardKeyKind = .abc {
+        didSet {
+            guard returnKey != oldValue else { return }
+            categoryBar.showReturnKey(returnKey)
+        }
+    }
     var onDeleteBegan: (() -> Void)? {
         get { categoryBar.onDeleteBegan }
         set { categoryBar.onDeleteBegan = newValue }

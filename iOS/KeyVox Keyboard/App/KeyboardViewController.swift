@@ -151,9 +151,8 @@ final class KeyboardViewController: UIInputViewController {
     var emojiPanel: KeyboardEmojiPanel = .closed {
         didSet {
             guard emojiPanel != oldValue else { return }
-            if (emojiPanel == .searching) != (oldValue == .searching) {
-                updatePrimaryViewHeight()
-            }
+            // The emoji page shows at the full keyboard's size, even from Compact Keys.
+            updatePrimaryViewHeight()
             updateUI()
         }
     }
@@ -312,9 +311,15 @@ final class KeyboardViewController: UIInputViewController {
         view.setNeedsLayout()
     }
 
+    /// The keys mode the keyboard lays out in: full while the emoji page or its search shows,
+    /// Compact Keys staying the user's mode underneath to return to.
+    private var layoutKeysMode: KeyboardKeysMode {
+        emojiPanel == .closed ? keysMode : .full
+    }
+
     /// The keyboard's height, taller by the search results while searching emoji.
     private var keyboardHeight: CGFloat {
-        keysMode.keyboardHeight(isLandscape: isLandscape)
+        layoutKeysMode.keyboardHeight(isLandscape: isLandscape)
             + (emojiPanel == .searching ? KeyboardEmojiSearchGeometry.addedKeyboardHeight : 0)
     }
 
@@ -360,10 +365,11 @@ final class KeyboardViewController: UIInputViewController {
         }
 
         let toolbarMode = currentToolbarMode()
+        rootContainerView?.emojiPageView.returnKey = emojiPageReturnKey
         rootContainerView?.apply(
             state: keyboardState,
             symbolPage: symbolPage,
-            keysMode: keysMode,
+            keysMode: layoutKeysMode,
             isLandscape: isLandscape,
             offersPredictions: typingTraits.showsSuggestions && fieldHasLetters && isLastDictationUntouched == false
                 && emojiPanel == .closed,

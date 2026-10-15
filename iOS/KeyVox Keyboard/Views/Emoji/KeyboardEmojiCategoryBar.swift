@@ -44,10 +44,9 @@ final class KeyboardEmojiCategoryBar: UIView {
 
     override init(frame: CGRect) {
         super.init(frame: frame)
-        lettersButton.setTitle("ABC", for: .normal)
+        showReturnKey(.abc)
         lettersButton.titleLabel?.font = .systemFont(ofSize: Drawn.lettersKeyFontSize)
         lettersButton.setTitleColor(.label, for: .normal)
-        lettersButton.accessibilityLabel = KeyboardKeyModel(kind: .abc, widthUnits: 1).accessibilityLabel
         lettersButton.addTarget(self, action: #selector(handleLetters), for: .touchUpInside)
 
         deleteButton.setImage(Self.symbol("delete.left"), for: .normal)
@@ -90,6 +89,13 @@ final class KeyboardEmojiCategoryBar: UIView {
             categoryStack.topAnchor.constraint(equalTo: topAnchor),
             categoryStack.bottomAnchor.constraint(equalTo: bottomAnchor),
         ])
+    }
+
+    /// Shows the key that leaves the emoji page as the keyboard's own key of `kind`.
+    func showReturnKey(_ kind: KeyboardKeyKind) {
+        let model = KeyboardKeyModel(kind: kind, widthUnits: 1)
+        lettersButton.setTitle(model.title, for: .normal)
+        lettersButton.accessibilityLabel = model.accessibilityLabel
     }
 
     @available(*, unavailable)
