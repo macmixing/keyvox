@@ -26,6 +26,9 @@ final class KeyboardKeyGridView: UIView {
     var onDeleteKeyUp: (() -> Void)?
     /// Called the moment a finger lands on any key, with the press it would make now.
     var onKeyTouchDown: ((KeyboardKeyActivation) -> Void)?
+    /// Called with the view the globe's finger landed in and the event of each of its touches, as it
+    /// lands, moves, and lifts, for the system to move on to the next keyboard or list them.
+    var onNextKeyboardTouch: ((UIView, UIEvent) -> Void)?
     var onCompactKeysRequested: (() -> Bool)?
     var onSpaceTrackpadEvent: ((KeyboardSpaceTrackpadEvent) -> Void)?
     /// Letter key frames whenever the letter page lays out differently.
@@ -46,6 +49,8 @@ final class KeyboardKeyGridView: UIView {
     private(set) var keysMode: KeyboardKeysMode = .full
     /// Whether the keys type into the emoji search, which shows its own bottom row.
     private(set) var isEmojiSearch = false
+    /// Whether the bottom row has the globe, where the system shows none under the keyboard.
+    private(set) var showsNextKeyboardKey = false
     /// Whether holding the space bar turns the keyboard into a trackpad for the cursor; the emoji
     /// search has no cursor to move.
     var allowsSpaceTrackpad = true
@@ -75,11 +80,18 @@ final class KeyboardKeyGridView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
-    func setLayout(symbolPage page: KeyboardSymbolPage, keysMode: KeyboardKeysMode, isEmojiSearch: Bool) {
-        guard page != symbolPage || keysMode != self.keysMode || isEmojiSearch != self.isEmojiSearch else { return }
+    func setLayout(
+        symbolPage page: KeyboardSymbolPage,
+        keysMode: KeyboardKeysMode,
+        isEmojiSearch: Bool,
+        showsNextKeyboardKey: Bool
+    ) {
+        guard page != symbolPage || keysMode != self.keysMode || isEmojiSearch != self.isEmojiSearch
+            || showsNextKeyboardKey != self.showsNextKeyboardKey else { return }
         symbolPage = page
         self.keysMode = keysMode
         self.isEmojiSearch = isEmojiSearch
+        self.showsNextKeyboardKey = showsNextKeyboardKey
         showPage()
     }
 
@@ -267,7 +279,12 @@ final class KeyboardKeyGridView: UIView {
     /// Shows the page for the current layout, building it the first time it is needed.
     private func showPage() {
         cancelAllTouches()
-        let layout = KeyboardKeyGridPage.Layout(symbolPage: symbolPage, keysMode: keysMode, isEmojiSearch: isEmojiSearch)
+        let layout = KeyboardKeyGridPage.Layout(
+            symbolPage: symbolPage,
+            keysMode: keysMode,
+            isEmojiSearch: isEmojiSearch,
+            showsNextKeyboardKey: showsNextKeyboardKey
+        )
         let page = pages[layout] ?? makePage(for: layout)
         if page !== currentPage {
             currentPage?.view.isHidden = true

@@ -219,7 +219,7 @@ final class KeyboardTextInputController {
             emitKeypress()
             symbolPage = .primary
             return true
-        case .restoreFullKeyboard, .shift, .emoji, .emojiSearchDone:
+        case .restoreFullKeyboard, .shift, .emoji, .emojiSearchDone, .nextKeyboard:
             return false
         }
     }

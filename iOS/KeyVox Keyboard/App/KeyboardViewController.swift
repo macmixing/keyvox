@@ -124,6 +124,14 @@ final class KeyboardViewController: UIInputViewController {
             updateUI()
         }
     }
+    /// Whether the keys show the globe, read on each layout pass: the system shows none under the
+    /// keyboard on an iPhone with a Home button.
+    var showsNextKeyboardKey = false {
+        didSet {
+            guard showsNextKeyboardKey != oldValue else { return }
+            updateUI()
+        }
+    }
     var isCapsLockEnabled = false {
         didSet {
             updateUI()
@@ -209,6 +217,7 @@ final class KeyboardViewController: UIInputViewController {
     override func viewWillLayoutSubviews() {
         super.viewWillLayoutSubviews()
         isLandscape = view.window?.windowScene?.interfaceOrientation.isLandscape ?? false
+        showsNextKeyboardKey = needsInputModeSwitchKey
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -366,6 +375,7 @@ final class KeyboardViewController: UIInputViewController {
             isLeftHandedLayoutEnabled: appSettingsStore.isLeftHandedKeyboardLayoutEnabled,
             toolbarMode: toolbarMode,
             emojiPanel: emojiPanel,
+            showsNextKeyboardKey: showsNextKeyboardKey,
             isTTSReady: installedModels.isTTSReady,
             isTrackpadModeActive: isTrackpadModeActive
         )

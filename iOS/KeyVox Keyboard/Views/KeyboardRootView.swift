@@ -204,6 +204,7 @@ final class KeyboardRootView: UIView {
         isLeftHandedLayoutEnabled: Bool,
         toolbarMode: KeyboardToolbarMode,
         emojiPanel: KeyboardEmojiPanel,
+        showsNextKeyboardKey: Bool,
         isTTSReady: Bool,
         isTrackpadModeActive: Bool
     ) {
@@ -293,7 +294,12 @@ final class KeyboardRootView: UIView {
         logoBarView.isEnabled = showsBrandedToolbar && state.isIndicatorEnabled
 
         applyEmojiPanel(emojiPanel)
-        keyGridView.setLayout(symbolPage: symbolPage, keysMode: keysMode, isEmojiSearch: emojiPanel == .searching)
+        keyGridView.setLayout(
+            symbolPage: symbolPage,
+            keysMode: keysMode,
+            isEmojiSearch: emojiPanel == .searching,
+            showsNextKeyboardKey: showsNextKeyboardKey
+        )
         keyGridHeightConstraint?.constant = keysMode.keyGridHeight(isLandscape: isLandscape)
         keyGridView.setTopRowKeyHeight(keysMode.keyHeight(isLandscape: isLandscape))
         keyGridView.setKeyboardEnabled(true)

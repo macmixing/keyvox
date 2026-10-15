@@ -121,9 +121,25 @@ enum KeyboardLayoutGeometry {
 
             guard pairedKeyWidth > 0, spaceKeyWidth > 0 else { return }
 
-            let targetWidths = rowStack.arrangedSubviews.count == 3
-                ? [sideKeyWidth, spaceKeyWidth, sideKeyWidth]
-                : [pairedKeyWidth, pairedKeyWidth, spaceKeyWidth, sideKeyWidth]
+            // On an iPhone with a Home button the globe follows the page key, as wide as it, and the
+            // emoji key takes the dictation key's place, a top-row key wide, as on Apple's keyboard
+            // there (`KeyboardSymbolLayout.HomeButtonRowMeasured`); the emoji search's row, with the
+            // globe and without the emoji key, has the usual row's widths.
+            let targetWidths: [CGFloat]
+            switch rowStack.arrangedSubviews.count {
+            case 3:
+                targetWidths = [sideKeyWidth, spaceKeyWidth, sideKeyWidth]
+            case 5:
+                targetWidths = [
+                    pairedKeyWidth,
+                    pairedKeyWidth,
+                    topRowKeyWidth,
+                    spaceKeyWidth - topRowKeyWidth - spacing,
+                    sideKeyWidth,
+                ]
+            default:
+                targetWidths = [pairedKeyWidth, pairedKeyWidth, spaceKeyWidth, sideKeyWidth]
+            }
             applyLayout(expectedKeyCount: targetWidths.count, targetWidths: targetWidths)
         }
     }

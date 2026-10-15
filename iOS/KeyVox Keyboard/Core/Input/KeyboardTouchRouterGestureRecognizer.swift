@@ -1,12 +1,12 @@
 import UIKit
 
 /// Forwards every raw touch on the key grid, for any number of fingers, without delaying
-/// or cancelling them, so the grid can follow overlapping taps itself.
+/// or cancelling them, so the grid can follow overlapping taps itself, with the event each came in.
 final class KeyboardTouchRouterGestureRecognizer: UIGestureRecognizer {
-    var onTouchesBegan: ((Set<UITouch>) -> Void)?
-    var onTouchesMoved: ((Set<UITouch>) -> Void)?
-    var onTouchesEnded: ((Set<UITouch>) -> Void)?
-    var onTouchesCancelled: ((Set<UITouch>) -> Void)?
+    var onTouchesBegan: ((Set<UITouch>, UIEvent) -> Void)?
+    var onTouchesMoved: ((Set<UITouch>, UIEvent) -> Void)?
+    var onTouchesEnded: ((Set<UITouch>, UIEvent) -> Void)?
+    var onTouchesCancelled: ((Set<UITouch>, UIEvent) -> Void)?
 
     private var activeTouchCount = 0
 
@@ -19,20 +19,20 @@ final class KeyboardTouchRouterGestureRecognizer: UIGestureRecognizer {
 
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent) {
         activeTouchCount += touches.count
-        onTouchesBegan?(touches)
+        onTouchesBegan?(touches, event)
     }
 
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent) {
-        onTouchesMoved?(touches)
+        onTouchesMoved?(touches, event)
     }
 
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent) {
-        onTouchesEnded?(touches)
+        onTouchesEnded?(touches, event)
         finish(touches.count)
     }
 
     override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent) {
-        onTouchesCancelled?(touches)
+        onTouchesCancelled?(touches, event)
         finish(touches.count)
     }
 

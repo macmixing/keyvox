@@ -7,21 +7,22 @@ import UIKit
 /// soon as another finger lands (rollover), so overlapping two-thumb taps always type in
 /// the order they landed. Delete repeats while held, as the system keyboard's does, even once
 /// the finger slides off it; a held space bar becomes a cursor trackpad, holding the
-/// alternate-symbols key opens Compact Keys, and holding a key that offers more characters, such
-/// as accented letters, opens their popup, where the finger picks one.
+/// alternate-symbols key opens Compact Keys, holding a key that offers more characters, such
+/// as accented letters, opens their popup, where the finger picks one, and the globe's finger is
+/// the system's, which moves on to the next keyboard or, held, lists them.
 extension KeyboardKeyGridView {
     func configureTouchRouter() {
-        touchRouter.onTouchesBegan = { [weak self] touches in
-            self?.handleTouchesBegan(touches)
+        touchRouter.onTouchesBegan = { [weak self] touches, event in
+            self?.handleTouchesBegan(touches, event: event)
         }
-        touchRouter.onTouchesMoved = { [weak self] touches in
-            self?.handleTouchesMoved(touches)
+        touchRouter.onTouchesMoved = { [weak self] touches, event in
+            self?.handleTouchesMoved(touches, event: event)
         }
-        touchRouter.onTouchesEnded = { [weak self] touches in
-            self?.handleTouchesEnded(touches)
+        touchRouter.onTouchesEnded = { [weak self] touches, event in
+            self?.handleTouchesEnded(touches, event: event)
         }
-        touchRouter.onTouchesCancelled = { [weak self] touches in
-            self?.handleTouchesCancelled(touches)
+        touchRouter.onTouchesCancelled = { [weak self] touches, event in
+            self?.handleTouchesCancelled(touches, event: event)
         }
         addGestureRecognizer(touchRouter)
     }
@@ -40,7 +41,7 @@ extension KeyboardKeyGridView {
         }
     }
 
-    private func handleTouchesBegan(_ touches: Set<UITouch>) {
+    private func handleTouchesBegan(_ touches: Set<UITouch>, event: UIEvent) {
         guard isKeyboardEnabled else { return }
         for touch in touches.sorted(by: { $0.timestamp < $1.timestamp }) {
             let location = touch.location(in: self)
@@ -81,13 +82,15 @@ extension KeyboardKeyGridView {
                 compactKeysHoldController.begin(onCompactKeysTrigger: true) { [weak self] in
                     self?.onCompactKeysRequested?() ?? false
                 }
+            case .nextKeyboard:
+                onNextKeyboardTouch?(touch.view ?? self, event)
             default:
                 break
             }
         }
     }
 
-    private func handleTouchesMoved(_ touches: Set<UITouch>) {
+    private func handleTouchesMoved(_ touches: Set<UITouch>, event: UIEvent) {
         let timestamp = ProcessInfo.processInfo.systemUptime
         for touch in touches {
             guard let session = touchSessions[ObjectIdentifier(touch)] else { continue }
@@ -95,6 +98,9 @@ extension KeyboardKeyGridView {
             switch session.kind {
             case .delete:
                 continue
+            case .nextKeyboard:
+                // Stays on the globe, the system's to follow into its list of keyboards.
+                onNextKeyboardTouch?(touch.view ?? self, event)
             case .space:
                 let update = spaceTrackpadController.update(
                     location: location,
@@ -139,7 +145,7 @@ extension KeyboardKeyGridView {
         }
     }
 
-    private func handleTouchesEnded(_ touches: Set<UITouch>) {
+    private func handleTouchesEnded(_ touches: Set<UITouch>, event: UIEvent) {
         for touch in touches.sorted(by: { $0.timestamp < $1.timestamp }) {
             guard let session = touchSessions.removeValue(forKey: ObjectIdentifier(touch)) else {
                 continue
@@ -157,6 +163,8 @@ extension KeyboardKeyGridView {
             case .delete:
                 deleteRepeatController.cancel()
                 onDeleteKeyUp?()
+            case .nextKeyboard:
+                onNextKeyboardTouch?(touch.view ?? self, event)
             case .alternateSymbols:
                 if compactKeysHoldController.end() == false {
                     deliver(.alternateSymbols, from: session)
@@ -179,7 +187,7 @@ extension KeyboardKeyGridView {
         }
     }
 
-    private func handleTouchesCancelled(_ touches: Set<UITouch>) {
+    private func handleTouchesCancelled(_ touches: Set<UITouch>, event: UIEvent) {
         for touch in touches {
             guard let session = touchSessions.removeValue(forKey: ObjectIdentifier(touch)) else {
                 continue
@@ -194,6 +202,8 @@ extension KeyboardKeyGridView {
             switch session.kind {
             case .delete:
                 deleteRepeatController.cancel()
+            case .nextKeyboard:
+                onNextKeyboardTouch?(touch.view ?? self, event)
             case .alternateSymbols:
                 compactKeysHoldController.cancel()
             case .space:
