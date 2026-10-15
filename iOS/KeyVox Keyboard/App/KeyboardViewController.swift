@@ -354,6 +354,10 @@ final class KeyboardViewController: UIInputViewController {
                 return
             }
         }
+        if appSettingsStore.isEmojiKeyboardEnabled == false, emojiPanel != .closed {
+            emojiPanel = .closed
+            return
+        }
 
         let toolbarMode = currentToolbarMode()
         rootContainerView?.apply(
@@ -375,6 +379,7 @@ final class KeyboardViewController: UIInputViewController {
             isLeftHandedLayoutEnabled: appSettingsStore.isLeftHandedKeyboardLayoutEnabled,
             toolbarMode: toolbarMode,
             emojiPanel: emojiPanel,
+            showsEmojiKey: appSettingsStore.isEmojiKeyboardEnabled,
             showsNextKeyboardKey: showsNextKeyboardKey,
             isTTSReady: installedModels.isTTSReady,
             isTrackpadModeActive: isTrackpadModeActive

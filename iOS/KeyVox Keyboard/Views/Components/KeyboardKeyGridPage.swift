@@ -8,6 +8,7 @@ final class KeyboardKeyGridPage {
         let symbolPage: KeyboardSymbolPage
         let keysMode: KeyboardKeysMode
         let isEmojiSearch: Bool
+        let showsEmojiKey: Bool
         let showsNextKeyboardKey: Bool
     }
 
@@ -34,6 +35,7 @@ final class KeyboardKeyGridPage {
             for: layout.symbolPage,
             keysMode: layout.keysMode,
             isEmojiSearch: layout.isEmojiSearch,
+            showsEmojiKey: layout.showsEmojiKey,
             showsNextKeyboardKey: layout.showsNextKeyboardKey
         )
         for (rowIndex, rowModels) in rows.enumerated() {

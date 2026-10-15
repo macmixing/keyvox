@@ -49,6 +49,8 @@ final class KeyboardKeyGridView: UIView {
     private(set) var keysMode: KeyboardKeysMode = .full
     /// Whether the keys type into the emoji search, which shows its own bottom row.
     private(set) var isEmojiSearch = false
+    /// Whether the bottom row has the emoji key, unless the user turned emoji off.
+    private(set) var showsEmojiKey = true
     /// Whether the bottom row has the globe, where the system shows none under the keyboard.
     private(set) var showsNextKeyboardKey = false
     /// Whether holding the space bar turns the keyboard into a trackpad for the cursor; the emoji
@@ -84,13 +86,15 @@ final class KeyboardKeyGridView: UIView {
         symbolPage page: KeyboardSymbolPage,
         keysMode: KeyboardKeysMode,
         isEmojiSearch: Bool,
+        showsEmojiKey: Bool,
         showsNextKeyboardKey: Bool
     ) {
         guard page != symbolPage || keysMode != self.keysMode || isEmojiSearch != self.isEmojiSearch
-            || showsNextKeyboardKey != self.showsNextKeyboardKey else { return }
+            || showsEmojiKey != self.showsEmojiKey || showsNextKeyboardKey != self.showsNextKeyboardKey else { return }
         symbolPage = page
         self.keysMode = keysMode
         self.isEmojiSearch = isEmojiSearch
+        self.showsEmojiKey = showsEmojiKey
         self.showsNextKeyboardKey = showsNextKeyboardKey
         showPage()
     }
@@ -283,6 +287,7 @@ final class KeyboardKeyGridView: UIView {
             symbolPage: symbolPage,
             keysMode: keysMode,
             isEmojiSearch: isEmojiSearch,
+            showsEmojiKey: showsEmojiKey,
             showsNextKeyboardKey: showsNextKeyboardKey
         )
         let page = pages[layout] ?? makePage(for: layout)

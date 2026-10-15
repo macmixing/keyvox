@@ -204,6 +204,7 @@ final class KeyboardRootView: UIView {
         isLeftHandedLayoutEnabled: Bool,
         toolbarMode: KeyboardToolbarMode,
         emojiPanel: KeyboardEmojiPanel,
+        showsEmojiKey: Bool,
         showsNextKeyboardKey: Bool,
         isTTSReady: Bool,
         isTrackpadModeActive: Bool
@@ -298,6 +299,7 @@ final class KeyboardRootView: UIView {
             symbolPage: symbolPage,
             keysMode: keysMode,
             isEmojiSearch: emojiPanel == .searching,
+            showsEmojiKey: showsEmojiKey,
             showsNextKeyboardKey: showsNextKeyboardKey
         )
         keyGridHeightConstraint?.constant = keysMode.keyGridHeight(isLandscape: isLandscape)

@@ -79,6 +79,7 @@ extension KeyboardViewController {
     /// The emoji the suggestion bar offers for `word`, in the skin tones the user chose, the ones
     /// they used most first, as on the system keyboard.
     func barEmoji(for word: String) -> [String] {
+        guard appSettingsStore.isEmojiKeyboardEnabled else { return [] }
         let emoji = KeyboardEmojiPredictionsIndex.shared.emoji(for: word).map { emojiSkinToneStore.chosenTones[$0] ?? $0 }
         return emojiFrequentlyUsedStore.frequentlyUsed.ordering(emoji)
     }

@@ -190,15 +190,19 @@ enum KeyboardSymbolLayout {
     }
 
     /// The rows of `page`; while the emoji search shows, the bottom row is the system emoji
-    /// keyboard's search row: the page key, space, and done. With `showsNextKeyboardKey`, the
-    /// bottom row has the globe after its page key.
+    /// keyboard's search row: the page key, space, and done. Without `showsEmojiKey`, the bottom
+    /// row has no emoji key; with `showsNextKeyboardKey`, it has the globe after its page key.
     static func rows(
         for page: KeyboardSymbolPage,
         keysMode: KeyboardKeysMode = .full,
         isEmojiSearch: Bool = false,
+        showsEmojiKey: Bool = true,
         showsNextKeyboardKey: Bool = false
     ) -> [[KeyboardKeyModel]] {
-        let rows = baseRows(for: page, keysMode: keysMode, isEmojiSearch: isEmojiSearch)
+        var rows = baseRows(for: page, keysMode: keysMode, isEmojiSearch: isEmojiSearch)
+        if showsEmojiKey == false, let bottomRow = rows.indices.last {
+            rows[bottomRow] = removingEmojiKey(from: rows[bottomRow])
+        }
         guard showsNextKeyboardKey, let bottomRow = rows.last else { return rows }
         return rows.dropLast() + [addingNextKeyboardKey(to: bottomRow)]
     }
@@ -292,6 +296,17 @@ enum KeyboardSymbolLayout {
             key(.returnKey, width: 2.5),
         ],
     ]
+
+    /// `row`, a bottom row, without its emoji key: the page key as wide as return, the space bar
+    /// taking what the other keys leave.
+    private static func removingEmojiKey(from row: [KeyboardKeyModel]) -> [KeyboardKeyModel] {
+        guard row.contains(where: { $0.kind == .emoji }), let pageKey = row.first else { return row }
+        let returnWidth = row.first { $0.kind == .returnKey }?.widthUnits ?? pageKey.widthUnits
+        let keys = [key(pageKey.kind, width: returnWidth)] + row.dropFirst().filter { $0.kind != .emoji }
+        let rowWidth = row.reduce(0) { $0 + $1.widthUnits }
+        let otherKeysWidth = keys.filter { $0.kind != .space }.reduce(0) { $0 + $1.widthUnits }
+        return keys.map { $0.kind == .space ? key(.space, width: rowWidth - otherKeysWidth) : $0 }
+    }
 
     /// `row`, a bottom row, as the system keyboard shows it on an iPhone with a Home button: the
     /// globe after the page key and the emoji key in the dictation key's place, the space bar taking
