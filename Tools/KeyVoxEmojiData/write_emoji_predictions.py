@@ -9,15 +9,17 @@ A word gets, at most three, in this order:
 1. emoji whose name is the word, then emoji whose name is the word with "face" or "flag" left out
    ("dog face", "flag: Cuba"), by Unicode's ranking;
 2. the person, woman, and man versions of such a name ("woman guard"), in the catalog's order;
-3. the most used emoji (the first MOST_USED of the ranking) that have the word among their CLDR
-   keywords, by Unicode's ranking.
-A plural in the vocabulary gets what its singular gets ("dogs" what "dog" gets).
+3. emoji that have the word among their CLDR keywords, by Unicode's ranking: the most used (the first
+   MOST_USED of the ranking) for any word, and those further down to the first FEW_FOUND_RANK for a
+   word at most FEW_FOUND emoji have among their keywords, after the emoji of rules 0 to 2.
+A plural in the vocabulary without emoji of its own by rules 0 to 2 or the most used emoji's
+keywords gets what its singular gets ("dogs" what "dog" gets), then its own from rule 3.
 
-Watching the system keyboard's bar for 320 words (Tools/AppleKeyboardBaseline,
-CorrectionMemoryProbeTests; once an emoji was typed, as the bar offers none before) showed emoji
-for 164 of them; this data gives emoji for 75 of those 164, and for 5 of the 156 it gave none.
-Rules reaching further into CLDR's keywords got more of the 164 but about one wrong word for each
-right one, and a wrong word costs the bar its third word.
+A wrong emoji costs the bar its third word, so a keyword shared by many emoji counts only for the
+most used: scored against the system keyboard's bar, watched with Tools/AppleKeyboardBaseline
+(CorrectionMemoryProbeTests, once an emoji was typed, as the bar offers none before), trusting
+every keyword gave about one wrong word for each right one, while a keyword few emoji share
+usually names what the word means.
 
 A word is compared as KeyVoxEmoji's EmojiSearch compares words: decomposed for compatibility,
 without nonspacing marks, lowercased.
@@ -40,6 +42,8 @@ from write_emoji_search import catalog_emoji, frequency_ranks, key, words  # noq
 
 ADDITIONS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "emoji_prediction_additions.txt")
 MOST_USED = 25
+FEW_FOUND = 2
+FEW_FOUND_RANK = 300
 LEFT_OUT = {"face", "flag"}
 PEOPLE = {"person", "woman", "man"}
 LIMIT = 3
@@ -78,6 +82,14 @@ def main(catalog_path, annotations_path, derived_path, frequency_path, vocabular
     unranked = len(ranks)
     found = {}
     catalog = list(catalog_emoji(catalog_path))
+    keywords = {}
+    for text, _ in catalog:
+        entry = plain.get(key(text)) or derived.get(key(text)) or {}
+        keywords[text] = {word for phrase in entry.get("default", []) for word in words(phrase)}
+    emoji_count = {}
+    for found_words in keywords.values():
+        for word in found_words:
+            emoji_count[word] = emoji_count.get(word, 0) + 1
     for order, (text, unicode_name) in enumerate(catalog):
         entry = plain.get(key(text)) or derived.get(key(text)) or {}
         name = words(" ".join(entry.get("tts", [])) or unicode_name)
@@ -91,27 +103,39 @@ def main(catalog_path, annotations_path, derived_path, frequency_path, vocabular
             matches.append((shortened[0], (1, rank)))
         elif len(without_people) == 1:
             matches.append((without_people[0], (2, order)))
-        if rank < MOST_USED:
-            for keyword in {word for phrase in entry.get("default", []) for word in words(phrase)}:
+        for keyword in keywords[text]:
+            if rank < MOST_USED:
                 matches.append((keyword, (3, rank)))
+            elif rank < FEW_FOUND_RANK and emoji_count[keyword] <= FEW_FOUND:
+                matches.append((keyword, (4, rank)))
         for word, place in matches:
             found.setdefault(word, []).append((place, text))
-    emoji_by_word = {}
+    # The most used emoji's matches first, the few-found keyword matches after them.
+    emoji_by_word, few_found = {}, {}
     for word, places in found.items():
-        chosen = []
-        for _, text in sorted(places):
-            if text not in chosen:
-                chosen.append(text)
-        emoji_by_word[word] = chosen[:LIMIT]
+        for target, kept in ((emoji_by_word, [p for p in places if p[0][0] < 4]),
+                             (few_found, [p for p in places if p[0][0] == 4])):
+            chosen = []
+            for _, text in sorted(kept):
+                if text not in chosen:
+                    chosen.append(text)
+            if chosen:
+                target[word] = chosen[:LIMIT]
     for word, emoji in additions({text for text, _ in catalog}).items():
         emoji_by_word[word] = (emoji + [text for text in emoji_by_word.get(word, []) if text not in emoji])[:LIMIT]
+
+    def extended(word, emoji):
+        return (emoji + [text for text in few_found.get(word, []) if text not in emoji])[:LIMIT]
+
+    with_few_found = {word: extended(word, emoji_by_word.get(word, [])) for word in emoji_by_word.keys() | few_found.keys()}
     vocabulary = {word for line in open(vocabulary_path, encoding="utf-8") for word in [line.strip()]
                   if word.isalpha() and word.islower()}
-    singular_emoji = dict(emoji_by_word)
-    for plural in sorted(vocabulary - singular_emoji.keys()):
-        singular = next((form for form in singulars(plural) if form in singular_emoji), None)
+    plurals = {}
+    for plural in sorted(vocabulary - emoji_by_word.keys()):
+        singular = next((form for form in singulars(plural) if form in with_few_found), None)
         if singular:
-            emoji_by_word[plural] = singular_emoji[singular]
+            plurals[plural] = extended(plural, with_few_found[singular])
+    emoji_by_word = {**with_few_found, **plurals}
     with open(output_path, "w", encoding="utf-8") as output:
         output.write("".join(f"{word}\t{' '.join(emoji)}\n" for word, emoji in sorted(emoji_by_word.items())))
     print(f"{len(emoji_by_word)} words with emoji", file=sys.stderr)

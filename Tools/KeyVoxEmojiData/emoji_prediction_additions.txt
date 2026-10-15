@@ -1,3 +1,4 @@
 # Emoji KeyVox offers for a word beyond what Unicode's data gives, first for that word:
 # <word><tab><emoji>, the emoji separated by spaces as the catalog has them.
 dead	💀 😵
+wtf	😳 😬 🤬

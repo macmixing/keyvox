@@ -1,27 +1,51 @@
 1	👍
+100	💯
 143	😍 💕 💖
+a	💯
 abacus	🧮
 abacuses	🧮
+absolutely	👊
 accordion	🪗
 accordions	🪗
+address	📢
+addresses	📢
 adorbs	😘
 af	🔥
 afghanistan	🇦🇫
+afraid	😨
+afraids	😨
+agree	💯 👊
+agreement	🤝
+agreements	🤝
+agrees	💯 👊
 airplane	✈️
 airplanes	✈️
+alarm	🚨
+alarms	🚨
 albania	🇦🇱
+ale	🍺
 alembic	⚗️
 alembics	⚗️
+alert	🚨
+alerts	🚨
+ales	🍺
 algeria	🇩🇿
 alien	👽
 aliens	👽
+amazed	😳
 ambulance	🚑
 ambulances	🚑
+americas	🌎
 amphora	🏺
 amphoras	🏺
 anchor	⚓️
 anchors	⚓️
 andorra	🇦🇩
+angel	😇 👼
+angeles	😇 👼
+angelic	😇
+angelics	😇
+angels	😇 👼
 angola	🇦🇴
 angolas	🇦🇴
 angries	😠
@@ -59,6 +83,10 @@ asks	🙏
 astonished	😲
 astronaut	🧑‍🚀 👩‍🚀 👨‍🚀
 astronauts	🧑‍🚀 👩‍🚀 👨‍🚀
+astronomies	⭐️
+astronomy	⭐️
+aubergine	🍆
+aubergines	🍆
 australia	🇦🇺
 australias	🇦🇺
 austria	🇦🇹
@@ -67,10 +95,13 @@ automobiles	🚗
 avocado	🥑
 avocadoes	🥑
 avocados	🥑
+away	💨
+aways	💨
 awesome	👏
 awesomes	👏
 awful	😢
 awfuls	😢
+awk	😬
 axe	🪓
 axes	🪓
 azerbaijan	🇦🇿
@@ -94,14 +125,21 @@ bald	👩‍🦲 🧑‍🦲 👨‍🦲
 balds	👩‍🦲 🧑‍🦲 👨‍🦲
 balloon	🎈
 balloons	🎈
+ballot	☑️
+ballots	☑️
 banana	🍌
 bananas	🍌
+bandage	🤕
+bandages	🤕
+bangbang	‼️
 bangladesh	🇧🇩
 banjo	🪕
 banjos	🪕
 bank	🏦
 banks	🏦
 barbados	🇧🇧
+barf	🤮
+barfs	🤮
 baseball	⚾️
 baseballs	⚾️
 basket	🧺
@@ -117,6 +155,9 @@ batteries	🔋
 battery	🔋
 bawling	😭
 bawlings	😭
+bday	🎂
+beacon	🚨
+beacons	🚨
 beaming	😁
 beans	🫘
 bear	🐻
@@ -126,18 +167,25 @@ beares	🐻
 bears	🐻
 beast	💪
 beasts	💪
+beating	💓
+beatings	💓
 beaver	🦫
 beavers	🦫
 bed	🛏️
 bedes	🛏️
 beds	🛏️
+bee	🐝
+bees	🐝
 beetle	🪲
 beetles	🪲
+befuddled	😕
 beg	🙏
 beges	🙏
 begs	🙏
 belarus	🇧🇾
 belgium	🇧🇪
+believe	😮
+believes	😮
 belize	🇧🇿
 bell	🔔
 belles	🔔
@@ -147,6 +195,12 @@ benches	💪
 benin	🇧🇯
 bermuda	🇧🇲
 bermudas	🇧🇲
+berries	🍓 🍒
+berry	🍓
+bestest	💜
+bet	👌 💰
+betes	👌 💰
+bets	👌 💰
 bhutan	🇧🇹
 biceps	💪
 bicycle	🚲
@@ -163,32 +217,43 @@ bisons	🦬
 black	🏴
 blackes	🏴
 blacks	🏴
-blessed	🙏
+blank	😐 😶
+blanks	😐 😶
+blessed	🙏 😇
 blossom	🌼
 blossoms	🌼
 blowfish	🐡
 blowing	😘
 blowings	😘
+blown	🤯
+blowns	🤯
 blue	💙
 blueberries	🫐
 blues	💙
-blush	😊
-blushes	😊
+blush	😊 😚
+blushes	😊 😚
 boar	🐗
 boars	🐗
 bodybuilder	💪
 bodybuilders	💪
 bolivia	🇧🇴
-bomb	💣
-bombs	💣
+bollywood	🎥
+bomb	💣 💥
+bombs	💣 💥
 bone	🦴
 bones	🦴
+boo	👻
 bookmark	🔖
 bookmarks	🔖
 books	📚
 boomerang	🪃
 boomerangs	🪃
+boos	👻
+boss	😏
+bosses	😏
+bosss	😏
 botswana	🇧🇼
+bottoms	🍻
 bouquet	💐
 bouquets	💐
 bow	🙏
@@ -203,6 +268,7 @@ boyes	👦
 boys	👦
 brain	🧠
 brains	🧠
+brainy	🤓
 brazil	🇧🇷
 brazils	🇧🇷
 bread	🍞
@@ -224,16 +290,24 @@ brokens	💔
 broom	🧹
 brooms	🧹
 bros	💪
+bruh	👊
 brunei	🇧🇳
+bs	💩
 bubbles	🫧
 bucket	🪣
 buckets	🪣
 bug	🐛
 buges	🐛
 bugs	🐛
+bulb	💡
+bulbs	💡
 bulgaria	🇧🇬
 bullseye	🎯
 bullseyes	🎯
+bumblebee	🐝
+bumblebees	🐝
+bump	👊
+bumps	👊
 burn	🔥
 burnes	🔥
 burns	🔥
@@ -244,13 +318,24 @@ bus	🚌
 buses	🚌
 buss	🚌
 butter	🧈
-butterflies	🦋
+buttercup	🌼
+buttercups	🌼
+butterflies	🦋 😟
 butterfly	🦋
 butters	🧈
+bye	👋
+byes	👋
+c	🍊
 cactus	🌵
 cactuses	🌵
+cafe	☕️
+cafes	☕️
+caffeine	☕️
+caffeines	☕️
 calendar	📅
 calendars	📅
+calm	😌
+calms	😌
 cambodia	🇰🇭
 camel	🐪
 camels	🐪
@@ -262,6 +347,8 @@ camping	🏕️
 campings	🏕️
 canada	🇨🇦
 canadas	🇨🇦
+cancel	❌
+cancels	❌
 cancer	♋️
 cancers	♋️
 candies	🍬
@@ -273,32 +360,62 @@ canoes	🛶
 capricorn	♑️
 capricorns	♑️
 card	♥️
+cardiac	💛
+cardio	💓
+cardios	💓
 cards	♥️
+care	💅
+carees	💅
+cares	💅
 carrot	🥕
 carrots	🥕
+cartoon	💭
+cartoons	💭
 cartwheeling	🤸‍♀️ 🤸 🤸‍♂️
 castle	🏰
 castles	🏰
 cat	🐈 🐱
 cates	🐈 🐱
 cats	🐈 🐱
+caught	😦
+caution	⚠️
+cautions	⚠️
+censor	🤬
+censors	🤬
 chad	🇹🇩
 chades	🇹🇩
 chads	🇹🇩
+chai	☕️
 chains	⛓️
 chair	🪑
 chairs	🪑
+champion	🏆
+champions	🏆
+champs	🏆
+checkered	🏁
+checkmark	✅ ✔️
+checkmarks	✅ ✔️
+cheerful	😀
+cheering	📣
+cheerings	📣
+cheers	🍻
+cheery	😀
 chequered	🏁
 cherries	🍒
+cherry	🌸 🍒
 chestnut	🌰
 chestnuts	🌰
 chicken	🐔
 chickens	🐔
 child	🧒
 childes	🧒
+children	👶
+childrens	👶
 childs	🧒
 chile	🇨🇱
 chiles	🇨🇱
+chilling	😎
+chillings	😎
 chin	🤔
 china	🇨🇳
 chinas	🇨🇳
@@ -319,12 +436,24 @@ clamp	🗜️
 clamps	🗜️
 clap	👏
 claps	👏
+classy	🧐
+clearly	💯
+clenched	👊 ✊
+clever	🤓
+clevers	🤓
 climbing	🧗‍♀️ 🧗 🧗‍♂️
+clink	🍻 🥂
+clinking	🍻 🥂
+clinks	🍻 🥂
 clipboard	📋
 clipboards	📋
+close	😥 😓
 closed	😆
+closes	😥 😓
 cloud	☁️
 clouds	☁️
+clover	🍀
+clovers	🍀
 clown	🤡
 clowns	🤡
 cmon	🙏
@@ -335,12 +464,18 @@ cockroach	🪳
 cockroaches	🪳
 coconut	🥥
 coconuts	🥥
+coffee	☕️
+coffees	☕️
 coffin	⚰️
 coffins	⚰️
 coin	🪙
 coins	🪙
 cold	🥶 😅
 colds	🥶 😅
+collage	📌
+collages	📌
+collide	💥
+collides	💥
 collision	💥
 collisions	💥
 colombia	🇨🇴
@@ -349,8 +484,19 @@ comets	☄️
 comoros	🇰🇲
 compass	🧭
 compasses	🧭
+complete	✅
+completed	✅
+completes	✅
+complicated	😥
+concentrate	😣
+concentrates	😣
+concentration	😣
+concentrations	😣
+confetti	🎊
+confettis	🎊
 confounded	😖
 confused	😕
+confusing	😕
 congrats	👏
 congratulations	👏
 consider	🤔
@@ -367,8 +513,17 @@ copyrights	©️
 coral	🪸
 corales	🪸
 corals	🪸
+cork	🍾
+corks	🍾
+correct	👊
+corrects	👊
+cosmetics	💅
 cow	🐄 🐮
+cowboy	🤠
+cowboys	🤠
 cowes	🐄 🐮
+cowgirl	🤠
+cowgirls	🤠
 cows	🐄 🐮
 crab	🦀
 crabs	🦀
@@ -376,11 +531,14 @@ crayon	🖍️
 crayons	🖍️
 cricket	🦗
 crickets	🦗
+cringe	😖
+cringes	😖
 croatia	🇭🇷
 crocodile	🐊
 crocodiles	🐊
 croissant	🥐
 croissants	🥐
+crossbones	☠️
 crown	👑
 crowns	👑
 crushed	💔
@@ -396,11 +554,18 @@ cucumber	🥒
 cucumbers	🥒
 cupcake	🧁
 cupcakes	🧁
+cupid	💘
+cupids	💘
+cupped	🤲
 curacao	🇨🇼
 curls	💪
+cursing	🤬
+cursings	🤬
+cussing	🤬
 custard	🍮
 custards	🍮
 customs	🛃
+cya	👋
 cyclone	🌀
 cyclones	🌀
 cyprus	🇨🇾
@@ -409,26 +574,66 @@ dagger	🗡️
 daggers	🗡️
 dancing	💃 🕺
 dancings	💃 🕺
+dandelion	🌼
+dandelions	🌼
+danger	⚡️
+dangerous	💣
+dangers	⚡️
 dango	🍡
 dangos	🍡
+dapper	😏
+dappers	😏
+dart	🎯
+darts	🎯
+dash	💨
+dashes	💨
+dashing	💨
 date	💕
 dates	💕
 dating	💕
 datings	💕
+daydream	💭
+daydreams	💭
+dazed	😳
 dead	💀 😵
+deadpan	😐
 deads	💀 😵
 deaf	🧏‍♀️ 🧏 🧏‍♂️
+deal	🤝
+deales	🤝
+deals	🤝
+decisions	💭
+decoration	💟
+decorations	💟
 deer	🦌
 deers	🦌
+definitely	💯
 dejected	😅
+delicious	😋
+demon	😈 👿
+demons	😈 👿
 denmark	🇩🇰
+dermatologist	😷
+dermatologists	😷
 desert	🏜️
 deserts	🏜️
 detective	🕵️ 🕵️‍♀️ 🕵️‍♂️
 detectives	🕵️ 🕵️‍♀️ 🕵️‍♂️
+died	😔
+diet	🍎
+diets	🍎
+direct	🎯
+directs	🎯
 disappointed	😞
+disapproval	🤨
+disapprovals	🤨
 disguised	🥸
+dislike	👎
+dislikes	👎
 distorted	🫪
+distraught	😖
+distrust	🤨
+distrusts	🤨
 divide	➗
 divides	➗
 dizzy	💫
@@ -440,66 +645,111 @@ dodos	🦤
 dog	🐕 🐶
 doges	🐕 🐶
 dogs	🐕 🐶
+dogss	🐕
 dolphin	🐬
 dolphins	🐬
 dominica	🇩🇲
 donkey	🫏
 donkeys	🫏
+doo	💩
 door	🚪
 doors	🚪
+doos	💩
+dope	👌
+dopes	👌
 doughnut	🍩
 doughnuts	🍩
 dove	🕊️
 doves	🕊️
+downcast	😓
+dr	😷
 dragon	🐉 🐲
 dragons	🐉 🐲
+dream	💭
+dreams	💭
 dress	👗
 dresses	👗
+drip	💦
+drips	💦
 drooling	🤤
-droplet	💧
-droplets	💧
+droplet	💧 💦
+droplets	💧 💦
+drops	💦 ☔️
 drum	🥁
 drums	🥁
+dua	🤲
+duas	🤲
 duck	🦆
 ducks	🦆
 dumpling	🥟
 dumplings	🥟
+dung	💩
+dunges	💩
+dungs	💩
 dvd	📀
 dvds	📀
+dying	🥀
+dyings	🥀
 eagle	🦅
 eagles	🦅
 ear	👂
+earbud	🎧
+earbuds	🎧
 ears	👂
+east	➡️
+eastes	➡️
+easts	➡️
 ecuador	🇪🇨
+eek	😰
+eeks	😰
 egg	🥚
 eggplant	🍆
 eggplants	🍆
 eggs	🥚
 egypt	🇪🇬
 egypts	🇪🇬
+electricities	⚡️
+electricity	⚡️
 elephant	🐘
 elephants	🐘
 elevator	🛗
 elevators	🛗
 elf	🧝 🧝‍♀️ 🧝‍♂️
 elfs	🧝 🧝‍♀️ 🧝‍♂️
+emoji	🤨
+emojis	🤨
 emotion	❤️ 💕 ♥️
 emotions	❤️ 💕 ♥️
+engaged	💍
+engagement	💎 💍
+engagements	💎 💍
 england	🏴󠁧󠁢󠁥󠁮󠁧󠁿
 englands	🏴󠁧󠁢󠁥󠁮󠁧󠁿
 enraged	😡
+entries	🚫
+entry	🚫
 envelope	✉️
 envelopes	✉️
 eritrea	🇪🇷
 estonia	🇪🇪
 eswatini	🇸🇿
 ethiopia	🇪🇹
+ew	🤮
 ewe	🐑
 ewes	🐑
 excited	😅 👏 💖
 exhaling	😮‍💨
+expert	🤓
+experts	🤓
+explode	💥 🤯
+explodes	💥 🤯
+exploding	🤯
+explosion	💣
+explosions	💣
 expressionless	😑
 eye	👁️ 😍 😊
+eyebrow	🤨
+eyebrows	🤨
 eyeroll	🙄
 eyes	👀 😍 😊
 eyeses	👀 😍 😊
@@ -511,20 +761,28 @@ factories	🏭
 factory	🏭
 fairies	🧚 🧚‍♀️ 🧚‍♂️
 fairy	🧚 🧚‍♀️ 🧚‍♂️
+faithful	💯
+faithfuls	💯
 falafel	🧆
 falafels	🧆
 farmer	🧑‍🌾 👩‍🌾 👨‍🌾
 farmers	🧑‍🌾 👩‍🌾 👨‍🌾
-fearful	😨
+fart	💨
+farts	💨
+fearful	😨 😱
 feather	🪶
 feathers	🪶
 feels	😂 😍 😢
 fencing	🤺
 ferries	⛴️
 ferry	⛴️
+fever	🤧
+fevers	🤧
 fiji	🇫🇯
 fingerprint	🫆
 fingerprints	🫆
+finish	🏁
+finishes	🏁
 finland	🇫🇮
 finlands	🇫🇮
 fire	🔥
@@ -539,15 +797,25 @@ fishes	🐟
 fishs	🐟
 five	🙏
 fives	🙏
+fixed	✅
+flags	🏁
+flair	💃 🕺
+flairs	💃 🕺
 flame	🔥
+flamenco	💃 🕺
+flamencos	💃 🕺
 flames	🔥
 flamingo	🦩
 flamingoes	🦩
 flamingos	🦩
+flash	📸
+flashes	📸
 flashlight	🔦
 flashlights	🔦
 flatbread	🫓
 flatbreads	🫓
+fleek	👌 💯
+fleeks	👌 💯
 flex	💪
 flexes	💪
 flexs	💪
@@ -555,12 +823,22 @@ flirt	😘 😉
 flirts	😘 😉
 floor	🤣
 floors	🤣
+flu	🤧 💉
+flues	🤧 💉
+flus	🤧 💉
 flushed	😳
 flute	🪈
 flutes	🪈
+flutter	🍃
+fluttering	🍃
+flutterings	🍃
+flutters	🍃
 fly	🪰
 flyes	🪰
 flys	🪰
+fml	💩
+focus	😣
+focuses	😣
 fog	🌫️
 foggies	🌁
 foggy	🌁
@@ -571,6 +849,7 @@ fondues	🫕
 foot	🦶
 footprints	👣
 foots	🦶
+fosho	👌
 fountain	⛲️
 fountains	⛲️
 fox	🦊
@@ -581,8 +860,16 @@ frances	🇫🇷
 frog	🐸
 frogs	🐸
 frowning	☹️ 🙍‍♀️ 🙍
+fume	😤
+fumes	😤
+fuming	😤
 funnies	😂 🤣
 funny	😂 🤣
+furies	😤
+furious	😤
+fury	😤
+futbol	⚽️
+g2g	👋
 gabon	🇬🇦
 gains	💪
 gambia	🇬🇲
@@ -592,23 +879,41 @@ gamees	♥️
 games	♥️
 garlic	🧄
 garlics	🧄
+gay	🌈
+gays	🌈
 gear	⚙️
 gears	⚙️
+geek	🤓
+geeks	🤓
+geez	😳
+geezes	😳
+gem	💎
 gemini	♊️
 geminis	♊️
+gems	💎
+genderqueer	🌈
 genie	🧞 🧞‍♀️ 🧞‍♂️
 genies	🧞 🧞‍♀️ 🧞‍♂️
 georgia	🇬🇪
 germanies	🇩🇪
 germany	🇩🇪
+germs	😷
 gesture	🙏
 gestures	🙏
+gesundheit	🤧
 ghana	🇬🇭
 ghanas	🇬🇭
 ghost	👻
 ghosts	👻
 gibraltar	🇬🇮
 gibraltars	🇬🇮
+gift	🎁
+gifted	🤓
+gifteds	🤓
+gifts	🎁
+giggle	🤭
+giggles	🤭
+giggling	🤭
 giraffe	🦒
 giraffes	🦒
 girl	👧
@@ -619,20 +924,42 @@ glades	😊
 glads	😊
 glasses	👓
 glassess	👓
+glbt	🌈
+glbtq	🌈
+glittery	🌟
 gloves	🧤
+glow	🌟
+glowes	🌟
+glowing	🌟
+glows	🌟
+go	💨
 goat	🐐
 goats	🐐
 goblin	👺
 goblins	👺
 goggles	🥽
 golfing	🏌️‍♀️ 🏌️ 🏌️‍♂️
+gone	💨
+gones	💨
+goo	👶
 good	👍 👏 💖
 goodes	👍 👏 💖
 goods	👍 👏 💖
+gooes	👶
+goofies	🤪
+goofy	🤪
+googly	👀
+goos	👶
 goose	🪿
 gooses	🪿
 gorilla	🦍
 gorillas	🦍
+got	👌
+gotcha	👌
+gotchas	👌
+gotes	👌
+gots	👌
+gotta	💨
 grapes	🍇
 great	👏
 greates	👏
@@ -640,11 +967,17 @@ greats	👏
 greece	🇬🇷
 greenland	🇬🇱
 greenlands	🇬🇱
+greetings	👋
 grenada	🇬🇩
 grimacing	😬
 grin	😁
 grinning	😀 😅 😁
 grins	😁
+groove	💃 🕺
+grooves	💃 🕺
+growing	💗
+growings	💗
+gtg	👋
 guadeloupe	🇬🇵
 guam	🇬🇺
 guard	💂 💂‍♀️ 💂‍♂️
@@ -657,6 +990,8 @@ guinea	🇬🇳
 guineas	🇬🇳
 guitar	🎸
 guitars	🎸
+gun	🔫
+guns	🔫
 guyana	🇬🇾
 gym	💪
 gyms	💪
@@ -664,6 +999,9 @@ haha	😂 🤣 😆
 hahaha	😆
 hahas	😂 🤣 😆
 haiti	🇭🇹
+halo	😇
+haloes	😇
+halos	😇
 hamburger	🍔
 hamburgers	🍔
 hammer	🔨
@@ -675,31 +1013,49 @@ hand	🙏 👍 👏
 handbag	👜
 handbags	👜
 handes	🙏 👍 👏
+handgun	🔫
+handguns	🔫
 hands	🙏 👍 👏
 handshake	🤝
 handshakes	🤝
+hang	🤙
+hanges	🤙
+hangs	🤙
 happies	😂 🤣 😁
 happy	😂 🤣 😁
 harp	🪉
 harpes	🪉
 harps	🪉
+haunting	👻
+hauntings	👻
 headphone	🎧
 headphones	🎧
 headstone	🪦
 headstones	🪦
 heart	❤️ 😍 💕
+heartbeat	💓
+heartbeats	💓
 heartbreaker	😉
 heartbreakers	😉
 heartbroken	💔
+hearth	💟
+hearths	💟
+heartpulse	💗
 hearts	😍 💕 ♥️
 hedgehog	🦔
 hedgehogs	🦔
 hehe	😂 🤣
 helicopter	🚁
 helicopters	🚁
+hello	👋
+hellos	👋
 herb	🌿
 herbes	🌿
 herbs	🌿
+hey	👋
+heyes	👋
+heys	👋
+hi	👋
 hibiscus	🌺
 hibiscuses	🌺
 high	🙏
@@ -708,11 +1064,20 @@ highs	🙏
 hilarious	😂 🤣
 hippopotamus	🦛
 hippopotamuses	🦛
-hmm	🤔
-hmms	🤔
+hit	🎯
+hites	🎯
+hits	🎯
+hm	😕
+hmm	🤔 🤨
+hmms	🤔 🤨
+hocho	🔪
 hole	🕳️
 holees	🕳️
 holes	🕳️
+hollow	⭕️
+hollows	⭕️
+hollywood	🎥
+hollywoods	🎥
 homie	👏
 homies	👏
 honduras	🇭🇳
@@ -721,6 +1086,11 @@ honeybees	🐝
 hook	🪝
 hookes	🪝
 hooks	🪝
+hoop	🏀
+hoopes	🏀
+hoops	🏀
+horrible	😝
+horribles	😝
 horse	🐎 🐴
 horses	🐎 🐴
 hospital	🏥
@@ -734,30 +1104,64 @@ hotes	🥵 🔥
 hots	🥵 🔥
 house	🏠
 houses	🏘️
+hugging	🤗
+hundred	💯
+hundreds	💯
 hungary	🇭🇺
+hurricane	🌀
+hurricanes	🌀
+hurt	🤕
+hurts	🤕
 hushed	😯
 hut	🛖
 huts	🛖
 hyacinth	🪻
 hyacinths	🪻
+i	💀
 ice	🧊
 icees	🧊
 iceland	🇮🇸
 icelands	🇮🇸
 ices	🧊
+idea	💡 💭
+ideas	💡 💭
+ill	🤒
+ills	🤒
 ily	😍 💕 😘
+imp	👿
+impes	👿
+impressed	😳
+imps	👿
 india	🇮🇳
 indias	🇮🇳
 indonesia	🇮🇩
+inexpressive	😑
+infant	👶
+infantes	👶
+infants	👶
 infinities	♾️
 infinity	♾️
 information	ℹ️
 informations	ℹ️
+injuries	🤕
+injury	🤕
+innocent	😇
+innocents	😇
+intelligent	🤓
+intelligents	🤓
+interrobang	⁉️
+invent	💭
+inventes	💭
+invention	💭
+inventions	💭
+invents	💭
 iran	🇮🇷
 iraq	🇮🇶
 iraqs	🇮🇶
 ireland	🇮🇪
 irelands	🇮🇪
+irish	🍀 ☘️
+irishes	🍀 ☘️
 israel	🇮🇱
 israels	🇮🇱
 italy	🇮🇹
@@ -769,16 +1173,29 @@ japanes	🇯🇵
 japans	🇯🇵
 jar	🫙
 jars	🫙
+jazz	👐
+jazzes	👐
 jeans	👖
+jeez	😳
+jel	😒
+jellies	😒
+jelly	😒
 jellyfish	🪼
 jellyfishes	🪼
+jels	😒
 jersey	🇯🇪
 jerseys	🇯🇪
+jet	✈️
+jets	✈️
+jewel	💎
+jewels	💎
 job	👏
 jobes	👏
 jobs	👏
+joke	😜
 joker	🃏
 jokers	🃏
+jokes	😜
 jordan	🇯🇴
 jordanes	🇯🇴
 jordans	🇯🇴
@@ -793,7 +1210,11 @@ juggling	🤹‍♀️ 🤹 🤹‍♂️
 kaaba	🕋
 kangaroo	🦘
 kangaroos	🦘
+karaoke	🎤
+karaokes	🎤
 kazakhstan	🇰🇿
+keep	💯 🤐
+keeps	💯 🤐
 kenya	🇰🇪
 key	🔑
 keyboard	⌨️
@@ -804,19 +1225,34 @@ keyes	🔑
 keys	🔑
 khanda	🪯
 khandas	🪯
+kidding	😏
 kimono	👘
 kimonos	👘
+king	👑
+kinges	👑
+kings	👑
 kiribati	🇰🇮
 kiss	💏 👩‍❤️‍💋‍👨 👩‍❤️‍💋‍👩
 kisses	😍 💕 💖
 kissing	😗
 kissings	😗
+kitchen	🔪
+kitchens	🔪
 kite	🪁
 kites	🪁
+kitten	🐱
+kittens	🐱
+kitties	🐱
+kitty	🐱
 kneeling	🧎‍♀️ 🧎 🧎‍♂️
 kneelings	🧎‍♀️ 🧎 🧎‍♂️
+knocked	😵
 knot	🪢
 knots	🪢
+knowledge	📚
+knowledges	📚
+knuckle	👊
+knuckles	👊
 koala	🐨
 koalas	🐨
 kosovo	🇽🇰
@@ -832,15 +1268,25 @@ landslides	🛘
 laos	🇱🇦
 laptop	💻
 laptops	💻
+later	👋
+laters	👋
 latvia	🇱🇻
 laugh	😂 🤣 😆
 laughes	😂 🤣 😆
+laughing	😹
+laughings	😹
 laughs	😂 🤣 😆
+launch	🚀
+launches	🚀
 lebanon	🇱🇧
 ledger	📒
 ledgers	📒
+leer	😏
+leers	😏
 leg	🦵
 leges	🦵
+legit	👌
+legits	👌
 legs	🦵
 lemon	🍋
 lemons	🍋
@@ -848,12 +1294,24 @@ leo	♌️
 leopard	🐆
 leopards	🐆
 leos	♌️
+lesbian	🌈
+lesbians	🌈
 lesotho	🇱🇸
+let	💃 🕺
+letes	💃 🕺
+lets	💃 🕺
+lgbt	🌈
+lgbtq	🌈
+lgbtqia	🌈
+lgbtqs	🌈
+lgbts	🌈
 liberia	🇱🇷
 libra	♎️
 libras	♎️
 libya	🇱🇾
 libyas	🇱🇾
+lick	👅
+licks	👅
 liechtenstein	🇱🇮
 like	👍
 likees	👍
@@ -865,6 +1323,7 @@ links	🔗
 lion	🦁
 liones	🦁
 lions	🦁
+lips	💋 👄
 lipstick	💄
 lipsticks	💄
 lit	🔥
@@ -879,6 +1338,8 @@ llamas	🦙
 lmao	😂 🤣
 lobster	🦞
 lobsters	🦞
+location	📍
+locations	📍
 locked	🔒
 locomotive	🚂
 locomotives	🚂
@@ -887,9 +1348,23 @@ lollipop	🍭
 lollipops	🍭
 lols	😂 🤣 😆
 lonely	💔
+look	👀
+lookes	👀
+looking	👀
+looks	👀
+loopies	😜
+loopy	😜
+loose	🤙
+looses	🤙
+losing	😔 😞
+losings	😔 😞
+lost	😔
+losts	😔
 lotus	🪷
 lotuses	🪷
+loud	📢
 loudly	😭
+louds	📢
 loudspeaker	📢
 loudspeakers	📢
 love	❤️ 😍 💕
@@ -899,6 +1374,9 @@ lovers	😘
 loves	❤️ 😍 💕
 loving	💕
 lovings	💕
+luckies	🍀
+lucky	🍀
+luckys	🍀
 luggage	🧳
 luggages	🧳
 lungs	🫁
@@ -906,7 +1384,9 @@ luxembourg	🇱🇺
 luxembourgs	🇱🇺
 lying	🤥
 lyings	🤥
+m	💀
 madagascar	🇲🇬
+maddening	😡 😠
 mage	🧙 🧙‍♀️ 🧙‍♂️
 mages	🧙 🧙‍♀️ 🧙‍♂️
 magnet	🧲
@@ -927,8 +1407,13 @@ manes	👨
 mango	🥭
 mangoes	🥭
 mangos	🥭
+manicure	💅
+manicures	💅
 mans	👨
+maple	🍁
+maples	🍁
 maracas	🪇
+married	💍
 martinique	🇲🇶
 martiniques	🇲🇶
 mate	🧉
@@ -938,6 +1423,12 @@ mauritius	🇲🇺
 mayotte	🇾🇹
 mechanic	🧑‍🔧 👩‍🔧 👨‍🔧
 mechanics	🧑‍🔧 👩‍🔧 👨‍🔧
+medical	😷
+medicals	😷
+medieval	👑
+medievals	👑
+meeting	🤝
+meetings	🤝
 megaphone	📣
 megaphones	📣
 melon	🍈
@@ -958,6 +1449,8 @@ metro	🚇
 metros	🚇
 mexico	🇲🇽
 mexicos	🇲🇽
+mic	🎤
+mices	🎤
 microbe	🦠
 microbes	🦠
 micronesia	🇫🇲
@@ -965,12 +1458,22 @@ microphone	🎤
 microphones	🎤
 microscope	🔬
 microscopes	🔬
+mics	🎤
+middle	🖕
+middles	🖕
+mild	🤨
+milds	🤨
+mind	🤯
+mindblown	🤯
+mindes	🤯
+minds	🤯
 minibus	🚐
 minibuses	🚐
 minus	➖
 minuses	➖
 mirror	🪞
 mirrors	🪞
+mischievous	👿
 miss	😘 😢
 misses	😘 😢
 misss	😘 😢
@@ -978,9 +1481,13 @@ moai	🗿
 moais	🗿
 moldova	🇲🇩
 monaco	🇲🇨
+moneybag	💰
+moneybags	💰
 mongolia	🇲🇳
 monkey	🐒 🐵
 monkeys	🐒 🐵
+monocle	🧐
+monocles	🧐
 monorail	🚝
 monorails	🚝
 montenegro	🇲🇪
@@ -1006,24 +1513,37 @@ mouse	🐁 🐭
 mouses	🐁 🐭
 mouth	👄 😅 😆
 mouthes	👄 😅 😆
+mouthless	😶
 mouths	👄 😅 😆
 mozambique	🇲🇿
-muah	😘
+muah	😘 💗
+mug	🍺
+mugs	🍺 🍻
 multiplies	✖️
 multiply	✖️
+munch	😱
+munches	😱
 muscle	💪
 muscles	💪
 mushroom	🍄
 mushrooms	🍄
+nail	💅
+nails	💅
 namibia	🇳🇦
+nasties	🤢
+nasty	🤢
+nastys	🤢
 nauru	🇳🇷
 naurus	🇳🇷
 nauseated	🤢
 necktie	👔
 neckties	👔
+nectarine	🍊
+nectarines	🍊
 nepal	🇳🇵
 nerd	🤓
 nerds	🤓
+nerves	😟
 nervous	😅
 netherlands	🇳🇱
 neutral	😐
@@ -1042,16 +1562,26 @@ nights	💖
 ninja	🥷
 ninjas	🥷
 niue	🇳🇺
+nooo	😩
+nope	👎
+nopes	👎
 norway	🇳🇴
 nose	👃
 noses	👃
 notebook	📓
 notebooks	📓
+novels	📚
+nutties	😜
+nutty	😜
+octoberfest	🍺
 octopus	🐙
 octopuses	🐙
 oden	🍢
 ogre	👹
 ogres	👹
+okay	👌
+okays	👌
+oktoberfest	🍺
 old	👵 👴
 older	🧓
 olders	🧓
@@ -1072,7 +1602,11 @@ orca	🫍
 orcas	🫍
 otter	🦦
 otters	🦦
+ouch	🤕
+ouches	🤕
+outdoors	🌻
 outlined	☺️
+outtie	👋
 owl	🦉
 owles	🦉
 owls	🦉
@@ -1083,10 +1617,12 @@ package	📦
 packages	📦
 pager	📟
 pagers	📟
+paid	💰 🤑
 paintbrush	🖌️
 paintbrushes	🖌️
 pakistan	🇵🇰
 palau	🇵🇼
+palms	🤲
 panama	🇵🇦
 panamas	🇵🇦
 pancakes	🥞
@@ -1100,6 +1636,11 @@ paraguay	🇵🇾
 parrot	🦜
 parrots	🦜
 partying	🥳
+paw	🐾
+paws	🐾
+paying	💰
+payings	💰
+peaceful	😇
 peach	🍑
 peaches	🍑
 peacock	🦚
@@ -1107,6 +1648,8 @@ peacocks	🦚
 peanuts	🥜
 pear	🍐
 pears	🍐
+peep	👀
+peeps	👀
 pen	🖊️
 pencil	✏️
 pencils	✏️
@@ -1116,6 +1659,10 @@ penguins	🐧
 pens	🖊️
 pensive	😔
 pensives	😔
+perfect	💯
+perfects	💯
+persevere	😣
+perseveres	😣
 persevering	😣
 person	🧑
 persones	🧑
@@ -1125,6 +1672,9 @@ perus	🇵🇪
 philippines	🇵🇭
 phoenix	🐦‍🔥
 phoenixes	🐦‍🔥
+photo	📷
+photoes	📷
+photos	📷
 pick	⛏️
 pickes	⛏️
 picks	⛏️
@@ -1132,17 +1682,27 @@ pie	🥧
 pies	🥧
 pig	🐖 🐷
 pigs	🐖 🐷
+pile	💩
+piles	💩
 pill	💊
 pills	💊
 pilot	🧑‍✈️ 👩‍✈️ 👨‍✈️
 pilots	🧑‍✈️ 👩‍✈️ 👨‍✈️
 pinata	🪅
 pinatas	🪅
+pinch	👌
+pinches	👌
 pineapple	🍍
 pineapples	🍍
+pint	🍺
+pints	🍺
 pirate	🏴‍☠️
 pirates	🏴‍☠️
-pisces	♓️
+pisces	♓️ 🐟
+pissed	😒 🤬
+pistol	🔫
+pistoles	🔫
+pistols	🔫
 pizza	🍕
 pizzas	🍕
 placard	🪧
@@ -1157,72 +1717,130 @@ plus	➕
 pluses	➕
 poland	🇵🇱
 polands	🇵🇱
+polish	💅
+polishes	💅
 ponder	🤔
 pondering	🤔
 ponderings	🤔
 ponders	🤔
+poo	💩
 poodle	🐩
 poodles	🐩
+poop	💩
+poops	💩
+poos	💩
 popcorn	🍿
 popcorns	🍿
+popper	🎉
+poppers	🎉
+popping	🍾
+poppings	🍾
+pork	🐷
+porks	🐷
 portugal	🇵🇹
 portugals	🇵🇹
 postbox	📮
 potato	🥔
 potatoes	🥔
 potatos	🥔
+pound	👊
+pounds	👊
 pouting	🙎‍♀️ 🙎 🙎‍♂️
+praise	🙌
+praises	🙌
 pray	🙏
 prayed	👏
+prayer	🤲
+prayers	🤲
 prays	🙏
 pregnant	🤰 🫄 🫃
+present	🎁
+presentes	🎁
+presents	🎁
 press	💪
 presses	💪
 presss	💪
 pretzel	🥨
 pretzels	🥨
+pride	🌈
+prides	🌈
 prince	🤴
 princes	🤴
 princess	👸
 princesses	👸
 printer	🖨️
 printers	🖨️
+prints	🐾
+prize	🏆
+prizes	🏆
 prohibited	🚫
+public	📢
+publics	📢
+puke	🤮
+pukes	🤮
+pulsating	💓
+punch	👊 ✊
+punches	👊 ✊
+puppies	🐶
+puppy	🐶
 purse	👛
 purses	👛
-pushpin	📌
-pushpins	📌
+pushpin	📌 📍
+pushpins	📌 📍
 qatar	🇶🇦
+queen	👑
+queens	👑
+queer	🌈
+queers	🌈
 rabbit	🐇 🐰
 rabbits	🐇 🐰
 raccoon	🦝
 raccoons	🦝
+rad	👌 😎
+rades	👌 😎
 radio	📻
 radioactive	☢️
 radioactives	☢️
 radios	📻
+rads	👌 😎
+rage	😡 😠
+rages	😡 😠
 rainbow	🌈 🏳️‍🌈
 rainbows	🌈 🏳️‍🌈
 ram	🐏
+ramadan	🌙
+ramadans	🌙
 rames	🐏
 rams	🐏
 rat	🐀
 rates	🐀
 rats	🐀
+rays	☀️
 razor	🪒
 razors	🪒
+realization	🤭
+realizations	🤭
+realize	💭
+realizes	💭
 receipt	🧾
 receipts	🧾
+record	🎥
+records	🎥
 red	❤️
 redes	❤️
 reds	❤️
 registered	®️
-relaxed	☺️
+relaxed	☺️ 😎
+relief	😌
+reliefs	😌
 relieved	😌
 restroom	🚻
 restrooms	🚻
 reunion	🇷🇪
 reunions	🇷🇪
+revolver	🔫
+revolvers	🔫
+revolving	💞 🚨
 rhinoceros	🦏
 rhinoceroses	🦏
 ribbon	🎀
@@ -1230,6 +1848,8 @@ ribbons	🎀
 ring	💍
 ringes	💍
 rings	💍
+ripe	🍎
+ripes	🍎
 ripped	💪
 robot	🤖
 robots	🤖
@@ -1253,8 +1873,11 @@ rose	🌹
 roses	🌹
 rosette	🏵️
 rosettes	🏵️
+round	📍
+rounds	📍
 running	🏃‍♀️ 🏃 🏃‍♂️
 runnings	🏃‍♀️ 🏃 🏃‍♂️
+rushed	😰
 russia	🇷🇺
 russias	🇷🇺
 rwanda	🇷🇼
@@ -1274,6 +1897,8 @@ samoa	🇼🇸
 samoas	🇼🇸
 sandwich	🥪
 sandwiches	🥪
+sapling	🌱
+saplings	🌱
 sari	🥻
 saries	🥻
 saris	🥻
@@ -1284,6 +1909,8 @@ satellites	🛰️
 satisfied	😊
 sauropod	🦕
 sauropods	🦕
+savor	😋
+savors	😋
 saxophone	🎷
 saxophones	🎷
 scarf	🧣
@@ -1293,12 +1920,20 @@ schools	🏫
 scientist	🧑‍🔬 👩‍🔬 👨‍🔬
 scientists	🧑‍🔬 👩‍🔬 👨‍🔬
 scissors	✂️
+score	💯 🎼
+scores	💯 🎼
 scorpio	♏️
 scorpion	🦂
 scorpions	🦂
 scorpios	♏️
 scotland	🏴󠁧󠁢󠁳󠁣󠁴󠁿
 scotlands	🏴󠁧󠁢󠁳󠁣󠁴󠁿
+scream	😱
+screamer	😱
+screamers	😱
+screaming	😱
+screamings	😱
+screams	😱
 screwdriver	🪛
 screwdrivers	🪛
 scroll	📜
@@ -1308,30 +1943,48 @@ seales	🦭
 seals	🦭
 seat	💺
 seats	💺
+see	👀
 seedling	🌱
 seedlings	🌱
-selfie	🤳
-selfies	🤳
+seees	👀
+seeing	👀
+seeings	👀
+sees	👀
+selfie	🤳 📷
+selfies	🤳 📷
 senegal	🇸🇳
 serbia	🇷🇸
 sexies	😉
 sexy	😉
 seychelles	🇸🇨
 shade	🙄
-shades	🙄
+shades	🙄 😎
+shaka	🤙
+shakas	🤙
 shaking	🫨
 shakings	🫨
 shamrock	☘️
 shamrocks	☘️
 shark	🦈
 sharks	🦈
+shh	🤫
 shield	🛡️
 shields	🛡️
+shine	🌞
+shines	🌞
+shinies	💍
+shining	🌟 💫
+shinings	🌟 💫
+shiny	💍
 ship	🚢
 ships	🚢
+shooting	💫
+shootings	💫
 shortcake	🍰
 shortcakes	🍰
 shorts	🩳
+shot	💉
+shots	💉
 shovel	🪏
 shovels	🪏
 shower	🚿
@@ -1339,12 +1992,28 @@ showers	🚿
 shrimp	🦐
 shrimps	🦐
 shrugging	🤷‍♀️ 🤷 🤷‍♂️
+shush	🤫
+shushes	🤫
 shushing	🤫
+shut	🤐
+shuts	🤐
+silence	😶
+silences	😶
+sillies	👻
+silly	👻
+sing	🎤
 singapore	🇸🇬
 singer	🧑‍🎤 👩‍🎤 👨‍🎤
 singers	🧑‍🎤 👩‍🎤 👨‍🎤
+singes	🎤
+sings	🎤
 skateboard	🛹
 skateboards	🛹
+skeptic	🤨
+skeptical	🤨
+skepticism	🤨
+skepticisms	🤨
+skeptics	🤨
 skier	⛷️
 skiers	⛷️
 skis	🎿
@@ -1352,29 +2021,50 @@ skull	💀
 skulls	💀
 skunk	🦨
 skunks	🦨
+slay	😎 🏆
+slays	😎 🏆
 sled	🛷
 sleds	🛷
 sleepies	😪
 sleeping	😴
 sleepy	😪
+slick	😏
+slicks	😏
 slide	😉
 slides	😉
+slightly	🙂 🙁
 sloth	🦥
 sloths	🦥
 slovakia	🇸🇰
 slovenia	🇸🇮
+slurp	👅
+slurps	👅
+smart	🤓
+smarts	🤓
+smelly	💩
 smile	😍 😊 😅
 smilees	😍 😊 😅
 smiles	😍 😊 😅
 smiling	☺️ 😊 😅
+smirk	😏
 smirking	😏
-smooch	😘
-smooches	😘
+smirks	😏
+smooch	😘 😗
+smooches	😘 😗 😚
+smug	😏
+smugs	😏
 snail	🐌
 snails	🐌
 snake	🐍
 snakes	🐍
+snap	📷
+snapes	📷
+snaps	📷
+sneeze	😫 🤧
+sneezes	😫 🤧
 sneezing	🤧
+snicker	😏
+snickers	😏
 snowboarder	🏂
 snowboarders	🏂
 snowflake	❄️
@@ -1386,11 +2076,20 @@ soaps	🧼
 sob	😭
 sobes	😭
 sobs	😭
+soccer	⚽️
+soccers	⚽️
 socks	🧦
 sockses	🧦
 softball	🥎
 softballs	🥎
+solidarities	✊
+solidarity	✊
 somalia	🇸🇴
+sour	🍋
+soures	🍋
+sours	🍋
+south	⬇️
+souths	⬇️
 spaghetti	🍝
 spaghetties	🍝
 spaghettis	🍝
@@ -1400,74 +2099,133 @@ sparkle	❇️ 💖
 sparkler	🎇
 sparklers	🎇
 sparkles	✨
-sparkling	💖
-sparklings	💖
+sparkling	💖 💍
+sparklings	💖 💍
+speak	🙊 🗣️
+speakes	🙊 🗣️
+speaking	🗣️
+speakings	🗣️
+speaks	🙊 🗣️
+speechless	😶
 speedboat	🚤
 speedboats	🚤
+spew	🤮
+spews	🤮
 spider	🕷️
 spiders	🕷️
+spirit	😇
+spirits	😇
+splashing	💦
+splashings	💦
 splatter	🫟
 splatters	🫟
+splayed	🖐️
 sponge	🧽
 sponges	🧽
 spoon	🥄
 spoons	🥄
+springtime	🌸
+sprout	🌱
+sprouts	🌱
 squid	🦑
 squids	🦑
-squinting	😆
+squinting	😆 😝
+squirt	💦
+squirts	💦
 stadium	🏟️
 stadiums	🏟️
 standing	🧍‍♀️ 🧍 🧍‍♂️
 standings	🧍‍♀️ 🧍 🧍‍♂️
 star	⭐️
 stares	⭐️
+starry	🤩
 stars	⭐️
 station	🚉
 stations	🚉
+stealth	🙊
+stealths	🙊
+stein	🍺
+steines	🍺
+steins	🍺
 stethoscope	🩺
 stethoscopes	🩺
+stink	💩
+stinkies	💩
+stinks	💩
+stinky	💩
 stopwatch	⏱️
 stopwatches	⏱️
+strat	🎸
+strates	🎸
+strats	🎸
 strawberries	🍓
 strawberry	🍓
-stress	😅
+stress	😅 😟
 stressed	😅
-stresses	😅
+stresses	😅 😟
 strong	💪
 strongs	💪
+struck	🤩
+strucks	🤩
 student	🧑‍🎓 👩‍🎓 👨‍🎓
 students	🧑‍🎓 👩‍🎓 👨‍🎓
+studies	📚
+study	📚
+stuffies	🧐
+stuffy	🧐
+stunned	😯
+suave	😏
+sucks	😔
+suckss	😔
 sudan	🇸🇩
+sudden	🤭
+suddens	🤭
 suit	♥️
 suites	♥️
 suits	♥️
+summer	🍺
+summers	🍺
 sun	☀️
 sunflower	🌻
 sunflowers	🌻
-sunglasses	🕶️
+sunglasses	🕶️ 😎
 sunrise	🌅
 sunrises	🌅
 suns	☀️
 sunset	🌇
 sunsets	🌇
+sunshine	🌞
+sunshines	🌞
 superhero	🦸 🦸‍♀️ 🦸‍♂️
 superheroes	🦸 🦸‍♀️ 🦸‍♂️
 superheros	🦸 🦸‍♀️ 🦸‍♂️
 supervillain	🦹 🦹‍♀️ 🦹‍♂️
 supervillains	🦹 🦹‍♀️ 🦹‍♂️
+sure	👌 😕
+sures	👌 😕
 surfing	🏄‍♀️ 🏄 🏄‍♂️
 suriname	🇸🇷
 sushi	🍣
 sushis	🍣
+suspicious	😏
+swag	😎 😏
+swags	😎 😏
 swan	🦢
 swans	🦢
+swearing	🤬
+swearings	🤬
 sweat	😅
 sweats	😅
 sweden	🇸🇪
 swedens	🇸🇪
+swerve	👐
+swerves	👐
 swimming	🏊‍♀️ 🏊 🏊‍♂️
 switzerland	🇨🇭
 switzerlands	🇨🇭
+symbols	🤬
+sympathies	😮
+sympathy	😮
 synagogue	🕍
 synagogues	🕍
 syria	🇸🇾
@@ -1475,13 +2233,23 @@ syringe	💉
 syringes	💉
 taco	🌮
 tacos	🌮
+tada	🎉
+tadas	🎉
 taiwan	🇹🇼
 tajikistan	🇹🇯
 tamale	🫔
 tamales	🫔
 tangerine	🍊
 tangerines	🍊
+tango	💃 🕺
+tangos	💃 🕺
 tanzania	🇹🇿
+target	🎯
+targets	🎯
+taste	😝
+tastes	😝
+tasties	😋
+tasty	😋
 taurus	♉️
 tauruses	♉️
 taxi	🚕
@@ -1511,14 +2279,27 @@ tents	⛺️
 thailand	🇹🇭
 thailands	🇹🇭
 thanks	🙏
-thermometer	🌡️
-thermometers	🌡️
+thermometer	🌡️ 🤒
+thermometers	🌡️ 🤒
+think	💭
+thinkes	💭
 thinking	🤔
 thinkings	🤔
+thinks	💭
+this	☝️
+thises	☝️
+thiss	☝️
+thoughts	💭
+thoughtses	💭
+thoughtss	💭
 thread	🧵
 threads	🧵
 thumb	👍
-thumbs	👍
+thumbs	👍 👎
+thunder	⚡️
+thunderbolt	⚡️
+thunderbolts	⚡️
+thunders	⚡️
 thx	🙏
 ticket	🎫
 tickets	🎫
@@ -1545,9 +2326,13 @@ tooth	🦷
 toothbrush	🪥
 toothbrushes	🪥
 tooths	🦷
+top	🔝
+topes	🔝
+tops	🔝
 tornado	🌪️
 tornadoes	🌪️
 tornados	🌪️
+totally	😲
 trackball	🖲️
 trackballs	🖲️
 tractor	🚜
@@ -1557,10 +2342,15 @@ traines	🚆
 trains	🚆
 tram	🚊
 trams	🚊
+trans	🌈
+transes	🌈
 transgender	🏳️‍⚧️
 transgenders	🏳️‍⚧️
+transs	🌈
 triangular	🚩
 triste	😢
+triumph	😤
+triumphs	😤
 troll	🧌
 trolleybus	🚎
 trolleybuses	🚎
@@ -1569,11 +2359,19 @@ trombone	🪊
 trombones	🪊
 trophies	🏆
 trophy	🏆
+true	💯
+trues	💯
 trumpet	🎺
 trumpets	🎺
+truth	💯
+truths	💯
+ttfn	👋
+ttyl	👊 👋
 tulip	🌷
 tulips	🌷
 tunisia	🇹🇳
+turd	💩
+turds	💩
 turkey	🦃
 turkeys	🦃
 turkiye	🇹🇷
@@ -1581,27 +2379,46 @@ turkmenistan	🇹🇲
 turtle	🐢
 turtles	🐢
 tuvalu	🇹🇻
+tv	📺
+twister	🌀
+twisters	🌀
 two	💕
 twoes	💕
 twos	💕
+typhoon	🌀
+typhoons	🌀
 uganda	🇺🇬
 ugh	🙄
 ughs	🙄
+uh	😑
+uhh	😒
 ukraine	🇺🇦
+um	😋
 umbrella	☂️
 umbrellas	☂️
-unamused	😒
+unamused	😒 😐
+unbelievable	😮
 unhappy	😭 😢
 unicorn	🦄
 unicorns	🦄
+unimpressed	😑 😐
 unlocked	🔓
+unreal	😮
 up	👍
+upside	🙃
+upsides	🙃
 uruguay	🇺🇾
 uzbekistan	🇺🇿
+v	✌️
+vaccination	💉
+vaccinations	💉
 vampire	🧛 🧛‍♀️ 🧛‍♂️
 vampires	🧛 🧛‍♀️ 🧛‍♂️
 vanuatu	🇻🇺
 venezuela	🇻🇪
+victories	✌️ 🏆
+victory	✌️ 🏆
+victorys	✌️ 🏆
 videocassette	📼
 vietnam	🇻🇳
 vietnames	🇻🇳
@@ -1609,13 +2426,20 @@ violin	🎻
 violins	🎻
 virgo	♍️
 virgos	♍️
+vitamin	🍊
+vitamins	🍊
 volcano	🌋
 volcanoes	🌋
 volcanos	🌋
 volleyball	🏐
 volleyballs	🏐
+voltage	⚡️
+voltages	⚡️
+vomit	🤢 🤮
 vomiting	🤮
 vomitings	🤮
+vomits	🤢 🤮
+wacky	😜
 waffle	🧇
 waffles	🧇
 wales	🏴󠁧󠁢󠁷󠁬󠁳󠁿
@@ -1625,72 +2449,121 @@ warning	⚠️
 warnings	⚠️
 wastebasket	🗑️
 wastebaskets	🗑️
-watch	⌚️
-watches	⌚️
-watchs	⌚️
+watch	⌚️ 🙈
+watches	⌚️ 🙈
+watchs	⌚️ 🙈
 watermelon	🍉
 watermelons	🍉
+wave	👋 🌊
+waves	👋 🌊
+wealthy	🧐
 wearies	😩
 weary	😩
 wedding	💒
 weddings	💒
 weightlift	💪
+weird	😒
+weirdo	😜
+weirdoes	😜
+weirdos	😜
+weirds	😒
 well	👏
 welles	👏
 wells	👏
+wet	💦
+wets	💦
 whale	🐋
 whales	🐋
 whatever	🙄
 whatevers	🙄
 wheel	🛞
 wheels	🛞
+whew	😥
 white	🏳️
 whites	🏳️
+whoops	🤭
+wicked	🖤
+wilted	🥀
 wind	🌬️
 windes	🌬️
 window	🪟
 windows	🪟
 winds	🌬️
+wine	🍷
+wines	🍷
 wing	🪽
 wings	🪽
-wink	😉
-winking	😉
+wink	😉 😜
+winking	😉 😜
 winks	😉
+winning	🏆
+winnings	🏆
 wireless	🛜
+wish	🤲
+wishes	🤲
 wolf	🐺
 wolfes	🐺
 wolfs	🐺
 woman	👩
 womans	👩
+won	😤
+wonder	💭
 wondering	🤔
 wonderings	🤔
+wonders	💭
+wones	😤
+wons	😤
 wood	🪵
 woodes	🪵
 woods	🪵
+woohoo	🎉 🎊
 woozy	🥴
 worm	🪱
 worms	🪱
 worried	😟
+worries	😟
+worry	😟
+wrapped	🎁
 wrench	🔧
 wrenches	🔧
+write	✍️
+writes	✍️
+writing	✍️
+writings	✍️
+wtf	😳 😬 🤬
 xoxo	😍 💕 😘
 yarn	🧶
 yarns	🧶
+yawn	😴
 yawning	🥱
-yay	👏
-yays	👏
+yawns	😴
+yay	👏 😃
+yays	👏 😃
 yemen	🇾🇪
 yes	👍
 yeses	👍
+yikes	😓 😰
+yo	👋
 you	😘
 yous	😘
+yum	😋
+yummies	😋
+yummy	😋
+yums	😋
+yup	💯
 zambia	🇿🇲
 zanies	🤪
 zany	🤪
+zap	⚡️
+zaps	⚡️
 zebra	🦓
 zebras	🦓
 zimbabwe	🇿🇼
 zimbabwes	🇿🇼
+zip	🤐
+zipper	🤐
+zippers	🤐
+zips	🤐
 zombie	🧟 🧟‍♀️ 🧟‍♂️
 zombies	🧟 🧟‍♀️ 🧟‍♂️
 zzz	💤
