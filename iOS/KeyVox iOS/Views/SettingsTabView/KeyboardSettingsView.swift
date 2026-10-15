@@ -57,6 +57,13 @@ struct KeyboardSettingsView: View {
                     )
                     divider
                     SettingsRow(
+                        // Drawn as an outline on this always-dark screen.
+                        icon: "face.smiling.inverse",
+                        title: KeyboardSettingsCopy.emojiKeyboardTitle,
+                        isOn: $settingsStore.emojiKeyboardEnabled
+                    )
+                    divider
+                    SettingsRow(
                         icon: "space",
                         title: KeyboardSettingsCopy.periodShortcutTitle,
                         isOn: $settingsStore.periodShortcutEnabled

@@ -13,6 +13,7 @@ nonisolated enum UserDefaultsKeys {
     static let autoCorrectionEnabled = "KeyVox.AutoCorrectionEnabled"
     static let shiftCapsLockEnabled = "KeyVox.ShiftCapsLockEnabled"
     static let predictiveTextEnabled = "KeyVox.PredictiveTextEnabled"
+    static let emojiKeyboardEnabled = "KeyVox.EmojiKeyboardEnabled"
     static let periodShortcutEnabled = "KeyVox.PeriodShortcutEnabled"
     static let opensOnNumberPage = "KeyVox.OpensOnNumberPage"
     /// How many times the user reset what the keyboard learned from their typing.

@@ -158,6 +158,10 @@ final class KeyboardAppSettingsStore {
         defaults?.object(forKey: UserDefaultsKeys.predictiveTextEnabled) as? Bool ?? true
     }
 
+    var isEmojiKeyboardEnabled: Bool {
+        defaults?.object(forKey: UserDefaultsKeys.emojiKeyboardEnabled) as? Bool ?? true
+    }
+
     var isPeriodShortcutEnabled: Bool {
         defaults?.object(forKey: UserDefaultsKeys.periodShortcutEnabled) as? Bool ?? true
     }

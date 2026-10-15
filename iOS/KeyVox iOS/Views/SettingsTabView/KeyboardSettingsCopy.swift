@@ -6,6 +6,7 @@ enum KeyboardSettingsCopy {
     static let autoCorrectionTitle = "Auto-Correction"
     static let capsLockTitle = "Enable Caps Lock"
     static let predictiveTextTitle = "Predictive Text"
+    static let emojiKeyboardTitle = "Emoji Keyboard"
     static let periodShortcutTitle = "“.” Shortcut"
     static let periodShortcutDescription = "Double tap the space bar to type a period followed by a space."
     static let hapticsTitle = "Keyboard Haptics"

@@ -146,6 +146,19 @@ struct AppSettingsStoreTests {
         #expect(KeyboardAppSettingsStore(defaults: defaults).opensOnNumberPage)
     }
 
+    @Test func emojiKeyboardDefaultsToOnAndPersistsForTheKeyboard() {
+        let defaults = UserDefaults(suiteName: #function)!
+        defaults.removePersistentDomain(forName: #function)
+        let store = AppSettingsStore(defaults: defaults)
+
+        #expect(store.emojiKeyboardEnabled)
+        #expect(KeyboardAppSettingsStore(defaults: defaults).isEmojiKeyboardEnabled)
+
+        store.emojiKeyboardEnabled = false
+
+        #expect(KeyboardAppSettingsStore(defaults: defaults).isEmojiKeyboardEnabled == false)
+    }
+
     @Test func selectedVibeDefaultsToNone() {
         let defaults = UserDefaults(suiteName: #function)!
         defaults.removePersistentDomain(forName: #function)
