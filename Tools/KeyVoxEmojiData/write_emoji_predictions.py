@@ -4,6 +4,8 @@ emoji in Unicode's ranking (unicode.org/emoji/frequency.html), and the catalog
 (write_emoji_catalog.py).
 
 A word gets, at most three, in this order:
+0. KeyVox's own additions, emoji_prediction_additions.txt beside this script, for words Unicode's
+   data leaves out;
 1. emoji whose name is the word, then emoji whose name is the word with "face" or "flag" left out
    ("dog face", "flag: Cuba"), by Unicode's ranking;
 2. the person, woman, and man versions of such a name ("woman guard"), in the catalog's order;
@@ -36,6 +38,7 @@ sys.dont_write_bytecode = True
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from write_emoji_search import catalog_emoji, frequency_ranks, key, words  # noqa: E402
 
+ADDITIONS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "emoji_prediction_additions.txt")
 MOST_USED = 25
 LEFT_OUT = {"face", "flag"}
 PEOPLE = {"person", "woman", "man"}
@@ -45,6 +48,20 @@ LIMIT = 3
 def entries(path):
     root = json.load(open(path, encoding="utf-8"))
     return next(iter(root.values()))["annotations"]
+
+
+def additions(catalog_texts):
+    """KeyVox's own emoji for words, checked against the catalog."""
+    added = {}
+    for line in open(ADDITIONS, encoding="utf-8"):
+        if not line.strip() or line.startswith("#"):
+            continue
+        word, emoji = line.rstrip("\n").split("\t")
+        unknown = [text for text in emoji.split(" ") if text not in catalog_texts]
+        if unknown:
+            sys.exit(f"{ADDITIONS}: {word} has emoji the catalog lacks: {' '.join(unknown)}")
+        added[key(word)] = emoji.split(" ")
+    return added
 
 
 def singulars(word):
@@ -60,7 +77,8 @@ def main(catalog_path, annotations_path, derived_path, frequency_path, vocabular
     ranks = frequency_ranks(frequency_path)
     unranked = len(ranks)
     found = {}
-    for order, (text, unicode_name) in enumerate(catalog_emoji(catalog_path)):
+    catalog = list(catalog_emoji(catalog_path))
+    for order, (text, unicode_name) in enumerate(catalog):
         entry = plain.get(key(text)) or derived.get(key(text)) or {}
         name = words(" ".join(entry.get("tts", [])) or unicode_name)
         rank = ranks.get(key(text), unranked)
@@ -85,6 +103,8 @@ def main(catalog_path, annotations_path, derived_path, frequency_path, vocabular
             if text not in chosen:
                 chosen.append(text)
         emoji_by_word[word] = chosen[:LIMIT]
+    for word, emoji in additions({text for text, _ in catalog}).items():
+        emoji_by_word[word] = (emoji + [text for text in emoji_by_word.get(word, []) if text not in emoji])[:LIMIT]
     vocabulary = {word for line in open(vocabulary_path, encoding="utf-8") for word in [line.strip()]
                   if word.isalpha() and word.islower()}
     singular_emoji = dict(emoji_by_word)
