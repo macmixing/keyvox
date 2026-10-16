@@ -4,10 +4,10 @@ import Foundation
 /// as recorded by watching it (Tools/AppleKeyboardBaseline, `EmojiFrequentlyUsedProbeTests`):
 /// each use adds one to the emoji's score and every later use of an emoji scales every score
 /// down, so an emoji used twice ranks above one used once three uses ago but below one used
-/// once two uses ago. The section holds a fixed number of emoji; the emoji the keyboard starts
-/// with fill what used emoji leave, in their order.
+/// once two uses ago. The section holds as many emoji as its page asks for; the emoji the keyboard
+/// starts with fill what used emoji leave, in their order.
 public struct EmojiFrequentlyUsed: Codable, Equatable, Sendable {
-    /// The emoji the section shows, measured.
+    /// The used emoji kept, and the fewest the section shows: as many as it showed when measured.
     public static let capacity = 30
     /// What each later use scales an earlier use's weight by: in three recordings an emoji used
     /// twice landed between the emoji used once two and three uses after it, which holds for
@@ -55,11 +55,11 @@ public struct EmojiFrequentlyUsed: Codable, Equatable, Sendable {
         return used + emoji.filter { scores[$0] == nil }
     }
 
-    /// What the section shows: the used emoji, best first, then `starters` the used emoji leave
-    /// room for, in order.
-    public func shown(starters: [String]) -> [String] {
-        let used = uses.map(\.emoji)
+    /// What a section of `count` emoji shows: the used emoji, best first, then `starters` the used
+    /// emoji leave room for, in order.
+    public func shown(starters: [String], count: Int) -> [String] {
+        let used = Array(uses.map(\.emoji).prefix(count))
         let usedSet = Set(used)
-        return Array((used + starters.filter { usedSet.contains($0) == false }).prefix(Self.capacity))
+        return used + starters.lazy.filter { usedSet.contains($0) == false }.prefix(count - used.count)
     }
 }

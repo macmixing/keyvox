@@ -9,7 +9,9 @@ final class KeyboardEmojiSections {
 
     private struct Loaded {
         let catalog: [EmojiKeyboardSection]
-        let starters: [String]
+        /// What fills the Frequently Used section after the used emoji: the starters, then the
+        /// catalog's emoji in order, so a section of any size fills.
+        let fill: [String]
         let emojiByText: [String: Emoji]
     }
 
@@ -34,8 +36,10 @@ final class KeyboardEmojiSections {
                 catalog.flatMap(\.emoji).map { ($0.text, $0) },
                 uniquingKeysWith: { first, _ in first }
             )
+            var seen = Set<String>()
+            let fill = (starters + catalog.flatMap(\.emoji).map(\.text)).filter { seen.insert($0).inserted }
             DispatchQueue.main.async { [self] in
-                loaded = Loaded(catalog: catalog, starters: starters, emojiByText: emojiByText)
+                loaded = Loaded(catalog: catalog, fill: fill, emojiByText: emojiByText)
                 isLoading = false
                 let waiting = self.waiting
                 self.waiting = []
@@ -44,16 +48,15 @@ final class KeyboardEmojiSections {
         }
     }
 
-    /// The page's sections once loaded: the emoji `frequentlyUsed` shows, then the catalog's.
-    func sections(frequentlyUsed: EmojiFrequentlyUsed) -> [EmojiKeyboardSection] {
-        guard let loaded else { return [] }
-        return [EmojiKeyboardSection(category: .frequentlyUsed, emoji: frequentlyUsedEmoji(frequentlyUsed))] + loaded.catalog
+    /// The catalog's sections, which follow Frequently Used on the page, once loaded.
+    var catalog: [EmojiKeyboardSection] {
+        loaded?.catalog ?? []
     }
 
-    /// The emoji `frequentlyUsed` shows, once loaded.
-    func frequentlyUsedEmoji(_ frequentlyUsed: EmojiFrequentlyUsed) -> [Emoji] {
+    /// The emoji a Frequently Used section of `count` emoji shows for `frequentlyUsed`, once loaded.
+    func frequentlyUsedEmoji(_ frequentlyUsed: EmojiFrequentlyUsed, count: Int) -> [Emoji] {
         guard let loaded else { return [] }
-        return frequentlyUsed.shown(starters: loaded.starters).filter(KeyboardEmojiSupport.canDraw).map { text in
+        return frequentlyUsed.shown(starters: loaded.fill, count: count).filter(KeyboardEmojiSupport.canDraw).map { text in
             loaded.emojiByText[text] ?? Emoji(text: text, name: text, skinToneVariants: [])
         }
     }

@@ -61,6 +61,11 @@ final class KeyboardEmojiPageView: UIView {
     lazy var collectionView = UICollectionView(frame: .zero, collectionViewLayout: gridLayout)
     private let categoryBar = KeyboardEmojiCategoryBar()
     private(set) var sections: [EmojiKeyboardSection] = []
+    /// The Frequently Used emoji for a section of so many, and the catalog's sections after it.
+    private var frequentlyUsedEmoji: (Int) -> [Emoji] = { _ in [] }
+    private var catalog: [EmojiKeyboardSection] = []
+    /// How many emoji the Frequently Used section was asked for, once the page has sections.
+    private var frequentlyUsedCount: Int?
     let skinTonePicker = KeyboardEmojiSkinTonePickerView()
     let twoPersonPicker = KeyboardEmojiTwoPersonPickerView()
     /// The emoji held with its skin-tone picker open, the picker's layout, and the choice under the finger.
@@ -117,7 +122,34 @@ final class KeyboardEmojiPageView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
-    func show(_ sections: [EmojiKeyboardSection]) {
+    /// Shows the Frequently Used emoji `frequentlyUsed` gives for a section of whole columns, then
+    /// `catalog`'s sections.
+    func show(frequentlyUsed: @escaping (Int) -> [Emoji], catalog: [EmojiKeyboardSection]) {
+        frequentlyUsedEmoji = frequentlyUsed
+        self.catalog = catalog
+        showFilledSections()
+    }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        // The grid's rows are known once it is laid out, and whole columns depend on them.
+        if let frequentlyUsedCount, frequentlyUsedCount != filledFrequentlyUsedCount {
+            showFilledSections()
+        }
+    }
+
+    /// The section's measured size, rounded up to whole columns of the grid as it is laid out.
+    private var filledFrequentlyUsedCount: Int {
+        KeyboardEmojiGridGeometry(gridHeight: collectionView.bounds.height).wholeColumnsCount(EmojiFrequentlyUsed.capacity)
+    }
+
+    private func showFilledSections() {
+        let count = filledFrequentlyUsedCount
+        frequentlyUsedCount = count
+        show([EmojiKeyboardSection(category: .frequentlyUsed, emoji: frequentlyUsedEmoji(count))] + catalog)
+    }
+
+    private func show(_ sections: [EmojiKeyboardSection]) {
         guard sections != self.sections else { return }
         self.sections = sections
         gridLayout.emojiCounts = sections.map(\.emoji.count)

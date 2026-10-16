@@ -61,8 +61,10 @@ extension KeyboardViewController {
     private func loadEmojiPage() {
         KeyboardEmojiSections.shared.load { [weak self] in
             guard let self else { return }
+            let frequentlyUsed = emojiFrequentlyUsedStore.frequentlyUsed
             rootContainerView?.emojiPageView.show(
-                KeyboardEmojiSections.shared.sections(frequentlyUsed: emojiFrequentlyUsedStore.frequentlyUsed)
+                frequentlyUsed: { KeyboardEmojiSections.shared.frequentlyUsedEmoji(frequentlyUsed, count: $0) },
+                catalog: KeyboardEmojiSections.shared.catalog
             )
         }
     }

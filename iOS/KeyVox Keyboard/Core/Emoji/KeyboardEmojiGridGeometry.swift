@@ -62,6 +62,11 @@ struct KeyboardEmojiGridGeometry: Equatable {
 
     var emojiSize: CGFloat { Measured.emojiSize * scale }
 
+    /// `count` emoji rounded up to whole columns, so a section's last column is full.
+    func wholeColumnsCount(_ count: Int) -> Int {
+        Int((Double(count) / Double(rowCount)).rounded(.up)) * rowCount
+    }
+
     /// Frames for sections of `emojiCounts` emoji each.
     func layout(emojiCounts: [Int]) -> Layout {
         let columnPitch = Measured.columnPitch * scale
