@@ -8,7 +8,7 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ## [1.3.7] - 2026-10-08
 
-Whisper and Parakeet no longer block app startup while preparing speech detection and dictation models.
+Whisper and Parakeet no longer block app startup while preparing speech detection and dictation models, and dictionary matching handles real words and split entry words more accurately.
 
 ### Includes
 
@@ -20,10 +20,13 @@ Whisper and Parakeet no longer block app startup while preparing speech detectio
 - Ended cancelled Parakeet requests as soon as the voice activity detector finishes loading, before analyzing audio.
 - Added debug-only timing logs for the Whisper voice activity detector and model loads.
 - Added regression coverage for background warmup, preload completion, and reuse of an in-flight voice activity detector and model load.
+- Prevented a known word from being replaced by a multi-word dictionary entry when its pronunciation differs from the entry, such as `lifetime` becoming `Leven Time`.
+- Rejoined words split by transcription inside multi-word dictionary entries, such as `key vox vibes` becoming `KeyVox Vibes` instead of `KeyVox vibes`.
+- Added regression coverage for pronunciation-checked merged words and split words inside multi-word entries.
 
 ### Notes
 
-- `1.3.7` tracks background model warmup in the shared Core dictation services.
+- `1.3.7` tracks background model warmup in the shared Core dictation services and pronunciation-aware dictionary matching.
 
 ---
 
