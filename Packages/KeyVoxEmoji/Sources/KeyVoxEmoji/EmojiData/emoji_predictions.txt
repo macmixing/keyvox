@@ -1432,6 +1432,8 @@ cracker	🍘
 crackers	🍘
 crane	🏗️
 cranes	🏗️
+crap	💩
+craps	💩
 crayon	🖍️
 crayons	🖍️
 crazies	😜 🤪 😳
@@ -2092,15 +2094,15 @@ extra	🛸
 extras	🛸
 extraterrestrial	👽 👾 🔭
 extraterrestrials	👽 👾 🔭
-eye	😍 😊 😁
+eye	👁️ 👀
 eyebrow	🤨 🥸
 eyebrows	🤨 🥸
 eyed	🤩 👧 👦
 eyeglasses	👓
 eyeroll	🙄
-eyes	😍 😊 😁
-eyeses	😍 😊 😁
-eyess	😍 😊 😁
+eyes	👀 👁️
+eyeses	👀 👁️
+eyess	👀 👁️
 eyewear	👓 🕶️
 face	😂 😍 🤣
 faced	🥵 🥶
@@ -5431,6 +5433,9 @@ shippings	📦
 ships	⚓️ 🔱 🚢
 shirt	👔 👕 👚
 shirts	👔 👕 👚
+shit	💩
+shites	💩
+shits	💩
 shock	🤦 🤭 🫢
 shocked	😱 😲 😮
 shocks	🤦 🤭 🫢
