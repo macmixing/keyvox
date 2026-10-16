@@ -22,6 +22,19 @@ final class DictionaryMatcherTests: LinguisticAnalyzerTestCase {
         XCTAssertEqual(matcher.apply(to: input).text, input)
     }
 
+    func testRejoinsSplitTokenInsideMultiTokenEntryOverSingleTokenEntry() async {
+        let matcher = makeRuntimeMatcher()
+        matcher.rebuildIndex(entries: [
+            DictionaryEntry(phrase: "KeyVox"),
+            DictionaryEntry(phrase: "KeyVox Vibes")
+        ])
+
+        XCTAssertEqual(
+            matcher.apply(to: "Try dictation with key vox vibes today.").text,
+            "Try dictation with KeyVox Vibes today."
+        )
+    }
+
     func testDoesNotMatchSixDictationsToBigDictation() async {
         let matcher = makeRuntimeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Big Dictation")])
