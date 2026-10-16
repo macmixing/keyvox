@@ -14,6 +14,14 @@ final class DictionaryMatcherTests: LinguisticAnalyzerTestCase {
         )
     }
 
+    func testDoesNotExpandKnownWordIntoMultiTokenEntrySharingItsTail() async {
+        let matcher = makeRuntimeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Leven Time")])
+        let input = "I bought a lifetime license."
+
+        XCTAssertEqual(matcher.apply(to: input).text, input)
+    }
+
     func testDoesNotMatchSixDictationsToBigDictation() async {
         let matcher = makeRuntimeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Big Dictation")])
