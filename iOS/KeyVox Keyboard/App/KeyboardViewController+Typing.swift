@@ -32,6 +32,7 @@ extension KeyboardViewController {
         )
         keysMode = layout.keysMode
         symbolPage = layout.symbolPage
+        holdsOpeningNumberPage = layout.symbolPage != .letters
     }
 
     /// Call after any change to the text or cursor, including the keyboard's own edits. A
@@ -83,6 +84,7 @@ extension KeyboardViewController {
             let separator = activation.isHeldKeyChoice
                 ? value
                 : SmartQuotes.text(for: value, after: textDocumentProxy.documentContextBeforeInput)
+            traceApostrophe("word-ending character \(value.debugDescription) separator=\(separator.debugDescription)")
             return applyWordBoundary(separator: separator, emitsKeypress: false)
         case let .character(value):
             return applyPickedWordSpace(value, typesExactly: activation.isHeldKeyChoice)
@@ -127,9 +129,10 @@ extension KeyboardViewController {
     }
 
     /// Returns to the letter page for a space that follows a symbol typed on a symbol page.
-    /// Compact Keys and fields that open on the number page stay where they are.
+    /// Compact Keys stay where they are, and so does a number page the keyboard opened on until
+    /// the user taps ABC.
     func updateSymbolPage(for kind: KeyboardKeyKind) {
-        guard keysMode == .full, typingTraits.prefersNumberPage == false else { return }
+        guard keysMode == .full, holdsOpeningNumberPage == false else { return }
         let page = symbolPageReturnTracker.page(for: kind, on: symbolPage)
         if page != symbolPage {
             symbolPage = page
@@ -282,8 +285,10 @@ extension KeyboardViewController {
     private func applyPickedWordSpace(_ character: String, typesExactly: Bool) -> Bool? {
         guard typingTraits.allowsPredictions,
               let edit = predictionCoordinator.pickedWordSpaceEdit(character: character, typesExactly: typesExactly) else {
+            traceApostrophe("picked-word space: none for \(character.debugDescription)")
             return nil
         }
+        traceApostrophe("picked-word space edit delete=\(edit.deleteCount) insert=\(edit.insertText.debugDescription)")
         textInputController.apply(edit)
         handleTypingContextChange()
         return true
@@ -298,6 +303,7 @@ extension KeyboardViewController {
             separator: separator,
             allowsAutocorrection: typingTraits.allowsAutocorrection
         )
+        traceApostrophe("word boundary edit delete=\(edit.deleteCount) insert=\(edit.insertText.debugDescription) before=\(traceTextBefore())")
         guard edit.deleteCount > 0 else { return nil }
         if emitsKeypress {
             keypressHaptics.emitKeypressIfEnabled()

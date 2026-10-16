@@ -80,6 +80,9 @@ final class KeyboardViewController: UIInputViewController {
     )
     let letterCaseController = KeyboardLetterCaseController()
     var symbolPageReturnTracker = KeyboardSymbolPageReturnTracker()
+    /// Whether the keyboard opened on the number page and the user has yet to tap ABC, which
+    /// keeps symbols from returning to the letters.
+    var holdsOpeningNumberPage = false
     /// Checked when the keyboard comes on screen; see `KeyboardInstalledModels`.
     var installedModels = KeyboardInstalledModels.check()
     lazy var predictionCoordinator = KeyboardPredictionCoordinator(
@@ -648,6 +651,9 @@ final class KeyboardViewController: UIInputViewController {
         if kind == .abc, keysMode == .compact {
             keysMode = .full
         }
+        if kind == .abc {
+            holdsOpeningNumberPage = false
+        }
         if kind == .numberSymbols, symbolPage == .letters, emojiPanel != .searching,
            KeyboardKeysMode.resolve(
                isCompactKeysEnabled: appSettingsStore.isCompactKeysEnabled,
@@ -655,8 +661,11 @@ final class KeyboardViewController: UIInputViewController {
            ) == .compact {
             keysMode = .compact
         }
+        traceApostrophe("key \(kind) page=\(symbolPage) holds=\(holdsOpeningNumberPage) before=\(traceTextBefore())")
         updateSymbolPage(for: kind)
+        traceApostrophe("page after updateSymbolPage=\(symbolPage)")
         if let handled = handleTypingActivation(activation) {
+            traceApostrophe("typing path handled=\(handled) before=\(traceTextBefore())")
             return handled
         }
 
@@ -672,11 +681,20 @@ final class KeyboardViewController: UIInputViewController {
         if updatedSymbolPage != symbolPage {
             symbolPage = updatedSymbolPage
         }
+        traceApostrophe("regular path handled=\(didHandle) page=\(symbolPage) before=\(traceTextBefore())")
         if didHandle {
             recordTypedCharacter(activation)
             handleTypingContextChange()
         }
         return didHandle
+    }
+
+    func traceApostrophe(_ message: String) {
+        NSLog("[KeyboardApostropheTrace] %@", message)
+    }
+
+    func traceTextBefore() -> String {
+        String((textDocumentProxy.documentContextBeforeInput ?? "").suffix(20)).debugDescription
     }
 
     func handleSpaceTrackpadEvent(_ event: KeyboardSpaceTrackpadEvent) {
