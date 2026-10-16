@@ -52,6 +52,7 @@ extension DictionaryMatcher {
                 // Keep this path conservative: only allow merged-token expansion
                 // when the non-tail prefix is still reasonably similar.
                 guard max(headTextSimilarity, headPhoneticSimilarity) >= MergedTokenEvaluationConstants.headSimilarityMinimum else { continue }
+                guard hasMergedTokenPronunciationEvidence(observed: observed.normalized, candidateTokens: candidate.tokens) else { continue }
 
                 let tailExactBonus: Double
                 if observed.normalized == mergedCandidate {
@@ -125,5 +126,20 @@ extension DictionaryMatcher {
             replacement: replacementText,
             score: best.score.final
         )
+    }
+
+    // A known word that is not pronounced like the entry spoken in sequence was said as itself.
+    // Missing pronunciation data is intentionally permissive; compare only when every value exists.
+    private func hasMergedTokenPronunciationEvidence(observed: String, candidateTokens: [String]) -> Bool {
+        guard let observedPronunciation = lexicon.pronunciation(for: observed) else { return true }
+
+        var candidatePronunciations: [String] = []
+        for token in candidateTokens {
+            guard let pronunciation = lexicon.pronunciation(for: token) else { return true }
+            candidatePronunciations.append(pronunciation)
+        }
+
+        return observedPronunciation
+            == candidatePronunciations.joined(separator: PronunciationLexicon.phonemeSeparator)
     }
 }

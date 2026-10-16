@@ -19,6 +19,8 @@ public protocol PronunciationLexiconProviding: AnyObject {
 
 public final class PronunciationLexicon: PronunciationLexiconProviding {
     public static let shared = PronunciationLexicon()
+    /// Joins the phonemes inside each pronunciation in the lexicon resource.
+    nonisolated static let phonemeSeparator = "-"
 
     nonisolated let pronunciationLookup: PronunciationLookup
     private(set) var commonWords: Set<String> = []
