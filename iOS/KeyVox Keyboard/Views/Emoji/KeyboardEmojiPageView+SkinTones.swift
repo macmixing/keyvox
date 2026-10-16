@@ -49,7 +49,8 @@ extension KeyboardEmojiPageView {
         let layout = KeyboardEmojiSkinTonePickerLayout(
             emojiCenter: collectionView.convert(cell.center, to: container),
             toneCount: emoji.skinToneVariants.count,
-            width: container.bounds.width
+            width: container.bounds.width,
+            rowPitch: gridLayout.geometry.rowPitch
         )
         let choices = [emoji.text] + emoji.skinToneVariants
         if skinTonePicker.superview !== container {
@@ -59,7 +60,7 @@ extension KeyboardEmojiPageView {
         skinTonePicker.frame = container.bounds
         skinTonePicker.present(
             panel: layout.panelFrame,
-            stem: layout.stemFrame,
+            stem: nil,
             divider: layout.dividerFrame,
             choiceCenters: layout.choiceCenters,
             choices: choices,
@@ -103,6 +104,9 @@ extension KeyboardEmojiPageView {
         guard choice != held.choice else { return }
         heldEmoji?.choice = choice
         skinTonePicker.select(choice)
+        if choice != nil {
+            onSkinToneHighlighted?()
+        }
     }
 
     private func endHold(at location: CGPoint) {

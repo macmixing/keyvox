@@ -25,6 +25,8 @@ final class KeyboardEmojiPageView: UIView {
     var onSkinToneChosen: ((_ emoji: String, _ version: String) -> Void)?
     /// Called the moment a held emoji's skin-tone picker opens.
     var onSkinTonePickerOpened: (() -> Void)?
+    /// Called each time the finger moves onto another choice in a held emoji's skin-tone picker.
+    var onSkinToneHighlighted: (() -> Void)?
     /// Called when a category is tapped, and each time another category reaches the grid's leading
     /// edge as a finger slides along the category bar.
     var onCategoryReached: (() -> Void)?

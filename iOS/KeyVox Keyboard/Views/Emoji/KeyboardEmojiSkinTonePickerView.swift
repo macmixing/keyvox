@@ -1,8 +1,8 @@
 import UIKit
 
-/// The skin-tone picker of a held emoji, in the system emoji keyboard's look: a panel joined to
-/// the emoji by a stem, the emoji as it comes, a divider, its skin tones, and on the emoji page the
-/// choice under the finger in blue.
+/// The skin-tone picker of a held emoji, in the system emoji keyboard's look: a panel, joined to
+/// the emoji by a stem when it has one, the emoji as it comes, a divider, its skin tones, and on the
+/// emoji page the choice under the finger under a light overlay.
 final class KeyboardEmojiSkinTonePickerView: UIView {
     /// The system emoji keyboard's pickers over its keyboard's background, measured in screenshots
     /// with Tools/AppleKeyboardBaseline (`EmojiFrequentlyUsedProbeTests`), light and dark.
@@ -52,6 +52,13 @@ final class KeyboardEmojiSkinTonePickerView: UIView {
 
     enum Measured {
         static let highlightCornerRadius: CGFloat = 4.5
+        /// The white over the panel under the choice under the finger in dark mode.
+        static let highlightWhite: CGFloat = 0.19
+        /// The same white in light mode, stronger so it shows over the lighter panel.
+        static let lightHighlightWhite: CGFloat = 0.4
+        /// How much wider and taller the box under the chosen choice is than the layout's highlight,
+        /// so it does not hug the emoji's edges.
+        static let highlightGrowth: CGFloat = 6
     }
 
     private let shapeLayer = CAShapeLayer()
@@ -66,7 +73,9 @@ final class KeyboardEmojiSkinTonePickerView: UIView {
         isUserInteractionEnabled = false
         isHidden = true
         layer.addSublayer(shapeLayer)
-        highlightView.backgroundColor = .systemBlue
+        highlightView.backgroundColor = UIColor { trait in
+            UIColor.white.withAlphaComponent(trait.userInterfaceStyle == .dark ? Measured.highlightWhite : Measured.lightHighlightWhite)
+        }
         highlightView.layer.cornerRadius = Measured.highlightCornerRadius
         addSubview(dividerView)
         addSubview(highlightView)
@@ -81,10 +90,11 @@ final class KeyboardEmojiSkinTonePickerView: UIView {
     }
 
     /// Shows `choices`, the emoji as it comes and then its skin tones, centered on `choiceCenters`
-    /// in a panel joined by a stem, in `style`, in this view's coordinates, none chosen yet.
+    /// in a panel, joined by `stem` when there is one, in `style`, in this view's coordinates, none
+    /// chosen yet.
     func present(
         panel: CGRect,
-        stem: CGRect,
+        stem: CGRect?,
         divider: CGRect,
         choiceCenters: [CGPoint],
         choices: [String],
@@ -131,7 +141,7 @@ final class KeyboardEmojiSkinTonePickerView: UIView {
             highlightView.isHidden = true
             return
         }
-        let size = KeyboardEmojiSkinTonePickerLayout.Measured.highlightSize
+        let size = KeyboardEmojiSkinTonePickerLayout.Measured.highlightSize + Measured.highlightGrowth
         let center = choiceCenters[index]
         highlightView.frame = CGRect(x: center.x - (size / 2), y: center.y - (size / 2), width: size, height: size)
         highlightView.isHidden = false
