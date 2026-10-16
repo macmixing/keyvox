@@ -3,7 +3,8 @@ own data (write_emoji_search.py), so the bar offers what a search for that word 
 
 A word gets, at most three:
 0. KeyVox's own additions, emoji_prediction_additions.txt beside this script, for words the search
-   data leaves out or gets wrong, in place of the rules below;
+   data leaves out or gets wrong, in place of the rules below; an addition without emoji leaves its
+   word, and the plurals that would take its emoji, without any;
 1. otherwise the emoji the search data has the word among, whole, in the search data's order, as
    the emoji search finds them; none for a function word (a determiner, preposition, conjunction,
    pronoun, or particle, as KeyVox's word kinds class it), which the search data has only from the
@@ -42,10 +43,11 @@ def additions(catalog_texts):
         if not line.strip() or line.startswith("#"):
             continue
         word, emoji = line.rstrip("\n").split("\t")
-        unknown = [text for text in emoji.split(" ") if text not in catalog_texts]
+        texts = emoji.split(" ") if emoji else []
+        unknown = [text for text in texts if text not in catalog_texts]
         if unknown:
             sys.exit(f"{ADDITIONS}: {word} has emoji the catalog lacks: {' '.join(unknown)}")
-        added[" ".join(words(word))] = emoji.split(" ")
+        added[" ".join(words(word))] = texts
     return added
 
 
@@ -73,9 +75,10 @@ def main(search_path, catalog_path, word_kinds_path, vocabulary_path, output_pat
         if singular:
             plurals[plural] = emoji_by_word[singular]
     emoji_by_word.update(plurals)
+    written = sorted((word, emoji) for word, emoji in emoji_by_word.items() if emoji)
     with open(output_path, "w", encoding="utf-8") as output:
-        output.write("".join(f"{word}\t{' '.join(emoji)}\n" for word, emoji in sorted(emoji_by_word.items())))
-    print(f"{len(emoji_by_word)} words with emoji", file=sys.stderr)
+        output.write("".join(f"{word}\t{' '.join(emoji)}\n" for word, emoji in written))
+    print(f"{len(written)} words with emoji", file=sys.stderr)
 
 
 if __name__ == "__main__":

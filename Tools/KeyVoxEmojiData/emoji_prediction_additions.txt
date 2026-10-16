@@ -1,5 +1,6 @@
 # Emoji KeyVox offers for a word beyond what Unicode's data gives, in place of what it gives:
-# <word><tab><emoji>, the emoji separated by spaces as the catalog has them.
+# <word><tab><emoji>, the emoji separated by spaces as the catalog has them; none for a word that
+# should offer no emoji.
 dead	💀 😵 ☠️
 wtf	😳 😬 🤬
 omg	😳 😱 😆
@@ -9,3 +10,4 @@ eye	👁️ 👀
 eyes	👀 👁️
 shit	💩
 crap	💩
+emoji	
