@@ -84,7 +84,6 @@ extension KeyboardViewController {
             let separator = activation.isHeldKeyChoice
                 ? value
                 : SmartQuotes.text(for: value, after: textDocumentProxy.documentContextBeforeInput)
-            traceApostrophe("word-ending character \(value.debugDescription) separator=\(separator.debugDescription)")
             return applyWordBoundary(separator: separator, emitsKeypress: false)
         case let .character(value):
             return applyPickedWordSpace(value, typesExactly: activation.isHeldKeyChoice)
@@ -285,10 +284,8 @@ extension KeyboardViewController {
     private func applyPickedWordSpace(_ character: String, typesExactly: Bool) -> Bool? {
         guard typingTraits.allowsPredictions,
               let edit = predictionCoordinator.pickedWordSpaceEdit(character: character, typesExactly: typesExactly) else {
-            traceApostrophe("picked-word space: none for \(character.debugDescription)")
             return nil
         }
-        traceApostrophe("picked-word space edit delete=\(edit.deleteCount) insert=\(edit.insertText.debugDescription)")
         textInputController.apply(edit)
         handleTypingContextChange()
         return true
@@ -303,7 +300,6 @@ extension KeyboardViewController {
             separator: separator,
             allowsAutocorrection: typingTraits.allowsAutocorrection
         )
-        traceApostrophe("word boundary edit delete=\(edit.deleteCount) insert=\(edit.insertText.debugDescription) before=\(traceTextBefore())")
         guard edit.deleteCount > 0 else { return nil }
         if emitsKeypress {
             keypressHaptics.emitKeypressIfEnabled()

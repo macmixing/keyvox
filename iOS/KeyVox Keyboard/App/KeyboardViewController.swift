@@ -661,11 +661,8 @@ final class KeyboardViewController: UIInputViewController {
            ) == .compact {
             keysMode = .compact
         }
-        traceApostrophe("key \(kind) page=\(symbolPage) holds=\(holdsOpeningNumberPage) before=\(traceTextBefore())")
         updateSymbolPage(for: kind)
-        traceApostrophe("page after updateSymbolPage=\(symbolPage)")
         if let handled = handleTypingActivation(activation) {
-            traceApostrophe("typing path handled=\(handled) before=\(traceTextBefore())")
             return handled
         }
 
@@ -681,20 +678,11 @@ final class KeyboardViewController: UIInputViewController {
         if updatedSymbolPage != symbolPage {
             symbolPage = updatedSymbolPage
         }
-        traceApostrophe("regular path handled=\(didHandle) page=\(symbolPage) before=\(traceTextBefore())")
         if didHandle {
             recordTypedCharacter(activation)
             handleTypingContextChange()
         }
         return didHandle
-    }
-
-    func traceApostrophe(_ message: String) {
-        NSLog("[KeyboardApostropheTrace] %@", message)
-    }
-
-    func traceTextBefore() -> String {
-        String((textDocumentProxy.documentContextBeforeInput ?? "").suffix(20)).debugDescription
     }
 
     func handleSpaceTrackpadEvent(_ event: KeyboardSpaceTrackpadEvent) {
