@@ -32,6 +32,7 @@ extension KeyboardViewController {
         )
         keysMode = layout.keysMode
         symbolPage = layout.symbolPage
+        holdsOpeningNumberPage = layout.symbolPage != .letters
     }
 
     /// Call after any change to the text or cursor, including the keyboard's own edits. A
@@ -127,9 +128,10 @@ extension KeyboardViewController {
     }
 
     /// Returns to the letter page for a space that follows a symbol typed on a symbol page.
-    /// Compact Keys and fields that open on the number page stay where they are.
+    /// Compact Keys stay where they are, and so does a number page the keyboard opened on until
+    /// the user taps ABC.
     func updateSymbolPage(for kind: KeyboardKeyKind) {
-        guard keysMode == .full, typingTraits.prefersNumberPage == false else { return }
+        guard keysMode == .full, holdsOpeningNumberPage == false else { return }
         let page = symbolPageReturnTracker.page(for: kind, on: symbolPage)
         if page != symbolPage {
             symbolPage = page

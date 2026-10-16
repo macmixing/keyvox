@@ -80,6 +80,9 @@ final class KeyboardViewController: UIInputViewController {
     )
     let letterCaseController = KeyboardLetterCaseController()
     var symbolPageReturnTracker = KeyboardSymbolPageReturnTracker()
+    /// Whether the keyboard opened on the number page and the user has yet to tap ABC, which
+    /// keeps symbols from returning to the letters.
+    var holdsOpeningNumberPage = false
     /// Checked when the keyboard comes on screen; see `KeyboardInstalledModels`.
     var installedModels = KeyboardInstalledModels.check()
     lazy var predictionCoordinator = KeyboardPredictionCoordinator(
@@ -647,6 +650,9 @@ final class KeyboardViewController: UIInputViewController {
         // ABC shows the full letter keys without turning Compact Keys off, so 123 returns to them.
         if kind == .abc, keysMode == .compact {
             keysMode = .full
+        }
+        if kind == .abc {
+            holdsOpeningNumberPage = false
         }
         if kind == .numberSymbols, symbolPage == .letters, emojiPanel != .searching,
            KeyboardKeysMode.resolve(
