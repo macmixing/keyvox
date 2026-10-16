@@ -123,6 +123,10 @@ final class KeyVoxSessionLiveActivityCoordinator {
         await reconcileActivity()
     }
 
+    var isLiveActivityActive: Bool {
+        liveActivityController.isActivityActive
+    }
+
     func prepareForAudioRecordingIntent() async throws {
         guard liveActivitiesEnabled else {
             throw KeyVoxRequiredLiveActivityError.disabled
