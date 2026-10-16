@@ -511,11 +511,15 @@ public final class PredictiveTypingSession {
             return revertEdit(reverted, followingText: context.followingText)
         }
         // Right after a mark a picked word is spaced away from, the first tap only adds the
-        // space, as on the system keyboard; the next tap picks.
-        if word.text.isEmpty, let mark = textBeforeCursor?.last,
-           Self.spacedFromPickedWordCharacters?.contains(String(mark)) == true {
+        // space, as on the system keyboard; the next tap picks. An emoji, offered for the word
+        // before the mark, is spaced away and typed in one tap.
+        let isAfterSpacedMark = word.text.isEmpty && textBeforeCursor?.last.map {
+            Self.spacedFromPickedWordCharacters?.contains(String($0)) == true
+        } == true
+        if isAfterSpacedMark, item.kind != .emoji {
             return TextEdit(deleteCount: 0, insertText: " ")
         }
+        let leadingSpace = isAfterSpacedMark ? " " : ""
         lastAutocorrection = nil
         revisableWord = nil
         wordTouches.reset()
@@ -550,7 +554,7 @@ public final class PredictiveTypingSession {
         }
         return TextEdit(
             deleteCount: word.charactersBeforeCursor,
-            insertText: written + space,
+            insertText: leadingSpace + written + space,
             deleteAfterCount: word.charactersAfterCursor
         )
     }

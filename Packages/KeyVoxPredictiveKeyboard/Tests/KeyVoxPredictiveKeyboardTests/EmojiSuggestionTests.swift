@@ -46,4 +46,10 @@ final class EmojiSuggestionTests: XCTestCase {
         XCTAssertEqual(edit.deleteCount, 0)
         XCTAssertEqual(edit.insertText, "🍕 ")
     }
+
+    func testTappingAnEmojiAfterACommaTypesItSpacedAwayFromTheComma() {
+        let edit = PredictiveTypingSession().choiceEdit(SuggestionBar.Item(text: "🐶", kind: .emoji), textBeforeCursor: "so dog,")
+        XCTAssertEqual(edit.deleteCount, 0)
+        XCTAssertEqual(edit.insertText, " 🐶 ")
+    }
 }
