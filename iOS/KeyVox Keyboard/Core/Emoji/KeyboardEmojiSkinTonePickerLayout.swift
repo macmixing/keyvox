@@ -36,9 +36,12 @@ struct KeyboardEmojiSkinTonePickerLayout: Equatable {
     ///   - width: How wide the space the picker shows in is; the panel stays inside it.
     init(emojiCenter: CGPoint, toneCount: Int, width: CGFloat) {
         let left = min(max(0, emojiCenter.x - (Measured.panelWidth / 2)), max(0, width - Measured.panelWidth))
+        // Nothing shows above the space the picker shows in, so a panel that would rise past its
+        // top comes down to it, on a shorter stem.
+        let drop = max(0, Measured.panelRise - emojiCenter.y)
         panelFrame = CGRect(
             x: left,
-            y: emojiCenter.y - Measured.panelRise,
+            y: emojiCenter.y - Measured.panelRise + drop,
             width: Measured.panelWidth,
             height: Measured.panelHeight
         )
@@ -48,7 +51,7 @@ struct KeyboardEmojiSkinTonePickerLayout: Equatable {
             width: Measured.stemWidth,
             height: emojiCenter.y + Measured.stemDrop - panelFrame.maxY
         )
-        let choiceY = emojiCenter.y - Measured.choiceRise
+        let choiceY = emojiCenter.y - Measured.choiceRise + drop
         dividerFrame = CGRect(
             x: left + Measured.dividerCenter - 0.5,
             y: choiceY - (Measured.dividerHeight / 2),
