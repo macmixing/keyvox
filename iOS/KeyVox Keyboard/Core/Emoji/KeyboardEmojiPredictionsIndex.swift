@@ -45,6 +45,12 @@ final class KeyboardEmojiPredictionsIndex {
     /// none before.
     func emoji(for word: String) -> [String] {
         guard hasTypedEmoji else { return [] }
-        return (predictions?.emoji(for: word) ?? []).filter(KeyboardEmojiSupport.canDraw)
+        return wordEmoji(for: word)
+    }
+
+    /// The emoji for `word` this phone draws, in order, once read, whether or not the bar offers
+    /// them yet: what the emoji search finds first for that word.
+    func wordEmoji(for word: String) -> [String] {
+        (predictions?.emoji(for: word) ?? []).filter(KeyboardEmojiSupport.canDraw)
     }
 }
