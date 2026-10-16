@@ -1,7 +1,8 @@
 import Foundation
 
 /// The emoji the suggestion bar offers for a word, at most three, in the order to show them, as
-/// `Tools/KeyVoxEmojiData/write_emoji_predictions.py` writes them from public Unicode data.
+/// `Tools/KeyVoxEmojiData/write_emoji_predictions.py` writes them from the emoji search's data;
+/// `EmojiSearch` finds them first for that word, so the bar and the search agree.
 public struct EmojiPredictions: Sendable {
     private let emojiByWord: [String: [String]]
 

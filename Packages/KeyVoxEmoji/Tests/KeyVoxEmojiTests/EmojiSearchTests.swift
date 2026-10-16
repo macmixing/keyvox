@@ -32,6 +32,15 @@ final class EmojiSearchTests: XCTestCase {
         XCTAssertEqual(search.results(for: "alpha delta"), [])
     }
 
+    func testEmojiGivenFirstComeAheadOfTheResultsOnce() throws {
+        let search = try Self.search([
+            ("first", "alpha"),
+            ("second", "alpha"),
+        ])
+        XCTAssertEqual(search.results(for: "alpha", first: ["second", "given"]), ["second", "given", "first"])
+        XCTAssertEqual(search.results(for: "alpha", first: []), ["first", "second"])
+    }
+
     func testCaseAndAccentsDoNotMatter() throws {
         let search = try Self.search([("found", "cafe")])
         XCTAssertEqual(search.results(for: "CAFÉ"), ["found"])

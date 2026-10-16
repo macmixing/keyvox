@@ -54,6 +54,12 @@ public struct EmojiSearch: Sendable {
         self.wordEmojiStarts = wordEmojiStarts
     }
 
+    /// The emoji `search` finds, in order, with `first` ahead of them: the suggestion bar's emoji
+    /// for a search of one word (`EmojiPredictions`), so a search finds first what the bar offers.
+    public func results(for search: String, first: [String]) -> [String] {
+        first + results(for: search).filter { first.contains($0) == false }
+    }
+
     /// The emoji `search` finds, in order; none for a search without words.
     public func results(for search: String) -> [String] {
         let searchedWords = Self.words(in: search)
