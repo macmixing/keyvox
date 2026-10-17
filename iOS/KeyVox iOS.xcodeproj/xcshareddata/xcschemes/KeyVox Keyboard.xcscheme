@@ -51,6 +51,7 @@
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "8E9E385E2F5BF1F200EAFA72"
                BuildableName = "KeyVox iOSTests.xctest"
+               BlueprintName = "KeyVox iOSTests"
                ReferencedContainer = "container:KeyVox iOS.xcodeproj">
             </BuildableReference>
          </TestableReference>

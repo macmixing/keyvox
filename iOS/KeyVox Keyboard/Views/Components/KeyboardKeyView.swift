@@ -9,7 +9,6 @@ final class KeyboardKeyView: UIView {
     }
 
     private let backgroundView = UIView()
-    private let blurEffectView = UIVisualEffectView(effect: UIBlurEffect(style: .systemThinMaterial))
     private let tintOverlay = UIView()
     /// Two labels taking turns: a letter switching case shows the label that already holds the
     /// other case instead of laying out new text, so switching case only shows and hides labels.
@@ -54,6 +53,7 @@ final class KeyboardKeyView: UIView {
     override func layoutSubviews() {
         super.layoutSubviews()
         updateBorderPath()
+        updateShadowPath()
     }
 
     func apply(
@@ -165,11 +165,6 @@ final class KeyboardKeyView: UIView {
         backgroundView.layer.cornerRadius = KeyboardStyle.keyCornerRadius
         backgroundView.layer.masksToBounds = false
         
-        blurEffectView.translatesAutoresizingMaskIntoConstraints = false
-        blurEffectView.layer.cornerRadius = KeyboardStyle.keyCornerRadius
-        blurEffectView.clipsToBounds = true
-        blurEffectView.isUserInteractionEnabled = false
-        
         tintOverlay.translatesAutoresizingMaskIntoConstraints = false
         tintOverlay.layer.cornerRadius = KeyboardStyle.keyCornerRadius
         tintOverlay.clipsToBounds = true
@@ -189,7 +184,6 @@ final class KeyboardKeyView: UIView {
         imageView.isUserInteractionEnabled = false
 
         addSubview(backgroundView)
-        backgroundView.addSubview(blurEffectView)
         backgroundView.addSubview(tintOverlay)
         titleLabels.forEach(addSubview)
         addSubview(imageView)
@@ -200,11 +194,6 @@ final class KeyboardKeyView: UIView {
             backgroundView.trailingAnchor.constraint(equalTo: trailingAnchor),
             backgroundView.topAnchor.constraint(equalTo: topAnchor),
             backgroundView.bottomAnchor.constraint(equalTo: bottomAnchor),
-
-            blurEffectView.leadingAnchor.constraint(equalTo: backgroundView.leadingAnchor),
-            blurEffectView.trailingAnchor.constraint(equalTo: backgroundView.trailingAnchor),
-            blurEffectView.topAnchor.constraint(equalTo: backgroundView.topAnchor),
-            blurEffectView.bottomAnchor.constraint(equalTo: backgroundView.bottomAnchor),
 
             tintOverlay.leadingAnchor.constraint(equalTo: backgroundView.leadingAnchor),
             tintOverlay.trailingAnchor.constraint(equalTo: backgroundView.trailingAnchor),
@@ -256,11 +245,20 @@ final class KeyboardKeyView: UIView {
         )
     }
 
+    /// Gives the shadow the key's rounded shape, so it is not worked out from the key's
+    /// contents each frame.
+    private func updateShadowPath() {
+        backgroundView.layer.shadowPath = UIBezierPath(
+            roundedRect: backgroundView.bounds,
+            cornerRadius: KeyboardStyle.keyCornerRadius
+        ).cgPath
+    }
+
     private func colorsForCurrentState(
         model: KeyboardKeyModel,
         state: VisualState
     ) -> (fill: UIColor, fillOpacity: CGFloat, border: UIColor, foreground: UIColor) {
-        // How strongly a key's fill tints the blur behind it.
+        // How strongly a key's fill tints the keyboard backdrop behind it.
         let fillOpacity: CGFloat = 0.3
         // The emoji search's done key is solid blue, and pressed it looks like a letter key, as the
         // system keyboard's does.
