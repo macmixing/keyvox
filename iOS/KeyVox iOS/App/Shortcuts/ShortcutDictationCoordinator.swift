@@ -26,6 +26,8 @@ protocol ShortcutDictationSessionControlling: AnyObject {
 
 @MainActor
 protocol ShortcutRecordingActivityCoordinating: AnyObject {
+    var isLiveActivityActive: Bool { get }
+
     func prepareForAudioRecordingIntent() async throws
     func completeAudioRecordingIntentStart(
         recordingStarted: Bool,
@@ -98,8 +100,10 @@ final class ShortcutDictationCoordinator {
     }
 
     private func stopRecording(releaseMicImmediately: Bool) async -> ShortcutDictationOutcome {
+        // The system requires a Live Activity whenever this intent leaves the mic active.
+        let shouldReleaseMic = releaseMicImmediately || liveActivityCoordinator.isLiveActivityActive == false
         switch await sessionController.performStopRecordingCommand(
-            releaseMicImmediately: releaseMicImmediately
+            releaseMicImmediately: shouldReleaseMic
         ) {
         case .completed(let text):
             return .transcriptionCompleted(text)

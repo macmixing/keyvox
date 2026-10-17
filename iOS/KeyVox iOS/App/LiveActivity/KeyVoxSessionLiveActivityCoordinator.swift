@@ -57,12 +57,17 @@ final class KeyVoxSessionLiveActivityController: KeyVoxSessionLiveActivityContro
     }
 
     private var currentActivity: Activity<KeyVoxSessionLiveActivityAttributes>? {
-        if let activity {
+        if let activity, Self.isShowing(activity) {
             return activity
         }
 
-        activity = Activity<KeyVoxSessionLiveActivityAttributes>.activities.first
+        activity = Activity<KeyVoxSessionLiveActivityAttributes>.activities.first(where: Self.isShowing)
+        lastWeeklyWordCount = nil
         return activity
+    }
+
+    private static func isShowing(_ activity: Activity<KeyVoxSessionLiveActivityAttributes>) -> Bool {
+        activity.activityState == .active || activity.activityState == .stale
     }
 }
 
@@ -121,6 +126,10 @@ final class KeyVoxSessionLiveActivityCoordinator {
             isAudioRecordingIntentSessionActive = false
         }
         await reconcileActivity()
+    }
+
+    var isLiveActivityActive: Bool {
+        liveActivityController.isActivityActive
     }
 
     func prepareForAudioRecordingIntent() async throws {

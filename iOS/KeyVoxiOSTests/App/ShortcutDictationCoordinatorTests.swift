@@ -132,6 +132,8 @@ private final class MockShortcutDictationSessionController: ShortcutDictationSes
 private final class MockShortcutRecordingActivityCoordinator: ShortcutRecordingActivityCoordinating {
     private let calls: ShortcutDictationCallRecorder
 
+    var isLiveActivityActive = true
+
     init(calls: ShortcutDictationCallRecorder) {
         self.calls = calls
     }
