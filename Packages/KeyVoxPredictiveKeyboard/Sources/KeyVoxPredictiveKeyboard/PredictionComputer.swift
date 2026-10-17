@@ -50,7 +50,7 @@ public final class PredictionComputer: @unchecked Sendable {
         for name in givenVocabulary.knownNames {
             if engine.capitalizedSpellings.spelling(of: name) != nil {
                 names.append(name)
-            } else if try engine.analyze(word: name).wordIsValid {
+            } else if try engine.analyze(word: PersonalVocabulary.key(name)).wordIsValid {
                 continue
             } else if try missesItsApostrophe(name) {
                 commonWords.append(name)

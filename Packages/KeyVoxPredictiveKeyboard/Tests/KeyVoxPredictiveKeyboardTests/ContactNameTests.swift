@@ -48,6 +48,16 @@ final class ContactNameTests: XCTestCase {
         XCTAssertEqual(try autocorrection(typing: "I dont"), try withoutContacts.compute(request).autocorrection)
     }
 
+    /// A contact word that is a dictionary word written with a curly apostrophe, as iPhones type
+    /// it, leaves typing corrected as if no contact had it.
+    func testContactDictionaryWordWithCurlyApostropheIsCorrectedAsWithoutTheContact() throws {
+        try computer.updateVocabulary(PersonalVocabulary(words: [], knownNames: ["it’s"], textReplacements: []))
+        let withoutContacts = PredictionComputer(engine: try EnglishPredictiveEngine())
+        let request = PredictiveTypingSession().request(textBeforeCursor: "so its")
+        XCTAssertNotNil(try withoutContacts.compute(request).autocorrection)
+        XCTAssertEqual(try autocorrection(typing: "so its"), try withoutContacts.compute(request).autocorrection)
+    }
+
     private func autocorrection(typing text: String) throws -> String? {
         let request = PredictiveTypingSession().request(textBeforeCursor: text)
         return try computer.compute(request).autocorrection
