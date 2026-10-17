@@ -11,11 +11,6 @@ import UIKit
 final class KeyboardEmojiTwoPersonPickerView: UIView {
     /// Measured in screenshots, light and dark.
     enum Measured {
-        static let highlightColor = UIColor { trait in
-            trait.userInterfaceStyle == .dark
-                ? UIColor(red: 77 / 255, green: 77 / 255, blue: 77 / 255, alpha: 1)
-                : UIColor(red: 238 / 255, green: 238 / 255, blue: 239 / 255, alpha: 1)
-        }
         static let dividerColor = UIColor { trait in
             trait.userInterfaceStyle == .dark
                 ? UIColor(red: 84 / 255, green: 84 / 255, blue: 84 / 255, alpha: 1)
@@ -30,8 +25,8 @@ final class KeyboardEmojiTwoPersonPickerView: UIView {
 
     private let shapeLayer = CAShapeLayer()
     private let dividerView = UIView()
-    private let firstHighlight = UIView()
-    private let secondHighlight = UIView()
+    private let firstHighlight = KeyboardEmojiChoiceHighlightView()
+    private let secondHighlight = KeyboardEmojiChoiceHighlightView()
     private var firstToneViews: [UIImageView] = []
     private var secondToneViews: [UIImageView] = []
     private let plainLabel = UILabel()
@@ -49,10 +44,8 @@ final class KeyboardEmojiTwoPersonPickerView: UIView {
         isHidden = true
         layer.addSublayer(shapeLayer)
         addSubview(dividerView)
-        for highlight in [firstHighlight, secondHighlight] {
-            highlight.layer.cornerRadius = KeyboardEmojiTwoPersonPickerLayout.Measured.highlightCornerRadius
-            addSubview(highlight)
-        }
+        addSubview(firstHighlight)
+        addSubview(secondHighlight)
         for _ in 0..<EmojiTwoPersonTones.toneCount {
             let first = UIImageView()
             let second = UIImageView()
@@ -171,11 +164,11 @@ final class KeyboardEmojiTwoPersonPickerView: UIView {
     /// tone in gray.
     private func showChoice() {
         guard let layout, let tones else { return }
-        let size = KeyboardEmojiTwoPersonPickerLayout.Measured.highlightSize
         for (highlight, tone, centers) in [(firstHighlight, firstTone, layout.firstToneCenters), (secondHighlight, secondTone, layout.secondToneCenters)] {
-            highlight.isHidden = tone == nil
             if let tone {
-                highlight.frame = CGRect(x: centers[tone].x - (size / 2), y: centers[tone].y - (size / 2), width: size, height: size)
+                highlight.show(centeredAt: centers[tone])
+            } else {
+                highlight.isHidden = true
             }
         }
         let scale = traitCollection.displayScale
@@ -243,8 +236,5 @@ final class KeyboardEmojiTwoPersonPickerView: UIView {
     private func applyColors() {
         shapeLayer.fillColor = panelFill.resolvedColor(with: traitCollection).cgColor
         dividerView.backgroundColor = Measured.dividerColor.resolvedColor(with: traitCollection)
-        for highlight in [firstHighlight, secondHighlight] {
-            highlight.backgroundColor = Measured.highlightColor.resolvedColor(with: traitCollection)
-        }
     }
 }
