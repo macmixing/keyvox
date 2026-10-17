@@ -55,6 +55,7 @@ struct DictationShortcutSetupBrowsingView: View {
                     }
                 }
             }
+            .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(.hidden, for: .navigationBar)
         }
         .interactiveDismissDisabled()
@@ -105,7 +106,11 @@ struct DictationShortcutSetupBrowsingView: View {
 
     @ViewBuilder
     private func pager(in geometry: GeometryProxy) -> some View {
-        if #available(iOS 26.0, *) {
+        if #available(iOS 27.0, *) {
+            pagerScrollView(in: geometry)
+                .scrollEdgeEffectHidden()
+                .toolbarMinimizationBehavior(.never, for: .navigationBar)
+        } else if #available(iOS 26.0, *) {
             pagerScrollView(in: geometry)
                 .scrollEdgeEffectHidden()
         } else {
@@ -129,11 +134,14 @@ struct DictationShortcutSetupBrowsingView: View {
                         width: geometry.size.width,
                         height: geometry.size.height
                     )
+                    .padding(.leading, geometry.safeAreaInsets.leading)
+                    .padding(.trailing, geometry.safeAreaInsets.trailing)
                     .id(page)
                 }
             }
             .scrollTargetLayout()
         }
+        .ignoresSafeArea(.container, edges: .horizontal)
         .scrollIndicators(.hidden)
         .scrollTargetBehavior(.paging)
         .scrollPosition(id: selectedPageScrollPosition)

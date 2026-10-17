@@ -84,6 +84,7 @@ struct DictationShortcutSetupOnboardingView: View {
                     }
                 }
             }
+            .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(.hidden, for: .navigationBar)
             .containerBackground(AppTheme.screenBackground, for: .navigation)
         }
