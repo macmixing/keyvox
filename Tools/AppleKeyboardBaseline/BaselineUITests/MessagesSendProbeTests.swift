@@ -8,6 +8,12 @@ import XCTest
 final class MessagesSendProbeTests: XCTestCase {
     private let signposter = OSSignposter(subsystem: "org.keyvox.baseline", category: .pointsOfInterest)
 
+    /// A failed step ends the probe, so nothing is sent with the wrong keyboard or recorded under
+    /// the wrong name.
+    override func setUpWithError() throws {
+        continueAfterFailure = false
+    }
+
     func testSendWithKeyboard() throws {
         let environment = ProcessInfo.processInfo.environment
         let marker = environment["MESSAGES_SEND_KEYBOARD_MARKER"]
