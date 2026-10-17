@@ -3,7 +3,7 @@ import SwiftUI
 struct DictationShortcutSetupPageView: View {
     private enum Layout {
         static let videoHorizontalInset: CGFloat = 5
-        static let videoTopInset: CGFloat = -60
+        static let videoTopInset: CGFloat = -8
     }
 
     let page: DictationShortcutSetupPage

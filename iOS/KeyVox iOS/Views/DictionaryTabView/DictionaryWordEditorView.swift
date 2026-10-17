@@ -7,6 +7,7 @@ struct DictionaryWordEditorView: View {
         static let addDetentHeightiOS18: CGFloat = 167
         static let addDetentHeightiOS26: CGFloat = 205
         static let editDetentHeight: CGFloat = 180
+        static let fieldTopSpacing: CGFloat = 35
     }
 
     let mode: DictionaryWordEditorMode
@@ -64,6 +65,7 @@ struct DictionaryWordEditorView: View {
                     }
                 }
                 .scrollDisabled(true)
+                .contentMargins(.top, Layout.fieldTopSpacing, for: .scrollContent)
                 .padding(.top, -18)
 
                 if let errorMessage {
@@ -114,7 +116,7 @@ struct DictionaryWordEditorView: View {
                     Button(mode.actionTitle) {
                         submit()
                     }
-                    .tint(AppTheme.accent)
+                    .tint(.yellow)
                     .disabled(trimmedPhrase.isEmpty)
                 }
             }

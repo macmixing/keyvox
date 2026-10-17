@@ -2,7 +2,6 @@ import SwiftUI
 
 struct ShortcutIntroView: View {
     private enum Layout {
-        static let contentTopInset: CGFloat = -50
         static let videoSize: CGFloat = 160
     }
 
@@ -102,7 +101,6 @@ struct ShortcutIntroView: View {
                     Spacer(minLength: 48)
                 }
                 .frame(maxWidth: .infinity, minHeight: geometry.size.height, alignment: .top)
-                .padding(.top, Layout.contentTopInset)
             }
             .scrollIndicators(.hidden)
             .scrollClipDisabled()
