@@ -29,7 +29,6 @@ struct KeyboardEmojiTwoPersonPickerLayout: Equatable {
         static let dividerInset: CGFloat = 13.5
         static let dividerHeight: CGFloat = 1
         static let highlightSize: CGFloat = 40
-        static let highlightCornerRadius: CGFloat = 10
         /// The bottom row's emoji are this much larger than the rows'.
         static let bottomEmojiScale: CGFloat = 1.5
     }

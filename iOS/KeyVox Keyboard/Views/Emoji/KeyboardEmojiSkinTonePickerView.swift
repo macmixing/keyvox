@@ -50,20 +50,9 @@ final class KeyboardEmojiSkinTonePickerView: UIView {
         )
     }
 
-    enum Measured {
-        static let highlightCornerRadius: CGFloat = 4.5
-        /// The white over the panel under the choice under the finger in dark mode.
-        static let highlightWhite: CGFloat = 0.19
-        /// The same white in light mode, stronger so it shows over the lighter panel.
-        static let lightHighlightWhite: CGFloat = 0.4
-        /// How much wider and taller the box under the chosen choice is than the layout's highlight,
-        /// so it does not hug the emoji's edges.
-        static let highlightGrowth: CGFloat = 6
-    }
-
     private let shapeLayer = CAShapeLayer()
     private let dividerView = UIView()
-    private let highlightView = UIView()
+    private let highlightView = KeyboardEmojiChoiceHighlightView()
     private var labels: [UILabel] = []
     private var choiceCenters: [CGPoint] = []
     private var style = Style.page
@@ -73,10 +62,6 @@ final class KeyboardEmojiSkinTonePickerView: UIView {
         isUserInteractionEnabled = false
         isHidden = true
         layer.addSublayer(shapeLayer)
-        highlightView.backgroundColor = UIColor { trait in
-            UIColor.white.withAlphaComponent(trait.userInterfaceStyle == .dark ? Measured.highlightWhite : Measured.lightHighlightWhite)
-        }
-        highlightView.layer.cornerRadius = Measured.highlightCornerRadius
         addSubview(dividerView)
         addSubview(highlightView)
         registerForTraitChanges([UITraitUserInterfaceStyle.self]) { (self: Self, _: UITraitCollection) in
@@ -141,10 +126,7 @@ final class KeyboardEmojiSkinTonePickerView: UIView {
             highlightView.isHidden = true
             return
         }
-        let size = KeyboardEmojiSkinTonePickerLayout.Measured.highlightSize + Measured.highlightGrowth
-        let center = choiceCenters[index]
-        highlightView.frame = CGRect(x: center.x - (size / 2), y: center.y - (size / 2), width: size, height: size)
-        highlightView.isHidden = false
+        highlightView.show(centeredAt: choiceCenters[index])
         // The highlight goes under the choices.
         insertSubview(highlightView, belowSubview: labels[0])
     }
