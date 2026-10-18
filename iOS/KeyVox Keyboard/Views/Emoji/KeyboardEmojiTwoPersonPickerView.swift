@@ -102,6 +102,7 @@ final class KeyboardEmojiTwoPersonPickerView: UIView {
                 KeyboardEmojiSilhouetteRenderer.image(
                     of: version,
                     graying: tones.version(first: tone, second: otherComparison).map { [$0] } ?? [],
+                    keeping: tones.version(first: otherComparison, second: others).map { [$0] } ?? [],
                     font: font,
                     scale: scale
                 )
@@ -110,6 +111,7 @@ final class KeyboardEmojiTwoPersonPickerView: UIView {
                 KeyboardEmojiSilhouetteRenderer.image(
                     of: version,
                     graying: tones.version(first: otherComparison, second: tone).map { [$0] } ?? [],
+                    keeping: tones.version(first: others, second: otherComparison).map { [$0] } ?? [],
                     font: font,
                     scale: scale
                 )
@@ -176,7 +178,7 @@ final class KeyboardEmojiTwoPersonPickerView: UIView {
         switch (firstTone, secondTone) {
         case let (first?, second?):
             image = tones.version(first: first, second: second).flatMap {
-                KeyboardEmojiSilhouetteRenderer.image(of: $0, graying: [], font: bottomFont, scale: scale)
+                KeyboardEmojiSilhouetteRenderer.image(of: $0, graying: [], keeping: [], font: bottomFont, scale: scale)
             }
         case let (first?, nil):
             let (other, comparison) = Self.contrastingTones(besides: first)
@@ -184,6 +186,7 @@ final class KeyboardEmojiTwoPersonPickerView: UIView {
                 KeyboardEmojiSilhouetteRenderer.image(
                     of: version,
                     graying: tones.version(first: first, second: comparison).map { [$0] } ?? [],
+                    keeping: tones.version(first: comparison, second: other).map { [$0] } ?? [],
                     font: bottomFont,
                     scale: scale
                 )
@@ -194,6 +197,7 @@ final class KeyboardEmojiTwoPersonPickerView: UIView {
                 KeyboardEmojiSilhouetteRenderer.image(
                     of: version,
                     graying: tones.version(first: comparison, second: second).map { [$0] } ?? [],
+                    keeping: tones.version(first: other, second: comparison).map { [$0] } ?? [],
                     font: bottomFont,
                     scale: scale
                 )
@@ -207,6 +211,7 @@ final class KeyboardEmojiTwoPersonPickerView: UIView {
                         tones.version(first: EmojiTwoPersonTones.toneCount - 2, second: EmojiTwoPersonTones.toneCount - 1),
                         tones.version(first: 0, second: 1),
                     ].compactMap { $0 },
+                    keeping: [],
                     font: bottomFont,
                     scale: scale
                 )

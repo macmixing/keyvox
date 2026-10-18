@@ -1,19 +1,36 @@
 import UIKit
 
-/// Draws an emoji of two people with one or both of them in gray, as the system emoji keyboard's
-/// two-person skin-tone picker shows a person whose tone is not chosen (measured gray: 142, 142,
-/// 147, light and dark). The gray covers what changes with that person's tone, found by drawing
-/// the emoji with the person in two tones; what never changes with the tone, such as clothes,
-/// stays in color, where the system picker grays the whole person.
+/// Draws an emoji of two people with one or both of them as a flat gray silhouette, as the system
+/// emoji keyboard's two-person skin-tone picker shows a person whose tone is not chosen (measured
+/// gray: 142, 142, 147, light and dark). A person's own pixels are the ones that change with their
+/// tone, found by drawing the emoji with that person in another tone; every other pixel, such as
+/// outlines and clothes, belongs to whichever person's own pixels are nearest, so the whole of a
+/// grayed person turns gray.
 enum KeyboardEmojiSilhouetteRenderer {
     static let gray = UIColor(red: 142 / 255, green: 142 / 255, blue: 147 / 255, alpha: 1)
     /// How far apart two drawings' colors must be, summed over red, green, and blue out of 255
     /// each, for a pixel to count as changing with the tone.
     private static let changeThreshold = 24
 
-    /// `version` drawn in `font`, with the pixels that differ from each of `comparisons`, versions
-    /// with only a grayed person's tone changed, in gray.
-    static func image(of version: String, graying comparisons: [String], font: UIFont, scale: CGFloat) -> UIImage? {
+    /// Whose a pixel is.
+    private enum Owner {
+        case unassigned
+        case grayed
+        case kept
+    }
+
+    /// `version` drawn in `font`, with the grayed people in gray.
+    /// - Parameters:
+    ///   - grayedComparisons: Versions with only a grayed person's tone changed.
+    ///   - keptComparisons: Versions with only the person kept in color's tone changed; none when
+    ///     both people are grayed.
+    static func image(
+        of version: String,
+        graying grayedComparisons: [String],
+        keeping keptComparisons: [String],
+        font: UIFont,
+        scale: CGFloat
+    ) -> UIImage? {
         let attributes: [NSAttributedString.Key: Any] = [.font: font]
         let size = (version as NSString).size(withAttributes: attributes)
         let width = Int((size.width * scale).rounded(.up))
@@ -21,13 +38,13 @@ enum KeyboardEmojiSilhouetteRenderer {
         guard width > 0, height > 0, var base = pixels(of: version, attributes: attributes, width: width, height: height, scale: scale) else {
             return nil
         }
-        let grayComponents = gray.rgbaBytes
-        let original = base
-        for comparison in comparisons {
-            guard let other = pixels(of: comparison, attributes: attributes, width: width, height: height, scale: scale) else {
-                continue
-            }
-            for pixel in stride(from: 0, to: base.count, by: 4) where changes(original, other, at: pixel) {
+        let changedWithGrayed = changedPixels(of: base, comparedWith: grayedComparisons, attributes: attributes, width: width, height: height, scale: scale)
+        if changedWithGrayed.contains(true) {
+            let changedWithKept = changedPixels(of: base, comparedWith: keptComparisons, attributes: attributes, width: width, height: height, scale: scale)
+            let owners = nearestOwners(grayed: changedWithGrayed, kept: changedWithKept, width: width, height: height)
+            let grayComponents = gray.rgbaBytes
+            for index in owners.indices where owners[index] == .grayed {
+                let pixel = index * 4
                 let alpha = Int(base[pixel + 3])
                 // Premultiplied, so the gray keeps the drawing's edges.
                 for channel in 0..<3 {
@@ -37,6 +54,63 @@ enum KeyboardEmojiSilhouetteRenderer {
         }
         guard let image = makeImage(base, width: width, height: height) else { return nil }
         return UIImage(cgImage: image, scale: scale, orientation: .up)
+    }
+
+    /// Whether each pixel of `base` differs from the same pixel of any of `comparisons`.
+    private static func changedPixels(
+        of base: [UInt8],
+        comparedWith comparisons: [String],
+        attributes: [NSAttributedString.Key: Any],
+        width: Int,
+        height: Int,
+        scale: CGFloat
+    ) -> [Bool] {
+        var changed = [Bool](repeating: false, count: width * height)
+        for comparison in comparisons {
+            guard let other = pixels(of: comparison, attributes: attributes, width: width, height: height, scale: scale) else {
+                continue
+            }
+            for index in changed.indices where changes(base, other, at: index * 4) {
+                changed[index] = true
+            }
+        }
+        return changed
+    }
+
+    /// Each pixel's owner: a pixel that changes with a person's tone is that person's, and every
+    /// other pixel is the person's whose own pixels are fewest steps away. With no kept pixels,
+    /// every pixel is grayed.
+    private static func nearestOwners(grayed: [Bool], kept: [Bool], width: Int, height: Int) -> [Owner] {
+        var owners = [Owner](repeating: .unassigned, count: grayed.count)
+        var queue: [Int] = []
+        queue.reserveCapacity(grayed.count)
+        for index in grayed.indices where grayed[index] {
+            owners[index] = .grayed
+            queue.append(index)
+        }
+        for index in kept.indices where kept[index] && owners[index] == .unassigned {
+            owners[index] = .kept
+            queue.append(index)
+        }
+        var head = 0
+        func spread(_ owner: Owner, to x: Int, _ y: Int) {
+            guard x >= 0, x < width, y >= 0, y < height else { return }
+            let neighbor = y * width + x
+            guard owners[neighbor] == .unassigned else { return }
+            owners[neighbor] = owner
+            queue.append(neighbor)
+        }
+        while head < queue.count {
+            let index = queue[head]
+            head += 1
+            let x = index % width
+            let y = index / width
+            spread(owners[index], to: x - 1, y)
+            spread(owners[index], to: x + 1, y)
+            spread(owners[index], to: x, y - 1)
+            spread(owners[index], to: x, y + 1)
+        }
+        return owners
     }
 
     private static func changes(_ base: [UInt8], _ other: [UInt8], at pixel: Int) -> Bool {
