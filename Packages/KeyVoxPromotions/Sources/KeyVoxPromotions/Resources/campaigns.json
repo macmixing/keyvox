@@ -6,6 +6,36 @@
   },
   "campaigns": [
     {
+      "id": "ios-keyboard-settings",
+      "targets": [
+        {
+          "platform": "ios",
+          "minimumAppVersion": "1.5.0"
+        }
+      ],
+      "icon": {
+        "kind": "systemImage",
+        "name": "keyboard"
+      },
+      "title": "Make the keyboard yours",
+      "message": "Go to Settings > Keyboard to try options like Open on 123, adjust auto-correction, and more."
+    },
+    {
+      "id": "ios-text-replacement",
+      "targets": [
+        {
+          "platform": "ios",
+          "minimumAppVersion": "1.5.0"
+        }
+      ],
+      "icon": {
+        "kind": "systemImage",
+        "name": "character.cursor.ibeam"
+      },
+      "title": "Your text replacements work here",
+      "message": "Shortcuts from iOS text replacement work in the KeyVox keyboard. Fine-tune them in iOS Settings > General > Keyboard > Text Replacement."
+    },
+    {
       "id": "ios-compact-keys",
       "targets": [
         {
