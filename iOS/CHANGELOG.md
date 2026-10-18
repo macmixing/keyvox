@@ -6,6 +6,53 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.5.0] - 2026-10-18
+
+Adds full letter keys with predictive typing and an emoji keyboard to the KeyVox keyboard, and loads dictation models without holding up app launch.
+
+### Added
+
+- Added letter keys to the KeyVox keyboard with autocorrection, word completions, next-word predictions, and sentence openers that learn from typing, using contacts, KeyVox Dictionary words and phrases, and text replacements as personal vocabulary.
+- Added press-and-hold accents and symbols, key-up haptics, repeating delete, smart quotes, caps lock on a quick double shift tap, and landscape key sizing.
+- Added an emoji keyboard with Frequently Used, categories, search by description, and skin tones, including separate tones for two-person emoji.
+- Added up to three emoji suggestions for the word before the cursor in the suggestion bar.
+- Added a Keyboard settings screen with Predictive Text, Emoji Keyboard, Open on 123, and Reset Learned Words.
+
+### Changed
+
+- The ABC key now opens the KeyVox letter keys; the globe key switches keyboards, and it now appears on iPhones with a Home button.
+- Open on 123 opens the number page each time the keyboard opens or moves to a new field, and stays on letters after ABC is tapped.
+- Dictation buttons, including Vibes, remain on the letter page until the last dictation is changed.
+- Dictation models now load in the background instead of delaying app launch, and model installs finish with the model ready to use.
+
+### Fixed
+
+- Fixed sent messages and typing dropping frames while the KeyVox keyboard is showing by removing a per-key blur that did not change the keys' appearance.
+- Fixed known words being merged into a custom-dictionary entry when their pronunciation does not match the entry, and fixed exact split spellings of multi-word entries not rejoining.
+- Fixed the microphone staying in use after the dictation shortcut stops when no Live Activity is showing.
+- Fixed the dictionary word editor's field spacing and the dictation shortcut tour showing neighboring pages or shifting on foldable-width iPhones.
+
+### Package versions
+
+KeyVox iOS 1.5.0
+  KeyVoxCore               1.3.7
+  KeyVoxEmoji              1.0.0
+  KeyVoxLinguistics        1.0.0
+  KeyVoxLocalInference     1.0.4
+  KeyVoxModels             1.0.0
+  KeyVoxParakeet           1.1.0
+  KeyVoxPredictiveKeyboard 1.0.0
+  KeyVoxPromotions         1.1.0
+  KeyVoxState              1.0.0
+  KeyVoxStyleRewrite       1.1.0
+  KeyVoxTTS                1.1.0
+  KeyVoxTextComposition    1.1.0
+  KeyVoxVibesAdapters      1.0.4
+  KeyVoxVoiceActivity      1.1.1
+  KeyVoxWhisper            1.2.0
+
+---
+
 ## [1.4.7] - 2026-10-06
 
 Keeps the keyboard toolbar intact when the keyboard opens and prevents custom-dictionary matches from joining words across punctuation.
