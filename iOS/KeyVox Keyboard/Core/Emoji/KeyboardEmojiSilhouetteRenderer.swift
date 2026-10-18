@@ -41,7 +41,8 @@ enum KeyboardEmojiSilhouetteRenderer {
         let changedWithGrayed = changedPixels(of: base, comparedWith: grayedComparisons, attributes: attributes, width: width, height: height, scale: scale)
         if changedWithGrayed.contains(true) {
             let changedWithKept = changedPixels(of: base, comparedWith: keptComparisons, attributes: attributes, width: width, height: height, scale: scale)
-            let owners = nearestOwners(grayed: changedWithGrayed, kept: changedWithKept, width: width, height: height)
+            let drawn = (0..<(width * height)).map { base[$0 * 4 + 3] > 0 }
+            let owners = nearestOwners(grayed: changedWithGrayed, kept: changedWithKept, drawn: drawn, width: width, height: height)
             let grayComponents = gray.rgbaBytes
             for index in owners.indices where owners[index] == .grayed {
                 let pixel = index * 4
@@ -78,25 +79,42 @@ enum KeyboardEmojiSilhouetteRenderer {
     }
 
     /// Each pixel's owner: a pixel that changes with a person's tone is that person's, and every
-    /// other pixel is the person's whose own pixels are fewest steps away. With no kept pixels,
-    /// every pixel is grayed.
-    private static func nearestOwners(grayed: [Bool], kept: [Bool], width: Int, height: Int) -> [Owner] {
+    /// other drawn pixel is the person's whose own pixels are fewest steps away through the
+    /// drawing, so the gap between the people keeps one person's clothes from going to the other.
+    /// What the drawing does not connect to either person goes to the nearest one across the gap.
+    /// With no kept pixels, every pixel is grayed.
+    private static func nearestOwners(grayed: [Bool], kept: [Bool], drawn: [Bool], width: Int, height: Int) -> [Owner] {
         var owners = [Owner](repeating: .unassigned, count: grayed.count)
-        var queue: [Int] = []
-        queue.reserveCapacity(grayed.count)
+        var seeds: [Int] = []
         for index in grayed.indices where grayed[index] {
             owners[index] = .grayed
-            queue.append(index)
+            seeds.append(index)
         }
         for index in kept.indices where kept[index] && owners[index] == .unassigned {
             owners[index] = .kept
-            queue.append(index)
+            seeds.append(index)
         }
+        spreadOwnership(&owners, from: seeds, width: width, height: height) { drawn[$0] }
+        let owned = owners.indices.filter { owners[$0] != .unassigned }
+        spreadOwnership(&owners, from: owned, width: width, height: height) { _ in true }
+        return owners
+    }
+
+    /// Spreads the owners of `seeds` to the unowned pixels `canEnter` allows, each pixel taking the
+    /// owner that reaches it in the fewest steps.
+    private static func spreadOwnership(
+        _ owners: inout [Owner],
+        from seeds: [Int],
+        width: Int,
+        height: Int,
+        canEnter: (Int) -> Bool
+    ) {
+        var queue = seeds
         var head = 0
         func spread(_ owner: Owner, to x: Int, _ y: Int) {
             guard x >= 0, x < width, y >= 0, y < height else { return }
             let neighbor = y * width + x
-            guard owners[neighbor] == .unassigned else { return }
+            guard owners[neighbor] == .unassigned, canEnter(neighbor) else { return }
             owners[neighbor] = owner
             queue.append(neighbor)
         }
@@ -110,7 +128,6 @@ enum KeyboardEmojiSilhouetteRenderer {
             spread(owners[index], to: x, y - 1)
             spread(owners[index], to: x, y + 1)
         }
-        return owners
     }
 
     private static func changes(_ base: [UInt8], _ other: [UInt8], at pixel: Int) -> Bool {
