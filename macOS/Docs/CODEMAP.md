@@ -1,5 +1,5 @@
 # KeyVox Code Map
-**Last Updated: 2026-09-12**
+**Last Updated: 2026-10-18**
 
 ## Project Overview
 
@@ -61,7 +61,8 @@ KeyVox/
 │   │   ├── AudioDeviceManager.swift
 │   │   ├── Audio/
 │   │   │   ├── AudioEngineInputCapture.swift
-│   │   │   └── AudioRecorder*.swift
+│   │   │   ├── AudioRecorder*.swift
+│   │   │   └── MacSoundCuePlayer.swift
 │   │   ├── ModelDownloader/
 │   │   ├── Transcription/
 │   │   │   └── TranscriptionManager*.swift
@@ -160,6 +161,7 @@ KeyVox/
 │   │       ├── Transcription/
 │   │       ├── Services/Parakeet/
 │   │       ├── Services/Whisper/
+│   │       ├── Services/SpeechModelLoadQueue.swift
 │   │       ├── Language/
 │   │       ├── Lists/
 │   │       ├── Normalization/
@@ -205,7 +207,8 @@ KeyVox/
 │   │       │   ├── VoiceActivityConfiguration.swift
 │   │       │   ├── VoiceActivityDetector.swift
 │   │       │   └── Resources/ggml-silero-v5.1.2.bin
-│   │       └── KeyVoxSpeechRuntime/SpeechRuntime.swift
+│   │       ├── KeyVoxSpeechRuntime/SpeechRuntime.swift
+│   │       └── CWhisper/
 │   ├── KeyVoxWhisper/
 │   │   └── Sources/KeyVoxWhisper/
 │   │       ├── Whisper.swift
@@ -231,7 +234,8 @@ KeyVox/
 │   │       │   │   ├── APStyleNumberRepair.swift
 │   │       │   │   ├── AddressFactRepair.swift
 │   │       │   │   ├── MoneyFactRepair.swift
-│   │       │   │   ├── NumberEvidenceRepair.swift
+│   │       │   │   ├── NumberEvidenceRepair/
+│   │       │   │   │   └── NumberEvidenceRepair.swift
 │   │       │   │   ├── NumberSeparatorEvidenceRepair.swift
 │   │       │   │   ├── PunctuationRepair.swift
 │   │       │   │   └── TerminalPunctuationBoundaryRepair.swift
@@ -256,9 +260,9 @@ KeyVox/
 1. `Core/KeyboardMonitor.swift` publishes trigger/shift/escape/caps-lock state.
 2. `Core/Transcription/TranscriptionManager*.swift` drives app state: `idle -> recording -> transcribing -> idle`.
 3. `Core/Audio/AudioEngineInputCapture.swift` binds the selected macOS input device to `AVAudioEngine`, exposes its complete hardware input stream, and hands every channel to `AudioRecorder`; `AudioRecorder+Streaming.swift` deterministically sums all exposed channels before converting the result to mono Float32 frames at 16kHz.
-4. `App/AppServiceRegistry.swift` routes dictation through `SwitchableDictationProvider`, normalizes active-provider selection, synchronizes the device-local Whisper language, composes one health-routed linguistic analyzer, and binds install-time Parakeet preloading to the downloader.
+4. `App/AppServiceRegistry.swift` routes dictation through `SwitchableDictationProvider`, normalizes active-provider selection, synchronizes the device-local Whisper language, composes one health-routed linguistic analyzer, and binds install-time Whisper and Parakeet preloading to the downloader.
 5. Both providers use the shared detector from `KeyVoxVoiceActivity` as a no-speech gate. Whisper additionally maps its speech segments through `WhisperSpeechRangePlanner` to skip chunks with no overlap and compact selected speech ranges before decoding; Parakeet uses VAD only to reject a whole capture and otherwise keeps its original chunk audio.
-6. `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/AudioParagraphChunker.swift` detects long internal silence and computes conservative chunk boundaries shared by both providers.
+6. `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/AudioParagraphChunker.swift` detects long internal silence and computes conservative chunk boundaries shared by both providers, placing forced long-chunk boundaries outside the VAD speech segments each provider supplies.
 7. `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Whisper/WhisperService.swift` or `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Parakeet/ParakeetService.swift` transcribes the chunk stream through the active provider and stitches chunk text with paragraph or space separators.
 8. `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/TranscriptionPostProcessor.swift` uses the shared linguistic analyzer while orchestrating email pre-normalization, dictionary correction, spoken colon/quantity/math normalization, list formatting, late cleanup, date/time/email/website repair, numeric grouping, whitespace/capitalization, terminal punctuation, and all-caps finishing through focused helpers under `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/`.
 9. `Core/Vibes/MacVibesCoordinator.swift` optionally runs local KeyVox Vibes rewrites through `MacLocalStyleRewriteTextTransformer`, `MacLocalRewriteInferenceService`, `Packages/KeyVoxLocalInference`, and bundled LoRA adapters from `Packages/KeyVoxVibesAdapters` when Vibes AI is installed, carrying the provider-reported language into shared output repair.
@@ -295,6 +299,8 @@ KeyVox/
   - Maps word tokens to shared lexical roles and lemmas without constructing a second system tagger.
 - `Packages/KeyVoxStyleRewrite/Sources/KeyVoxStyleRewrite/OutputRepair/Repairs/NumberSeparatorEvidenceRepair.swift`
   - Preserves decimal-versus-time separator facts while rejecting ambiguous date-detector output split into whitespace-separated adjacent detections.
+- `Packages/KeyVoxStyleRewrite/Sources/KeyVoxStyleRewrite/OutputRepair/Repairs/TerminalPunctuationBoundaryRepair.swift`
+  - Restores source-backed punctuation clusters containing `!` or an ellipsis between matched words and at the end of rewritten text.
 - `Packages/KeyVoxStyleRewrite/Sources/KeyVoxStyleRewrite/OutputRepair/Repairs/MoneyFactRepair.swift`
   - Resolves currency units from available lemma evidence or the token surface while preserving shared number facts.
 
@@ -312,6 +318,8 @@ KeyVox/
   - Owns the shared VAD protocol, standard configuration, Silero resource, actor-isolated detector, and speech-segment results used by Whisper and Parakeet.
 - `Packages/KeyVoxVoiceActivity/Sources/KeyVoxSpeechRuntime/SpeechRuntime.swift`
   - Exposes the shared `whisper.cpp` runtime bridge consumed by both the VAD detector and `KeyVoxWhisper`.
+- `Packages/KeyVoxVoiceActivity/Package.swift`
+  - Owns the single pinned `whisper.cpp` XCFramework binary target; `KeyVoxWhisper` consumes it only through the `KeyVoxSpeechRuntime` product.
 
 ### App Layer
 
@@ -336,6 +344,7 @@ KeyVox/
   - Hosts the separate first-dictation flow after setup onboarding completes, animates intro-to-practice resizing from a centered frame, and opens Settings when the user completes or skips the flow.
 - `App/MacRuntimeFlags.swift`
   - Centralized macOS environment flag parser for forcing setup onboarding, first-dictation onboarding, the debug microphone picker, debug model-download preview errors, raw-text debug logs, and the KeyVox Vibes intro without clearing persisted defaults.
+  - Also parses the debug-only bundled promotion manifest, promotion preview campaign, and forced fresh-dictionary-install flags.
 - `App/AppSettingsStore.swift`
   - Centralized persisted user-preference owner (`triggerBinding`, `autoParagraphsEnabled`, `listFormattingEnabled`, sound settings, onboarding, first-dictation outcome flags, selected microphone, selected Vibe, Vibes trigger-key interactions, hide Dock icon preference, update prompt timestamps, active dictation provider, Whisper dictation language).
   - Single in-memory observable source consumed by settings UI and runtime managers.
@@ -346,7 +355,7 @@ KeyVox/
   - Creates one health-routed linguistic analyzer from app-bundle resources and shares it across Whisper continuation analysis, transcription post-processing, and Mac Vibes output repair.
   - Normalizes active-provider selection changes back into the runtime only when transcription is idle.
   - Applies the persisted Whisper language during composition and keeps later local selection changes synchronized with `WhisperService`.
-  - Hooks downloader post-install preparation so Parakeet preload happens after install finalization instead of on the first trigger path.
+  - Hooks downloader post-install preparation so Whisper preloads after a Whisper Base install and Parakeet preloads after a Parakeet install, instead of on the first trigger path.
   - Creates the Mac `PromotionCenter` with the current app version, Mac audience, shared defaults, and runtime-selected bundled or remote manifest source.
   - Owns the Mac Vibes local rewrite model manager, inference service, and coordinator without startup Vibes model prewarming.
   - Owns the dedicated weekly stats store/sync subsystem separately from the general iCloud settings coordinator.
@@ -361,6 +370,7 @@ KeyVox/
   - Seeds the ordinary `KeyVox` dictionary entry only when local onboarding, local dictionary state, synchronized dictionary state, and shared installation history all identify a genuine first installation.
   - Records shared installation history without mutating an existing user's dictionary and preserves deletion of the initial entry on later launches.
   - Uses per-setting modified-at timestamps so newer local/remote values win deterministically during bootstrap and live sync.
+  - Treats the local dictionary as timestamped local data only when `DictionaryStore.persistedSnapshotModifiedAt` shows a dictionary file was loaded, so a restored timestamp without a local dictionary file cannot overwrite the cloud snapshot; in that state incoming cloud dictionaries apply without timestamp comparison and are written to local storage.
 - `App/iCloud/KeyVoxiCloudKeys.swift`
   - Single source of truth for macOS iCloud KVS value keys, the shared installation marker, and per-setting modified-at keys.
 - `App/iCloud/KeyVoxiCloudPayloads.swift`
@@ -449,6 +459,7 @@ KeyVox/
 - `Core/Transcription/TranscriptionManager.swift`
   - Owns runtime state, dependencies, active-provider pipeline composition, initialization, and teardown for the macOS dictation manager.
   - Publishes `successfulDictationRevision` as a monotonic in-memory signal for UI that needs to react to every successful dictation, including repeated identical text.
+  - Hides the recording overlay from the paste-completion callback while still transcribing and supplies `DictationPipeline` with the Vibes coordinator's deterministic-variant requirement.
 - `Core/Transcription/TranscriptionManager+Bindings.swift`
   - Binds keyboard/caps-lock/model readiness publishers into runtime availability, trigger orchestration, formatting-shortcut monitor eligibility, and overlay hands-free state.
 - `Core/Transcription/TranscriptionManager+RecordingSession.swift`
@@ -466,6 +477,7 @@ KeyVox/
 - `Core/Vibes/MacVibesCoordinator.swift`
   - Mac-owned local style rewrite coordinator for KeyVox Vibes.
   - Resolves the selected Vibe through local model readiness, prewarms requested styles, transforms pipeline output with its explicit language code, and releases the local rewrite runtime after dictation and Vibe-change transforms complete.
+  - Reports `requiresDeterministicVariantsForOutputProcessing` only while the resolved Vibe uses a model rewrite, so ordinary dictation delivers text before deterministic variants are built.
 - `Core/Vibes/MacVibesReadinessPrewarmer.swift`
   - Defines the old install-readiness prewarm helper, but the app runtime does not retain it because Vibes AI should not load at app launch or immediately after reinstall.
 - `Core/Vibes/MacVibesIntroController.swift`
@@ -501,8 +513,10 @@ KeyVox/
   - Owns formatting-pill feedback and delegates latest-insertion changes to `MacDictationChangeController` without changing saved paragraph/list preferences.
 - `Core/Vibes/MacTriggerTapClassifier.swift`
   - Small deterministic helper for single-tap vs double-tap classification.
+  - Ignores negative tap intervals so out-of-order timestamps cannot become a double tap.
 - `Core/Vibes/MacVibesTriggerActionController.swift`
   - Owns quick-tap press timing, pending single-tap work, Vibe apply/undo dispatch, and double-tap Vibe cycling outside `TranscriptionManager`.
+  - Treats a release as a quick tap only for a non-negative press duration within the quick-tap limit.
   - Respects `AppSettingsStore.vibesTriggerKeyInteractionsEnabled`; when disabled, trigger-key taps fall through to normal dictation behavior without Vibes single-tap, double-tap, or pill-handoff behavior.
 - `Core/Services/Paste/PasteService.swift`
   - Owns paste insertion plus latest untouched insertion verification/replacement used by Mac Vibes apply/undo.
@@ -513,6 +527,7 @@ KeyVox/
 - `Core/Services/Paste/Accessibility/PasteUntouchedInsertionReplacer.swift`
   - Resolves the exact current Accessibility target for an authorized latest insertion and performs replacement through confirmed selected-text or whole-value writes, with menu fallback only when direct mutation cannot be proven safe.
   - Owns newline-normalized target recovery, post-write verification, tracked value-target continuity, and final caret placement; it does not authorize whether an insertion may be changed.
+  - Newline-normalized recovery also ignores invisible Unicode format characters, but only at the expected text's line-break boundaries.
 - `Core/Services/Paste/Accessibility/PasteUntouchedInsertionToken.swift`
   - Immutable authorization record for the latest successful insertion, binding replacement to its original PID and AX target context.
   - Allows a successful replacement to advance only within the same process, AX element, and target start location.
@@ -520,13 +535,15 @@ KeyVox/
   - Boundary helper for transcribe -> post-process -> paste orchestration with injected dependencies for smoke/integration tests.
   - Carries the provider-reported language into text-processing context and the final result so downstream consumers do not infer language from text.
   - Treats the host-provided dictionary-hint flag as an audio/silence eligibility signal and enables prompting only when the supplied user dictionary is nonempty.
+  - Builds the four deterministic paragraph/list variants before output processing only when the host's variant-requirement provider says so; otherwise it delivers the selected text first and builds the variants afterward. The variant matching the active settings reuses the already processed text, and all variants are in the result before completion.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/DictationPromptEchoGuard.swift`
   - Post-transcription guard that suppresses likely dictionary-prompt echo output by treating repetitive prompt-like text as no-speech.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/TranscriptionPostProcessor.swift`
-  - Post-transcription orchestration using the injected shared linguistic analyzer (email pre-normalization, dictionary correction, idiom/colon/spoken-quantity/math/list passes, laughter/spam/model-artifact/time/date/email/website/numeric grouping cleanup, then whitespace/capitalization/terminal-punctuation/all-caps finishing).
+  - Post-transcription orchestration using the injected shared linguistic analyzer (email pre-normalization, dictionary correction, idiom/colon/spoken-quantity/math/list passes, laughter/spam/model-artifact/time/date/email/website/numeric grouping cleanup, then whitespace, spoken terminal punctuation, sentence capitalization, ellipsis continuation casing, terminal-time and terminal-period completion, model ellipsis artifact removal, and all-caps finishing).
   - Rebuilds and applies matching from the supplied persisted dictionary entries without adding hidden app or product entries.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/AudioParagraphChunker.swift`
   - Shared conservative silence/fallback chunking used by both Whisper and Parakeet services.
+  - Accepts VAD speech segments and places forced fallback boundaries outside them when the allowed window has a gap, falling back to the RMS-based search otherwise.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/DictationDeterministicState.swift`
   - Shared paragraph/list state value used by both iOS and macOS latest-insertion changes.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/DictationDeterministicVariantResolver.swift`
@@ -551,10 +568,18 @@ KeyVox/
   - Render-mode-aware whitespace normalization (`.multiline` paragraph preservation vs `.singleLineInline` flattening).
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/SentenceCapitalizationNormalizer.swift`
   - Sentence-start/text-start/line-break capitalization with email/domain safety guards.
+  - Does not treat periods inside dotted abbreviations as sentence boundaries.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/ColonNormalizer.swift`
   - Converts spoken/delimiter forms of `colon` into punctuation (`:`) with lightweight homophone tolerance and punctuation cleanup guards.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/TerminalPunctuationNormalizer.swift`
   - Converts eligible spoken terminal punctuation commands into `?`/`!` during post-processing and appends terminal periods for sentence-like outputs ending in formatted times when punctuation is absent.
+  - Converts three consecutive spoken dot commands into an ellipsis character, rewrites the model's dotted-word ellipsis artifact into a period run for later artifact removal, and repairs a plural-possessive artifact on an ordinary noun after a preposition and determiner before the terminal symbol.
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/TerminalPeriodNormalizer.swift`
+  - Appends a terminal period to multi-word prose without sentence punctuation, skips lists, list items, and non-prose shapes, and removes a lone terminal period from single-word output.
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/EllipsisContinuationNormalizer.swift`
+  - Lowercases the first letter of a word that continues after an ellipsis while preserving first-person pronoun forms, internal-uppercase tokens, recognized name phrases, dotted acronyms, and supplied dictionary entries.
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/ModelEllipsisArtifactNormalizer.swift`
+  - Removes runs of three or more ASCII periods as model artifacts after terminal-period completion, keeping one space only when the removal would join two word characters.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/AllCapsOverrideNormalizer.swift`
   - Final independent override that uppercases post-processed output when Caps Lock mode is enabled.
 - `Core/KeyboardMonitor.swift`
@@ -562,6 +587,8 @@ KeyVox/
   - Default trigger binding is `rightOption`.
   - Publishes live Caps Lock state used to enable forced all-caps output mode.
   - Mirrors persisted trigger binding from `AppSettingsStore`; owns runtime key state only.
+  - After Accessibility is trusted, runs a listen-only session event tap that records physical modifier timestamps and publishes `commandVPressedSignal` for Command-V key-downs.
+  - Pairs each modifier `NSEvent` only with a recorded timestamp that matches its own timestamp within a small tolerance, discards older unmatched entries, and clears recorded timestamps when a disabled tap is re-enabled.
 - `Core/Overlay/OverlayManager.swift`
   - Floating overlay lifecycle orchestration and visibility.
   - Owns recording overlay windows, generic standalone Vibe/formatting pills, recording-time selected-Vibe labels, and cycle-pill window reuse/handoff.
@@ -610,6 +637,8 @@ KeyVox/
   - Stop-time gap removal, normalization, capture classification, and final output frame selection.
 - `Core/Audio/AudioRecorder+Thresholds.swift`
   - Input-volume-based threshold profile calibration and CoreAudio scalar lookup helpers.
+- `Core/Audio/MacSoundCuePlayer.swift`
+  - Plays named system sound cues through `AVAudioPlayer`, retaining each player only until it finishes or fails to decode.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Audio/AudioCaptureClassification.swift`
   - Centralized per-capture classification (absolute silence, long true silence, likely-silence rejection).
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Audio/AudioSilencePolicy.swift`
@@ -678,9 +707,10 @@ KeyVox/
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Whisper/WhisperService+Language.swift`
   - Validates app selections against `WhisperBaseLanguageCatalog` and applies the configured identifier to the loaded Whisper parameters.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Whisper/WhisperService+ModelLifecycle.swift`
-  - Isolates model lifecycle helpers (`warmup`, `unloadModel`, model-path resolution), initializes model parameters with the configured language, and creates/releases the shared VAD detector with the Whisper model lifecycle.
+  - Isolates model lifecycle helpers (`warmup`, `preloadIfNeeded`, `unloadModel`, model-path resolution), initializes model parameters with the configured language, and creates/releases the shared VAD detector with the Whisper model lifecycle.
+  - Schedules one off-main warmup task through `SpeechModelLoadQueue` that loads the detector before the model, installs results only from the current warmup handle, and cancels pending warmup on unload.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Whisper/WhisperService+TranscriptionCore.swift`
-  - Owns VAD gating and speech-range-aware chunk transcription, applies the current language before a request begins, and handles retry selection, whitespace normalization, and debug segment logging.
+  - Owns VAD gating and speech-range-aware chunk transcription, awaits any pending warmup inside the request task, applies the current language and dictionary prompt before decoding, and handles retry selection, whitespace normalization, and debug segment logging.
   - Rejects captures with no detected speech, skips chunks without speech overlap, compacts selected speech ranges with bounded internal silence, and falls back to full source chunks plus decoder safeguards when VAD analysis is unavailable.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Whisper/WhisperSpeechRangePlanner.swift`
   - Converts shared VAD timestamps into padded, bounded frame ranges and compacts those ranges for Whisper decoding.
@@ -698,8 +728,11 @@ KeyVox/
   - Parakeet provider service root that owns request state and delegates lifecycle/transcription behavior across split extension files.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Parakeet/ParakeetService+ModelLifecycle.swift`
   - Owns model warmup/preload/unload behavior and Parakeet instance management.
+  - Schedules the VAD analyzer load through `SpeechModelLoadQueue` during warmup and cancels it on unload.
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/SpeechModelLoadQueue.swift`
+  - Runs blocking VAD-detector and Whisper model loads one at a time on a dedicated serial queue off the main actor.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Parakeet/ParakeetService+TranscriptionCore.swift`
-  - Lazily creates the shared VAD analyzer, rejects a whole capture when no speech is detected, and otherwise preserves the original chunk audio for Parakeet decoding.
+  - Awaits the warmed shared VAD analyzer, rejects a whole capture when no speech is detected, passes detected speech segments to the chunker, and otherwise preserves the original chunk audio for Parakeet decoding.
   - Owns chunk transcription flow, prompt assignment, whitespace shaping, and provider-specific result handling.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Parakeet/ParakeetService+Backend.swift`
   - Adapts `ParakeetService` to the package's backend contract while retaining Core ML as the Mac runtime.
@@ -763,16 +796,19 @@ KeyVox/
   - Token extraction and range construction helpers used by matcher runtime.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/Evaluation/DictionaryMatcher+StandardEvaluation.swift`
   - Orchestrates standard 1-4 token evaluation, final ambiguity checks, suffix resolution, and replacement construction.
+  - Rejects non-exact single-token replacements for tokens tagged as pronouns.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/Evaluation/DictionaryMatcher+StandardCandidateScoring.swift`
   - Selects and scores standard dictionary candidates, including candidate-relative trailing forms and direct-exact preference.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/Evaluation/DictionaryMatcher+StandardSingleTokenEvaluation.swift`
   - Applies single-token contextual safety gates and common-word peer-support decisions.
+  - Scores text similarity against the observed form selected during candidate scoring.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/Evaluation/DictionaryMatcher+StandardThresholdEvaluation.swift`
   - Calculates baseline and evidence-adjusted thresholds for standard single- and two-token candidates.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/Evaluation/StandardEvaluationPolicy.swift`
   - Owns the shared constants used across standard candidate scoring and safety evaluation.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/Evaluation/DictionaryMatcher+MergedTokenEvaluation.swift`
   - Merged-token recovery path for compact spoken forms that collapse multi-token dictionary entries.
+  - Requires the observed token's lexicon pronunciation to equal the joined candidate-token pronunciations when every pronunciation is available; missing pronunciation data is permissive.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/Evaluation/DictionaryMatcher+ThreeTokenEvaluation.swift`
   - Three-token-specific recovery paths (middle-initial and compressed-tail patterns).
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/Evaluation/Helpers/DictionaryMatcher+EvaluationStylizedHelpers.swift`
@@ -786,16 +822,19 @@ KeyVox/
   - Owns shared phonetic validation for uppercase letter sequences across dictionary evaluation paths.
   - Accepts pronunciation-equivalent sequences while rejecting candidates whose uppercase sequence has different phonetic evidence.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/Evaluation/SplitJoin/DictionaryMatcher+ExactMultiTokenJoin.swift`
-  - Owns exact three- and four-token joins into canonical single-entry replacements.
+  - Owns exact three- and four-token joins into a canonical entry with fewer tokens, requiring every entry token to be spelled exactly by consecutive observed tokens that cover the whole window.
   - Defers dotted-domain protection to the shared split-join domain guard before proposing a replacement.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/Evaluation/SplitJoin/DictionaryMatcher+SplitJoinScoring.swift`
   - Split-token to single-entry scoring and acceptance path with plural/possessive handling.
   - Promotes plural-tail split joins to possessive output when guarded possessive context is present.
+  - Rejects fuzzy joins across sentence or clause punctuation unless an exact joined dictionary form exists, skips candidates already matched exactly by either token, requires minimum phonetic length before anchored stylized tails pass on phonetic similarity alone, and exempts exact joined forms from fuzzy stylized plural rejection.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/Evaluation/SplitJoin/DictionaryMatcher+SplitJoinForms.swift`
   - Split-join observed-form generation and replacement-suffix normalization helpers.
+  - Generates possessive joins for short stems when the joined form matches a single-token entry exactly.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/Evaluation/SplitJoin/DictionaryMatcher+SplitJoinGuards.swift`
   - Split-join guard heuristics (domain-shape suppression, anchoring checks, possessive-sound inference).
   - Requires noun-following context for possessive split-join inference to limit false positives.
+  - Detects two-token windows separated by sentence or clause punctuation plus whitespace; dotted forms without whitespace are not boundaries.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/DictionaryMatcher+OverlapResolver.swift`
   - Deterministic overlap pruning with confidence-first ordering.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/DictionaryTextNormalization.swift`
@@ -809,6 +848,7 @@ KeyVox/
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/PronunciationLexicon.swift`
   - Loads bundled pronunciation signatures and curated common-word safety list from `Packages/KeyVoxCore/Sources/KeyVoxCore/Resources/Pronunciation/`.
   - Exposes an immutable, sendable pronunciation lookup snapshot for CPU-bound work outside the main actor.
+  - Owns `phonemeSeparator`, the separator used inside each lexicon pronunciation.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/PhoneticEncoder.swift`
   - Uses lexicon lookups first, then deterministic fallback encoding for unknown words.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/ReplacementScorer.swift`
@@ -822,6 +862,7 @@ KeyVox/
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Lists/ListPatternMarkerParser.swift`
   - Parses spoken/typed marker tokens into canonical marker metadata used by list detection.
   - Handles markers attached to domains, spoken `to` as list marker 2 in email-list shapes, and time-component false-positive suppression.
+  - Caches localized number parsing results, including non-number results, by locale and token in a bounded cache that is cleared when it reaches its entry limit.
   - Uses `WebsiteNormalizer` for domain-token heuristics to avoid duplicated website regex logic.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Lists/ListPatternRunSelector.swift`
   - Selects best monotonic list run and enforces confidence guards before formatting.
@@ -901,10 +942,13 @@ KeyVox/
   - Orchestrates paste pipeline (dictionary-aware leading-cap normalization, smart leading/trailing separation, adjacent punctuation composition, AX injection, menu fallback, recovery, clipboard restore).
   - Applies trailing-separator composition after punctuation composition using the following character captured from the retained AX target, and remembers an insertion only when the complete payload was delivered.
   - Determines preferred list render mode from focused AX role for single-line graceful fallback.
+  - Accepts an optional main-actor completion that runs after the asynchronous insertion path finishes its recovery or clipboard-restore step, and immediately for empty text.
 - `Core/Services/Paste/Clipboard/PasteFailureRecoveryCoordinator.swift`
   - Manages active paste-failure recovery session lifecycle, timers, and Command-V detection.
+  - Routes Command-V from its own key monitors and from `KeyboardMonitor.commandVPressedSignal` through one debounced handler that acts only while recovery is active.
 - `Core/Services/Paste/Accessibility/PasteAXInspector.swift`
   - Shared AX inspection helpers used by composition, injection, and fallback verification, including the character following the selected span and guarded selection expansion for punctuation replacement.
+  - Treats a newline reported immediately after the caret as authoritative range evidence; the trailing-value newline fallback applies only when the range after the caret is not a newline.
 - `Core/Services/Paste/Accessibility/PasteAccessibilityInjector.swift`
   - Direct AX selected-text insertion path with outcome classification.
   - Routes self-targeted AX writes through a bounded main-thread hop so local AppKit text fields can be updated without an unbounded cross-thread `main.sync`.
@@ -945,6 +989,7 @@ KeyVox/
   - `TerminalPunctuationCompositionPolicy` preserves supported non-quote following punctuation by stripping an incoming model period, deduplicates a matching incoming question or exclamation mark, and signals when a differing incoming question or exclamation mark must replace the following punctuation.
   - `TrailingSeparatorCompositionPolicy` appends one space when finalized dictation would otherwise run directly into a following letter, number, or emoji; it leaves existing trailing whitespace and punctuation/symbol boundaries unchanged.
   - `TextCompositionCharacterClassifier` centralizes the emoji classification shared by leading- and trailing-separator policy.
+  - Leading-separator policy uses one attaching-punctuation scalar set, which includes the ellipsis character, for both the incoming first character and the preceding character.
   - Accepts platform-neutral adjacent-text context and has no dependency on Accessibility, UIKit document proxies, clipboards, or insertion transports.
 - `Core/Services/Paste/Pipeline/PastePolicies.swift`
   - Static policy helpers for list render mode and failure-recovery decisions.

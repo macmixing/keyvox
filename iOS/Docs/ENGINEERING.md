@@ -2,7 +2,7 @@
 
 This document captures the current implementation rules and maintainer-facing architecture for the iOS app, keyboard extension, and widget extension.
 
-**Last Updated: 2026-09-12**
+**Last Updated: 2026-10-18**
 
 ## Design Philosophy
 
@@ -47,6 +47,8 @@ The containing app owns:
 - copied-text playback, replay, and pause/resume state
 - playback-preparation and return-to-host readiness gating
 - weekly word stats
+- App Store review-request eligibility and scheduling
+- keyboard typing settings and the reset of what the keyboard learned from typing
 - Live Activity coordination
 - the SwiftUI app shell
 
@@ -54,8 +56,11 @@ The containing app owns:
 
 The keyboard extension owns:
 
-- visible keyboard UI
+- visible keyboard UI, including the letter, number, and symbol pages
 - presentation-scoped keyboard view-tree lifecycle
+- letter-page typing: shift state, field typing traits, suggestions, autocorrection, held-key characters, and delete repeat, hosted on the shared `KeyVoxPredictiveKeyboard` session
+- the typing memory learned from the user's typing and its App Group file
+- the emoji page, emoji search, suggestion-bar emoji, Frequently Used ranking state, and chosen skin tones, built on `KeyVoxEmoji`
 - toolbar mode selection and warning presentation
 - lightweight active-provider artifact inspection for missing-versus-repair warning state
 - warm/cold launch handoff into the containing app
@@ -77,6 +82,8 @@ The keyboard extension does **not** own:
 - KeyVox Vibes style rewrite policy
 - linguistic model loading or fallback resource ownership
 - onboarding progression
+- keyboard typing settings persistence; it only reads the shared values the containing app writes
+- prediction, correction, typing-memory, or emoji search and ranking rules, which belong to `KeyVoxPredictiveKeyboard` and `KeyVoxEmoji`
 
 ### Widget Extension
 
@@ -126,6 +133,8 @@ The share extension does **not** own:
 - The share extension also requires the App Group entitlement:
   - `group.com.cueit.keyvox`
 - The widget target also depends on the shared code/project wiring needed for ActivityKit and the shared App Group-backed session state.
+- The app, keyboard, share, and widget targets each ship a `PrivacyInfo.xcprivacy` declaring no tracking and no collected data, with required-reason entries only for the APIs that target uses: UserDefaults in all four, file timestamps in the app and keyboard, disk space in the app, and system boot time in the keyboard. The app's privacy manifest is not a member of the unit test target.
+- Among the shipping targets, only the keyboard extension links `KeyVoxPredictiveKeyboard` and `KeyVoxEmoji`.
 
 ## Composition Root
 
@@ -136,6 +145,8 @@ It builds and wires:
 - `DictionaryStore`
 - `AppSettingsStore`
 - `OnboardingStore`
+- `AppReviewRequestStore`
+- `AppReviewRequestCoordinator`
 - `DictationShortcutSetupIntroController`
 - `WeeklyWordStatsStore`
 - `AppTabRouter`
@@ -182,6 +193,7 @@ Service ownership rules:
 - `AppServiceRegistry` applies `AppSettingsStore.whisperDictationLanguage` when creating `WhisperService` and keeps later device-local selection changes synchronized with the service.
 - `AppServiceRegistry` creates one health-routed linguistic analyzer and injects that same instance into Whisper continuation analysis, transcription post-processing, KeyVox Vibes output repair, and PocketTTS chunk planning.
 - `AppServiceRegistry` creates `PromotionCenter` with the iOS audience, current app version, App Group defaults, and the runtime-selected bundled or remote manifest source.
+- `AppServiceRegistry` creates `OnboardingStore` with the launch's protected-data availability and passes `CloudSyncCoordinator` an existing-installation signal that is true while onboarding state is unresolved, so a launch that cannot read protected data is never treated as a fresh dictionary install.
 
 ### Linguistic Analysis Routing Contract
 
@@ -203,7 +215,8 @@ Service ownership rules:
 - `Lifecycle/` owns the app entry point plus UIKit delegate bridges.
 - `Composition/` owns `AppServiceRegistry` and shared rooted path helpers.
 - `Routing/` owns cold-launch URL capture and route parsing/dispatch.
-- `Integration/` owns App Group and keyboard-bridge contracts.
+- `Integration/` owns App Group and keyboard-bridge contracts, including the keyboard typing-memory file location and its app-side reset.
+- `AppReview/` owns StoreKit review-request eligibility, persisted review dates, and delayed request scheduling.
 - `Feedback/` owns app-scoped haptics and copy-feedback interaction state.
 - `LiveActivity/` owns the ActivityKit mirror layer.
 - `KeyVoxSpeak/` owns the post-onboarding intro controller and copied-text playback purchase gate.
@@ -223,6 +236,8 @@ Service ownership rules:
 - `KeyVoxWhisper` owns low-level Whisper context, parameters and request snapshots, compute policy, encoder configuration, segments, and language metadata. It consumes the shared speech runtime rather than owning VAD resources.
 - `KeyVoxParakeet` exposes a backend contract while the iOS app continues to use its Core ML backend.
 - `KeyVoxCoreResources` centralizes access to packaged pronunciation and file-type resources. Apple app builds use the SwiftPM resource bundle by default.
+- `KeyVoxPredictiveKeyboard` owns UI-independent English typing prediction and correction: the bundled AOSP LatinIME native target with KeyVox ranking, bundled language data, `PredictiveTypingSession`, `PredictionComputer`, personal vocabulary, typing memory and its file format, held-key characters and popup layout, and smart quotes. The keyboard host supplies touches, key geometry, document text, and storage locations, and applies the `TextEdit` values the session returns.
+- `KeyVoxEmoji` owns the UI-independent emoji catalog, search, suggestion-bar emoji by word, Frequently Used ranking, and two-person skin tones, with bundled data. The keyboard host decides which emoji the system can draw and owns persistence and presentation.
 
 `KeyVox iOS/Core/` owns app runtime services that are not view or composition concerns:
 
@@ -240,7 +255,7 @@ Service ownership rules:
 
 Current root behavior:
 
-- hold on a neutral background until the initial launch context is resolved
+- hold on a neutral background until the initial launch context is resolved and `OnboardingStore` has resolved its persisted state
 - show `ReturnToHostView` only when onboarding is not being suppressed and a cold start route or explicit return-to-host presentation is active
 - allow `ReturnToHostView` to dismiss itself back to the Home surface without tearing down the underlying app route or session owner
 - keep the main tab shell mounted whenever the app is in the onboarding-or-main path
@@ -269,9 +284,12 @@ Current root behavior:
 - `isPendingKeyboardTourRouteArmed`
 - `isIgnoringPersistedPendingKeyboardTourThisLaunch`
 - `hasCompletedOnboardingThisLaunch`
+- `hasResolvedPersistentState`
 
 Rules:
 
+- persisted onboarding state is resolved at launch when protected data is available or a completion value can already be read; otherwise the root view holds until the app reports protected data available on a scene-phase change or the protected-data notification
+- resolving deferred state rereads every persisted onboarding value without writing those values back to defaults
 - the onboarding language value is persisted separately from language-step completion so returning from setup restores the exact prior selection
 - entering the guided Shortcut flow records a pending Shortcut setup route; continuing from Action Button Demo Handoff replaces it with the pending keyboard-tour handoff
 - completing onboarding clears both pending routes and marks the Dictation Shortcut introduction handled so a new user is not shown the same guide again after onboarding
@@ -292,6 +310,7 @@ The supported runtime flags are:
 - `KEYVOX_FORCE_KEYVOX_VIBES_INTRO`
 - `KEYVOX_USE_LOCAL_PROMOTION_MANIFEST`
 - `KEYVOX_PROMOTION_PREVIEW_CAMPAIGN_ID`
+- `KEYVOX_FORCE_FRESH_DICTIONARY_INSTALL`
 
 ### Force Onboarding Runtime Flag
 
@@ -323,6 +342,8 @@ Behavior:
 - completing or returning from the forced guide clears the forced route through `OnboardingStore`
 
 The promotion flags are debug presentation tools: `KEYVOX_USE_LOCAL_PROMOTION_MANIFEST` selects the bundled local manifest, while `KEYVOX_PROMOTION_PREVIEW_CAMPAIGN_ID` selects a non-empty campaign identifier. Production builds ignore both values.
+
+`KEYVOX_FORCE_FRESH_DICTIONARY_INSTALL` accepts the same truthy values in debug builds and makes `CloudSyncCoordinator` bootstrap the dictionary as a fresh install by seeding the initial `KeyVox` entry into the local entries. Production builds ignore it.
 
 ### TTS Free-Speak Bypass Runtime Flag
 
@@ -466,6 +487,7 @@ Shared rules:
 - Open Settings invokes `DictationShortcutSettingsOpener`; after the first request, the guided CTA becomes Next so returning from Settings preserves progress
 - onboarding Skip and Action Button Demo Handoff's Set Up Keyboard action both clear the pending Shortcut route and record the pending keyboard-tour handoff
 - page indicator navigation moves only one page per action and exposes VoiceOver adjustable previous/next behavior
+- the onboarding and browsing presentations use an inline navigation title; browsing pages span the full screen width with safe-area padding inside each page so neighboring pages never show beside the current one
 
 ### Existing-User Introduction Contract
 
@@ -538,6 +560,8 @@ Keyboard onboarding detection is deliberately split across three signals:
 - `recordingState`
 - `recordingState_timestamp`
 - `latestTranscription`
+- `latestTranscriptionID`
+- `latestTranscriptionStyleIdentifier`
 - `session_timestamp`
 - `sessionHasBluetoothAudioRoute`
 - `recentTTSPlayback_timestamp`
@@ -549,8 +573,12 @@ Keyboard onboarding detection is deliberately split across three signals:
 - `keyboardOnboardingPresentation_timestamp`
 - `keyboardOnboardingAccess_timestamp`
 - `keyboardOnboardingHasFullAccess`
-- `appUpdateRequired`
 - `pendingURLRoute`
+- `KeyVox.StyleRewrite.LatestDictationArtifactData`
+- `KeyVox.StyleRewrite.PendingRequestData`
+- `KeyVox.StyleRewrite.PendingResponseData`
+
+`latestTranscriptionID` and `latestTranscriptionStyleIdentifier` are written and cleared together with `latestTranscription`; the ID is the utterance ID that also identifies the latest dictation artifact.
 
 ### App Group Settings Keys
 
@@ -562,6 +590,19 @@ Keyboard onboarding detection is deliberately split across three signals:
 - `KeyVox.LeftHandedKeyboardLayoutEnabled`
 - `KeyVox.CompactKeysEnabled`
 - `KeyVox.CompactKeysActive`
+- `KeyVox.AutoCapitalizationEnabled`
+- `KeyVox.AutoCorrectionEnabled`
+- `KeyVox.ShiftCapsLockEnabled`
+- `KeyVox.PredictiveTextEnabled`
+- `KeyVox.EmojiKeyboardEnabled`
+- `KeyVox.PeriodShortcutEnabled`
+- `KeyVox.OpensOnNumberPage`
+- `KeyVox.KeyboardTypingMemoryResetGeneration`
+  - counts the user's resets of what the keyboard learned from typing; written by the containing app and read by the keyboard
+- `KeyVox.EmojiFrequentlyUsed`
+  - the keyboard's Frequently Used emoji ranking, written by the keyboard
+- `KeyVox.EmojiSkinTones`
+  - the skin tone last chosen for each emoji, written by the keyboard
 - `KeyVox.PreferBuiltInMicrophone`
 - `KeyVox.LiveActivitiesEnabled`
 - `KeyVox.SessionDisableTiming`
@@ -581,6 +622,7 @@ Keyboard onboarding detection is deliberately split across three signals:
 - `KeyVox.App.HasPendingKeyboardTour`
 - `KeyVox.App.HasPendingDictationShortcutSetup`
 - `KeyVox.App.HasSeenDictationShortcutSetup`
+- `KeyVox.App.DismissedDictationModelUpdatePromptID`
 - `KeyVox.App.ActiveDictationProvider`
 - `KeyVox.App.WhisperDictationLanguage`
 - `KeyVox.App.CachedAppStoreReleaseURL`
@@ -602,6 +644,9 @@ Keyboard onboarding detection is deliberately split across three signals:
 - `KeyVox.App.HasSeenKeyVoxVibesIntro`
 - `KeyVox.App.HasInteractedWithKeyVoxVibes`
 - `KeyVox.App.ShouldShowKeyVoxVibesIntroOnNextEligibleLaunch`
+- `KeyVox.App.Review.FirstLaunchAt`
+- `KeyVox.App.Review.LastSuccessfulDictationAt`
+- `KeyVox.App.Review.LastRequestedVersion`
 
 ### App Group File Transport
 
@@ -616,6 +661,9 @@ Keyboard onboarding detection is deliberately split across three signals:
   - durable replay metadata containing the request, rendered sample count, and optional paused replay sample offset
 - `TTS/last-replay.pcm`
   - durable replay audio payload for the last replayable copied-text playback
+- `Keyboard/typing-memory.json`
+  - durable keyboard typing memory, written by the keyboard extension under the current reset generation
+  - removed by the containing app's learned-words reset after it increments `KeyVox.KeyboardTypingMemoryResetGeneration`
 
 ## App Update Contract
 
@@ -633,7 +681,7 @@ Current rules:
 - `AppUpdateCoordinator` caches the last resolved decision in app-owned defaults so optional updates can reappear on cold launch without requiring a fresh network fetch every time
 - optional updates are dismissible only for the current process lifetime and should reappear on the next cold launch while the cached decision remains valid
 - forced updates are never dismissible
-- forced update state is mirrored into `KeyVoxIPCBridge` through the shared `appUpdateRequired` flag so the keyboard toolbar can route into its warning mode
+- update state is not mirrored into `KeyVoxIPCBridge`; a required update keeps the containing app's permanent prompt, while the keyboard toolbar and keyboard dictation stay available
 - the containing app may present update UI only on the true `.main` route
 - the keyboard must not evaluate App Store or policy-manifest state directly
 
@@ -644,6 +692,7 @@ Current rules:
 - `com.cueit.keyvox.cancelRecording`
 - `com.cueit.keyvox.disableSession`
 - `com.cueit.keyvox.recordingStarted`
+- `com.cueit.keyvox.recordingStartFailed`
 - `com.cueit.keyvox.transcribingStarted`
 - `com.cueit.keyvox.transcriptionReady`
 - `com.cueit.keyvox.noSpeech`
@@ -658,15 +707,18 @@ Current rules:
 - `com.cueit.keyvox.ttsFinished`
 - `com.cueit.keyvox.ttsStopped`
 - `com.cueit.keyvox.ttsFailed`
+- `com.cueit.keyvox.pendingURLRouteReady`
 - `com.cueit.keyvox.vibeSelectionChanged`
 - `com.cueit.keyvox.listFormattingChanged`
 - `com.cueit.keyvox.autoParagraphsChanged`
+- `com.cueit.keyvox.styleRewriteRequested`
 
 ### Shared Recording States
 
 - `idle`
 - `waitingForApp`
 - `recording`
+- `startFailed`
 - `transcribing`
 
 ### Shared TTS States
@@ -702,6 +754,7 @@ The App Group container is the stable cross-process boundary:
 - `TTS/request.json`
 - `TTS/last-replay.json`
 - `TTS/last-replay.pcm`
+- `Keyboard/typing-memory.json` for the keyboard's typing memory
 - `live-meter-state.bin` for transient keyboard indicator transport
 
 If the App Group container is unavailable:
@@ -751,6 +804,7 @@ The signed workflow can run from Shortcuts and can be assigned by the user to sy
 - Shortcut recording starts with `isFromURL = false`; it must not present the keyboard cold-launch `ReturnToHostView` flow.
 - `TranscriptionStartCommandResult` and `TranscriptionStopCommandResult` are the typed boundary between the coordinator and transcription owner.
 - Live Activity preparation must complete before background microphone startup. Disabled Live Activities or failed preparation prevent recording from starting, and failed recorder startup releases the pending activity state.
+- Once recording starts from the intent, the Live Activity it required stays showing until the dictation session ends, even if the user turns Live Activities off mid-session.
 
 ### Result Delivery
 
@@ -765,11 +819,12 @@ The signed workflow can run from Shortcuts and can be assigned by the user to sy
 
 `Release Mic Immediately` is an App Intent parameter and defaults to `false`.
 
-- Off preserves normal warm-session behavior and lets the configured session timing decide when monitoring ends.
+- Off preserves normal warm-session behavior while a Live Activity is showing and lets the configured session timing decide when monitoring ends.
 - On attempts to stop monitoring immediately after audio capture, while transcription continues from the captured frames.
 - A failed first release attempt must never discard or replace the user's transcription.
 - After transcription finishes, `TranscriptionManager` retries the immediate release once.
 - If the retry also fails, the session stays active and the configured idle timeout is re-armed for later cleanup.
+- Because the system requires a Live Activity whenever this intent leaves the microphone active, a stop requests immediate release whenever no Live Activity is actually showing, even with the parameter off. Dismissed or ended activities do not count as showing.
 
 ### Shared-State Reconciliation
 
@@ -882,9 +937,11 @@ Interrupted captures follow the same post-stop processing rules before they are 
 Accepted recorder output passes through the shared `KeyVoxVoiceActivity` analyzer inside each provider service:
 
 - `KeyVoxVoiceActivity.VoiceActivityDetector` owns the actor-isolated `whisper.cpp` VAD context and loads the package-bundled `ggml-silero-v5.1.2.bin` model.
-- `WhisperService+ModelLifecycle` creates the VAD detector during Whisper warmup and releases it when the Whisper model is unloaded.
+- `WhisperService+ModelLifecycle` loads the VAD detector and then the Whisper model in one background warmup, off the main actor, and releases both when the Whisper model is unloaded. Warmup loading must not run on the main actor; a transcription that starts before loading finishes reuses the in-flight warmup and waits for it inside the transcription task.
+- `SpeechModelLoadQueue` runs VAD detector and Whisper model loads one at a time; the detector load stays ahead of the model load because the detector initializes the shared `whisper.cpp` runtime first.
 - `WhisperService+TranscriptionCore` rejects a capture with no speech, then uses `WhisperSpeechRangePlanner` to skip chunks without speech overlap and compact padded speech ranges before decoding.
-- `ParakeetService+TranscriptionCore` creates the analyzer lazily, rejects a whole capture with no speech, and otherwise preserves the original chunk audio for Parakeet decoding.
+- `ParakeetService` loads its analyzer in the background through the same load queue, waits for it inside the transcription task, ends a request that was cancelled while it loaded, rejects a whole capture with no speech, and otherwise preserves the original chunk audio for Parakeet decoding.
+- Both providers pass the detected speech segments into `AudioParagraphChunker`, which prefers fallback chunk boundaries inside VAD-confirmed gaps so long dictations are not split during active speech.
 - If detector creation or analysis fails, each provider continues through its existing decoder and provider-specific no-speech safeguards.
 - iOS targets do not copy the Silero resource or implement a second target-local VAD policy.
 
@@ -945,7 +1002,7 @@ It is intentionally app-local and is not synchronized through iCloud.
 
 Current model-specific post-install work:
 
-- Whisper extracts `ggml-base-encoder.mlmodelc.zip`, removes the zip, and warms `WhisperService`
+- Whisper extracts `ggml-base-encoder.mlmodelc.zip`, removes the zip, and awaits `WhisperService.preloadIfNeeded()` so the install finishes with the model loaded
 - Parakeet preloads the installed Core ML directory set through `ParakeetService`
 
 ### Readiness Contract
@@ -1232,7 +1289,9 @@ Current order:
 5. normalize math expressions through the split math normalization helpers
 6. apply list formatting when enabled
 7. run late cleanup for laughter, character spam, provider asterisk artifacts, time expressions, dates, email boundaries, website/domain casing, and numeric grouping
-8. run render-mode whitespace cleanup, sentence capitalization, spoken terminal punctuation, terminal-time punctuation completion, and the all-caps override
+8. run render-mode whitespace cleanup, sentence capitalization, spoken terminal punctuation, terminal-time punctuation completion, removal of model-generated literal ellipsis artifacts, and the all-caps override
+
+Model ellipsis artifact removal runs after continuation casing has been resolved, leaves spoken ellipses intact, and keeps a single space where removing an artifact would otherwise join two words.
 
 `TimeExpressionNormalizer` is the single owner of compact numeric time shaping. Meridiem matches that continue an already colon-separated number must be ignored so compact inputs such as `810 PM` normalize once to `8:10 PM`, never a second time to `8:10:00 PM`.
 
@@ -1326,7 +1385,9 @@ The shared `KeyVoxCore` dictation pipeline owns the stable hook point:
 4. Caps Lock casing override is applied after transformation
 5. final text is recorded and inserted
 
-`DictationPipelineResult` exposes the provider-reported language code, raw provider text, base text, selected pre-Caps final text, selected final text, inference duration, transform duration, transform applied flag, selected style identifier, transform chunk count, transform errors, transform processing mode, and paste duration.
+When the caller configures an output delivery handler, the pipeline delivers the final text as `DictationPipelineOutputDelivery` with the caller-supplied utterance ID and selected style identifier instead of calling the paste closure. `TranscriptionManager` uses that path, publishes a delivery only when it matches the active utterance, and passes the same ID to the keyboard so later latest-insertion changes bind to the matching artifact.
+
+`DictationPipelineResult` exposes the utterance ID, the provider-reported language code, raw provider text, base text, selected pre-Caps final text, selected final text, inference duration, transform duration, transform applied flag, selected style identifier, transform chunk count, transform errors, transform processing mode, and paste duration.
 This keeps the keyboard insertion path unchanged while still making speed-profile and artifact data explicit.
 
 Failure policy:
@@ -1384,9 +1445,9 @@ LoRA adapter ownership:
 - debug logs use `[StyleRewriteLocal]` and include prewarm load/cache state plus generation style, chunk index, adapter label, load state, input/output tokens, prefill/decode/total timing, and decode tokens per second
 
 `StyleRewriteLatestArtifactStore` persists one latest utterance in App Group defaults under the style rewrite artifact key.
-The artifact includes raw provider text, post-processed base text, selected inserted text, selected pre-Caps text, selected style identifier, deterministic paragraph/list variants, variant text/timing/errors, inference duration, transform duration, and creation date.
+The artifact includes the utterance ID, raw provider text, post-processed base text, selected inserted text, selected pre-Caps text, selected style identifier, deterministic paragraph/list variants, variant text/timing/errors, inference duration, transform duration, and creation date.
 When providers supply audio-derived paragraph and inline text, deterministic paragraph variants preserve those forms so the keyboard can apply paragraph changes later without inferring sentence breaks locally.
-The keyboard consumes this artifact for long-press Vibes revert/restyle, paragraph/list deterministic swaps, and Caps Lock reversal on the latest untouched KeyVox dictation insertion.
+The keyboard consumes this artifact for long-press Vibes revert/restyle, paragraph/list deterministic swaps, and Caps Lock reversal on the latest untouched KeyVox dictation insertion, and only when the artifact's ID matches the utterance ID published with that insertion's transcript.
 
 ### KeyVox Vibes Purchase Ownership
 
@@ -1472,12 +1533,17 @@ The restore card remains visible until both unlocks are owned.
 - posts the shared auto-paragraphs Darwin notification so the containing app refreshes its settings UI
 - reads Compact Keys availability from `KeyVox.CompactKeysEnabled`, defaulting to enabled
 - reads and writes the separate `KeyVox.CompactKeysActive` presentation preference, defaulting to the full keyboard
+- reads, but never writes, the shared keyboard typing settings and `KeyVox.LeftHandedKeyboardLayoutEnabled`, using the same defaults as `AppSettingsStore`: Open on 123 and Left-Handed Layout default off, and every other typing setting defaults on
 
 `AppSettingsStore` owns the containing-app Compact Keys availability toggle. Turning availability off must also clear `KeyVox.CompactKeysActive`, so enabling the feature again never revives a stale compact presentation.
+
+`AppSettingsStore` also owns the keyboard typing settings shown on the Keyboard settings screen: Auto-Capitalization, Auto-Correction, Enable Caps Lock, Predictive Text, Emoji Keyboard, the period shortcut, and Open on 123. They are device-local App Group values that the keyboard reads directly through `KeyboardAppSettingsStore`, including each time it resolves a field's typing traits.
 
 `KeyboardDictationChangeController` owns keyboard-side long-press changes for KeyVox insertions:
 
 - records the latest inserted dictation session from `KeyboardTextInsertionResult` plus `DictationUtteranceArtifact`
+- binds the session to the utterance ID published with the transcript and reads the artifact only when its ID matches, so a change never applies a previous dictation's artifact to the current insertion
+- when the matching artifact has not been published yet, records the inserted text under the published style identifier, refreshes the session from the artifact once it is readable, and refuses Vibes and paragraph/list long-press changes until then
 - treats `None` as the original post-processed base text
 - stores the current insertion text, current Vibe, deterministic paragraph/list state, Caps Lock display-transform state, and cached rendered variants
 - delegates deterministic paragraph/list state transitions and source selection to `KeyVoxCore.DictationDeterministicVariantResolver`
@@ -1550,6 +1616,8 @@ It reports:
 - auto paragraphs timestamps
 - list formatting timestamps
 
+Restored dictionary timestamps count as local dictionary data only when a persisted local dictionary snapshot exists. Without one, a cloud dictionary payload is applied and persisted locally even when its entries already match memory, and a missing local dictionary file never overwrites existing cloud contents.
+
 `KeyVox` is created as an ordinary dictionary entry only when onboarding is incomplete and no local dictionary snapshot, synchronized dictionary payload, or shared installation history exists. Existing installations record shared installation history without changing their dictionaries. The entry remains user-owned after creation, so deleting it is synchronized normally and does not cause it to be recreated later.
 
 `WeeklyWordStatsCloudSync` syncs only the current-week usage snapshot.
@@ -1560,6 +1628,9 @@ Excluded from iCloud sync:
 
 - Caps Lock latch
 - keyboard haptics
+- keyboard typing settings, layout settings, and Compact Keys state
+- keyboard typing memory and its reset generation
+- emoji Frequently Used ranking and chosen skin tones
 - microphone preference
 - KeyVox Vibes selected style
 - KeyVox Vibes unlock cache
@@ -1608,7 +1679,11 @@ The Live Activity should be shown only when:
 - session disable is not pending
 - the user setting `liveActivitiesEnabled` is `true`
 
-Turning the toggle off must end any active Live Activity immediately.
+or while a background audio-recording intent's start is pending or the session that intent started is still active.
+
+Turning the toggle off must end any active Live Activity immediately, except one an audio-recording intent requires, which ends with its session.
+
+The coordinator reports a Live Activity as showing only while its activity state is active or stale; when the cached activity was dismissed or ended, it adopts another showing activity or requests a new one.
 
 Background dictation intents require the coordinator to prepare or update the Live Activity before recorder startup. The coordinator keeps that preparation pending until startup resolves, then reconciles against the actual session state so a failed start cannot leave an orphaned activity.
 
@@ -1645,6 +1720,9 @@ The extension is a transport and insertion surface, not the transcription owner.
 - cancel flow
 - host-text insertion
 - cursor movement and key-repeat interactions
+- page, keys-mode, and emoji-panel state
+- letter-page typing coordination with the shared prediction session
+- emoji page and emoji search coordination
 
 ### Keyboard Presentation Lifecycle Rules
 
@@ -1657,19 +1735,25 @@ Rules:
 - teardown must run on real keyboard dismissal and presentation-swap boundaries while the extension host is active, including `viewWillDisappear`
 - extension-host resign-active notifications must pause the active presentation without destroying the current tree so host app background/foreground does not blank the keyboard
 - `deinit` is not a safe ownership boundary for keyboard cleanup
-- teardown must remove the presentation tree, popup overlay, full-access overlay, IPC observers, and indicator callbacks
+- teardown must remove the presentation tree, popup overlay, full-access overlay, IPC observers, indicator callbacks, key-grid and suggestion-bar callbacks, the prediction bar callback, and emoji page and search bindings
+- the emoji search ends when the keyboard is about to disappear, as the system keyboard's does
 - host lifecycle observers are controller-scoped and remain installed until controller teardown
 - rebuild must preserve the same visuals, toolbar behavior, warning precedence, haptics, and insertion rules as a fresh keyboard presentation
-- rebuild must resolve Compact Keys mode from App Group defaults before presentation setup so the extension returns to the user's persisted mode after a keyboard switch
+- rebuild must resolve the opening page and Compact Keys mode from App Group defaults through `KeyboardOpeningLayout` before presentation setup; the persisted compact mode applies whenever the number page shows, so the extension returns to the user's persisted mode after a keyboard switch
+- the controller must not read the focused field's document state until the host hands it over with the first `textDidChange(_:)` after appearing; reading earlier, even on a later main-thread turn, can reach freed host state
+- each appearance and each extension-host activation adopts any typing-memory reset and rechecks installed models through `KeyboardInstalledModels`
 
 Implementation split:
 
 - `KeyboardViewController.swift` owns the controller-facing event and state surface
 - `KeyboardViewController+PresentationLifecycle.swift` owns presentation-tree creation, binding, teardown, and host-lifecycle observation
 - `KeyboardViewController+Debug.swift` owns debug-only lifecycle counters and testing hooks
+- `KeyboardViewController+Typing.swift` owns letter-page typing: field preparation, shift handling, word boundaries, picked-word spacing, suggestion taps, contested taps, held-delete word deletion, and the return to letters after symbols
+- `KeyboardViewController+Emoji.swift` and `KeyboardViewController+EmojiSearch.swift` own emoji page and emoji search coordination
 - `KeyboardTTSController.swift` owns keyboard-side copied-text speak transport state and the App Group request/start-stop coordination surface
 - `KeyboardAppSettingsStore.swift` owns keyboard-side App Group settings persistence and notification dispatch for controls that mirror containing-app settings
-- `KeyboardKeysMode.swift` owns full/compact resolution, visible row count, and height selection
+- `KeyboardKeysMode.swift` owns full/compact resolution, visible row count, per-orientation key height, and height selection
+- `KeyboardOpeningLayout.swift` owns the page and keys mode a field opens on
 - `Input/KeyboardCompactKeysHoldController.swift` owns the cancellable activation timer for the `#+=` long press
 - `DictationChange/` groups the latest untouched insertion long-press feature files
 - `DictationChange/KeyboardDictationChangeController.swift` owns the artifact-scoped latest-insertion change facade, display-facing state, collaborators, and current session reference
@@ -1683,8 +1767,10 @@ Implementation split:
 - `KeyVoxCore.DictationDeterministicTextFormatter` owns paragraph collapse, ordered-list line preservation, and post-rewrite layout adjustment
 - keyboard `Core` is grouped by domain:
   - `Dictation/` owns recording-state handoff, generic startup-failure feedback, live indicator driving, and latest-insertion long-press changes
-  - `Feedback/` owns extension-local haptics configuration and dispatch
-  - `Input/` owns text insertion, special-key interaction, and cursor trackpad behavior
+  - `Emoji/` owns emoji indexes, drawability checks, Frequently Used and skin-tone persistence, panel state, and emoji layout math
+  - `Feedback/` owns extension-local haptics configuration and dispatch, including the Core Haptics text-input tap
+  - `Input/` owns text insertion, key activation values, letter-case shift state, held-key popups, delete repeat and word deletion, symbol-page return, touch routing, special-key interaction, and cursor trackpad behavior
+  - `Prediction/` owns the keyboard adapters for the shared typing session: the prediction coordinator and engines, field typing traits, personal vocabulary building, and persisted typing memory
   - `Settings/` owns App Group-backed keyboard controls that mirror containing-app settings
   - `Text/` owns casing and spacing heuristics for inserted text
   - `Transport/` owns shared playback IPC plus non-visual keyboard transport state
@@ -1694,13 +1780,17 @@ Implementation split:
 
 ### Toolbar and Layout Rules
 
-Toolbar modes are:
+Toolbar modes resolved by `KeyboardToolbarMode.resolve` are:
 
-- hidden
 - branded
+- dictation-model warning
+- dictation-model action warning
 - full-access warning
 - microphone warning
-- update-required warning
+
+`hidden` remains a declared mode without warning text, but the resolver does not produce it. There is no update-required toolbar mode.
+
+Within the branded toolbar, the full keyboard's letter page shows the suggestion bar in place of the Settings, Speak, Dictionary, Paragraphs, Lists, Caps Lock, and Vibes accessories while predictions are offered: the field allows predictions and shows suggestions, it holds letters, no latest dictation is still untouched, the emoji panel is closed, and no cancel control is showing. The dictation accessories show instead on the number and symbol pages, in Compact Keys, while dictating, transcribing, or playing speech, in a field without letters or predictions, and until the user changes the latest untouched dictation. While the emoji page or emoji search is open, the emoji search field takes the toolbar's place.
 
 The keyboard root layout has an important invariant:
 
@@ -1711,23 +1801,29 @@ The keyboard root layout has an important invariant:
 
 That separation exists because putting the warning UI into the main root layout reintroduced the keyboard launch flash.
 
-### Symbol Keyboard Layout Rules
+### Key Grid Layout Rules
 
 Keyboard-specific row geometry must stay separated by responsibility:
 
-- `KeyboardRootView` owns the stable keyboard shell, toolbar stacking, and the top-row accessory button containers
-- `KeyboardKeyGridView` owns row creation and key interaction wiring
+- `KeyboardRootView` owns the stable keyboard shell, toolbar stacking, the top-row accessory button containers, the suggestion bar's placement, and the emoji page, search field, and results placement
+- `KeyboardKeyGridView` owns page display and key interaction wiring; `KeyboardKeyGridPage` builds each page's rows once and keeps them, and `KeyboardKeyGridView+Touches.swift` owns multi-finger touch handling
+- `KeyboardSymbolLayout` owns which keys each letter, number, and symbol page, Compact Keys, the emoji search row, and the globe row contain
 - `KeyboardLayoutGeometry` owns live measurement-based row sizing, while `KeyboardTopRowAccessoryLayout` owns accessory alignment rules
 
 Do not push special-case row width math back into `KeyboardSymbolLayout` when the requirement depends on the rendered keyboard width.
 
-Current symbol layout rules:
+Current key grid layout rules:
 
-- rows 1 and 2 stay equal-width
-- row 3 side keys use a 1.5-key span
-- row 3 middle keys evenly divide the remaining width
-- row 4 side keys use a 2.5-key span
-- the space bar consumes the remaining row-4 width
+- in full mode the first row's keys stay equal-width on every page, and the number and symbol pages keep their second row equal-width too
+- the letter page's middle row uses top-row-width keys inset half a key on each side, and its shift row flanks top-row-width letters with shift and delete keys spanning 1.5 top-row keys
+- the number and symbol pages' delete row uses 1.5-key side keys, with the middle keys evenly dividing the remaining width, in both full and Compact Keys modes
+- bottom-row side keys use a 2.5-key span in portrait and a 2-key span in landscape; the page key and the emoji key share the leading side key's width, and the space bar consumes the remaining width
+- without the emoji key, the page key takes the full side-key width; the emoji search's bottom row is the page key, space, and done
+- on an iPhone where the system shows no globe under the keyboard, the bottom row adds the globe after the page key and narrows the emoji key to one top-row key; the globe's touches go to the system input-mode list
+- keys are shorter in landscape in both full and Compact Keys modes
+- touches in the gaps between keys, and in the keyboard's outer padding, type the nearest key
+- characters type when their finger lifts, or as soon as another finger lands, so overlapping taps type in the order they landed
+- keys in the key grid draw no per-key blur and give their shadows an explicit rounded path, so no key is redrawn or has its shadow worked out from its contents every frame
 - the left accessory slot is derived from the live `1` key geometry and swaps statically between Settings and Cancel
 - with Vibes available, top-row Speak aligns over `2`, Dictionary aligns over `3`, Paragraphs aligns over `4`, Lists aligns over `5`, Caps Lock aligns over `6`, the Vibes selector spans `7` and `8`, and the logo bar sits over the far-right `9`/`0` area
 - with the Vibes feature unavailable, the Vibes key is removed and the remaining top-row accessories compact rightward against the logo area
@@ -1744,15 +1840,18 @@ Compact Keys rules:
 - compact mode omits the first two symbol rows and keeps the final punctuation/action row plus the bottom row
 - the compact row's leading key becomes the `keyboard` SF Symbol and restores the full keyboard with one tap and a medium interaction haptic
 - normal `#+=` behavior remains unchanged when the hold does not activate or the feature is unavailable
-- both modes must use explicit required controller-view heights: 286 points for full and 174 points for compact
+- the hold does not activate while the emoji search is open
+- Compact Keys applies only to the number and symbol pages: ABC from Compact Keys shows the full letter keys without clearing the persisted compact-active flag, and 123 from the letter page returns to Compact Keys when that flag is set
+- both modes must use explicit required controller-view heights taken from portrait heights of 286 points for full and 174 points for compact, shortened in landscape by the shorter landscape keys
+- while the emoji page or emoji search is open the keyboard lays out in full mode, Compact Keys staying the user's mode underneath, and the emoji search adds `KeyboardEmojiSearchGeometry.addedKeyboardHeight` to the controller-view height
 - `KeyboardStyle` owns those height constants; do not infer either height from transient host bounds
-- `KeyboardKeysMode` owns visible row count and derived key-grid height, while `KeyboardSymbolLayout` owns which rows and restore key appear
+- `KeyboardKeysMode` owns visible row count, per-orientation key height, and derived key-grid height, while `KeyboardSymbolLayout` owns which rows and restore key appear
 - active mode is persisted separately from availability and survives keyboard-extension recreation
 - disabling availability forces full mode and clears the persisted compact-active flag
 
 iOS may briefly display a host-cached frame while recreating a third-party keyboard at a different height. The extension must still establish the resolved mode and explicit height before presentation setup; it cannot control the host's cached transition frame.
 
-The important implementation detail is that these widths are measured from the live top-row grid, so portrait and landscape can share the same ratios without mixing keyboard shell concerns into the symbol model layer.
+The important implementation detail is that these widths are measured from the live top-row grid, so portrait and landscape share the same ratios, apart from the bottom row's narrower landscape side keys, without mixing keyboard shell concerns into the symbol model layer.
 
 ### Warning Toolbar Rules
 
@@ -1761,6 +1860,12 @@ The branded toolbar requires:
 - installed model
 - `hasFullAccess == true`
 - microphone permission granted
+
+When the active provider's dictation model is not installed, or its artifacts need repair:
+
+- keep the key grid visible
+- hide the branded toolbar controls
+- show the warning toolbar with the install message, or with the repair message `KeyboardDictationModelStatus` resolved
 
 When the model is installed but Full Access is missing:
 
@@ -1790,12 +1895,80 @@ When a microphone tap cannot start dictation:
 
 Warning precedence must remain:
 
-1. model unavailable -> hidden toolbar
-2. Full Access missing -> full-access warning
-3. microphone permission missing -> microphone warning
-4. otherwise -> branded toolbar
+1. dictation model not installed -> dictation-model warning
+2. dictation model needs repair -> dictation-model action warning
+3. Full Access missing -> full-access warning
+4. microphone permission missing -> microphone warning
+5. otherwise -> branded toolbar
+
+A required app update is not part of this precedence; the keyboard keeps dictation available while the containing app shows its forced-update prompt.
+
+Installed-model availability comes from `KeyboardInstalledModels`, checked when the keyboard appears and when the extension host becomes active, and reused for every toolbar update in between because models are added or removed only in the containing app.
 
 `FullAccessView` is keyboard-only instructional UI. It does not route through onboarding state or the containing app.
+
+### Letter Typing and Prediction Rules
+
+`KeyVoxPredictiveKeyboard.PredictiveTypingSession` is the typing source of truth for the letter page. The keyboard reports taps and text changes, asks the session what space, return, a word-ending character, a character after a suggestion tap, or a suggestion tap should change, and applies the returned `TextEdit` through `KeyboardTextInputController`. The keyboard must not re-implement correction, completion, next-word, sentence-opener, personal-word casing, or undo rules locally.
+
+Field preparation:
+
+- after appearing, the keyboard waits for the host's first `textDidChange(_:)` before reading the field; until then it opens as the Open on 123 setting says
+- `KeyboardTypingTraits` resolves what the field allows from its keyboard type, content type, secure entry, autocorrection type, and autocapitalization type, then narrows it by the shared keyboard typing settings; a feature the field turns off stays off whatever the settings say
+- numeric-only keyboard types, secure entry, and password content types turn predictions off; email, URL, and username fields keep predictions but not autocorrection
+- a number-pad style field, a numbers-and-punctuation field, or the Open on 123 setting opens the number page, which stays until the user taps ABC; after that, symbols return to the letters again
+- a change of the field's typing traits while the keyboard stays up means the cursor moved to another field, which starts that field with a fresh session
+
+Prediction threading:
+
+- typing state lives on the main thread; suggestion work runs on a serial background engine and is published only when no newer request was made while it ran
+- the text is never reread when background work finishes, because the host may be replacing the field's document state at that moment
+- a word boundary uses the current result, or computes it synchronously when it has not arrived, so a fast space never skips an autocorrection; the previous-word revision is worked out ahead in the same way
+- contested-tap checks for space, return, shift, delete, 123, and the emoji key landing close to a letter run on a separate engine, start when the finger lands, and are skipped off the letter page, during the emoji search, for repeats, and when the field allows no predictions
+- suggestions are worked out only while they are shown; a word boundary still works out its autocorrection on the spot when they are hidden
+
+Vocabulary:
+
+- personal vocabulary combines KeyVox Dictionary phrases with the system supplementary lexicon's known names and text replacements; the dictionary is applied at once and the lexicon again whenever the system answers
+- learned vocabulary from typing memory is handed to suggestions whenever it changes
+- pressing and holding a suggestion forgets a learned word or learned capitals; the user's own vocabulary is never forgotten this way
+- corrections and predictions are English only
+
+Shift and letter case:
+
+- `KeyboardLetterCaseController` owns lowercase, shifted, and caps-locked states; a tap shifts the next letter and a quick second tap locks caps when the Enable Caps Lock setting allows it
+- the field's autocapitalization type, unless the Auto-Capitalization setting is off, re-derives the automatic shift from the text before the cursor after each change; caps lock is kept
+
+Keys and characters:
+
+- holding a key that offers held-key characters opens its popup after the hold duration; lifting on a cell types that character exactly as shown, and moving far enough below the popup closes it without typing
+- the apostrophe and quote keys type smart quotes from `SmartQuotes` unless the character was picked from a held key's popup
+- the double-space period runs only when the period-shortcut setting is on and nothing is selected
+- a held delete key repeats on `KeyboardDeleteRepeatSchedule`, switching from characters to whole words, and keeps repeating even once the finger slides off it; its press plays the keypress haptic on lift and repeats play theirs as they delete
+- when a host shows only part of the text before the cursor, word deletion deletes one more character to make the host reveal the preceding text before deleting the remaining words
+- letter and character keys, held-key popups, and emoji play the Core Haptics text-input tap; other keys keep the keypress haptic
+
+### Keyboard Typing Memory Rules
+
+- `KeyboardTypingMemory.shared` is one `TypingMemory` for every keyboard view while the extension runs
+- it saves the memory to `Keyboard/typing-memory.json` in the App Group a moment after each change, off the main thread, under the reset generation it was loaded with
+- `KeyboardTypingMemoryReset` in the containing app increments `KeyVox.KeyboardTypingMemoryResetGeneration` before removing the file, so a keyboard still holding the old memory never saves over the reset
+- the keyboard adopts a newer reset generation, clearing its memory, when it appears and when the extension host becomes active
+- the Keyboard settings screen's Reset Learned Words action routes through the shared Settings deletion confirmation; the KeyVox Dictionary is not affected
+
+### Emoji Keyboard Rules
+
+`KeyVoxEmoji` owns emoji data, search, suggestion-bar emoji, Frequently Used ranking, and two-person tones. The keyboard owns drawability, persistence, presentation, and typing.
+
+- the emoji key opens the emoji page in the key grid's place, with the search field in the toolbar's place, so the keyboard keeps its height
+- the page's leading bar key is 123, returning to Compact Keys or the number page, when Compact Keys is the mode underneath or Open on 123 is on, and ABC, returning to the letters, otherwise
+- emoji show only when the system emoji font draws them as one picture
+- the Frequently Used section is computed when the page opens and does not reorder while it stays open
+- an emoji typed from the page, the search, or the suggestion bar counts toward Frequently Used
+- each emoji shows and types in the skin tone last chosen for it; holding an emoji with skin tones opens its picker, and a two-person emoji opens a picker that stays open for taps and draws unchosen people as solid gray silhouettes
+- tapping the search field starts the emoji search over the letter keys, lowercase, with a results row that makes the keyboard taller; keys type into the search instead of the document, results show the Frequently Used emoji until a non-space character is typed, a tapped result types into the document while the search stays, and done or the keyboard disappearing ends the search on the letter keys
+- the suggestion bar offers emoji for the word before the cursor in the user's chosen tones, most used first, only after the user has typed an emoji since the keyboard started
+- turning the Emoji Keyboard setting off removes the emoji key, closes an open emoji panel, and stops suggestion-bar emoji
 
 ### Text Insertion Rules
 
@@ -1823,14 +1996,18 @@ Warning precedence must remain:
 
 `KeyboardTextInputController` remains the insertion owner. It calls the capitalization and leading-spacing coordinators, captures the document proxy's following character once, applies the shared punctuation result followed by the shared trailing-separator result, and inserts the finalized text. When punctuation replacement is required, it first replaces the selected text, then advances over and deletes the old following punctuation so selection semantics remain correct.
 
+`KeyboardTextInputController.apply(_:)` is the only path for typing-session `TextEdit` values. It deletes and retypes only the end of the replaced text that the edit changes, so an edit that keeps the start of a field's text never empties the field first, and it moves past and deletes any following characters the edit names.
+
 ### Keyboard-Owned Local State
 
 The keyboard extension locally owns:
 
 - Caps Lock latch
+- letter-page shift and caps-lock state
 - haptics preference
 - dictionary casing preservation helpers
 - interaction-haptics execution
+- typing memory, Frequently Used emoji ranking, and chosen emoji skin tones
 
 These remain extension-facing conveniences, not app-owned business logic.
 
@@ -1856,7 +2033,8 @@ Current app-owned surfaces:
 - `DictionaryTabView`: dictionary browsing/editing
 - `StyleTabView`: dictation style toggles
 - `SettingsTabView`: top-level settings composition, shared disclosure state, third-party notices presentation, full-screen Dictation Shortcut reference-guide presentation, and cross-section coordination
-- `SettingsTabView+General`: session timeout, Live Activities, Dictation Shortcut setup-guide entry, Speak Timeout, keyboard haptics, and audio preference sections extracted from the settings root view
+- `SettingsTabView+General`: session timeout, Live Activities, Dictation Shortcut setup-guide entry, Speak Timeout, the Keyboard row, and audio preference sections extracted from the settings root view
+- `KeyboardSettingsView`: the Keyboard settings screen opened from that row, with keyboard haptics and the keyboard typing toggles, Compact Keys, Open on 123, Left-Handed Layout, and Reset Learned Words; its copy lives in `KeyboardSettingsCopy`
 - `SettingsTabView+Models`: release-facing `Dictation Model` section for provider selection, per-model install actions, uninstalled model size display, and the attached language section driven by the shared Whisper catalog or Parakeet Auto Detect guidance
 - `SettingsTabView+TTS`: release-facing `KeyVox Speak` section for PocketTTS runtime install state, per-voice install actions, previews, voice selection, and the `KeyVox Speak Unlimited` unlock row placed beneath the model section
 - `SettingsTabView+VibesAI`: release-facing `KeyVox Vibes AI` section for local rewrite model install state, confirmed download/delete actions, repair, progress, and animated progress collapse
@@ -1903,6 +2081,10 @@ Views may surface manager state, but runtime ownership stays in the managers and
 - keyboard interaction haptics
 - keyboard controller presentation teardown and rebuild behavior
 - keyboard text input helpers
+- keyboard letter-case shift and caps-lock state
+- keyboard held-delete word deletion
+- keyboard typing-memory reset
+- keyboard emoji category memory and styles, grid, search, and picker geometry, search keys, and drawability
 - keyboard cursor-trackpad support
 - transcription manager lifecycle, typed shortcut command outcomes, immediate microphone-release retry and timeout fallback, and interruption handling
 
@@ -1927,6 +2109,7 @@ Those remain device, integration, or manual-test territory by design.
 - When `KeyVoxCore` behavior changes, update this document only if the iOS runtime contract or target boundaries change as well.
 - When `KeyVoxTextComposition` changes its context contract or insertion-facing policy, update the keyboard insertion section and `CODEMAP.md` without moving document-proxy ownership into the package.
 - When `KeyVoxStyleRewrite` changes style identifiers, artifact fields, fallback policy, prewarm lifecycle, or transform metadata consumed by iOS, update this document and `CODEMAP.md`.
+- When `KeyVoxPredictiveKeyboard` or `KeyVoxEmoji` changes a host-facing contract such as `TextEdit`, the typing session's calls, the typing-memory file, or bundled-data loading, update the keyboard typing or emoji sections and `CODEMAP.md` without moving document-proxy, threading, or App Group storage ownership into the packages.
 
 ## Change Tracking
 
