@@ -45,6 +45,8 @@ KeyVox for iOS brings the same speech-to-text workflow from the Mac app into a m
 - 🧾 Custom dictionary with phonetic-aware matching and iCloud sync
 - ♥️ KeyVox Vibes (macOS/iOS) - Pick a style, change your mind later
 - 🔈 KeyVox Speak (iOS) - On-device text-to-speech with 8 AI voices to choose from
+- 🔮 Predictive text (iOS) - Autocorrection, word completions, and next-word predictions that learn from your typing
+- 😀 Emoji keyboard (iOS) - Search, skin tones, and emoji suggestions while you type
 - ⚙️ Configurable trigger binding (Option, Command, Control, or Fn), synced across devices
 - 📓 Optional auto-paragraph splitting with Lists preferences with sync
 - 🧱 Deterministic list formatting and safe text post-processing
@@ -53,7 +55,7 @@ KeyVox for iOS brings the same speech-to-text workflow from the Mac app into a m
 - 🔊 Optional system cue sounds with adjustable volume
 - ⚠️ Recovery and warning overlays for insertion/audio edge cases
 
-https://github.com/user-attachments/assets/891f6354-55c2-4f7f-9ebc-2fa6bbfe7b0b
+https://github.com/user-attachments/assets/baffa074-6584-485e-827c-bf3a43ee8bf5
 
 ## What is KeyVox Vibes?
 
@@ -176,6 +178,19 @@ The first Action Button press starts recording. Press it again to stop and trans
 The Shortcut action includes an optional **Release Mic Immediately** setting. It is off by default to preserve KeyVox’s normal warm-session behavior; turn it on when you want microphone monitoring released as soon as capture stops while transcription finishes.
 
 New users receive the complete Shortcut and Action Button guide during onboarding before keyboard enablement. Existing users receive the same guide once, and it can always be reopened from the Dictation Shortcut row in KeyVox Settings.
+
+### Predictive Text and Emoji
+
+The KeyVox keyboard includes full letter keys, so you can type and dictate from the same keyboard:
+
+- 🔮 **Predictive text**: Autocorrection, word completions, and next-word predictions that learn from how you type. Your contacts, KeyVox Dictionary words and phrases, and text replacements are used as personal vocabulary.
+- ⌨️ **Typing extras**: Press and hold for accents and symbols, smart quotes, repeating delete, and a quick double tap on Shift for caps lock.
+- 😀 **Emoji keyboard**: Browse Frequently Used and categories, search by description, and choose skin tones, including separate tones for two-person emoji.
+- 💡 **Emoji suggestions**: Up to three emoji for the word before the cursor appear in the suggestion bar.
+
+The Keyboard settings screen lets you turn Predictive Text and the Emoji Keyboard on or off, open the keyboard on the number page with Open on 123, and Reset Learned Words.
+
+> **Note:** Predictive text, emoji search, and emoji suggestions are currently available in English only.
 
 ### Compact Keys
 
