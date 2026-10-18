@@ -126,6 +126,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
+				PrivacyInfo.xcprivacy,
 			);
 			target = 8E9E385E2F5BF1F200EAFA72 /* KeyVox iOSTests */;
 		};
