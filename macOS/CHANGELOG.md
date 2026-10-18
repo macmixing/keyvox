@@ -6,6 +6,35 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.3.15] - 2026-10-18
+
+Keeps app launch responsive while dictation models load and improves custom-dictionary accuracy.
+
+### Fixed
+
+- Fixed app launch being blocked while Whisper and Parakeet prepare their speech detection and dictation models by loading them in the background, one at a time.
+- Fixed Whisper starting a second model load when dictation begins before warmup finishes, and made Whisper model downloads finish with the model fully loaded.
+- Fixed known words being replaced by a multi-word custom-dictionary entry when their pronunciation differs from the entry.
+- Fixed words split by transcription inside multi-word custom-dictionary entries not being rejoined into the entry's spelling.
+
+### Package versions
+
+KeyVox macOS 1.3.15:
+- KeyVoxCore            1.3.7
+- KeyVoxLinguistics     1.0.0
+- KeyVoxLocalInference  1.0.4
+- KeyVoxModels          1.0.0
+- KeyVoxParakeet        1.1.0
+- KeyVoxPromotions      1.1.0
+- KeyVoxState           1.0.0
+- KeyVoxStyleRewrite    1.1.0
+- KeyVoxTextComposition 1.1.0
+- KeyVoxVibesAdapters   1.0.4
+- KeyVoxVoiceActivity   1.1.1
+- KeyVoxWhisper         1.2.0
+
+---
+
 ## [1.3.14] - 2026-10-06
 
 Prevents custom-dictionary matches from joining words across punctuation.
