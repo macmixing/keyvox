@@ -47,11 +47,25 @@ final class KeyboardTextDocumentProxyAdapter: KeyboardTextDocumentProxying {
         proxyProvider()?.selectedText
     }
 
-    /// Text views and fields delete smartly unless set not to: their default does, as measured with
-    /// `Tools/AppleKeyboardBaseline`.
+    /// Text views and fields delete smartly when set to, and by default unless their keyboard is one
+    /// that turns it off, as measured with `Tools/AppleKeyboardBaseline`.
     var deletesSelectionSmartly: Bool {
-        guard let type = proxyProvider()?.smartInsertDeleteType else { return false }
-        return type != .no
+        guard let proxy = proxyProvider(), let type = proxy.smartInsertDeleteType else { return false }
+        switch type {
+        case .yes:
+            return true
+        case .no:
+            return false
+        case .default:
+            switch proxy.keyboardType ?? .default {
+            case .asciiCapable, .URL, .numberPad, .phonePad, .emailAddress, .decimalPad, .asciiCapableNumberPad:
+                return false
+            default:
+                return true
+            }
+        @unknown default:
+            return false
+        }
     }
 
     func insertText(_ text: String) {
