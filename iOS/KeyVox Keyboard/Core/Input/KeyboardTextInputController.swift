@@ -16,6 +16,12 @@ protocol KeyboardTextDocumentProxying: AnyObject {
     func insertText(_ text: String)
     func deleteBackward()
     func adjustTextPosition(byCharacterOffset offset: Int)
+    /// Whether the field removes a space next to a selection the delete key deletes.
+    var deletesSelectionSmartly: Bool { get }
+}
+
+extension KeyboardTextDocumentProxying {
+    var deletesSelectionSmartly: Bool { false }
 }
 
 final class KeyboardTextDocumentProxyAdapter: KeyboardTextDocumentProxying {
@@ -39,6 +45,27 @@ final class KeyboardTextDocumentProxyAdapter: KeyboardTextDocumentProxying {
 
     var selectedText: String? {
         proxyProvider()?.selectedText
+    }
+
+    /// Text views and fields delete smartly when set to, and by default unless their keyboard is one
+    /// that turns it off, as measured with `Tools/AppleKeyboardBaseline`.
+    var deletesSelectionSmartly: Bool {
+        guard let proxy = proxyProvider(), let type = proxy.smartInsertDeleteType else { return false }
+        switch type {
+        case .yes:
+            return true
+        case .no:
+            return false
+        case .default:
+            switch proxy.keyboardType ?? .default {
+            case .asciiCapable, .URL, .numberPad, .phonePad, .emailAddress, .decimalPad, .asciiCapableNumberPad:
+                return false
+            default:
+                return true
+            }
+        @unknown default:
+            return false
+        }
     }
 
     func insertText(_ text: String) {
@@ -175,6 +202,11 @@ final class KeyboardTextInputController {
                 if emitsKeypress {
                     emitKeypress()
                 }
+                if selectedTextBeforeDeletion?.isEmpty == false, documentProxy.deletesSelectionSmartly {
+                    pendingSelectionDeletion = nil
+                    deleteSelectionSmartly()
+                    return true
+                }
                 documentProxy.deleteBackward()
                 return true
             } else {
@@ -221,6 +253,28 @@ final class KeyboardTextInputController {
             return true
         case .restoreFullKeyboard, .shift, .emoji, .emojiSearchDone, .nextKeyboard:
             return false
+        }
+    }
+
+    /// Deletes the selection, and the space next to it a field that deletes smartly removes with it
+    /// (`KeyboardSmartDeletion`). Deleting the selection itself lets the field remove that space
+    /// without the text the keyboard reads around the cursor showing it, so every later edit lands
+    /// a character off; typing a space over the selection and deleting it, then the space the field
+    /// would remove, keeps that text in step with the field.
+    private func deleteSelectionSmartly() {
+        documentProxy.insertText(" ")
+        documentProxy.deleteBackward()
+        switch KeyboardSmartDeletion.removedSpace(
+            textBefore: documentProxy.documentContextBeforeInput ?? "",
+            textAfter: documentProxy.documentContextAfterInput ?? ""
+        ) {
+        case .before:
+            documentProxy.deleteBackward()
+        case .after:
+            documentProxy.adjustTextPosition(byCharacterOffset: 1)
+            documentProxy.deleteBackward()
+        case nil:
+            break
         }
     }
 
