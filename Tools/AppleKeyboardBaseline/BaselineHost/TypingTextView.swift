@@ -22,6 +22,11 @@ struct TypingTextView: UIViewRepresentable {
         view.inlinePredictionType = .no
         view.accessibilityIdentifier = "input"
         view.delegate = context.coordinator
+        if ProcessInfo.processInfo.environment["SMART_DELETE_CHARACTERS"] == "1" {
+            DispatchQueue.main.async {
+                SmartDeleteCharacterProbe.run(in: view)
+            }
+        }
         return view
     }
 

@@ -5,7 +5,9 @@ import XCTest
 /// `MESSAGES_FIELD_KEYBOARD_MARKER` (the system keyboard unless set), and plays the steps in the
 /// JSON array `MESSAGES_FIELD_SCRIPT`, saving the field's frame and text after each step to
 /// `MESSAGES_FIELD_OUTPUT`, with a screenshot next to it. Steps: "tap:<label>" taps an element so
-/// labeled; "field" taps the message field; "wait:<seconds>" waits; "elements:<name>" saves every
+/// labeled; "field" taps the message field; "paste:<text>" pastes the text into the field;
+/// "doubletap:<x>,<y>" double-taps the field at that point, from 0 to 1 across and down it, which
+/// selects the word there; "wait:<seconds>" waits; "elements:<name>" saves every
 /// labeled element on screen, with its type and frame, next to the output.
 final class MessagesFieldProbeTests: XCTestCase {
     private struct Record: Encodable {
@@ -86,6 +88,17 @@ final class MessagesFieldProbeTests: XCTestCase {
                 Thread.sleep(forTimeInterval: 1)
             case "field":
                 field.tap()
+                Thread.sleep(forTimeInterval: 1)
+            case "paste":
+                UIPasteboard.general.string = argument
+                field.press(forDuration: 1)
+                let paste = element("Paste")
+                XCTAssertTrue(paste.waitForExistence(timeout: 3), "no Paste")
+                paste.tap()
+                Thread.sleep(forTimeInterval: 1)
+            case "doubletap":
+                let offset = argument.split(separator: ",").compactMap { Double($0) }
+                field.coordinate(withNormalizedOffset: CGVector(dx: offset[0], dy: offset[1])).doubleTap()
                 Thread.sleep(forTimeInterval: 1)
             case "wait":
                 Thread.sleep(forTimeInterval: Double(argument) ?? 0)
