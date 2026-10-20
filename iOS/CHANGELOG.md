@@ -6,6 +6,40 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.5.1] - 2026-10-19
+
+Keeps letters from disappearing after deleting a selected word with the KeyVox keyboard, and adds tips for the keyboard's settings and text replacements.
+
+### Added
+
+- Added tips pointing to the keyboard settings and to iOS text replacements, which work in the KeyVox keyboard.
+
+### Fixed
+
+- Fixed space and suggestion taps deleting the letter just typed after deleting a selected word.
+- Fixed the space next to a deleted selected word so it is removed or kept as the text field's own smart delete would, including in email and URL fields.
+
+### Package versions
+
+KeyVox iOS 1.5.1
+  KeyVoxCore               1.3.7
+  KeyVoxEmoji              1.0.0
+  KeyVoxLinguistics        1.0.0
+  KeyVoxLocalInference     1.0.4
+  KeyVoxModels             1.0.0
+  KeyVoxParakeet           1.1.0
+  KeyVoxPredictiveKeyboard 1.0.0
+  KeyVoxPromotions         1.1.0
+  KeyVoxState              1.0.0
+  KeyVoxStyleRewrite       1.1.0
+  KeyVoxTTS                1.1.0
+  KeyVoxTextComposition    1.1.0
+  KeyVoxVibesAdapters      1.0.4
+  KeyVoxVoiceActivity      1.1.1
+  KeyVoxWhisper            1.2.0
+
+---
+
 ## [1.5.0] - 2026-10-18
 
 Adds full letter keys with predictive typing and an emoji keyboard to the KeyVox keyboard, and loads dictation models without holding up app launch.
