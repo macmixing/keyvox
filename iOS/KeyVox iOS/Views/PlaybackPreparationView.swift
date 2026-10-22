@@ -37,15 +37,17 @@ struct PlaybackPreparationView: View {
                             videoName: "ReturnToHost",
                             isReady: $isVideoReady
                         )
-                        .frame(width: 350, height: 350)
                     }
 
                     Image("ReturnToHostPlaceholder")
                         .resizable()
                         .aspectRatio(contentMode: .fit)
-                        .frame(width: 350, height: 350)
                         .opacity(shouldPlayVideo && isVideoReady ? 0 : 1)
                 }
+                .frame(maxWidth: 350, maxHeight: 350)
+                .aspectRatio(1, contentMode: .fit)
+                // Full size wherever it fits; shrinks only on screens too short for the text around it
+                .layoutPriority(1)
                 .offset(y: -30)
 
                 VStack(spacing: 14) {
