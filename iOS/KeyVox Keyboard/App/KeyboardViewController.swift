@@ -219,7 +219,9 @@ final class KeyboardViewController: UIInputViewController {
     override func viewWillLayoutSubviews() {
         super.viewWillLayoutSubviews()
         isLandscape = view.window?.windowScene?.interfaceOrientation.isLandscape ?? false
-        showsNextKeyboardKey = needsInputModeSwitchKey
+        showsNextKeyboardKey = KeyboardInputModeSwitchKeyPolicy.showsKey(
+            systemRequestsKey: needsInputModeSwitchKey
+        )
     }
 
     override func viewWillAppear(_ animated: Bool) {
