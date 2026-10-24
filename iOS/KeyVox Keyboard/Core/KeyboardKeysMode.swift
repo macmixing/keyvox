@@ -10,7 +10,7 @@ enum KeyboardKeysMode: Equatable {
 
     /// The keyboard's height: the portrait height, shortened by however much shorter the
     /// keys are in landscape.
-    func keyboardHeight(isLandscape: Bool) -> CGFloat {
+    func keyboardHeight(isLandscape: Bool, isOpenFoldableDisplay: Bool = false) -> CGFloat {
         let portraitHeight: CGFloat
         switch self {
         case .full:
@@ -18,12 +18,23 @@ enum KeyboardKeysMode: Equatable {
         case .compact:
             portraitHeight = KeyboardStyle.compactKeyboardHeight
         }
-        return portraitHeight - keyGridHeight(isLandscape: false) + keyGridHeight(isLandscape: isLandscape)
+        return portraitHeight - keyGridHeight(isLandscape: false)
+            + keyGridHeight(isLandscape: isLandscape, isOpenFoldableDisplay: isOpenFoldableDisplay)
     }
 
-    /// Keys are shorter in landscape, in both full and Compact Keys.
-    func keyHeight(isLandscape: Bool) -> CGFloat {
-        isLandscape ? KeyboardStyle.landscapeKeyHeight : KeyboardStyle.keyHeight
+    /// Keys are shorter in landscape, in both full and Compact Keys, though less so on an open
+    /// foldable's inner display.
+    func keyHeight(isLandscape: Bool, isOpenFoldableDisplay: Bool = false) -> CGFloat {
+        guard isLandscape else { return KeyboardStyle.keyHeight }
+        return isOpenFoldableDisplay ? KeyboardStyle.openFoldableLandscapeKeyHeight : KeyboardStyle.landscapeKeyHeight
+    }
+
+    /// Key rows keep the same spacing everywhere except landscape on an open foldable's inner
+    /// display, where they sit a little further apart.
+    func rowSpacing(isLandscape: Bool, isOpenFoldableDisplay: Bool = false) -> CGFloat {
+        isLandscape && isOpenFoldableDisplay
+            ? KeyboardStyle.openFoldableLandscapeRowSpacing
+            : KeyboardStyle.keyboardRowSpacing
     }
 
     var visibleRowCount: Int {
@@ -35,9 +46,11 @@ enum KeyboardKeysMode: Equatable {
         }
     }
 
-    func keyGridHeight(isLandscape: Bool) -> CGFloat {
+    func keyGridHeight(isLandscape: Bool, isOpenFoldableDisplay: Bool = false) -> CGFloat {
         let rowCount = CGFloat(visibleRowCount)
         let spacingCount = CGFloat(max(visibleRowCount - 1, 0))
-        return (keyHeight(isLandscape: isLandscape) * rowCount) + (KeyboardStyle.keyboardRowSpacing * spacingCount)
+        let keyHeight = keyHeight(isLandscape: isLandscape, isOpenFoldableDisplay: isOpenFoldableDisplay)
+        let rowSpacing = rowSpacing(isLandscape: isLandscape, isOpenFoldableDisplay: isOpenFoldableDisplay)
+        return (keyHeight * rowCount) + (rowSpacing * spacingCount)
     }
 }

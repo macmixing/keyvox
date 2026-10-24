@@ -37,6 +37,7 @@ final class KeyboardKeyGridView: UIView {
     /// Every page shown so far, kept so showing it again does not build it again.
     private var pages: [KeyboardKeyGridPage.Layout: KeyboardKeyGridPage] = [:]
     private var currentPage: KeyboardKeyGridPage?
+    private var rowSpacing = KeyboardStyle.keyboardRowSpacing
     private let topRowAccessoryReferenceStack = UIStackView()
     private var topRowAccessoryReferenceViews: [UIView] = []
     private var topRowAccessoryReferenceHeightConstraint: NSLayoutConstraint?
@@ -157,6 +158,12 @@ final class KeyboardKeyGridView: UIView {
         guard let topRowAccessoryReferenceHeightConstraint,
               topRowAccessoryReferenceHeightConstraint.constant != height else { return }
         topRowAccessoryReferenceHeightConstraint.constant = height
+    }
+
+    /// Spaces the key rows of the page showing, and of every page shown after it.
+    func setRowSpacing(_ spacing: CGFloat) {
+        rowSpacing = spacing
+        currentPage?.view.spacing = spacing
     }
 
     func topRowKeyView(for slot: KeyboardTopRowAccessorySlot) -> UIView? {
@@ -296,6 +303,7 @@ final class KeyboardKeyGridView: UIView {
             page.view.isHidden = false
             currentPage = page
         }
+        page.view.spacing = rowSpacing
         page.apply(letterCase: letterCase, isTrackpadModeActive: spaceTrackpadController.isActive)
         updateAllKeyStates()
         setNeedsLayout()
