@@ -5,6 +5,7 @@ import UIKit
 /// leaving out its own switch key, which leaves no way to change keyboards; those models get the
 /// key whenever another keyboard is enabled to switch to.
 enum KeyboardInputModeSwitchKeyPolicy {
+    // Temporary workaround for an iOS issue (FB25073949); remove once Apple fixes it.
     private static let modelsMissingSystemSwitchKey: Set<String> = ["iPhone19,4"]
 
     static func showsKey(systemRequestsKey: Bool) -> Bool {
