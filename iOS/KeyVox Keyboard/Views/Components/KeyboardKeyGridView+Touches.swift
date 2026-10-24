@@ -282,7 +282,7 @@ extension KeyboardKeyGridView {
     /// Shows the popup in place of the key's bubble and returns its layout.
     private func openHeldKeyPopup(_ offer: HeldKeyCharacters.Offer, from keyView: KeyboardKeyView) -> HeldKeyPopupLayout {
         let container = popupContainerView ?? self
-        let isLandscape = window?.windowScene?.interfaceOrientation.isLandscape ?? false
+        let isLandscape = KeyboardScreenShape.isWide(self)
         let metrics = HeldKeyPopupLayout.Metrics(
             cellWidth: keyView.bounds.width + KeyboardStyle.keySpacing - KeyboardStyle.heldKeyPopupCellWidthReduction,
             cellHeight: KeyboardStyle.heldKeyPopupCellHeight,

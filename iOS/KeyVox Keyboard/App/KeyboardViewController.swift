@@ -227,7 +227,7 @@ final class KeyboardViewController: UIInputViewController {
 
     override func viewWillLayoutSubviews() {
         super.viewWillLayoutSubviews()
-        isLandscape = view.window?.windowScene?.interfaceOrientation.isLandscape ?? false
+        isLandscape = KeyboardScreenShape.isWide(view)
         isOpenFoldableDisplay = KeyboardFoldableDisplay.isOpen(in: traitCollection)
         showsNextKeyboardKey = KeyboardInputModeSwitchKeyPolicy.showsKey(
             systemRequestsKey: needsInputModeSwitchKey

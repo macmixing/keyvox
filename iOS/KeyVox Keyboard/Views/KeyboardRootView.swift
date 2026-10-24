@@ -135,7 +135,7 @@ final class KeyboardRootView: UIView {
             }
         }
 
-        let isLandscape = window?.windowScene?.interfaceOrientation.isLandscape ?? false
+        let isLandscape = KeyboardScreenShape.isWide(self)
         topRowAccessoryLayoutGeometry?.update(
             isLandscape: isLandscape,
             showsVibesButton: showsVibesButton,
