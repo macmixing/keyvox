@@ -21,7 +21,8 @@ struct ReturnToHostAdaptiveLayout<Content: View>: View {
             let displaySize = Self.displaySize(proxy)
             Group {
                 if displaySize.width > displaySize.height {
-                    content(.sideBySide(foldX: Self.foldX(proxy, displaySize: displaySize)))
+                    let fold = Self.fold(proxy, displaySize: displaySize)
+                    content(.sideBySide(foldX: fold.x, isFoldActive: fold.isActive))
                 } else if Self.isSquat(displaySize) {
                     ViewThatFits(in: .vertical) {
                         content(.usualAtFullSize(spacing: spacing))
@@ -47,14 +48,15 @@ struct ReturnToHostAdaptiveLayout<Content: View>: View {
         )
     }
 
-    /// Where the fold runs across the layout: the division the system reports running top to
-    /// bottom, or else the middle of the display, where a foldable's fold is.
-    private static func foldX(_ proxy: GeometryProxy, displaySize: CGSize) -> CGFloat {
+    /// Where the fold runs across the layout and whether it is active: the active division the
+    /// system reports running top to bottom, or else the middle of the display, where a
+    /// foldable's fold is.
+    private static func fold(_ proxy: GeometryProxy, displaySize: CGSize) -> (x: CGFloat, isActive: Bool) {
         if #available(iOS 27.1, *),
            let fold = proxy.reservedRegions(kind: .division).first(where: { $0.frame.height > $0.frame.width }) {
-            return fold.frame.midX
+            return (fold.frame.midX, true)
         }
-        return displaySize.width / 2 - proxy.safeAreaInsets.leading
+        return (displaySize.width / 2 - proxy.safeAreaInsets.leading, false)
     }
 
     private static func isSquat(_ size: CGSize) -> Bool {

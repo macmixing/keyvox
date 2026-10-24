@@ -1,7 +1,8 @@
 import SwiftUI
 
 /// The text on the left and the video on the right, the gap between the text and the video's
-/// drawing centered on the fold, and anything below them centered on the fold too.
+/// drawing centered on the fold, and anything below them centered on the fold, or under the video
+/// while the fold is active.
 struct ReturnToHostSideBySideLayout<Text: View, Video: View, Footer: View>: View {
     private let metrics: ReturnToHostLayoutMetrics
     private let text: Text
@@ -21,7 +22,7 @@ struct ReturnToHostSideBySideLayout<Text: View, Video: View, Footer: View>: View
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 32) {
+        VStack(alignment: .footerCenter, spacing: 32) {
             HStack(spacing: 0) {
                 text
                     .frame(width: max(metrics.foldX - metrics.spacing / 2, 0), alignment: .trailing)
@@ -32,14 +33,31 @@ struct ReturnToHostSideBySideLayout<Text: View, Video: View, Footer: View>: View
                     .visualEffect { content, proxy in
                         content.offset(x: -proxy.size.width * ReturnToHostLayoutMetrics.videoArtworkInsetFraction)
                     }
+                    .alignmentGuide(.footerCenter) { dimensions in
+                        dimensions[HorizontalAlignment.center]
+                            - dimensions.width * ReturnToHostLayoutMetrics.videoArtworkInsetFraction
+                    }
                     .padding(.leading, metrics.spacing)
+            }
+            .alignmentGuide(.footerCenter) { dimensions in
+                metrics.isFoldActive ? dimensions[.footerCenter] : metrics.foldX
             }
 
             footer
-                .alignmentGuide(.leading) { dimensions in
-                    dimensions[HorizontalAlignment.center] - metrics.foldX
-                }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+        .animation(.easeInOut(duration: 0.35), value: metrics.isFoldActive)
     }
+}
+
+private extension HorizontalAlignment {
+    private enum FooterCenter: AlignmentID {
+        static func defaultValue(in dimensions: ViewDimensions) -> CGFloat {
+            dimensions[HorizontalAlignment.center]
+        }
+    }
+
+    /// Where the footer centers: the fold, or the middle of the video's drawing while the fold is
+    /// active.
+    static let footerCenter = HorizontalAlignment(FooterCenter.self)
 }

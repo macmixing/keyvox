@@ -24,6 +24,9 @@ struct ReturnToHostLayoutMetrics {
     /// Where the fold runs across the layout, from its leading edge, when the text sits beside
     /// the video.
     var foldX: CGFloat = 0
+    /// Whether the fold is active, which it is while the device is partially open; content then
+    /// stays on one side of it.
+    var isFoldActive = false
 
     /// The usual layout: the video at full size wherever it fits, shrinking only on screens too
     /// short for the text around it.
@@ -67,7 +70,7 @@ struct ReturnToHostLayoutMetrics {
 
     /// The text on the left and the video on the right, for a screen wider than it is tall, with
     /// the gap between them centered on the fold.
-    static func sideBySide(foldX: CGFloat) -> ReturnToHostLayoutMetrics {
+    static func sideBySide(foldX: CGFloat, isFoldActive: Bool) -> ReturnToHostLayoutMetrics {
         ReturnToHostLayoutMetrics(
             spacing: 56,
             textScale: 1,
@@ -77,7 +80,8 @@ struct ReturnToHostLayoutMetrics {
             bodyOffset: 0,
             reservesStateText: true,
             isSideBySide: true,
-            foldX: foldX
+            foldX: foldX,
+            isFoldActive: isFoldActive
         )
     }
 
