@@ -5,7 +5,7 @@ import SwiftUI
 struct ReturnToHostLayoutMetrics {
     static let videoSize: CGFloat = 350
     /// The share of the video's width its artwork leaves empty on each side.
-    static let videoArtworkInsetFraction: CGFloat = 39 / 1024
+    nonisolated static let videoArtworkInsetFraction: CGFloat = 39 / 1024
 
     let spacing: CGFloat
     let textScale: CGFloat
