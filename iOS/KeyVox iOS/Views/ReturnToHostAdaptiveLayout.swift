@@ -1,7 +1,8 @@
 import SwiftUI
 
-/// Lays out a return-to-app screen in the usual layout, except on a squat screen, which keeps the
-/// usual layout only while the video fits at full size and otherwise takes the tighter one.
+/// Lays out a return-to-app screen in the usual layout, except on a screen wider than it is tall,
+/// which puts the text beside the video, and on a squat screen, which keeps the usual layout only
+/// while the video fits at full size and otherwise takes the tighter one.
 struct ReturnToHostAdaptiveLayout<Content: View>: View {
     /// Height over width of the whole display below which it counts as squat: the closed iPhone
     /// Duo's display (about 1.45) is under it, and every other iPhone display is at least 1.77.
@@ -17,8 +18,11 @@ struct ReturnToHostAdaptiveLayout<Content: View>: View {
 
     var body: some View {
         GeometryReader { proxy in
+            let displaySize = Self.displaySize(proxy)
             Group {
-                if Self.isSquat(Self.displaySize(proxy)) {
+                if displaySize.width > displaySize.height {
+                    content(.sideBySide(foldX: Self.foldX(proxy, displaySize: displaySize)))
+                } else if Self.isSquat(displaySize) {
                     ViewThatFits(in: .vertical) {
                         content(.usualAtFullSize(spacing: spacing))
                         // Text held at the standard size, which the tighter layout is laid out for.
@@ -41,6 +45,16 @@ struct ReturnToHostAdaptiveLayout<Content: View>: View {
             width: proxy.size.width + insets.leading + insets.trailing,
             height: proxy.size.height + insets.top + insets.bottom
         )
+    }
+
+    /// Where the fold runs across the layout: the division the system reports running top to
+    /// bottom, or else the middle of the display, where a foldable's fold is.
+    private static func foldX(_ proxy: GeometryProxy, displaySize: CGSize) -> CGFloat {
+        if #available(iOS 27.1, *),
+           let fold = proxy.reservedRegions(kind: .division).first(where: { $0.frame.height > $0.frame.width }) {
+            return fold.frame.midX
+        }
+        return displaySize.width / 2 - proxy.safeAreaInsets.leading
     }
 
     private static func isSquat(_ size: CGSize) -> Bool {

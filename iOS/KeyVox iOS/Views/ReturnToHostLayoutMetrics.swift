@@ -4,6 +4,8 @@ import SwiftUI
 /// tighter one that gives the video more of a squat screen.
 struct ReturnToHostLayoutMetrics {
     static let videoSize: CGFloat = 350
+    /// The share of the video's width its artwork leaves empty on each side.
+    static let videoArtworkInsetFraction: CGFloat = 39 / 1024
 
     let spacing: CGFloat
     let textScale: CGFloat
@@ -17,6 +19,11 @@ struct ReturnToHostLayoutMetrics {
     /// Whether text that changes as the screen's state changes keeps room for every state's text,
     /// so choosing between layouts does not change with the state.
     let reservesStateText: Bool
+    /// Whether the text sits beside the video instead of above and below it.
+    var isSideBySide = false
+    /// Where the fold runs across the layout, from its leading edge, when the text sits beside
+    /// the video.
+    var foldX: CGFloat = 0
 
     /// The usual layout: the video at full size wherever it fits, shrinking only on screens too
     /// short for the text around it.
@@ -57,6 +64,35 @@ struct ReturnToHostLayoutMetrics {
         bodyOffset: 0,
         reservesStateText: true
     )
+
+    /// The text on the left and the video on the right, for a screen wider than it is tall, with
+    /// the gap between them centered on the fold.
+    static func sideBySide(foldX: CGFloat) -> ReturnToHostLayoutMetrics {
+        ReturnToHostLayoutMetrics(
+            spacing: 56,
+            textScale: 1,
+            isVideoFixed: false,
+            separatesHeadline: false,
+            videoOffset: 0,
+            bodyOffset: 0,
+            reservesStateText: true,
+            isSideBySide: true,
+            foldX: foldX
+        )
+    }
+
+    /// Limits text to a width: beside the video, it takes only the width it uses, so its edge
+    /// sits at the gap; elsewhere, it takes the whole width, as it always has.
+    @ViewBuilder
+    func textFrame<Content: View>(_ content: Content, maxWidth: CGFloat) -> some View {
+        if isSideBySide {
+            HuggingWidthLayout(maxWidth: maxWidth) {
+                content
+            }
+        } else {
+            content.frame(maxWidth: maxWidth)
+        }
+    }
 
     /// Sizes the video's space: held at full size, or full size wherever it fits and shrinking
     /// only on screens too short for the text around it.

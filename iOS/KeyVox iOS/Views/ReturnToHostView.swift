@@ -38,56 +38,80 @@ struct ReturnToHostView: View {
         .animation(.easeInOut(duration: 0.1), value: isVideoReady)
     }
 
+    @ViewBuilder
     private func content(metrics: ReturnToHostLayoutMetrics) -> some View {
-        VStack(spacing: metrics.spacing) {
-            Spacer()
-
-            VStack(spacing: -10) {
-                Text("Swipe Back,")
-                    .font(.appFont(50 * metrics.textScale, variant: .medium))
-                Text("and speak.")
-                    .font(.appFont(40 * metrics.textScale, variant: .light))
+        if metrics.isSideBySide {
+            ReturnToHostSideBySideLayout(metrics: metrics) {
+                VStack(spacing: 24) {
+                    headline(metrics: metrics)
+                    message(metrics: metrics)
+                }
+            } video: {
+                video(metrics: metrics)
             }
-            .foregroundColor(.white)
-            .multilineTextAlignment(.center)
+        } else {
+            VStack(spacing: metrics.spacing) {
+                Spacer()
 
-            if metrics.separatesHeadline {
+                headline(metrics: metrics)
+
+                if metrics.separatesHeadline {
+                    Spacer()
+                }
+
+                video(metrics: metrics)
+                    .offset(y: metrics.videoOffset)
+
+                message(metrics: metrics)
+                    .offset(y: metrics.bodyOffset)
+
                 Spacer()
             }
+        }
+    }
 
-            metrics.videoFrame(Color.clear)
-                .overlay {
-                    ZStack {
-                        LoopingVideoPlayer(
-                            videoName: "ReturnToHost",
-                            isReady: $isVideoReady
-                        )
+    private func headline(metrics: ReturnToHostLayoutMetrics) -> some View {
+        VStack(spacing: -10) {
+            Text("Swipe Back,")
+                .font(.appFont(50 * metrics.textScale, variant: .medium))
+            Text("and speak.")
+                .font(.appFont(40 * metrics.textScale, variant: .light))
+        }
+        .foregroundColor(.white)
+        .multilineTextAlignment(.center)
+    }
 
-                        // Static image is now bit-perfect because we generated it with AVFoundation on the Mac
-                        Image("ReturnToHostPlaceholder")
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .opacity(isVideoReady ? 0 : 1)
-                    }
+    private func video(metrics: ReturnToHostLayoutMetrics) -> some View {
+        metrics.videoFrame(Color.clear)
+            .overlay {
+                ZStack {
+                    LoopingVideoPlayer(
+                        videoName: "ReturnToHost",
+                        isReady: $isVideoReady
+                    )
+
+                    // Static image is now bit-perfect because we generated it with AVFoundation on the Mac
+                    Image("ReturnToHostPlaceholder")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .opacity(isVideoReady ? 0 : 1)
                 }
-                .offset(y: metrics.videoOffset)
-
-            VStack(spacing: 8) {
-                Text("KeyVox is ready...")
-                    .font(.appFont(35 * metrics.textScale, variant: .medium))
-                    .foregroundColor(.white)
-
-                VStack(spacing: -4) {
-                    Text("Don’t worry, you’ll only have to")
-                    Text("do this once per session.")
-                }
-                .font(.appFont(22 * metrics.textScale, variant: .light))
-                .foregroundColor(Color(UIColor.systemGray))
-                .multilineTextAlignment(.center)
             }
-            .offset(y: metrics.bodyOffset)
+    }
 
-            Spacer()
+    private func message(metrics: ReturnToHostLayoutMetrics) -> some View {
+        VStack(spacing: 8) {
+            Text("KeyVox is ready...")
+                .font(.appFont(35 * metrics.textScale, variant: .medium))
+                .foregroundColor(.white)
+
+            VStack(spacing: -4) {
+                Text("Don’t worry, you’ll only have to")
+                Text("do this once per session.")
+            }
+            .font(.appFont(22 * metrics.textScale, variant: .light))
+            .foregroundColor(Color(UIColor.systemGray))
+            .multilineTextAlignment(.center)
         }
     }
 }
