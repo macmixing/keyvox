@@ -135,7 +135,7 @@ final class KeyboardRootView: UIView {
             }
         }
 
-        let isLandscape = window?.windowScene?.interfaceOrientation.isLandscape ?? false
+        let isLandscape = KeyboardScreenShape.isWide(self)
         topRowAccessoryLayoutGeometry?.update(
             isLandscape: isLandscape,
             showsVibesButton: showsVibesButton,
@@ -191,6 +191,7 @@ final class KeyboardRootView: UIView {
         symbolPage: KeyboardSymbolPage,
         keysMode: KeyboardKeysMode,
         isLandscape: Bool,
+        isOpenFoldableDisplay: Bool,
         offersPredictions: Bool,
         isCapsLockEnabled: Bool,
         isDictationCapsApplied: Bool,
@@ -302,8 +303,16 @@ final class KeyboardRootView: UIView {
             showsEmojiKey: showsEmojiKey,
             showsNextKeyboardKey: showsNextKeyboardKey
         )
-        keyGridHeightConstraint?.constant = keysMode.keyGridHeight(isLandscape: isLandscape)
-        keyGridView.setTopRowKeyHeight(keysMode.keyHeight(isLandscape: isLandscape))
+        keyGridView.setRowSpacing(
+            keysMode.rowSpacing(isLandscape: isLandscape, isOpenFoldableDisplay: isOpenFoldableDisplay)
+        )
+        keyGridHeightConstraint?.constant = keysMode.keyGridHeight(
+            isLandscape: isLandscape,
+            isOpenFoldableDisplay: isOpenFoldableDisplay
+        )
+        keyGridView.setTopRowKeyHeight(
+            keysMode.keyHeight(isLandscape: isLandscape, isOpenFoldableDisplay: isOpenFoldableDisplay)
+        )
         keyGridView.setKeyboardEnabled(true)
         keyGridView.refreshAppearance()
 

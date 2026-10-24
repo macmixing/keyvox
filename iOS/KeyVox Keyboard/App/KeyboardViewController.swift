@@ -127,6 +127,15 @@ final class KeyboardViewController: UIInputViewController {
             updateUI()
         }
     }
+    /// Whether the keyboard is on an open foldable's inner display, read on each layout pass;
+    /// keys are taller there in landscape.
+    var isOpenFoldableDisplay = false {
+        didSet {
+            guard isOpenFoldableDisplay != oldValue else { return }
+            updatePrimaryViewHeight()
+            updateUI()
+        }
+    }
     /// Whether the keys show the globe, read on each layout pass: the system shows none under the
     /// keyboard on an iPhone with a Home button.
     var showsNextKeyboardKey = false {
@@ -218,7 +227,8 @@ final class KeyboardViewController: UIInputViewController {
 
     override func viewWillLayoutSubviews() {
         super.viewWillLayoutSubviews()
-        isLandscape = view.window?.windowScene?.interfaceOrientation.isLandscape ?? false
+        isLandscape = KeyboardScreenShape.isWide(view)
+        isOpenFoldableDisplay = KeyboardFoldableDisplay.isOpen(in: traitCollection)
         showsNextKeyboardKey = KeyboardInputModeSwitchKeyPolicy.showsKey(
             systemRequestsKey: needsInputModeSwitchKey
         )
@@ -324,7 +334,7 @@ final class KeyboardViewController: UIInputViewController {
 
     /// The keyboard's height, taller by the search results while searching emoji.
     private var keyboardHeight: CGFloat {
-        layoutKeysMode.keyboardHeight(isLandscape: isLandscape)
+        layoutKeysMode.keyboardHeight(isLandscape: isLandscape, isOpenFoldableDisplay: isOpenFoldableDisplay)
             + (emojiPanel == .searching ? KeyboardEmojiSearchGeometry.addedKeyboardHeight : 0)
     }
 
@@ -376,6 +386,7 @@ final class KeyboardViewController: UIInputViewController {
             symbolPage: symbolPage,
             keysMode: layoutKeysMode,
             isLandscape: isLandscape,
+            isOpenFoldableDisplay: isOpenFoldableDisplay,
             offersPredictions: typingTraits.showsSuggestions && fieldHasLetters && isLastDictationUntouched == false
                 && emojiPanel == .closed,
             isCapsLockEnabled: isCapsLockEnabled,
