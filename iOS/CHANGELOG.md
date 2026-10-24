@@ -6,6 +6,36 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.5.2] - 2026-10-23
+
+Brings back the globe key for switching keyboards on iPhone Duo, and fits the return-to-app screens on shorter displays.
+
+### Fixed
+
+- Fixed the KeyVox keyboard on iPhone Duo having no globe key, which left no way to switch to another keyboard; the globe key now appears whenever another keyboard is turned on. This works around an iOS issue and will be removed once Apple fixes it.
+- Fixed the return-to-app and playback preparation animations crowding the text around them on shorter displays; they now shrink to fit.
+
+### Package versions
+
+KeyVox iOS 1.5.2
+  KeyVoxCore               1.3.7
+  KeyVoxEmoji              1.0.0
+  KeyVoxLinguistics        1.0.0
+  KeyVoxLocalInference     1.0.4
+  KeyVoxModels             1.0.0
+  KeyVoxParakeet           1.1.0
+  KeyVoxPredictiveKeyboard 1.0.0
+  KeyVoxPromotions         1.1.0
+  KeyVoxState              1.0.0
+  KeyVoxStyleRewrite       1.1.0
+  KeyVoxTTS                1.1.0
+  KeyVoxTextComposition    1.1.0
+  KeyVoxVibesAdapters      1.0.4
+  KeyVoxVoiceActivity      1.1.1
+  KeyVoxWhisper            1.2.0
+
+---
+
 ## [1.5.1] - 2026-10-19
 
 Keeps letters from disappearing after deleting a selected word with the KeyVox keyboard, and adds tips for the keyboard's settings and text replacements.
