@@ -6,6 +6,21 @@ The format loosely follows Keep a Changelog, and the package uses semantic versi
 
 ---
 
+## [1.0.1] - 2026-10-23
+
+Sentence starts that hold through quotation marks, so the keyboard capitalizes the first word inside or after a quote.
+
+### Includes
+
+- `TypingTextContext.startsSentence(after:)` now reads the text right before the cursor, including the space after a sentence end, and owns the rule that a sentence starts only after that space or a line break.
+- An opening quotation mark typed after a sentence end, at the start of the text, or at the start of a line keeps the sentence start, and a closing quotation mark after a period, question mark, or exclamation mark keeps the sentence end before the space that follows it.
+- Quotation marks are recognized by their Unicode quotation-mark property, covering straight, smart, and single marks.
+- Added regression coverage for sentence starts around the marks the quote keys type.
+
+### Notes
+
+- `1.0.1` moves the full sentence-start decision for automatic capitalization into the package, so keyboard hosts pass the text before the cursor as it is.
+
 ## [1.0.0] - 2026-10-13
 
 Initial shared typing prediction and correction system for KeyVox keyboards, matched against the measured behavior of the iOS system keyboard.
