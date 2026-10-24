@@ -184,9 +184,11 @@ extension KeyboardViewController {
         let dictionaryPhrases = dictionaryCasingStore.dictionaryPhrases()
         applyPersonalVocabulary(dictionaryPhrases: dictionaryPhrases, lexicon: supplementaryLexicon)
         requestSupplementaryLexicon { [weak self] lexicon in
-            guard let self else { return }
-            self.supplementaryLexicon = lexicon
-            self.applyPersonalVocabulary(dictionaryPhrases: dictionaryPhrases, lexicon: lexicon)
+            DispatchQueue.main.async { [weak self] in
+                guard let self else { return }
+                self.supplementaryLexicon = lexicon
+                self.applyPersonalVocabulary(dictionaryPhrases: dictionaryPhrases, lexicon: lexicon)
+            }
         }
     }
 
