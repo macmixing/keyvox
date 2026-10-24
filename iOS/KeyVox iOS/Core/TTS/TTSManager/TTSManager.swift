@@ -5,7 +5,7 @@ import UIKit
 
 @MainActor
 final class TTSManager: ObservableObject {
-    enum PlaybackPreparationPhase: Equatable {
+    enum PlaybackPreparationPhase: Equatable, CaseIterable {
         case preparing
         case readyToReturn
     }
