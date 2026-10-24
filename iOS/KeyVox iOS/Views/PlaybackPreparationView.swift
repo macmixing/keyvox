@@ -58,71 +58,117 @@ struct PlaybackPreparationView: View {
         .animation(.easeInOut(duration: 0.2), value: ttsManager.playbackPreparationPhase)
     }
 
+    @ViewBuilder
     private func content(metrics: ReturnToHostLayoutMetrics) -> some View {
-        VStack(spacing: metrics.spacing) {
-            Spacer()
+        if metrics.isSideBySide {
+            ReturnToHostSideBySideLayout(metrics: metrics) {
+                VStack(spacing: 24) {
+                    headline(metrics: metrics)
 
+                    VStack(spacing: 14) {
+                        status(metrics: metrics)
+                    }
+                }
+            } video: {
+                video(metrics: metrics)
+            } footer: {
+                VStack(spacing: 14) {
+                    progress(metrics: metrics)
+                }
+            }
+        } else {
+            VStack(spacing: metrics.spacing) {
+                Spacer()
+
+                headline(metrics: metrics)
+
+                if metrics.separatesHeadline {
+                    Spacer()
+                }
+
+                video(metrics: metrics)
+                    .offset(y: metrics.videoOffset)
+
+                VStack(spacing: 14) {
+                    status(metrics: metrics)
+                    progress(metrics: metrics)
+                }
+                .offset(y: metrics.bodyOffset)
+
+                Spacer()
+            }
+        }
+    }
+
+    private func headline(metrics: ReturnToHostLayoutMetrics) -> some View {
+        metrics.textFrame(
             VStack(spacing: -10) {
                 phaseText(primaryHeadlineLineOne, metrics: metrics)
                     .font(.appFont(42 * metrics.textScale, variant: .medium))
                 phaseText(primaryHeadlineLineTwo, metrics: metrics)
                     .font(.appFont(30 * metrics.textScale, variant: .light))
-            }
-            .frame(maxWidth: 330)
-            .foregroundColor(.white)
-            .multilineTextAlignment(.center)
-            .lineLimit(2)
-            .minimumScaleFactor(0.72)
+            },
+            maxWidth: 330
+        )
+        .foregroundColor(.white)
+        .multilineTextAlignment(.center)
+        .lineLimit(2)
+        .minimumScaleFactor(0.72)
+    }
 
-            if metrics.separatesHeadline {
-                Spacer()
-            }
-
-            metrics.videoFrame(Color.clear)
-                .overlay {
-                    ZStack {
-                        if shouldPlayVideo {
-                            LoopingVideoPlayer(
-                                videoName: "ReturnToHost",
-                                isReady: $isVideoReady
-                            )
-                        }
-
-                        Image("ReturnToHostPlaceholder")
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .opacity(shouldPlayVideo && isVideoReady ? 0 : 1)
+    private func video(metrics: ReturnToHostLayoutMetrics) -> some View {
+        metrics.videoFrame(Color.clear)
+            .overlay {
+                ZStack {
+                    if shouldPlayVideo {
+                        LoopingVideoPlayer(
+                            videoName: "ReturnToHost",
+                            isReady: $isVideoReady
+                        )
                     }
-                }
-                .offset(y: metrics.videoOffset)
 
-            VStack(spacing: 14) {
+                    Image("ReturnToHostPlaceholder")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .opacity(shouldPlayVideo && isVideoReady ? 0 : 1)
+                }
+            }
+    }
+
+    /// The status title and its explanation.
+    private func status(metrics: ReturnToHostLayoutMetrics) -> some View {
+        Group {
+            metrics.textFrame(
                 phaseText(statusTitle, metrics: metrics)
                     .font(.appFont(30 * metrics.textScale, variant: .medium))
-                    .foregroundColor(.white)
-                    .frame(maxWidth: 320)
-                    .multilineTextAlignment(.center)
-                    .lineLimit(2)
-                    .minimumScaleFactor(0.8)
+                    .foregroundColor(.white),
+                maxWidth: 320
+            )
+            .multilineTextAlignment(.center)
+            .lineLimit(2)
+            .minimumScaleFactor(0.8)
 
+            metrics.textFrame(
                 phaseText(statusBody, metrics: metrics)
                     .font(.appFont(20 * metrics.textScale, variant: .light))
-                    .foregroundColor(Color(UIColor.systemGray))
-                    .frame(maxWidth: 330)
-                    .multilineTextAlignment(.center)
-                    .fixedSize(horizontal: false, vertical: true)
+                    .foregroundColor(Color(UIColor.systemGray)),
+                maxWidth: 330
+            )
+            .multilineTextAlignment(.center)
+            .fixedSize(horizontal: false, vertical: true)
+        }
+    }
 
-                PlaybackPreparationProgressBar(progress: ttsManager.playbackPreparationProgress)
-                    .frame(maxWidth: 320)
-                    .padding(.top, 8)
+    /// The progress bar and its percentage.
+    private func progress(metrics: ReturnToHostLayoutMetrics) -> some View {
+        Group {
+            PlaybackPreparationProgressBar(progress: ttsManager.playbackPreparationProgress)
+                .frame(maxWidth: 320)
+                .padding(.top, 8)
 
-                Text(progressLabel)
-                    .font(.appFont(16 * metrics.textScale, variant: .medium))
-                    .foregroundColor(progressAccentColor)
-            }
-            .offset(y: metrics.bodyOffset)
-
-            Spacer()
+            Text(progressLabel)
+                .font(.appFont(16 * metrics.textScale, variant: .medium))
+                .foregroundColor(progressAccentColor)
         }
     }
 
