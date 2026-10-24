@@ -14,69 +14,8 @@ struct PlaybackPreparationView: View {
         ZStack {
             AppTheme.screenBackground.ignoresSafeArea()
 
-            VStack(spacing: 28) {
-                Spacer()
-
-                VStack(spacing: -10) {
-                    Text(primaryHeadlineLineOne)
-                        .font(.appFont(42, variant: .medium))
-                    Text(primaryHeadlineLineTwo)
-                        .font(.appFont(30, variant: .light))
-                }
-                .frame(maxWidth: 330)
-                .foregroundColor(.white)
-                .multilineTextAlignment(.center)
-                .lineLimit(2)
-                .minimumScaleFactor(0.72)
-
-                Spacer()
-
-                ZStack {
-                    if shouldPlayVideo {
-                        LoopingVideoPlayer(
-                            videoName: "ReturnToHost",
-                            isReady: $isVideoReady
-                        )
-                    }
-
-                    Image("ReturnToHostPlaceholder")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .opacity(shouldPlayVideo && isVideoReady ? 0 : 1)
-                }
-                .frame(maxWidth: 350, maxHeight: 350)
-                .aspectRatio(1, contentMode: .fit)
-                // Full size wherever it fits; shrinks only on screens too short for the text around it
-                .layoutPriority(1)
-                .offset(y: -30)
-
-                VStack(spacing: 14) {
-                    Text(statusTitle)
-                        .font(.appFont(30, variant: .medium))
-                        .foregroundColor(.white)
-                        .frame(maxWidth: 320)
-                        .multilineTextAlignment(.center)
-                        .lineLimit(2)
-                        .minimumScaleFactor(0.8)
-
-                    Text(statusBody)
-                        .font(.appFont(20, variant: .light))
-                        .foregroundColor(Color(UIColor.systemGray))
-                        .frame(maxWidth: 330)
-                        .multilineTextAlignment(.center)
-                        .fixedSize(horizontal: false, vertical: true)
-
-                    PlaybackPreparationProgressBar(progress: ttsManager.playbackPreparationProgress)
-                        .frame(maxWidth: 320)
-                        .padding(.top, 8)
-
-                    Text(progressLabel)
-                        .font(.appFont(16, variant: .medium))
-                        .foregroundColor(progressAccentColor)
-                }
-                .offset(y: -5)
-
-                Spacer()
+            ReturnToHostAdaptiveLayout(spacing: 28) { metrics in
+                content(metrics: metrics)
             }
 
             VStack {
@@ -119,8 +58,98 @@ struct PlaybackPreparationView: View {
         .animation(.easeInOut(duration: 0.2), value: ttsManager.playbackPreparationPhase)
     }
 
-    private var primaryHeadlineLineOne: String {
-        switch ttsManager.playbackPreparationPhase {
+    private func content(metrics: ReturnToHostLayoutMetrics) -> some View {
+        VStack(spacing: metrics.spacing) {
+            Spacer()
+
+            VStack(spacing: -10) {
+                phaseText(primaryHeadlineLineOne, metrics: metrics)
+                    .font(.appFont(42 * metrics.textScale, variant: .medium))
+                phaseText(primaryHeadlineLineTwo, metrics: metrics)
+                    .font(.appFont(30 * metrics.textScale, variant: .light))
+            }
+            .frame(maxWidth: 330)
+            .foregroundColor(.white)
+            .multilineTextAlignment(.center)
+            .lineLimit(2)
+            .minimumScaleFactor(0.72)
+
+            if metrics.separatesHeadline {
+                Spacer()
+            }
+
+            metrics.videoFrame(Color.clear)
+                .overlay {
+                    ZStack {
+                        if shouldPlayVideo {
+                            LoopingVideoPlayer(
+                                videoName: "ReturnToHost",
+                                isReady: $isVideoReady
+                            )
+                        }
+
+                        Image("ReturnToHostPlaceholder")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .opacity(shouldPlayVideo && isVideoReady ? 0 : 1)
+                    }
+                }
+                .offset(y: metrics.videoOffset)
+
+            VStack(spacing: 14) {
+                phaseText(statusTitle, metrics: metrics)
+                    .font(.appFont(30 * metrics.textScale, variant: .medium))
+                    .foregroundColor(.white)
+                    .frame(maxWidth: 320)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.8)
+
+                phaseText(statusBody, metrics: metrics)
+                    .font(.appFont(20 * metrics.textScale, variant: .light))
+                    .foregroundColor(Color(UIColor.systemGray))
+                    .frame(maxWidth: 330)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                PlaybackPreparationProgressBar(progress: ttsManager.playbackPreparationProgress)
+                    .frame(maxWidth: 320)
+                    .padding(.top, 8)
+
+                Text(progressLabel)
+                    .font(.appFont(16 * metrics.textScale, variant: .medium))
+                    .foregroundColor(progressAccentColor)
+            }
+            .offset(y: metrics.bodyOffset)
+
+            Spacer()
+        }
+    }
+
+    /// The phase's text; where the layout asks for it, laid out with room for every phase's text
+    /// so the layout chosen stays the same as the phase changes.
+    @ViewBuilder
+    private func phaseText(
+        _ text: (TTSManager.PlaybackPreparationPhase) -> String,
+        metrics: ReturnToHostLayoutMetrics
+    ) -> some View {
+        if metrics.reservesStateText {
+            let texts = TTSManager.PlaybackPreparationPhase.allCases.map { (phase: $0, text: text($0)) }
+            ZStack {
+                ForEach(texts, id: \.phase) { entry in
+                    let isCurrent = entry.phase == ttsManager.playbackPreparationPhase
+                    Text(entry.text)
+                        .opacity(isCurrent ? 1 : 0)
+                        .accessibilityHidden(isCurrent == false)
+                }
+            }
+        } else {
+            Text(text(ttsManager.playbackPreparationPhase))
+        }
+    }
+
+    private func primaryHeadlineLineOne(for phase: TTSManager.PlaybackPreparationPhase) -> String {
+        switch phase {
         case .preparing:
             return "Stay here,"
         case .readyToReturn:
@@ -128,8 +157,8 @@ struct PlaybackPreparationView: View {
         }
     }
 
-    private var primaryHeadlineLineTwo: String {
-        switch ttsManager.playbackPreparationPhase {
+    private func primaryHeadlineLineTwo(for phase: TTSManager.PlaybackPreparationPhase) -> String {
+        switch phase {
         case .preparing:
             return "Speak is almost ready."
         case .readyToReturn:
@@ -137,8 +166,8 @@ struct PlaybackPreparationView: View {
         }
     }
 
-    private var statusTitle: String {
-        switch ttsManager.playbackPreparationPhase {
+    private func statusTitle(for phase: TTSManager.PlaybackPreparationPhase) -> String {
+        switch phase {
         case .preparing:
             return "Preparing to Speak..."
         case .readyToReturn:
@@ -146,8 +175,8 @@ struct PlaybackPreparationView: View {
         }
     }
 
-    private var statusBody: String {
-        switch ttsManager.playbackPreparationPhase {
+    private func statusBody(for phase: TTSManager.PlaybackPreparationPhase) -> String {
+        switch phase {
         case .preparing:
             return "Wait here while KeyVox prepares to speak without interruptions."
         case .readyToReturn:
