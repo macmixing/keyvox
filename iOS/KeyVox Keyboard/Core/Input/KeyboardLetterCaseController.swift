@@ -83,12 +83,7 @@ final class KeyboardLetterCaseController {
         case .words:
             return textBeforeCursor.last.map { $0.isWhitespace || $0.isNewline } ?? true
         case .sentences:
-            guard let last = textBeforeCursor.last else { return true }
-            if last.isNewline { return true }
-            guard last.isWhitespace else { return false }
-            return TypingTextContext.startsSentence(
-                after: textBeforeCursor.trimmingCharacters(in: .whitespaces)
-            )
+            return TypingTextContext.startsSentence(after: textBeforeCursor)
         @unknown default:
             return false
         }
