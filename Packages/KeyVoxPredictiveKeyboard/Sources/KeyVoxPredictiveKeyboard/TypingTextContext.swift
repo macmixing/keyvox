@@ -58,10 +58,30 @@ public struct TypingTextContext: Sendable, Equatable {
     }
 
     /// Whether a word typed right after `text` starts a sentence: `text` is empty or ends at
-    /// a line break, or at a period, question mark, or exclamation mark that is not part of
-    /// an ellipsis, since an ellipsis pauses a sentence rather than ending it.
+    /// a line break, or at a space after a period, question mark, or exclamation mark that is
+    /// not part of an ellipsis, since an ellipsis pauses a sentence rather than ending it.
+    /// Quotation marks belong to the sentence they open or close, so an opening mark after
+    /// the space and a closing mark before it leave the sentence start where it is.
     public static func startsSentence(after text: String) -> Bool {
-        sentenceStart(in: text[...]) == text.endIndex
+        let beforeOpeningMarks = trimmingEnd(of: text[...], while: isQuotationMark)
+        guard let last = beforeOpeningMarks.last else { return true }
+        if last.isNewline { return true }
+        guard last.isWhitespace else { return false }
+        let sentence = trimmingEnd(of: beforeOpeningMarks) { $0.isWhitespace && $0.isNewline == false }
+        let beforeClosingMarks = trimmingEnd(of: sentence, while: isQuotationMark)
+        return sentenceStart(in: beforeClosingMarks) == beforeClosingMarks.endIndex
+    }
+
+    private static func isQuotationMark(_ character: Character) -> Bool {
+        character.unicodeScalars.allSatisfy(\.properties.isQuotationMark)
+    }
+
+    private static func trimmingEnd(of text: Substring, while shouldTrim: (Character) -> Bool) -> Substring {
+        var end = text.endIndex
+        while end > text.startIndex, shouldTrim(text[text.index(before: end)]) {
+            end = text.index(before: end)
+        }
+        return text[..<end]
     }
 
     /// Where the last sentence of `text` begins: right after its last sentence boundary.
