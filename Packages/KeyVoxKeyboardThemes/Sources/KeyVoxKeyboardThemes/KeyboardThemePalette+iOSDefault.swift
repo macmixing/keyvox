@@ -24,7 +24,12 @@ extension KeyboardThemePalette {
             light: .rgba(KeyboardThemeRGBA(red: 0.72, green: 0.50, blue: 0)),
             dark: .system(.yellow)
         ),
-        cancelKeyBorder: .system(.indigo)
+        cancelKeyBorder: .system(.indigo),
+        // In light, the letter key color at the keys' strength over white.
+        microphoneBackground: .appearance(
+            light: KeyboardThemeRGBA(red: 0.901, green: 0.901, blue: 0.976),
+            dark: KeyboardThemeRGBA(red: 0, green: 0, blue: 0, alpha: 0.82)
+        )
     )
 
     private static let defaultKeyPressedFill = KeyboardThemeColor.fixed(
