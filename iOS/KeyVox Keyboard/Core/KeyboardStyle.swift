@@ -47,7 +47,7 @@ enum KeyboardStyle {
             ? UIColor.separator.withAlphaComponent(0.45)
             : UIColor.white.withAlphaComponent(0.50)
     }
-    static let popupLabelColor = UIColor.black
+    static let popupLabelColor = UIColor.keyboardTheme(\.popupLabel)
     static let popupFont = UIFont.systemFont(ofSize: 32, weight: .medium)
 
     // A held key's popup, as the system keyboard draws it on an iPhone: the same height upright
@@ -66,9 +66,8 @@ enum KeyboardStyle {
     static let heldKeyPopupCornerRadius: CGFloat = 20
     static let heldKeyPopupHighlightCornerRadius: CGFloat = 9
     static let heldKeyPopupHighlightInset: CGFloat = 0.2
-    /// Darkens the popup under the selected character as the system keyboard's gray darkens its
-    /// white popup.
-    static let heldKeyPopupHighlightColor = UIColor.black.withAlphaComponent(0.106)
+    /// Marks the selected character in a held key's popup, as the system keyboard's highlight does.
+    static let heldKeyPopupHighlightColor = UIColor.keyboardTheme(\.heldKeyPopupHighlight)
     /// How large the popup's characters are next to the same characters on the keys.
     static let heldKeyPopupFontScale: CGFloat = 0.88
 
