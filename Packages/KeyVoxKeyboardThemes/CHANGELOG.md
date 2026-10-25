@@ -1,0 +1,18 @@
+# Changelog
+
+All notable changes to `KeyVoxKeyboardThemes` will be documented in this file.
+
+The format loosely follows Keep a Changelog, and the package uses semantic versioning for shared keyboard theme data within the KeyVox monorepo.
+
+---
+
+## [1.0.0] - 2026-10-24
+
+Initial shared keyboard themes for KeyVox keyboards.
+
+### Includes
+
+- Default theme with KeyVox's lavender and indigo keys.
+- Classic theme with neutral keys that follow the system keyboard's light and dark grays.
+- Theme colors for letter, special, and toolbar keys, their pressed states, key popups, and the cancel key's border, with how strongly keys cover the keyboard backdrop in each appearance.
+- Saved theme lookup that falls back to the default theme.
