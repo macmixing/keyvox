@@ -400,11 +400,7 @@ final class KeyboardLogoBarView: UIControl {
         ).insetBy(dx: circleInset, dy: circleInset)
         let circlePath = UIBezierPath(ovalIn: circleRect).cgPath
 
-        let logoBackgroundColor = UIColor { trait in
-            trait.userInterfaceStyle == .dark
-                ? UIColor.black.withAlphaComponent(0.82)
-                : Self.compositedLightKeySurfaceColor()
-        }.resolvedColor(with: traitCollection)
+        let logoBackgroundColor = KeyboardStyle.microphoneBackgroundColor.resolvedColor(with: traitCollection)
 
         backgroundLayer.path = circlePath
         backgroundLayer.fillColor = logoBackgroundColor.cgColor
@@ -557,27 +553,6 @@ final class KeyboardLogoBarView: UIControl {
             y: align(rect.origin.y),
             width: max(align(rect.size.width), 1 / scale),
             height: max(align(rect.size.height), 1 / scale)
-        )
-    }
-
-    private static func compositedLightKeySurfaceColor() -> UIColor {
-        let overlay = KeyboardStyle.keyFillColor.resolvedColor(with: UITraitCollection(userInterfaceStyle: .light))
-        var red: CGFloat = 0
-        var green: CGFloat = 0
-        var blue: CGFloat = 0
-        var alpha: CGFloat = 0
-
-        guard overlay.getRed(&red, green: &green, blue: &blue, alpha: &alpha) else {
-            return KeyboardStyle.keyFillColor
-        }
-
-        let overlayAlpha: CGFloat = 0.3
-        let base: CGFloat = 1.0
-        return UIColor(
-            red: (red * overlayAlpha) + (base * (1 - overlayAlpha)),
-            green: (green * overlayAlpha) + (base * (1 - overlayAlpha)),
-            blue: (blue * overlayAlpha) + (base * (1 - overlayAlpha)),
-            alpha: 1
         )
     }
 
