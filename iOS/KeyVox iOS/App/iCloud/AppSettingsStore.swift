@@ -2,6 +2,7 @@ import Combine
 import CoreFoundation
 import Foundation
 import KeyVoxCore
+import KeyVoxKeyboardThemes
 import KeyVoxStyleRewrite
 
 enum SessionDisableTiming: String, CaseIterable, Identifiable {
@@ -203,6 +204,12 @@ final class AppSettingsStore: ObservableObject {
         }
     }
 
+    @Published var keyboardTheme: KeyboardThemeID {
+        didSet {
+            defaults.set(keyboardTheme.rawValue, forKey: UserDefaultsKeys.keyboardTheme)
+        }
+    }
+
     @Published var compactKeysEnabled: Bool {
         didSet {
             defaults.set(compactKeysEnabled, forKey: UserDefaultsKeys.compactKeysEnabled)
@@ -338,6 +345,7 @@ final class AppSettingsStore: ObservableObject {
         capsLockEnabled = defaults.object(forKey: UserDefaultsKeys.capsLockEnabled) as? Bool ?? false
         keyboardHapticsEnabled = defaults.object(forKey: UserDefaultsKeys.keyboardHapticsEnabled) as? Bool ?? true
         leftHandedKeyboardLayoutEnabled = defaults.object(forKey: UserDefaultsKeys.leftHandedKeyboardLayoutEnabled) as? Bool ?? false
+        keyboardTheme = KeyboardThemeID.resolved(rawValue: defaults.string(forKey: UserDefaultsKeys.keyboardTheme))
         let restoredCompactKeysEnabled = defaults.object(forKey: UserDefaultsKeys.compactKeysEnabled) as? Bool ?? true
         compactKeysEnabled = restoredCompactKeysEnabled
         if restoredCompactKeysEnabled == false {

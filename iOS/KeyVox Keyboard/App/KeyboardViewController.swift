@@ -1,6 +1,7 @@
 import AVFoundation
 import KeyVoxCore
 import KeyVoxEmoji
+import KeyVoxKeyboardThemes
 import KeyVoxPredictiveKeyboard
 import UIKit
 
@@ -366,6 +367,7 @@ final class KeyboardViewController: UIInputViewController {
     }
 
     func updateUI() {
+        applyKeyboardTheme()
         if appSettingsStore.isCompactKeysEnabled == false {
             if appSettingsStore.isCompactKeysActive {
                 appSettingsStore.setCompactKeysActive(false)
@@ -413,6 +415,13 @@ final class KeyboardViewController: UIInputViewController {
         }
         indicatorDriver.phase = keyboardState.indicatorPhase
         indicatorDriver.isPlaybackActive = keyboardState.isTTSPlaybackActive
+    }
+
+    /// Hands the chosen theme to every view below the keyboard, which recolor themselves with it.
+    private func applyKeyboardTheme() {
+        let theme = appSettingsStore.keyboardTheme
+        guard traitCollection.keyboardTheme != theme else { return }
+        traitOverrides.keyboardTheme = theme
     }
 
     private func currentToolbarMode() -> KeyboardToolbarMode {

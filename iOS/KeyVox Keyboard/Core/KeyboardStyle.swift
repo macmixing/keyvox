@@ -1,3 +1,4 @@
+import KeyVoxKeyboardThemes
 import UIKit
 
 enum KeyboardStyle {
@@ -40,15 +41,9 @@ enum KeyboardStyle {
     static let popupShadowOpacity: Float = 0.25
     static let popupShadowRadius: CGFloat = 4
     static let popupShadowOffset = CGSize(width: 0, height: 3)
-    static let popupFillColor = UIColor { trait in
-        trait.userInterfaceStyle == .dark ? UIColor(red: 0.62, green: 0.63, blue: 0.78, alpha: 1) : UIColor(red: 1.0, green: 1.0, blue: 1.0, alpha: 1)
-    }
-    static let popupBorderColor = UIColor { trait in
-        trait.userInterfaceStyle == .light
-            ? UIColor.separator.withAlphaComponent(0.45)
-            : UIColor.white.withAlphaComponent(0.50)
-    }
-    static let popupLabelColor = UIColor.black
+    static let popupFillColor = UIColor.keyboardTheme(\.popupFill)
+    static let popupBorderColor = UIColor.keyboardTheme(\.popupBorder)
+    static let popupLabelColor = UIColor.keyboardTheme(\.popupLabel)
     static let popupFont = UIFont.systemFont(ofSize: 32, weight: .medium)
 
     // A held key's popup, as the system keyboard draws it on an iPhone: the same height upright
@@ -67,9 +62,8 @@ enum KeyboardStyle {
     static let heldKeyPopupCornerRadius: CGFloat = 20
     static let heldKeyPopupHighlightCornerRadius: CGFloat = 9
     static let heldKeyPopupHighlightInset: CGFloat = 0.2
-    /// Darkens the popup under the selected character as the system keyboard's gray darkens its
-    /// white popup.
-    static let heldKeyPopupHighlightColor = UIColor.black.withAlphaComponent(0.106)
+    /// Marks the selected character in a held key's popup, as the system keyboard's highlight does.
+    static let heldKeyPopupHighlightColor = UIColor.keyboardTheme(\.heldKeyPopupHighlight)
     /// How large the popup's characters are next to the same characters on the keys.
     static let heldKeyPopupFontScale: CGFloat = 0.88
 
@@ -81,28 +75,27 @@ enum KeyboardStyle {
     static let labelColor = UIColor.label
     static let secondaryLabelColor = UIColor.secondaryLabel
     static let buttonFillColor = UIColor.secondarySystemBackground
-    static let controlBlurEffectStyle: UIBlurEffect.Style = .systemThinMaterial
     static let cancelButtonSize: CGFloat = 32
-    static let cancelButtonBorderColor = UIColor.systemIndigo
+    static let cancelButtonBorderColor = UIColor.keyboardTheme(\.cancelKeyBorder)
     static let cancelButtonIconColor = UIColor.systemRed
+    /// The circle behind the microphone in the dictation button.
+    static let microphoneBackgroundColor = UIColor.keyboardTheme(\.microphoneBackground)
     static let cancelButtonBorderWidth: CGFloat = 0.5
     static let keyBorderWidth: CGFloat = 0.5
 
-    static let keyFillColor = UIColor(red: 0.67, green: 0.67, blue: 0.92, alpha: 1)
-    static let keyPressedFillColor = UIColor(red: 0.29, green: 0.31, blue: 0.55, alpha: 1)
-    static let specialKeyFillColor = UIColor(red: 0.35, green: 0.36, blue: 0.66, alpha: 1)
-    static let specialKeyPressedFillColor = UIColor(red: 0.19, green: 0.20, blue: 0.36, alpha: 1)
-    static let keyDisabledFillColor = UIColor.tertiarySystemFill
+    static let keyFillColor = UIColor.keyboardTheme(\.keyFill)
+    static let keyPressedFillColor = UIColor.keyboardTheme(\.keyPressedFill)
+    static let specialKeyFillColor = UIColor.keyboardTheme(\.specialKeyFill)
+    static let specialKeyPressedFillColor = UIColor.keyboardTheme(\.specialKeyPressedFill)
+    static let keyDisabledFillColor = UIColor.keyboardTheme(\.keyDisabledFill)
+    /// A toolbar key that is on, such as Caps Lock while it is locked.
+    static let activeKeyFillColor = UIColor.keyboardTheme(\.activeKeyFill)
     /// The emoji search's done key, as the system keyboard draws it, light and dark, measured with
     /// Tools/AppleKeyboardBaseline (`EmojiFrequentlyUsedProbeTests`).
     static let emojiSearchDoneFillColor = UIColor(red: 0, green: 122 / 255, blue: 1, alpha: 1)
     static let emojiSearchDoneLabelColor = UIColor.white
-    static let specialKeyDisabledFillColor = UIColor.quaternarySystemFill
-    static let keyBorderColor = UIColor { trait in
-        trait.userInterfaceStyle == .light
-            ? UIColor(red: 0.42, green: 0.42, blue: 0.44, alpha: 0.35)
-            : UIColor.white.withAlphaComponent(0.15)
-    }
+    static let specialKeyDisabledFillColor = UIColor.keyboardTheme(\.specialKeyDisabledFill)
+    static let keyBorderColor = UIColor.keyboardTheme(\.keyBorder)
     static let keyPressedBorderColor = UIColor { trait in
         trait.userInterfaceStyle == .light
             ? UIColor.separator.withAlphaComponent(0.20)
@@ -116,12 +109,18 @@ enum KeyboardStyle {
     static let keyLabelColor = UIColor.label
     static let keyDisabledLabelColor = UIColor.secondaryLabel.withAlphaComponent(0.7)
 
-    static func activeForegroundColor(for traitCollection: UITraitCollection) -> UIColor {
-        guard traitCollection.userInterfaceStyle == .light else {
-            return .systemYellow
+    /// A key's fill as it tints the keyboard backdrop behind it, as strongly as the theme sets for
+    /// the appearance.
+    static func keyTintColor(_ fill: UIColor) -> UIColor {
+        UIColor { traits in
+            let opacity = traits.keyboardThemePalette.keyFillOpacity
+            let alpha = traits.userInterfaceStyle == .dark ? opacity.dark : opacity.light
+            return fill.resolvedColor(with: traits).withAlphaComponent(alpha)
         }
+    }
 
-        return UIColor(red: 0.72, green: 0.50, blue: 0, alpha: 1)
+    static func activeForegroundColor(for traitCollection: UITraitCollection) -> UIColor {
+        traitCollection.keyboardThemePalette.activeKeyForeground.resolvedColor(with: traitCollection)
     }
 
     static func pressedActiveForegroundColor(for traitCollection: UITraitCollection) -> UIColor {

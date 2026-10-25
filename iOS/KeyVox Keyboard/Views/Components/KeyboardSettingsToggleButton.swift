@@ -4,7 +4,6 @@ final class KeyboardSettingsToggleButton: UIControl {
     private static let symbolConfiguration = UIImage.SymbolConfiguration(pointSize: 18, weight: .regular)
 
     private let backgroundView = UIView()
-    private let blurEffectView = UIVisualEffectView(effect: UIBlurEffect(style: .systemThinMaterial))
     private let tintOverlay = UIView()
     private let imageView = UIImageView()
     private lazy var borderRenderer = KeyboardRoundedBorderRenderer(containerView: backgroundView)
@@ -63,6 +62,7 @@ final class KeyboardSettingsToggleButton: UIControl {
     override func layoutSubviews() {
         super.layoutSubviews()
         updateBorderPath()
+        updateShadowPath()
     }
 
     override var isHighlighted: Bool {
@@ -89,11 +89,6 @@ final class KeyboardSettingsToggleButton: UIControl {
         backgroundView.backgroundColor = .clear
         backgroundView.isUserInteractionEnabled = false
 
-        blurEffectView.translatesAutoresizingMaskIntoConstraints = false
-        blurEffectView.layer.cornerRadius = KeyboardStyle.keyCornerRadius
-        blurEffectView.clipsToBounds = true
-        blurEffectView.isUserInteractionEnabled = false
-
         tintOverlay.translatesAutoresizingMaskIntoConstraints = false
         tintOverlay.layer.cornerRadius = KeyboardStyle.keyCornerRadius
         tintOverlay.clipsToBounds = true
@@ -104,7 +99,6 @@ final class KeyboardSettingsToggleButton: UIControl {
         imageView.isUserInteractionEnabled = false
 
         addSubview(backgroundView)
-        backgroundView.addSubview(blurEffectView)
         backgroundView.addSubview(tintOverlay)
         addSubview(imageView)
         _ = borderRenderer
@@ -114,11 +108,6 @@ final class KeyboardSettingsToggleButton: UIControl {
             backgroundView.trailingAnchor.constraint(equalTo: trailingAnchor),
             backgroundView.topAnchor.constraint(equalTo: topAnchor),
             backgroundView.bottomAnchor.constraint(equalTo: bottomAnchor),
-
-            blurEffectView.leadingAnchor.constraint(equalTo: backgroundView.leadingAnchor),
-            blurEffectView.trailingAnchor.constraint(equalTo: backgroundView.trailingAnchor),
-            blurEffectView.topAnchor.constraint(equalTo: backgroundView.topAnchor),
-            blurEffectView.bottomAnchor.constraint(equalTo: backgroundView.bottomAnchor),
 
             tintOverlay.leadingAnchor.constraint(equalTo: backgroundView.leadingAnchor),
             tintOverlay.trailingAnchor.constraint(equalTo: backgroundView.trailingAnchor),
@@ -131,7 +120,7 @@ final class KeyboardSettingsToggleButton: UIControl {
     }
 
     private func observeBorderAppearanceChanges() {
-        registerForTraitChanges([UITraitUserInterfaceStyle.self]) { (self: Self, _: UITraitCollection) in
+        registerForTraitChanges([UITraitUserInterfaceStyle.self, KeyboardThemeTrait.self]) { (self: Self, _: UITraitCollection) in
             self.updateVisualState(animated: false)
         }
     }
@@ -143,7 +132,7 @@ final class KeyboardSettingsToggleButton: UIControl {
 
         let applyState = {
             self.backgroundView.transform = .identity
-            self.tintOverlay.backgroundColor = colors.fill.withAlphaComponent(0.3)
+            self.tintOverlay.backgroundColor = KeyboardStyle.keyTintColor(colors.fill)
             self.borderRenderer.strokeColor = self.isTrackpadModeActive ? UIColor.clear.cgColor : resolvedBorderColor.cgColor
             self.backgroundView.layer.shadowColor = shadow.color.cgColor
             self.backgroundView.layer.shadowOpacity = shadow.opacity
@@ -164,6 +153,15 @@ final class KeyboardSettingsToggleButton: UIControl {
         } else {
             applyState()
         }
+    }
+
+    /// Gives the shadow the key's rounded shape, so it is not worked out from the key's
+    /// contents each frame.
+    private func updateShadowPath() {
+        backgroundView.layer.shadowPath = UIBezierPath(
+            roundedRect: backgroundView.bounds,
+            cornerRadius: KeyboardStyle.keyCornerRadius
+        ).cgPath
     }
 
     private func updateBorderPath() {

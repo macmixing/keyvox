@@ -28,7 +28,7 @@ final class KeyboardKeyPopupView: UIView {
     }
 
     private func observeBorderAppearanceChanges() {
-        registerForTraitChanges([UITraitUserInterfaceStyle.self]) { (self: Self, _: UITraitCollection) in
+        registerForTraitChanges([UITraitUserInterfaceStyle.self, KeyboardThemeTrait.self]) { (self: Self, _: UITraitCollection) in
             self.setNeedsLayout()
             self.layoutIfNeeded()
         }

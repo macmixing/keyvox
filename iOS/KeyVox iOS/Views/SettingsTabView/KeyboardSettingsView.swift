@@ -1,3 +1,4 @@
+import KeyVoxKeyboardThemes
 import SwiftUI
 
 /// The KeyVox keyboard's settings, opened from the Keyboard row in Settings: the typing
@@ -11,6 +12,7 @@ struct KeyboardSettingsView: View {
         AppScrollScreen(additionalTopContentInset: AppScreenContentInset.tabPageTop) {
             VStack(alignment: .leading, spacing: AppTheme.sectionSpacing) {
                 typingSection
+                classicThemeSection
                 compactKeysSection
                 openOnNumberPageSection
                 leftHandedLayoutSection
@@ -85,6 +87,20 @@ struct KeyboardSettingsView: View {
                 title: KeyboardSettingsCopy.leftHandedLayoutTitle,
                 description: KeyboardSettingsCopy.leftHandedLayoutDescription,
                 isOn: $settingsStore.leftHandedKeyboardLayoutEnabled
+            )
+        }
+    }
+
+    private var classicThemeSection: some View {
+        AppCard {
+            SettingsRow(
+                icon: "paintpalette",
+                title: KeyboardSettingsCopy.classicThemeTitle,
+                description: KeyboardSettingsCopy.classicThemeDescription,
+                isOn: Binding(
+                    get: { settingsStore.keyboardTheme == .classic },
+                    set: { settingsStore.keyboardTheme = $0 ? .classic : .keyVox }
+                )
             )
         }
     }

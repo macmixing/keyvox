@@ -67,7 +67,7 @@ final class KeyboardSuggestionBarView: UIView {
             stackView.topAnchor.constraint(equalTo: topAnchor),
             stackView.bottomAnchor.constraint(equalTo: bottomAnchor),
         ])
-        registerForTraitChanges([UITraitUserInterfaceStyle.self]) { (self: Self, _: UITraitCollection) in
+        registerForTraitChanges([UITraitUserInterfaceStyle.self, KeyboardThemeTrait.self]) { (self: Self, _: UITraitCollection) in
             self.refreshAppearance()
         }
         refreshAppearance()
@@ -127,8 +127,9 @@ final class KeyboardSuggestionBarView: UIView {
         }
         let isPressed = button.isHighlighted
         button.configuration?.baseForegroundColor = KeyboardStyle.keyLabelColor
-        button.backgroundColor = (isPressed ? KeyboardStyle.keyPressedFillColor : KeyboardStyle.keyFillColor)
-            .withAlphaComponent(0.3)
+        button.backgroundColor = KeyboardStyle.keyTintColor(
+            isPressed ? KeyboardStyle.keyPressedFillColor : KeyboardStyle.keyFillColor
+        )
         button.layer.borderColor = (isPressed ? KeyboardStyle.keyPressedBorderColor : KeyboardStyle.keyBorderColor)
             .resolvedColor(with: traitCollection)
             .cgColor

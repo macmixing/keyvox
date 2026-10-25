@@ -1,4 +1,5 @@
 import Foundation
+import KeyVoxKeyboardThemes
 import KeyVoxStyleRewrite
 
 final class KeyboardAppSettingsStore {
@@ -132,6 +133,10 @@ final class KeyboardAppSettingsStore {
 
     var isLeftHandedKeyboardLayoutEnabled: Bool {
         defaults?.object(forKey: UserDefaultsKeys.leftHandedKeyboardLayoutEnabled) as? Bool ?? false
+    }
+
+    var keyboardTheme: KeyboardThemeID {
+        KeyboardThemeID.resolved(rawValue: defaults?.string(forKey: UserDefaultsKeys.keyboardTheme))
     }
 
     var isCompactKeysEnabled: Bool {

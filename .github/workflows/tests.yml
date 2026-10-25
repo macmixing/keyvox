@@ -115,3 +115,6 @@ jobs:
 
       - name: Run KeyVoxEmoji package tests
         run: swift test --package-path Packages/KeyVoxEmoji --scratch-path /tmp/keyvox-emoji-ci
+
+      - name: Run KeyVoxKeyboardThemes package tests
+        run: swift test --package-path Packages/KeyVoxKeyboardThemes --scratch-path /tmp/keyvox-keyboard-themes-ci

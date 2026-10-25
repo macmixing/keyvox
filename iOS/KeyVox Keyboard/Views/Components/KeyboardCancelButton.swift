@@ -1,7 +1,6 @@
 import UIKit
 
 final class KeyboardCancelButton: UIControl {
-    private let fillAlpha: CGFloat = 0.3
     private let highlightedBorderAlpha: CGFloat = 0.3
     private let normalBorderAlpha: CGFloat = 0.7
     private let iconAlpha: CGFloat = 0.8
@@ -10,7 +9,6 @@ final class KeyboardCancelButton: UIControl {
     private let pressAnimationDuration: TimeInterval = 0.08
 
     private let backgroundView = UIView()
-    private let blurEffectView = UIVisualEffectView(effect: UIBlurEffect(style: KeyboardStyle.controlBlurEffectStyle))
     private let tintOverlay = UIView()
     private let iconImageView = UIImageView()
     private lazy var borderRenderer = KeyboardRoundedBorderRenderer(containerView: backgroundView)
@@ -40,6 +38,7 @@ final class KeyboardCancelButton: UIControl {
     override func layoutSubviews() {
         super.layoutSubviews()
         updateBorderPath()
+        updateShadowPath()
     }
     
     override var isHighlighted: Bool {
@@ -65,11 +64,6 @@ final class KeyboardCancelButton: UIControl {
         backgroundView.backgroundColor = .clear
         backgroundView.isUserInteractionEnabled = false
         
-        blurEffectView.translatesAutoresizingMaskIntoConstraints = false
-        blurEffectView.layer.cornerRadius = KeyboardStyle.keyCornerRadius
-        blurEffectView.clipsToBounds = true
-        blurEffectView.isUserInteractionEnabled = false
-        
         tintOverlay.translatesAutoresizingMaskIntoConstraints = false
         tintOverlay.layer.cornerRadius = KeyboardStyle.keyCornerRadius
         tintOverlay.clipsToBounds = true
@@ -85,7 +79,6 @@ final class KeyboardCancelButton: UIControl {
         )
         
         addSubview(backgroundView)
-        backgroundView.addSubview(blurEffectView)
         backgroundView.addSubview(tintOverlay)
         addSubview(iconImageView)
         _ = borderRenderer
@@ -102,7 +95,7 @@ final class KeyboardCancelButton: UIControl {
     }
 
     private func observeBorderAppearanceChanges() {
-        registerForTraitChanges([UITraitUserInterfaceStyle.self]) { (self: Self, _: UITraitCollection) in
+        registerForTraitChanges([UITraitUserInterfaceStyle.self, KeyboardThemeTrait.self]) { (self: Self, _: UITraitCollection) in
             self.updateVisualState(animated: false)
         }
     }
@@ -115,7 +108,7 @@ final class KeyboardCancelButton: UIControl {
         
         let animations = {
             self.backgroundView.transform = transform
-            self.tintOverlay.backgroundColor = colors.fill.withAlphaComponent(self.fillAlpha)
+            self.tintOverlay.backgroundColor = KeyboardStyle.keyTintColor(colors.fill)
             self.borderRenderer.strokeColor = self.isTrackpadModeActive ? UIColor.clear.cgColor : resolvedBorderColor.cgColor
             self.iconImageView.tintColor = colors.icon
             self.iconImageView.alpha = self.isTrackpadModeActive ? 0 : (self.isHighlighted ? self.highlightedIconAlpha : self.normalIconAlpha)
@@ -137,6 +130,15 @@ final class KeyboardCancelButton: UIControl {
             animations()
         }
     }
+    /// Gives the shadow the key's rounded shape, so it is not worked out from the key's
+    /// contents each frame.
+    private func updateShadowPath() {
+        backgroundView.layer.shadowPath = UIBezierPath(
+            roundedRect: backgroundView.bounds,
+            cornerRadius: KeyboardStyle.keyCornerRadius
+        ).cgPath
+    }
+
     private func updateBorderPath() {
         borderRenderer.updatePath(
             cornerRadius: KeyboardStyle.keyCornerRadius,
@@ -150,11 +152,6 @@ final class KeyboardCancelButton: UIControl {
             backgroundView.trailingAnchor.constraint(equalTo: trailingAnchor),
             backgroundView.topAnchor.constraint(equalTo: topAnchor),
             backgroundView.bottomAnchor.constraint(equalTo: bottomAnchor),
-            
-            blurEffectView.leadingAnchor.constraint(equalTo: backgroundView.leadingAnchor),
-            blurEffectView.trailingAnchor.constraint(equalTo: backgroundView.trailingAnchor),
-            blurEffectView.topAnchor.constraint(equalTo: backgroundView.topAnchor),
-            blurEffectView.bottomAnchor.constraint(equalTo: backgroundView.bottomAnchor),
             
             tintOverlay.leadingAnchor.constraint(equalTo: backgroundView.leadingAnchor),
             tintOverlay.trailingAnchor.constraint(equalTo: backgroundView.trailingAnchor),
