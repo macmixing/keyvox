@@ -3,4 +3,5 @@
 public enum KeyboardThemeSystemColor: Sendable {
     case indigo
     case gray
+    case yellow
 }

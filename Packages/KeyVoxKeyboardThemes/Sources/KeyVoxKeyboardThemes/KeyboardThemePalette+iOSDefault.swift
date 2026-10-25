@@ -10,6 +10,10 @@ extension KeyboardThemePalette {
             light: KeyboardThemeRGBA(red: 1, green: 1, blue: 1),
             dark: KeyboardThemeRGBA(red: 0.62, green: 0.63, blue: 0.78)
         ),
+        activeKeyForeground: KeyboardThemeColor(
+            light: .rgba(KeyboardThemeRGBA(red: 0.72, green: 0.50, blue: 0)),
+            dark: .system(.yellow)
+        ),
         cancelKeyBorder: .system(.indigo)
     )
 }
