@@ -455,7 +455,11 @@ final class AppServiceRegistry {
             ttsManager: ttsManager,
             audioModeCoordinator: audioModeCoordinator,
             appTabRouter: appTabRouter,
-            vibesPurchaseController: keyVoxVibesPurchaseController
+            vibesPurchaseController: keyVoxVibesPurchaseController,
+            keyVoxSpeakIntroController: keyVoxSpeakIntroController,
+            hasInstalledSpeakAssets: {
+                pocketTTSModelManager.hasInstalledSpeakAssets(preferredVoice: settingsStore.ttsVoice)
+            }
         )
 
         settingsStore.$activeDictationProvider

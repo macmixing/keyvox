@@ -15,7 +15,9 @@ struct KeyVoxURLRouterTests {
             ttsManager: harness.ttsManager,
             audioModeCoordinator: harness.audioModeCoordinator,
             appTabRouter: harness.appTabRouter,
-            vibesPurchaseController: harness.vibesPurchaseController
+            vibesPurchaseController: harness.vibesPurchaseController,
+            keyVoxSpeakIntroController: harness.keyVoxSpeakIntroController,
+            hasInstalledSpeakAssets: { false }
         )
 
         router.handle(route: .startRecording, shouldPresentReturnToHost: false)
@@ -34,7 +36,9 @@ struct KeyVoxURLRouterTests {
             ttsManager: harness.ttsManager,
             audioModeCoordinator: harness.audioModeCoordinator,
             appTabRouter: harness.appTabRouter,
-            vibesPurchaseController: harness.vibesPurchaseController
+            vibesPurchaseController: harness.vibesPurchaseController,
+            keyVoxSpeakIntroController: harness.keyVoxSpeakIntroController,
+            hasInstalledSpeakAssets: { false }
         )
 
         router.handle(route: .startRecording, shouldPresentReturnToHost: true)
@@ -53,7 +57,9 @@ struct KeyVoxURLRouterTests {
             ttsManager: harness.ttsManager,
             audioModeCoordinator: harness.audioModeCoordinator,
             appTabRouter: harness.appTabRouter,
-            vibesPurchaseController: harness.vibesPurchaseController
+            vibesPurchaseController: harness.vibesPurchaseController,
+            keyVoxSpeakIntroController: harness.keyVoxSpeakIntroController,
+            hasInstalledSpeakAssets: { false }
         )
 
         router.handle(route: .startTTS, shouldPresentReturnToHost: false)
@@ -72,7 +78,9 @@ struct KeyVoxURLRouterTests {
             ttsManager: harness.ttsManager,
             audioModeCoordinator: harness.audioModeCoordinator,
             appTabRouter: harness.appTabRouter,
-            vibesPurchaseController: harness.vibesPurchaseController
+            vibesPurchaseController: harness.vibesPurchaseController,
+            keyVoxSpeakIntroController: harness.keyVoxSpeakIntroController,
+            hasInstalledSpeakAssets: { false }
         )
 
         router.handle(route: .openDictionary, shouldPresentReturnToHost: false)
@@ -89,7 +97,9 @@ struct KeyVoxURLRouterTests {
             ttsManager: harness.ttsManager,
             audioModeCoordinator: harness.audioModeCoordinator,
             appTabRouter: harness.appTabRouter,
-            vibesPurchaseController: harness.vibesPurchaseController
+            vibesPurchaseController: harness.vibesPurchaseController,
+            keyVoxSpeakIntroController: harness.keyVoxSpeakIntroController,
+            hasInstalledSpeakAssets: { false }
         )
 
         router.handle(route: .openSettings, shouldPresentReturnToHost: false)
@@ -106,13 +116,35 @@ struct KeyVoxURLRouterTests {
             ttsManager: harness.ttsManager,
             audioModeCoordinator: harness.audioModeCoordinator,
             appTabRouter: harness.appTabRouter,
-            vibesPurchaseController: harness.vibesPurchaseController
+            vibesPurchaseController: harness.vibesPurchaseController,
+            keyVoxSpeakIntroController: harness.keyVoxSpeakIntroController,
+            hasInstalledSpeakAssets: { false }
         )
 
         router.handle(route: .openVibes, shouldPresentReturnToHost: false)
 
         #expect(harness.appTabRouter.selectedTab == .style)
         #expect(harness.vibesPurchaseController.sheetPresentation != nil)
+    }
+
+    @Test func openSpeakSetupRoutePresentsSpeakSheetWithSetupScene() async throws {
+        let harness = try makeHarness()
+        defer { harness.cleanup() }
+
+        let router = KeyVoxURLRouter(
+            transcriptionManager: harness.manager,
+            ttsManager: harness.ttsManager,
+            audioModeCoordinator: harness.audioModeCoordinator,
+            appTabRouter: harness.appTabRouter,
+            vibesPurchaseController: harness.vibesPurchaseController,
+            keyVoxSpeakIntroController: harness.keyVoxSpeakIntroController,
+            hasInstalledSpeakAssets: { false }
+        )
+
+        router.handle(route: .openSpeakSetup, shouldPresentReturnToHost: false)
+
+        #expect(harness.keyVoxSpeakIntroController.isPresented)
+        #expect(harness.keyVoxSpeakIntroController.introPresentation.displayedScenes.contains(.c))
     }
 
     private func makeHarness(
@@ -183,6 +215,7 @@ struct KeyVoxURLRouterTests {
             appTabRouter: appTabRouter,
             ttsPurchaseGate: purchaseGate
         )
+        let keyVoxSpeakIntroController = KeyVoxSpeakIntroController(defaults: defaults)
 
         return Harness(
             manager: manager,
@@ -190,6 +223,7 @@ struct KeyVoxURLRouterTests {
             audioModeCoordinator: audioModeCoordinator,
             appTabRouter: appTabRouter,
             vibesPurchaseController: vibesPurchaseController,
+            keyVoxSpeakIntroController: keyVoxSpeakIntroController,
             purchaseGate: purchaseGate,
             tempRootURL: tempRootURL,
             defaultsSuiteName: defaultsSuiteName
@@ -210,6 +244,7 @@ private final class Harness {
     let audioModeCoordinator: AudioModeCoordinator
     let appTabRouter: AppTabRouter
     let vibesPurchaseController: KeyVoxVibesPurchaseController
+    let keyVoxSpeakIntroController: KeyVoxSpeakIntroController
     let purchaseGate: StubTTSPurchaseGate
     private let tempRootURL: URL
     private let defaultsSuiteName: String
@@ -220,6 +255,7 @@ private final class Harness {
         audioModeCoordinator: AudioModeCoordinator,
         appTabRouter: AppTabRouter,
         vibesPurchaseController: KeyVoxVibesPurchaseController,
+        keyVoxSpeakIntroController: KeyVoxSpeakIntroController,
         purchaseGate: StubTTSPurchaseGate,
         tempRootURL: URL,
         defaultsSuiteName: String
@@ -229,6 +265,7 @@ private final class Harness {
         self.audioModeCoordinator = audioModeCoordinator
         self.appTabRouter = appTabRouter
         self.vibesPurchaseController = vibesPurchaseController
+        self.keyVoxSpeakIntroController = keyVoxSpeakIntroController
         self.purchaseGate = purchaseGate
         self.tempRootURL = tempRootURL
         self.defaultsSuiteName = defaultsSuiteName

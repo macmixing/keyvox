@@ -197,7 +197,7 @@ struct KeyVoxApp: App {
     }
 
     private func handle(route: KeyVoxURLRoute, shouldPresentReturnToHost: Bool) {
-        if onboardingStore.shouldShowOnboarding, route.isVibesPresentationRoute {
+        if onboardingStore.shouldShowOnboarding, route.isFeatureSheetRoute {
             Self.log("ignored onboarding route=\(String(describing: route))")
             return
         }
@@ -244,9 +244,9 @@ struct KeyVoxApp: App {
 }
 
 private extension KeyVoxURLRoute {
-    var isVibesPresentationRoute: Bool {
+    var isFeatureSheetRoute: Bool {
         switch self {
-        case .openVibes, .openVibesTrialStart, .openVibesModelRecovery:
+        case .openSpeakSetup, .openVibes, .openVibesTrialStart, .openVibesModelRecovery:
             return true
         case .startRecording, .stopRecording, .startTTS, .openDictionary, .openSettings:
             return false

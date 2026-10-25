@@ -13,6 +13,11 @@ struct KeyVoxURLRouteTests {
         #expect(route == .stopRecording)
     }
 
+    @Test func parsesOpenSpeakSetupRoute() {
+        let route = KeyVoxURLRoute(url: URL(string: "keyvoxios://tts/setup")!)
+        #expect(route == .openSpeakSetup)
+    }
+
     @Test func parsesOpenDictionaryRoute() {
         let route = KeyVoxURLRoute(url: URL(string: "keyvoxios://tab/dictionary")!)
         #expect(route == .openDictionary)

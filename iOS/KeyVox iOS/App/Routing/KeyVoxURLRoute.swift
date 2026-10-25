@@ -4,6 +4,7 @@ nonisolated enum KeyVoxURLRoute: Equatable, Sendable {
     case startRecording
     case stopRecording
     case startTTS
+    case openSpeakSetup
     case openDictionary
     case openSettings
     case openVibes
@@ -29,6 +30,8 @@ nonisolated enum KeyVoxURLRoute: Equatable, Sendable {
             switch normalizedPath {
             case "start":
                 self = .startTTS
+            case "setup":
+                self = .openSpeakSetup
             default:
                 return nil
             }
