@@ -149,6 +149,18 @@ final class PocketTTSModelManager: ObservableObject {
         }
     }
 
+    func effectiveVoice(preferredVoice: AppSettingsStore.TTSVoice) -> AppSettingsStore.TTSVoice {
+        if isVoiceReady(preferredVoice) {
+            return preferredVoice
+        }
+
+        return installedVoices().first ?? preferredVoice
+    }
+
+    func hasInstalledSpeakAssets(preferredVoice: AppSettingsStore.TTSVoice) -> Bool {
+        isReady(for: effectiveVoice(preferredVoice: preferredVoice))
+    }
+
     func isBusyInstallingAnotherTarget(sharedModel: Bool = false, voice: AppSettingsStore.TTSVoice? = nil) -> Bool {
         guard let activeInstallTarget else { return false }
         if sharedModel {
