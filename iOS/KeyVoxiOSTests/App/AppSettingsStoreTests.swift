@@ -1,4 +1,5 @@
 import Foundation
+import KeyVoxKeyboardThemes
 import KeyVoxStyleRewrite
 import Testing
 @testable import KeyVox_iOS
@@ -131,6 +132,20 @@ struct AppSettingsStoreTests {
         #expect(keyboardSettings.isShiftCapsLockEnabled == false)
         #expect(keyboardSettings.isPredictiveTextEnabled == false)
         #expect(keyboardSettings.isPeriodShortcutEnabled == false)
+    }
+
+    @Test func keyboardThemeDefaultsToDefaultAndPersistsForTheKeyboard() {
+        let defaults = UserDefaults(suiteName: #function)!
+        defaults.removePersistentDomain(forName: #function)
+        let store = AppSettingsStore(defaults: defaults)
+
+        #expect(store.keyboardTheme == .default)
+        #expect(KeyboardAppSettingsStore(defaults: defaults).keyboardTheme == .default)
+
+        store.keyboardTheme = .classic
+
+        #expect(KeyboardAppSettingsStore(defaults: defaults).keyboardTheme == .classic)
+        #expect(AppSettingsStore(defaults: defaults).keyboardTheme == .classic)
     }
 
     @Test func openOnNumberPageDefaultsToOffAndPersistsForTheKeyboard() {
