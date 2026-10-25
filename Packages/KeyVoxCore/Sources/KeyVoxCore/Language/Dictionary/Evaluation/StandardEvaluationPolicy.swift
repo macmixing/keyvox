@@ -1,5 +1,6 @@
 enum StandardEvaluationPolicy {
     static let minimumSingleTokenLength = 3
+    static let inflectionSuffixPhonemeCount = 1
 
     static let pluralHomophonePhoneticMinimum = 0.95
     static let pluralHomophoneTextMinimum = 0.35
