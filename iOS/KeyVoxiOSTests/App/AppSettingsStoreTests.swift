@@ -134,13 +134,13 @@ struct AppSettingsStoreTests {
         #expect(keyboardSettings.isPeriodShortcutEnabled == false)
     }
 
-    @Test func keyboardThemeDefaultsToDefaultAndPersistsForTheKeyboard() {
+    @Test func keyboardThemeDefaultsToKeyVoxAndPersistsForTheKeyboard() {
         let defaults = UserDefaults(suiteName: #function)!
         defaults.removePersistentDomain(forName: #function)
         let store = AppSettingsStore(defaults: defaults)
 
-        #expect(store.keyboardTheme == .default)
-        #expect(KeyboardAppSettingsStore(defaults: defaults).keyboardTheme == .default)
+        #expect(store.keyboardTheme == .keyVox)
+        #expect(KeyboardAppSettingsStore(defaults: defaults).keyboardTheme == .keyVox)
 
         store.keyboardTheme = .classic
 

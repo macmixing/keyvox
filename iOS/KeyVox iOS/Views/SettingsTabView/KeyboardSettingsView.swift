@@ -99,7 +99,7 @@ struct KeyboardSettingsView: View {
                 description: KeyboardSettingsCopy.classicThemeDescription,
                 isOn: Binding(
                     get: { settingsStore.keyboardTheme == .classic },
-                    set: { settingsStore.keyboardTheme = $0 ? .classic : .default }
+                    set: { settingsStore.keyboardTheme = $0 ? .classic : .keyVox }
                 )
             )
         }

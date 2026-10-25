@@ -4,7 +4,7 @@ import UIKit
 /// Carries the keyboard's chosen theme down its views, so themed colors resolve with it the way
 /// they resolve with the light or dark appearance.
 struct KeyboardThemeTrait: UITraitDefinition {
-    static let defaultValue = KeyboardThemeID.default
+    static let defaultValue = KeyboardThemeID.keyVox
     static let affectsColorAppearance = true
 }
 

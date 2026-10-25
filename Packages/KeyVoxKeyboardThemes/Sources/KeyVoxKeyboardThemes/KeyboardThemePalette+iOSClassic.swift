@@ -4,7 +4,7 @@ extension KeyboardThemePalette {
     /// both still let the backdrop through. Every key shares one color, as the system keyboard's do,
     /// and a toolbar key that is on uses a deeper gold in light so it stays readable on near-white keys.
     /// In light, disabled keys sit a step below the keyboard backdrop so they stay apart from it, and a
-    /// toolbar key that is on steps down from the near-white keys as gently as it does in the default theme.
+    /// toolbar key that is on steps down from the near-white keys as gently as it does in the KeyVox theme.
     /// Key popups and the highlight under a held key's selected character follow the system keyboard's
     /// measured popups: white with black characters in light, dark gray with white characters in dark,
     /// with the keys' own outline in dark. In light, the microphone button's background is drawn as the

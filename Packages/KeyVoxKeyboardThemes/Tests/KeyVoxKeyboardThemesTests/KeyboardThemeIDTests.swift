@@ -1,7 +1,7 @@
 import XCTest
 @testable import KeyVoxKeyboardThemes
 
-/// A saved theme comes back as itself, and anything missing or unknown falls back to the default.
+/// A saved theme comes back as itself, and anything missing or unknown falls back to KeyVox.
 final class KeyboardThemeIDTests: XCTestCase {
     func testEverySavedThemeResolvesToItself() {
         for theme in KeyboardThemeID.allCases {
@@ -9,9 +9,9 @@ final class KeyboardThemeIDTests: XCTestCase {
         }
     }
 
-    func testMissingOrUnknownThemeResolvesToDefault() {
-        XCTAssertEqual(KeyboardThemeID.resolved(rawValue: nil), .default)
-        XCTAssertEqual(KeyboardThemeID.resolved(rawValue: ""), .default)
-        XCTAssertEqual(KeyboardThemeID.resolved(rawValue: UUID().uuidString), .default)
+    func testMissingOrUnknownThemeResolvesToKeyVox() {
+        XCTAssertEqual(KeyboardThemeID.resolved(rawValue: nil), .keyVox)
+        XCTAssertEqual(KeyboardThemeID.resolved(rawValue: ""), .keyVox)
+        XCTAssertEqual(KeyboardThemeID.resolved(rawValue: UUID().uuidString), .keyVox)
     }
 }
