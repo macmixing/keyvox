@@ -6,6 +6,52 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.5.3] - 2026-10-25
+
+Adds a Classic keyboard theme, makes better use of an open iPhone Duo, and lets dictation start while another app is using audio.
+
+### Added
+
+- Added a Classic Theme toggle in keyboard settings that gives the KeyVox keyboard neutral keys that follow the system keyboard in light and dark mode.
+- Added a tip pointing to the Classic theme in keyboard settings.
+- Added taller keys and more space between rows on an open iPhone Duo in landscape, whether partially or fully open.
+- Added a side-by-side layout for the return-to-app and Speak preparation screens on an open iPhone Duo, with the text beside the video and the gap centered on the fold.
+
+### Changed
+
+- Disabled the Settings, Dictionary, and Speak keys until onboarding is complete.
+- Changed the Speak key to always show, opening Speak setup when no voice is downloaded yet.
+- Removed the blur behind toolbar keys so they tint the keyboard background like the other keys.
+
+### Fixed
+
+- Fixed dictation failing to start from the keyboard while another app was using audio; the keyboard now always hands off to KeyVox, which shows an error only when recording can't start.
+- Fixed the first word after an opening quotation mark not being capitalized at the start of a sentence.
+- Fixed dictionary entries replacing known words they aren't pronounced like, including plurals.
+- Fixed the keyboard updating its contact and text replacement suggestions off the main thread.
+
+### Package versions
+
+KeyVox iOS 1.5.3
+  KeyVoxCore               1.3.8
+  KeyVoxEmoji              1.0.0
+  KeyVoxKeyboardThemes     1.0.0
+  KeyVoxLinguistics        1.0.0
+  KeyVoxLocalInference     1.0.4
+  KeyVoxModels             1.0.0
+  KeyVoxParakeet           1.1.0
+  KeyVoxPredictiveKeyboard 1.0.1
+  KeyVoxPromotions         1.1.0
+  KeyVoxState              1.0.0
+  KeyVoxStyleRewrite       1.1.0
+  KeyVoxTTS                1.1.0
+  KeyVoxTextComposition    1.1.0
+  KeyVoxVibesAdapters      1.0.4
+  KeyVoxVoiceActivity      1.1.1
+  KeyVoxWhisper            1.2.0
+
+---
+
 ## [1.5.2] - 2026-10-23
 
 Brings back the globe key for switching keyboards on iPhone Duo, and fits the return-to-app screens on shorter displays.
