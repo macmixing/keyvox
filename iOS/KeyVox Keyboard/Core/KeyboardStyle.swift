@@ -86,12 +86,14 @@ enum KeyboardStyle {
     static let keyPressedFillColor = UIColor.keyboardTheme(\.keyPressedFill)
     static let specialKeyFillColor = UIColor.keyboardTheme(\.specialKeyFill)
     static let specialKeyPressedFillColor = UIColor.keyboardTheme(\.specialKeyPressedFill)
-    static let keyDisabledFillColor = UIColor.tertiarySystemFill
+    static let keyDisabledFillColor = UIColor.keyboardTheme(\.keyDisabledFill)
+    /// A toolbar key that is on, such as Caps Lock while it is locked.
+    static let activeKeyFillColor = UIColor.keyboardTheme(\.activeKeyFill)
     /// The emoji search's done key, as the system keyboard draws it, light and dark, measured with
     /// Tools/AppleKeyboardBaseline (`EmojiFrequentlyUsedProbeTests`).
     static let emojiSearchDoneFillColor = UIColor(red: 0, green: 122 / 255, blue: 1, alpha: 1)
     static let emojiSearchDoneLabelColor = UIColor.white
-    static let specialKeyDisabledFillColor = UIColor.quaternarySystemFill
+    static let specialKeyDisabledFillColor = UIColor.keyboardTheme(\.specialKeyDisabledFill)
     static let keyBorderColor = UIColor.keyboardTheme(\.keyBorder)
     static let keyPressedBorderColor = UIColor { trait in
         trait.userInterfaceStyle == .light

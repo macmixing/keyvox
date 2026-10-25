@@ -34,6 +34,10 @@ private extension KeyboardThemeSystemColor {
             return .systemYellow
         case .separator:
             return .separator
+        case .tertiaryFill:
+            return .tertiarySystemFill
+        case .quaternaryFill:
+            return .quaternarySystemFill
         }
     }
 }

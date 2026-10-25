@@ -1,6 +1,6 @@
-/// The colors a theme gives the keyboard's keys: letter, special, and toolbar keys and their
-/// outline, their popups with their outline, characters, and highlight, the symbol of a toolbar
-/// key that is on, and the cancel key's border.
+/// The colors a theme gives the keyboard's keys: letter, special, and toolbar keys with their
+/// disabled look and outline, a toolbar key that is on and its symbol, the keys' popups with their
+/// outline, characters, and highlight, and the cancel key's border.
 public struct KeyboardThemePalette: Equatable, Sendable {
     /// Letter keys, and the toolbar keys drawn like them.
     public let keyFill: KeyboardThemeColor
@@ -8,6 +8,10 @@ public struct KeyboardThemePalette: Equatable, Sendable {
     /// Shift, delete, the page keys, space, and return.
     public let specialKeyFill: KeyboardThemeColor
     public let specialKeyPressedFill: KeyboardThemeColor
+    public let keyDisabledFill: KeyboardThemeColor
+    public let specialKeyDisabledFill: KeyboardThemeColor
+    /// A toolbar key that is on, such as Caps Lock while it is locked.
+    public let activeKeyFill: KeyboardThemeColor
     public let keyFillOpacity: KeyboardThemeKeyOpacity
     /// The outline around keys.
     public let keyBorder: KeyboardThemeColor
@@ -28,6 +32,9 @@ public struct KeyboardThemePalette: Equatable, Sendable {
         keyPressedFill: KeyboardThemeColor,
         specialKeyFill: KeyboardThemeColor,
         specialKeyPressedFill: KeyboardThemeColor,
+        keyDisabledFill: KeyboardThemeColor,
+        specialKeyDisabledFill: KeyboardThemeColor,
+        activeKeyFill: KeyboardThemeColor,
         keyFillOpacity: KeyboardThemeKeyOpacity,
         keyBorder: KeyboardThemeColor,
         popupFill: KeyboardThemeColor,
@@ -41,6 +48,9 @@ public struct KeyboardThemePalette: Equatable, Sendable {
         self.keyPressedFill = keyPressedFill
         self.specialKeyFill = specialKeyFill
         self.specialKeyPressedFill = specialKeyPressedFill
+        self.keyDisabledFill = keyDisabledFill
+        self.specialKeyDisabledFill = specialKeyDisabledFill
+        self.activeKeyFill = activeKeyFill
         self.keyFillOpacity = keyFillOpacity
         self.keyBorder = keyBorder
         self.popupFill = popupFill
