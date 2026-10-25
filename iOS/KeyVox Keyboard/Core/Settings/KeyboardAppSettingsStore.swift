@@ -19,6 +19,10 @@ final class KeyboardAppSettingsStore {
         self.isVibesAIInstalledProvider = isVibesAIInstalledProvider
     }
 
+    var hasCompletedOnboarding: Bool {
+        defaults?.bool(forKey: UserDefaultsKeys.App.hasCompletedOnboarding) == true
+    }
+
     var selectedVibeTitle: String {
         selectedVibe.displayName
     }
