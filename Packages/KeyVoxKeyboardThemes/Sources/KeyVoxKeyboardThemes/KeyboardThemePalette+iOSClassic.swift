@@ -3,8 +3,8 @@ extension KeyboardThemePalette {
     /// light keys read nearly white and dark keys land on the system keyboard's key gray, while
     /// both still let the backdrop through. Every key shares one color, as the system keyboard's do,
     /// and a toolbar key that is on uses a deeper gold in light so it stays readable on near-white keys.
-    /// Disabled keys and a toolbar key that is on step down from the near-white keys in light as gently
-    /// as they do in the default theme.
+    /// In light, disabled keys sit a step below the keyboard backdrop so they stay apart from it, and a
+    /// toolbar key that is on steps down from the near-white keys as gently as it does in the default theme.
     /// Key popups and the highlight under a held key's selected character follow the system keyboard's
     /// measured popups: white with black characters in light, dark gray with white characters in dark,
     /// with the keys' own outline in dark.
@@ -14,11 +14,11 @@ extension KeyboardThemePalette {
         specialKeyFill: iOSClassicKeyFill,
         specialKeyPressedFill: iOSClassicKeyPressedFill,
         keyDisabledFill: KeyboardThemeColor(
-            light: .rgba(KeyboardThemeRGBA(red: 0.907, green: 0.907, blue: 0.925)),
+            light: .rgba(KeyboardThemeRGBA(red: 0.82, green: 0.82, blue: 0.84)),
             dark: .system(.tertiaryFill)
         ),
         specialKeyDisabledFill: KeyboardThemeColor(
-            light: .rgba(KeyboardThemeRGBA(red: 0.93, green: 0.93, blue: 0.948)),
+            light: .rgba(KeyboardThemeRGBA(red: 0.85, green: 0.85, blue: 0.87)),
             dark: .system(.quaternaryFill)
         ),
         activeKeyFill: KeyboardThemeColor(
