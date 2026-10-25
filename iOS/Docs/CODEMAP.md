@@ -1497,9 +1497,8 @@ Packages/
   - Keyboard-side style rewrite transport that writes the base text, style, and saved dictation language into a `KeyVoxStyleRewriteIPCRequest`, polls for the matching response, and returns package-shaped transform results with processing mode `app-ipc`.
   - Keeps local rewrite model execution out of the extension.
 - `KeyVox Keyboard/Core/Dictation/KeyboardDictationController.swift`
-  - Owns the keyboard-side recording request lifecycle, including a synchronous keyboard-process audio-session gate, a generic two-second start-failure state, and the no-response fallback.
-  - The gate reads the extension's live `AVAudioSession` values directly; it does not consume a persisted containing-app availability flag.
-  - Consumes containing-app startup results from shared state so a failure remains observable across the temporary app handoff.
+  - Owns the keyboard-side recording request lifecycle, including warm Darwin signaling, cold URL handoff, a generic two-second start-failure state, and the no-response fallback.
+  - Consumes containing-app startup results from shared state so app-reported recorder failures remain observable across the temporary app handoff.
   - Keyboard-local state machine for shared recording state and app launch handoff.
 - `../Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/DictationDeterministicState.swift`
   - Shared paragraph/list state value used by both keyboard long-press changes and Mac trigger-key changes.
