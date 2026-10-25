@@ -73,7 +73,6 @@ final class KeyboardDictationController {
     private let scheduleAction: KeyboardActionScheduler
     private let openContainingApp: (URL?) -> Void
     private let startRecordingURL: URL?
-    private let isAudioCaptureAvailable: () -> Bool
     private let waitingTimeoutDuration: TimeInterval
     private let failureDisplayDuration: TimeInterval
     private let warmSessionGracePeriod: TimeInterval
@@ -98,7 +97,6 @@ final class KeyboardDictationController {
         scheduleAction: @escaping KeyboardActionScheduler,
         openContainingApp: @escaping (URL?) -> Void,
         startRecordingURL: URL?,
-        isAudioCaptureAvailable: @escaping () -> Bool = { true },
         waitingTimeoutDuration: TimeInterval = 5,
         failureDisplayDuration: TimeInterval = KeyVoxIPCBridge.recordingStartFailureDisplayDuration,
         warmSessionGracePeriod: TimeInterval = 0.5,
@@ -110,7 +108,6 @@ final class KeyboardDictationController {
         self.scheduleAction = scheduleAction
         self.openContainingApp = openContainingApp
         self.startRecordingURL = startRecordingURL
-        self.isAudioCaptureAvailable = isAudioCaptureAvailable
         self.waitingTimeoutDuration = waitingTimeoutDuration
         self.failureDisplayDuration = failureDisplayDuration
         self.warmSessionGracePeriod = warmSessionGracePeriod
@@ -166,10 +163,6 @@ final class KeyboardDictationController {
 
         switch state {
         case .idle:
-            guard isAudioCaptureAvailable() else {
-                presentRecordingStartFailure()
-                return
-            }
             state = .waitingForApp
             scheduleWaitingTimeout()
 
@@ -185,10 +178,6 @@ final class KeyboardDictationController {
             ipcManager.sendStopCommand()
             scheduleTranscriptionReconciliation()
         case .speaking, .pausedSpeaking:
-            guard isAudioCaptureAvailable() else {
-                presentRecordingStartFailure()
-                return
-            }
             state = .waitingForApp
             scheduleWaitingTimeout()
 
@@ -308,10 +297,6 @@ final class KeyboardDictationController {
                 return
             }
             self.state = .waitingForApp
-            guard self.isAudioCaptureAvailable() else {
-                self.presentRecordingStartFailure()
-                return
-            }
             self.openContainingApp(self.startRecordingURL)
         }
     }

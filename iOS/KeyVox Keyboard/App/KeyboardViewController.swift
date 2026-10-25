@@ -50,13 +50,7 @@ final class KeyboardViewController: UIInputViewController {
         openContainingApp: { [weak self] url in
             self?.containingAppLauncher.open(url)
         },
-        startRecordingURL: startRecordingURL,
-        isAudioCaptureAvailable: {
-            let audioSession = AVAudioSession.sharedInstance()
-            let currentAudioConflict = audioSession.isOtherAudioPlaying
-                && audioSession.secondaryAudioShouldBeSilencedHint
-            return !currentAudioConflict
-        }
+        startRecordingURL: startRecordingURL
     )
     lazy var ttsController = KeyboardTTSController(
         ipcManager: ipcManager,
