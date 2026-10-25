@@ -6,6 +6,21 @@
   },
   "campaigns": [
     {
+      "id": "ios-classic-theme",
+      "targets": [
+        {
+          "platform": "ios",
+          "minimumAppVersion": "1.5.3"
+        }
+      ],
+      "icon": {
+        "kind": "systemImage",
+        "name": "paintpalette"
+      },
+      "title": "Change the keyboard theme!",
+      "message": "Inside of the KeyVox keyboard settings, enable our Classic theme for a more familiar look."
+    },
+    {
       "id": "ios-keyboard-settings",
       "targets": [
         {
