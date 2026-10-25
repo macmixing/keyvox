@@ -14,6 +14,11 @@ Initial shared keyboard themes for KeyVox keyboards.
 
 - KeyVox theme with KeyVox's lavender and indigo keys, used unless another theme is chosen.
 - Classic theme with neutral keys that follow each platform's system keyboard.
-- Theme colors for letter, special, and toolbar keys, their outline and pressed and disabled states, a toolbar key that is on, key popups and their outline, characters, and selected-character highlight, the symbol of a toolbar key that is on, the cancel key's border, and the microphone button's background, with how strongly keys cover the keyboard backdrop in each appearance.
+- Key colors for letter, special, and toolbar keys, including their pressed and disabled states and outline.
+- How strongly keys cover the keyboard backdrop, set separately for light and dark appearances.
+- Colors for a toolbar key that is on, and for its symbol and title.
+- Key popup colors for the fill, outline, characters, and the highlight under a held key's selected character.
+- The cancel key's border and the microphone button's background.
+- Theme colors given as explicit values or as a platform's system colors, separately for light and dark appearances.
 - Palettes defined per platform, starting with iOS, so each theme can follow a platform's own look.
 - Saved theme lookup that falls back to the KeyVox theme.
