@@ -6,6 +6,22 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.3.8] - 2026-10-24
+
+Dictionary matching no longer replaces a single known word with a dictionary entry it is not pronounced like.
+
+### Includes
+
+- Prevented a known word from being replaced by a single-word dictionary entry when its pronunciation differs from the entry, such as `doom` becoming `Dom`.
+- Prevented a known plural word from being treated as the plural of a single-word dictionary entry unless it only adds the plural sound to the entry, such as `dominoes` becoming `Doms`.
+- Added regression coverage for pronunciation-checked single words and plurals.
+
+### Notes
+
+- `1.3.8` tracks pronunciation-aware single-word dictionary matching.
+
+---
+
 ## [1.3.7] - 2026-10-08
 
 Whisper and Parakeet no longer block app startup while preparing speech detection and dictation models, and dictionary matching handles real words and split entry words more accurately.

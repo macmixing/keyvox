@@ -51,6 +51,22 @@ final class DictionaryMatcherTests: LinguisticAnalyzerTestCase {
         XCTAssertEqual(matcher.apply(to: input).text, input)
     }
 
+    func testDoesNotReplaceKnownWordPronouncedDifferentlyFromDictionaryName() async {
+        let matcher = makeRuntimeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Dom")])
+        let input = "Last night I was doom scrolling."
+
+        XCTAssertEqual(matcher.apply(to: input).text, input)
+    }
+
+    func testDoesNotTreatKnownPluralWordAsPluralOfDictionaryName() async {
+        let matcher = makeRuntimeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Dom")])
+        let input = "Don't play with my dominoes."
+
+        XCTAssertEqual(matcher.apply(to: input).text, input)
+    }
+
     func testDoesNotMatchNumericDictionaryEntryToUnrelatedPluralTail() async {
         let matcher = makeRuntimeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "7-Eleven")])

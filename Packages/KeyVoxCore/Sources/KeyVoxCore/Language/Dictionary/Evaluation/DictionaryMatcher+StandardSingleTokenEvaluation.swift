@@ -26,6 +26,15 @@ extension DictionaryMatcher {
         let best = selection.candidate
         let observedToken = window[0]
         let candidateToken = best.entry.tokens[0]
+        guard hasSingleTokenPronunciationEvidence(
+            observedToken: observedToken.normalized,
+            observedForm: selection.observedNormalized,
+            replacementSuffix: best.replacementSuffix,
+            candidate: candidateToken
+        ) else {
+            stats.rejectedLowScore += 1
+            return nil
+        }
         let candidatePhonetic = encoder.scoringSignature(for: candidateToken, lexicon: lexicon)
         let surfaceObservedNormalized = selection.observedNormalized
         let textSimilarity = scorer.similarity(lhs: surfaceObservedNormalized, rhs: candidateToken)
