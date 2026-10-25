@@ -42,11 +42,7 @@ enum KeyboardStyle {
     static let popupShadowRadius: CGFloat = 4
     static let popupShadowOffset = CGSize(width: 0, height: 3)
     static let popupFillColor = UIColor.keyboardTheme(\.popupFill)
-    static let popupBorderColor = UIColor { trait in
-        trait.userInterfaceStyle == .light
-            ? UIColor.separator.withAlphaComponent(0.45)
-            : UIColor.white.withAlphaComponent(0.50)
-    }
+    static let popupBorderColor = UIColor.keyboardTheme(\.popupBorder)
     static let popupLabelColor = UIColor.keyboardTheme(\.popupLabel)
     static let popupFont = UIFont.systemFont(ofSize: 32, weight: .medium)
 

@@ -10,6 +10,10 @@ extension KeyboardThemePalette {
             light: KeyboardThemeRGBA(red: 1, green: 1, blue: 1),
             dark: KeyboardThemeRGBA(red: 0.62, green: 0.63, blue: 0.78)
         ),
+        popupBorder: KeyboardThemeColor(
+            light: .system(.separator, alpha: 0.45),
+            dark: .rgba(KeyboardThemeRGBA(red: 1, green: 1, blue: 1, alpha: 0.5))
+        ),
         popupLabel: .fixed(KeyboardThemeRGBA(red: 0, green: 0, blue: 0)),
         heldKeyPopupHighlight: .fixed(KeyboardThemeRGBA(red: 0, green: 0, blue: 0, alpha: 0.106)),
         activeKeyForeground: KeyboardThemeColor(

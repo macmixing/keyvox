@@ -16,8 +16,9 @@ extension KeyboardThemeColor {
         switch shade {
         case let .rgba(rgba):
             return UIColor(red: rgba.red, green: rgba.green, blue: rgba.blue, alpha: rgba.alpha)
-        case let .system(color):
-            return color.uiColor.resolvedColor(with: traits)
+        case let .system(color, alpha):
+            let resolved = color.uiColor.resolvedColor(with: traits)
+            return alpha.map { resolved.withAlphaComponent($0) } ?? resolved
         }
     }
 }
@@ -31,6 +32,8 @@ private extension KeyboardThemeSystemColor {
             return .systemGray
         case .yellow:
             return .systemYellow
+        case .separator:
+            return .separator
         }
     }
 }

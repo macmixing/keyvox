@@ -4,7 +4,8 @@ extension KeyboardThemePalette {
     /// both still let the backdrop through. Every key shares one color, as the system keyboard's do,
     /// and a toolbar key that is on uses a deeper gold in light so it stays readable on near-white keys.
     /// Key popups and the highlight under a held key's selected character follow the system keyboard's
-    /// measured popups: white with black characters in light, dark gray with white characters in dark.
+    /// measured popups: white with black characters in light, dark gray with white characters in dark,
+    /// with a softer outline in dark that sits closer to the keys' own.
     public static let iOSClassic = KeyboardThemePalette(
         keyFill: iOSClassicKeyFill,
         keyPressedFill: iOSClassicKeyPressedFill,
@@ -14,6 +15,10 @@ extension KeyboardThemePalette {
         popupFill: .appearance(
             light: KeyboardThemeRGBA(red: 1, green: 1, blue: 1),
             dark: KeyboardThemeRGBA(red: 0.224, green: 0.224, blue: 0.224)
+        ),
+        popupBorder: KeyboardThemeColor(
+            light: .system(.separator, alpha: 0.45),
+            dark: .rgba(KeyboardThemeRGBA(red: 1, green: 1, blue: 1, alpha: 0.3))
         ),
         popupLabel: .appearance(
             light: KeyboardThemeRGBA(red: 0, green: 0, blue: 0),
