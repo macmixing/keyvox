@@ -1,3 +1,4 @@
+import KeyVoxKeyboardThemes
 import UIKit
 
 enum KeyboardStyle {
@@ -40,9 +41,7 @@ enum KeyboardStyle {
     static let popupShadowOpacity: Float = 0.25
     static let popupShadowRadius: CGFloat = 4
     static let popupShadowOffset = CGSize(width: 0, height: 3)
-    static let popupFillColor = UIColor { trait in
-        trait.userInterfaceStyle == .dark ? UIColor(red: 0.62, green: 0.63, blue: 0.78, alpha: 1) : UIColor(red: 1.0, green: 1.0, blue: 1.0, alpha: 1)
-    }
+    static let popupFillColor = UIColor.keyboardTheme(\.popupFill)
     static let popupBorderColor = UIColor { trait in
         trait.userInterfaceStyle == .light
             ? UIColor.separator.withAlphaComponent(0.45)
@@ -83,15 +82,15 @@ enum KeyboardStyle {
     static let buttonFillColor = UIColor.secondarySystemBackground
     static let controlBlurEffectStyle: UIBlurEffect.Style = .systemThinMaterial
     static let cancelButtonSize: CGFloat = 32
-    static let cancelButtonBorderColor = UIColor.systemIndigo
+    static let cancelButtonBorderColor = UIColor.keyboardTheme(\.cancelKeyBorder)
     static let cancelButtonIconColor = UIColor.systemRed
     static let cancelButtonBorderWidth: CGFloat = 0.5
     static let keyBorderWidth: CGFloat = 0.5
 
-    static let keyFillColor = UIColor(red: 0.67, green: 0.67, blue: 0.92, alpha: 1)
-    static let keyPressedFillColor = UIColor(red: 0.29, green: 0.31, blue: 0.55, alpha: 1)
-    static let specialKeyFillColor = UIColor(red: 0.35, green: 0.36, blue: 0.66, alpha: 1)
-    static let specialKeyPressedFillColor = UIColor(red: 0.19, green: 0.20, blue: 0.36, alpha: 1)
+    static let keyFillColor = UIColor.keyboardTheme(\.keyFill)
+    static let keyPressedFillColor = UIColor.keyboardTheme(\.keyPressedFill)
+    static let specialKeyFillColor = UIColor.keyboardTheme(\.specialKeyFill)
+    static let specialKeyPressedFillColor = UIColor.keyboardTheme(\.specialKeyPressedFill)
     static let keyDisabledFillColor = UIColor.tertiarySystemFill
     /// The emoji search's done key, as the system keyboard draws it, light and dark, measured with
     /// Tools/AppleKeyboardBaseline (`EmojiFrequentlyUsedProbeTests`).
@@ -116,12 +115,18 @@ enum KeyboardStyle {
     static let keyLabelColor = UIColor.label
     static let keyDisabledLabelColor = UIColor.secondaryLabel.withAlphaComponent(0.7)
 
-    static func activeForegroundColor(for traitCollection: UITraitCollection) -> UIColor {
-        guard traitCollection.userInterfaceStyle == .light else {
-            return .systemYellow
+    /// A key's fill as it tints the keyboard backdrop behind it, as strongly as the theme sets for
+    /// the appearance.
+    static func keyTintColor(_ fill: UIColor) -> UIColor {
+        UIColor { traits in
+            let opacity = traits.keyboardThemePalette.keyFillOpacity
+            let alpha = traits.userInterfaceStyle == .dark ? opacity.dark : opacity.light
+            return fill.resolvedColor(with: traits).withAlphaComponent(alpha)
         }
+    }
 
-        return UIColor(red: 0.72, green: 0.50, blue: 0, alpha: 1)
+    static func activeForegroundColor(for traitCollection: UITraitCollection) -> UIColor {
+        traitCollection.keyboardThemePalette.activeKeyForeground.resolvedColor(with: traitCollection)
     }
 
     static func pressedActiveForegroundColor(for traitCollection: UITraitCollection) -> UIColor {

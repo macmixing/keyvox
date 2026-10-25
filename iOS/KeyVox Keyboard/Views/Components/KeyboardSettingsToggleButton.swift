@@ -131,7 +131,7 @@ final class KeyboardSettingsToggleButton: UIControl {
     }
 
     private func observeBorderAppearanceChanges() {
-        registerForTraitChanges([UITraitUserInterfaceStyle.self]) { (self: Self, _: UITraitCollection) in
+        registerForTraitChanges([UITraitUserInterfaceStyle.self, KeyboardThemeTrait.self]) { (self: Self, _: UITraitCollection) in
             self.updateVisualState(animated: false)
         }
     }
@@ -143,7 +143,7 @@ final class KeyboardSettingsToggleButton: UIControl {
 
         let applyState = {
             self.backgroundView.transform = .identity
-            self.tintOverlay.backgroundColor = colors.fill.withAlphaComponent(0.3)
+            self.tintOverlay.backgroundColor = KeyboardStyle.keyTintColor(colors.fill)
             self.borderRenderer.strokeColor = self.isTrackpadModeActive ? UIColor.clear.cgColor : resolvedBorderColor.cgColor
             self.backgroundView.layer.shadowColor = shadow.color.cgColor
             self.backgroundView.layer.shadowOpacity = shadow.opacity

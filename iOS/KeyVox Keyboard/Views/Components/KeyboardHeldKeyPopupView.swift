@@ -14,7 +14,7 @@ final class KeyboardHeldKeyPopupView: UIView {
         highlightView.backgroundColor = KeyboardStyle.heldKeyPopupHighlightColor
         highlightView.layer.cornerRadius = KeyboardStyle.heldKeyPopupHighlightCornerRadius
         addSubview(highlightView)
-        registerForTraitChanges([UITraitUserInterfaceStyle.self]) { (self: Self, _: UITraitCollection) in
+        registerForTraitChanges([UITraitUserInterfaceStyle.self, KeyboardThemeTrait.self]) { (self: Self, _: UITraitCollection) in
             self.setNeedsLayout()
             self.layoutIfNeeded()
         }

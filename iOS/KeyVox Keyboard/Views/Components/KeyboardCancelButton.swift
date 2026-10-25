@@ -1,7 +1,6 @@
 import UIKit
 
 final class KeyboardCancelButton: UIControl {
-    private let fillAlpha: CGFloat = 0.3
     private let highlightedBorderAlpha: CGFloat = 0.3
     private let normalBorderAlpha: CGFloat = 0.7
     private let iconAlpha: CGFloat = 0.8
@@ -102,7 +101,7 @@ final class KeyboardCancelButton: UIControl {
     }
 
     private func observeBorderAppearanceChanges() {
-        registerForTraitChanges([UITraitUserInterfaceStyle.self]) { (self: Self, _: UITraitCollection) in
+        registerForTraitChanges([UITraitUserInterfaceStyle.self, KeyboardThemeTrait.self]) { (self: Self, _: UITraitCollection) in
             self.updateVisualState(animated: false)
         }
     }
@@ -115,7 +114,7 @@ final class KeyboardCancelButton: UIControl {
         
         let animations = {
             self.backgroundView.transform = transform
-            self.tintOverlay.backgroundColor = colors.fill.withAlphaComponent(self.fillAlpha)
+            self.tintOverlay.backgroundColor = KeyboardStyle.keyTintColor(colors.fill)
             self.borderRenderer.strokeColor = self.isTrackpadModeActive ? UIColor.clear.cgColor : resolvedBorderColor.cgColor
             self.iconImageView.tintColor = colors.icon
             self.iconImageView.alpha = self.isTrackpadModeActive ? 0 : (self.isHighlighted ? self.highlightedIconAlpha : self.normalIconAlpha)
