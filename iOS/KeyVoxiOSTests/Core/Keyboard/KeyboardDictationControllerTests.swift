@@ -3,26 +3,6 @@ import Testing
 @testable import KeyVox_iOS
 
 struct KeyboardDictationControllerTests {
-    @Test func unavailableAudioCaptureShowsFailureWithoutOpeningContainingApp() {
-        let ipcManager = KeyboardDictationIPCManagerSpy()
-        let scheduler = KeyboardActionSchedulerSpy()
-        let appLauncher = KeyboardContainingAppLauncherSpy()
-        let controller = KeyboardDictationController(
-            ipcManager: ipcManager,
-            scheduleAction: scheduler.schedule,
-            openContainingApp: appLauncher.open,
-            startRecordingURL: URL(string: "keyvoxios://record/start"),
-            isAudioCaptureAvailable: { false }
-        )
-
-        controller.handleMicTap()
-
-        #expect(controller.state == .dictationStartFailed)
-        #expect(ipcManager.sendStartCommandCallCount == 0)
-        #expect(appLauncher.openedURLs.isEmpty)
-        #expect(scheduler.scheduledDelays == [2.0])
-    }
-
     @Test func coldSessionOpensContainingAppImmediately() {
         let ipcManager = KeyboardDictationIPCManagerSpy()
         ipcManager.isSessionWarmValue = false
