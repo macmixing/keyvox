@@ -22,7 +22,7 @@ extension KeyboardThemePalette {
 
     private static let iOSClassicKeyFill = KeyboardThemeColor.appearance(
         light: KeyboardThemeRGBA(red: 1, green: 1, blue: 1),
-        dark: KeyboardThemeRGBA(red: 0.73, green: 0.73, blue: 0.73)
+        dark: KeyboardThemeRGBA(red: 0.64, green: 0.64, blue: 0.64)
     )
 
     private static let iOSClassicKeyPressedFill = KeyboardThemeColor.appearance(
