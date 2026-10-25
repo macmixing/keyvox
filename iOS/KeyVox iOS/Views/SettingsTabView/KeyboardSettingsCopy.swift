@@ -14,7 +14,7 @@ enum KeyboardSettingsCopy {
     static let leftHandedLayoutTitle = "Left-Handed Layout"
     static let leftHandedLayoutDescription = "Mirror KeyVox controls for easier left-hand access."
     static let classicThemeTitle = "Classic Theme"
-    static let classicThemeDescription = "Use neutral gray keys instead of KeyVox colors."
+    static let classicThemeDescription = "Use neutral keys instead of KeyVox colors."
     static let compactKeysTitle = "Compact Keys"
     static let compactKeysDescription = "Long-press #+= to use a shorter keyboard."
     static let openOnNumberPageTitle = "Open on 123"
