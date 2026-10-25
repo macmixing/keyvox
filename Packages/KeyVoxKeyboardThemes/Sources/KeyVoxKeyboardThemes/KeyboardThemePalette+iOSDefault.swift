@@ -6,6 +6,7 @@ extension KeyboardThemePalette {
         specialKeyFill: .fixed(KeyboardThemeRGBA(red: 0.35, green: 0.36, blue: 0.66)),
         specialKeyPressedFill: .fixed(KeyboardThemeRGBA(red: 0.19, green: 0.20, blue: 0.36)),
         keyFillOpacity: KeyboardThemeKeyOpacity(light: 0.3, dark: 0.3),
+        keyBorder: .iOSKeyBorder,
         popupFill: .appearance(
             light: KeyboardThemeRGBA(red: 1, green: 1, blue: 1),
             dark: KeyboardThemeRGBA(red: 0.62, green: 0.63, blue: 0.78)

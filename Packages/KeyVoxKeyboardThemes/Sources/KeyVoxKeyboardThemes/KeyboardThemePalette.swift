@@ -1,6 +1,6 @@
-/// The colors a theme gives the keyboard's keys: letter, special, and toolbar keys, their
-/// popups with their outline, characters, and highlight, the symbol of a toolbar key that is on,
-/// and the cancel key's border.
+/// The colors a theme gives the keyboard's keys: letter, special, and toolbar keys and their
+/// outline, their popups with their outline, characters, and highlight, the symbol of a toolbar
+/// key that is on, and the cancel key's border.
 public struct KeyboardThemePalette: Equatable, Sendable {
     /// Letter keys, and the toolbar keys drawn like them.
     public let keyFill: KeyboardThemeColor
@@ -9,6 +9,8 @@ public struct KeyboardThemePalette: Equatable, Sendable {
     public let specialKeyFill: KeyboardThemeColor
     public let specialKeyPressedFill: KeyboardThemeColor
     public let keyFillOpacity: KeyboardThemeKeyOpacity
+    /// The outline around keys.
+    public let keyBorder: KeyboardThemeColor
     /// The popups that show above a tapped or held key.
     public let popupFill: KeyboardThemeColor
     /// The outline around those popups.
@@ -27,6 +29,7 @@ public struct KeyboardThemePalette: Equatable, Sendable {
         specialKeyFill: KeyboardThemeColor,
         specialKeyPressedFill: KeyboardThemeColor,
         keyFillOpacity: KeyboardThemeKeyOpacity,
+        keyBorder: KeyboardThemeColor,
         popupFill: KeyboardThemeColor,
         popupBorder: KeyboardThemeColor,
         popupLabel: KeyboardThemeColor,
@@ -39,6 +42,7 @@ public struct KeyboardThemePalette: Equatable, Sendable {
         self.specialKeyFill = specialKeyFill
         self.specialKeyPressedFill = specialKeyPressedFill
         self.keyFillOpacity = keyFillOpacity
+        self.keyBorder = keyBorder
         self.popupFill = popupFill
         self.popupBorder = popupBorder
         self.popupLabel = popupLabel
