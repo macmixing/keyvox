@@ -75,7 +75,6 @@ enum KeyboardStyle {
     static let labelColor = UIColor.label
     static let secondaryLabelColor = UIColor.secondaryLabel
     static let buttonFillColor = UIColor.secondarySystemBackground
-    static let controlBlurEffectStyle: UIBlurEffect.Style = .systemThinMaterial
     static let cancelButtonSize: CGFloat = 32
     static let cancelButtonBorderColor = UIColor.keyboardTheme(\.cancelKeyBorder)
     static let cancelButtonIconColor = UIColor.systemRed

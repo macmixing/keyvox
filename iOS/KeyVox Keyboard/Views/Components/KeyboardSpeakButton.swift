@@ -4,7 +4,6 @@ final class KeyboardSpeakButton: UIControl {
     private static let symbolConfiguration = UIImage.SymbolConfiguration(pointSize: 18, weight: .regular)
 
     private let backgroundView = UIView()
-    private let blurEffectView = UIVisualEffectView(effect: UIBlurEffect(style: .systemThinMaterial))
     private let tintOverlay = UIView()
     private let imageView = UIImageView()
     private lazy var borderRenderer = KeyboardRoundedBorderRenderer(containerView: backgroundView)
@@ -42,6 +41,7 @@ final class KeyboardSpeakButton: UIControl {
     override func layoutSubviews() {
         super.layoutSubviews()
         updateBorderPath()
+        updateShadowPath()
     }
 
     override var isHighlighted: Bool {
@@ -67,11 +67,6 @@ final class KeyboardSpeakButton: UIControl {
         backgroundView.backgroundColor = .clear
         backgroundView.isUserInteractionEnabled = false
 
-        blurEffectView.translatesAutoresizingMaskIntoConstraints = false
-        blurEffectView.layer.cornerRadius = KeyboardStyle.keyCornerRadius
-        blurEffectView.clipsToBounds = true
-        blurEffectView.isUserInteractionEnabled = false
-
         tintOverlay.translatesAutoresizingMaskIntoConstraints = false
         tintOverlay.layer.cornerRadius = KeyboardStyle.keyCornerRadius
         tintOverlay.clipsToBounds = true
@@ -82,7 +77,6 @@ final class KeyboardSpeakButton: UIControl {
         imageView.isUserInteractionEnabled = false
 
         addSubview(backgroundView)
-        backgroundView.addSubview(blurEffectView)
         backgroundView.addSubview(tintOverlay)
         addSubview(imageView)
         _ = borderRenderer
@@ -92,11 +86,6 @@ final class KeyboardSpeakButton: UIControl {
             backgroundView.trailingAnchor.constraint(equalTo: trailingAnchor),
             backgroundView.topAnchor.constraint(equalTo: topAnchor),
             backgroundView.bottomAnchor.constraint(equalTo: bottomAnchor),
-
-            blurEffectView.leadingAnchor.constraint(equalTo: backgroundView.leadingAnchor),
-            blurEffectView.trailingAnchor.constraint(equalTo: backgroundView.trailingAnchor),
-            blurEffectView.topAnchor.constraint(equalTo: backgroundView.topAnchor),
-            blurEffectView.bottomAnchor.constraint(equalTo: backgroundView.bottomAnchor),
 
             tintOverlay.leadingAnchor.constraint(equalTo: backgroundView.leadingAnchor),
             tintOverlay.trailingAnchor.constraint(equalTo: backgroundView.trailingAnchor),
@@ -143,6 +132,15 @@ final class KeyboardSpeakButton: UIControl {
         } else {
             applyState()
         }
+    }
+
+    /// Gives the shadow the key's rounded shape, so it is not worked out from the key's
+    /// contents each frame.
+    private func updateShadowPath() {
+        backgroundView.layer.shadowPath = UIBezierPath(
+            roundedRect: backgroundView.bounds,
+            cornerRadius: KeyboardStyle.keyCornerRadius
+        ).cgPath
     }
 
     private func updateBorderPath() {

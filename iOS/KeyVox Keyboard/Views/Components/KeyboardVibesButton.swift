@@ -3,7 +3,6 @@ import UIKit
 
 final class KeyboardVibesButton: UIControl {
     private let backgroundView = UIView()
-    private let blurEffectView = UIVisualEffectView(effect: UIBlurEffect(style: .systemThinMaterial))
     private let tintOverlay = UIView()
     private let contentStackView = UIStackView()
     private let noneIconBaseImage = UIImage(named: "vibes-logo")
@@ -64,6 +63,7 @@ final class KeyboardVibesButton: UIControl {
     override func layoutSubviews() {
         super.layoutSubviews()
         updateBorderPath()
+        updateShadowPath()
         updateNoneIconImageIfNeeded(for: currentForegroundColor())
     }
 
@@ -90,11 +90,6 @@ final class KeyboardVibesButton: UIControl {
         backgroundView.layer.masksToBounds = false
         backgroundView.backgroundColor = .clear
         backgroundView.isUserInteractionEnabled = false
-
-        blurEffectView.translatesAutoresizingMaskIntoConstraints = false
-        blurEffectView.layer.cornerRadius = KeyboardStyle.keyCornerRadius
-        blurEffectView.clipsToBounds = true
-        blurEffectView.isUserInteractionEnabled = false
 
         tintOverlay.translatesAutoresizingMaskIntoConstraints = false
         tintOverlay.layer.cornerRadius = KeyboardStyle.keyCornerRadius
@@ -123,7 +118,6 @@ final class KeyboardVibesButton: UIControl {
         titleLabel.text = title
 
         addSubview(backgroundView)
-        backgroundView.addSubview(blurEffectView)
         backgroundView.addSubview(tintOverlay)
         contentStackView.addArrangedSubview(noneIconImageView)
         contentStackView.addArrangedSubview(titleLabel)
@@ -135,11 +129,6 @@ final class KeyboardVibesButton: UIControl {
             backgroundView.trailingAnchor.constraint(equalTo: trailingAnchor),
             backgroundView.topAnchor.constraint(equalTo: topAnchor),
             backgroundView.bottomAnchor.constraint(equalTo: bottomAnchor),
-
-            blurEffectView.leadingAnchor.constraint(equalTo: backgroundView.leadingAnchor),
-            blurEffectView.trailingAnchor.constraint(equalTo: backgroundView.trailingAnchor),
-            blurEffectView.topAnchor.constraint(equalTo: backgroundView.topAnchor),
-            blurEffectView.bottomAnchor.constraint(equalTo: backgroundView.bottomAnchor),
 
             tintOverlay.leadingAnchor.constraint(equalTo: backgroundView.leadingAnchor),
             tintOverlay.trailingAnchor.constraint(equalTo: backgroundView.trailingAnchor),
@@ -190,6 +179,15 @@ final class KeyboardVibesButton: UIControl {
         } else {
             applyState()
         }
+    }
+
+    /// Gives the shadow the key's rounded shape, so it is not worked out from the key's
+    /// contents each frame.
+    private func updateShadowPath() {
+        backgroundView.layer.shadowPath = UIBezierPath(
+            roundedRect: backgroundView.bounds,
+            cornerRadius: KeyboardStyle.keyCornerRadius
+        ).cgPath
     }
 
     private func updateBorderPath() {
