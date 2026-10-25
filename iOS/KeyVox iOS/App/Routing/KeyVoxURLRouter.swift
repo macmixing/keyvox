@@ -7,19 +7,25 @@ final class KeyVoxURLRouter {
     private let ttsManager: TTSManager
     private let appTabRouter: AppTabRouter
     private let vibesPurchaseController: KeyVoxVibesPurchaseController
+    private let keyVoxSpeakIntroController: KeyVoxSpeakIntroController
+    private let hasInstalledSpeakAssets: () -> Bool
 
     init(
         transcriptionManager: TranscriptionManager,
         ttsManager: TTSManager,
         audioModeCoordinator: AudioModeCoordinator,
         appTabRouter: AppTabRouter,
-        vibesPurchaseController: KeyVoxVibesPurchaseController
+        vibesPurchaseController: KeyVoxVibesPurchaseController,
+        keyVoxSpeakIntroController: KeyVoxSpeakIntroController,
+        hasInstalledSpeakAssets: @escaping () -> Bool
     ) {
         self.audioModeCoordinator = audioModeCoordinator
         self.transcriptionManager = transcriptionManager
         self.ttsManager = ttsManager
         self.appTabRouter = appTabRouter
         self.vibesPurchaseController = vibesPurchaseController
+        self.keyVoxSpeakIntroController = keyVoxSpeakIntroController
+        self.hasInstalledSpeakAssets = hasInstalledSpeakAssets
     }
 
     func route(for url: URL) -> KeyVoxURLRoute? {
@@ -42,6 +48,8 @@ final class KeyVoxURLRouter {
                 ttsManager.dismissPlaybackPreparationView()
                 audioModeCoordinator.handleSpeakClipboardFromApp()
             }
+        case .openSpeakSetup:
+            keyVoxSpeakIntroController.presentHelp(hasInstalledSpeakAssets: hasInstalledSpeakAssets())
         case .openDictionary:
             appTabRouter.selectTab(.dictionary, suppressesHaptic: true)
         case .openSettings:

@@ -93,6 +93,15 @@ final class KeyVoxSpeakIntroController: ObservableObject {
         isPresented = true
     }
 
+    func presentHelp(hasInstalledSpeakAssets: Bool) {
+        present(
+            introPresentation: KeyVoxSpeakFlowRules.helpPresentation(
+                hasInstalledSpeakAssets: hasInstalledSpeakAssets,
+                hasUsedKeyVoxSpeak: hasUsedKeyVoxSpeak
+            )
+        )
+    }
+
     func cancelPendingPresentation() {
         pendingPresentationTask?.cancel()
         pendingPresentationTask = nil

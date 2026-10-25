@@ -207,7 +207,7 @@ final class KeyboardRootView: UIView {
         emojiPanel: KeyboardEmojiPanel,
         showsEmojiKey: Bool,
         showsNextKeyboardKey: Bool,
-        isTTSReady: Bool,
+        hasCompletedOnboarding: Bool,
         isTrackpadModeActive: Bool
     ) {
         // The emoji search field takes the toolbar's place.
@@ -227,10 +227,10 @@ final class KeyboardRootView: UIView {
             && symbolPage == .letters
             && offersPredictions
         let showsToolbarAccessories = showsBrandedToolbar && !showsSuggestionBar
-        let shouldShowSpeak = showsToolbarAccessories && isTTSReady
         let shouldShowVibes = showsToolbarAccessories && isVibesAvailable
         let wasVibesButtonHidden = vibesButton.isHidden
-        let shouldEnableSpeak = shouldShowSpeak
+        let shouldEnableSpeak = showsToolbarAccessories
+            && hasCompletedOnboarding
             && state != .waitingForApp
             && state != .recording
             && state != .transcribing
@@ -240,9 +240,12 @@ final class KeyboardRootView: UIView {
         }
 
         settingsButton.isTrackpadModeActive = isTrackpadModeActive
-        settingsButton.isEnabled = showsToolbarAccessories && !shouldShowCancel && !isTrackpadModeActive
+        settingsButton.isEnabled = showsToolbarAccessories
+            && !shouldShowCancel
+            && hasCompletedOnboarding
+            && !isTrackpadModeActive
         settingsButton.isHidden = !showsToolbarAccessories || shouldShowCancel
-        speakButton.isHidden = !shouldShowSpeak
+        speakButton.isHidden = !showsToolbarAccessories
         speakButton.alpha = 1
         speakButton.transform = .identity
         
@@ -266,7 +269,7 @@ final class KeyboardRootView: UIView {
         listsButton.isEnabled = showsToolbarAccessories && !isTrackpadModeActive
         listsButton.isHidden = !showsToolbarAccessories
         dictionaryButton.isTrackpadModeActive = isTrackpadModeActive
-        dictionaryButton.isEnabled = showsToolbarAccessories && !isTrackpadModeActive
+        dictionaryButton.isEnabled = showsToolbarAccessories && hasCompletedOnboarding && !isTrackpadModeActive
         dictionaryButton.isHidden = !showsToolbarAccessories
         suggestionBarView.isHidden = !showsSuggestionBar
         suggestionBarView.isUserInteractionEnabled = showsSuggestionBar && !isTrackpadModeActive

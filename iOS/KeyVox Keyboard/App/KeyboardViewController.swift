@@ -19,6 +19,7 @@ final class KeyboardViewController: UIInputViewController {
     let openSettingsURL = URL(string: "keyvoxios://tab/settings")
     let openVibesURL = URL(string: "keyvoxios://vibes/open")
     let openVibesModelRecoveryURL = URL(string: "keyvoxios://vibes/model-recovery")
+    let openSpeakSetupURL = URL(string: "keyvoxios://tts/setup")
     let delayedTranscriptionLandingHapticThreshold: TimeInterval = 1
     let dictionaryCasingStore = KeyboardDictionaryCasingStore()
     lazy var containingAppLauncher = KeyboardContainingAppLauncher(responderProvider: { [weak self] in
@@ -403,7 +404,7 @@ final class KeyboardViewController: UIInputViewController {
             emojiPanel: emojiPanel,
             showsEmojiKey: appSettingsStore.isEmojiKeyboardEnabled,
             showsNextKeyboardKey: showsNextKeyboardKey,
-            isTTSReady: installedModels.isTTSReady,
+            hasCompletedOnboarding: appSettingsStore.hasCompletedOnboarding,
             isTrackpadModeActive: isTrackpadModeActive
         )
         applyLetterCase()
@@ -507,6 +508,10 @@ final class KeyboardViewController: UIInputViewController {
               keyboardState != .recording,
               keyboardState != .transcribing else { return }
         interactionHaptics.emitMediumIfEnabled()
+        guard installedModels.isTTSReady else {
+            containingAppLauncher.open(openSpeakSetupURL)
+            return
+        }
         ttsController.handleSpeakTap()
     }
 
