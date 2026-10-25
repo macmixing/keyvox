@@ -1,6 +1,6 @@
 extension KeyboardThemePalette {
-    /// KeyVox's lavender and indigo keys, tinting the keyboard backdrop in both appearances.
-    public static let `default` = KeyboardThemePalette(
+    /// KeyVox's lavender and indigo keys on iOS, tinting the keyboard backdrop in both appearances.
+    public static let iOSDefault = KeyboardThemePalette(
         keyFill: .fixed(KeyboardThemeRGBA(red: 0.67, green: 0.67, blue: 0.92)),
         keyPressedFill: .fixed(KeyboardThemeRGBA(red: 0.29, green: 0.31, blue: 0.55)),
         specialKeyFill: .fixed(KeyboardThemeRGBA(red: 0.35, green: 0.36, blue: 0.66)),

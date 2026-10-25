@@ -2,7 +2,7 @@
 public enum KeyboardThemeID: String, CaseIterable, Sendable {
     /// KeyVox's own key colors, used unless the user picks another theme.
     case `default` = "default"
-    /// Neutral key colors that follow the system keyboard's light and dark grays.
+    /// Neutral key colors that follow each platform's system keyboard.
     case classic = "classic"
 
     /// The theme saved under `rawValue`, or the default theme when nothing valid is saved.

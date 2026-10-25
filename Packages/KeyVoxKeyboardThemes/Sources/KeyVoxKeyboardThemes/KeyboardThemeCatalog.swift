@@ -1,11 +1,11 @@
-/// Looks up each theme's palette.
+/// Looks up each theme's palette on each platform.
 public enum KeyboardThemeCatalog {
-    public static func palette(for theme: KeyboardThemeID) -> KeyboardThemePalette {
-        switch theme {
-        case .default:
-            return .default
-        case .classic:
-            return .classic
+    public static func palette(for theme: KeyboardThemeID, on platform: KeyboardThemePlatform) -> KeyboardThemePalette {
+        switch (platform, theme) {
+        case (.iOS, .default):
+            return .iOSDefault
+        case (.iOS, .classic):
+            return .iOSClassic
         }
     }
 }
