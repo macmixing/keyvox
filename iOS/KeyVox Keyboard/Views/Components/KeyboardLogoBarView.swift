@@ -117,7 +117,8 @@ final class KeyboardLogoBarView: UIControl {
         translatesAutoresizingMaskIntoConstraints = false
         accessibilityTraits = [.button]
 
-        microphoneImageView.translatesAutoresizingMaskIntoConstraints = false
+        // layoutSubviews owns the center icon geometry, including playback symbols.
+        microphoneImageView.translatesAutoresizingMaskIntoConstraints = true
         microphoneImageView.contentMode = .scaleAspectFit
         microphoneImageView.tintColor = nil
         microphoneImageView.image = microphoneBaseImage?.withRenderingMode(.alwaysOriginal)
@@ -491,6 +492,10 @@ final class KeyboardLogoBarView: UIControl {
     }
 
     func updateCenterIconImageIfNeeded(for size: CGSize) {
+        if microphoneImageView.bounds.size != size {
+            setNeedsLayout()
+        }
+
         guard let transportSymbolName else {
             updateMicrophoneImageIfNeeded(for: size)
             return
