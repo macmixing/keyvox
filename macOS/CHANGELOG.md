@@ -6,6 +6,33 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.3.16] - 2026-10-26
+
+Improves custom-dictionary accuracy for single words.
+
+### Fixed
+
+- Fixed known words being replaced by a single-word custom-dictionary entry when their pronunciation differs from the entry.
+- Fixed known plural words being treated as the plural of a single-word custom-dictionary entry unless they only add the plural sound to the entry.
+
+### Package versions
+
+KeyVox macOS 1.3.16:
+- KeyVoxCore            1.3.8
+- KeyVoxLinguistics     1.0.0
+- KeyVoxLocalInference  1.0.4
+- KeyVoxModels          1.0.0
+- KeyVoxParakeet        1.1.0
+- KeyVoxPromotions      1.1.0
+- KeyVoxState           1.0.0
+- KeyVoxStyleRewrite    1.1.0
+- KeyVoxTextComposition 1.1.0
+- KeyVoxVibesAdapters   1.0.4
+- KeyVoxVoiceActivity   1.1.1
+- KeyVoxWhisper         1.2.0
+
+---
+
 ## [1.3.15] - 2026-10-18
 
 Keeps app launch responsive while dictation models load and improves custom-dictionary accuracy.
