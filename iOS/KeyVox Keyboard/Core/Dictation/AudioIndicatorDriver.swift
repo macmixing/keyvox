@@ -78,7 +78,7 @@ final class AudioIndicatorDriver {
         phase == .listening || phase == .processing || phase == .speaking || isPlaybackActive
     }
 
-    private var displayLink: CADisplayLink?
+    private var updateLink: UIUpdateLink?
     private var lastFrameTimestamp: CFTimeInterval?
     private var lastMeterPollTimestamp: CFTimeInterval?
     private var lowActivityPhase: Double = 0
@@ -87,22 +87,33 @@ final class AudioIndicatorDriver {
     private var targetLevel: CGFloat = 0
     private var signalState: AudioIndicatorSignalState = .inactive
 
-    func start() {
-        guard displayLink == nil else { return }
+    /// Frames come from the screen `view` is on, and only while it shows, so the indicator keeps
+    /// moving wherever the keyboard is shown without being started or stopped around the host.
+    func attach(to view: UIView) {
+        detach()
 
-        let displayLink = CADisplayLink(target: self, selector: #selector(handleDisplayLinkTick))
-        displayLink.isPaused = needsFrames == false
-        displayLink.add(to: .main, forMode: .common)
-        self.displayLink = displayLink
+        let updateLink = UIUpdateLink(view: view)
+        updateLink.addAction { [weak self] _, updateInfo in
+            self?.advanceFrame(to: updateInfo.modelTime)
+        }
+        updateLink.requiresContinuousUpdates = true
+        updateLink.isEnabled = needsFrames
+        self.updateLink = updateLink
         publishState()
     }
 
+    func detach() {
+        guard let updateLink else { return }
+        updateLink.isEnabled = false
+        self.updateLink = nil
+        lastFrameTimestamp = nil
+        lastMeterPollTimestamp = nil
+    }
+
     private func updateFrameDelivery() {
-        guard let displayLink else { return }
-        let isPaused = needsFrames == false
-        guard displayLink.isPaused != isPaused else { return }
-        displayLink.isPaused = isPaused
-        if isPaused {
+        guard let updateLink, updateLink.isEnabled != needsFrames else { return }
+        updateLink.isEnabled = needsFrames
+        if needsFrames == false {
             // Where the level settles when frames keep running without a signal.
             displayedLevel = 0
             lastFrameTimestamp = nil
@@ -110,23 +121,15 @@ final class AudioIndicatorDriver {
         }
     }
 
-    func stop() {
-        displayLink?.invalidate()
-        displayLink = nil
-        lastFrameTimestamp = nil
-        lastMeterPollTimestamp = nil
-    }
-
-    @objc
-    private func handleDisplayLinkTick(_ displayLink: CADisplayLink) {
-        let previousTimestamp = lastFrameTimestamp ?? displayLink.timestamp
-        let delta = min(max(displayLink.timestamp - previousTimestamp, 1.0 / 120.0), 1.0 / 20.0)
-        lastFrameTimestamp = displayLink.timestamp
+    private func advanceFrame(to timestamp: CFTimeInterval) {
+        let previousTimestamp = lastFrameTimestamp ?? timestamp
+        let delta = min(max(timestamp - previousTimestamp, 1.0 / 120.0), 1.0 / 20.0)
+        lastFrameTimestamp = timestamp
 
         processingPhase = wrappedPhase(processingPhase + Metrics.processingPhaseStep * delta * 60)
         lowActivityPhase = wrappedPhase(lowActivityPhase + Metrics.lowActivityPhaseStep * delta * 60)
 
-        refreshSampleIfNeeded(at: displayLink.timestamp)
+        refreshSampleIfNeeded(at: timestamp)
 
         let smoothingRate: CGFloat
         if phase == .speaking {
