@@ -248,7 +248,6 @@ final class KeyboardViewController: UIInputViewController {
         configureDictationBehavior()
         rootContainerView?.keyGridView.resetInteractionState()
         appSettingsStore.normalizeSelectedVibeIfNeeded()
-        indicatorDriver.start()
         configurePrimaryViewHeight()
         syncCapsLockState()
         dictationController.syncStateFromSharedState()

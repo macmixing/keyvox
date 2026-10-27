@@ -148,6 +148,7 @@ extension KeyboardViewController {
             self.rootContainerView?.logoBarView.applyTimelineState(timelineState)
             self.rootContainerView?.logoBarView.applyPlaybackProgress(self.ipcManager.currentTTSPlaybackProgress())
         }
+        indicatorDriver.attach(to: rootContainerView.logoBarView)
 
         dictationController.registerObservers()
         isPresentationBound = true
@@ -156,7 +157,7 @@ extension KeyboardViewController {
     func deactivatePresentationBindings() {
         guard isPresentationBound else { return }
 
-        indicatorDriver.stop()
+        indicatorDriver.detach()
         indicatorDriver.sampleProvider = nil
         indicatorDriver.onUpdate = nil
         predictionCoordinator.onBarChange = nil
@@ -251,7 +252,6 @@ extension KeyboardViewController {
         ) { [weak self] _ in
             self?.extensionHostIsActive = false
             self?.rootContainerView?.keyGridView.resetInteractionState()
-            self?.indicatorDriver.stop()
         }
 
         hostDidBecomeActiveObserver = NotificationCenter.default.addObserver(
@@ -269,7 +269,6 @@ extension KeyboardViewController {
             self.rootContainerView?.keyGridView.resetInteractionState()
             self.dictationController.syncStateFromSharedState()
             self.ttsController.syncStateFromSharedState()
-            self.indicatorDriver.start()
             KeyVoxIPCBridge.reportKeyboardOnboardingState(hasFullAccess: self.hasFullAccess)
             KeyVoxIPCBridge.reportKeyboardOnboardingPresentation()
             self.updateUI()

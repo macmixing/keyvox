@@ -23,6 +23,9 @@ extension KeyboardLogoBarView {
         if state != .dictationStartFailed, wasShowingRecordingStartFailure {
             updateAccessibility()
             animateRecordingStartFailureReturn()
+            // The failure left the bars at idle; a state that moves on straight to recording or
+            // transcribing still needs its bars.
+            applyIndicatorPhase(state.indicatorPhase)
             updateLayerFrames()
             return
         }
