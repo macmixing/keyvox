@@ -6,6 +6,21 @@ The format loosely follows Keep a Changelog, and the package uses semantic versi
 
 ---
 
+## [1.0.2] - 2026-10-27
+
+Taps on the delete key that always delete, so a press near its edge in the middle of a word no longer types the letter beside it.
+
+### Includes
+
+- `ContestedTap.OtherKey` gains a `delete` case, separate from shift, 123, and the globe.
+- `ContestedTapPolicy.keepsOtherKey(_:startsWord:landedOnOtherKey:)` now takes the other key and keeps delete for any touch on the key itself, inside a word or at its start.
+- A touch in the gap beside delete is still judged against the nearby letters as before.
+- Added regression coverage for touches on and beside delete inside a word.
+
+### Notes
+
+- `1.0.2` changes `keepsOtherKey` to take the other key, so keyboard hosts pass the key the tap landed on and report delete as `.delete`.
+
 ## [1.0.1] - 2026-10-23
 
 Sentence starts that hold through quotation marks, so the keyboard capitalizes the first word inside or after a quote.

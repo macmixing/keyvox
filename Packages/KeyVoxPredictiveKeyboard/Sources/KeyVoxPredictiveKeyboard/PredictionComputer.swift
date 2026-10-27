@@ -314,7 +314,7 @@ public final class PredictionComputer: @unchecked Sendable {
     ) throws -> Character? {
         let typed = request.currentWord.replacingOccurrences(of: "’", with: "'").lowercased()
         let landedOnOtherKey = otherKeyFrame.contains(touch)
-        if policy.keepsOtherKey(startsWord: typed.isEmpty, landedOnOtherKey: landedOnOtherKey) {
+        if policy.keepsOtherKey(otherKey, startsWord: typed.isEmpty, landedOnOtherKey: landedOnOtherKey) {
             return nil
         }
         lock.lock()

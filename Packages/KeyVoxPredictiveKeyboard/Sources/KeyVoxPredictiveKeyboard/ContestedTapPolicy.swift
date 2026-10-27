@@ -3,9 +3,10 @@
 /// Each nearby letter that leads to a real word scores its language-weighted
 /// log-likelihood minus a touch penalty that grows with its distance from the touch. Before
 /// a word starts, every key is a plausible intent, so only touches in the gap beside the
-/// other key go to the best letter. Inside a word, the best letter beats shift, delete, 123,
-/// and the globe outright; against space or return it must also beat the word ending here
-/// by the boundary threshold.
+/// other key go to the best letter, and the same holds for delete everywhere. Inside a word,
+/// the best letter beats shift, 123, the globe, and a touch in the gap beside delete
+/// outright; against space or return it must also beat the word ending here by the boundary
+/// threshold.
 public struct ContestedTapPolicy: Sendable, Equatable {
     public struct Parameters: Sendable, Equatable {
         /// Letters farther than this from a touch on space or return, in key pitches, are
@@ -54,10 +55,10 @@ public struct ContestedTapPolicy: Sendable, Equatable {
     }
 
     /// Whether a tap keeps the other key whatever letters are near it: before a word starts,
-    /// a touch on the other key itself is that key. Nothing about the letters need be worked
-    /// out for such a tap.
-    public func keepsOtherKey(startsWord: Bool, landedOnOtherKey: Bool) -> Bool {
-        startsWord && landedOnOtherKey
+    /// a touch on the other key itself is that key, and a touch on delete itself always is.
+    /// Nothing about the letters need be worked out for such a tap.
+    public func keepsOtherKey(_ otherKey: ContestedTap.OtherKey, startsWord: Bool, landedOnOtherKey: Bool) -> Bool {
+        landedOnOtherKey && (startsWord || otherKey == .delete)
     }
 
     /// Letters farther than this from a touch on `otherKey`, in key pitches, are not considered.
@@ -67,7 +68,7 @@ public struct ContestedTapPolicy: Sendable, Equatable {
 
     /// The letter the tap was meant for, or nil to keep the other key.
     public func intendedLetter(for tap: ContestedTap) -> Character? {
-        if keepsOtherKey(startsWord: tap.startsWord, landedOnOtherKey: tap.landedOnOtherKey) { return nil }
+        if keepsOtherKey(tap.otherKey, startsWord: tap.startsWord, landedOnOtherKey: tap.landedOnOtherKey) { return nil }
         let spread = parameters.touchStandardDeviation
         let maximumDistance = maximumDistance(for: tap.otherKey)
         let scored = tap.letters

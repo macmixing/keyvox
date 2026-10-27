@@ -274,6 +274,7 @@ final class KeyboardPredictionCoordinator {
         }
         let request = session.request(textBeforeCursor: textBeforeCursor())
         guard contestedTapPolicy.keepsOtherKey(
+            otherKey,
             startsWord: request.currentWord.isEmpty,
             landedOnOtherKey: keyFrame.contains(location)
         ) == false else {
