@@ -250,7 +250,9 @@ extension KeyboardViewController {
         switch kind {
         case .space, .returnKey:
             return .wordBoundary
-        case .shift, .delete, .numberSymbols, .emoji:
+        case .delete:
+            return .delete
+        case .shift, .numberSymbols, .emoji:
             return .control
         default:
             return nil

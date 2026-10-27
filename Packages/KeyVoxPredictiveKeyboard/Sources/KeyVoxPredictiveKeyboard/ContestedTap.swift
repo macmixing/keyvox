@@ -5,7 +5,11 @@ public struct ContestedTap: Sendable, Equatable {
         /// Space or return: ends the word, so it competes with the letter on how complete
         /// the word already is.
         case wordBoundary
-        /// Shift, delete, 123, or the globe: rarely meant in the middle of a word.
+        /// Delete: a touch on the key itself always deletes, since a letter typed in its place
+        /// adds to the text the user is taking away; only a touch in the gap beside it may be
+        /// meant for a letter.
+        case delete
+        /// Shift, 123, or the globe: rarely meant in the middle of a word.
         case control
     }
 
