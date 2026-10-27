@@ -19,6 +19,8 @@ final class KeyboardLetterCaseController {
         static let capsLockTapInterval: TimeInterval = 0.35
     }
 
+    private static let attachmentCharacter = Character(Unicode.Scalar(UInt16(NSTextAttachment.character))!)
+
     private(set) var letterCase: KeyboardLetterCase = .lowercase
     private var lastShiftTapTimestamp: TimeInterval?
 
@@ -53,14 +55,15 @@ final class KeyboardLetterCaseController {
         lastShiftTapTimestamp = nil
     }
 
-    /// Re-derives the automatic shift from the text before the cursor.
+    /// Re-derives the automatic shift from the text before the cursor. Attachments are objects
+    /// in the field rather than typed text, so their placeholders are skipped.
     func synchronize(
         textBeforeCursor: String?,
         autocapitalization: UITextAutocapitalizationType
     ) {
         guard letterCase != .capsLocked else { return }
         letterCase = Self.shouldAutoCapitalize(
-            textBeforeCursor: textBeforeCursor ?? "",
+            textBeforeCursor: (textBeforeCursor ?? "").filter { $0 != Self.attachmentCharacter },
             autocapitalization: autocapitalization
         ) ? .shifted : .lowercase
         lastShiftTapTimestamp = nil
@@ -78,11 +81,11 @@ final class KeyboardLetterCaseController {
         switch autocapitalization {
         case .none:
             return false
-        case .allCharacters:
-            return true
         case .words:
             return textBeforeCursor.last.map { $0.isWhitespace || $0.isNewline } ?? true
-        case .sentences:
+        // A field asking for every letter capitalized still shifts only at sentence starts,
+        // as other keyboards do; caps lock stays the user's to turn on.
+        case .sentences, .allCharacters:
             return TypingTextContext.startsSentence(after: textBeforeCursor)
         @unknown default:
             return false
