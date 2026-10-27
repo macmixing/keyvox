@@ -143,7 +143,6 @@ struct KeyVoxVibesSheetView: View {
             .downloadConfirmation($pendingDownloadConfirmation, onConfirm: performDownloadConfirmation)
         }
         .interactiveDismissDisabled()
-        .appPadPageSheetSizing()
         .onAppear {
             selectedScene = initialScene
             startButtonAnimation()
