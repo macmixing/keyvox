@@ -39,13 +39,7 @@ enum DictationShortcutInstaller {
     }
 
     private static var activePresentationViewController: UIViewController? {
-        let rootViewController = UIApplication.shared.connectedScenes
-            .compactMap { $0 as? UIWindowScene }
-            .first { $0.activationState == .foregroundActive }?
-            .windows
-            .first { $0.isKeyWindow }?
-            .rootViewController
-        return topViewController(from: rootViewController)
+        topViewController(from: AppForegroundWindow.current?.rootViewController)
     }
 
     private static func topViewController(from viewController: UIViewController?) -> UIViewController? {

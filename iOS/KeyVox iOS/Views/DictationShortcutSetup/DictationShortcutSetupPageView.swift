@@ -36,10 +36,7 @@ struct DictationShortcutSetupPageView: View {
         ZStack {
             if let videoAsset = page.videoAsset {
                 GeometryReader { geometry in
-                    let viewportWidth = max(
-                        geometry.size.width - (Layout.videoHorizontalInset * 2),
-                        0
-                    )
+                    let viewportWidth = fittedViewportWidth(for: videoAsset, in: geometry.size)
                     let videoWidth = videoAsset.width(
                         forViewportWidth: viewportWidth
                     )
@@ -65,5 +62,18 @@ struct DictationShortcutSetupPageView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    /// The page's width less the video's insets. On iPad the video is also kept no taller than
+    /// the page, so the whole recording stays in view on wide windows.
+    private func fittedViewportWidth(
+        for videoAsset: DictationShortcutSetupVideoAsset,
+        in pageSize: CGSize
+    ) -> CGFloat {
+        let widthLimit = max(pageSize.width - (Layout.videoHorizontalInset * 2), 0)
+        guard AppDevice.isPad else { return widthLimit }
+
+        let heightLimit = videoAsset.viewportWidth(forHeight: pageSize.height - Layout.videoTopInset)
+        return min(widthLimit, max(heightLimit, 0))
     }
 }

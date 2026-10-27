@@ -90,6 +90,7 @@ struct DictionaryTabView: View {
                     .opacity(isFloatingAddButtonVisible ? 1 : 0)
                     .frame(maxWidth: .infinity, alignment: .trailing)
                     .padding(.trailing, 20)
+                    .appReadableWidth(horizontalPadding: AppTheme.screenPadding)
                     .padding(.top, 8)
                     .padding(.bottom, 20)
             }
@@ -201,29 +202,31 @@ struct DictionaryTabView: View {
 
 private extension View {
     func dictionaryScreenRow(top: CGFloat, bottom: CGFloat) -> some View {
-        listRowInsets(
-            EdgeInsets(
-                top: top,
-                leading: AppTheme.screenPadding,
-                bottom: bottom,
-                trailing: AppTheme.screenPadding
+        appReadableWidth()
+            .listRowInsets(
+                EdgeInsets(
+                    top: top,
+                    leading: AppTheme.screenPadding,
+                    bottom: bottom,
+                    trailing: AppTheme.screenPadding
+                )
             )
-        )
-        .listRowSeparator(.hidden)
-        .listRowBackground(Color.clear)
+            .listRowSeparator(.hidden)
+            .listRowBackground(Color.clear)
     }
 
     func dictionaryEntryListRow(bottom: CGFloat) -> some View {
-        listRowInsets(
-            EdgeInsets(
-                top: 0,
-                leading: AppTheme.screenPadding,
-                bottom: bottom,
-                trailing: AppTheme.screenPadding
+        appReadableWidth()
+            .listRowInsets(
+                EdgeInsets(
+                    top: 0,
+                    leading: AppTheme.screenPadding,
+                    bottom: bottom,
+                    trailing: AppTheme.screenPadding
+                )
             )
-        )
-        .listRowSeparator(.hidden)
-        .listRowBackground(Color.clear)
+            .listRowSeparator(.hidden)
+            .listRowBackground(Color.clear)
     }
 }
 

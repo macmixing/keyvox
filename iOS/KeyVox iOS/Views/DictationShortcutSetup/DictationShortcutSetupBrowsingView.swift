@@ -27,8 +27,8 @@ struct DictationShortcutSetupBrowsingView: View {
                     }
 
                     AppPageIndicator(
-                        pageCount: DictationShortcutSetupPage.allCases.count,
-                        selectedIndex: selectedPage.rawValue - 1,
+                        pageCount: DictationShortcutSetupPage.available.count,
+                        selectedIndex: selectedPage.availableIndex,
                         onNavigate: handlePageIndicatorNavigation
                     )
                     .padding(.top, 12)
@@ -121,7 +121,7 @@ struct DictationShortcutSetupBrowsingView: View {
     private func pagerScrollView(in geometry: GeometryProxy) -> some View {
         ScrollView(.horizontal) {
             LazyHStack(spacing: 0) {
-                ForEach(DictationShortcutSetupPage.allCases, id: \.self) { page in
+                ForEach(DictationShortcutSetupPage.available, id: \.self) { page in
                     VStack(spacing: 0) {
                         DictationShortcutSetupPageView(
                             page: page,
@@ -152,16 +152,22 @@ struct DictationShortcutSetupBrowsingView: View {
         actionSlot(for: page)
             .accessibilitySortPriority(1)
             .padding(.horizontal, 20)
+            .appReadableWidth(horizontalPadding: 20)
             .padding(.top, 8)
     }
 
     private var showsCloseButton: Bool {
         switch mode {
         case .existingUserIntroduction:
-            selectedPage != .actionButtonDemoHandoff
+            finishesSetup(on: selectedPage) == false
         case .settingsReference:
             true
         }
+    }
+
+    /// Whether the button on `page` closes the setup: it's the last page and its own step is done.
+    private func finishesSetup(on page: DictationShortcutSetupPage) -> Bool {
+        page.next == nil && (page != .addShortcut || hasRequestedShortcutInstallation)
     }
 
     @ViewBuilder
@@ -211,7 +217,11 @@ struct DictationShortcutSetupBrowsingView: View {
         case .shortcutIntro, .actionButtonIntro:
             "Continue"
         case .addShortcut:
-            hasRequestedShortcutInstallation ? "Next" : "Add Shortcut"
+            if hasRequestedShortcutInstallation {
+                finishesSetup(on: page) ? "Finish" : "Next"
+            } else {
+                "Add Shortcut"
+            }
         case .actionButtonSettings, .actionButtonShortcutOption:
             "Next"
         case .actionButtonShortcutSelection:
@@ -229,7 +239,9 @@ struct DictationShortcutSetupBrowsingView: View {
              .actionButtonShortcutOption, .actionButtonDemoPaste:
             advance(from: page)
         case .addShortcut:
-            if hasRequestedShortcutInstallation {
+            if finishesSetup(on: page) {
+                finish()
+            } else if hasRequestedShortcutInstallation {
                 advance(from: page)
             } else {
                 hasRequestedShortcutInstallation = true
@@ -243,9 +255,13 @@ struct DictationShortcutSetupBrowsingView: View {
                 openSettings()
             }
         case .actionButtonDemoHandoff:
-            appHaptics.medium()
-            onClose()
+            finish()
         }
+    }
+
+    private func finish() {
+        appHaptics.medium()
+        onClose()
     }
 
     private func advance(from page: DictationShortcutSetupPage) {

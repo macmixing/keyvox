@@ -19,7 +19,9 @@ struct KeyVoxSpeakUnlockScene: View {
             id: 1,
             icon: "lock.fill",
             title: "Always Private",
-            subtitle: "AI voices run entirely on-device. Nothing leaves your iPhone."
+            subtitle: AppDevice.isPad
+                ? "AI voices run entirely on-device. Nothing leaves your iPad."
+                : "AI voices run entirely on-device. Nothing leaves your iPhone."
         ),
         Benefit(
             id: 2,

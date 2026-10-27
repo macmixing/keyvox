@@ -197,7 +197,13 @@ struct OnboardingKeyboardTourScreen: View {
                 .allowsHitTesting(false)
             }
         }
-        .frame(width: max(0, geometry.size.width - (AppTheme.screenPadding * 2)))
+        .frame(width: inputBarWidth(for: geometry))
+    }
+
+    /// The window's width less the screen padding, kept to the readable content width on iPad.
+    private func inputBarWidth(for geometry: GeometryProxy) -> CGFloat {
+        let width = max(0, geometry.size.width - (AppTheme.screenPadding * 2))
+        return AppDevice.isPad ? min(width, AppTheme.readableContentWidth) : width
     }
 
     private func keyboardLift(for geometry: GeometryProxy) -> CGFloat {

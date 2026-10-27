@@ -191,7 +191,7 @@ final class KeyboardRootView: UIView {
         symbolPage: KeyboardSymbolPage,
         keysMode: KeyboardKeysMode,
         isLandscape: Bool,
-        isOpenFoldableDisplay: Bool,
+        display: KeyboardDisplay,
         offersPredictions: Bool,
         isCapsLockEnabled: Bool,
         isDictationCapsApplied: Bool,
@@ -307,14 +307,14 @@ final class KeyboardRootView: UIView {
             showsNextKeyboardKey: showsNextKeyboardKey
         )
         keyGridView.setRowSpacing(
-            keysMode.rowSpacing(isLandscape: isLandscape, isOpenFoldableDisplay: isOpenFoldableDisplay)
+            keysMode.rowSpacing(isLandscape: isLandscape, display: display)
         )
         keyGridHeightConstraint?.constant = keysMode.keyGridHeight(
             isLandscape: isLandscape,
-            isOpenFoldableDisplay: isOpenFoldableDisplay
+            display: display
         )
         keyGridView.setTopRowKeyHeight(
-            keysMode.keyHeight(isLandscape: isLandscape, isOpenFoldableDisplay: isOpenFoldableDisplay)
+            keysMode.toolbarButtonHeight(isLandscape: isLandscape, display: display)
         )
         keyGridView.setKeyboardEnabled(true)
         keyGridView.refreshAppearance()

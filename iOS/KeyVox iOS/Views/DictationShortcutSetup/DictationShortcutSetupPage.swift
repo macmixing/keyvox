@@ -10,12 +10,41 @@ enum DictationShortcutSetupPage: Int, CaseIterable, Hashable {
     case actionButtonDemoPaste
     case actionButtonDemoHandoff
 
+    /// The pages shown on this device. iPad has no Action Button, so it skips those pages and
+    /// its setup ends once the shortcut is added.
+    static var available: [Self] {
+        AppDevice.isPad ? allCases.filter { $0.isActionButtonPage == false } : allCases
+    }
+
+    /// The last page shown on this device.
+    static var finalPage: Self {
+        available[available.count - 1]
+    }
+
+    /// Whether this page teaches the Action Button.
+    var isActionButtonPage: Bool {
+        switch self {
+        case .shortcutIntro, .addShortcut:
+            false
+        case .actionButtonIntro, .actionButtonSettings, .actionButtonShortcutOption,
+             .actionButtonShortcutSelection, .actionButtonDemoPaste, .actionButtonDemoHandoff:
+            true
+        }
+    }
+
+    /// Where this page sits among the pages shown on this device.
+    var availableIndex: Int {
+        Self.available.firstIndex(of: self) ?? 0
+    }
+
     var next: Self? {
-        Self(rawValue: rawValue + 1)
+        let index = availableIndex + 1
+        return index < Self.available.count ? Self.available[index] : nil
     }
 
     var previous: Self? {
-        Self(rawValue: rawValue - 1)
+        let index = availableIndex - 1
+        return index >= 0 ? Self.available[index] : nil
     }
 
     var videoAccessibilityLabel: String? {

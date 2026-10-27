@@ -3,6 +3,8 @@ import SwiftUI
 
 final class KeyboardObserver: ObservableObject {
     @Published var isKeyboardVisible = false
+    /// How much of KeyVox's window the keyboard covers: its whole height when the window reaches
+    /// the bottom of the screen, less or none when the window ends above the keyboard on iPad.
     @Published var keyboardHeight: CGFloat = 0
 
     private var willShowObserver: NSObjectProtocol?
@@ -33,7 +35,14 @@ final class KeyboardObserver: ObservableObject {
             return 0
         }
 
-        return max(0, frameValue.height)
+        return MainActor.assumeIsolated {
+            guard let window = AppForegroundWindow.current else {
+                return max(0, frameValue.height)
+            }
+            // The keyboard's frame is in screen coordinates.
+            let frameInWindow = window.convert(frameValue, from: window.screen.coordinateSpace)
+            return max(0, window.bounds.maxY - frameInWindow.minY)
+        }
     }
 
     deinit {

@@ -90,6 +90,7 @@ struct KeyVoxSpeakSheetView: View {
                     .opacity(tabViewOpacity)
 
                     bottomActions
+                    .appSheetBottomPadding(20)
                     .opacity(buttonOpacity)
                 }
 
