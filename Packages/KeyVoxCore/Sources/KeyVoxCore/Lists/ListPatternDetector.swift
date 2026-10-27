@@ -28,13 +28,13 @@ public struct ListPatternDetector {
 
         let bestRun = detection.run
         let nsText = text as NSString
-        let firstMarkerStart = bestRun[0].markerTokenStart
+        let firstMarkerStart = bestRun[0].labelStart
         var items: [DetectedListItem] = []
         var trailingText = ""
 
         for index in 0..<bestRun.count {
             let marker = bestRun[index]
-            let end = index + 1 < bestRun.count ? bestRun[index + 1].markerTokenStart : nsText.length
+            let end = index + 1 < bestRun.count ? bestRun[index + 1].labelStart : nsText.length
             guard end > marker.contentStart else {
                 #if DEBUG
                 logDetector("reject reason=invalid_marker_span markerStart=\(marker.markerTokenStart) contentStart=\(marker.contentStart) end=\(end)")

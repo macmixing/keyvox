@@ -66,12 +66,25 @@ public struct ListPatternRunSelector {
 
         guard best.count >= 2 else { return nil }
         guard isCredibleRunStart(run: best, in: nsText) else { return nil }
+        let repeatedLabelRanges = sameWordLabelRanges(run: best, in: nsText)
+        if let repeatedLabelRanges,
+           labelWordsAreContent(repeatedLabelRanges, in: nsText, languageCode: languageCode) {
+            return nil
+        }
         guard hasNoCredibleTrailingSkippedMarkers(after: best, from: markers, in: nsText, languageCode: languageCode) else {
             return nil
         }
         guard hasCredibleAmbiguousTwoItemSpokenContent(run: best, in: nsText, languageCode: languageCode) else { return nil }
         guard hasCredibleRunCadence(run: best, in: nsText, languageCode: languageCode) else { return nil }
-        return best
+        guard let repeatedLabelRanges else { return best }
+        return zip(best, repeatedLabelRanges).map { marker, labelRange in
+            ListPatternMarker(
+                number: marker.number,
+                markerTokenStart: marker.markerTokenStart,
+                contentStart: marker.contentStart,
+                labelStart: labelRange.location
+            )
+        }
     }
 
     // Runs that start above "1" are far more likely to be incidental prose
@@ -80,6 +93,30 @@ public struct ListPatternRunSelector {
         guard let first = run.first else { return false }
         guard first.number > 1 else { return true }
         return markerHasBoundaryBefore(first, in: nsText)
+    }
+
+    // A word repeated before every marker labels it. A content word label
+    // leaves the text as spoken; any other label leaves the text with its marker.
+    // Either way the label is never stranded at the end of an item.
+    private func sameWordLabelRanges(run: [ListPatternMarker], in nsText: NSString) -> [NSRange]? {
+        var labelRanges: [NSRange] = []
+        var labelWords = Set<String>()
+        for marker in run {
+            guard let wordRange = ListPatternMarkerBounds.precedingWordRange(before: marker.labelStart, in: nsText) else {
+                return nil
+            }
+            labelRanges.append(wordRange)
+            labelWords.insert(nsText.substring(with: wordRange).lowercased())
+        }
+        return labelWords.count == 1 ? labelRanges : nil
+    }
+
+    private func labelWordsAreContent(_ labelRanges: [NSRange], in nsText: NSString, languageCode: String?) -> Bool {
+        let tokens = TextLinguistics.analyze(nsText as String, languageCode: languageCode).tokens
+        return labelRanges.allSatisfy { labelRange in
+            let token = tokens.first { NSEqualRanges($0.range, labelRange) }
+            return lexicalClassCountsAsContent(token?.role)
+        }
     }
 
     private func hasCredibleAmbiguousTwoItemSpokenContent(

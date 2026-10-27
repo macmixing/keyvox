@@ -29,6 +29,7 @@ struct ListPatternMarkerParser {
             "(?:\\s+|\\s*[\\.\\)\\:\\-,](?:\\s+|(?=[A-Za-z]))|\(WebsiteNormalizer.attachedDomainLookaheadPattern))"
         return try! NSRegularExpression(pattern: pattern)
     }()
+    private static let numberLabelWord = "number"
     private static let oneForOneRegex: NSRegularExpression = {
         let pattern = #"(?i)\b(?:one|1)\s+for\s+(?:one|1)\b"#
         return try! NSRegularExpression(pattern: pattern)
@@ -329,6 +330,21 @@ struct ListPatternMarkerParser {
         }
 
         return removingLocalizedCompoundContinuations(from: deduped, in: nsText, languageCode: languageCode)
+            .map { withNumberLabel($0, in: nsText) }
+    }
+
+    // A spoken "number" label belongs to the marker, so it leaves the text with it.
+    private func withNumberLabel(_ marker: ListPatternMarker, in nsText: NSString) -> ListPatternMarker {
+        guard let wordRange = ListPatternMarkerBounds.precedingWordRange(before: marker.markerTokenStart, in: nsText),
+              nsText.substring(with: wordRange).lowercased() == Self.numberLabelWord else {
+            return marker
+        }
+        return ListPatternMarker(
+            number: marker.number,
+            markerTokenStart: marker.markerTokenStart,
+            contentStart: marker.contentStart,
+            labelStart: wordRange.location
+        )
     }
 
     private static func normalizedSpokenToken(_ token: String) -> String {
