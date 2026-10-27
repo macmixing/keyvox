@@ -123,11 +123,11 @@ final class KeyboardViewController: UIInputViewController {
             updateUI()
         }
     }
-    /// Whether the keyboard is on an open foldable's inner display, read on each layout pass;
-    /// keys are taller there in landscape.
-    var isOpenFoldableDisplay = false {
+    /// The kind of display the keyboard is on, read on each layout pass; keys are taller on an
+    /// open foldable's inner display in landscape, and on iPad.
+    var display = KeyboardDisplay.standard {
         didSet {
-            guard isOpenFoldableDisplay != oldValue else { return }
+            guard display != oldValue else { return }
             updatePrimaryViewHeight()
             updateUI()
         }
@@ -224,7 +224,7 @@ final class KeyboardViewController: UIInputViewController {
     override func viewWillLayoutSubviews() {
         super.viewWillLayoutSubviews()
         isLandscape = KeyboardScreenShape.isWide(view)
-        isOpenFoldableDisplay = KeyboardFoldableDisplay.isOpen(in: traitCollection)
+        display = KeyboardDisplay.resolve(in: traitCollection)
         showsNextKeyboardKey = KeyboardInputModeSwitchKeyPolicy.showsKey(
             systemRequestsKey: needsInputModeSwitchKey
         )
@@ -329,7 +329,7 @@ final class KeyboardViewController: UIInputViewController {
 
     /// The keyboard's height, taller by the search results while searching emoji.
     private var keyboardHeight: CGFloat {
-        layoutKeysMode.keyboardHeight(isLandscape: isLandscape, isOpenFoldableDisplay: isOpenFoldableDisplay)
+        layoutKeysMode.keyboardHeight(isLandscape: isLandscape, display: display)
             + (emojiPanel == .searching ? KeyboardEmojiSearchGeometry.addedKeyboardHeight : 0)
     }
 
@@ -382,7 +382,7 @@ final class KeyboardViewController: UIInputViewController {
             symbolPage: symbolPage,
             keysMode: layoutKeysMode,
             isLandscape: isLandscape,
-            isOpenFoldableDisplay: isOpenFoldableDisplay,
+            display: display,
             offersPredictions: typingTraits.showsSuggestions && fieldHasLetters && isLastDictationUntouched == false
                 && emojiPanel == .closed,
             isCapsLockEnabled: isCapsLockEnabled,

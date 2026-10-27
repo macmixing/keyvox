@@ -29,6 +29,13 @@ enum KeyboardStyle {
     static let openFoldableLandscapeKeyHeight: CGFloat = 37
     /// Space between key rows in landscape on an open foldable's inner display.
     static let openFoldableLandscapeRowSpacing: CGFloat = 11
+    /// Key height in portrait on iPad, a little taller than on iPhone.
+    static let padKeyHeight: CGFloat = 56
+    /// Key height in landscape on iPad.
+    static let padLandscapeKeyHeight: CGFloat = 54
+    /// Toolbar button height in landscape on iPad, which stays shorter than the keys there, as the
+    /// toolbar does in portrait.
+    static let padLandscapeToolbarHeight: CGFloat = 37
     static let keyUnitWidth: CGFloat = 34
     static let keyCornerRadius: CGFloat = 8
     static let popupWidthMultiplier: CGFloat = 1.15
