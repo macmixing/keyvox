@@ -115,6 +115,7 @@ struct KeyVoxVibesSheetView: View {
                     .opacity(tabViewOpacity)
 
                     bottomActions
+                        .appSheetBottomPadding(20)
                         .opacity(buttonOpacity)
                 }
 
@@ -142,6 +143,7 @@ struct KeyVoxVibesSheetView: View {
             .downloadConfirmation($pendingDownloadConfirmation, onConfirm: performDownloadConfirmation)
         }
         .interactiveDismissDisabled()
+        .appPadPageSheetSizing()
         .onAppear {
             selectedScene = initialScene
             startButtonAnimation()
