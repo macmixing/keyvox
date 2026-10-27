@@ -6,6 +6,23 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.3.9] - 2026-10-27
+
+List formatting no longer leaves a word repeated before each spoken number stuck to the end of list items.
+
+### Includes
+
+- Left dictation as spoken when the same content word comes before every number, such as `step one … step two`, instead of formatting a list that strands that word at the end of each item.
+- Removed a spoken `number` before each list number, so `number one eggs number two milk` becomes a list of `Eggs` and `Milk`.
+- Removed a repeated connecting word before each list number, such as `in one first item in two second item`, instead of leaving it at the end of the previous item.
+- Added regression coverage for repeated label words, spoken `number` labels, and repeated connecting words.
+
+### Notes
+
+- `1.3.9` tracks repeated label word handling in list formatting.
+
+---
+
 ## [1.3.8] - 2026-10-24
 
 Dictionary matching no longer replaces a single known word with a dictionary entry it is not pronounced like.
