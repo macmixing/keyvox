@@ -288,19 +288,6 @@ final class TranscriptionPostProcessorTests: LinguisticAnalyzerTestCase {
         XCTAssertEqual(output, "Essentially I'm able to pull one hundred two hours.")
     }
 
-    func testStillFormatsRealListsWhenUsingInOneInTwoPattern() async {
-        let processor = TranscriptionPostProcessor()
-
-        let output = processor.process(
-            "I want to summarize this in one first item in two second item",
-            dictionaryEntries: [],
-            renderMode: .multiline
-        )
-
-        XCTAssertTrue(output.contains("1. First item"))
-        XCTAssertTrue(output.contains("2. Second item"))
-    }
-
     func testDoesNotFormatQuantifiedChoiceSentenceAsList() async {
         let processor = TranscriptionPostProcessor()
 

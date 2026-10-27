@@ -572,4 +572,45 @@ final class ListPatternDetectorTests: LinguisticAnalyzerTestCase {
 
         XCTAssertNil(detected)
     }
+
+    func testLeavesMarkersLabeledBySameWordAsSpoken() {
+        let detector = ListPatternDetector()
+        let text = "Step one, open the app. Step two, sign in. Step three, tap record."
+
+        let detected = detector.detectList(in: text, languageCode: "en")
+
+        XCTAssertNil(detected)
+    }
+
+    func testDropsNumberLabelFromListMarkers() {
+        let detector = ListPatternDetector()
+        let text = "Here is what I need number one eggs number two milk number three bread"
+
+        let detected = detector.detectList(in: text, languageCode: "en")
+
+        XCTAssertEqual(detected?.leadingText, "Here is what I need")
+        XCTAssertEqual(detected?.items.map(\.spokenIndex), [1, 2, 3])
+        XCTAssertEqual(detected?.items.map(\.content), ["Eggs", "Milk", "Bread"])
+    }
+
+    func testKeepsNumberThatEndsListItems() {
+        let detector = ListPatternDetector()
+        let text = "1. Record account number 2. Record invoice number 3. Save the report"
+
+        let detected = detector.detectList(in: text, languageCode: "en")
+
+        XCTAssertEqual(
+            detected?.items.map(\.content),
+            ["Record account number", "Record invoice number", "Save the report"]
+        )
+    }
+
+    func testLeavesMarkersAfterRepeatedConnectorWordAsSpoken() {
+        let detector = ListPatternDetector()
+        let text = "I put books in one box and receipts in two folders"
+
+        let detected = detector.detectList(in: text, languageCode: "en")
+
+        XCTAssertNil(detected)
+    }
 }

@@ -20,6 +20,8 @@ public struct ListPatternRunSelector {
         static let ambiguousOpeningTokenCheckLimit = 2
     }
 
+    private static let numberLabelWord = "number"
+
     public init() {}
 
     public func selectDetection(
@@ -66,12 +68,24 @@ public struct ListPatternRunSelector {
 
         guard best.count >= 2 else { return nil }
         guard isCredibleRunStart(run: best, in: nsText) else { return nil }
+        let repeatedLabelRanges = sameWordLabelRanges(run: best, in: nsText)
+        if let repeatedLabelRanges, !isNumberLabel(repeatedLabelRanges, in: nsText) {
+            return nil
+        }
         guard hasNoCredibleTrailingSkippedMarkers(after: best, from: markers, in: nsText, languageCode: languageCode) else {
             return nil
         }
         guard hasCredibleAmbiguousTwoItemSpokenContent(run: best, in: nsText, languageCode: languageCode) else { return nil }
         guard hasCredibleRunCadence(run: best, in: nsText, languageCode: languageCode) else { return nil }
-        return best
+        guard let repeatedLabelRanges else { return best }
+        return zip(best, repeatedLabelRanges).map { marker, labelRange in
+            ListPatternMarker(
+                number: marker.number,
+                markerTokenStart: marker.markerTokenStart,
+                contentStart: marker.contentStart,
+                labelStart: labelRange.location
+            )
+        }
     }
 
     // Runs that start above "1" are far more likely to be incidental prose
@@ -80,6 +94,27 @@ public struct ListPatternRunSelector {
         guard let first = run.first else { return false }
         guard first.number > 1 else { return true }
         return markerHasBoundaryBefore(first, in: nsText)
+    }
+
+    // A word repeated before every marker labels it. A spoken "number" label
+    // leaves the text with its marker; any other label leaves the text as
+    // spoken. Either way the label is never stranded at the end of an item.
+    private func sameWordLabelRanges(run: [ListPatternMarker], in nsText: NSString) -> [NSRange]? {
+        var labelRanges: [NSRange] = []
+        var labelWords = Set<String>()
+        for marker in run {
+            guard let wordRange = ListPatternMarkerBounds.precedingWordRange(before: marker.labelStart, in: nsText) else {
+                return nil
+            }
+            labelRanges.append(wordRange)
+            labelWords.insert(nsText.substring(with: wordRange).lowercased())
+        }
+        return labelWords.count == 1 ? labelRanges : nil
+    }
+
+    private func isNumberLabel(_ labelRanges: [NSRange], in nsText: NSString) -> Bool {
+        guard let labelRange = labelRanges.first else { return false }
+        return nsText.substring(with: labelRange).lowercased() == Self.numberLabelWord
     }
 
     private func hasCredibleAmbiguousTwoItemSpokenContent(
