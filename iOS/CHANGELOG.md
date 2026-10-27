@@ -6,6 +6,56 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.6.0] - 2026-10-27
+
+Runs KeyVox natively on iPad, and keeps the keyboard's delete key, letter case, and dictation waveform behaving as expected.
+
+### Added
+
+- Added native iPad support for the app, keyboard, share extension, and widget, in a single window and every orientation.
+- Added a centered, readable layout for screens, onboarding buttons, and the keyboard tour on iPad.
+- Added taller keyboard keys on iPad, with the landscape toolbar buttons kept shorter than the keys.
+
+### Changed
+
+- Changed dictation shortcut setup and KeyVox Speak on iPad to leave out the Action Button pages and copy, ending setup once the shortcut is added.
+- Changed keyboard setup on iPad to return to a finished shortcut step.
+- Changed the shortcut setup videos to fit within the page on iPad.
+- Changed the KeyVox Speak and Vibes sheets to leave space under their buttons on iPad.
+- Changed the KeyVox Speak privacy copy to say iPad on iPad.
+
+### Fixed
+
+- Fixed the dictation waveform freezing in the keyboard, including staying at idle after a start failure gave way to recording or transcribing.
+- Fixed taps on the delete key typing a nearby letter in the middle of a word.
+- Fixed the keyboard capitalizing every letter in fields that ask for all capitals; it now capitalizes only at the start of a sentence.
+- Fixed attachments in a message keeping the keyboard from recognizing the start of a sentence.
+- Fixed dictation formatting a list when the same word is spoken before every number, which left that word stuck to the end of each item.
+- Fixed a spoken "number" before each list number staying in the list items.
+- Fixed the Speak playback icons drifting off center in the keyboard.
+
+### Package versions
+
+KeyVox iOS 1.6.0
+  KeyVoxCore               1.3.9
+  KeyVoxEmoji              1.0.0
+  KeyVoxKeyboardThemes     1.0.0
+  KeyVoxLinguistics        1.0.0
+  KeyVoxLocalInference     1.0.4
+  KeyVoxModels             1.0.0
+  KeyVoxParakeet           1.1.0
+  KeyVoxPredictiveKeyboard 1.0.2
+  KeyVoxPromotions         1.1.0
+  KeyVoxState              1.0.0
+  KeyVoxStyleRewrite       1.1.0
+  KeyVoxTTS                1.1.0
+  KeyVoxTextComposition    1.1.0
+  KeyVoxVibesAdapters      1.0.4
+  KeyVoxVoiceActivity      1.1.1
+  KeyVoxWhisper            1.2.0
+
+---
+
 ## [1.5.3] - 2026-10-25
 
 Adds a Classic keyboard theme, makes better use of an open iPhone Duo, and lets dictation start while another app is using audio.
