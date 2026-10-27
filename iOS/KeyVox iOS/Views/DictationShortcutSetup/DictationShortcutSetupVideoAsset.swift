@@ -29,4 +29,8 @@ struct DictationShortcutSetupVideoAsset {
     func width(forViewportWidth viewportWidth: CGFloat) -> CGFloat {
         viewportWidth * pixelWidth / viewportPixelWidth
     }
+
+    func viewportWidth(forHeight height: CGFloat) -> CGFloat {
+        height * viewportPixelWidth / pixelHeight
+    }
 }

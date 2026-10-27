@@ -71,7 +71,7 @@ struct DictationShortcutSetupOnboardingView: View {
                         .font(.appFont(22))
                 }
 
-                if selectedPage != .actionButtonDemoHandoff {
+                if finishesSetup == false {
                     if #available(iOS 26.0, *) {
                         ToolbarItem(placement: .topBarTrailing) {
                             skipButton
@@ -146,11 +146,12 @@ struct DictationShortcutSetupOnboardingView: View {
             .accessibilitySortPriority(1)
 
             AppPageIndicator(
-                pageCount: DictationShortcutSetupPage.allCases.count,
-                selectedIndex: selectedPage.rawValue - 1
+                pageCount: DictationShortcutSetupPage.available.count,
+                selectedIndex: selectedPage.availableIndex
             )
         }
         .padding(.horizontal, 20)
+        .appReadableWidth(horizontalPadding: 20)
         .padding(.top, 8)
         .padding(.bottom, 12)
     }
@@ -167,12 +168,22 @@ struct DictationShortcutSetupOnboardingView: View {
         .fixedSize(horizontal: true, vertical: false)
     }
 
+    /// Whether the button on the current page leaves for keyboard setup: it's the last page and
+    /// its own step is done.
+    private var finishesSetup: Bool {
+        selectedPage.next == nil
+            && (selectedPage != .addShortcut || hasRequestedShortcutInstallation)
+    }
+
     private var actionTitle: String {
         switch selectedPage {
         case .shortcutIntro, .actionButtonIntro:
             return "Continue"
         case .addShortcut:
-            return hasRequestedShortcutInstallation ? "Next" : "Add Shortcut"
+            if hasRequestedShortcutInstallation {
+                return finishesSetup ? "Set Up Keyboard" : "Next"
+            }
+            return "Add Shortcut"
         case .actionButtonSettings, .actionButtonShortcutOption:
             return "Next"
         case .actionButtonShortcutSelection:
@@ -190,7 +201,9 @@ struct DictationShortcutSetupOnboardingView: View {
              .actionButtonShortcutOption, .actionButtonDemoPaste:
             advance()
         case .addShortcut:
-            if hasRequestedShortcutInstallation {
+            if finishesSetup {
+                complete()
+            } else if hasRequestedShortcutInstallation {
                 advance()
             } else {
                 hasRequestedShortcutInstallation = true

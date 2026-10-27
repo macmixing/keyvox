@@ -11,11 +11,20 @@ struct ShortcutIntroView: View {
         let label: String
     }
 
-    private static let featureItems: [FeatureItem] = [
-        FeatureItem(id: 0, symbol: "switch.2", label: "Add to Control Center"),
-        FeatureItem(id: 1, symbol: "hand.tap.fill",        label: "Map to Action Button"),
-        FeatureItem(id: 2, symbol: "mic.fill",             label: "Dictate in any app, instantly"),
-    ]
+    private static let controlCenterItem = FeatureItem(id: 0, symbol: "switch.2", label: "Add to Control Center")
+    private static let actionButtonItem = FeatureItem(id: 1, symbol: "hand.tap.fill", label: "Map to Action Button")
+    private static let anyAppItem = FeatureItem(id: 2, symbol: "mic.fill", label: "Dictate in any app, instantly")
+
+    /// iPad has no Action Button, so it leaves that item out.
+    private static let featureItems: [FeatureItem] = AppDevice.isPad
+        ? [controlCenterItem, anyAppItem]
+        : [controlCenterItem, actionButtonItem, anyAppItem]
+
+    private static var subtitle: LocalizedStringKey {
+        AppDevice.isPad
+            ? "Use it from Control Center and more."
+            : "Use it from Control Center,\nthe Action Button, and more."
+    }
 
     let videoAsset: DictationShortcutSetupVideoAsset
     let isActive: Bool
@@ -65,7 +74,7 @@ struct ShortcutIntroView: View {
                             .opacity(titleOpacity)
                             .offset(y: titleOffset)
 
-                        Text("Use it from Control Center,\nthe Action Button, and more.")
+                        Text(Self.subtitle)
                             .font(.appFont(17, variant: .light))
                             .foregroundStyle(.white.opacity(0.72))
                             .multilineTextAlignment(.center)
@@ -84,10 +93,10 @@ struct ShortcutIntroView: View {
                     .padding(.bottom, 28)
 
                     VStack(spacing: 10) {
-                        ForEach(Self.featureItems) { item in
+                        ForEach(Array(Self.featureItems.enumerated()), id: \.element.id) { index, item in
                             featureRow(item)
-                                .opacity(item.id < featureRevealProgress ? 1 : 0)
-                                .offset(y: item.id < featureRevealProgress ? 0 : 12)
+                                .opacity(index < featureRevealProgress ? 1 : 0)
+                                .offset(y: index < featureRevealProgress ? 0 : 12)
                         }
                     }
                     .padding(.bottom, 20)
@@ -100,6 +109,7 @@ struct ShortcutIntroView: View {
 
                     Spacer(minLength: 48)
                 }
+                .appReadableWidth()
                 .frame(maxWidth: .infinity, minHeight: geometry.size.height, alignment: .top)
             }
             .scrollIndicators(.hidden)
