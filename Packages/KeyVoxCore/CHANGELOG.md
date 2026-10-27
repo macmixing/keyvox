@@ -12,10 +12,9 @@ List formatting no longer leaves a word repeated before each spoken number stuck
 
 ### Includes
 
-- Left dictation as spoken when the same content word comes before every number, such as `step one … step two`, instead of formatting a list that strands that word at the end of each item.
-- Removed a spoken `number` before each list number, so `number one eggs number two milk` becomes a list of `Eggs` and `Milk`.
-- Removed a repeated connecting word before each list number, such as `in one first item in two second item`, instead of leaving it at the end of the previous item.
-- Added regression coverage for repeated label words, spoken `number` labels, and repeated connecting words.
+- Left dictation as spoken when the same word comes before every number, such as `step one … step two`, instead of formatting a list that strands that word at the end of each item.
+- Removed a spoken `number` before every list number, so `number one eggs number two milk` becomes a list of `Eggs` and `Milk`, while list items that end in `number` keep it.
+- Added regression coverage for repeated label words, spoken `number` labels, and list items that end in `number`.
 
 ### Notes
 
