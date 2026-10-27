@@ -12,6 +12,9 @@ struct DictationShortcutSetupOnboardingView: View {
     @Binding private var hasRequestedShortcutInstallation: Bool
     @Binding private var hasRequestedSettings: Bool
     @State private var errorMessage: String?
+    /// Whether setup opened on its last page, which happens when someone returns from keyboard
+    /// setup after finishing these steps on an earlier launch.
+    @State private var opensAfterCompletedSetup: Bool
 
     let onReturnToSetup: () -> Void
     let onContinueToKeyboardSetup: () -> Void
@@ -24,6 +27,7 @@ struct DictationShortcutSetupOnboardingView: View {
         onContinueToKeyboardSetup: @escaping () -> Void
     ) {
         _selectedPage = State(initialValue: initialPage)
+        _opensAfterCompletedSetup = State(initialValue: initialPage == DictationShortcutSetupPage.finalPage)
         _hasRequestedShortcutInstallation = hasRequestedShortcutInstallation
         _hasRequestedSettings = hasRequestedSettings
         self.onReturnToSetup = onReturnToSetup
@@ -172,7 +176,7 @@ struct DictationShortcutSetupOnboardingView: View {
     /// its own step is done.
     private var finishesSetup: Bool {
         selectedPage.next == nil
-            && (selectedPage != .addShortcut || hasRequestedShortcutInstallation)
+            && (selectedPage != .addShortcut || hasRequestedShortcutInstallation || opensAfterCompletedSetup)
     }
 
     private var actionTitle: String {
@@ -180,10 +184,10 @@ struct DictationShortcutSetupOnboardingView: View {
         case .shortcutIntro, .actionButtonIntro:
             return "Continue"
         case .addShortcut:
-            if hasRequestedShortcutInstallation {
-                return finishesSetup ? "Set Up Keyboard" : "Next"
+            if finishesSetup {
+                return "Set Up Keyboard"
             }
-            return "Add Shortcut"
+            return hasRequestedShortcutInstallation ? "Next" : "Add Shortcut"
         case .actionButtonSettings, .actionButtonShortcutOption:
             return "Next"
         case .actionButtonShortcutSelection:
