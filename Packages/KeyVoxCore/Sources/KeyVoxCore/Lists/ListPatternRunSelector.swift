@@ -20,6 +20,8 @@ public struct ListPatternRunSelector {
         static let ambiguousOpeningTokenCheckLimit = 2
     }
 
+    private static let numberLabelWord = "number"
+
     public init() {}
 
     public func selectDetection(
@@ -67,8 +69,7 @@ public struct ListPatternRunSelector {
         guard best.count >= 2 else { return nil }
         guard isCredibleRunStart(run: best, in: nsText) else { return nil }
         let repeatedLabelRanges = sameWordLabelRanges(run: best, in: nsText)
-        if let repeatedLabelRanges,
-           labelWordsAreContent(repeatedLabelRanges, in: nsText, languageCode: languageCode) {
+        if let repeatedLabelRanges, !isNumberLabel(repeatedLabelRanges, in: nsText) {
             return nil
         }
         guard hasNoCredibleTrailingSkippedMarkers(after: best, from: markers, in: nsText, languageCode: languageCode) else {
@@ -95,9 +96,9 @@ public struct ListPatternRunSelector {
         return markerHasBoundaryBefore(first, in: nsText)
     }
 
-    // A word repeated before every marker labels it. A content word label
-    // leaves the text as spoken; any other label leaves the text with its marker.
-    // Either way the label is never stranded at the end of an item.
+    // A word repeated before every marker labels it. A spoken "number" label
+    // leaves the text with its marker; any other label leaves the text as
+    // spoken. Either way the label is never stranded at the end of an item.
     private func sameWordLabelRanges(run: [ListPatternMarker], in nsText: NSString) -> [NSRange]? {
         var labelRanges: [NSRange] = []
         var labelWords = Set<String>()
@@ -111,12 +112,9 @@ public struct ListPatternRunSelector {
         return labelWords.count == 1 ? labelRanges : nil
     }
 
-    private func labelWordsAreContent(_ labelRanges: [NSRange], in nsText: NSString, languageCode: String?) -> Bool {
-        let tokens = TextLinguistics.analyze(nsText as String, languageCode: languageCode).tokens
-        return labelRanges.allSatisfy { labelRange in
-            let token = tokens.first { NSEqualRanges($0.range, labelRange) }
-            return lexicalClassCountsAsContent(token?.role)
-        }
+    private func isNumberLabel(_ labelRanges: [NSRange], in nsText: NSString) -> Bool {
+        guard let labelRange = labelRanges.first else { return false }
+        return nsText.substring(with: labelRange).lowercased() == Self.numberLabelWord
     }
 
     private func hasCredibleAmbiguousTwoItemSpokenContent(

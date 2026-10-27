@@ -593,13 +593,24 @@ final class ListPatternDetectorTests: LinguisticAnalyzerTestCase {
         XCTAssertEqual(detected?.items.map(\.content), ["Eggs", "Milk", "Bread"])
     }
 
-    func testDropsRepeatedConnectorWordFromListMarkers() {
+    func testKeepsNumberThatEndsListItems() {
         let detector = ListPatternDetector()
-        let text = "I want to summarize this in one first item in two second item"
+        let text = "1. Record account number 2. Record invoice number 3. Save the report"
 
         let detected = detector.detectList(in: text, languageCode: "en")
 
-        XCTAssertEqual(detected?.leadingText, "I want to summarize this")
-        XCTAssertEqual(detected?.items.map(\.content), ["First item", "Second item"])
+        XCTAssertEqual(
+            detected?.items.map(\.content),
+            ["Record account number", "Record invoice number", "Save the report"]
+        )
+    }
+
+    func testLeavesMarkersAfterRepeatedConnectorWordAsSpoken() {
+        let detector = ListPatternDetector()
+        let text = "I put books in one box and receipts in two folders"
+
+        let detected = detector.detectList(in: text, languageCode: "en")
+
+        XCTAssertNil(detected)
     }
 }
