@@ -39,6 +39,7 @@ struct OnboardingEnableKeyboardScreen: View {
                     }
                     .frame(maxWidth: .infinity, alignment: .topLeading)
                     .padding(.horizontal, AppTheme.screenPadding)
+                    .appReadableWidth(horizontalPadding: AppTheme.screenPadding)
                     .padding(.top, AppTheme.screenPadding)
                     .padding(.bottom, 20)
                 }
@@ -51,6 +52,7 @@ struct OnboardingEnableKeyboardScreen: View {
                     action: openKeyboardSettings
                 )
                 .padding(.horizontal, AppTheme.screenPadding)
+                .appReadableWidth(horizontalPadding: AppTheme.screenPadding)
                 .padding(.top, 8)
                 .padding(.bottom, 12)
             }

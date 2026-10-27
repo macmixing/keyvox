@@ -36,6 +36,7 @@ struct AppScrollScreen<Content: View>: View {
                 content
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(AppTheme.screenPadding)
+                    .appReadableWidth(horizontalPadding: AppTheme.screenPadding)
             }
             .scrollDisabled(scrollDisabled)
             .contentMargins(

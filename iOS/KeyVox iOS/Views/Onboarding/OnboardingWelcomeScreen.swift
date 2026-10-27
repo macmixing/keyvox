@@ -57,6 +57,7 @@ struct OnboardingWelcomeScreen: View {
                     .frame(maxWidth: .infinity)
                 }
                 .padding(.horizontal, AppTheme.screenPadding)
+                .appReadableWidth(horizontalPadding: AppTheme.screenPadding)
                 .padding(.top, 8)
                 .padding(.bottom, 12)
                 .background(AppTheme.screenBackground.opacity(0.98))

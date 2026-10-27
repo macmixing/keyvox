@@ -18,6 +18,8 @@ enum AppTheme {
     static let rowPressedStroke = Color.white.opacity(0.14)
     static let iconFill = Color.indigo.opacity(0.15)
     static let screenPadding: CGFloat = 16
+    /// The widest a screen's content gets on iPad, where it's centered in a column.
+    static let readableContentWidth: CGFloat = 700
     static let sectionSpacing: CGFloat = 16
     static let cardPadding: CGFloat = 16
     static let cardCornerRadius: CGFloat = 16
