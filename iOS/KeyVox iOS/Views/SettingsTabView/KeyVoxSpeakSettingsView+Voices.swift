@@ -1,6 +1,6 @@
 import SwiftUI
 
-extension SettingsTabView {
+extension KeyVoxSpeakSettingsView {
     @ViewBuilder
     var ttsSection: some View {
         AppCard {
@@ -59,7 +59,7 @@ extension SettingsTabView {
                     if supportsTTSExpansion {
                         Button {
                             appHaptics.light()
-                            withAnimation(Self.sectionExpansionAnimation) {
+                            withAnimation(SettingsTabView.sectionExpansionAnimation) {
                                 isTTSSectionExpanded.toggle()
                             }
                         } label: {
