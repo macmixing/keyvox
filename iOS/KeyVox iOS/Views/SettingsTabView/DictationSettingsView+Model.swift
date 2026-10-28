@@ -9,7 +9,7 @@ extension DictationSettingsView {
                 HStack(alignment: .top, spacing: 12) {
                     ZStack {
                         Circle()
-                            .fill(AppTheme.accent.opacity(0.2))
+                            .fill(AppTheme.accent.opacity(0.4))
                             .frame(width: 32, height: 32)
 
                         Image(systemName: "character.cursor.ibeam")
@@ -106,7 +106,7 @@ extension DictationSettingsView {
             HStack(alignment: .top, spacing: 12) {
                 ZStack {
                     Circle()
-                        .fill(AppTheme.accent.opacity(0.2))
+                        .fill(AppTheme.accent.opacity(0.4))
                         .frame(width: 32, height: 32)
 
                     Image(systemName: "textformat.characters.dottedunderline")
