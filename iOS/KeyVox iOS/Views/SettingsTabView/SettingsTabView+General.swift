@@ -10,7 +10,7 @@ extension SettingsTabView {
             AppCard {
                 HStack(alignment: .center, spacing: 12) {
                     SettingsRow(
-                        icon: "waveform",
+                        assetIcon: "keyvox-circle",
                         title: DictationSettingsCopy.screenTitle,
                         description: DictationSettingsCopy.screenDescription
                     ) {
