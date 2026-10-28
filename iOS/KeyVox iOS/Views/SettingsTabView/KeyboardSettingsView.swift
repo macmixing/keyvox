@@ -28,12 +28,14 @@ struct KeyboardSettingsView: View {
         VStack(alignment: .leading, spacing: 8) {
             AppCard {
                 VStack(spacing: 16) {
-                    SettingsRow(
-                        icon: "iphone.radiowaves.left.and.right",
-                        title: KeyboardSettingsCopy.hapticsTitle,
-                        isOn: $settingsStore.keyboardHapticsEnabled
-                    )
-                    divider
+                    if AppDevice.isPad == false {
+                        SettingsRow(
+                            icon: "iphone.radiowaves.left.and.right",
+                            title: KeyboardSettingsCopy.hapticsTitle,
+                            isOn: $settingsStore.keyboardHapticsEnabled
+                        )
+                        divider
+                    }
                     SettingsRow(
                         icon: "textformat",
                         title: KeyboardSettingsCopy.autoCapitalizationTitle,
