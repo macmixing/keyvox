@@ -1,5 +1,5 @@
 # KeyVox Code Map
-**Last Updated: 2026-10-18**
+**Last Updated: 2026-10-28**
 
 ## Project Overview
 
@@ -802,6 +802,7 @@ KeyVox/
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/Evaluation/DictionaryMatcher+StandardSingleTokenEvaluation.swift`
   - Applies single-token contextual safety gates and common-word peer-support decisions.
   - Scores text similarity against the observed form selected during candidate scoring.
+  - Rejects a candidate that fails single-token pronunciation evidence.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/Evaluation/DictionaryMatcher+StandardThresholdEvaluation.swift`
   - Calculates baseline and evidence-adjusted thresholds for standard single- and two-token candidates.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/Evaluation/StandardEvaluationPolicy.swift`
@@ -821,6 +822,9 @@ KeyVox/
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/Evaluation/Helpers/DictionaryMatcher+SpelledUppercaseGuard.swift`
   - Owns shared phonetic validation for uppercase letter sequences across dictionary evaluation paths.
   - Accepts pronunciation-equivalent sequences while rejecting candidates whose uppercase sequence has different phonetic evidence.
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/Evaluation/Helpers/DictionaryMatcher+SingleTokenPronunciationEvidence.swift`
+  - Owns the pronunciation check for single-token replacements: a known observed form must share the entry's lexicon pronunciation, and when only the full inflected word has a pronunciation, it may only append `StandardEvaluationPolicy.inflectionSuffixPhonemeCount` phonemes to the entry's pronunciation.
+  - Missing pronunciation data for the entry or the observed word is permissive.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/Evaluation/SplitJoin/DictionaryMatcher+ExactMultiTokenJoin.swift`
   - Owns exact three- and four-token joins into a canonical entry with fewer tokens, requiring every entry token to be spelled exactly by consecutive observed tokens that cover the whole window.
   - Defers dotted-domain protection to the shared split-join domain guard before proposing a replacement.
@@ -866,11 +870,13 @@ KeyVox/
   - Uses `WebsiteNormalizer` for domain-token heuristics to avoid duplicated website regex logic.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Lists/ListPatternRunSelector.swift`
   - Selects best monotonic list run and enforces confidence guards before formatting.
+  - Treats one word repeated before every marker in the run as a label: the spoken number-label word is removed with its markers, and any other repeated label leaves the dictation unformatted.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Lists/ListPatternTrailingSplitter.swift`
   - Splits trailing prose off list items while preserving valid list item content.
   - Uses scored deterministic split candidates with email-boundary-aware preference.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Lists/ListPatternMarker.swift`
   - Shared marker model for parser/detector/run-selection helpers.
+  - `labelStart` records where a marker's spoken label begins so the detector ends each item before the next label; `ListPatternMarkerBounds` owns the shared preceding-word lookup.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Lists/ListRenderer.swift`
   - Renders detected lists as multiline (`1. ...`) or single-line inline (`1. ...; 2. ...`) based on target context.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Lists/ListFormattingTypes.swift`
