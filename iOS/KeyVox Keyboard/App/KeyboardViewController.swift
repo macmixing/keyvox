@@ -225,9 +225,7 @@ final class KeyboardViewController: UIInputViewController {
         super.viewWillLayoutSubviews()
         isLandscape = KeyboardScreenShape.isWide(view)
         display = KeyboardDisplay.resolve(in: traitCollection)
-        showsNextKeyboardKey = KeyboardInputModeSwitchKeyPolicy.showsKey(
-            systemRequestsKey: needsInputModeSwitchKey
-        )
+        showsNextKeyboardKey = needsInputModeSwitchKey
     }
 
     override func viewWillAppear(_ animated: Bool) {
