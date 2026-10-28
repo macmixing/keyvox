@@ -1,7 +1,7 @@
 import KeyVoxCore
 import SwiftUI
 
-extension SettingsTabView {
+extension DictationSettingsView {
     @ViewBuilder
     var activeModelSection: some View {
         AppCard {
@@ -9,7 +9,7 @@ extension SettingsTabView {
                 HStack(alignment: .top, spacing: 12) {
                     ZStack {
                         Circle()
-                            .fill(AppTheme.accent.opacity(0.2))
+                            .fill(AppTheme.accent.opacity(0.4))
                             .frame(width: 32, height: 32)
 
                         Image(systemName: "character.cursor.ibeam")
@@ -67,7 +67,7 @@ extension SettingsTabView {
 
                     Button {
                         appHaptics.light()
-                        withAnimation(Self.sectionExpansionAnimation) {
+                        withAnimation(SettingsTabView.sectionExpansionAnimation) {
                             isModelSectionExpanded.toggle()
                         }
                     } label: {
@@ -97,7 +97,7 @@ extension SettingsTabView {
                 dictationLanguageSection
             }
         }
-        .id(SettingsScrollTarget.dictationModel)
+        .id(DictationSettingsScrollTarget.dictationModel)
     }
 
     @ViewBuilder
@@ -106,7 +106,7 @@ extension SettingsTabView {
             HStack(alignment: .top, spacing: 12) {
                 ZStack {
                     Circle()
-                        .fill(AppTheme.accent.opacity(0.2))
+                        .fill(AppTheme.accent.opacity(0.4))
                         .frame(width: 32, height: 32)
 
                     Image(systemName: "textformat.characters.dottedunderline")
