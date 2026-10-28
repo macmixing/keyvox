@@ -36,7 +36,6 @@ final class PocketTTSModelManager: ObservableObject {
     @Published var activeInstallTarget: PocketTTSInstallTarget?
 
     let fileManager: FileManager
-    let session: URLSession
     let assetLocator: PocketTTSAssetLocator
     let backgroundDownloadCoordinator: PocketTTSBackgroundDownloadCoordinator
     var installTask: Task<Void, Never>?
@@ -47,12 +46,10 @@ final class PocketTTSModelManager: ObservableObject {
 
     init(
         fileManager: FileManager = .default,
-        session: URLSession = .shared,
         assetLocator: PocketTTSAssetLocator? = nil,
         backgroundDownloadCoordinator: PocketTTSBackgroundDownloadCoordinator
     ) {
         self.fileManager = fileManager
-        self.session = session
         self.assetLocator = assetLocator ?? PocketTTSAssetLocator(fileManager: fileManager)
         self.backgroundDownloadCoordinator = backgroundDownloadCoordinator
         self.voiceInstallStates = Dictionary(

@@ -1,4 +1,5 @@
 import Foundation
+import KeyVoxModels
 
 extension PocketTTSModelManager {
     func startBackgroundInstall(
@@ -45,7 +46,8 @@ extension PocketTTSModelManager {
               installTask == nil,
               !isFinalizationInFlight,
               let job = backgroundDownloadCoordinator.loadJob(),
-              job.isReadyForFinalization else {
+              job.isReadyForFinalization,
+              job.finalizationState != .failed else {
             return
         }
 
@@ -55,7 +57,7 @@ extension PocketTTSModelManager {
 
         do {
             applyInstallState(.installing(progress: 0.95), to: job.target)
-            try finalizeBackgroundInstall(job)
+            try await finalizeBackgroundInstall(job)
             let queuedVoice = job.queuedVoiceAfterSharedModel
             try? fileManager.removeItem(
                 at: Self.makeStagingRootURL(fileManager: fileManager, target: job.target)
@@ -68,6 +70,8 @@ extension PocketTTSModelManager {
                !assetLocator.isVoiceInstalled(queuedVoice) {
                 downloadVoice(queuedVoice)
             }
+        } catch is CancellationError {
+            Self.log("Background install finalization stopped because its download job was cleared.")
         } catch {
             Self.log("Background install finalization failed with error: \(error.localizedDescription)")
             backgroundDownloadCoordinator.markFinalizationFailed(message: error.localizedDescription)
@@ -98,7 +102,37 @@ private extension PocketTTSModelManager {
         }
     }
 
-    func finalizeBackgroundInstall(_ job: PocketTTSBackgroundDownloadJob) throws {
+    func verifyStagedArtifacts(of job: PocketTTSBackgroundDownloadJob, stagingRootURL: URL) async throws {
+        let stagedArtifacts = try job.artifacts.map { artifact in
+            (
+                artifact: artifact,
+                url: try backgroundDownloadCoordinator.stagedArtifactURL(
+                    stagingRootURL: stagingRootURL,
+                    relativePath: artifact.relativePath
+                )
+            )
+        }
+        let mismatchedArtifact = try await Task.detached(priority: .userInitiated) {
+            try stagedArtifacts.first { stagedArtifact in
+                try ModelFileIntegrity.sha256Hex(forFileAt: stagedArtifact.url).lowercased()
+                    != stagedArtifact.artifact.expectedSHA256.lowercased()
+            }
+        }.value
+
+        guard backgroundDownloadCoordinator.loadJob()?.id == job.id else {
+            throw CancellationError()
+        }
+        if let mismatchedArtifact {
+            Self.log("Artifact hash mismatch for \(mismatchedArtifact.artifact.relativePath).")
+            throw NSError(
+                domain: "PocketTTSModelManager",
+                code: 12,
+                userInfo: [NSLocalizedDescriptionKey: "Speak download integrity check failed."]
+            )
+        }
+    }
+
+    func finalizeBackgroundInstall(_ job: PocketTTSBackgroundDownloadJob) async throws {
         let stagingRootURL = try Self.makeStagingRootURL(fileManager: fileManager, target: job.target)
         let manifest = PocketTTSInstallManifest(
             sourceRepository: PocketTTSModelCatalog.repositoryID,
@@ -112,6 +146,7 @@ private extension PocketTTSModelManager {
             let stagedModelRootURL = stagingRootURL.appendingPathComponent("Model", isDirectory: true)
             let finalModelRootURL = try Self.finalSharedModelRootURL(fileManager: fileManager)
             if fileManager.fileExists(atPath: stagedModelRootURL.path) {
+                try await verifyStagedArtifacts(of: job, stagingRootURL: stagingRootURL)
                 try Self.replaceDirectory(
                     at: finalModelRootURL,
                     with: stagedModelRootURL,
@@ -138,6 +173,7 @@ private extension PocketTTSModelManager {
                 .appendingPathComponent(voice.rawValue, isDirectory: true)
             let finalVoiceRootURL = try Self.finalVoiceRootURL(voice, fileManager: fileManager)
             if fileManager.fileExists(atPath: stagedVoiceDirectoryURL.path) {
+                try await verifyStagedArtifacts(of: job, stagingRootURL: stagingRootURL)
                 try Self.replaceDirectory(
                     at: finalVoiceRootURL,
                     with: stagedVoiceDirectoryURL,
