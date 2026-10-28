@@ -1,12 +1,12 @@
 # KeyVox iOS Code Map
-**Last Updated: 2026-10-18**
+**Last Updated: 2026-10-28**
 
 ## Project Overview
 
 KeyVox iOS ships as four cooperating targets:
 
 - The containing app owns onboarding, settings, dictation model lifecycle, local Vibes model lifecycle, bundled Vibes adapter lookup, local style rewrite inference, PocketTTS voice installs, copied-text playback, microphone capture, interrupted-capture recovery, session policy, weekly stats, iCloud sync, and the SwiftUI shell.
-- The keyboard extension owns the visible custom keyboard, the letter, number, and symbol pages, full/compact key modes, letter-page typing with suggestions and autocorrection, the typing memory it learns from the user's typing, the emoji page and emoji search, warm/cold app handoff, copied-text speak transport, text insertion, warning-toolbar presentation, Vibes selection/status UI, latest-insertion editability tracking, and keyboard-only interaction behavior. For model-backed Vibes rewrites, it requests work from the containing app instead of loading the local rewrite model itself.
+- The keyboard extension owns the visible custom keyboard, the letter, number, and symbol pages, full/compact key modes, the selected keyboard theme's key colors, letter-page typing with suggestions and autocorrection, the typing memory it learns from the user's typing, the emoji page and emoji search, warm/cold app handoff, copied-text speak transport, text insertion, warning-toolbar presentation, Vibes selection/status UI, latest-insertion editability tracking, and keyboard-only interaction behavior. For model-backed Vibes rewrites, it requests work from the containing app instead of loading the local rewrite model itself.
 - The share extension owns shared text/URL/PDF extraction, OCR for shared images and rendered PDF pages, TTS request handoff to the main app, and visual feedback during share processing.
 - The widget extension owns the Live Activity and Dynamic Island presentation plus the stop-session App Intent.
 
@@ -14,6 +14,7 @@ Shared speech and text behavior lives in `../Packages/KeyVoxCore`, including `Di
 Shared linguistic contracts, native analysis, portable analysis, health evaluation, and fallback routing live in `../Packages/KeyVoxLinguistics`. The containing app owns the portable linguistic resources and injects one analyzer into every app-side consumer; the keyboard transports language context but does not load the analyzer resources.
 The local PocketTTS runtime now lives in `../Packages/KeyVoxTTS`.
 Keyboard typing prediction, autocorrection, held-key characters, smart quotes, and typing memory live in `../Packages/KeyVoxPredictiveKeyboard`; the emoji catalog, search, Frequently Used ranking, suggestion-bar emoji, and two-person skin tones live in `../Packages/KeyVoxEmoji`. Among the shipping targets only the keyboard extension links these two packages; the containing app owns only the keyboard settings that steer them and the typing-memory reset.
+Keyboard theme identifiers and per-platform key palettes live in `../Packages/KeyVoxKeyboardThemes`; the containing app stores the selected theme and the keyboard extension colors its keys from it.
 
 The current default runtime flow is:
 
@@ -38,7 +39,7 @@ The current default runtime flow is:
 ## Architecture
 
 - **`KeyVox iOS/`**: app lifecycle, grouped app composition/routing/integration surfaces, onboarding state, app haptics, App Store review requests, keyboard typing settings and the typing-memory reset, App Group storage, iCloud sync, reusable resumable download transport, dictation model background downloads, local Vibes model download/validation, bundled Vibes adapter lookup, app-owned local style rewrite inference, PocketTTS install ownership and playback-scoped runtime ownership, audio capture, transcription/session management, KeyVox Vibes app wiring, Live Activity coordination, and the SwiftUI shell.
-- **`KeyVox Keyboard/`**: custom keyboard controller, presentation-scoped keyboard view lifecycle, toolbar modes, copied-text speak transport, keyboard playback pause/resume/stop controls, call-aware warning detection, key grid UI with letter, number, and symbol pages, multi-finger key handling, held-key character popups, delete repeat, letter-case shift state, field typing traits, prediction coordination and the suggestion bar, persisted typing memory, the emoji page and emoji search, full-access instructional surface, live indicator rendering, host-app launch handoff, haptics, cursor trackpad behavior, and platform-owned insertion coordination.
+- **`KeyVox Keyboard/`**: custom keyboard controller, presentation-scoped keyboard view lifecycle, toolbar modes, copied-text speak transport, keyboard playback pause/resume/stop controls, key grid UI with letter, number, and symbol pages, multi-finger key handling, held-key character popups, delete repeat, letter-case shift state, field typing traits, prediction coordination and the suggestion bar, persisted typing memory, the emoji page and emoji search, full-access instructional surface, live indicator rendering, keyboard theme application, display-specific key sizing, host-app launch handoff, haptics, cursor trackpad behavior, and platform-owned insertion coordination.
 - **`KeyVox Widget/`**: ActivityKit/WidgetKit surface for the lock screen and Dynamic Island, plus the stop-session App Intent.
 - **`../Packages/KeyVoxCore/`**: shared dictation pipeline, provider seams, dictation-language values/display names, the Whisper Base language catalog and service configuration, provider-specific VAD coordination, deterministic paragraph/list state and variant handling, dictionary store, post-processing order, model-artifact cleanup, audio-file loading, packaged pronunciation/file-type resources, guarded compact-time/date/math normalization, silence heuristics, and list formatting behavior.
 - **`../Packages/KeyVoxLinguistics/`**: linguistic provider contracts, native and portable analyzers, UTF-16 token/range models, feature availability, language normalization, analysis-health evaluation, and lazy health-based fallback routing.
@@ -48,6 +49,7 @@ The current default runtime flow is:
 - **`../Packages/KeyVoxVoiceActivity/`**: shared Silero model, VAD protocol/configuration, actor-isolated detector, and speech-runtime bridge.
 - **`../Packages/KeyVoxPredictiveKeyboard/`**: UI-independent English typing prediction and correction built on a bundled AOSP LatinIME native target with KeyVox ranking: the shared `PredictiveTypingSession`, `PredictionComputer`, noisy-channel and missing-space correction, completions, next-word and sentence-opener suggestions, personal vocabulary, typing memory and its file, held-key characters and popup layout, smart quotes, bundled language data, and package tests.
 - **`../Packages/KeyVoxEmoji/`**: UI-independent emoji catalog in the system emoji keyboard's categories and order, emoji search, Frequently Used ranking, suggestion-bar emoji by word, two-person skin tones, bundled emoji data, and package tests.
+- **`../Packages/KeyVoxKeyboardThemes/`**: UI-independent keyboard theme identifiers with their saved-value fallback, the per-platform theme catalog, each theme's light and dark key palette, and package tests.
 - **`../Packages/KeyVoxTextComposition/`**: platform-neutral leading-capitalization, leading-spacing, quotation-mark context, sentence-boundary, adjacent terminal-punctuation, and trailing-separator policy used immediately before insertion.
 - **`../Packages/KeyVoxWhisper/`**: local `whisper.cpp` wrapper package consumed through the shared `WhisperService`, including request parameters and snapshots, compute policy, encoder configuration, segments, and iterable language identifiers.
 - **`../Packages/KeyVoxParakeet/`**: local Parakeet runtime package with a public backend seam and the Core ML backend used by the iOS app.
@@ -131,6 +133,8 @@ iOS/
 │   │   │   ├── OnboardingStore.swift
 │   │   │   └── RuntimeFlags.swift
 │   │   ├── Presentation/
+│   │   │   ├── AppDevice.swift
+│   │   │   ├── AppForegroundWindow.swift
 │   │   │   ├── AppReviewRequestBlockingPreference.swift
 │   │   │   ├── AppTypography.swift
 │   │   │   ├── InlineWarningRules.swift
@@ -285,15 +289,24 @@ iOS/
 │   │   ├── ContainingAppTab.swift
 │   │   ├── MainTabView.swift
 │   │   ├── PlaybackPreparationView.swift
+│   │   ├── ReturnToHostAdaptiveLayout.swift
+│   │   ├── ReturnToHostLayoutMetrics.swift
+│   │   ├── ReturnToHostSideBySideLayout.swift
 │   │   ├── ReturnToHostView.swift
 │   │   ├── SettingsTabView/
+│   │   │   ├── DictationSettingsCopy.swift
+│   │   │   ├── DictationSettingsView+General.swift
+│   │   │   ├── DictationSettingsView+Model.swift
+│   │   │   ├── DictationSettingsView.swift
 │   │   │   ├── KeyboardSettingsCopy.swift
 │   │   │   ├── KeyboardSettingsView.swift
+│   │   │   ├── KeyVoxSpeakSettingsCopy.swift
+│   │   │   ├── KeyVoxSpeakSettingsView+Timeout.swift
+│   │   │   ├── KeyVoxSpeakSettingsView+Voices.swift
+│   │   │   ├── KeyVoxSpeakSettingsView.swift
 │   │   │   ├── SettingsRow.swift
 │   │   │   ├── SettingsTabView+About.swift
 │   │   │   ├── SettingsTabView+General.swift
-│   │   │   ├── SettingsTabView+Models.swift
-│   │   │   ├── SettingsTabView+TTS.swift
 │   │   │   ├── SettingsTabView+VibesAI.swift
 │   │   │   └── SettingsTabView.swift
 │   │   ├── StyleTabView+KeyVoxVibes.swift
@@ -305,8 +318,10 @@ iOS/
 │   │   │   │   ├── AppCard.swift
 │   │   │   │   ├── AppIconTile.swift
 │   │   │   │   ├── AppPageIndicator.swift
+│   │   │   │   ├── AppReadableWidth.swift
 │   │   │   │   ├── AppScrollMetrics.swift
 │   │   │   │   ├── AppScrollScreen.swift
+│   │   │   │   ├── AppSheetBottomPadding.swift
 │   │   │   │   ├── AppTheme.swift
 │   │   │   │   ├── AppTintedScrollIndicator.swift
 │   │   │   │   ├── AppTintedScrollView.swift
@@ -315,6 +330,7 @@ iOS/
 │   │   │   ├── AutoFocusTextField.swift
 │   │   │   ├── DeletionConfirmation.swift
 │   │   │   ├── DownloadConfirmation.swift
+│   │   │   ├── HuggingWidthLayout.swift
 │   │   │   ├── InlineWarningRow.swift
 │   │   │   ├── LogoBarView.swift
 │   │   │   ├── LoopingVideoPlayer.swift
@@ -427,11 +443,14 @@ iOS/
 │   │   │   ├── KeyboardHeldKeyController.swift
 │   │   │   ├── KeyboardKeyActivation.swift
 │   │   │   ├── KeyboardLetterCaseController.swift
+│   │   │   ├── KeyboardSmartDeletion.swift
 │   │   │   ├── KeyboardSpecialKeyInteractionSupport.swift
 │   │   │   ├── KeyboardSymbolPageReturnTracker.swift
 │   │   │   ├── KeyboardTextInputController.swift
 │   │   │   ├── KeyboardTouchRouterGestureRecognizer.swift
-│   │   │   └── KeyboardWordDeletion.swift
+│   │   │   ├── KeyboardWordDeletion.swift
+│   │   │   ├── smart_delete_after_word_characters.txt
+│   │   │   └── smart_delete_before_word_characters.txt
 │   │   ├── Prediction/
 │   │   │   ├── KeyboardPersonalVocabularyBuilder.swift
 │   │   │   ├── KeyboardPredictionCoordinator.swift
@@ -445,12 +464,18 @@ iOS/
 │   │   │   ├── KeyboardDictionaryCasingStore.swift
 │   │   │   ├── KeyboardInsertionCapitalizationCoordinator.swift
 │   │   │   └── KeyboardInsertionSpacingCoordinator.swift
+│   │   ├── Theme/
+│   │   │   ├── KeyboardThemeColor+UIKit.swift
+│   │   │   └── KeyboardThemeTrait.swift
 │   │   ├── Transport/
 │   │   │   ├── KeyboardIPCManager.swift
 │   │   │   ├── KeyboardTransportDisplayState.swift
 │   │   │   └── KeyboardTTSController.swift
 │   │   ├── KeyboardLayoutGeometry.swift
 │   │   ├── KeyboardKeysMode.swift
+│   │   ├── KeyboardDisplay.swift
+│   │   ├── KeyboardFoldableDisplay.swift
+│   │   ├── KeyboardScreenShape.swift
 │   │   ├── KeyboardDictationModelStatus.swift
 │   │   ├── KeyboardInstalledModels.swift
 │   │   ├── KeyboardModelAvailability.swift
@@ -690,6 +715,22 @@ Packages/
 │   │   ├── EmojiSearch.swift
 │   │   └── EmojiTwoPersonTones.swift
 │   └── Tests/KeyVoxEmojiTests/
+├── KeyVoxKeyboardThemes/
+│   ├── Package.swift
+│   ├── Sources/KeyVoxKeyboardThemes/
+│   │   ├── KeyboardThemeCatalog.swift
+│   │   ├── KeyboardThemeColor.swift
+│   │   ├── KeyboardThemeColor+iOSKeyBorder.swift
+│   │   ├── KeyboardThemeID.swift
+│   │   ├── KeyboardThemeKeyOpacity.swift
+│   │   ├── KeyboardThemePalette.swift
+│   │   ├── KeyboardThemePalette+iOSClassic.swift
+│   │   ├── KeyboardThemePalette+iOSKeyVox.swift
+│   │   ├── KeyboardThemePlatform.swift
+│   │   ├── KeyboardThemeRGBA.swift
+│   │   ├── KeyboardThemeShade.swift
+│   │   └── KeyboardThemeSystemColor.swift
+│   └── Tests/KeyVoxKeyboardThemesTests/
 ├── KeyVoxLinguistics/
 │   ├── Package.swift
 │   ├── Sources/KeyVoxLinguistics/
@@ -889,6 +930,7 @@ Packages/
   - Handles scene activation/background callbacks for transcription recovery, model recovery, onboarding keyboard-tour arming, Dictation Shortcut intro scheduling, shortcut-route consumption, and Dictation/Speak/Vibes download transport handoffs.
   - Starts Dictation, Speak, and Vibes foreground-to-background handoffs during `.inactive`, while the app still has foreground execution time, and hands unfinished transfers back during `.active`.
   - Consumes any cold-launch URL route that was captured before SwiftUI rendered and pre-presents `ReturnToHostView` without animation before routing `keyvoxios://record/start`.
+  - Ignores the KeyVox Speak setup and KeyVox Vibes sheet routes while onboarding is showing.
   - Asks `OnboardingStore` to resolve its persisted state on every scene-phase change and again when protected data becomes available.
 - `KeyVox iOS/App/Composition/SharedPaths.swift`
   - Centralizes rooted app-group, cache, and install filesystem locations used by app-owned services.
@@ -920,9 +962,10 @@ Packages/
 - `KeyVox iOS/App/Routing/AppLaunchRouteStore.swift`
   - Small launch-scoped routing owner for early cold-start URL presentation and later route consumption.
 - `KeyVox iOS/App/Routing/KeyVoxURLRoute.swift`
-  - Typed app route surface for cold-start recording, copied-text playback, locked KeyVox Vibes launches, Vibes trial-start launches, and keyboard-originated missing-model recovery.
+  - Typed app route surface for cold-start recording, copied-text playback, keyboard-originated KeyVox Speak setup, locked KeyVox Vibes launches, Vibes trial-start launches, and keyboard-originated missing-model recovery.
 - `KeyVox iOS/App/Routing/KeyVoxURLRouter.swift`
-  - App-owned URL parsing and route dispatch owner for record, TTS, locked Vibes, Vibes trial-start, model recovery, and return-to-host flows.
+  - App-owned URL parsing and route dispatch owner for record, TTS, KeyVox Speak setup, locked Vibes, Vibes trial-start, model recovery, and return-to-host flows.
+  - Answers `keyvoxios://tts/setup` with the same KeyVox Speak help presentation the Home screen uses, chosen from whether Speak assets are installed.
 - `KeyVox iOS/App/Composition/AppServiceRegistry.swift`
   - Main composition root.
   - Builds dictionary, onboarding, settings, App Store review-request state, weekly stats, app haptics, the shared app-tab router, Whisper, Parakeet, the active-provider router, post-processing, dictation model management, local Vibes model management, local Vibes inference, keyboard bridge, transcription, Shortcut dictation coordination, Dictation Shortcut intro state, KeyVox Vibes style rewrite coordination, PocketTTS runtime services, the TTS unlock gate, KeyVox Vibes purchase/trial state, the KeyVox Speak and Vibes intro controllers, the App Store update coordinator, iCloud sync, Live Activity, and URL-routing services.
@@ -940,6 +983,7 @@ Packages/
 - `KeyVox iOS/App/KeyVoxSpeak/KeyVoxSpeakIntroController.swift`
   - App-owned post-onboarding KeyVox Speak intro owner.
   - Tracks whether the intro has been seen, whether the user has already used KeyVox Speak organically, the eligible-open counter for delayed presentation, and the development-only force-presentation path.
+  - Presents the KeyVox Speak help sheet through `KeyVoxSpeakFlowRules.helpPresentation` for both the Home help action and the keyboard's Speak setup route.
 - `KeyVox iOS/App/KeyVoxSpeak/TTSPurchaseController.swift`
   - App-owned one-time unlock and daily-usage owner for copied-text playback.
   - Loads the placeholder StoreKit non-consumable product, owns purchase and restore flows, caches last-known unlock state, tracks two free new speaks per local day, and exposes the shared unlock-sheet presentation state.
@@ -966,6 +1010,11 @@ Packages/
   - App-wide typography helpers for SwiftUI surfaces that should share the same app font treatment.
 - `KeyVox iOS/App/Presentation/KeyboardObserver.swift`
   - App-side keyboard-presentation observer used by text-entry flows such as onboarding and dictionary editing.
+  - Reports how much of KeyVox's window the keyboard covers, which is less than its full height, or nothing, when the window ends above the keyboard on iPad.
+- `KeyVox iOS/App/Presentation/AppDevice.swift`
+  - Single device-idiom check for the layout and copy that differ on iPad.
+- `KeyVox iOS/App/Presentation/AppForegroundWindow.swift`
+  - Resolves the key window of KeyVox's foreground-active scene, shared by keyboard-coverage measurement and the Shortcut installer's share-sheet presentation.
 - `KeyVox iOS/App/Stats/WeeklyWordStatsStore.swift`
   - App-owned local weekly usage aggregator consumed by Home, settings-adjacent surfaces, and Live Activity mirroring.
 - `KeyVox iOS/App/Feedback/AppHaptics.swift`
@@ -1009,16 +1058,18 @@ Packages/
   - Starts the guided Dictation Shortcut route; keyboard system settings are handled later by `OnboardingEnableKeyboardScreen`.
   - Uses app-owned haptics for warning/success step feedback.
 - `KeyVox iOS/Views/DictationShortcutSetup/DictationShortcutSetupOnboardingView.swift`
-  - Controlled eight-step onboarding flow with back, Skip, bottom CTA, and non-interactive shared page indicator behavior.
-  - Installs the bundled Shortcut from Add Shortcut, opens system Settings from Action Button Shortcut Selection, and hands off to keyboard enablement from Action Button Demo Handoff.
+  - Controlled onboarding flow over the device's setup steps (all eight on iPhone, the two non-Action Button steps on iPad) with back, Skip, bottom CTA, and non-interactive shared page indicator behavior.
+  - Installs the bundled Shortcut from Add Shortcut, opens system Settings from Action Button Shortcut Selection, and hands off to keyboard enablement from the final step once its own action is done: Action Button Demo Handoff on iPhone, Add Shortcut on iPad.
+  - Treats the final step as done when it reopens there after keyboard setup.
 - `KeyVox iOS/Views/DictationShortcutSetup/DictationShortcutSetupBrowsingView.swift`
-  - Swipeable reuse of the same eight steps for the one-time existing-user introduction and the Settings reference guide.
+  - Swipeable reuse of the same device-specific steps for the one-time existing-user introduction and the Settings reference guide.
   - Existing-user mode retains guided CTAs and Finish; Settings mode limits actions to Add Shortcut and Open Settings while allowing free step browsing and close.
   - Sizes each page to the full screen width with the safe-area padding inside the page so neighboring pages never show beside the current one, uses an inline navigation title, and keeps the navigation bar from minimizing on scroll where the system supports that behavior.
 - `KeyVox iOS/Views/DictationShortcutSetup/DictationShortcutSetupPage.swift`
   - Ordered setup-step model, semantic step identifiers, accessibility descriptions, and single source of truth for the eight bundled video asset names and viewport dimensions.
+  - Owns the steps shown on the current device, leaving the Action Button steps out on iPad, plus each step's position and next/previous step among them.
 - `KeyVox iOS/Views/DictationShortcutSetup/DictationShortcutSetupPageView.swift`
-  - Shared per-step presentation that composes `ShortcutIntroView` with the reusable video viewport.
+  - Shared per-step presentation that composes `ShortcutIntroView` with the reusable video viewport; on iPad the video is also kept no taller than the page.
 - `KeyVox iOS/Views/DictationShortcutSetup/DictationShortcutSetupVideoView.swift`
   - Active-page looping playback wrapper for the transparent Shortcut/Action Button instructional media.
 - `KeyVox iOS/Views/Components/App/AppPageIndicator.swift`
@@ -1062,13 +1113,15 @@ Packages/
   - Includes the app-owned cached TTS unlock state plus the local day token and free-speak usage count used by the phase-one copied-text playback gate.
   - Also includes the post-onboarding KeyVox Speak intro keys for seen-state, feature-used state, the delayed eligible-open counter, and the app-owned cached update decision keys used for cold-launch reminders.
   - Also includes the KeyVox Vibes style-selection keys used by both `AppSettingsStore` and the keyboard extension's Vibes selector.
-  - Also includes the shared Compact Keys availability and active-mode keys used by the containing app and keyboard extension.
+  - Also includes the shared Compact Keys availability and active-mode keys and the keyboard theme key used by the containing app and keyboard extension.
   - Also includes the shared keyboard typing settings (auto-capitalization, auto-correction, shift caps lock, predictive text, emoji keyboard, period shortcut, and Open on 123), the typing-memory reset generation, the keyboard's emoji Frequently Used and per-emoji skin-tone keys, and the app-owned review-request dates and last requested version.
 - `KeyVox iOS/App/iCloud/AppSettingsStore.swift`
   - Owns the device-local active dictation provider and Whisper language selection alongside the app's other persisted settings.
   - Validates restored Whisper language identifiers against `WhisperBaseLanguageCatalog` and defaults missing or unsupported values to Auto Detect; this preference is intentionally not part of iCloud settings sync.
   - Owns the user-facing Compact Keys availability toggle, which defaults on and clears any active compact mode when disabled.
   - Owns the published keyboard typing settings shown on the Keyboard settings screen; every toggle defaults on except Open on 123, which defaults off, and each writes its shared App Group key for the keyboard extension to read.
+  - Owns the keyboard theme choice, written to its shared App Group key and resolved through `KeyboardThemeID` so a missing or unknown saved value falls back to the KeyVox theme.
+  - Owns the dictation timeout, defined by `SessionDisableTiming` with a single shared default of 15 minutes that also supplies `SessionPolicy`'s idle timeout.
 - `KeyVox iOS/App/iCloud/KeyVoxPlaybackVoice.swift`
   - Dependency-free shared playback-voice catalog used by both `AppSettingsStore` and the share extension when resolving canonical TTS voice IDs and display names.
 - `KeyVox iOS/App/Integration/KeyVoxKeyboardBridge.swift`
@@ -1210,12 +1263,13 @@ Packages/
 - `KeyVox iOS/Core/TTS/TTSReplayCache.swift`
   - Persistence layer for the last replayable rendered playback and paused replay sample offsets.
 - `KeyVox iOS/Core/TTS/TTSPreviewPlayer.swift`
-  - Shared bundled-preview playback owner used by both the Voice Model settings section and the KeyVox Speak intro demo.
+  - Shared bundled-preview playback owner used by both the KeyVox Speak settings screen's voice previews and the KeyVox Speak intro demo.
 - `KeyVox iOS/Core/TTS/AudioModeCoordinator.swift`
   - Single arbitration surface for dictation-versus-TTS transitions, including pause/resume/replay transport.
   - Also enforces the copied-text playback entitlement gate for every new TTS start path before playback begins.
 - `KeyVox iOS/Views/PlaybackPreparationView.swift`
   - Cold-launch playback-preparation screen shown before returning to the host app.
+  - Lays out through `ReturnToHostAdaptiveLayout`, keeping room for both preparation phases' text in its squat-display and side-by-side layouts; side by side, the progress centers on the fold, or under the video while the fold is active.
 - `KeyVox iOS/Views/HomeTabView/TTS/HomeTabView+TTSPresentation.swift`
   - Defines `TTSPreparationPresentationPolicy`, the pure spinner/progress visibility policy tested separately from Home view copy and layout.
 
@@ -1354,7 +1408,7 @@ Packages/
 - `KeyVox iOS/Core/Transcription/InterruptedCaptureRecoveryStore.swift`
   - Durable storage for interrupted captures that need to be resumed later.
 - `KeyVox iOS/Core/Transcription/SessionPolicy.swift`
-  - Session safety thresholds and timeout policy.
+  - Session safety thresholds and timeout policy; the default idle timeout comes from the dictation timeout's shared default.
 
 ### App UI
 
@@ -1380,7 +1434,7 @@ Packages/
 - `KeyVox iOS/Views/HomeTabView/LastTranscriptionCardView.swift`
   - Latest transcription card plus its shared tinted transcription scroller and trailing copy action, backed by the shared copy-feedback interaction controller instead of view-local pasteboard logic.
 - `KeyVox iOS/Views/Components/PlaybackVoicePickerMenu.swift`
-  - Reusable installed-voice picker menu used by both the Settings Voice Model section and the hidden Home copied-text playback shortcut.
+  - Reusable installed-voice picker menu used by both the KeyVox Speak settings screen and the hidden Home copied-text playback shortcut.
 - `KeyVox iOS/Views/Components/InlineWarningRow.swift`
   - Shared yellow warning row treatment for inline caution copy, including the reused cellular-download warning shown across onboarding, KeyVox Speak setup, Home copied-text playback, and Settings model surfaces.
 - `KeyVox iOS/Views/Components/NativeActivityIndicator.swift`
@@ -1414,25 +1468,41 @@ Packages/
   - Uses the shared Vibes trial remaining-time formatter for active-trial status while keeping the card sentence local to the Style tab.
   - Keeps selected Vibe displayed as `None` until both Vibes access and local Vibes AI readiness are active, and exposes an install entry point when the model is missing.
 - `KeyVox iOS/Views/SettingsTabView/SettingsTabView.swift`
-  - Top-level settings composition, shared disclosure state, download-confirmation request binding, full-screen Dictation Shortcut reference-guide presentation, third-party notices sheet presentation, and cross-section coordination for the extracted settings surface.
+  - Top-level settings composition: the Dictation, Keyboard, and KeyVox Speak rows, the KeyVox Vibes AI card, then the About sections.
+  - Owns the deletion- and download-confirmation request bindings, third-party notices sheet presentation, and the Dictation screen push; an `AppTabRouter` model-section request opens that screen with its dictation model card expanded.
 - `KeyVox Keyboard/Core/KeyboardToolbarMode.swift`
   - Central warning-priority resolver for the keyboard toolbar: dictation model missing, dictation model action required, Full Access missing, microphone permission missing, then branded.
   - Required app updates are not a keyboard toolbar mode, so dictation stays available from the keyboard while the containing app shows its forced-update prompt.
 - `KeyVox iOS/Views/SettingsTabView/SettingsTabView+General.swift`
-  - Session timeout, Live Activities, the Dictation Shortcut setup-guide entry point, Speak Timeout, the Keyboard row that opens `KeyboardSettingsView`, and audio preference sections extracted from the settings root view.
+  - The Dictation, Keyboard, and KeyVox Speak rows that open `DictationSettingsView`, `KeyboardSettingsView`, and `KeyVoxSpeakSettingsView`.
+- `KeyVox iOS/Views/SettingsTabView/DictationSettingsView.swift`
+  - Dictation settings screen opened from the Dictation row: the session card, the dictation model card, then the microphone preference.
+  - Owns the full-screen Dictation Shortcut reference-guide and language-picker presentations, defers automatic KeyVox Vibes and KeyVox Speak introductions while the guide is open, and expands and scrolls to the model card when a model-section request arrives.
+- `KeyVox iOS/Views/SettingsTabView/DictationSettingsView+General.swift`
+  - Dictation Timeout, Live Activities, and the Dictation Shortcut setup-guide entry point in the session card, plus the built-in microphone preference.
+- `KeyVox iOS/Views/SettingsTabView/DictationSettingsCopy.swift`
+  - Copy owner for the Dictation settings screen and the Settings row that opens it.
 - `KeyVox iOS/Views/SettingsTabView/KeyboardSettingsView.swift`
-  - Keyboard settings screen: single-line typing toggles for keyboard haptics, auto-capitalization, auto-correction, caps lock, predictive text, the emoji keyboard, and the period shortcut, then Compact Keys, Open on 123, and Left-Handed Layout with descriptions, then Reset Learned Words through the shared deletion confirmation.
+  - Keyboard settings screen: single-line typing toggles for keyboard haptics (hidden on iPad), auto-capitalization, auto-correction, caps lock, predictive text, the emoji keyboard, and the period shortcut, then Classic Theme, Compact Keys, Open on 123, and Left-Handed Layout with descriptions, then Reset Learned Words through the shared deletion confirmation.
+  - The Classic Theme toggle switches the saved keyboard theme between Classic and KeyVox.
 - `KeyVox iOS/Views/SettingsTabView/KeyboardSettingsCopy.swift`
   - Copy owner for the Keyboard settings screen and the Settings row that opens it.
 - `KeyVox iOS/Views/SettingsTabView/SettingsRow.swift`
   - Shared settings-row layout with mutually exclusive SF Symbol and template-rendered asset icon support and an optional description for single-line rows.
-- `KeyVox iOS/Views/SettingsTabView/SettingsTabView+Models.swift`
+- `KeyVox iOS/Views/SettingsTabView/DictationSettingsView+Model.swift`
   - Release-facing `Dictation Model` section, provider selection, per-model install actions, and not-installed size labels.
   - Attaches the Language section beneath the model card: Whisper uses the shared model catalog for its picker, while Parakeet remains visible as Auto Detect with FAQ guidance because it has no native forced-language selection.
-- `KeyVox iOS/Views/SettingsTabView/SettingsTabView+TTS.swift`
+- `KeyVox iOS/Views/SettingsTabView/KeyVoxSpeakSettingsView.swift`
+  - KeyVox Speak settings screen opened from the KeyVox Speak row: Speak Timeout, then the KeyVox Speak engine and voices card.
+  - Stops voice previews when the card collapses or the screen goes away, and expands the card when the shared Speak engine becomes ready.
+- `KeyVox iOS/Views/SettingsTabView/KeyVoxSpeakSettingsView+Timeout.swift`
+  - Speak Timeout card.
+- `KeyVox iOS/Views/SettingsTabView/KeyVoxSpeakSettingsView+Voices.swift`
   - Release-facing `KeyVox Speak` section for PocketTTS runtime install state, per-voice install actions, voice previews, playback voice selection, and the `KeyVox Speak Unlimited` unlock row placed beneath the model section, including the shared installed-voice picker menu.
+- `KeyVox iOS/Views/SettingsTabView/KeyVoxSpeakSettingsCopy.swift`
+  - Copy owner for the KeyVox Speak settings screen and the Settings row that opens it.
 - `KeyVox iOS/Views/SettingsTabView/SettingsTabView+VibesAI.swift`
-  - Release-facing `KeyVox Vibes AI` model card placed below the dictation model card, with download/delete/repair actions, confirmation handoff, install progress, percentage text, failure copy, and animated progress collapse.
+  - Release-facing `KeyVox Vibes AI` model card placed below the KeyVox Speak row, with download/delete/repair actions, confirmation handoff, install progress, percentage text, failure copy, and animated progress collapse.
 - `KeyVox iOS/Views/SettingsTabView/SettingsTabView+About.swift`
   - Rate-and-review, GitHub support, shared Speak/Vibes restore-purchases, version footer, and third-party notices launcher extracted from the settings root view.
 - `KeyVox iOS/Views/Components/DeletionConfirmation.swift`
@@ -1446,12 +1516,27 @@ Packages/
 - `KeyVox iOS/Views/ReturnToHostView.swift`
   - One-time post-cold-launch host-return guidance screen during a live session handoff.
   - Includes a top-right dismiss control for returning to the Home surface without waiting for an external host-app switch.
+  - Lays out through `ReturnToHostAdaptiveLayout`.
+- `KeyVox iOS/Views/ReturnToHostAdaptiveLayout.swift`
+  - Chooses the return-to-app and playback-preparation layout from the whole display's shape: text beside the video on a display wider than it is tall, the usual layout with the video held at full size or else the tighter layout on a squat display, and otherwise the usual layout.
+  - Locates the fold from the active top-to-bottom division the system reports, or else the middle of the display.
+- `KeyVox iOS/Views/ReturnToHostLayoutMetrics.swift`
+  - Spacing, text size, video sizing, state-text reservation, and fold position for the usual, full-size, tighter, and side-by-side return-to-app layouts.
+- `KeyVox iOS/Views/ReturnToHostSideBySideLayout.swift`
+  - Places the text left of the video with the gap between the text and the video's drawing centered on the fold, and centers anything below them on the fold, or under the video while the fold is active.
+- `KeyVox iOS/Views/Components/HuggingWidthLayout.swift`
+  - Layout that wraps content to a maximum width while taking only the width the content uses; side-by-side return-to-app text uses it.
+- `KeyVox iOS/Views/Components/App/AppReadableWidth.swift`
+  - On iPad, centers a view in a column no wider than `AppTheme.readableContentWidth`; `AppScrollScreen`, onboarding screens, the Dictation Shortcut guide, and the Dictionary list use it.
+- `KeyVox iOS/Views/Components/App/AppSheetBottomPadding.swift`
+  - On iPad, leaves space under the KeyVox Speak and KeyVox Vibes sheets' bottom buttons.
 
 ### Keyboard Extension
 
 - `KeyVox Keyboard/App/KeyboardViewController.swift`
   - Extension controller and top-level keyboard surface owner.
-  - Owns toolbar mode switching, full-access instructions presentation, warm/cold app launch behavior, onboarding presentation reporting, Caps Lock, Vibes key cycling, missing-model Vibes recovery launch, dictionary/settings tab launch, the letter/number/symbol page, keys mode and controller-view height, emoji panel state, trackpad mode, and insertion.
+  - Owns toolbar mode switching, full-access instructions presentation, warm/cold app launch behavior, onboarding presentation reporting, Caps Lock, Vibes key cycling, missing-model Vibes recovery launch, dictionary/settings tab launch, the KeyVox Speak setup launch when no Speak voice is ready, the letter/number/symbol page, keys mode and controller-view height, emoji panel state, trackpad mode, and insertion.
+  - On each layout pass reads the display kind through `KeyboardDisplay`, decides landscape from `KeyboardScreenShape`, and shows its own globe key whenever the system asks for one; on each UI update applies the saved keyboard theme as a `KeyboardThemeTrait` override.
   - Waits for the host's first `textDidChange(_:)` after appearing before reading the focused field, then prepares typing for that field; a later change of the field's typing traits starts the new field fresh.
   - Tracks whether the latest dictation is still untouched and whether the field holds letters, which together decide whether the toolbar offers suggestions or the dictation accessories.
   - Missing-model taps open `keyvoxios://vibes/model-recovery`; access-aware recovery scene selection remains app-owned by `KeyVoxVibesPurchaseController`.
@@ -1465,7 +1550,7 @@ Packages/
   - Resolves the active provider's App Group artifacts into ready, not-installed, or repair-required state for keyboard warning presentation.
   - Keeps lightweight extension-side artifact inspection separate from containing-app install, validation, and repair ownership.
 - `KeyVox Keyboard/Core/KeyboardInstalledModels.swift`
-  - Caches the dictation availability and Speak voice readiness the toolbar depends on; the controller rechecks it when the keyboard appears and when the extension host becomes active instead of inspecting disk on every UI update.
+  - Caches the dictation availability the toolbar depends on and the Speak voice readiness that decides whether a Speak tap plays or opens KeyVox Speak setup; the controller rechecks it when the keyboard appears and when the extension host becomes active instead of inspecting disk on every UI update.
 - `KeyVox Keyboard/Core/KeyboardOpeningLayout.swift`
   - Resolves the page and keys mode a field opens on: full letter keys, or the number page in the user's Compact Keys mode when the field or Open on 123 prefers numbers.
 - `KeyVox Keyboard/App/KeyboardContainingAppLauncher.swift`
@@ -1474,7 +1559,7 @@ Packages/
   - Presentation-tree creation, per-presentation binding, teardown, and extension-host lifecycle observation.
   - Pauses the active presentation during host backgrounding, refreshes it on host foregrounding, and tears the tree down only for real dismissal and globe-key presentation swaps.
   - Keeps the keyboard view hierarchy disposable across globe-key presentation swaps.
-  - Binds and unbinds key-grid callbacks, letter-key geometry for predictions, suggestion-bar taps and long presses, the emoji page, and the emoji search with the presentation tree; on host foregrounding it also adopts any typing-memory reset and rechecks installed models.
+  - Binds and unbinds key-grid callbacks, letter-key geometry for predictions, suggestion-bar taps and long presses, the emoji page, the emoji search, and the audio indicator's attachment to the logo bar with the presentation tree; on host foregrounding it also adopts any typing-memory reset and rechecks installed models.
 - `KeyVox Keyboard/App/KeyboardViewController+Debug.swift`
   - Debug-only presentation lifecycle counters and controller test hooks.
 - `KeyVox Keyboard/Core/Dictation/DictationChange/KeyboardDictationChangeController.swift`
@@ -1492,7 +1577,7 @@ Packages/
 - `KeyVox Keyboard/Core/Dictation/DictationChange/KeyboardDictationChangeArtifactStore.swift`
   - Lightweight keyboard-side reader for the app-published latest dictation artifact in App Group defaults; returns the artifact only when its ID matches the requested utterance.
 - `KeyVox Keyboard/Core/Dictation/AudioIndicatorDriver.swift`
-  - Drives the logo indicator from the shared live meter; pauses its display link whenever neither a listening, processing, or speaking phase nor speech-playback progress needs new frames.
+  - Drives the logo indicator from the shared live meter through an update link attached to the logo bar view, so frames come from the screen the keyboard is on and only while it shows; disables the link whenever neither a listening, processing, or speaking phase nor speech-playback progress needs new frames.
 - `KeyVox Keyboard/Core/Dictation/KeyboardLocalStyleRewriteTextTransformer.swift`
   - Keyboard-side style rewrite transport that writes the base text, style, and saved dictation language into a `KeyVoxStyleRewriteIPCRequest`, polls for the matching response, and returns package-shaped transform results with processing mode `app-ipc`.
   - Keeps local rewrite model execution out of the extension.
@@ -1518,14 +1603,19 @@ Packages/
   - Reads and writes the shared selected Vibe, paragraph, and list-formatting defaults, derives Vibe display text from `StyleRewriteStyle`, evaluates trial access using the shared Vibes trial duration policy, forces the resolved Vibe to `None` when access or Vibes AI install readiness is missing, and posts shared Darwin notifications so the containing app can refresh visible settings.
   - Reads Compact Keys availability and persists the active full/compact mode independently; availability defaults on while active mode defaults full.
   - Reads the shared keyboard typing settings and Left-Handed Layout with the same defaults the containing app uses; the keyboard never writes them.
+  - Reads the saved keyboard theme through `KeyboardThemeID` and the containing app's onboarding-completion flag.
 - `KeyVox Keyboard/Core/Input/KeyboardCompactKeysHoldController.swift`
   - Owns the cancellable half-second `#+=` hold gesture that requests compact-mode activation without turning the eventual touch-up into a normal symbol-page keypress.
 - `KeyVox Keyboard/Core/Input/KeyboardTextInputController.swift`
   - Host-app text insertion, key dispatch, double-space period behavior, cursor movement, and document-proxy execution of adjacent punctuation replacement after selected-text insertion.
   - Captures the first character after the insertion or selected span once, then applies shared terminal-punctuation and trailing-separator composition before inserting the finalized text.
   - Applies typing-session `TextEdit` values by deleting and retyping only the changed end of the replaced text, deletes whole words for a held delete key, types smart quotes unless a character was picked from a held key's popup, gates the double-space period on the period-shortcut setting and an empty selection, and switches between the letter, number, and alternate symbol pages.
+  - In a field that deletes smartly, deletes a selection by typing a space over it and deleting that space, then removes the neighboring space, if any, that `KeyboardSmartDeletion` names, so the text read around the cursor stays in step with the field.
 - `KeyVox Keyboard/Core/Input/KeyboardLetterCaseController.swift`
   - Owns the letter page's shift state: a tap shifts the next letter, a quick second tap locks caps when allowed, and the field's auto-capitalization type decides when the keyboard shifts by itself.
+  - Shifts at sentence starts, as `TypingTextContext.startsSentence(after:)` reads the full text before the cursor, for both sentence and every-letter fields, and skips attachment placeholders in that text.
+- `KeyVox Keyboard/Core/Input/KeyboardSmartDeletion.swift`
+  - Decides which plain space, before or after a deleted selection, a smart-deleting field removes with it, from the bundled `smart_delete_before_word_characters.txt` and `smart_delete_after_word_characters.txt` character lists.
 - `KeyVox Keyboard/Core/Input/KeyboardSymbolPageReturnTracker.swift`
   - Returns to the letter page right after a character that belongs inside words (as `TypingTextContext.isWordCharacter` defines it) is typed on a symbol page, or on the space that follows any other symbol-page character.
 - `KeyVox Keyboard/Core/Input/KeyboardHeldKeyController.swift`
@@ -1560,7 +1650,13 @@ Packages/
   - Owns the letter page's inset middle row and shift row, the symbol pages' third row, and the bottom row's live widths, including the landscape side-key span, the paired page and emoji keys, the emoji search's three-key row, and the globe row, all driven from the measured key grid.
 - `KeyVox Keyboard/Core/KeyboardKeysMode.swift`
   - Resolves full versus compact presentation from availability and persisted active state.
-  - Takes the 286-point full or 174-point compact portrait height from `KeyboardStyle`, shortens it by the shorter landscape keys, and owns visible row count, per-orientation key height, and derived key-grid height.
+  - Takes the 286-point full or 174-point compact portrait height from `KeyboardStyle`, changes it by however much shorter or taller the keys are in landscape or on iPad, and owns visible row count, per-orientation and per-display key height, row spacing, the top row's toolbar button height, and derived key-grid height.
+- `KeyVox Keyboard/Core/KeyboardDisplay.swift`
+  - Resolves the display the keyboard is on: standard (an iPhone display or an iPad's floating keyboard), an open foldable's inner display, or a full-width iPad keyboard.
+- `KeyVox Keyboard/Core/KeyboardFoldableDisplay.swift`
+  - Treats a display regular in both width and height as an open foldable's inner display, partially or fully open, because keyboard extensions do not receive hinge updates.
+- `KeyVox Keyboard/Core/KeyboardScreenShape.swift`
+  - Decides landscape from whether the keyboard's scene is wider than it is tall rather than from the interface orientation.
 - `KeyVox Keyboard/Core/KeyboardSymbolLayout.swift`
   - Defines the letter, number, and alternate symbol pages, the key kinds and their titles, symbols, and accessibility labels, the Compact Keys rows, the emoji search's bottom row, and the bottom-row variants without the emoji key or with the globe key.
 - `KeyVox Keyboard/Core/KeyboardTopRowAccessoryLayout.swift`
@@ -1577,6 +1673,8 @@ Packages/
   - Hosts the emoji page over the key grid's place, the emoji search field in the toolbar's place, and the search results above the keys while searching.
   - Sends touches in the keyboard's outer padding to the key grid so they type the nearest key.
   - Invalidates layout whenever branded-toolbar Vibes visibility changes so returning from a warning mode restores measured top-row spacing.
+  - Shows Speak with the other toolbar accessories whether or not a Speak voice is installed, and keeps Settings, Dictionary, and Speak disabled until onboarding is complete.
+  - Applies the display's row spacing, key-grid height, and top-row toolbar button height from `KeyboardKeysMode`.
 - `KeyVox Keyboard/Views/Components/KeyboardSpeakButton.swift`
   - Keyboard speak control used for copied-text playback transport in the top-row accessory area.
 - `KeyVox Keyboard/Views/Components/KeyboardVibesButton.swift`
@@ -1591,7 +1689,7 @@ Packages/
 - `KeyVox Keyboard/Core/Transport/KeyboardTransportDisplayState.swift`
   - Non-visual keyboard logo transport state, accessibility labels, and playback/dictation presentation inputs kept separate from the proprietary logo-bar rendering file.
 - `KeyVox Keyboard/Views/Components/KeyboardKeyGridView.swift`
-  - Shows the page for the current layout through cached `KeyboardKeyGridPage` instances, applies the letter case, reports letter-key frames for predictions, resolves a touch to the containing key or the nearest key within its hit slop, and exposes the key, held-key, delete, globe, and touch-down callbacks.
+  - Shows the page for the current layout through cached `KeyboardKeyGridPage` instances, applies the letter case and the current row spacing to the page showing and every page shown after it, reports letter-key frames for predictions, resolves a touch to the containing key or the nearest key within its hit slop, and exposes the key, held-key, delete, globe, and touch-down callbacks.
 - `KeyVox Keyboard/Views/Components/KeyboardKeyGridView+Touches.swift`
   - Multi-finger key handling: each finger is followed separately, characters type on lift or as soon as another finger lands, delete repeats while held, a held space bar becomes the cursor trackpad, holding `#+=` requests Compact Keys, holding a key with held-key characters opens its popup, and the globe's touches go to the system input-mode list.
 - `KeyVox Keyboard/Views/Components/KeyboardKeyGridPage.swift`
@@ -1672,6 +1770,23 @@ Packages/
 - `KeyVox Keyboard/Views/Emoji/KeyboardEmojiCell.swift`, `KeyboardEmojiGridLayout.swift`, and `KeyboardEmojiCategoryStyle.swift`
   - Grid cells labeled by their emoji for VoiceOver, the collection layout that places each emoji from `KeyboardEmojiGridGeometry`, and each category's bar symbol and VoiceOver wording.
 
+### Keyboard Themes
+
+- `Packages/KeyVoxKeyboardThemes/Sources/KeyVoxKeyboardThemes/KeyboardThemeID.swift`
+  - The themes a user can choose, each saved by its raw value, and the resolution that falls back to the KeyVox theme when no valid theme is saved.
+- `Packages/KeyVoxKeyboardThemes/Sources/KeyVoxKeyboardThemes/KeyboardThemeCatalog.swift` and `KeyboardThemePlatform.swift`
+  - Looks up each theme's palette per platform; iOS is the only platform defined today.
+- `Packages/KeyVoxKeyboardThemes/Sources/KeyVoxKeyboardThemes/KeyboardThemePalette.swift`, `KeyboardThemePalette+iOSKeyVox.swift`, and `KeyboardThemePalette+iOSClassic.swift`
+  - The colors a theme gives the keys: letter, special, and toolbar key fills with their pressed and disabled looks and key opacity, the key outline, a toolbar key that is on and its foreground, key popups with their outline, characters, and held-key highlight, the cancel key's border, and the microphone button's background; the KeyVox and Classic iOS palettes.
+- `Packages/KeyVoxKeyboardThemes/Sources/KeyVoxKeyboardThemes/KeyboardThemeColor.swift`, `KeyboardThemeShade.swift`, `KeyboardThemeRGBA.swift`, `KeyboardThemeSystemColor.swift`, `KeyboardThemeKeyOpacity.swift`, and `KeyboardThemeColor+iOSKeyBorder.swift`
+  - Platform-neutral color values: light and dark shades given as explicit sRGB values or platform system colors, per-appearance key fill opacity, and the shared iOS key outline.
+- `KeyVox Keyboard/Core/Theme/KeyboardThemeTrait.swift`
+  - Custom UIKit trait that carries the chosen theme down the keyboard's views and resolves its iOS palette from a trait collection.
+- `KeyVox Keyboard/Core/Theme/KeyboardThemeColor+UIKit.swift`
+  - Builds dynamic `UIColor`s that resolve a palette color from the theme and light or dark appearance in the traits they resolve with, mapping package system colors to UIKit system colors.
+- `KeyVox Keyboard/Core/KeyboardStyle.swift`
+  - Takes the themed key, popup, active-key, cancel-border, and microphone-background colors and the themed key tint opacity from the palette.
+
 ### Tests
 
 - `KeyVoxiOSTests/App/`
@@ -1697,6 +1812,8 @@ Packages/
   - Package-level coverage for autocorrection, missing-space correction, word revision, deleted-into and remembered corrections, contact names and dictionary phrases, learned words, capitals, and suggestions, sentence endings and openers, picked-word spacing and repeated picks, emoji suggestions, smart quotes, held-key characters and popup layout, character lists, and the typing-memory file.
 - `Packages/KeyVoxEmoji/Tests/KeyVoxEmojiTests/`
   - Package-level coverage for the catalog, keyboard sections, Frequently Used ranking, search, suggestion-bar emoji, and two-person tones.
+- `Packages/KeyVoxKeyboardThemes/Tests/KeyVoxKeyboardThemesTests/`
+  - Package-level coverage for saved-theme resolution and fallback, a distinct palette for every theme on every platform, and key opacity bounds.
 
 ## Change Tracking
 

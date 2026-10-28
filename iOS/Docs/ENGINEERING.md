@@ -2,7 +2,7 @@
 
 This document captures the current implementation rules and maintainer-facing architecture for the iOS app, keyboard extension, and widget extension.
 
-**Last Updated: 2026-10-18**
+**Last Updated: 2026-10-28**
 
 ## Design Philosophy
 
@@ -48,7 +48,7 @@ The containing app owns:
 - playback-preparation and return-to-host readiness gating
 - weekly word stats
 - App Store review-request eligibility and scheduling
-- keyboard typing settings and the reset of what the keyboard learned from typing
+- keyboard typing settings, the keyboard theme choice, and the reset of what the keyboard learned from typing
 - Live Activity coordination
 - the SwiftUI app shell
 
@@ -61,6 +61,7 @@ The keyboard extension owns:
 - letter-page typing: shift state, field typing traits, suggestions, autocorrection, held-key characters, and delete repeat, hosted on the shared `KeyVoxPredictiveKeyboard` session
 - the typing memory learned from the user's typing and its App Group file
 - the emoji page, emoji search, suggestion-bar emoji, Frequently Used ranking state, and chosen skin tones, built on `KeyVoxEmoji`
+- applying the saved keyboard theme's key colors, built on `KeyVoxKeyboardThemes`
 - toolbar mode selection and warning presentation
 - lightweight active-provider artifact inspection for missing-versus-repair warning state
 - warm/cold launch handoff into the containing app
@@ -82,7 +83,7 @@ The keyboard extension does **not** own:
 - KeyVox Vibes style rewrite policy
 - linguistic model loading or fallback resource ownership
 - onboarding progression
-- keyboard typing settings persistence; it only reads the shared values the containing app writes
+- keyboard typing settings or keyboard theme persistence; it only reads the shared values the containing app writes
 - prediction, correction, typing-memory, or emoji search and ranking rules, which belong to `KeyVoxPredictiveKeyboard` and `KeyVoxEmoji`
 
 ### Widget Extension
@@ -118,6 +119,7 @@ The share extension does **not** own:
 ## Platform and Target Requirements
 
 - Supported deployment target: iOS 18.6 and newer for the app, keyboard, widget, and tests.
+- The app, keyboard, share, widget, and test targets build for both iPhone and iPad (`TARGETED_DEVICE_FAMILY = "1,2"`). On iPad the containing app runs in a single window (`UIApplicationSupportsMultipleScenes = false`) in every orientation; on iPhone it stays portrait-only.
 - KeyVox Vibes runs through the local Vibes model and LoRA adapter path, so it is supported on the app's iOS 18.6+ deployment target.
 - The containing app declares:
   - `UIBackgroundModes = ["audio"]`
@@ -135,6 +137,7 @@ The share extension does **not** own:
 - The widget target also depends on the shared code/project wiring needed for ActivityKit and the shared App Group-backed session state.
 - The app, keyboard, share, and widget targets each ship a `PrivacyInfo.xcprivacy` declaring no tracking and no collected data, with required-reason entries only for the APIs that target uses: UserDefaults in all four, file timestamps in the app and keyboard, disk space in the app, and system boot time in the keyboard. The app's privacy manifest is not a member of the unit test target.
 - Among the shipping targets, only the keyboard extension links `KeyVoxPredictiveKeyboard` and `KeyVoxEmoji`.
+- `KeyVoxKeyboardThemes` is linked by the containing app, which stores the theme choice, and the keyboard extension, which colors its keys from it.
 
 ## Composition Root
 
@@ -238,6 +241,7 @@ Service ownership rules:
 - `KeyVoxCoreResources` centralizes access to packaged pronunciation and file-type resources. Apple app builds use the SwiftPM resource bundle by default.
 - `KeyVoxPredictiveKeyboard` owns UI-independent English typing prediction and correction: the bundled AOSP LatinIME native target with KeyVox ranking, bundled language data, `PredictiveTypingSession`, `PredictionComputer`, personal vocabulary, typing memory and its file format, held-key characters and popup layout, and smart quotes. The keyboard host supplies touches, key geometry, document text, and storage locations, and applies the `TextEdit` values the session returns.
 - `KeyVoxEmoji` owns the UI-independent emoji catalog, search, suggestion-bar emoji by word, Frequently Used ranking, and two-person skin tones, with bundled data. The keyboard host decides which emoji the system can draw and owns persistence and presentation.
+- `KeyVoxKeyboardThemes` owns the UI-independent theme identifiers, saved-value fallback to the KeyVox theme, the per-platform theme catalog, and each theme's light and dark key palette as platform-neutral color values. Hosts store the choice and turn palette colors into platform colors.
 
 `KeyVox iOS/Core/` owns app runtime services that are not view or composition concerns:
 
@@ -266,6 +270,7 @@ Current root behavior:
 - the post-onboarding `KeyVoxSpeakIntroSheetView` may appear only while the resolved root destination is truly `.main`, and must never interrupt onboarding, `ReturnToHostView`, or `PlaybackPreparationView`
 - an unhandled Dictation Shortcut guide has automatic-presentation priority over KeyVox Vibes and KeyVox Speak; presenting or browsing the guide defers those lower-priority introductions to a later eligible launch
 - app update prompts may appear only while the resolved root destination is truly `.main`, and must never interrupt launch hold, onboarding, `ReturnToHostView`, or `PlaybackPreparationView`
+- the KeyVox Speak setup and KeyVox Vibes sheet URL routes are ignored while onboarding is showing
 
 ### Onboarding Store Rules
 
@@ -337,7 +342,7 @@ Accepted truthy values:
 
 Behavior:
 
-- `KEYVOX_FORCE_DICTATION_SHORTCUT_SETUP` launches directly into the guided eight-page Shortcut/Action Button flow
+- `KEYVOX_FORCE_DICTATION_SHORTCUT_SETUP` launches directly into the guided Shortcut/Action Button flow
 - it bypasses welcome and language selection for that launch without changing the user's stored language
 - completing or returning from the forced guide clears the forced route through `OnboardingStore`
 
@@ -472,22 +477,24 @@ Rules:
 
 ### Dictation Shortcut and Action Button Setup Contract
 
-The same eight-page content model is reused in three presentation modes:
+The same eight-page content model is reused in three presentation modes. iPhone shows all eight pages; iPad has no Action Button, so it shows only Shortcut Intro and Add Shortcut, and its setup ends once the shortcut is added:
 
 - onboarding mode is controlled with Back, Skip, and a single bottom CTA; page swiping and page-indicator navigation are not enabled
-- existing-user introduction mode is freely swipeable, retains the guided CTA sequence, exposes close before the final step, and uses Finish on Action Button Demo Handoff
+- existing-user introduction mode is freely swipeable, retains the guided CTA sequence, exposes close before the final step, and uses Finish on the final page once that page's own step is done: Action Button Demo Handoff on iPhone, Add Shortcut after installation was requested on iPad
 - Settings reference mode is freely swipeable with close available throughout; only Add Shortcut exposes its installation action and Action Button Shortcut Selection exposes Open Settings
 
 Shared rules:
 
-- `DictationShortcutSetupPage` owns page order, accessibility descriptions, bundled video names, native media dimensions, and optional viewport width
+- `DictationShortcutSetupPage` owns page order, the pages available on the current device, accessibility descriptions, bundled video names, native media dimensions, and optional viewport width
 - all eight bundled videos live under `Resources/DictationShortcutSetup/`; `ShortcutHero.mov` supplies the centered Dictate Anywhere brand animation, while the seven semantically named instructional assets cover Shortcut installation, Action Button setup, and both dictation demonstrations
 - only the selected page may actively play; videos loop and restart through `LoopingVideoPlayer` when their page becomes active
 - Add Shortcut invokes `DictationShortcutInstaller`; after the first request, the guided CTA becomes Next so returning from Shortcuts does not reopen installation automatically
 - Open Settings invokes `DictationShortcutSettingsOpener`; after the first request, the guided CTA becomes Next so returning from Settings preserves progress
-- onboarding Skip and Action Button Demo Handoff's Set Up Keyboard action both clear the pending Shortcut route and record the pending keyboard-tour handoff
+- onboarding Skip and the final page's Set Up Keyboard action both clear the pending Shortcut route and record the pending keyboard-tour handoff; on iPad, Add Shortcut becomes Set Up Keyboard after installation was requested
+- returning from keyboard enablement reopens the final page with its step already done
 - page indicator navigation moves only one page per action and exposes VoiceOver adjustable previous/next behavior
 - the onboarding and browsing presentations use an inline navigation title; browsing pages span the full screen width with safe-area padding inside each page so neighboring pages never show beside the current one
+- on iPad the intro page's content and the bottom action area sit in the app's readable-width column, and each video is kept no taller than its page
 
 ### Existing-User Introduction Contract
 
@@ -503,7 +510,7 @@ Shared rules:
 - the bundled `Resources/Onboarding/EnableKeyboard.mov` animation demonstrates the system-settings steps
 - opening Settings clears stale keyboard-onboarding presentation state before leaving the app
 - when the app becomes active, `OnboardingKeyboardAccessProbe` refreshes enablement and arms the pending keyboard-tour route once the KeyVox keyboard is enabled
-- Back returns to Action Button Demo Handoff without discarding the pending setup journey
+- Back returns to the guide's final page (Action Button Demo Handoff on iPhone, Add Shortcut on iPad) without discarding the pending setup journey
 
 ### Download Confirmation Contract
 
@@ -528,7 +535,8 @@ Rules:
 
 - it is full-screen, not a sheet
 - it autofocuses a text field so the KeyVox keyboard can appear immediately
-- it uses `KeyboardObserver` height to pin the input above the keyboard
+- it uses `KeyboardObserver` height to pin the input above the keyboard; that height is how much of KeyVox's window the keyboard covers, which on iPad may be less than the keyboard's height or nothing when the window ends above it
+- on iPad the input keeps to the app's readable content width
 - it is driven by `OnboardingKeyboardTourState` scene progression (`a` -> `b` -> `c`)
 - scene A uses the bundled `Resources/Onboarding/KeyVoxKeyboardSelection.mov` animation; the removed keyboard-menu image sequence is not part of the current flow
 - the final completion action is disabled until the user has both shown the KeyVox keyboard and completed a first non-empty transcription while the tour is active
@@ -590,6 +598,8 @@ Keyboard onboarding detection is deliberately split across three signals:
 - `KeyVox.LeftHandedKeyboardLayoutEnabled`
 - `KeyVox.CompactKeysEnabled`
 - `KeyVox.CompactKeysActive`
+- `KeyVox.KeyboardTheme`
+  - the saved keyboard theme's raw value, written by the containing app and read by the keyboard
 - `KeyVox.AutoCapitalizationEnabled`
 - `KeyVox.AutoCorrectionEnabled`
 - `KeyVox.ShiftCapsLockEnabled`
@@ -837,7 +847,7 @@ The signed workflow can run from Shortcuts and can be assigned by the user to sy
 
 - `iOS/Shortcuts/Toggle KeyVox Dictation.wflow` is the editable workflow source.
 - `KeyVox iOS/Resources/Shortcuts/Toggle KeyVox Dictation.shortcut` is the signed distributable bundled with the app.
-- The Dictation Shortcut row in Settings opens the reusable eight-page reference guide rather than installing immediately.
+- The Dictation Shortcut row on the Dictation settings screen opens the reusable reference guide rather than installing immediately.
 - Add Shortcut is the app-owned installation entry point in onboarding, the existing-user introduction, and Settings reference modes.
 - `DictationShortcutInstaller` opens the bundled shortcut directly where supported and otherwise presents the standard system share sheet, which exposes Shortcuts and Save to Files.
 - Open Settings on Action Button Shortcut Selection uses `DictationShortcutSettingsOpener` to open system Settings while the guide explains the Action Button selection steps.
@@ -856,7 +866,7 @@ The signed workflow can run from Shortcuts and can be assigned by the user to sy
 
 ### Default Policy
 
-- idle timeout: `300` seconds
+- idle timeout: `900` seconds, taken from `SessionDisableTiming.default` (15 minutes), which is also the dictation timeout setting's default when none is saved; a timeout the user already picked is kept
 - no-speech abandonment timeout: `45` seconds
 - post-speech inactivity timeout: `180` seconds
 - emergency utterance cap: `900` seconds
@@ -867,7 +877,7 @@ The signed workflow can run from Shortcuts and can be assigned by the user to sy
 - enabling a session warms the recorder without starting an utterance
 - disabling a session while idle tears down immediately
 - disabling a session during an utterance defers shutdown until the current work finishes
-- the Home/Settings surfaces read and configure session timing, but `TranscriptionManager` remains the runtime owner
+- the Dictation settings screen reads and configures session timing, but `TranscriptionManager` remains the runtime owner
 - session timing may disable monitoring immediately, after the configured idle timeout, or never; changing from `Never` to a timed preset must re-arm an idle timeout when an active idle session is currently monitored/idle
 - KeyVox Vibes warmth hooks are tied to an utterance lifecycle, not the whole session lifecycle; a user may keep monitoring alive indefinitely, so prewarm/release calls must stay utterance-scoped and must not become session-level model retention policy
 
@@ -1417,7 +1427,7 @@ It owns:
 - expected installed artifact size: `491,400,032` bytes
 - install readiness requires the model file plus `install-manifest.json` with matching model ID, artifact filename, expected SHA-256, and installed SHA-256
 - delete invalidates the installed local model and asks the local inference service to unload
-- Settings exposes the main `KeyVox Vibes AI` download/delete/repair card beneath the dictation model card
+- Settings exposes the main `KeyVox Vibes AI` download/delete/repair card beneath the KeyVox Speak row
 - Vibes Scene C exposes a compact install card when the model is not ready, using sheet-owned download confirmation before starting a user-requested download
 
 LoRA adapter ownership:
@@ -1507,7 +1517,7 @@ The restore card remains visible until both unlocks are owned.
 
 `SettingsTabView+VibesAI` owns the release-facing `KeyVox Vibes AI` card.
 
-- the card lives directly below the dictation model card
+- the card lives on the Settings screen directly below the KeyVox Speak row
 - not-installed copy tells the user to install Vibes AI first and includes the pinned approximate size
 - ready copy confirms Vibes AI is installed and ready
 - download requests set the shared `PendingDownloadConfirmation.keyVoxVibesAI` value before `LocalRewriteModelManager.downloadModel()` starts
@@ -1534,10 +1544,14 @@ The restore card remains visible until both unlocks are owned.
 - reads Compact Keys availability from `KeyVox.CompactKeysEnabled`, defaulting to enabled
 - reads and writes the separate `KeyVox.CompactKeysActive` presentation preference, defaulting to the full keyboard
 - reads, but never writes, the shared keyboard typing settings and `KeyVox.LeftHandedKeyboardLayoutEnabled`, using the same defaults as `AppSettingsStore`: Open on 123 and Left-Handed Layout default off, and every other typing setting defaults on
+- reads, but never writes, `KeyVox.KeyboardTheme` through `KeyboardThemeID.resolved(rawValue:)`, so a missing or unknown value resolves to the KeyVox theme
+- reads the containing app's `KeyVox.App.HasCompletedOnboarding` flag from App Group defaults
 
 `AppSettingsStore` owns the containing-app Compact Keys availability toggle. Turning availability off must also clear `KeyVox.CompactKeysActive`, so enabling the feature again never revives a stale compact presentation.
 
 `AppSettingsStore` also owns the keyboard typing settings shown on the Keyboard settings screen: Auto-Capitalization, Auto-Correction, Enable Caps Lock, Predictive Text, Emoji Keyboard, the period shortcut, and Open on 123. They are device-local App Group values that the keyboard reads directly through `KeyboardAppSettingsStore`, including each time it resolves a field's typing traits.
+
+`AppSettingsStore.keyboardTheme` owns the keyboard theme choice, resolved through the same `KeyboardThemeID` fallback and written to `KeyVox.KeyboardTheme`. The Keyboard settings screen's Classic Theme toggle switches it between Classic and KeyVox.
 
 `KeyboardDictationChangeController` owns keyboard-side long-press changes for KeyVox insertions:
 
@@ -1628,7 +1642,7 @@ Excluded from iCloud sync:
 
 - Caps Lock latch
 - keyboard haptics
-- keyboard typing settings, layout settings, and Compact Keys state
+- keyboard typing settings, layout settings, keyboard theme, and Compact Keys state
 - keyboard typing memory and its reset generation
 - emoji Frequently Used ranking and chosen skin tones
 - microphone preference
@@ -1712,7 +1726,6 @@ The extension is a transport and insertion surface, not the transcription owner.
 - UI event handling
 - presentation lifecycle coordination
 - toolbar mode switching
-- call-state observation for warning presentation
 - full-access instructions presentation
 - keyboard state transitions
 - warm/cold app handoff
@@ -1742,6 +1755,8 @@ Rules:
 - rebuild must resolve the opening page and Compact Keys mode from App Group defaults through `KeyboardOpeningLayout` before presentation setup; the persisted compact mode applies whenever the number page shows, so the extension returns to the user's persisted mode after a keyboard switch
 - the controller must not read the focused field's document state until the host hands it over with the first `textDidChange(_:)` after appearing; reading earlier, even on a later main-thread turn, can reach freed host state
 - each appearance and each extension-host activation adopts any typing-memory reset and rechecks installed models through `KeyboardInstalledModels`
+- `AudioIndicatorDriver` attaches its update link to the logo bar view when presentation bindings activate and detaches it when they deactivate; frames come from the screen the keyboard is on and only while it shows, so host activity and keyboard appearance do not start or stop the indicator
+- each UI update applies the saved keyboard theme as a `KeyboardThemeTrait` override on the controller, so a rebuilt presentation resolves the same theme
 
 Implementation split:
 
@@ -1752,7 +1767,8 @@ Implementation split:
 - `KeyboardViewController+Emoji.swift` and `KeyboardViewController+EmojiSearch.swift` own emoji page and emoji search coordination
 - `KeyboardTTSController.swift` owns keyboard-side copied-text speak transport state and the App Group request/start-stop coordination surface
 - `KeyboardAppSettingsStore.swift` owns keyboard-side App Group settings persistence and notification dispatch for controls that mirror containing-app settings
-- `KeyboardKeysMode.swift` owns full/compact resolution, visible row count, per-orientation key height, and height selection
+- `KeyboardKeysMode.swift` owns full/compact resolution, visible row count, per-orientation and per-display key height, row spacing, top-row toolbar button height, and height selection
+- `KeyboardDisplay.swift`, `KeyboardFoldableDisplay.swift`, and `KeyboardScreenShape.swift` resolve the display kind and landscape shape those sizes depend on
 - `KeyboardOpeningLayout.swift` owns the page and keys mode a field opens on
 - `Input/KeyboardCompactKeysHoldController.swift` owns the cancellable activation timer for the `#+=` long press
 - `DictationChange/` groups the latest untouched insertion long-press feature files
@@ -1773,6 +1789,7 @@ Implementation split:
   - `Prediction/` owns the keyboard adapters for the shared typing session: the prediction coordinator and engines, field typing traits, personal vocabulary building, and persisted typing memory
   - `Settings/` owns App Group-backed keyboard controls that mirror containing-app settings
   - `Text/` owns casing and spacing heuristics for inserted text
+  - `Theme/` owns the UIKit side of keyboard themes: the theme trait and palette-to-`UIColor` resolution
   - `Transport/` owns shared playback IPC plus non-visual keyboard transport state
   - Vibes-specific keyboard UI lives in the top-row button component, while latest-insertion long-press behavior lives with dictation because paragraph/list undo is not part of the Vibes entitlement boundary
   - cross-cutting layout, style, typography, and high-level keyboard state primitives stay at the `Core/` root
@@ -1791,6 +1808,8 @@ Toolbar modes resolved by `KeyboardToolbarMode.resolve` are:
 `hidden` remains a declared mode without warning text, but the resolver does not produce it. There is no update-required toolbar mode.
 
 Within the branded toolbar, the full keyboard's letter page shows the suggestion bar in place of the Settings, Speak, Dictionary, Paragraphs, Lists, Caps Lock, and Vibes accessories while predictions are offered: the field allows predictions and shows suggestions, it holds letters, no latest dictation is still untouched, the emoji panel is closed, and no cancel control is showing. The dictation accessories show instead on the number and symbol pages, in Compact Keys, while dictating, transcribing, or playing speech, in a field without letters or predictions, and until the user changes the latest untouched dictation. While the emoji page or emoji search is open, the emoji search field takes the toolbar's place.
+
+Speak shows with the other toolbar accessories whether or not a Speak voice is installed. Settings, Dictionary, and Speak stay disabled until the containing app reports onboarding complete. A Speak tap while no Speak voice is ready opens `keyvoxios://tts/setup`, which the containing app answers with the same KeyVox Speak help presentation as the Home help action; otherwise the tap goes to the keyboard's copied-text speak transport.
 
 The keyboard root layout has an important invariant:
 
@@ -1819,11 +1838,13 @@ Current key grid layout rules:
 - the number and symbol pages' delete row uses 1.5-key side keys, with the middle keys evenly dividing the remaining width, in both full and Compact Keys modes
 - bottom-row side keys use a 2.5-key span in portrait and a 2-key span in landscape; the page key and the emoji key share the leading side key's width, and the space bar consumes the remaining width
 - without the emoji key, the page key takes the full side-key width; the emoji search's bottom row is the page key, space, and done
-- on an iPhone where the system shows no globe under the keyboard, the bottom row adds the globe after the page key and narrows the emoji key to one top-row key; the globe's touches go to the system input-mode list
-- keys are shorter in landscape in both full and Compact Keys modes
+- whenever the system asks the keyboard for its own globe key, on any device, the bottom row adds the globe after the page key and narrows the emoji key to one top-row key; the globe's touches go to the system input-mode list
+- keys are shorter in landscape in both full and Compact Keys modes; landscape means the keyboard's scene is wider than it is tall, not the interface orientation
+- on an open foldable's inner display, detected as a display regular in both width and height without the pad idiom, landscape keys are taller and key rows sit further apart than on other iPhones
+- on a full-width iPad keyboard, keys are taller than on iPhone in both orientations, and in landscape the top-row toolbar buttons stay shorter than the keys; an iPad's floating keyboard uses the iPhone sizes
 - touches in the gaps between keys, and in the keyboard's outer padding, type the nearest key
 - characters type when their finger lifts, or as soon as another finger lands, so overlapping taps type in the order they landed
-- keys in the key grid draw no per-key blur and give their shadows an explicit rounded path, so no key is redrawn or has its shadow worked out from its contents every frame
+- keys in the key grid draw no per-key blur and give their shadows an explicit rounded path, so no key is redrawn or has its shadow worked out from its contents every frame; toolbar keys draw no blur either and tint the keyboard backdrop like the other keys
 - the left accessory slot is derived from the live `1` key geometry and swaps statically between Settings and Cancel
 - with Vibes available, top-row Speak aligns over `2`, Dictionary aligns over `3`, Paragraphs aligns over `4`, Lists aligns over `5`, Caps Lock aligns over `6`, the Vibes selector spans `7` and `8`, and the logo bar sits over the far-right `9`/`0` area
 - with the Vibes feature unavailable, the Vibes key is removed and the remaining top-row accessories compact rightward against the logo area
@@ -1842,10 +1863,10 @@ Compact Keys rules:
 - normal `#+=` behavior remains unchanged when the hold does not activate or the feature is unavailable
 - the hold does not activate while the emoji search is open
 - Compact Keys applies only to the number and symbol pages: ABC from Compact Keys shows the full letter keys without clearing the persisted compact-active flag, and 123 from the letter page returns to Compact Keys when that flag is set
-- both modes must use explicit required controller-view heights taken from portrait heights of 286 points for full and 174 points for compact, shortened in landscape by the shorter landscape keys
+- both modes must use explicit required controller-view heights taken from portrait heights of 286 points for full and 174 points for compact, changed by however much shorter or taller the key grid is in landscape, on an open foldable, or on iPad
 - while the emoji page or emoji search is open the keyboard lays out in full mode, Compact Keys staying the user's mode underneath, and the emoji search adds `KeyboardEmojiSearchGeometry.addedKeyboardHeight` to the controller-view height
 - `KeyboardStyle` owns those height constants; do not infer either height from transient host bounds
-- `KeyboardKeysMode` owns visible row count, per-orientation key height, and derived key-grid height, while `KeyboardSymbolLayout` owns which rows and restore key appear
+- `KeyboardKeysMode` owns visible row count, per-orientation and per-display key height, row spacing, and derived key-grid height, while `KeyboardSymbolLayout` owns which rows and restore key appear
 - active mode is persisted separately from availability and survives keyboard-extension recreation
 - disabling availability forces full mode and clears the persisted compact-active flag
 
@@ -1884,14 +1905,12 @@ When the model is installed and Full Access is granted but microphone permission
 When a microphone tap cannot start dictation:
 
 - keep the branded toolbar and key grid visible
-- synchronously inspect `AVAudioSession.sharedInstance()` inside the keyboard process before changing state or opening the containing app
-- treat `isOtherAudioPlaying && secondaryAudioShouldBeSilencedHint` as the immediate conflict signal; when both values are true, show the failure state without entering `waitingForApp`
-- do not persist or transport this availability decision through the App Group bridge
+- the keyboard does not inspect its own audio session or other apps' audio before a tap; every microphone tap hands off to the containing app through the warm or cold path, so audio another app holds never blocks the request on the keyboard side
+- when `AudioRecorder.startRecording()` throws, have the containing app publish the separate `recordingStartFailed` state through the existing App Group bridge
 - do not use CallKit or represent the failure as phone-call detection
 - replace the microphone with a red X for two seconds
-- if preflight allows the request but `AudioRecorder.startRecording()` later throws, have the containing app publish the separate `recordingStartFailed` state through the existing App Group bridge
 - use the same generic failure feedback for that explicit startup failure or a keyboard-side no-response timeout
-- return to the microphone with the logo control's existing animated transition
+- return to the microphone with the logo control's existing animated transition; a state that moves on straight to recording or transcribing reapplies its indicator phase so the bars do not stay idle
 
 Warning precedence must remain:
 
@@ -1924,12 +1943,12 @@ Prediction threading:
 - typing state lives on the main thread; suggestion work runs on a serial background engine and is published only when no newer request was made while it ran
 - the text is never reread when background work finishes, because the host may be replacing the field's document state at that moment
 - a word boundary uses the current result, or computes it synchronously when it has not arrived, so a fast space never skips an autocorrection; the previous-word revision is worked out ahead in the same way
-- contested-tap checks for space, return, shift, delete, 123, and the emoji key landing close to a letter run on a separate engine, start when the finger lands, and are skipped off the letter page, during the emoji search, for repeats, and when the field allows no predictions
+- contested-tap checks for space, return, shift, delete, 123, and the emoji key landing close to a letter run on a separate engine, start when the finger lands, and are skipped off the letter page, during the emoji search, for repeats, and when the field allows no predictions; a touch on the delete key itself always deletes, and only a touch in the gap beside delete is judged against nearby letters
 - suggestions are worked out only while they are shown; a word boundary still works out its autocorrection on the spot when they are hidden
 
 Vocabulary:
 
-- personal vocabulary combines KeyVox Dictionary phrases with the system supplementary lexicon's known names and text replacements; the dictionary is applied at once and the lexicon again whenever the system answers
+- personal vocabulary combines KeyVox Dictionary phrases with the system supplementary lexicon's known names and text replacements; the dictionary is applied at once and the lexicon again on the main thread whenever the system answers
 - learned vocabulary from typing memory is handed to suggestions whenever it changes
 - pressing and holding a suggestion forgets a learned word or learned capitals; the user's own vocabulary is never forgotten this way
 - corrections and predictions are English only
@@ -1938,6 +1957,7 @@ Shift and letter case:
 
 - `KeyboardLetterCaseController` owns lowercase, shifted, and caps-locked states; a tap shifts the next letter and a quick second tap locks caps when the Enable Caps Lock setting allows it
 - the field's autocapitalization type, unless the Auto-Capitalization setting is off, re-derives the automatic shift from the text before the cursor after each change; caps lock is kept
+- sentence and every-letter fields both shift only at sentence starts, as `TypingTextContext.startsSentence(after:)` reads the full text before the cursor; quotation marks stay with the sentence they open or close, and attachment placeholders are skipped
 
 Keys and characters:
 
@@ -1946,6 +1966,7 @@ Keys and characters:
 - the double-space period runs only when the period-shortcut setting is on and nothing is selected
 - a held delete key repeats on `KeyboardDeleteRepeatSchedule`, switching from characters to whole words, and keeps repeating even once the finger slides off it; its press plays the keypress haptic on lift and repeats play theirs as they delete
 - when a host shows only part of the text before the cursor, word deletion deletes one more character to make the host reveal the preceding text before deleting the remaining words
+- in a field that deletes smartly (smart insert and delete on, or left at default with a keyboard type that keeps it on), delete removes a selection by typing a space over it and deleting that space, then removes the neighboring plain space, if any, that `KeyboardSmartDeletion` names from its bundled character lists, so the text read around the cursor stays in step with the field
 - letter and character keys, held-key popups, and emoji play the Core Haptics text-input tap; other keys keep the keypress haptic
 
 ### Keyboard Typing Memory Rules
@@ -1969,6 +1990,16 @@ Keys and characters:
 - tapping the search field starts the emoji search over the letter keys, lowercase, with a results row that makes the keyboard taller; keys type into the search instead of the document, results show the Frequently Used emoji until a non-space character is typed, a tapped result types into the document while the search stays, and done or the keyboard disappearing ends the search on the letter keys
 - the suggestion bar offers emoji for the word before the cursor in the user's chosen tones, most used first, only after the user has typed an emoji since the keyboard started
 - turning the Emoji Keyboard setting off removes the emoji key, closes an open emoji panel, and stops suggestion-bar emoji
+
+### Keyboard Theme Rules
+
+`KeyVoxKeyboardThemes` owns the theme identifiers, the per-platform catalog, and each palette. The keyboard owns only turning palette colors into UIKit colors and applying the saved theme.
+
+- the available themes are KeyVox, the default, and Classic, whose neutral keys follow the system keyboard in light and dark
+- a missing or unknown saved theme resolves to KeyVox in both the containing app and the keyboard
+- the controller applies the saved theme as a `KeyboardThemeTrait` trait override; themed `UIColor`s resolve from that trait together with the light or dark appearance, and themed views re-render on changes to either trait
+- the palette colors letter, special, and toolbar keys with their pressed and disabled fills, key fill opacity, and outline, a toolbar key that is on and its foreground, key popups with their outline, characters, and held-key highlight, the cancel key's border, and the microphone button's background
+- the trademark-protected logo bar reads its microphone background and light-appearance inner outline from the themed `KeyboardStyle` colors while its drawing stays in `KeyboardLogoBarView.swift`
 
 ### Text Insertion Rules
 
@@ -2021,7 +2052,7 @@ Current app-owned surfaces:
 - Home copied-text playback UI stages status/warning rows, spinner-to-progress handoff, transcript expansion/collapse, and preparation progress so content does not snap, drift, or bleed through card animations.
 - Scrollable Home text surfaces that need a tinted indicator should use the shared `AppTintedScrollView`, `AppScrollMetrics`, and `AppTintedScrollIndicator` components under `Views/Components/App/`. These components keep SwiftUI's native scroll indicator hidden and derive thumb progress from `ScrollGeometry.visibleRect` rather than raw offset guesses so the thumb reaches the scroll box endpoints deterministically.
 - `CopyFeedbackController`: shared app-scoped interaction helper for pasteboard writes, success haptics, copied-state timing, and reset behavior used by multiple UI surfaces without forcing a shared button component
-- `PlaybackVoicePickerMenu`: reusable installed-voice menu surface shared between the release-facing Settings Voice Model section and the hidden Home copied-text playback shortcut
+- `PlaybackVoicePickerMenu`: reusable installed-voice menu surface shared between the release-facing KeyVox Speak settings screen and the hidden Home copied-text playback shortcut
 - `InlineWarningRules`: pure shared visibility rules under `App/Presentation/` for Wi-Fi caution rows across onboarding, KeyVox Speak setup, Home copied-text playback, and Settings install flows
 - `KeyVoxSpeakIntroController`: post-onboarding feature-introduction owner that waits until onboarding is complete, delays presentation until a later eligible app open, and suppresses the intro after real KeyVox Speak usage
 - `TTSPreviewPlayer`: shared bundled-preview playback owner used by both Settings voice previews and the KeyVox Speak intro demo clip
@@ -2032,17 +2063,21 @@ Current app-owned surfaces:
 - `ThirdPartyNoticesView`: shared legal-notices sheet that renders the bundled repo-root `THIRD_PARTY_NOTICES.md` markdown with app-owned styling and explicit close-only dismissal
 - `DictionaryTabView`: dictionary browsing/editing
 - `StyleTabView`: dictation style toggles
-- `SettingsTabView`: top-level settings composition, shared disclosure state, third-party notices presentation, full-screen Dictation Shortcut reference-guide presentation, and cross-section coordination
-- `SettingsTabView+General`: session timeout, Live Activities, Dictation Shortcut setup-guide entry, Speak Timeout, the Keyboard row, and audio preference sections extracted from the settings root view
-- `KeyboardSettingsView`: the Keyboard settings screen opened from that row, with keyboard haptics and the keyboard typing toggles, Compact Keys, Open on 123, Left-Handed Layout, and Reset Learned Words; its copy lives in `KeyboardSettingsCopy`
-- `SettingsTabView+Models`: release-facing `Dictation Model` section for provider selection, per-model install actions, uninstalled model size display, and the attached language section driven by the shared Whisper catalog or Parakeet Auto Detect guidance
-- `SettingsTabView+TTS`: release-facing `KeyVox Speak` section for PocketTTS runtime install state, per-voice install actions, previews, voice selection, and the `KeyVox Speak Unlimited` unlock row placed beneath the model section
+- `SettingsTabView`: top-level settings composition with the Dictation, Keyboard, and KeyVox Speak rows, the KeyVox Vibes AI card, and the About sections, plus third-party notices presentation and the Dictation screen push; a dictation-model section request from `AppTabRouter` opens the Dictation screen with its model card expanded
+- `SettingsTabView+General`: the Dictation, Keyboard, and KeyVox Speak rows that open their settings screens
+- `DictationSettingsView`: the Dictation settings screen with the Dictation Timeout, Live Activities, and Dictation Shortcut setup-guide card, the dictation model card, and the built-in microphone preference; it owns the full-screen Dictation Shortcut reference-guide and language-picker presentations, and its copy lives in `DictationSettingsCopy`
+- `KeyboardSettingsView`: the Keyboard settings screen, with keyboard haptics (hidden on iPad) and the keyboard typing toggles, Classic Theme, Compact Keys, Open on 123, Left-Handed Layout, and Reset Learned Words; its copy lives in `KeyboardSettingsCopy`
+- `DictationSettingsView+Model`: release-facing `Dictation Model` section for provider selection, per-model install actions, uninstalled model size display, and the attached language section driven by the shared Whisper catalog or Parakeet Auto Detect guidance
+- `KeyVoxSpeakSettingsView`: the KeyVox Speak settings screen with the Speak Timeout card and the engine and voices card; its copy lives in `KeyVoxSpeakSettingsCopy`
+- `KeyVoxSpeakSettingsView+Voices`: release-facing `KeyVox Speak` section for PocketTTS runtime install state, per-voice install actions, previews, voice selection, and the `KeyVox Speak Unlimited` unlock row placed beneath the model section
 - `SettingsTabView+VibesAI`: release-facing `KeyVox Vibes AI` section for local rewrite model install state, confirmed download/delete actions, repair, progress, and animated progress collapse
 - `SettingsTabView+About`: rate-and-review, GitHub support, restore-purchases, version footer, and third-party notices launcher extracted from the settings root view
 - `PlaybackPreparationView`: keyboard cold-launch playback-preparation surface shown before returning to the host app
 - `ReturnToHostView`: one-time host-return guidance after a cold keyboard launch, with a top-right dismiss affordance that returns the app to Home while preserving the containing app as the route/session owner
+- `ReturnToHostAdaptiveLayout`: shared layout choice for both screens above, judged from the whole display: text beside the video on a display wider than it is tall, with the visible gap centered on the fold the system reports or else the middle of the display; on a squat display the usual layout only while the video fits at full size, otherwise a tighter layout; the usual layout everywhere else. Outside the usual layout, playback preparation keeps room for both preparation phases' text so the layout does not change between them
+- on iPad, `appReadableWidth` centers scroll screens, onboarding, the Dictation Shortcut guide, and the Dictionary list in a column no wider than `AppTheme.readableContentWidth`, and `appSheetBottomPadding` leaves space under the KeyVox Speak and KeyVox Vibes sheets' bottom buttons
 - onboarding screens: welcome, searchable language selection, model/microphone setup, the guided Dictation Shortcut and Action Button flow, keyboard enablement, and keyboard tour
-- `DictationShortcutSetupBrowsingView`: shared freely swipeable existing-user introduction and Settings reference presentation for the same eight-page guide
+- `DictationShortcutSetupBrowsingView`: shared freely swipeable existing-user introduction and Settings reference presentation for the same device-specific guide pages
 - `AppPageIndicator`: shared page position control with optional one-step navigation and VoiceOver adjustable behavior
 
 `AppHaptics` is the app-owned feedback bridge for these surfaces, while `AppHapticsDecisions` keeps the trigger rules deterministic and testable.
