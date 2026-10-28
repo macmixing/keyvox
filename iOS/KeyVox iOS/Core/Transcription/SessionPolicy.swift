@@ -7,7 +7,7 @@ struct SessionPolicy: Equatable {
     var emergencyUtteranceCap: TimeInterval?
 
     nonisolated static let `default` = SessionPolicy(
-        idleTimeout: 300,
+        idleTimeout: SessionDisableTiming.default.idleTimeout,
         noSpeechAbandonmentTimeout: 45,
         postSpeechInactivityTimeout: 180,
         emergencyUtteranceCap: 900

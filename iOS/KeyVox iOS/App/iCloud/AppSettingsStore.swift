@@ -12,6 +12,8 @@ enum SessionDisableTiming: String, CaseIterable, Identifiable {
     case oneHour
     case never
 
+    nonisolated static let `default`: SessionDisableTiming = .fifteenMinutes
+
     var id: String { rawValue }
 
     var displayName: String {
@@ -26,7 +28,7 @@ enum SessionDisableTiming: String, CaseIterable, Identifiable {
     /// Returns the idle timeout before disabling, or `nil` if no timeout applies.
     /// When `nil`, check `keepsSessionActiveIndefinitely` to distinguish
     /// between immediate disable (`.immediately`) and never disable (`.never`)
-    var idleTimeout: TimeInterval? {
+    nonisolated var idleTimeout: TimeInterval? {
         switch self {
         case .immediately, .never: return nil
         case .fiveMinutes: return 300
@@ -364,7 +366,7 @@ final class AppSettingsStore: ObservableObject {
            let timing = SessionDisableTiming(rawValue: raw) {
             sessionDisableTiming = timing
         } else {
-            sessionDisableTiming = .fiveMinutes
+            sessionDisableTiming = .default
         }
 
         if let raw = defaults.string(forKey: UserDefaultsKeys.speakTimeoutTiming),

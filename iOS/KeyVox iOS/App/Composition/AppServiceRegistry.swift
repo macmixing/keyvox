@@ -262,7 +262,7 @@ final class AppServiceRegistry {
                 await styleRewritePipelineCoordinator?.releasePrewarmSession(reason: reason)
             },
             sessionDisableTimingProvider: { [weak settingsStore] in
-                settingsStore?.sessionDisableTiming ?? .fiveMinutes
+                settingsStore?.sessionDisableTiming ?? .default
             },
             isTTSPlaybackActiveProvider: {
                 ttsManagerRef?.isActive ?? false
