@@ -101,19 +101,7 @@ private struct DownloadConfirmationModifier: ViewModifier {
                                 .font(.appFont(15, variant: .light))
                                 .foregroundStyle(.white.opacity(0.78))
 
-                            HStack(spacing: 12) {
-                                AppActionButton(
-                                    title: "Cancel",
-                                    style: .secondary,
-                                    fillsWidth: true,
-                                    size: .regular,
-                                    fontSize: 16,
-                                    action: {
-                                        self.confirmation = nil
-                                    }
-                                )
-                                .accessibilityFocused($isCancelFocused)
-
+                            VStack(spacing: 12) {
                                 AppActionButton(
                                     title: "Download",
                                     style: .primary,
@@ -126,6 +114,18 @@ private struct DownloadConfirmationModifier: ViewModifier {
                                         onConfirm(activeConfirmation)
                                     }
                                 )
+
+                                AppActionButton(
+                                    title: "Cancel",
+                                    style: .secondary,
+                                    fillsWidth: true,
+                                    size: .regular,
+                                    fontSize: 16,
+                                    action: {
+                                        self.confirmation = nil
+                                    }
+                                )
+                                .accessibilityFocused($isCancelFocused)
                             }
                         }
                         .padding(22)

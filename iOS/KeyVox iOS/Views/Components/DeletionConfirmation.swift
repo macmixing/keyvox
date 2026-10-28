@@ -102,19 +102,7 @@ private struct SettingsDeletionConfirmationModifier: ViewModifier {
                                 .font(.appFont(15, variant: .light))
                                 .foregroundStyle(.white.opacity(0.78))
 
-                            HStack(spacing: 12) {
-                                AppActionButton(
-                                    title: "Cancel",
-                                    style: .secondary,
-                                    fillsWidth: true,
-                                    size: .regular,
-                                    fontSize: 16,
-                                    action: {
-                                        self.confirmation = nil
-                                    }
-                                )
-                                .accessibilityFocused($isConfirmFocused)
-
+                            VStack(spacing: 12) {
                                 AppActionButton(
                                     title: confirmation.confirmTitle,
                                     style: .destructive,
@@ -127,6 +115,18 @@ private struct SettingsDeletionConfirmationModifier: ViewModifier {
                                         onConfirm(activeConfirmation)
                                     }
                                 )
+
+                                AppActionButton(
+                                    title: "Cancel",
+                                    style: .secondary,
+                                    fillsWidth: true,
+                                    size: .regular,
+                                    fontSize: 16,
+                                    action: {
+                                        self.confirmation = nil
+                                    }
+                                )
+                                .accessibilityFocused($isConfirmFocused)
                             }
                         }
                         .padding(22)
