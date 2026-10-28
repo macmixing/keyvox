@@ -1,4 +1,5 @@
 import Foundation
+import KeyVoxModels
 
 extension PocketTTSModelManager {
     func startBackgroundInstall(
@@ -98,6 +99,24 @@ private extension PocketTTSModelManager {
         }
     }
 
+    func verifyStagedArtifacts(of job: PocketTTSBackgroundDownloadJob, stagingRootURL: URL) throws {
+        for artifact in job.artifacts {
+            let stagedArtifactURL = try backgroundDownloadCoordinator.stagedArtifactURL(
+                stagingRootURL: stagingRootURL,
+                relativePath: artifact.relativePath
+            )
+            let stagedSHA256 = try ModelFileIntegrity.sha256Hex(forFileAt: stagedArtifactURL)
+            guard stagedSHA256.lowercased() == artifact.expectedSHA256.lowercased() else {
+                Self.log("Artifact hash mismatch for \(artifact.relativePath).")
+                throw NSError(
+                    domain: "PocketTTSModelManager",
+                    code: 12,
+                    userInfo: [NSLocalizedDescriptionKey: "Speak download integrity check failed."]
+                )
+            }
+        }
+    }
+
     func finalizeBackgroundInstall(_ job: PocketTTSBackgroundDownloadJob) throws {
         let stagingRootURL = try Self.makeStagingRootURL(fileManager: fileManager, target: job.target)
         let manifest = PocketTTSInstallManifest(
@@ -112,6 +131,7 @@ private extension PocketTTSModelManager {
             let stagedModelRootURL = stagingRootURL.appendingPathComponent("Model", isDirectory: true)
             let finalModelRootURL = try Self.finalSharedModelRootURL(fileManager: fileManager)
             if fileManager.fileExists(atPath: stagedModelRootURL.path) {
+                try verifyStagedArtifacts(of: job, stagingRootURL: stagingRootURL)
                 try Self.replaceDirectory(
                     at: finalModelRootURL,
                     with: stagedModelRootURL,
@@ -138,6 +158,7 @@ private extension PocketTTSModelManager {
                 .appendingPathComponent(voice.rawValue, isDirectory: true)
             let finalVoiceRootURL = try Self.finalVoiceRootURL(voice, fileManager: fileManager)
             if fileManager.fileExists(atPath: stagedVoiceDirectoryURL.path) {
+                try verifyStagedArtifacts(of: job, stagingRootURL: stagingRootURL)
                 try Self.replaceDirectory(
                     at: finalVoiceRootURL,
                     with: stagedVoiceDirectoryURL,

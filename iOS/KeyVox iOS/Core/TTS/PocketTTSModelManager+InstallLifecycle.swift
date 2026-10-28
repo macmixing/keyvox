@@ -33,7 +33,7 @@ extension PocketTTSModelManager {
         }
         activeInstallTarget = .sharedModel
 
-        installTask = Task { [session] in
+        installTask = Task {
             var installError: Error?
             defer {
                 installTask = nil
@@ -53,9 +53,8 @@ extension PocketTTSModelManager {
                     return
                 }
 
-                let descriptor = try await PocketTTSModelCatalog.fetchSharedModelDescriptor(session: session)
                 try await startBackgroundInstall(
-                    descriptor: descriptor,
+                    descriptor: PocketTTSModelCatalog.sharedModelDescriptor,
                     target: .sharedModel,
                     queuedVoiceAfterSharedModel: pendingVoiceInstallAfterSharedModel
                 )
@@ -103,7 +102,7 @@ extension PocketTTSModelManager {
         }
         activeInstallTarget = .voice(voice)
 
-        installTask = Task { [session] in
+        installTask = Task {
             var installError: Error?
             defer {
                 installTask = nil
@@ -121,8 +120,10 @@ extension PocketTTSModelManager {
                     return
                 }
 
-                let descriptor = try await PocketTTSModelCatalog.fetchVoiceDescriptor(for: voice, session: session)
-                try await startBackgroundInstall(descriptor: descriptor, target: .voice(voice))
+                try await startBackgroundInstall(
+                    descriptor: PocketTTSModelCatalog.voiceDescriptor(for: voice),
+                    target: .voice(voice)
+                )
             } catch {
                 Self.log("Voice install failed for \(voice.rawValue) with error: \(error.localizedDescription)")
                 installError = error

@@ -3,6 +3,7 @@ import Foundation
 struct PocketTTSBackgroundArtifact: Codable, Equatable, Sendable {
     let relativePath: String
     let remoteURL: URL
+    let expectedSHA256: String
     let expectedByteCount: Int64
 }
 
@@ -52,6 +53,7 @@ struct PocketTTSBackgroundDownloadJob: Codable, Equatable, Sendable {
             PocketTTSBackgroundArtifact(
                 relativePath: $0.relativePath,
                 remoteURL: $0.remoteURL,
+                expectedSHA256: $0.expectedSHA256,
                 expectedByteCount: $0.expectedByteCount
             )
         }
