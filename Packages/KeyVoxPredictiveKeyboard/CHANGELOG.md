@@ -6,15 +6,17 @@ The format loosely follows Keep a Changelog, and the package uses semantic versi
 
 ---
 
-## [1.0.3] - 2026-10-28
+## [1.0.3] - 2026-10-29
 
-A next-word bar that keeps offering three words while the user picks its words in a row, even after a word with few next words of its own.
+A next-word bar that keeps offering three words while the user picks its words in a row, and autocorrection that fixes a real word typed with two keys a key off without dropping a letter the user tapped.
 
 ### Includes
 
 - While the user picks from the bar in a row, a word with fewer than three new next words is followed by what usually follows such a word (`UnknownWordFollowers`), after its own next words and before any that would repeat a pick.
 - Filling words never repeat a word already on the bar or a pick, by the same rule as `RepeatedPicks`.
 - `SuggestionBar.slotCount` owns how many words the bar shows, and `SuggestionBarComposer` uses it.
+- Space now considers dictionary words that differ from the typed word in two letters, each a neighbor of the key tapped in its place (`NeighborKeySlips`), so a word typed with the hand a key off can be corrected to the word meant, while a real word typed as meant stays as typed.
+- A word the bundled dictionary knows is never replaced by a word that drops one of its tapped letters, at space or once the next word is typed, as on the system keyboard.
 
 ### Notes
 
