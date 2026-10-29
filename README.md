@@ -16,7 +16,7 @@ KeyVox is a local-first macOS and iOS AI-powered dictation app with on-device Wh
 
 KeyVox for Mac is simple. Hold your trigger key to record, release to transcribe on-device with Whisper or Parakeet, and insert text into the app you are currently using. Your custom dictionary, key dictation style settings, and weekly word total can also stay in sync across your devices with iCloud.
 
-KeyVox for iOS brings the same speech-to-text workflow from the Mac app into a mobile experience, with on-device transcription, post-processing, shared dictionary via iCloud and synced preferences.
+KeyVox for iOS brings the same speech-to-text workflow from the Mac app to iPhone and iPad, with on-device transcription, post-processing, shared dictionary via iCloud and synced preferences.
 
 ## Download for iOS
 
@@ -55,7 +55,7 @@ KeyVox for iOS brings the same speech-to-text workflow from the Mac app into a m
 - 🔊 Optional system cue sounds with adjustable volume
 - ⚠️ Recovery and warning overlays for insertion/audio edge cases
 
-https://github.com/user-attachments/assets/baffa074-6584-485e-827c-bf3a43ee8bf5
+https://github.com/user-attachments/assets/1d2a08aa-6e10-4f4c-be6a-4d0ebb2fdd59
 
 ## What is KeyVox Vibes?
 

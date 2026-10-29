@@ -2,7 +2,7 @@
 
 This document contains implementation and maintainer-focused details that are intentionally kept out of the top-level README.
 
-**Last Updated: 2026-10-18**
+**Last Updated: 2026-10-28**
 
 ## Design Philosophy
 
@@ -245,7 +245,7 @@ Both dictation providers use the shared `KeyVoxVoiceActivity` analyzer after mac
 3. The active provider (`WhisperService` or `ParakeetService`) transcribes each chunk and stitches chunk text with `\n\n` when `autoParagraphsEnabled` is on (space-separated when off).
 4. Early literal cleanup runs first: `EmailAddressNormalizer` repairs email literal casing/punctuation boundaries before downstream matching, then dictionary correction applies the persisted entries supplied to `DictionaryMatcher`, including dictionary-backed spoken/literal email recovery.
 5. Pre-list normalization prepares deterministic structure: lightweight idiom normalization (`hole in one` -> `hole-in-one`), `ColonNormalizer`, spoken quantity grouping, and `MathExpressionNormalizer` run before list parsing so structural markers stabilize early.
-6. List formatting applies numeric list rendering when confidence gates pass.
+6. List formatting applies numeric list rendering when confidence gates pass. A word repeated before every list number is treated as part of the marker: the spoken number-label word is removed with the markers, and any other repeated word leaves the dictation as spoken.
 7. Late cleanup normalizes residual model output after list rendering: `LaughterNormalizer`, `CharacterSpamNormalizer`, `AsteriskCensorshipArtifactNormalizer`, `TimeExpressionNormalizer`, `DateNormalizer`, final email boundary repair, `WebsiteNormalizer`, and `ThousandsGroupingNormalizer`.
 8. Final finishers run in this order: render-mode whitespace cleanup; spoken terminal punctuation (including spoken ellipsis commands, plural-possessive artifact repair before a terminal command, and conversion of the model's dotted-word ellipsis artifact into a period run); sentence capitalization guards (including URL/domain/email, dotted-abbreviation, and technical-token safety checks); `EllipsisContinuationNormalizer` continuation casing; terminal-time punctuation completion; `TerminalPeriodNormalizer`; `ModelEllipsisArtifactNormalizer`; and the optional `AllCapsOverrideNormalizer`.
 9. Final text is inserted via the paste service. macOS resolves following-character context, selection expansion, and direct insertion against one retained AX target. An incoming model period is stripped when supported non-quote punctuation already follows, while a differing incoming question or exclamation mark replaces that following punctuation. Failed selection expansion preserves the existing punctuation. After punctuation composition, one trailing space is appended when the result would otherwise run directly into a following letter, number, or emoji.
@@ -266,6 +266,7 @@ Both dictation providers use the shared `KeyVoxVoiceActivity` analyzer after mac
 - `TranscriptionPostProcessor` applies the supplied dictionary entries even when provider prompt hinting is disabled for short, silent, or otherwise unsafe captures.
 - Adjacent-titlecase safety checks still guard against broad prose/name rewrites, while sentence punctuation remains a real boundary for dictionary candidates followed by titlecase text in the next sentence.
 - Fuzzy single-token replacement never rewrites a token tagged as a pronoun; exact matches remain eligible.
+- Single-token replacement requires lexicon pronunciation evidence: when the entry and the observed form both have pronunciations, they must be equal; when the observed form has none but the full inflected word does, that word's pronunciation may only add the inflection suffix sound to the end of the entry's pronunciation. Missing pronunciation data leaves the decision to the existing scoring.
 - Split-join correction never consumes a neighboring word when either token already matches the candidate exactly. Fuzzy split joins are rejected across sentence or clause punctuation followed by whitespace; only an exact joined dictionary form may merge across that boundary, and dotted forms without whitespace are not boundaries.
 - Anchored stylized split-join tails accept phonetic-only similarity only when both phonetic signatures meet a minimum length, and possessive split-join forms keep their suffix for short stems when the joined form matches a single-token entry exactly.
 - Merged-token recovery requires lexicon pronunciation evidence: when pronunciations exist for the observed token and every candidate token, the observed pronunciation must equal the candidate pronunciations joined with `PronunciationLexicon.phonemeSeparator`. Missing pronunciation data leaves the decision to the existing scoring.
