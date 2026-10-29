@@ -17,6 +17,7 @@ public final class PredictionComputer: @unchecked Sendable {
     /// after words at 1.4 times or less ("and", "with", "like").
     static let everydayWordContextLogLift = log(1.5)
     private var keys: KeyCenterMap
+    private var neighborKeySlips: NeighborKeySlips
     private var vocabulary = PersonalVocabulary.empty
     private var forms = PersonalWordForms.empty
     private var learned = LearnedVocabulary.empty
@@ -28,13 +29,17 @@ public final class PredictionComputer: @unchecked Sendable {
         self.engine = engine
         self.parameters = parameters
         keys = KeyCenterMap(geometry: EnglishKeyboardLayout.defaultGeometry)
+        neighborKeySlips = NeighborKeySlips(keys: keys)
     }
 
     /// Call whenever the letter keys move or resize.
     public func updateKeyboardGeometry(_ geometry: [PredictionKeyGeometry], keyboardSize: CGSize) {
         guard engine.updateKeyboardGeometry(geometry, keyboardSize: keyboardSize) else { return }
+        let keys = KeyCenterMap(geometry: geometry)
+        let neighborKeySlips = NeighborKeySlips(keys: keys)
         lock.lock()
-        keys = KeyCenterMap(geometry: geometry)
+        self.keys = keys
+        self.neighborKeySlips = neighborKeySlips
         lock.unlock()
     }
 
@@ -108,6 +113,7 @@ public final class PredictionComputer: @unchecked Sendable {
     public func compute(_ request: PredictionRequest) throws -> PredictionResult {
         lock.lock()
         let keys = keys
+        let neighborKeySlips = neighborKeySlips
         let vocabulary = vocabulary
         let forms = forms
         let learned = learned
@@ -151,7 +157,9 @@ public final class PredictionComputer: @unchecked Sendable {
             touches: request.touches,
             previousWords: request.previousWords,
             candidates: written(
-                correction.suggestions.map(\.word) + personalCandidates,
+                correction.suggestions.map(\.word)
+                    + personalCandidates
+                    + neighborKeySlips.words(for: typed) { try engine.analyze(word: $0).wordIsValid },
                 after: request.previousWords.first,
                 vocabulary: vocabulary,
                 forms: forms
