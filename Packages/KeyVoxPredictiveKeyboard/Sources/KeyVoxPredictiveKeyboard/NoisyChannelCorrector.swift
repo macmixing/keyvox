@@ -12,7 +12,7 @@ import CoreGraphics
 /// best candidate, as the system keyboard replaces it, unless that candidate fits far worse
 /// than the typed letters themselves; a dictionary word only when another word beats it by
 /// the dictionary word margin, and a word known only from everyday use by the smaller
-/// everyday word margin.
+/// everyday word margin. A word the bundled dictionary knows never loses a tapped letter.
 ///
 /// Once the next word is known, a word left as typed can be reconsidered: each candidate
 /// then also scores how likely the next word is after it, and replaces the typed word only
@@ -186,6 +186,7 @@ public struct NoisyChannelCorrector: Sendable {
         alternatives.sort { $0.score > $1.score }
 
         let replacement = revisable(alternatives, of: typedCandidate, followingWord: followingWord)
+            .filter { keepsTappedLetters($0, of: typedCandidate) }
             .first
             .flatMap { best in
                 let margin = followingWord == nil
@@ -218,6 +219,17 @@ public struct NoisyChannelCorrector: Sendable {
             return TypingSlip.isAtMostOne(between: typed.word, and: candidate.word)
                 && (support >= parameters.revisionNextWordSupport || tapsLandedToward)
         }
+    }
+
+    /// Whether `candidate` may replace `typed` without treating one of its tapped letters as an
+    /// extra tap, which a word the bundled dictionary knows never is: watching the system keyboard
+    /// (Tools/AppleKeyboardBaseline) on seventeen phrases where the typed word was a shorter word
+    /// plus one tapped letter, with the words before or after reading far better after the shorter
+    /// word, it kept the typed word in every one, at space and once the next word was typed.
+    private func keepsTappedLetters(_ candidate: ScoredCandidate, of typed: ScoredCandidate) -> Bool {
+        typed.language.isDictionaryWord == false
+            || typed.language.isEverydayWord
+            || TypingSlip.dropsALetter(from: typed.word, toReach: candidate.word) == false
     }
 
     private func margin(for best: ScoredCandidate, typed: ScoredCandidate) -> Double {

@@ -34,6 +34,11 @@ enum TypingSlip {
         return true
     }
 
+    /// Whether reading `typed` as `word` would treat a tapped letter as an extra tap.
+    static func dropsALetter(from typed: String, toReach word: String) -> Bool {
+        letters(of: word).count < letters(of: typed).count
+    }
+
     private static func letters(of word: String) -> [Character] {
         Array(word.lowercased().filter { $0 != "'" && $0 != "’" })
     }
