@@ -6,6 +6,20 @@ The format loosely follows Keep a Changelog, and the package uses semantic versi
 
 ---
 
+## [1.0.3] - 2026-10-28
+
+A next-word bar that keeps offering three words while the user picks its words in a row, even after a word with few next words of its own.
+
+### Includes
+
+- While the user picks from the bar in a row, a word with fewer than three new next words is followed by what usually follows such a word (`UnknownWordFollowers`), after its own next words and before any that would repeat a pick.
+- Filling words never repeat a word already on the bar or a pick, by the same rule as `RepeatedPicks`.
+- `SuggestionBar.slotCount` owns how many words the bar shows, and `SuggestionBarComposer` uses it.
+
+### Notes
+
+- `1.0.3` changes no public API, so keyboard hosts need no changes.
+
 ## [1.0.2] - 2026-10-27
 
 Taps on the delete key that always delete, so a press near its edge in the middle of a word no longer types the letter beside it.
