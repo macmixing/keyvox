@@ -55,7 +55,7 @@ KeyVox for iOS brings the same speech-to-text workflow from the Mac app to iPhon
 - 🔊 Optional system cue sounds with adjustable volume
 - ⚠️ Recovery and warning overlays for insertion/audio edge cases
 
-https://github.com/user-attachments/assets/1d2a08aa-6e10-4f4c-be6a-4d0ebb2fdd59
+https://github.com/user-attachments/assets/c7cc9371-fc0a-40f6-a470-205059f62806
 
 ## What is KeyVox Vibes?
 
