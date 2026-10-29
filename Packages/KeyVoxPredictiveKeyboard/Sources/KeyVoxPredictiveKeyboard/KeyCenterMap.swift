@@ -24,6 +24,11 @@ public struct KeyCenterMap: Sendable {
         pitch = Self.pitch(of: centers)
     }
 
+    /// Every letter that has a key.
+    var allLetters: [Character] {
+        Array(centers.keys)
+    }
+
     public func center(of letter: Character) -> CGPoint? {
         centers[Character(letter.lowercased())]
     }
