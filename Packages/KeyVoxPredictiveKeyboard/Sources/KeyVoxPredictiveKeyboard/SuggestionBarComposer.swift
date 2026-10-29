@@ -35,7 +35,7 @@ public enum SuggestionBarComposer {
     }
 
     public static func composeNextWords(_ rankedWords: [String]) -> SuggestionBar {
-        let items = rankedWords.prefix(3).map { SuggestionBar.Item(text: $0, kind: .nextWord) }
+        let items = rankedWords.prefix(SuggestionBar.slotCount).map { SuggestionBar.Item(text: $0, kind: .nextWord) }
         return SuggestionBar(
             primary: items.first,
             leading: items.dropFirst().first,

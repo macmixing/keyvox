@@ -34,6 +34,8 @@ public struct SuggestionBar: Sendable, Equatable {
     public let emoji: [Item]
 
     public static let empty = SuggestionBar(primary: nil, leading: nil, trailing: nil)
+    /// How many words the bar shows: `primary`, `leading`, and `trailing`.
+    static let slotCount = 3
 
     public init(primary: Item?, leading: Item?, trailing: Item?, emoji: [Item] = []) {
         self.primary = primary
