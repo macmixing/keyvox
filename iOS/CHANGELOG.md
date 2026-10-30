@@ -6,6 +6,51 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.6.1] - 2026-10-29
+
+Gives dictation and KeyVox Speak their own settings screens, makes keyboard suggestions and corrections smarter, and makes KeyVox Speak downloads safer.
+
+### Added
+
+- Added a Dictation screen in Settings for the dictation timeout, Live Activities, shortcut, dictation model, and microphone settings.
+- Added a KeyVox Speak screen in Settings, above KeyVox Vibes, for the Speak timeout, engine, and voices.
+
+### Changed
+
+- Changed the default dictation timeout to 15 minutes, keeping any timeout already picked.
+- Changed the download and delete prompts to stack their buttons, with the main action above Cancel.
+- Changed KeyVox Speak engine and voice downloads to a fixed version, checking every file before it is installed.
+- Changed the globe key on iPhone Duo to follow iOS, which now asks for it there in iOS 27.2.
+- Hid the Keyboard Haptics toggle on iPad.
+
+### Fixed
+
+- Fixed the next-word bar showing fewer than three words while picking its words in a row.
+- Fixed autocorrection missing words typed with two keys a key off.
+- Fixed autocorrection replacing a real word with one that drops a letter that was tapped.
+
+### Package versions
+
+KeyVox iOS 1.6.1
+  KeyVoxCore               1.3.9
+  KeyVoxEmoji              1.0.0
+  KeyVoxKeyboardThemes     1.0.0
+  KeyVoxLinguistics        1.0.0
+  KeyVoxLocalInference     1.0.4
+  KeyVoxModels             1.0.0
+  KeyVoxParakeet           1.1.0
+  KeyVoxPredictiveKeyboard 1.0.3
+  KeyVoxPromotions         1.1.0
+  KeyVoxState              1.0.0
+  KeyVoxStyleRewrite       1.1.0
+  KeyVoxTTS                1.1.0
+  KeyVoxTextComposition    1.1.0
+  KeyVoxVibesAdapters      1.0.4
+  KeyVoxVoiceActivity      1.1.1
+  KeyVoxWhisper            1.2.0
+
+---
+
 ## [1.6.0] - 2026-10-27
 
 Runs KeyVox natively on iPad, and keeps the keyboard's delete key, letter case, and dictation waveform behaving as expected.
