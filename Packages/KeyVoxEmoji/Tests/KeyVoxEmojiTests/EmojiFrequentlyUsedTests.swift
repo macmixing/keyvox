@@ -47,6 +47,15 @@ final class EmojiFrequentlyUsedTests: XCTestCase {
         XCTAssertEqual(shown, Array(used.suffix(count).reversed()) + starters.prefix(2))
     }
 
+    /// A use is kept through saving and reading back, as when the keyboard starts again.
+    func testAUseIsKeptThroughSaving() throws {
+        XCTAssertFalse(EmojiFrequentlyUsed().hasUses)
+        var frequentlyUsed = EmojiFrequentlyUsed()
+        frequentlyUsed.recordUse(of: "a")
+        let saved = try JSONEncoder().encode(frequentlyUsed)
+        XCTAssertTrue(try JSONDecoder().decode(EmojiFrequentlyUsed.self, from: saved).hasUses)
+    }
+
     /// A word's emoji in the suggestion bar put the one used last first, then the rest in order.
     func testOrderingPutsTheLastUsedFirst() {
         var frequentlyUsed = EmojiFrequentlyUsed()

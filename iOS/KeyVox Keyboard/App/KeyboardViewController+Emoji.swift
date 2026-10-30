@@ -90,10 +90,12 @@ extension KeyboardViewController {
     }
 
     /// The emoji the suggestion bar offers for `word`, in the skin tones the user chose, the ones
-    /// they used most first, as on the system keyboard.
+    /// they used most first, as on the system keyboard. The bar offers none until the user types
+    /// an emoji, not for only opening the emoji page, and keeps offering them once they have, also
+    /// after the keyboard starts again.
     func barEmoji(for word: String) -> [String] {
-        guard appSettingsStore.isEmojiKeyboardEnabled else { return [] }
-        let emoji = KeyboardEmojiPredictionsIndex.shared.emoji(for: word).map { emojiSkinToneStore.chosenTones[$0] ?? $0 }
+        guard appSettingsStore.isEmojiKeyboardEnabled, emojiFrequentlyUsedStore.frequentlyUsed.hasUses else { return [] }
+        let emoji = KeyboardEmojiPredictionsIndex.shared.wordEmoji(for: word).map { emojiSkinToneStore.chosenTones[$0] ?? $0 }
         return emojiFrequentlyUsedStore.frequentlyUsed.ordering(emoji)
     }
 
@@ -116,7 +118,6 @@ extension KeyboardViewController {
         }
         characterKeyHaptics.emitKeypressIfEnabled()
         emojiFrequentlyUsedStore.recordUse(of: emoji)
-        KeyboardEmojiPredictionsIndex.shared.recordTypedEmoji()
         handleTypingContextChange()
     }
 

@@ -6,6 +6,20 @@ The format loosely follows Keep a Changelog, and the package uses semantic versi
 
 ---
 
+## [1.0.1] - 2026-10-30
+
+Frequently Used can now tell a host whether the user has used any emoji, so a keyboard can keep offering suggestion-bar emoji after it starts again.
+
+### Includes
+
+- `EmojiFrequentlyUsed.hasUses` reports whether any emoji was used, and stays true through saving and reading the ranking back.
+
+### Notes
+
+- `1.0.1` adds to the public API without changing it, so keyboard hosts need no changes.
+
+---
+
 ## [1.0.0] - 2026-10-15
 
 Initial shared emoji catalog, search, and suggestions for KeyVox keyboards, matched against the measured behavior of the iOS system emoji keyboard.
