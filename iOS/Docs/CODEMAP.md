@@ -1543,7 +1543,7 @@ Packages/
 - `KeyVox Keyboard/App/KeyboardViewController+Typing.swift`
   - Letter-page typing: field preparation, opening layout, shift and caps-lock handling, word-boundary autocorrection, picked-word spacing, suggestion taps and long-press forgetting, contested taps near letter keys, held-delete word deletion, return to letters after symbols, and personal, learned, and emoji vocabulary hand-off to the prediction coordinator.
 - `KeyVox Keyboard/App/KeyboardViewController+Emoji.swift`
-  - Emoji page binding, opening and closing, typing an emoji with the character-key haptic, recording Frequently Used and skin-tone choices, the page's delete repeat, and the suggestion-bar emoji for a word.
+  - Emoji page binding, opening and closing, typing an emoji with the character-key haptic, recording Frequently Used and skin-tone choices, the page's delete repeat, and the suggestion-bar emoji for a word, offered once the saved Frequently Used ranking holds a typed emoji.
 - `KeyVox Keyboard/App/KeyboardViewController+EmojiSearch.swift`
   - Emoji search binding, start and end, routing typed characters, space, delete, and done into the search text, held-delete word deletion inside the search, and results that fall back to the Frequently Used emoji before anything is typed.
 - `KeyVox Keyboard/Core/KeyboardDictationModelStatus.swift`
@@ -1744,11 +1744,11 @@ Packages/
 - `Packages/KeyVoxEmoji/Sources/KeyVoxEmoji/EmojiSearch.swift` and `EmojiPredictions.swift`
   - Word-prefix emoji search with whole-word matches first, and the suggestion-bar emoji for a word, which the search returns first so the two agree.
 - `Packages/KeyVoxEmoji/Sources/KeyVoxEmoji/EmojiFrequentlyUsed.swift`
-  - Codable Frequently Used ranking with decaying scores, bundled starters that fill what used emoji leave, and ordering of other emoji lists by use.
+  - Codable Frequently Used ranking with decaying scores, bundled starters that fill what used emoji leave, ordering of other emoji lists by use, and whether any emoji was used.
 - `Packages/KeyVoxEmoji/Sources/KeyVoxEmoji/EmojiTwoPersonTones.swift`
   - Maps two-person emoji versions to and from each person's tone.
 - `KeyVox Keyboard/Core/Emoji/KeyboardEmojiSections.swift`, `KeyboardEmojiSearchIndex.swift`, and `KeyboardEmojiPredictionsIndex.swift`
-  - Shared indexes that read the bundled catalog, search, and suggestion-bar emoji once off the main thread and keep them while the keyboard runs; the suggestion bar offers emoji only after the user has typed an emoji since the keyboard started.
+  - Shared indexes that read the bundled catalog, search, and suggestion-bar emoji once off the main thread and keep them while the keyboard runs.
 - `KeyVox Keyboard/Core/Emoji/KeyboardEmojiSupport.swift`
   - Asks the system emoji font whether it draws an emoji as one picture so the keyboard offers only emoji this phone shows.
 - `KeyVox Keyboard/Core/Emoji/KeyboardEmojiFrequentlyUsedStore.swift` and `KeyboardEmojiSkinToneStore.swift`
