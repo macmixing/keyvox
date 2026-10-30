@@ -23,6 +23,11 @@ public struct EmojiFrequentlyUsed: Codable, Equatable, Sendable {
 
     public init() {}
 
+    /// Whether any emoji was used, which stays true once one is.
+    public var hasUses: Bool {
+        uses.isEmpty == false
+    }
+
     /// The emoji the system keyboard's Frequently Used section starts with, in order, written by
     /// `Tools/KeyVoxEmojiData/write_emoji_catalog.py`.
     public static func bundledStarters() throws -> [String] {
