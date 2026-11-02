@@ -200,8 +200,10 @@ final class KeyboardKeyGridView: UIView {
     }
 
     /// The key a touch belongs to: the key containing it, or else the nearest key within
-    /// `hitSlop`, so touches in the gaps between and around keys still land.
+    /// `hitSlop`, so touches in the gaps between and around keys still land. Of keys that
+    /// overlap, the touch belongs to the one drawn on top, the key the user sees under it.
     func keyView(at point: CGPoint, hitSlop: CGFloat = KeyboardStyle.sectionSpacing) -> KeyboardKeyView? {
+        var containing: KeyboardKeyView?
         var nearest: (keyView: KeyboardKeyView, distance: CGFloat)?
         for keyView in keyViews {
             let frame = keyView.convert(keyView.bounds, to: self)
@@ -209,12 +211,16 @@ final class KeyboardKeyGridView: UIView {
             let dy = max(frame.minY - point.y, 0, point.y - frame.maxY)
             let distance = (dx * dx + dy * dy).squareRoot()
             guard distance <= hitSlop else { continue }
-            if distance == 0 { return keyView }
+            // Each key is drawn over the keys before it.
+            if distance == 0 {
+                containing = keyView
+                continue
+            }
             if nearest == nil || distance < nearest!.distance {
                 nearest = (keyView, distance)
             }
         }
-        return nearest?.keyView
+        return containing ?? nearest?.keyView
     }
 
     func setVisualState(_ state: KeyboardKeyView.VisualState, for keyView: KeyboardKeyView) {
