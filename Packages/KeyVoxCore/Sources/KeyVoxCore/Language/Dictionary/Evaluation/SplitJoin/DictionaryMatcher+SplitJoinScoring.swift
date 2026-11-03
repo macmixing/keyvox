@@ -241,6 +241,19 @@ extension DictionaryMatcher {
         if isStylizedSingleTokenEntry(best.entry) {
             let candidateToken = best.entry.tokens[0]
             let similarity = splitJoinStylizedSimilarity(window: window, candidateToken: candidateToken)
+            let isAnchored = isAnchoredStylizedSplitJoin(window: window, candidateToken: candidateToken)
+            let hasAnchoredTailEvidence = isAnchored
+                && hasAnchoredStylizedTailGuardEvidence(window: window, candidateToken: candidateToken)
+            // When the first word is the entry's own prefix, that shared prefix carries the
+            // whole-form score, so the rest of the entry must also have been said: either
+            // the tail resembles the entry's tail, or the spoken form carries all of its sounds.
+            let hasEntryRemainderEvidence = !isAnchored
+                || hasAnchoredTailEvidence
+                || splitJoinFormsCoverEntrySounds(window: window, candidateToken: candidateToken)
+            guard hasEntryRemainderEvidence else {
+                stats.rejectedLowScore += 1
+                return nil
+            }
 
             // Keep split-join strict by default, but allow stylized single-token
             // brand-like entries when both text and phonetic evidence are strong.
@@ -252,14 +265,7 @@ extension DictionaryMatcher {
                 // Spoken split forms like "air act's" can still be a clean stylized
                 // match when fallback phonetic shape is strong.
                 effectiveThreshold = min(effectiveThreshold, SplitJoinScoringConstants.stylizedModerateThreshold)
-            } else if isAnchoredStylizedSplitJoin(
-                window: window,
-                candidateToken: candidateToken
-            ),
-            hasAnchoredStylizedTailGuardEvidence(
-                window: window,
-                candidateToken: candidateToken
-            ),
+            } else if hasAnchoredTailEvidence,
             similarity.text >= SplitJoinScoringConstants.stylizedAnchoredTextMinimum,
             similarity.phonetic >= SplitJoinScoringConstants.stylizedAnchoredPhoneticMinimum,
             similarity.blended >= SplitJoinScoringConstants.stylizedAnchoredBlendedMinimum {

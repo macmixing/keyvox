@@ -15,6 +15,14 @@ extension DictionaryMatcher {
         return candidateToken.hasPrefix(observedFirst)
     }
 
+    // A joined form that does not start with every sound of the entry leaves part of the entry unsaid.
+    func splitJoinFormsCoverEntrySounds(window: [Token], candidateToken: String) -> Bool {
+        let candidateSounds = encoder.untruncatedScoringSignature(for: candidateToken, lexicon: lexicon)
+        return splitJoinForms(from: window).contains { form in
+            encoder.untruncatedScoringSignature(for: form.normalized, lexicon: lexicon).hasPrefix(candidateSounds)
+        }
+    }
+
     func shouldInferSplitJoinPossessiveSuffix(
         observedCombined: String,
         observedTail: String,
