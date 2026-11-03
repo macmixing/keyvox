@@ -40,7 +40,18 @@ public struct PhoneticEncoder {
             .joined(separator: " ")
     }
 
+    // Full-length scoring signature for comparisons that depend on a word's ending sounds.
+    func untruncatedScoringSignature(for normalizedToken: String, lexicon: PronunciationLexiconProviding) -> String {
+        fallbackSignature(for: signature(for: normalizedToken, lexicon: lexicon), maximumLength: nil)
+    }
+
     public func fallbackSignature(for token: String) -> String {
+        fallbackSignature(for: token, maximumLength: Self.fallbackSignatureMaximumLength)
+    }
+
+    private static let fallbackSignatureMaximumLength = 8
+
+    private func fallbackSignature(for token: String, maximumLength: Int?) -> String {
         guard !token.isEmpty else { return "" }
 
         let lowered = token.lowercased()
@@ -68,7 +79,7 @@ public struct PhoneticEncoder {
             output.append(code)
             lastCode = code
 
-            if output.count >= 8 {
+            if let maximumLength, output.count >= maximumLength {
                 break
             }
         }
