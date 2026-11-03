@@ -6,6 +6,34 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.3.17] - 2026-11-02
+
+Improves custom-dictionary accuracy and spoken-list formatting.
+
+### Fixed
+
+- Fixed spoken words being joined into a custom-dictionary entry when only the beginning of the entry matches, including long entries, while preserving matches when the full entry is spoken.
+- Fixed repeated words before list numbers being left at the end of list items; phrases such as `step one … step two` now stay as spoken.
+- Fixed spoken `number` labels appearing in list items when used before every list number, while preserving `number` when it belongs at the end of an item.
+
+### Package versions
+
+KeyVox macOS 1.3.17:
+- KeyVoxCore            1.3.10
+- KeyVoxLinguistics     1.0.0
+- KeyVoxLocalInference  1.0.4
+- KeyVoxModels          1.0.0
+- KeyVoxParakeet        1.1.0
+- KeyVoxPromotions      1.1.0
+- KeyVoxState           1.0.0
+- KeyVoxStyleRewrite    1.1.0
+- KeyVoxTextComposition 1.1.0
+- KeyVoxVibesAdapters   1.0.4
+- KeyVoxVoiceActivity   1.1.1
+- KeyVoxWhisper         1.2.0
+
+---
+
 ## [1.3.16] - 2026-10-26
 
 Improves custom-dictionary accuracy for single words.
