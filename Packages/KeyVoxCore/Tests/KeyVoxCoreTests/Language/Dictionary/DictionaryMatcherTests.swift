@@ -35,6 +35,14 @@ final class DictionaryMatcherTests: LinguisticAnalyzerTestCase {
         )
     }
 
+    func testDoesNotJoinKnownWordPairIntoDifferentSoundingCompoundEntry() async {
+        let matcher = makeRuntimeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "LinkTrak")])
+        let input = "I just wanted to link that data."
+
+        XCTAssertEqual(matcher.apply(to: input).text, input)
+    }
+
     func testDoesNotMatchSixDictationsToBigDictation() async {
         let matcher = makeRuntimeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Big Dictation")])
