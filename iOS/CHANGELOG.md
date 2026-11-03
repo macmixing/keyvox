@@ -6,6 +6,37 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.6.2] - 2026-11-02
+
+Keeps emoji on the keyboard's suggestion bar after the keyboard restarts, and stops dictation from joining words into a dictionary entry that was only partly spoken.
+
+### Fixed
+
+- Fixed the suggestion bar stopping its emoji after the keyboard restarted, until an emoji was typed again.
+- Fixed dictation joining two spoken words into a dictionary entry when only the start of the entry was said.
+
+### Package versions
+
+KeyVox iOS 1.6.2
+  KeyVoxCore               1.3.10
+  KeyVoxEmoji              1.0.1
+  KeyVoxKeyboardThemes     1.0.0
+  KeyVoxLinguistics        1.0.0
+  KeyVoxLocalInference     1.0.4
+  KeyVoxModels             1.0.0
+  KeyVoxParakeet           1.1.0
+  KeyVoxPredictiveKeyboard 1.0.3
+  KeyVoxPromotions         1.1.0
+  KeyVoxState              1.0.0
+  KeyVoxStyleRewrite       1.1.0
+  KeyVoxTTS                1.1.0
+  KeyVoxTextComposition    1.1.0
+  KeyVoxVibesAdapters      1.0.4
+  KeyVoxVoiceActivity      1.1.1
+  KeyVoxWhisper            1.2.0
+
+---
+
 ## [1.6.1] - 2026-10-29
 
 Gives dictation and KeyVox Speak their own settings screens, makes keyboard suggestions and corrections smarter, and makes KeyVox Speak downloads safer.
