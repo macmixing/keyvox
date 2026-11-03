@@ -6,6 +6,22 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.3.10] - 2026-11-02
+
+Dictionary matching no longer joins two spoken words into a brand-style entry when part of the entry was never said.
+
+### Includes
+
+- Prevented two words that start like a single-word dictionary entry from being joined into it when the rest of the entry was not spoken, such as `link that` becoming `LinkTrak`.
+- Kept split brand-style entries matching when the whole entry was spoken, such as `air act's` becoming `AirRack's`.
+- Added regression coverage for split words that only share the start of a dictionary entry.
+
+### Notes
+
+- `1.3.10` tracks split-word dictionary matching for brand-style entries.
+
+---
+
 ## [1.3.9] - 2026-10-27
 
 List formatting no longer leaves a word repeated before each spoken number stuck to the end of list items.
