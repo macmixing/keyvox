@@ -51,6 +51,24 @@ final class DictionaryMatcherTests: LinguisticAnalyzerTestCase {
         XCTAssertEqual(matcher.apply(to: input).text, input)
     }
 
+    func testDoesNotJoinKnownWordPairMissingEntryTailDespiteLongSharedPrefix() async {
+        let matcher = makeRuntimeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "SuperLinkTrak")])
+        let input = "I just wanted to superlink that data."
+
+        XCTAssertEqual(matcher.apply(to: input).text, input)
+    }
+
+    func testJoinsSplitLongCompoundEntryWhenItsTailIsSpoken() async {
+        let matcher = makeRuntimeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "SuperLinkTrak")])
+
+        XCTAssertEqual(
+            matcher.apply(to: "I just wanted to superlink trak data.").text,
+            "I just wanted to SuperLinkTrak data."
+        )
+    }
+
     func testDoesNotMatchSixDictationsToBigDictation() async {
         let matcher = makeRuntimeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Big Dictation")])

@@ -245,20 +245,22 @@ extension DictionaryMatcher {
             let hasAnchoredTailEvidence = isAnchored
                 && hasAnchoredStylizedTailGuardEvidence(window: window, candidateToken: candidateToken)
             // When the first word is the entry's own prefix, that shared prefix carries the
-            // whole-form similarity, so the rest of the entry must also have been said: either
+            // whole-form score, so the rest of the entry must also have been said: either
             // the tail resembles the entry's tail, or the spoken form carries all of its sounds.
             let hasEntryRemainderEvidence = !isAnchored
                 || hasAnchoredTailEvidence
                 || splitJoinFormsCoverEntrySounds(window: window, candidateToken: candidateToken)
+            guard hasEntryRemainderEvidence else {
+                stats.rejectedLowScore += 1
+                return nil
+            }
 
             // Keep split-join strict by default, but allow stylized single-token
             // brand-like entries when both text and phonetic evidence are strong.
-            if hasEntryRemainderEvidence,
-               similarity.text >= SplitJoinScoringConstants.stylizedStrongTextMinimum,
+            if similarity.text >= SplitJoinScoringConstants.stylizedStrongTextMinimum,
                similarity.blended >= SplitJoinScoringConstants.stylizedStrongBlendedMinimum {
                 effectiveThreshold = min(effectiveThreshold, SplitJoinScoringConstants.stylizedStrongThreshold)
-            } else if hasEntryRemainderEvidence,
-                      similarity.text >= SplitJoinScoringConstants.stylizedModerateTextMinimum,
+            } else if similarity.text >= SplitJoinScoringConstants.stylizedModerateTextMinimum,
                       similarity.blended >= SplitJoinScoringConstants.stylizedModerateBlendedMinimum {
                 // Spoken split forms like "air act's" can still be a clean stylized
                 // match when fallback phonetic shape is strong.
