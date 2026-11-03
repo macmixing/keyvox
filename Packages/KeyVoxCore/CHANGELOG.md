@@ -13,8 +13,10 @@ Dictionary matching no longer joins two spoken words into a brand-style entry wh
 ### Includes
 
 - Prevented two words that start like a single-word dictionary entry from being joined into it when the rest of the entry was not spoken, such as `link that` becoming `LinkTrak`.
-- Kept split brand-style entries matching when the whole entry was spoken, such as `air act's` becoming `AirRack's`.
-- Added regression coverage for split words that only share the start of a dictionary entry.
+- Applied the same check to long entries, so a long shared start no longer joins words whose ending differs, such as `superlink that` or `superlink thin` becoming `SuperLinkTrak`.
+- Compared entry sounds at full length, so long entries are no longer treated as fully spoken just because both sides reach the usual sound limit.
+- Kept split brand-style entries matching when the whole entry was spoken, such as `air act's` becoming `AirRack's` and `superlink trak` becoming `SuperLinkTrak`.
+- Added regression coverage for split words that only share the start of a dictionary entry, including long entries.
 
 ### Notes
 
