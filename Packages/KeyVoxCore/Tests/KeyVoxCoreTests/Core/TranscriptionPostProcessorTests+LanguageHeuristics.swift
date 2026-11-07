@@ -342,6 +342,42 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "The scan showed the sigmoid colon was healthy.")
     }
+
+    func testNormalizesColinSentenceBetweenSentencesToPunctuation() async {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "I have some news for the team. Colin. We won the regional game on Friday night.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "I have some news for the team: We won the regional game on Friday night.")
+    }
+
+    func testNormalizesColinSentenceBeforeParagraphBreakAndKeepsTheBreak() async {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Here is the plan for the week. Colin.\n\nWe start the painting on Monday.",
+            dictionaryEntries: [],
+            renderMode: .multiline
+        )
+
+        XCTAssertEqual(output, "Here is the plan for the week:\n\nWe start the painting on Monday.")
+    }
+
+    func testKeepsColinSentenceAtDictationStartLiteral() async {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Colin. We need to talk about the budget.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "Colin. We need to talk about the budget.")
+    }
     func testColonNormalizationStaysCompatibleWithWebsiteNormalization() async {
         let processor = TranscriptionPostProcessor()
 

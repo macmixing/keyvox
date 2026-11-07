@@ -5,7 +5,8 @@ import Foundation
 /// stays a word when it is part of a hyphenated word or one of the user's dictionary entries,
 /// belongs to a listed phrase that names the body part, follows a word that needs a noun after
 /// it, or ends a phrase opened by a determiner where its sentence ends or what follows needs it
-/// as a noun, and when nothing comes before it in its sentence or after it.
+/// as a noun, and when nothing comes before it in its sentence or after it, unless it stands as a
+/// sentence of its own between two sentences, which the transcriber split at the spoken colon.
 public struct ColonNormalizer {
     private struct WordToken {
         let text: String
@@ -16,7 +17,7 @@ public struct ColonNormalizer {
     private static let namePhrases = try? PunctuationNamePhrases()
     private static let writtenName = "colon"
     private static let collapsedWhitespaceRegex: NSRegularExpression? = try? NSRegularExpression(
-        pattern: #"\s{2,}"#,
+        pattern: #"[^\S\r\n]{2,}"#,
         options: []
     )
 
@@ -27,17 +28,18 @@ public struct ColonNormalizer {
 
         let words = wordTokens(in: text)
         let replacements = words.indices.reversed().compactMap { index -> Range<String.Index>? in
-            guard isSpokenColon(at: index, words: words, text: text, dictionaryEntries: dictionaryEntries) else {
-                return nil
-            }
-            return replacementRange(for: words[index].range, in: text)
+            spokenColonRange(at: index, words: words, text: text, dictionaryEntries: dictionaryEntries)
         }
         guard !replacements.isEmpty else { return text }
 
         let mutable = NSMutableString(string: text)
         var replacedFrom = text.endIndex
         for range in replacements where range.upperBound <= replacedFrom {
-            mutable.replaceCharacters(in: NSRange(range, in: text), with: ": ")
+            let lineBreaks = text[range].filter(\.isNewline)
+            mutable.replaceCharacters(
+                in: NSRange(range, in: text),
+                with: lineBreaks.isEmpty ? ": " : ":" + String(lineBreaks)
+            )
             replacedFrom = range.lowerBound
         }
         let normalized = mutable as String
@@ -52,6 +54,23 @@ public struct ColonNormalizer {
             withTemplate: " "
         )
         return stripTerminalPunctuationForShortStandaloneAssociation(in: collapsed)
+    }
+
+    /// The span a written colon replaces when the word at `index` is a spoken colon.
+    private func spokenColonRange(
+        at index: Int,
+        words: [WordToken],
+        text: String,
+        dictionaryEntries: [DictionaryEntry]
+    ) -> Range<String.Index>? {
+        guard isSpokenColon(at: index, words: words, text: text, dictionaryEntries: dictionaryEntries) else {
+            return nil
+        }
+        let range = words[index].range
+        if hasSentenceContent(before: range, in: text), hasSentenceContent(after: range, in: text) {
+            return replacementRange(for: range, in: text)
+        }
+        return ownSentenceReplacementRange(for: range, in: text)
     }
 
     private func isSpokenColon(
@@ -95,8 +114,33 @@ public struct ColonNormalizer {
             }
         }
 
-        return hasSentenceContent(before: word.range, in: text)
-            && hasSentenceContent(after: word.range, in: text)
+        return true
+    }
+
+    /// The span from the period ending the sentence before the word through the punctuation and
+    /// spaces after it, when the word is a sentence of its own between two sentences.
+    private func ownSentenceReplacementRange(
+        for range: Range<String.Index>,
+        in text: String
+    ) -> Range<String.Index>? {
+        var start = range.lowerBound
+        while start > text.startIndex, text[text.index(before: start)].isWhitespace,
+              !text[text.index(before: start)].isNewline {
+            start = text.index(before: start)
+        }
+        guard start > text.startIndex else { return nil }
+        let periodIndex = text.index(before: start)
+        guard text[periodIndex] == ".",
+              hasSentenceContent(before: periodIndex..<start, in: text) else {
+            return nil
+        }
+
+        let end = replacementRange(for: range, in: text).upperBound
+        guard text[range.upperBound..<end].contains(where: isSentenceBoundary),
+              text[end...].contains(where: { $0.isLetter || $0.isNumber }) else {
+            return nil
+        }
+        return periodIndex..<end
     }
 
     /// Whether the descriptive words ending at `index` follow a determiner within one phrase.
