@@ -163,5 +163,8 @@ vendel period
 vibrio comma
 waiting period
 wash-up period
+word colon
+word comma
+word period
 xerothermic period
 zero period
