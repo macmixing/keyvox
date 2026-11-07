@@ -13,6 +13,8 @@ DATA_DIR = MODEL_TRAINING_ROOT / "datasets" / "polished" / "alpha-028-continuati
 REPORT_DIR = ROOT / "reports"
 PROMPT = (MODEL_TRAINING_ROOT / "prompts" / "polished" / "polished_runtime_short.txt").read_text(encoding="utf-8").strip()
 REPLAY_SCRIPT = MODEL_TRAINING_ROOT / "runs" / "polished" / "alpha-027" / "scripts" / "generate_dataset.py"
+AINT_REPLAY_DIR = MODEL_TRAINING_ROOT / "datasets" / "polished" / "alpha-017-continuation-aint"
+AINT_REPLAY_CATEGORIES = {"bad_grammar_aint", "bad_grammar_aint_context"}
 
 
 @dataclass(frozen=True)
@@ -45,6 +47,19 @@ def load_replay_examples() -> list[Example]:
     ]
 
 
+def load_aint_replay_examples() -> list[Example]:
+    examples: list[Example] = []
+    for split in ("train", "valid", "test"):
+        with (AINT_REPLAY_DIR / f"{split}.jsonl").open("r", encoding="utf-8") as handle:
+            for line in handle:
+                item = json.loads(line)
+                if item["category"] not in AINT_REPLAY_CATEGORIES:
+                    continue
+                messages = {message["role"]: message["content"] for message in item["messages"]}
+                examples.append(Example(item["category"], messages["user"], messages["assistant"], split))
+    return examples
+
+
 GOTTA_CASES = [
     ("I gotta leave in a few minutes.", "I have to leave in a few minutes."),
     ("You gotta see the view from up here.", "You have to see the view from up here."),
@@ -75,6 +90,16 @@ GOTTA_CASES = [
     ("I gotta pick up a few things from the pharmacy.", "I have to pick up a few things from the pharmacy."),
     ("Gotta go, my ride is here.", "Have to go, my ride is here."),
     ("Gotta finish this chapter before bed.", "Have to finish this chapter before bed."),
+    ("Gotta head out, see you later.", "Have to head out, see you later."),
+    ("Gotta jump on a call, text you after.", "Have to jump on a call, text you after."),
+    ("Gotta leave now, I'll call you tonight.", "Have to leave now, I'll call you tonight."),
+    ("Gotta get back to work, talk later.", "Have to get back to work, talk later."),
+    ("Gotta wake up early tomorrow.", "Have to wake up early tomorrow."),
+    ("I gotta problem with my car.", "I have a problem with my car."),
+    ("We gotta situation at the office.", "We have a situation at the office."),
+    ("You gotta pen I can borrow?", "You have a pen I can borrow?"),
+    ("I gotta question about the invoice.", "I have a question about the invoice."),
+    ("She gotta new puppy last week.", "She got a new puppy last week."),
     ("He gotta work late again tonight.", "He has to work late again tonight."),
     ("She gotta be at the airport early.", "She has to be at the airport early."),
     ("I gotta feeling this is going to work.", "I have a feeling this is going to work."),
@@ -174,6 +199,20 @@ MEANING_GUARD_CASES = [
     ("I gotta be honest, I really do love it.", "I have to be honest, I really do love it."),
     ("I'm not gonna go, and I don't wanna be asked again.", "I'm not going to go, and I don't want to be asked again."),
     ("I wasn't gonna say anything, but you gotta know.", "I wasn't going to say anything, but you have to know."),
+    ("I'm not gonna call and I'm not gonna text.", "I'm not going to call and I'm not going to text."),
+    ("She's gonna cook and I wanna clean up.", "She's going to cook and I want to clean up."),
+    ("We gotta pack and we gotta leave by noon.", "We have to pack and we have to leave by noon."),
+    ("I don't wanna argue and I don't wanna wait.", "I don't want to argue and I don't want to wait."),
+    ("Anyway, I'm gonna get some rest.", "Anyway, I'm going to get some rest."),
+    ("Anyway, we gotta decide by tomorrow.", "Anyway, we have to decide by tomorrow."),
+    ("That's the whole story.\n\nAnyway, if you wanna talk more, call me.", "That's the whole story.\n\nAnyway, if you want to talk more, call me."),
+]
+
+FILLER_LIST_GUARD_CASES = [
+    ("Please call the bank, like ask about the fee, and then email me.", "Please call the bank, ask about the fee, and then email me."),
+    ("Can you pack the car, like grab the cooler, and lock the house?", "Can you pack the car, grab the cooler, and lock the house?"),
+    ("We should book the hotel, like reserve the van, and confirm the tickets.", "We should book the hotel, reserve the van, and confirm the tickets."),
+    ("Make sure you water the plants, like feed the cat, and take out the trash.", "Make sure you water the plants, feed the cat, and take out the trash."),
 ]
 
 CONTROL_CASES = [
@@ -198,6 +237,7 @@ NEW_CASE_GROUPS = [
     ("casual_reduction_other", OTHER_REDUCTION_CASES),
     ("casual_reduction_mixed", MIXED_CASES),
     ("casual_reduction_meaning_guard", MEANING_GUARD_CASES),
+    ("filler_list_guard", FILLER_LIST_GUARD_CASES),
     ("casual_reduction_control", CONTROL_CASES),
 ]
 
@@ -222,6 +262,9 @@ def build_examples() -> list[Example]:
             add(Example(category, *cases[-1], "test"))
 
     for example in load_replay_examples():
+        add(example)
+
+    for example in load_aint_replay_examples():
         add(example)
 
     return examples
@@ -251,7 +294,10 @@ def main() -> int:
     manifest = {
         "version": "polished-alpha-028",
         "purpose": "continue polished alpha-027 with casual spoken reductions written out in standard form",
-        "replayed_from": str(REPLAY_SCRIPT.relative_to(MODEL_TRAINING_ROOT.parent)),
+        "replayed_from": [
+            str(REPLAY_SCRIPT.relative_to(MODEL_TRAINING_ROOT.parent)),
+            str(AINT_REPLAY_DIR.relative_to(MODEL_TRAINING_ROOT.parent)),
+        ],
         "continued_from": "ModelTraining/artifacts/current/polished-lora-alpha-027/adapters/polished-alpha-027/adapters.safetensors",
         "train_count": counts["train"],
         "valid_count": counts["valid"],

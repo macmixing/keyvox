@@ -43,7 +43,7 @@ TRAIN_ARGS=(
     --data "$DATA_DIR" \
     --adapter-path "$ADAPTER_DIR" \
     --config "$ROOT_DIR/train_config.yaml" \
-    --iters "${KEYVOX_FT_ITERS:-230}" \
+    --iters "${KEYVOX_FT_ITERS:-300}" \
     --batch-size "${KEYVOX_FT_BATCH_SIZE:-1}" \
     --learning-rate "${KEYVOX_FT_LEARNING_RATE:-2e-6}" \
     --mask-prompt
