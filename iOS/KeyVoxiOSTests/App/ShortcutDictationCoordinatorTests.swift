@@ -120,7 +120,8 @@ private final class MockShortcutDictationSessionController: ShortcutDictationSes
     }
 
     func performStopRecordingCommand(
-        releaseMicImmediately: Bool
+        releaseMicImmediately: Bool,
+        shouldReleaseMicAtCompletion: (@MainActor () -> Bool)?
     ) async -> TranscriptionStopCommandResult {
         calls.values.append("stopRecording:\(releaseMicImmediately)")
         shortcutDictationState = .idle

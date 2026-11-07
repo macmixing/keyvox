@@ -285,7 +285,8 @@ final class TranscriptionManager: ObservableObject {
     }
 
     func performStopRecordingCommand(
-        releaseMicImmediately: Bool = false
+        releaseMicImmediately: Bool = false,
+        shouldReleaseMicAtCompletion: (@MainActor () -> Bool)? = nil
     ) async -> TranscriptionStopCommandResult {
         guard state == .recording else { return .notRecording }
         let utteranceID = activeUtteranceID
@@ -310,7 +311,8 @@ final class TranscriptionManager: ObservableObject {
             startTime: startTime
         )
 
-        if shouldRetryImmediateRelease, isSessionActive {
+        if isSessionActive,
+           shouldRetryImmediateRelease || (utteranceID == activeUtteranceID && shouldReleaseMicAtCompletion?() == true) {
             await releaseSessionMonitoringAfterCapture()
             if isSessionActive {
                 armIdleTimeout()

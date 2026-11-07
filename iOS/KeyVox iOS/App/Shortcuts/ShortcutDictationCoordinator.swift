@@ -21,7 +21,10 @@ protocol ShortcutDictationSessionControlling: AnyObject {
     var sessionDisablePending: Bool { get }
 
     func performStartRecordingCommand(isFromURL: Bool) async -> TranscriptionStartCommandResult
-    func performStopRecordingCommand(releaseMicImmediately: Bool) async -> TranscriptionStopCommandResult
+    func performStopRecordingCommand(
+        releaseMicImmediately: Bool,
+        shouldReleaseMicAtCompletion: (@MainActor () -> Bool)?
+    ) async -> TranscriptionStopCommandResult
 }
 
 @MainActor
@@ -109,7 +112,8 @@ final class ShortcutDictationCoordinator {
         // The system requires a Live Activity whenever this intent leaves the mic active.
         let shouldReleaseMic = releaseMicImmediately || liveActivityCoordinator.isLiveActivityActive == false
         switch await sessionController.performStopRecordingCommand(
-            releaseMicImmediately: shouldReleaseMic
+            releaseMicImmediately: shouldReleaseMic,
+            shouldReleaseMicAtCompletion: { self.liveActivityCoordinator.isLiveActivityActive == false }
         ) {
         case .completed(let text):
             return .transcriptionCompleted(text)
