@@ -6,6 +6,21 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.0.5] - 2026-11-06
+
+Live validation coverage for the Polished alpha-028 adapter refresh.
+
+### Includes
+
+- Added Polished gauntlet coverage for casual spoken reductions written out in standard form, including sentence-start and subject-free phrasing, `gotta` meaning `got a`, negation, and `ain't`.
+- Added Polished gauntlet guards that keep already-standard phrasing unchanged.
+
+### Notes
+
+- `1.0.5` bumps the tracked local inference package version for live validation coverage around the promoted Polished alpha-028 Vibes adapter.
+
+---
+
 ## [1.0.4] - 2026-06-06
 
 Live validation coverage for the Polished alpha-027 adapter refresh.
