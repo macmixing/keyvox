@@ -16,11 +16,12 @@ Shared capitalized spellings for every KeyVox surface that decides a word's capi
 - Bundled `capitalized_spellings.txt` as a package resource, so the list loads the same way on every platform.
 - Added `KeyVoxLinguisticsResources.configure(bundleURL:)` so hosts outside an application bundle can point the package at its copied resources before first use.
 - Added `PunctuationNamePhrases`, a bundled list of phrases where a punctuation mark's name is an ordinary word, such as `trial period`, `serial comma`, and `sigmoid colon`, so dictation keeps those names as words on every platform.
+- Added `GreetingPhrases`, a bundled list of spoken greetings, farewells, and thanks, such as `hey`, `see you tomorrow`, and `thank you`, drawn from Wiktionary, Tatoeba, WordNet, and Apple's lexicon, so dictation can tell a name spoken to someone on every platform.
 - Tagged a word written with an attached `'s` as the word it is attached to in the portable analyzer, matching how its model was trained, so possessives of less common nouns read as nouns and contractions such as `that's` and `let's` read as their first word.
 
 ### Notes
 
-- `1.0.1` adds public API for the shared capitalized spellings and punctuation name phrase lists.
+- `1.0.1` adds public API for the shared capitalized spellings, punctuation name phrase, and greeting phrase lists.
 
 ---
 
