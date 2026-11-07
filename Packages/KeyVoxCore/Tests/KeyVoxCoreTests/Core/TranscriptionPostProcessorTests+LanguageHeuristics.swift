@@ -506,6 +506,20 @@ extension TranscriptionPostProcessorTests {
         }
     }
 
+    func testNormalizesSpokenColonEndingPhraseOpenedByDeterminer() async {
+        let processor = TranscriptionPostProcessor()
+
+        let cases: [(input: String, expected: String)] = [
+            ("These are the main reasons colon", "These are the main reasons:"),
+            ("The second rule colon wash your hands before eating", "The second rule: Wash your hands before eating"),
+        ]
+        for (input, expected) in cases {
+            let output = processor.process(input, dictionaryEntries: [], renderMode: .singleLineInline)
+
+            XCTAssertEqual(output, expected, input)
+        }
+    }
+
     func testKeepsLongerNameNearColonSpellingLiteral() async {
         let processor = TranscriptionPostProcessor()
 

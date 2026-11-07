@@ -5,9 +5,8 @@ import Foundation
 /// whatever punctuation the transcriber put on either side of it. The word stays a word when it is
 /// part of a hyphenated word or one of the user's dictionary entries, belongs to a listed phrase
 /// that names the body part, or follows a word that needs a noun after it, and when nothing comes
-/// before it in the dictation. The written word also stays a word when it ends a phrase opened by
-/// a determiner where its sentence ends or what follows needs it as a noun, or opens a sentence
-/// and runs straight into a noun or verb it belongs to. A misheard spelling, such as "Colin", also stays a name when it addresses a
+/// before it in the dictation. The written word also stays a word when it opens a sentence and runs
+/// straight into a noun or verb it belongs to. A misheard spelling, such as "Colin", also stays a name when it addresses a
 /// person after a phrase that opens with a greeting, farewell, or thanks, or sits next to a
 /// spoken punctuation mark, which the speaker would not say beside a spoken colon.
 public struct ColonNormalizer {
@@ -125,19 +124,6 @@ public struct ColonNormalizer {
                 default:
                     break
                 }
-                // The written word ending a phrase opened by a determiner names the thing when the
-                // sentence ends after it, as in "the word colon.", or what follows needs it as a
-                // noun, as in "the word colon appears".
-                if isWrittenName(word.text), opensNounPhrase(endingAt: previousIndex, words: words, text: text) {
-                    if endsSentence(after: word.range, in: text) {
-                        return false
-                    }
-                    if index + 1 < words.endIndex,
-                       isAdjacent(words[index], words[index + 1], in: text),
-                       words[index + 1].role == .verb || words[index + 1].role == .preposition {
-                        return false
-                    }
-                }
             }
         }
 
@@ -185,27 +171,6 @@ public struct ColonNormalizer {
     /// Whether the word is spelled as the mark's written name rather than a misheard spelling.
     private func isWrittenName(_ word: String) -> Bool {
         word.lowercased() == Self.writtenName
-    }
-
-    /// Whether the descriptive words ending at `index` follow a determiner within one phrase.
-    private func opensNounPhrase(endingAt index: Int, words: [WordToken], text: String) -> Bool {
-        var current = index
-        while current > words.startIndex {
-            switch words[current].role {
-            case .adjective, .noun, .number, .ordinal:
-                break
-            default:
-                return false
-            }
-
-            let previous = words.index(before: current)
-            guard isAdjacent(words[previous], words[current], in: text) else { return false }
-            if words[previous].role == .determiner {
-                return true
-            }
-            current = previous
-        }
-        return false
     }
 
     private func isAdjacent(_ first: WordToken, _ second: WordToken, in text: String) -> Bool {
@@ -261,16 +226,6 @@ public struct ColonNormalizer {
 
     private func isWordCharacter(_ character: Character) -> Bool {
         character.isLetter || character.isNumber || character == "_"
-    }
-
-    /// Whether only spaces and closing punctuation come between the word and the end of its
-    /// sentence.
-    private func endsSentence(after range: Range<String.Index>, in text: String) -> Bool {
-        for character in text[range.upperBound...] {
-            if isSentenceBoundary(character) { return true }
-            if character.isLetter || character.isNumber { return false }
-        }
-        return true
     }
 
     private func isContent(_ character: Character) -> Bool {
