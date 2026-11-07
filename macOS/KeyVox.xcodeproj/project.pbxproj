@@ -46,6 +46,7 @@
 		8E9E38262F5BBA5400EAFA72 /* AudioRecorderStopRecordingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38252F5BBA5400EAFA72 /* AudioRecorderStopRecordingTests.swift */; };
 		8EA1C1022F3D111100A1B2C3 /* AudioDeviceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EA1C1012F3D111100A1B2C3 /* AudioDeviceManager.swift */; };
 		8EBB01032F41000200BB1101 /* UpdatePromptOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EBB01022F41000200BB1101 /* UpdatePromptOverlay.swift */; };
+		9281E6C8116E4600AFE6C47A /* UpdatePromptPanelQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02573E446A124D9FA1619E8F /* UpdatePromptPanelQueue.swift */; };
 		8EC700012F42000100C70001 /* WarningKind.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EC700112F42000100C70001 /* WarningKind.swift */; };
 		8EC700022F42000100C70001 /* WarningOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EC700122F42000100C70001 /* WarningOverlayView.swift */; };
 		8EC700032F42000100C70001 /* WarningManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EC700132F42000100C70001 /* WarningManager.swift */; };
@@ -102,6 +103,7 @@
 		AB3000032F60000100AA0001 /* OverlayScreenPersistenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000032F60000100AA0001 /* OverlayScreenPersistenceTests.swift */; };
 		AB3000042F60000100AA0001 /* OverlayFlingPhysicsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000042F60000100AA0001 /* OverlayFlingPhysicsTests.swift */; };
 		AB3000122F60000100AA0001 /* WarningKindTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000142F60000100AA0001 /* WarningKindTests.swift */; };
+		333F4E6BD3734E409DEDB489 /* UpdatePromptPanelQueueTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F0E57E02D344C98BB838DAE /* UpdatePromptPanelQueueTests.swift */; };
 		AB3000132F60000100AA0001 /* AppUpdateLogicTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000152F60000100AA0001 /* AppUpdateLogicTests.swift */; };
 		AB3000142F60000100AA0001 /* PasteServiceListRenderModeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000162F60000100AA0001 /* PasteServiceListRenderModeTests.swift */; };
 		AB3000152F60000100AA0001 /* PasteFailureRecoveryPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000172F60000100AA0001 /* PasteFailureRecoveryPolicyTests.swift */; };
@@ -311,6 +313,7 @@
 		8E9E38252F5BBA5400EAFA72 /* AudioRecorderStopRecordingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioRecorderStopRecordingTests.swift; sourceTree = "<group>"; };
 		8EA1C1012F3D111100A1B2C3 /* AudioDeviceManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioDeviceManager.swift; sourceTree = "<group>"; };
 		8EBB01022F41000200BB1101 /* UpdatePromptOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdatePromptOverlay.swift; sourceTree = "<group>"; };
+		02573E446A124D9FA1619E8F /* UpdatePromptPanelQueue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdatePromptPanelQueue.swift; sourceTree = "<group>"; };
 		8EC700112F42000100C70001 /* WarningKind.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WarningKind.swift; sourceTree = "<group>"; };
 		8EC700122F42000100C70001 /* WarningOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WarningOverlayView.swift; sourceTree = "<group>"; };
 		8EC700132F42000100C70001 /* WarningManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WarningManager.swift; sourceTree = "<group>"; };
@@ -371,6 +374,7 @@
 		AB2000122F60000100AA0001 /* latest_without_dmg.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = latest_without_dmg.json; sourceTree = "<group>"; };
 		AB2000132F60000100AA0001 /* latest_with_dmg.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = latest_with_dmg.json; sourceTree = "<group>"; };
 		AB2000142F60000100AA0001 /* WarningKindTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WarningKindTests.swift; sourceTree = "<group>"; };
+		6F0E57E02D344C98BB838DAE /* UpdatePromptPanelQueueTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdatePromptPanelQueueTests.swift; sourceTree = "<group>"; };
 		AB2000152F60000100AA0001 /* AppUpdateLogicTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateLogicTests.swift; sourceTree = "<group>"; };
 		AB2000162F60000100AA0001 /* PasteServiceListRenderModeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteServiceListRenderModeTests.swift; sourceTree = "<group>"; };
 		AB2000172F60000100AA0001 /* PasteFailureRecoveryPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteFailureRecoveryPolicyTests.swift; sourceTree = "<group>"; };
@@ -688,6 +692,7 @@
 				E90000142FE1000100AA0001 /* VibePillOverlay.swift */,
 				8E6D05DA2F3C51D6003BD458 /* StatusMenuView.swift */,
 				8EBB01022F41000200BB1101 /* UpdatePromptOverlay.swift */,
+				02573E446A124D9FA1619E8F /* UpdatePromptPanelQueue.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -864,6 +869,7 @@
 			children = (
 				F1D100B42FEA000100AA0001 /* FirstDictationPracticeStateTests.swift */,
 				AB2000142F60000100AA0001 /* WarningKindTests.swift */,
+				6F0E57E02D344C98BB838DAE /* UpdatePromptPanelQueueTests.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -1378,6 +1384,7 @@
 				F1D100172FEA000100AA0001 /* FirstDictationOptionKeyPromptView.swift in Sources */,
 				F1D1001A2FEA000100AA0001 /* FirstDictationSuccessCelebrationView.swift in Sources */,
 				8EBB01032F41000200BB1101 /* UpdatePromptOverlay.swift in Sources */,
+				9281E6C8116E4600AFE6C47A /* UpdatePromptPanelQueue.swift in Sources */,
 				8F5502012F47010000EE5501 /* UpdateFeedConfig.swift in Sources */,
 				8F6602012F48010000FF6601 /* UpdatePromptPresenting.swift in Sources */,
 				EF9464A6E48D4A629797283C /* ParakeetUpdatePromptController.swift in Sources */,
@@ -1420,6 +1427,7 @@
 				AB3000032F60000100AA0001 /* OverlayScreenPersistenceTests.swift in Sources */,
 				AB3000042F60000100AA0001 /* OverlayFlingPhysicsTests.swift in Sources */,
 				AB3000122F60000100AA0001 /* WarningKindTests.swift in Sources */,
+				333F4E6BD3734E409DEDB489 /* UpdatePromptPanelQueueTests.swift in Sources */,
 				8E37FC672FB0F954004DD69A /* WindowManagerOnboardingWindowLevelTests.swift in Sources */,
 				B12000012FD4000100AA0001 /* InstalledDictationModelLocatorTests.swift in Sources */,
 				AB3000342F60000100AA0001 /* AppSettingsStoreTests.swift in Sources */,

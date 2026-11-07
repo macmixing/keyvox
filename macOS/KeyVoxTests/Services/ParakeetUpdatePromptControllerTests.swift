@@ -116,6 +116,26 @@ final class ParakeetUpdatePromptControllerTests: XCTestCase {
         }
     }
 
+    func testDownloadWhileAnotherModelDownloadsExplainsWhy() throws {
+        try withHarness { harness in
+            try harness.writeLegacyInstall()
+            harness.controller.presentIfNeeded()
+            harness.downloader.activeDownload = ModelDownloader.ActiveDownload(
+                token: UUID(),
+                modelID: .whisperBase,
+                descriptor: harness.downloader.modelLocator.descriptor(for: .whisperBase)
+            )
+
+            harness.presenter.prompts.first?.onPrimaryAction?()
+
+            let blockedPrompt = try XCTUnwrap(harness.presenter.prompts.last)
+            XCTAssertEqual(harness.presenter.prompts.count, 2)
+            XCTAssertNil(blockedPrompt.progress)
+            XCTAssertNotNil(blockedPrompt.primaryButtonTitle)
+            XCTAssertFalse(harness.downloader.isDownloading(for: .parakeetTdtV3))
+        }
+    }
+
     private func withHarness(_ body: (Harness) throws -> Void) throws {
         try withTemporaryDirectory { dir in
             let suiteName = "ParakeetUpdatePromptControllerTests.\(UUID().uuidString)"

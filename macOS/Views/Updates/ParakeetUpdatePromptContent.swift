@@ -11,7 +11,8 @@ enum ParakeetUpdatePromptContent {
             primaryButtonTitle: "Download",
             onPrimaryAction: onDownload,
             onDismiss: onLater,
-            dismissesOnPrimaryAction: false
+            dismissesOnPrimaryAction: false,
+            holdsPanelUntilDismissed: true
         )
     }
 
@@ -25,7 +26,8 @@ enum ParakeetUpdatePromptContent {
             primaryButtonTitle: nil,
             onPrimaryAction: nil,
             onDismiss: {},
-            progress: UpdatePromptProgress(value: state.progress, statusText: state.phase.statusText)
+            progress: UpdatePromptProgress(value: state.progress, statusText: state.phase.statusText),
+            holdsPanelUntilDismissed: true
         )
     }
 
@@ -38,7 +40,19 @@ enum ParakeetUpdatePromptContent {
             dismissButtonTitle: "Okay",
             primaryButtonTitle: nil,
             onPrimaryAction: nil,
-            onDismiss: {}
+            onDismiss: {},
+            holdsPanelUntilDismissed: true
+        )
+    }
+
+    static func blockedByActiveDownload(
+        onDownload: @escaping () -> Void,
+        onLater: @escaping () -> Void
+    ) -> UpdatePrompt {
+        failed(
+            errorMessage: "Another model is downloading. Try again when it finishes.",
+            onDownload: onDownload,
+            onLater: onLater
         )
     }
 
@@ -56,7 +70,8 @@ enum ParakeetUpdatePromptContent {
             primaryButtonTitle: "Download",
             onPrimaryAction: onDownload,
             onDismiss: onLater,
-            dismissesOnPrimaryAction: false
+            dismissesOnPrimaryAction: false,
+            holdsPanelUntilDismissed: true
         )
     }
 }

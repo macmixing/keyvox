@@ -37,6 +37,7 @@ struct UpdatePrompt {
     let onDismiss: () -> Void
     var progress: UpdatePromptProgress? = nil
     var dismissesOnPrimaryAction: Bool = true
+    var holdsPanelUntilDismissed: Bool = false
 }
 
 @MainActor

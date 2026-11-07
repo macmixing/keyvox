@@ -121,8 +121,13 @@ final class UpdatePromptManager {
     static let shared = UpdatePromptManager()
     private var window: NSPanel?
     private var hostingView: NSHostingView<UpdatePromptOverlay>?
+    private var panelQueue = UpdatePromptPanelQueue()
 
     func show(prompt: UpdatePrompt) {
+        guard panelQueue.shouldShow(prompt, isPanelVisible: window?.isVisible == true) else {
+            return
+        }
+
         if window == nil {
             let panel = NSPanel(
                 contentRect: NSRect(x: 0, y: 0, width: UpdatePromptLayout.width, height: UpdatePromptLayout.fallbackHeight),
@@ -161,6 +166,9 @@ final class UpdatePromptManager {
 
     func hide() {
         window?.orderOut(nil)
+        if let queuedPrompt = panelQueue.takeQueuedPrompt() {
+            show(prompt: queuedPrompt)
+        }
     }
 
     private func resolvedContentSize(for hostingView: NSHostingView<UpdatePromptOverlay>) -> NSSize {

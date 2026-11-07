@@ -43,6 +43,14 @@ final class ParakeetUpdatePromptController {
     }
 
     private func startUpdate() {
+        guard downloader.activeDownload == nil else {
+            presenter.show(prompt: ParakeetUpdatePromptContent.blockedByActiveDownload(
+                onDownload: { [weak self] in self?.startUpdate() },
+                onLater: { [weak self] in self?.dismissPermanently() }
+            ))
+            return
+        }
+
         hasObservedActiveInstall = false
         lastPresentedProgress = nil
         installObservation = downloader.$modelStates
