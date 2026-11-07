@@ -8,22 +8,24 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ## [1.3.11] - 2026-11-06
 
-Spoken periods and commas now become punctuation, and capitals that belong to a word survive a spoken comma or ellipsis.
+Spoken periods, commas, and colons now become punctuation, and capitals that belong to a word survive a spoken comma or ellipsis.
 
 ### Includes
 
 - Converted spoken `period` and `full stop` into a period and spoken `comma` into a comma, at the end of a dictation or mid-sentence, with the next sentence capitalized after a spoken period.
 - Left one mark when the transcriber already added punctuation after the spoken word, collapsed repeated spoken periods or commas into one, and dropped a spoken period or comma next to a spoken question mark or exclamation.
-- Kept `period` and `comma` as words when they end a noun phrase such as `this period`, `the trial period`, `a serial comma`, or `the Oxford comma`, when a dictation starts with `comma`, and for an emphatic `, period` at the end of a dictation.
+- Converted a spoken period after a comma, such as `I'll go out with him, period`, and a spoken period mid-sentence before any following word, such as `I'm done period see you later` and `the store period and I left`, without relying on the transcriber's own trailing period.
+- Kept `period`, `full stop`, and `comma` as words when they follow a determiner such as `this period` or `my period`, end a describing phrase such as `a long period` or `the third period`, belong to a listed phrase such as `the trial period`, `the billing period`, `a serial comma`, or `the Oxford comma`, are followed by words that need them as a noun such as `the holiday period starts` or `period dramas`, or start a dictation with `comma`.
 - Kept a spoken period on a one-word dictation and kept a trailing spoken comma without adding a period after it.
 - Lowercased a capital the transcriber put on the word after a spoken comma, while keeping names, capital-only words such as `Monday` and `English`, dictionary entries, `I`, and acronyms.
 - Shared the same continuation casing rules with inline ellipses, so capital-only words and names keep their capitals after a spoken ellipsis too.
-- Added regression coverage for spoken periods, full stops, commas, and their capitals on both linguistic analyzers.
+- Converted a spoken colon, including the transcriber's `, Colin,`, whenever words come before and after it in the sentence, keeping it as a word only for dictionary entries, listed phrases such as `sigmoid colon` and `colon cancer`, after a determiner or preposition, or when what follows needs it as a noun, such as `the word colon appears`.
+- Added regression coverage for spoken periods, full stops, commas, colons, and their capitals on both linguistic analyzers.
 - Judged the noun before a spoken terminal command in the finished sentence, so plural-possessive repair works when the command words would make the noun read as a modifier, and the plural-possessive coverage now passes on the portable analyzer too.
 
 ### Notes
 
-- `1.3.11` tracks spoken period and comma punctuation and shared continuation casing.
+- `1.3.11` tracks spoken period, comma, and colon punctuation and shared continuation casing.
 
 ---
 
