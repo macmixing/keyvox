@@ -122,6 +122,7 @@ final class KeyboardDictationController {
     }
 
     func registerObservers() {
+        configureIPC()
         ipcManager.registerObservers()
     }
 
