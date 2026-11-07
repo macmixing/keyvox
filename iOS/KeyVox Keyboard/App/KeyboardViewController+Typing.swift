@@ -206,7 +206,7 @@ extension KeyboardViewController {
             self?.barEmoji(for: word) ?? []
         }
         KeyboardEmojiPredictionsIndex.shared.load { [weak self] in
-            self?.refreshPredictions()
+            self?.predictionCoordinator.refreshEmojiSuggestions()
         }
     }
 

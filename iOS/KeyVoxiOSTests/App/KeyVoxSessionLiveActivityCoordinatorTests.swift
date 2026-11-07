@@ -169,7 +169,7 @@ struct KeyVoxSessionLiveActivityCoordinatorTests {
         await Task.yield()
 
         try await coordinator.prepareForAudioRecordingIntent()
-        await coordinator.completeAudioRecordingIntentStart(
+        try await coordinator.completeAudioRecordingIntentStart(
             recordingStarted: false,
             isSessionActive: false,
             sessionDisablePending: false
@@ -202,7 +202,7 @@ struct KeyVoxSessionLiveActivityCoordinatorTests {
         await Task.yield()
 
         try await coordinator.prepareForAudioRecordingIntent()
-        await coordinator.completeAudioRecordingIntentStart(
+        try await coordinator.completeAudioRecordingIntentStart(
             recordingStarted: true,
             isSessionActive: true,
             sessionDisablePending: false
@@ -212,13 +212,46 @@ struct KeyVoxSessionLiveActivityCoordinatorTests {
         #expect(controller.isActivityActive)
     }
 
+    @Test(arguments: [false, true])
+    func recordingStartPropagatesFailureToRestoreTheRequiredActivity(returnsInactive: Bool) async throws {
+        let controller = MockKeyVoxSessionLiveActivityController()
+        let coordinator = makeCoordinator(controller: controller)
+        await Task.yield()
+
+        try await coordinator.prepareForAudioRecordingIntent()
+        controller.isActivityActive = false
+        controller.activatesOnStart = !returnsInactive
+        controller.startError = returnsInactive ? nil : TestLiveActivityError.requestFailed
+
+        do {
+            try await coordinator.completeAudioRecordingIntentStart(
+                recordingStarted: true,
+                isSessionActive: true,
+                sessionDisablePending: false
+            )
+            Issue.record("Expected recording start to fail without an active Live Activity")
+        } catch {
+            #expect(returnsInactive ? error is CancellationError : error is TestLiveActivityError)
+        }
+        #expect(controller.isActivityActive == false)
+
+        let attemptsBeforeReconciliation = controller.startAttemptCount
+        await coordinator.applyState(
+            isSessionActive: true,
+            sessionDisablePending: false,
+            liveActivitiesEnabled: false,
+            weeklyWordCount: 0
+        )
+        #expect(controller.startAttemptCount == attemptsBeforeReconciliation)
+    }
+
     @Test func disablingPreferenceKeepsRequiredIntentActivityUntilSessionEnds() async throws {
         let controller = MockKeyVoxSessionLiveActivityController()
         let coordinator = makeCoordinator(controller: controller)
         await Task.yield()
 
         try await coordinator.prepareForAudioRecordingIntent()
-        await coordinator.completeAudioRecordingIntentStart(
+        try await coordinator.completeAudioRecordingIntentStart(
             recordingStarted: true,
             isSessionActive: true,
             sessionDisablePending: false
@@ -271,6 +304,7 @@ private final class MockKeyVoxSessionLiveActivityController: KeyVoxSessionLiveAc
     var startedOrUpdatedWordCounts: [Int] = []
     var startAttemptCount = 0
     var startError: Error?
+    var activatesOnStart = true
     var endCallCount = 0
 
     init(isActivityActive: Bool = false, startError: Error? = nil) {
@@ -283,7 +317,7 @@ private final class MockKeyVoxSessionLiveActivityController: KeyVoxSessionLiveAc
         if let startError {
             throw startError
         }
-        isActivityActive = true
+        isActivityActive = activatesOnStart
         startedOrUpdatedWordCounts.append(weeklyWordCount)
     }
 

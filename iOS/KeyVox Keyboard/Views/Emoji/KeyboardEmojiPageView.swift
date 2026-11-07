@@ -132,6 +132,12 @@ final class KeyboardEmojiPageView: UIView {
         showFilledSections()
     }
 
+    func resetScrollPosition() {
+        categoryMemory = KeyboardEmojiCategoryMemory()
+        collectionView.setContentOffset(.zero, animated: false)
+        selectCategory()
+    }
+
     override func layoutSubviews() {
         super.layoutSubviews()
         // The grid's rows are known once it is laid out, and whole columns depend on them.
