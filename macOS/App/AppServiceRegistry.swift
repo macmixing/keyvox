@@ -139,6 +139,10 @@ final class AppServiceRegistry {
             case .parakeetTdtV3:
                 try Task.checkCancellation()
                 guard let parakeetService else { return }
+                // Unloading cancels a transcription in flight, so let it finish first.
+                while parakeetService.isTranscribing {
+                    try await Task.sleep(nanoseconds: 100_000_000)
+                }
                 parakeetService.unloadModel()
                 await parakeetService.preloadIfNeeded()
                 guard parakeetService.isModelLoaded else {
