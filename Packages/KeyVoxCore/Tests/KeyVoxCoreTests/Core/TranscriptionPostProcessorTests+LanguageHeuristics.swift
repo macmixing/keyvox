@@ -506,6 +506,18 @@ extension TranscriptionPostProcessorTests {
         }
     }
 
+    func testKeepsLongerNameNearColonSpellingLiteral() async {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "We drove Colton to practice after school",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "We drove Colton to practice after school.")
+    }
+
     func testKeepsColinSentenceAtDictationStartLiteral() async {
         let processor = TranscriptionPostProcessor()
 

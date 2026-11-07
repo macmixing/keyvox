@@ -341,7 +341,9 @@ public struct ColonNormalizer {
         let letters = token.lowercased().unicodeScalars.filter { CharacterSet.letters.contains($0) }
         let simplified = String(String.UnicodeScalarView(letters))
         guard simplified.hasPrefix("col"), simplified.hasSuffix("n") else { return false }
-        guard (4...6).contains(simplified.count) else { return false }
+        // A mishearing keeps the name's length, as in "Colin", so a longer name such as "Colton" is
+        // not one.
+        guard simplified.count == Self.writtenName.count else { return false }
         return levenshteinDistance(between: simplified, and: "colon") <= 1
     }
 
