@@ -379,6 +379,18 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "These are the things we need for the trip:")
     }
 
+    func testNormalizesColinAfterClauseFollowingGreetingToPunctuation() async {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Hey, here is everything I packed for the trip, Colin.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "Hey, here is everything I packed for the trip:")
+    }
+
     func testNormalizesCommaDelimitedColinAtDictationEndToPunctuation() async {
         let processor = TranscriptionPostProcessor()
 
@@ -389,6 +401,22 @@ extension TranscriptionPostProcessorTests {
         )
 
         XCTAssertEqual(output, "Here is everything I packed for the trip:")
+    }
+
+    func testKeepsColinAddressedAfterGreetingFarewellOrThanksLiteral() async {
+        let processor = TranscriptionPostProcessor()
+
+        for input in [
+            "Thank you so much for the help, Colin.",
+            "Okay, goodbye, Colin.",
+            "Hey, Colin.",
+            "See you tomorrow, Colin.",
+            "Good morning, Colin, the meeting moved to noon.",
+        ] {
+            let output = processor.process(input, dictionaryEntries: [], renderMode: .singleLineInline)
+
+            XCTAssertEqual(output, input)
+        }
     }
 
     func testKeepsColinSentenceAtDictationStartLiteral() async {

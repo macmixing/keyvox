@@ -3,11 +3,12 @@ import Foundation
 
 /// Writes a spoken colon, or a word the transcriber heard in its place, as a colon. The word
 /// stays a word when it is part of a hyphenated word or one of the user's dictionary entries,
-/// belongs to a listed phrase that names the body part, follows a word that needs a noun after
-/// it, or ends a phrase opened by a determiner where its sentence ends or what follows needs it
-/// as a noun, and when nothing comes before it in its sentence or after it, unless it ends the
-/// dictation after more than a lone greeting word, or stands as a sentence of its own after a
-/// sentence, which the transcriber split at the spoken colon.
+/// belongs to a listed phrase that names the body part, addresses a person after a phrase that
+/// opens with a greeting, farewell, or thanks, follows a word that needs a
+/// noun after it, or ends a phrase opened by a determiner where its sentence ends or what follows
+/// needs it as a noun, and when nothing comes before it in its sentence or after it, unless it
+/// ends the dictation after other words or stands as a sentence of its own after a sentence,
+/// which the transcriber split at the spoken colon.
 public struct ColonNormalizer {
     private struct WordToken {
         let text: String
@@ -16,6 +17,7 @@ public struct ColonNormalizer {
     }
 
     private static let namePhrases = try? PunctuationNamePhrases()
+    private static let greetingPhrases = try? GreetingPhrases()
     private static let writtenName = "colon"
     private static let collapsedWhitespaceRegex: NSRegularExpression? = try? NSRegularExpression(
         pattern: #"[^\S\r\n]{2,}"#,
@@ -70,19 +72,9 @@ public struct ColonNormalizer {
             if hasSentenceContent(after: range, in: text) {
                 return replacementRange(for: range, in: text)
             }
-            // A colon ending the dictation introduces what the speaker sends next, unless a lone
-            // word comes before it, which greets or thanks the person, as in "hi, Colin".
+            // A colon ending the dictation introduces what the speaker sends next.
             let replacement = replacementRange(for: range, in: text)
-            guard replacement.upperBound == text.endIndex,
-                  index >= words.startIndex + 2 else {
-                return nil
-            }
-            let previous = words[words.index(before: index)]
-            let secondPrevious = words[index - 2]
-            guard !text[secondPrevious.range.upperBound..<previous.range.lowerBound].contains(where: isSentenceBoundary) else {
-                return nil
-            }
-            return replacement
+            return replacement.upperBound == text.endIndex ? replacement : nil
         }
         return ownSentenceReplacementRange(for: range, in: text)
     }
@@ -97,7 +89,8 @@ public struct ColonNormalizer {
         guard isColonHomophone(word.text),
               !isHyphenated(word.range, in: text),
               !isInsideDictionaryEntry(word.range, in: text, dictionaryEntries: dictionaryEntries),
-              Self.namePhrases?.phraseRange(around: word.range, named: Self.writtenName, in: text) == nil else {
+              Self.namePhrases?.phraseRange(around: word.range, named: Self.writtenName, in: text) == nil,
+              !addressesPerson(word.range, in: text) else {
             return false
         }
 
@@ -157,6 +150,28 @@ public struct ColonNormalizer {
             return nil
         }
         return periodIndex..<end
+    }
+
+    /// Whether the word is a name spoken to someone after a phrase that opens with a greeting,
+    /// farewell, or thanks, as in "thank you so much for the help, Colin" or "okay, goodbye,
+    /// Colin", where the phrase runs back from the word to the comma before it or the start of
+    /// its sentence.
+    private func addressesPerson(_ range: Range<String.Index>, in text: String) -> Bool {
+        guard let greetingPhrases = Self.greetingPhrases else { return false }
+        var phraseEnd = range.lowerBound
+        while phraseEnd > text.startIndex, text[text.index(before: phraseEnd)].isWhitespace {
+            phraseEnd = text.index(before: phraseEnd)
+        }
+        if phraseEnd > text.startIndex, text[text.index(before: phraseEnd)] == "," {
+            phraseEnd = text.index(before: phraseEnd)
+        }
+        var phraseStart = phraseEnd
+        while phraseStart > text.startIndex {
+            let previous = text[text.index(before: phraseStart)]
+            if isSentenceBoundary(previous) || previous == "," { break }
+            phraseStart = text.index(before: phraseStart)
+        }
+        return greetingPhrases.startsWithPhrase(text[phraseStart..<phraseEnd])
     }
 
     /// Whether the descriptive words ending at `index` follow a determiner within one phrase.
