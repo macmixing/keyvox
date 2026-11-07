@@ -59,8 +59,9 @@ public struct PerceptronLinguisticAnalyzer: LinguisticAnalyzing {
         return LinguisticAnalysis(tokens: tokens, availableFeatures: features.intersection(available))
     }
 
-    /// The model was trained on text that splits a possessive `'s` from its word, so a word
-    /// written with one is tagged as the word it is attached to.
+    /// The model was trained on text that splits an attached `'s` from its word, as in a
+    /// possessive or a contraction, so a word written with one is tagged as the word it is
+    /// attached to.
     static func taggingForm(of word: String) -> String {
         let normalized = word.replacingOccurrences(of: "’", with: "'").lowercased()
         guard normalized.hasSuffix("'s") else { return word }

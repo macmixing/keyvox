@@ -15,7 +15,7 @@ Shared capitalized spellings for every KeyVox surface that decides a word's capi
 - Added `CapitalizedSpellings`, the bundled list of words spelled only with capitals, such as `Monday`, `Sarah`, and `iPhone`, moved here from `KeyVoxPredictiveKeyboard` so the keyboard and dictation share one list.
 - Bundled `capitalized_spellings.txt` as a package resource, so the list loads the same way on every platform.
 - Added `KeyVoxLinguisticsResources.configure(bundleURL:)` so hosts outside an application bundle can point the package at its copied resources before first use.
-- Tagged a word written with a possessive `'s` as the word it is attached to in the portable analyzer, matching how its model was trained, so possessives of less common nouns read as nouns.
+- Tagged a word written with an attached `'s` as the word it is attached to in the portable analyzer, matching how its model was trained, so possessives of less common nouns read as nouns and contractions such as `that's` and `let's` read as their first word.
 
 ### Notes
 
