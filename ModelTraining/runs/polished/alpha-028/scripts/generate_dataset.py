@@ -36,15 +36,29 @@ def record(category: str, user: str, assistant: str) -> dict:
     }
 
 
+REPLAY_CORRECTIONS = {
+    "I need groceries:\n\n1. Um apples\n2. Like two cartons of eggs\n3. Uh three bags of rice": "I need groceries:\n\n1. Apples\n2. Two cartons of eggs\n3. Three bags of rice",
+}
+
+
 def load_replay_examples() -> list[Example]:
     spec = importlib.util.spec_from_file_location("polished_alpha_027_dataset", REPLAY_SCRIPT)
     module = importlib.util.module_from_spec(spec)
     sys.dont_write_bytecode = True
     spec.loader.exec_module(module)
-    return [
-        Example(example.category, example.user, example.assistant, example.split)
+    examples = [
+        Example(
+            example.category,
+            example.user,
+            REPLAY_CORRECTIONS.get(example.user, example.assistant),
+            example.split,
+        )
         for example in module.build_examples()
     ]
+    corrected = {example.user for example in examples} & REPLAY_CORRECTIONS.keys()
+    if corrected != REPLAY_CORRECTIONS.keys():
+        raise ValueError(f"replay corrections did not match: {REPLAY_CORRECTIONS.keys() - corrected}")
+    return examples
 
 
 def load_aint_replay_examples() -> list[Example]:
@@ -145,7 +159,7 @@ WANNA_CASES = [
     ("I just wanna sleep for a whole day.", "I just want to sleep for a whole day."),
     ("We don't wanna be late again.", "We don't want to be late again."),
     ("He doesn't wanna talk to anyone today.", "He doesn't want to talk to anyone today."),
-    ("Do you wanna drink?", "Do you want a drink?"),
+    ("Do you wanna drink?", "Do you want to drink?"),
     ("I wanna new phone for my birthday.", "I want a new phone for my birthday."),
     ("You wanna know the funny part?", "You want to know the funny part?"),
     ("If they wanna come, they can.", "If they want to come, they can."),
@@ -199,10 +213,10 @@ MEANING_GUARD_CASES = [
     ("I gotta be honest, I really do love it.", "I have to be honest, I really do love it."),
     ("I'm not gonna go, and I don't wanna be asked again.", "I'm not going to go, and I don't want to be asked again."),
     ("I wasn't gonna say anything, but you gotta know.", "I wasn't going to say anything, but you have to know."),
-    ("I'm not gonna call and I'm not gonna text.", "I'm not going to call and I'm not going to text."),
-    ("She's gonna cook and I wanna clean up.", "She's going to cook and I want to clean up."),
-    ("We gotta pack and we gotta leave by noon.", "We have to pack and we have to leave by noon."),
-    ("I don't wanna argue and I don't wanna wait.", "I don't want to argue and I don't want to wait."),
+    ("I'm not gonna call and I'm not gonna text.", "I'm not going to call, and I'm not going to text."),
+    ("She's gonna cook and I wanna clean up.", "She's going to cook, and I want to clean up."),
+    ("We gotta pack and we gotta leave by noon.", "We have to pack, and we have to leave by noon."),
+    ("I don't wanna argue and I don't wanna wait.", "I don't want to argue, and I don't want to wait."),
     ("Anyway, I'm gonna get some rest.", "Anyway, I'm going to get some rest."),
     ("Anyway, we gotta decide by tomorrow.", "Anyway, we have to decide by tomorrow."),
     ("That's the whole story.\n\nAnyway, if you wanna talk more, call me.", "That's the whole story.\n\nAnyway, if you want to talk more, call me."),

@@ -16,6 +16,7 @@ Polished alpha-028 continues alpha-027 so casual spoken reductions are written o
 - Keep the meaning of `gotta` when it stands for `got a`, and keep clause-joining `and` and sentence-start `Anyway,`.
 - Leave already-standard phrasing such as `going to`, `want to`, and `got to` unchanged.
 - Keep commas when filler `like` is removed inside a list.
+- Capitalize numbered list items after removing leading filler, correcting the replayed alpha-027 grocery list example.
 - Replay the alpha-027 continuation and the alpha-017 `ain't` examples so meaning preservation and standard-English repair hold.
 
 ## Promotion
