@@ -387,6 +387,25 @@ END OF TERMS AND CONDITIONS
 - License: Unicode License v3 (Unicode-3.0), copyright © 1991–2026 Unicode, Inc. Full text: <https://www.unicode.org/license.txt>.
 - Use: `KeyVoxEmoji` bundles data written from these sources by `Tools/KeyVoxEmojiData`: each emoji's name and skin-tone versions (`emoji_catalog.txt`), the words that find it in search (`emoji_search.txt`), and the emoji the suggestion bar offers for a word (`emoji_predictions.txt`). The frequency ranking only orders them.
 
+### Wiktionary (derived dictation phrase lists)
+
+- Upstream: <https://en.wiktionary.org/>
+- License: Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0). Full text: <https://creativecommons.org/licenses/by-sa/4.0/legalcode>.
+- Use: `KeyVoxLinguistics` bundles `Resources/punctuation_name_phrases.txt`, phrases in which a punctuation mark's name is an ordinary word, and `Resources/greeting_phrases.txt`, spoken greetings, farewells, and thanks. Both were built from English Wiktionary entry titles and category membership, which were selected, lowercased, and combined with Princeton WordNet 3.0 entries. The greeting list keeps only phrases that Tatoeba English sentences use before a person's name and that WordNet 3.0, Wiktionary's phrasebook, or Apple's lexical classes also mark.
+- These two data files are licensed under CC BY-SA 4.0 and are excluded from this repository's MIT source-code license. They are provided as is, without warranties, as described in the license.
+
+Attribution: Based on Wiktionary content contributed by the Wiktionary community.
+
+### Medical Subject Headings (MeSH) (derived dictation phrase list)
+
+- Source: U.S. National Library of Medicine (NLM), <https://www.nlm.nih.gov/mesh/>
+- Version: MeSH 2026. These terms reflect MeSH 2026 and may not reflect the most current data available from NLM.
+- Terms and conditions: <https://www.nlm.nih.gov/databases/download/terms_and_conditions_mesh.html>
+- Use: `KeyVoxLinguistics` `Resources/punctuation_name_phrases.txt` includes medical phrases containing the word "colon" taken from MeSH 2026 topical descriptor terms, with inverted headings written in natural order and lowercased.
+- NLM has not endorsed KeyVox. NLM provides the data with no warranties, express or implied, regarding its accuracy or completeness.
+
+Attribution: Courtesy of the U.S. National Library of Medicine.
+
 Pronunciation-data notices for `KeyVoxCore` are bundled with the package resources:
 
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Resources/Pronunciation/LICENSES.md`

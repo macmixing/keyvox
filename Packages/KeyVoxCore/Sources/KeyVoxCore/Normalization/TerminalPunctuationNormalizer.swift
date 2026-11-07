@@ -13,15 +13,8 @@ public struct TerminalPunctuationNormalizer {
         let firstWordIndex: Int
         let nextWordIndex: Int
         let symbols: String
-    }
-
-    private enum SpokenCommand {
-        static let questionMark = ["question", "mark"]
-        static let exclamationPoint = ["exclamation", "point"]
-        static let exclamationMark = ["exclamation", "mark"]
-        static let period = ["period"]
-        static let fullStop = ["full", "stop"]
-        static let comma = ["comma"]
+        /// The index after the words of the first spoken mark name in the match.
+        var firstCommandEndIndex: Int? = nil
     }
 
     private enum PauseSymbol {
@@ -35,6 +28,7 @@ public struct TerminalPunctuationNormalizer {
     private static let terminalSentencePunctuationRegex = try? NSRegularExpression(
         pattern: #"[.!?…][\"'”’\)\]\}]*\s*$"#
     )
+    private static let namePhrases = try? PunctuationNamePhrases()
     private let casingPolicy = ContinuationCasingPolicy()
 
     public init() {}
@@ -306,6 +300,7 @@ public struct TerminalPunctuationNormalizer {
             var currentIndex = startIndex
             var symbols = ""
             var lastSpokenSymbol = ""
+            var firstCommandEndIndex: Int?
 
             while currentIndex < words.count {
                 guard let command = commandSymbol(startingAt: currentIndex, in: words, text: text) else {
@@ -314,6 +309,9 @@ public struct TerminalPunctuationNormalizer {
 
                 lastSpokenSymbol = command.symbol
                 currentIndex = command.nextIndex
+                if firstCommandEndIndex == nil {
+                    firstCommandEndIndex = command.nextIndex
+                }
                 guard let commandSymbol = command.symbol.first, let lastSymbol = symbols.last else {
                     symbols += command.symbol
                     continue
@@ -333,7 +331,12 @@ public struct TerminalPunctuationNormalizer {
             if !symbols.isEmpty,
                isTerminalBoundary(afterWordAt: currentIndex - 1, nextWordIndex: currentIndex, words: words, text: text)
                 || continuesAfterPauseCommand(symbols: lastSpokenSymbol, nextWordIndex: currentIndex, words: words) {
-                matches.append(CommandMatch(firstWordIndex: startIndex, nextWordIndex: currentIndex, symbols: symbols))
+                matches.append(CommandMatch(
+                    firstWordIndex: startIndex,
+                    nextWordIndex: currentIndex,
+                    symbols: symbols,
+                    firstCommandEndIndex: firstCommandEndIndex
+                ))
                 startIndex = currentIndex
             } else {
                 startIndex = words.index(after: startIndex)
@@ -384,28 +387,55 @@ public struct TerminalPunctuationNormalizer {
         }
 
         guard lastSymbol == PauseSymbol.period else { return false }
-        return startsSentence(words[nextWordIndex])
+        return !isModifiedNoun(at: nextWordIndex, words: words)
     }
 
-    private func startsSentence(_ word: WordToken) -> Bool {
-        if word.lexicalClass == .pronoun || word.lexicalClass == .determiner {
+    /// Whether the word at `index` is a noun written in lowercase that a spoken period before it
+    /// modifies, as in "period dramas", rather than the start of a new sentence. A word followed
+    /// by a pronoun or determiner takes it as an object, as in "see you", so it is not a noun.
+    private func isModifiedNoun(at index: Int, words: [WordToken]) -> Bool {
+        let word = words[index]
+        guard word.lexicalClass == .noun,
+              word.identity == .ordinaryWord,
+              let firstCharacter = word.text.first,
+              !firstCharacter.isUppercase else {
+            return false
+        }
+        guard index + 1 < words.endIndex else { return true }
+        switch words[index + 1].lexicalClass {
+        case .pronoun, .determiner:
+            return false
+        default:
             return true
         }
-
-        guard let firstCharacter = word.text.first else { return false }
-        return firstCharacter.isUppercase && word.identity != .name
     }
 
-    private func isEmphaticSpokenPeriod(match: CommandMatch, words: [WordToken], text: String) -> Bool {
-        guard match.symbols.last == PauseSymbol.period,
-              match.nextWordIndex == words.endIndex,
-              match.firstWordIndex > words.startIndex else {
+    /// Whether the first spoken mark name in `match` belongs to a listed phrase that names a
+    /// thing, such as "the trial period" or "colon cancer", read as that phrase when nothing
+    /// comes before it, a determiner or preposition introduces it, or words follow the mark name
+    /// within it.
+    private func belongsToNamePhrase(match: CommandMatch, words: [WordToken], text: String) -> Bool {
+        guard let namePhrases = Self.namePhrases,
+              let firstCommandEndIndex = match.firstCommandEndIndex else {
             return false
         }
 
-        let previousWord = words[words.index(before: match.firstWordIndex)]
-        let leadingBoundary = text[previousWord.range.upperBound..<words[match.firstWordIndex].range.lowerBound]
-        return leadingBoundary.contains(PauseSymbol.comma)
+        let nameWords = words[match.firstWordIndex..<firstCommandEndIndex]
+        guard let firstNameWord = nameWords.first, let lastNameWord = nameWords.last else { return false }
+        let nameRange = firstNameWord.range.lowerBound..<lastNameWord.range.upperBound
+        let name = nameWords.map { $0.text.lowercased() }.joined(separator: " ")
+        guard let phraseRange = namePhrases.phraseRange(around: nameRange, named: name, in: text) else {
+            return false
+        }
+
+        if phraseRange.upperBound > nameRange.upperBound {
+            return true
+        }
+        guard let previousWord = words.last(where: { $0.range.upperBound <= phraseRange.lowerBound }) else {
+            return true
+        }
+        return (previousWord.lexicalClass == .determiner || previousWord.lexicalClass == .preposition)
+            && isWhitespaceOnly(text[previousWord.range.upperBound..<phraseRange.lowerBound])
     }
 
     private func matches(
@@ -430,7 +460,7 @@ public struct TerminalPunctuationNormalizer {
     }
 
     private func isEligibleCommand(match: CommandMatch, words: [WordToken], text: String) -> Bool {
-        if isEmphaticSpokenPeriod(match: match, words: words, text: text) {
+        if belongsToNamePhrase(match: match, words: words, text: text) {
             return false
         }
 
@@ -450,6 +480,10 @@ public struct TerminalPunctuationNormalizer {
         }
 
         if endsInPauseSymbol, endsNounPhrase(match: match, previousIndex: previousIndex, words: words, text: text) {
+            return false
+        }
+
+        if namesNumberedPeriod(match: match, previousIndex: previousIndex, words: words, text: text) {
             return false
         }
 
@@ -485,15 +519,32 @@ public struct TerminalPunctuationNormalizer {
     }
 
     /// Whether a spoken period or comma is the noun ending a phrase opened by a determiner, as in
-    /// "the trial period" or "a serial comma", rather than a command after that phrase.
+    /// "a long period" or "a serial comma", rather than a command after that phrase.
     private func endsNounPhrase(match: CommandMatch, previousIndex: Int, words: [WordToken], text: String) -> Bool {
         guard opensNounPhrase(endingAt: previousIndex, words: words, text: text) else { return false }
 
+        let previousWord = words[previousIndex]
         if match.symbols.last == PauseSymbol.period {
-            return !hasExplicitCommandBoundaryAfter(match: match, words: words, text: text)
+            // A describing word would be left without its noun, as in "a long period".
+            switch previousWord.lexicalClass {
+            case .adjective, .ordinal, .number:
+                return true
+            default:
+                break
+            }
+            // What follows needs the period as its noun, as in "the holiday period starts".
+            guard match.nextWordIndex < words.endIndex,
+                  isWhitespaceOnly(text[words[match.nextWordIndex - 1].range.upperBound..<words[match.nextWordIndex].range.lowerBound]) else {
+                return false
+            }
+            switch words[match.nextWordIndex].lexicalClass {
+            case .verb, .preposition:
+                return true
+            default:
+                return false
+            }
         }
 
-        let previousWord = words[previousIndex]
         if previousWord.text.first?.isUppercase == true {
             return true
         }
@@ -507,13 +558,40 @@ public struct TerminalPunctuationNormalizer {
         }
     }
 
-    /// Whether the descriptive words ending at `index` follow a determiner within one phrase.
+    /// Whether a spoken period is the noun a preposition takes, followed by the number that names
+    /// it, as in "in period two".
+    private func namesNumberedPeriod(match: CommandMatch, previousIndex: Int, words: [WordToken], text: String) -> Bool {
+        guard match.symbols.last == PauseSymbol.period,
+              words[previousIndex].lexicalClass == .preposition,
+              isWhitespaceOnly(text[words[previousIndex].range.upperBound..<words[match.firstWordIndex].range.lowerBound]),
+              match.nextWordIndex < words.endIndex,
+              isWhitespaceOnly(text[words[match.nextWordIndex - 1].range.upperBound..<words[match.nextWordIndex].range.lowerBound]) else {
+            return false
+        }
+        switch words[match.nextWordIndex].lexicalClass {
+        case .number, .ordinal:
+            return true
+        default:
+            return false
+        }
+    }
+
+    /// Whether the descriptive words ending at `index` follow a determiner or preposition within
+    /// one phrase, where a word describing the next one, as in "a really hard", belongs to it.
     private func opensNounPhrase(endingAt index: Int, words: [WordToken], text: String) -> Bool {
         var current = index
         while current > words.startIndex {
             switch words[current].lexicalClass {
             case .adjective, .noun, .number, .ordinal:
                 break
+            case .adverb:
+                guard current < index else { return false }
+                switch words[current + 1].lexicalClass {
+                case .adjective, .adverb:
+                    break
+                default:
+                    return false
+                }
             default:
                 return false
             }
@@ -522,10 +600,12 @@ public struct TerminalPunctuationNormalizer {
             guard isWhitespaceOnly(text[words[previous].range.upperBound..<words[current].range.lowerBound]) else {
                 return false
             }
-            if words[previous].lexicalClass == .determiner {
+            switch words[previous].lexicalClass {
+            case .determiner, .preposition:
                 return true
+            default:
+                current = previous
             }
-            current = previous
         }
         return false
     }

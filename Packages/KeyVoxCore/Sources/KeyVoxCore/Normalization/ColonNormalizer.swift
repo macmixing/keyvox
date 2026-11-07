@@ -1,111 +1,264 @@
 import KeyVoxLinguistics
 import Foundation
 
+/// Writes a spoken colon, or a word the transcriber heard in its place, as a colon, replacing
+/// whatever punctuation the transcriber put on either side of it. The word stays a word when it is
+/// part of a hyphenated word or one of the user's dictionary entries, belongs to a listed phrase
+/// that names the body part, or follows a word that needs a noun after it, and when nothing comes
+/// before it in the dictation. The written word also stays a word when it opens a sentence and runs
+/// straight into a noun or verb it belongs to. A misheard spelling, such as "Colin", also stays a name when it addresses a
+/// person after a phrase that opens with a greeting, farewell, or thanks, or sits next to a
+/// spoken punctuation mark, which the speaker would not say beside a spoken colon.
 public struct ColonNormalizer {
-    private static let delimiterWrappedTokenRegex: NSRegularExpression? = try? NSRegularExpression(
-        pattern: #"([,;:—\-])\s*["'“”‘’\(\[\{]*\s*([A-Za-z][A-Za-z'’\-]{2,})\s*["'“”‘’\)\]\}]*\s*([,;:—\-])"#,
-        options: []
-    )
-    private static let wordTokenRegex: NSRegularExpression? = try? NSRegularExpression(
-        pattern: #"\b[A-Za-z][A-Za-z'’\-]{2,}\b"#,
-        options: []
-    )
-    private static let collapsedWhitespaceRegex: NSRegularExpression? = try? NSRegularExpression(
-        pattern: #"\s{2,}"#,
-        options: []
-    )
-    private static let newlineCodeUnit = utf16CodeUnit(for: "\n")
-    private static let periodCodeUnit = utf16CodeUnit(for: ".")
-    private static let exclamationCodeUnit = utf16CodeUnit(for: "!")
-    private static let questionCodeUnit = utf16CodeUnit(for: "?")
-
-    private static func utf16CodeUnit(for character: Character) -> unichar {
-        let text = String(character)
-        return text.utf16[text.utf16.startIndex]
+    private struct WordToken {
+        let text: String
+        let range: Range<String.Index>
+        let role: LexicalRole?
     }
+
+    private static let namePhrases = try? PunctuationNamePhrases()
+    private static let greetingPhrases = try? GreetingPhrases()
+    private static let writtenName = "colon"
+    private static let collapsedWhitespaceRegex: NSRegularExpression? = try? NSRegularExpression(
+        pattern: #"[^\S\r\n]{2,}"#,
+        options: []
+    )
 
     public init() {}
 
-    public func normalize(in text: String) -> String {
+    public func normalize(in text: String, dictionaryEntries: [DictionaryEntry] = []) -> String {
         guard !text.isEmpty else { return text }
-        let explicitResult = normalizeExplicitDelimiterWrappedTokens(in: text)
-        let associationResult = normalizeAssociationStyleTokens(in: explicitResult.text)
-        let replacedSpokenColon = explicitResult.replacedSpokenColon || associationResult.replacedSpokenColon
 
-        guard replacedSpokenColon, let collapsedWhitespaceRegex = Self.collapsedWhitespaceRegex else {
-            let normalized = associationResult.text
-            return stripTerminalPunctuationForShortStandaloneAssociation(in: normalized, replacedSpokenColon: replacedSpokenColon)
+        let words = wordTokens(in: text)
+        let replacements = words.indices.reversed().compactMap { index -> (word: Range<String.Index>, span: Range<String.Index>)? in
+            spokenColonRange(at: index, words: words, text: text, dictionaryEntries: dictionaryEntries)
+                .map { (words[index].range, $0) }
         }
-        let normalized = associationResult.text
-        let collapsedRange = NSRange(location: 0, length: (normalized as NSString).length)
+        guard !replacements.isEmpty else { return text }
+
+        let mutable = NSMutableString(string: text)
+        var replacedFrom = text.endIndex
+        for replacement in replacements where replacement.span.upperBound <= replacedFrom {
+            // The line breaks the transcriber put around the spoken colon still start the next line,
+            // taking those after it when it has breaks on both sides.
+            let breaksAfter = text[replacement.word.upperBound..<replacement.span.upperBound].filter(\.isNewline)
+            let breaksBefore = text[replacement.span.lowerBound..<replacement.word.lowerBound].filter(\.isNewline)
+            let lineBreaks = breaksAfter.isEmpty ? breaksBefore : breaksAfter
+            let separator = replacement.span.upperBound == text.endIndex
+                ? ""
+                : (lineBreaks.isEmpty ? " " : String(lineBreaks))
+            mutable.replaceCharacters(in: NSRange(replacement.span, in: text), with: ":" + separator)
+            replacedFrom = replacement.span.lowerBound
+        }
+        let normalized = mutable as String
+
+        guard let collapsedWhitespaceRegex = Self.collapsedWhitespaceRegex else {
+            return stripTerminalPunctuationForShortStandaloneAssociation(in: normalized)
+        }
         let collapsed = collapsedWhitespaceRegex.stringByReplacingMatches(
             in: normalized,
             options: [],
-            range: collapsedRange,
+            range: NSRange(location: 0, length: (normalized as NSString).length),
             withTemplate: " "
         )
-        return stripTerminalPunctuationForShortStandaloneAssociation(in: collapsed, replacedSpokenColon: replacedSpokenColon)
+        return stripTerminalPunctuationForShortStandaloneAssociation(in: collapsed)
     }
 
-    private func normalizeExplicitDelimiterWrappedTokens(in text: String) -> (text: String, replacedSpokenColon: Bool) {
-        guard let regex = Self.delimiterWrappedTokenRegex else {
-            return (text, false)
+    /// The span a written colon replaces when the word at `index` is a spoken colon.
+    private func spokenColonRange(
+        at index: Int,
+        words: [WordToken],
+        text: String,
+        dictionaryEntries: [DictionaryEntry]
+    ) -> Range<String.Index>? {
+        guard isSpokenColon(at: index, words: words, text: text, dictionaryEntries: dictionaryEntries) else {
+            return nil
         }
-
-        let nsText = text as NSString
-        let fullRange = NSRange(location: 0, length: nsText.length)
-        let matches = regex.matches(in: text, options: [], range: fullRange)
-        guard !matches.isEmpty else {
-            return (text, false)
+        let word = words[index].range
+        let replacement = replacementRange(for: word, in: text)
+        // Words must come before the colon in the dictation, and it either ends the dictation,
+        // introducing what the speaker sends next, or has words after it.
+        guard text[..<replacement.lowerBound].contains(where: isContent),
+              replacement.upperBound == text.endIndex || text[replacement.upperBound...].contains(where: isContent) else {
+            return nil
         }
-
-        let mutable = NSMutableString(string: text)
-        var replacedSpokenColon = false
-        for match in matches.reversed() {
-            let tokenRange = match.range(at: 2)
-            guard tokenRange.location != NSNotFound, tokenRange.length > 0 else { continue }
-            let token = nsText.substring(with: tokenRange)
-            guard isLikelySpokenColon(token, in: nsText, tokenRange: tokenRange) else { continue }
-            mutable.replaceCharacters(in: match.range, with: ": ")
-            replacedSpokenColon = true
+        // The written word opening a sentence and running straight into a noun or verb belongs to
+        // that sentence's subject, as in "Colon health matters" or "Colon is part of the gut".
+        if isWrittenName(words[index].text),
+           text[replacement.lowerBound..<word.lowerBound].contains(where: isSentenceBoundary),
+           index + 1 < words.endIndex,
+           isAdjacent(words[index], words[index + 1], in: text),
+           words[index + 1].role == .noun || words[index + 1].role == .verb {
+            return nil
         }
-
-        return (mutable as String, replacedSpokenColon)
+        return replacement
     }
 
-    private func normalizeAssociationStyleTokens(in text: String) -> (text: String, replacedSpokenColon: Bool) {
-        guard let regex = Self.wordTokenRegex else {
-            return (text, false)
+    private func isSpokenColon(
+        at index: Int,
+        words: [WordToken],
+        text: String,
+        dictionaryEntries: [DictionaryEntry]
+    ) -> Bool {
+        let word = words[index]
+        guard isColonHomophone(word.text),
+              !isHyphenated(word.range, in: text),
+              !isInsideDictionaryEntry(word.range, in: text, dictionaryEntries: dictionaryEntries),
+              Self.namePhrases?.phraseRange(around: word.range, named: Self.writtenName, in: text) == nil else {
+            return false
+        }
+        if !isWrittenName(word.text),
+           addressesPerson(replacementRange(for: word.range, in: text), in: text)
+            || neighborsSpokenCommand(at: index, words: words, text: text) {
+            return false
         }
 
-        let nsText = text as NSString
-        let fullRange = NSRange(location: 0, length: nsText.length)
-        let matches = regex.matches(in: text, options: [], range: fullRange)
-        guard !matches.isEmpty else {
-            return (text, false)
+        if index > words.startIndex {
+            let previousIndex = words.index(before: index)
+            if isAdjacent(words[previousIndex], words[index], in: text) {
+                // A word that needs a noun after it would be left without one, as in "the colon"
+                // or "between colon".
+                switch words[previousIndex].role {
+                case .determiner, .preposition:
+                    return false
+                default:
+                    break
+                }
+            }
         }
 
-        let mutable = NSMutableString(string: text)
-        var replacedSpokenColon = false
-
-        for match in matches.reversed() {
-            let tokenRange = match.range
-            guard tokenRange.location != NSNotFound, tokenRange.length > 0 else { continue }
-            let token = nsText.substring(with: tokenRange)
-            guard isColonHomophone(token) else { continue }
-            guard let replacementRange = associationReplacementRange(in: nsText, tokenRange: tokenRange) else { continue }
-            mutable.replaceCharacters(in: replacementRange, with: ": ")
-            replacedSpokenColon = true
-        }
-
-        return (mutable as String, replacedSpokenColon)
+        return true
     }
 
-    private func stripTerminalPunctuationForShortStandaloneAssociation(
+    /// Whether the word whose replaced span is `span` is a name spoken to someone after a phrase
+    /// that opens with a greeting, farewell, or thanks, as in "thank you so much for the help,
+    /// Colin", "okay, goodbye, Colin", or "good morning. Colin", where the phrase runs back from the
+    /// punctuation before the word to the comma before it or the start of its sentence.
+    private func addressesPerson(_ span: Range<String.Index>, in text: String) -> Bool {
+        guard let greetingPhrases = Self.greetingPhrases else { return false }
+        var phraseStart = span.lowerBound
+        while phraseStart > text.startIndex {
+            let previous = text[text.index(before: phraseStart)]
+            if isSentenceBoundary(previous) || previous == "," { break }
+            phraseStart = text.index(before: phraseStart)
+        }
+        return greetingPhrases.startsWithPhrase(text[phraseStart..<span.lowerBound])
+    }
+
+    /// Whether a spoken punctuation mark comes right before or right after the word at `index`,
+    /// whatever punctuation the transcriber put between them, as in "Colin comma" or "period Colin",
+    /// and is not an ordinary word inside a listed phrase, as in "trial period".
+    private func neighborsSpokenCommand(at index: Int, words: [WordToken], text: String) -> Bool {
+        let lowercased = words.map { $0.text.lowercased() }
+        return SpokenCommand.all.contains { command in
+            let after = index + 1
+            let before = index - command.count
+            let candidates = [after, before].filter { start in
+                start >= 0 && start + command.count <= lowercased.count && start != index
+                    && Array(lowercased[start..<(start + command.count)]) == command
+            }
+            return candidates.contains { start in
+                let markRange = words[start].range.lowerBound..<words[start + command.count - 1].range.upperBound
+                return Self.namePhrases?.phraseRange(
+                    around: markRange,
+                    named: command.joined(separator: " "),
+                    in: text
+                ) == nil
+            }
+        }
+    }
+
+    /// Whether the word is spelled as the mark's written name rather than a misheard spelling.
+    private func isWrittenName(_ word: String) -> Bool {
+        word.lowercased() == Self.writtenName
+    }
+
+    private func isAdjacent(_ first: WordToken, _ second: WordToken, in text: String) -> Bool {
+        text[first.range.upperBound..<second.range.lowerBound].allSatisfy(\.isWhitespace)
+    }
+
+    /// Whether the word is joined to another by a hyphen, as in "semi-colon", so it is part of
+    /// that compound word.
+    private func isHyphenated(_ range: Range<String.Index>, in text: String) -> Bool {
+        (range.lowerBound > text.startIndex && text[text.index(before: range.lowerBound)] == "-")
+            || (range.upperBound < text.endIndex && text[range.upperBound] == "-")
+    }
+
+    /// Whether the word is part of one of the user's dictionary entries as written in `text`,
+    /// wherever it falls in the entry, as in "Kristen Colon".
+    private func isInsideDictionaryEntry(
+        _ range: Range<String.Index>,
         in text: String,
-        replacedSpokenColon: Bool
-    ) -> String {
-        guard replacedSpokenColon else { return text }
+        dictionaryEntries: [DictionaryEntry]
+    ) -> Bool {
+        for entry in dictionaryEntries {
+            let phrase = entry.phrase.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !phrase.isEmpty else { continue }
+
+            var searchStart = text.startIndex
+            while let match = text.range(
+                of: phrase,
+                options: [.caseInsensitive, .diacriticInsensitive],
+                range: searchStart..<text.endIndex
+            ) {
+                if match.lowerBound <= range.lowerBound,
+                   match.upperBound >= range.upperBound,
+                   isWordBoundary(before: match.lowerBound, in: text),
+                   isWordBoundary(after: match.upperBound, in: text) {
+                    return true
+                }
+                guard match.lowerBound < range.lowerBound else { break }
+                searchStart = text.index(after: match.lowerBound)
+            }
+        }
+        return false
+    }
+
+    private func isWordBoundary(before index: String.Index, in text: String) -> Bool {
+        guard index > text.startIndex else { return true }
+        return !isWordCharacter(text[text.index(before: index)])
+    }
+
+    private func isWordBoundary(after index: String.Index, in text: String) -> Bool {
+        guard index < text.endIndex else { return true }
+        return !isWordCharacter(text[index])
+    }
+
+    private func isWordCharacter(_ character: Character) -> Bool {
+        character.isLetter || character.isNumber || character == "_"
+    }
+
+    private func isContent(_ character: Character) -> Bool {
+        character.isLetter || character.isNumber
+    }
+
+    /// The spoken colon with the spaces, line breaks, and sentence or clause punctuation the
+    /// transcriber put on either side of it, which the written colon replaces.
+    private func replacementRange(for range: Range<String.Index>, in text: String) -> Range<String.Index> {
+        var start = range.lowerBound
+        while start > text.startIndex, isSeparator(text[text.index(before: start)]) {
+            start = text.index(before: start)
+        }
+
+        var end = range.upperBound
+        while end < text.endIndex, isSeparator(text[end]) {
+            end = text.index(after: end)
+        }
+        return start..<end
+    }
+
+    /// Whether the character is a space, a line break, or punctuation that Unicode marks as ending
+    /// a sentence or clause.
+    private func isSeparator(_ character: Character) -> Bool {
+        character.isWhitespace
+            || character.unicodeScalars.allSatisfy { $0.properties.isTerminalPunctuation }
+    }
+
+    private func isSentenceBoundary(_ character: Character) -> Bool {
+        character == "." || character == "!" || character == "?" || character.isNewline
+    }
+
+    private func stripTerminalPunctuationForShortStandaloneAssociation(in text: String) -> String {
         guard !text.contains("\n") else { return text }
         guard text.filter({ $0 == ":" }).count == 1 else { return text }
         guard let colonIndex = text.firstIndex(of: ":") else { return text }
@@ -132,224 +285,21 @@ public struct ColonNormalizer {
         )
     }
 
-    private func isLikelySpokenColon(_ token: String, in fullText: NSString, tokenRange: NSRange) -> Bool {
-        guard isColonHomophone(token) else { return false }
-        guard !isLikelyNamedEntity(token, in: fullText, tokenRange: tokenRange) else { return false }
-        return true
-    }
-
-    private func associationReplacementRange(in text: NSString, tokenRange: NSRange) -> NSRange? {
-        let sentenceStart = sentenceBoundaryBefore(in: text, location: tokenRange.location)
-
-        var replacementStart = tokenRange.location
-        while replacementStart > sentenceStart {
-            let codeUnitIndex = replacementStart - 1
-            let scalar = unicodeScalar(in: text, at: codeUnitIndex)
-            let codeUnit = text.character(at: codeUnitIndex)
-            if let scalar, CharacterSet.whitespacesAndNewlines.contains(scalar) {
-                replacementStart -= 1
-                continue
-            }
-            if codeUnit == 44 {
-                replacementStart -= 1
-            }
-            break
+    private func wordTokens(in text: String) -> [WordToken] {
+        TextLinguistics.analyze(text, features: [.roles, .wordBoundaries]).tokens.compactMap { token in
+            guard let range = Range(token.range, in: text) else { return nil }
+            return WordToken(text: String(text[range]), range: range, role: token.role)
         }
-
-        var replacementEnd = NSMaxRange(tokenRange)
-        while replacementEnd < text.length {
-            let scalar = unicodeScalar(in: text, at: replacementEnd)
-            let codeUnit = text.character(at: replacementEnd)
-            if codeUnit == 44 || codeUnit == 46 {
-                replacementEnd += 1
-                continue
-            }
-            if let scalar, CharacterSet.whitespacesAndNewlines.contains(scalar) {
-                replacementEnd += 1
-                continue
-            }
-            break
-        }
-
-        let sentenceEnd = sentenceBoundaryAfter(in: text, location: replacementEnd)
-
-        let leftRange = NSRange(location: sentenceStart, length: max(0, replacementStart - sentenceStart))
-        let rightRange = NSRange(location: replacementEnd, length: max(0, sentenceEnd - replacementEnd))
-
-        let leftSegment = normalizeAssociationSegment(text.substring(with: leftRange))
-        let rightSegment = normalizeAssociationSegment(text.substring(with: rightRange))
-
-        guard isLikelyAssociationLabel(leftSegment) else { return nil }
-        guard isLikelyAssociationValue(rightSegment) else { return nil }
-
-        return NSRange(location: replacementStart, length: replacementEnd - replacementStart)
-    }
-
-    private func unicodeScalar(in text: NSString, at index: Int) -> UnicodeScalar? {
-        guard index >= 0, index < text.length else { return nil }
-
-        let codeUnit = text.character(at: index)
-        if let scalar = UnicodeScalar(codeUnit) {
-            return scalar
-        }
-
-        let leadSurrogateRange: ClosedRange<unichar> = 0xD800...0xDBFF
-        let trailSurrogateRange: ClosedRange<unichar> = 0xDC00...0xDFFF
-
-        if leadSurrogateRange.contains(codeUnit) {
-            let nextIndex = index + 1
-            guard nextIndex < text.length else { return nil }
-            let trailingCodeUnit = text.character(at: nextIndex)
-            guard trailSurrogateRange.contains(trailingCodeUnit) else { return nil }
-
-            let highBits = UInt32(codeUnit) - 0xD800
-            let lowBits = UInt32(trailingCodeUnit) - 0xDC00
-            return UnicodeScalar(0x10000 + ((highBits << 10) | lowBits))
-        }
-
-        if trailSurrogateRange.contains(codeUnit) {
-            let previousIndex = index - 1
-            guard previousIndex >= 0 else { return nil }
-            let leadingCodeUnit = text.character(at: previousIndex)
-            guard leadSurrogateRange.contains(leadingCodeUnit) else { return nil }
-
-            let highBits = UInt32(leadingCodeUnit) - 0xD800
-            let lowBits = UInt32(codeUnit) - 0xDC00
-            return UnicodeScalar(0x10000 + ((highBits << 10) | lowBits))
-        }
-
-        return nil
     }
 
     private func isColonHomophone(_ token: String) -> Bool {
         let letters = token.lowercased().unicodeScalars.filter { CharacterSet.letters.contains($0) }
         let simplified = String(String.UnicodeScalarView(letters))
         guard simplified.hasPrefix("col"), simplified.hasSuffix("n") else { return false }
-        guard (4...6).contains(simplified.count) else { return false }
+        // A mishearing keeps the name's length, as in "Colin", so a longer name such as "Colton" is
+        // not one.
+        guard simplified.count == Self.writtenName.count else { return false }
         return levenshteinDistance(between: simplified, and: "colon") <= 1
-    }
-
-    private func isLikelyNamedEntity(_ token: String, in text: NSString, tokenRange: NSRange) -> Bool {
-        guard let first = token.first, first.isUppercase else { return false }
-        let lowered = token.lowercased()
-        if lowered == "colon" {
-            return false
-        }
-
-        guard let previousScalar = previousNonWhitespaceScalar(in: text, before: tokenRange.location) else {
-            return false
-        }
-        return !sentenceBoundaryCharacterSet.contains(previousScalar)
-    }
-
-    private func normalizeAssociationSegment(_ text: String) -> String {
-        text.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines.union(CharacterSet(charactersIn: ",.;:—-")))
-    }
-
-    private func isLikelyAssociationLabel(_ text: String) -> Bool {
-        let words = wordCount(in: text)
-        guard (1...4).contains(words) else { return false }
-        guard !text.isEmpty else { return false }
-
-        let tags = lexicalTags(in: text)
-        guard !tags.contains(.pronoun) else { return false }
-        guard !tags.contains(.preposition) else { return false }
-        guard !tags.contains(.interjection) else { return false }
-
-        let verbCount = tags.filter { $0 == .verb }.count
-        if verbCount == 0 {
-            return true
-        }
-
-        return verbCount == 1 && words <= 2 && startsWithUppercaseWord(in: text)
-    }
-
-    private func isLikelyAssociationValue(_ text: String) -> Bool {
-        let words = wordCount(in: text)
-        guard (1...6).contains(words) else { return false }
-        guard !text.isEmpty else { return false }
-
-        let tags = lexicalTags(in: text)
-        guard !tags.contains(.pronoun) else { return false }
-        guard !tags.contains(.verb) else { return false }
-        guard !tags.contains(.preposition) else { return false }
-        guard !tags.contains(.interjection) else { return false }
-        return true
-    }
-
-    private func lexicalTags(in text: String) -> [LexicalRole] {
-        let nsText = text as NSString
-        return TextLinguistics.analyze(text, grouping: .namedPhrases).tokens.compactMap { token in
-            guard nsText.substring(with: token.range).rangeOfCharacter(from: .letters) != nil else { return nil }
-            return token.role
-        }
-    }
-
-    private func wordCount(in text: String) -> Int {
-        text.split(whereSeparator: \.isWhitespace).count
-    }
-
-    private func startsWithUppercaseWord(in text: String) -> Bool {
-        guard let firstWord = text.split(whereSeparator: \.isWhitespace).first,
-              let firstCharacter = firstWord.first else {
-            return false
-        }
-        return firstCharacter.isUppercase
-    }
-
-    private func sentenceBoundaryBefore(in text: NSString, location: Int) -> Int {
-        guard location > 0 else { return 0 }
-        var index = location - 1
-
-        while index >= 0 {
-            let scalar = text.character(at: index)
-            if scalar == Self.newlineCodeUnit ||
-                scalar == Self.periodCodeUnit ||
-                scalar == Self.exclamationCodeUnit ||
-                scalar == Self.questionCodeUnit {
-                return index + 1
-            }
-            if index == 0 { break }
-            index -= 1
-        }
-
-        return 0
-    }
-
-    private func sentenceBoundaryAfter(in text: NSString, location: Int) -> Int {
-        guard location < text.length else { return text.length }
-        var index = location
-
-        while index < text.length {
-            let scalar = text.character(at: index)
-            if scalar == Self.newlineCodeUnit ||
-                scalar == Self.periodCodeUnit ||
-                scalar == Self.exclamationCodeUnit ||
-                scalar == Self.questionCodeUnit {
-                return index
-            }
-            index += 1
-        }
-
-        return text.length
-    }
-
-    private func previousNonWhitespaceScalar(in text: NSString, before location: Int) -> UnicodeScalar? {
-        guard location > 0 else { return nil }
-        var index = location - 1
-        while index >= 0 {
-            guard let scalar = UnicodeScalar(text.character(at: index)) else { return nil }
-            if !CharacterSet.whitespacesAndNewlines.contains(scalar) {
-                return scalar
-            }
-            if index == 0 { break }
-            index -= 1
-        }
-        return nil
-    }
-
-    private var sentenceBoundaryCharacterSet: CharacterSet {
-        CharacterSet(charactersIn: ".!?…\n")
     }
 
     private func levenshteinDistance(between lhs: String, and rhs: String) -> Int {

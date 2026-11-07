@@ -265,7 +265,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "Example: Exhibit A")
     }
-    func testKeepsCommaDelimitedCapitalizedColinPhraseLiteral() async {
+    func testNormalizesCommaDelimitedCapitalizedColinPhraseToPunctuation() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -274,18 +274,287 @@ extension TranscriptionPostProcessorTests {
             renderMode: .singleLineInline
         )
 
-        XCTAssertEqual(output, "I'm going to the store, Colin, to buy some groceries.")
+        XCTAssertEqual(output, "I'm going to the store: To buy some groceries.")
     }
-    func testKeepsCommaDelimitedCollinNameLiteral() async {
+    func testNormalizesCommaDelimitedColinBeforeListToPunctuation() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
-            "I met, Collin, yesterday at lunch.",
+            "Here's what we need, Colin, apples and pears.",
             dictionaryEntries: [],
             renderMode: .singleLineInline
         )
 
+        XCTAssertEqual(output, "Here's what we need: Apples and pears")
+    }
+    func testKeepsCommaDelimitedDictionaryNameLiteral() async {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "I met, Collin, yesterday at lunch.",
+            dictionaryEntries: [DictionaryEntry(phrase: "Collin")],
+            renderMode: .singleLineInline
+        )
+
         XCTAssertEqual(output, "I met, Collin, yesterday at lunch.")
+    }
+    func testKeepsHyphenatedColonWordLiteral() async {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Use a semi-colon here",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "Use a semi-colon here.")
+    }
+    func testKeepsColonWordEndingDeterminerPhraseAtSentenceEnd() async {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Write the word colon. Then stop.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "Write the word colon. Then stop.")
+    }
+    func testKeepsColonWordInsideDictionaryName() async {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "I met Kristen Colon yesterday",
+            dictionaryEntries: [DictionaryEntry(phrase: "Kristen Colon")],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "I met Kristen Colon yesterday.")
+    }
+    func testKeepsListedColonPhraseLiteral() async {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "The scan showed the sigmoid colon was healthy",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "The scan showed the sigmoid colon was healthy.")
+    }
+
+    func testNormalizesColinSentenceBetweenSentencesToPunctuation() async {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "I have some news for the team. Colin. We won the regional game on Friday night.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "I have some news for the team: We won the regional game on Friday night.")
+    }
+
+    func testNormalizesColinSentenceBeforeParagraphBreakAndKeepsTheBreak() async {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Here is the plan for the week. Colin.\n\nWe start the painting on Monday.",
+            dictionaryEntries: [],
+            renderMode: .multiline
+        )
+
+        XCTAssertEqual(output, "Here is the plan for the week:\n\nWe start the painting on Monday.")
+    }
+
+    func testNormalizesColinSentenceAtDictationEndToPunctuation() async {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "These are the things we need for the trip. Colin.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "These are the things we need for the trip:")
+    }
+
+    func testNormalizesColinAfterClauseFollowingGreetingToPunctuation() async {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Hey, here is everything I packed for the trip, Colin.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "Hey, here is everything I packed for the trip:")
+    }
+
+    func testNormalizesCommaDelimitedColinAtDictationEndToPunctuation() async {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Here is everything I packed for the trip, Colin.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "Here is everything I packed for the trip:")
+    }
+
+    func testKeepsColinAddressedAfterGreetingFarewellOrThanksLiteral() async {
+        let processor = TranscriptionPostProcessor()
+
+        for input in [
+            "Thank you so much for the help, Colin.",
+            "Okay, goodbye, Colin.",
+            "Hey, Colin.",
+            "See you tomorrow, Colin.",
+            "Good morning, Colin, the meeting moved to noon.",
+        ] {
+            let output = processor.process(input, dictionaryEntries: [], renderMode: .singleLineInline)
+
+            XCTAssertEqual(output, input)
+        }
+    }
+
+    func testNormalizesColinOpeningSentenceAfterSentenceToPunctuation() async {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Here is what I learned on the trip. Colin, the river was higher than we expected.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "Here is what I learned on the trip: The river was higher than we expected.")
+    }
+
+    func testKeepsColinOpeningSentenceAfterGreetingLiteral() async {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Good morning. Colin, the meeting moved to noon.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "Good morning. Colin, the meeting moved to noon.")
+    }
+
+    func testNormalizesColinWhereverTheTranscriberPunctuatesAroundIt() async {
+        let processor = TranscriptionPostProcessor()
+        let before = "Here is the plan for the weekend"
+        let after = "we leave early on Saturday"
+        let joined = "Here is the plan for the weekend: We leave early on Saturday."
+
+        let cases: [(input: String, expected: String)] = [
+            ("\(before). Colin, \(after).", joined),
+            ("\(before). Colin. \(after).", joined),
+            ("\(before), Colin. \(after).", joined),
+            ("\(before)! Colin, \(after).", joined),
+            ("\(before)? Colin, \(after).", joined),
+            ("\(before).\nColin, \(after).", "Here is the plan for the weekend:\nWe leave early on Saturday."),
+            ("\(before).\n\nColin.\n\n\(after).", "Here is the plan for the weekend:\n\nWe leave early on Saturday."),
+            ("\(before), Colin!", "Here is the plan for the weekend:"),
+            ("\(before), Colin?", "Here is the plan for the weekend:"),
+            ("\(before), Colin;", "Here is the plan for the weekend:"),
+        ]
+        for (input, expected) in cases {
+            let output = processor.process(input, dictionaryEntries: [], renderMode: .multiline)
+
+            XCTAssertEqual(output, expected, input)
+        }
+    }
+
+    func testNormalizesWrittenColonInClauseOpenedByGreetingWord() async {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Thanks for coming colon here is the plan for today.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "Thanks for coming: Here is the plan for today.")
+    }
+
+    func testKeepsWrittenColonOpeningSentenceAsItsSubject() async {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "The doctor called. Colon screening starts next week.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "The doctor called. Colon screening starts next week.")
+    }
+
+    func testKeepsColinNextToSpokenPunctuationMarkLiteral() async {
+        let processor = TranscriptionPostProcessor()
+
+        let cases: [(input: String, expected: String)] = [
+            ("I met Colin comma and we talked about the trip", "I met Colin, and we talked about the trip."),
+            ("We finished the project period Colin will present it tomorrow", "We finished the project. Colin will present it tomorrow."),
+        ]
+        for (input, expected) in cases {
+            let output = processor.process(input, dictionaryEntries: [], renderMode: .singleLineInline)
+
+            XCTAssertEqual(output, expected, input)
+        }
+    }
+
+    func testNormalizesSpokenColonEndingPhraseOpenedByDeterminer() async {
+        let processor = TranscriptionPostProcessor()
+
+        let cases: [(input: String, expected: String)] = [
+            ("These are the main reasons colon", "These are the main reasons:"),
+            ("The second rule colon wash your hands before eating", "The second rule: Wash your hands before eating"),
+        ]
+        for (input, expected) in cases {
+            let output = processor.process(input, dictionaryEntries: [], renderMode: .singleLineInline)
+
+            XCTAssertEqual(output, expected, input)
+        }
+    }
+
+    func testKeepsListedMedicalColonPhrasesLiteral() async {
+        let processor = TranscriptionPostProcessor()
+
+        for input in [
+            "She was treated for irritable colon last spring",
+            "The doctor said I should get colon screening next year",
+        ] {
+            let output = processor.process(input, dictionaryEntries: [], renderMode: .singleLineInline)
+
+            XCTAssertEqual(output, input + ".", input)
+        }
+    }
+
+    func testKeepsLongerNameNearColonSpellingLiteral() async {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "We drove Colton to practice after school",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "We drove Colton to practice after school.")
+    }
+
+    func testKeepsColinSentenceAtDictationStartLiteral() async {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Colin. We need to talk about the budget.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "Colin. We need to talk about the budget.")
     }
     func testColonNormalizationStaysCompatibleWithWebsiteNormalization() async {
         let processor = TranscriptionPostProcessor()
@@ -335,7 +604,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "The word colon appears here.")
     }
-    func testKeepsTerminalCommaDelimitedColinPhraseLiteral() async {
+    func testNormalizesTerminalCommaDelimitedColinToPunctuation() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -344,7 +613,7 @@ extension TranscriptionPostProcessorTests {
             renderMode: .singleLineInline
         )
 
-        XCTAssertEqual(output, "Next task, Colin.")
+        XCTAssertEqual(output, "Next task:")
     }
     func testNormalizesBareColonAssociationLabel() async {
         let processor = TranscriptionPostProcessor()

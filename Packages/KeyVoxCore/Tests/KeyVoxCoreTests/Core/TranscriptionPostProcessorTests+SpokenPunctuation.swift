@@ -16,6 +16,55 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "I'm home. We leave at noon.")
     }
 
+    func testCapitalizesSentenceAfterSpokenPeriodBeforeAnyWord() async {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "I went to the store period and I bought some apples today",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline,
+            languageCode: "en"
+        )
+
+        XCTAssertEqual(output, "I went to the store. And I bought some apples today.")
+    }
+
+    func testKeepsPeriodAsNounAfterPrepositionOrDescribingPhrase() async {
+        let processor = TranscriptionPostProcessor()
+
+        for input in [
+            "My sister has art during period five",
+            "We always eat snacks in third period before the bell",
+            "That was an incredibly quiet period for the shop",
+            "At lunch period the cafeteria gets loud",
+        ] {
+            let output = processor.process(
+                input,
+                dictionaryEntries: [],
+                renderMode: .singleLineInline,
+                languageCode: "en"
+            )
+
+            XCTAssertEqual(output, input + ".", input)
+        }
+    }
+
+    func testKeepsNamedPunctuationWordsLiteral() async {
+        let processor = TranscriptionPostProcessor()
+
+        for word in ["period", "comma", "colon"] {
+            let input = "My teacher wrote the word \(word), then she asked us to spell it"
+            let output = processor.process(
+                input,
+                dictionaryEntries: [],
+                renderMode: .singleLineInline,
+                languageCode: "en"
+            )
+
+            XCTAssertEqual(output, input + ".", word)
+        }
+    }
+
     func testSpokenPeriodBeforeTranscribedPeriodLeavesOnePeriod() async {
         let processor = TranscriptionPostProcessor()
 
