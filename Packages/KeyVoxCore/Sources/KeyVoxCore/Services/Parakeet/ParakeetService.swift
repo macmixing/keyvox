@@ -55,6 +55,10 @@ public final class ParakeetService: StatePublishing, DictationProvider {
         return FileManager.default.fileExists(atPath: modelURL.path)
     }
 
+    public var isModelLoaded: Bool {
+        parakeet != nil
+    }
+
     public func cancelTranscription() {
         transcriptionTask?.cancel()
         transcriptionTask = nil

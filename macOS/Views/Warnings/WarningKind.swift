@@ -10,6 +10,7 @@ enum WarningKind {
     case microphoneSilence(reason: MicrophoneSilenceReason, microphoneName: String)
     case accessibilityPermission
     case modelMissing
+    case modelUpdating
 
     var iconName: String {
         switch self {
@@ -19,6 +20,8 @@ enum WarningKind {
             return "accessibility"
         case .modelMissing:
             return "cpu"
+        case .modelUpdating:
+            return "arrow.down.circle"
         }
     }
 
@@ -35,6 +38,8 @@ enum WarningKind {
             return "Accessibility access required"
         case .modelMissing:
             return "Model is not installed"
+        case .modelUpdating:
+            return "Model is updating"
         }
     }
 
@@ -52,6 +57,8 @@ enum WarningKind {
             return "KeyVox needs Accessibility access to paste dictation into other apps. Enable it in System Settings, then try again."
         case .modelMissing:
             return "KeyVox needs a local Whisper model before dictation can start. Open KeyVox Settings to download it."
+        case .modelUpdating:
+            return "Dictation will be available again as soon as the model update finishes."
         }
     }
 
@@ -61,7 +68,7 @@ enum WarningKind {
             return .settings
         case .accessibilityPermission:
             return .home
-        case .modelMissing:
+        case .modelMissing, .modelUpdating:
             return .settings
         }
     }
@@ -72,7 +79,7 @@ enum WarningKind {
             return URL(string: "x-apple.systempreferences:com.apple.preference.sound?Input")
         case .accessibilityPermission:
             return URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")
-        case .modelMissing:
+        case .modelMissing, .modelUpdating:
             return nil
         }
     }
@@ -81,7 +88,7 @@ enum WarningKind {
         switch self {
         case .microphoneSilence, .modelMissing:
             return true
-        case .accessibilityPermission:
+        case .accessibilityPermission, .modelUpdating:
             return false
         }
     }

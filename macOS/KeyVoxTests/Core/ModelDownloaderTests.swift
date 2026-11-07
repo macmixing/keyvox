@@ -430,6 +430,220 @@ final class ModelDownloaderTests: XCTestCase {
         )
     }
 
+    func testLegacyParakeetInstallStaysReadyAndRequiresUpdate() throws {
+        try withTemporaryDirectory { dir in
+            let downloader = ParakeetInstallFixture.makeDownloader(in: dir)
+            try ParakeetInstallFixture.writeInstall(
+                ParakeetInstallFixture.legacyArtifacts,
+                at: downloader.modelLocator.installRootURL(for: .parakeetTdtV3)
+            )
+
+            downloader.refreshModelStatus()
+
+            XCTAssertTrue(downloader.isModelReady(for: .parakeetTdtV3))
+            XCTAssertTrue(downloader.requiresArtifactUpdate(for: .parakeetTdtV3))
+            XCTAssertNotNil(downloader.modelLocator.resolvedParakeetModelDirectoryURL())
+        }
+    }
+
+    func testCurrentParakeetInstallIsReadyWithoutUpdate() throws {
+        try withTemporaryDirectory { dir in
+            let downloader = ParakeetInstallFixture.makeDownloader(in: dir)
+            try ParakeetInstallFixture.writeInstall(
+                ParakeetInstallFixture.currentArtifacts,
+                at: downloader.modelLocator.installRootURL(for: .parakeetTdtV3)
+            )
+
+            downloader.refreshModelStatus()
+
+            XCTAssertTrue(downloader.isModelReady(for: .parakeetTdtV3))
+            XCTAssertFalse(downloader.requiresArtifactUpdate(for: .parakeetTdtV3))
+        }
+    }
+
+    func testMissingParakeetInstallDoesNotRequireUpdate() throws {
+        try withTemporaryDirectory { dir in
+            let downloader = ParakeetInstallFixture.makeDownloader(in: dir)
+
+            downloader.refreshModelStatus()
+
+            XCTAssertFalse(downloader.requiresArtifactUpdate(for: .parakeetTdtV3))
+        }
+    }
+
+    func testStagedInstallSwapKeepsReplacedInstallUntilDiscarded() throws {
+        try withTemporaryDirectory { dir in
+            let installRootURL = dir.appendingPathComponent("install", isDirectory: true)
+            let stagedRootURL = dir.appendingPathComponent("staged", isDirectory: true)
+            let previousRootURL = dir.appendingPathComponent("previous", isDirectory: true)
+            try writeBytes(count: 1, to: installRootURL.appendingPathComponent("old"))
+            try writeBytes(count: 1, to: stagedRootURL.appendingPathComponent("new"))
+            let swap = StagedModelInstallSwap(fileManager: .default)
+
+            try swap.install(
+                stagedRootURL: stagedRootURL,
+                installRootURL: installRootURL,
+                previousRootURL: previousRootURL
+            )
+
+            XCTAssertTrue(FileManager.default.fileExists(atPath: installRootURL.appendingPathComponent("new").path))
+            XCTAssertTrue(FileManager.default.fileExists(atPath: previousRootURL.appendingPathComponent("old").path))
+            XCTAssertFalse(FileManager.default.fileExists(atPath: stagedRootURL.path))
+
+            swap.discardPrevious(previousRootURL: previousRootURL)
+
+            XCTAssertFalse(FileManager.default.fileExists(atPath: previousRootURL.path))
+        }
+    }
+
+    func testStagedInstallSwapRestoresReplacedInstall() throws {
+        try withTemporaryDirectory { dir in
+            let installRootURL = dir.appendingPathComponent("install", isDirectory: true)
+            let stagedRootURL = dir.appendingPathComponent("staged", isDirectory: true)
+            let previousRootURL = dir.appendingPathComponent("previous", isDirectory: true)
+            try writeBytes(count: 1, to: installRootURL.appendingPathComponent("old"))
+            try writeBytes(count: 1, to: stagedRootURL.appendingPathComponent("new"))
+            let swap = StagedModelInstallSwap(fileManager: .default)
+            try swap.install(
+                stagedRootURL: stagedRootURL,
+                installRootURL: installRootURL,
+                previousRootURL: previousRootURL
+            )
+
+            try swap.restorePrevious(installRootURL: installRootURL, previousRootURL: previousRootURL)
+
+            XCTAssertTrue(FileManager.default.fileExists(atPath: installRootURL.appendingPathComponent("old").path))
+            XCTAssertFalse(FileManager.default.fileExists(atPath: installRootURL.appendingPathComponent("new").path))
+            XCTAssertFalse(FileManager.default.fileExists(atPath: previousRootURL.path))
+        }
+    }
+
+    func testParakeetInstallWarmsUpBeforeReportingFinished() async throws {
+        let dir = makeTempDirectory()
+        defer { try? FileManager.default.removeItem(at: dir) }
+
+        let downloader = ParakeetInstallFixture.makeDownloader(in: dir)
+        try ParakeetInstallFixture.writeInstall(
+            ParakeetInstallFixture.currentArtifacts,
+            at: downloader.modelLocator.installRootURL(for: .parakeetTdtV3)
+        )
+        try ParakeetInstallFixture.writeInstall(
+            ParakeetInstallFixture.legacyArtifacts,
+            at: downloader.modelLocator.previousInstallRootURL(for: .parakeetTdtV3)
+        )
+        beginActiveParakeetInstall(on: downloader)
+        var stateDuringWarmUp: DictationModelInstallState?
+        downloader.postInstallPreparation = { [weak downloader] modelID in
+            stateDuringWarmUp = await MainActor.run { downloader?.state(for: modelID) }
+        }
+
+        downloader.completeSuccessfulDownload(for: .parakeetTdtV3)
+
+        try await waitForCondition {
+            downloader.activeDownload == nil
+        }
+
+        XCTAssertEqual(stateDuringWarmUp?.phase, .warmingUp)
+        XCTAssertEqual(stateDuringWarmUp?.isDownloading, true)
+        XCTAssertFalse(downloader.isDownloading(for: .parakeetTdtV3))
+        XCTAssertNil(downloader.errorMessage(for: .parakeetTdtV3))
+        XCTAssertTrue(downloader.isModelReady(for: .parakeetTdtV3))
+        XCTAssertFalse(downloader.requiresArtifactUpdate(for: .parakeetTdtV3))
+        XCTAssertFalse(
+            FileManager.default.fileExists(
+                atPath: downloader.modelLocator.previousInstallRootURL(for: .parakeetTdtV3).path
+            )
+        )
+    }
+
+    func testParakeetWarmUpFailureRestoresReplacedInstallAndFails() async throws {
+        let dir = makeTempDirectory()
+        defer { try? FileManager.default.removeItem(at: dir) }
+
+        let downloader = ParakeetInstallFixture.makeDownloader(in: dir)
+        try ParakeetInstallFixture.writeInstall(
+            ParakeetInstallFixture.currentArtifacts,
+            at: downloader.modelLocator.installRootURL(for: .parakeetTdtV3)
+        )
+        try ParakeetInstallFixture.writeInstall(
+            ParakeetInstallFixture.legacyArtifacts,
+            at: downloader.modelLocator.previousInstallRootURL(for: .parakeetTdtV3)
+        )
+        beginActiveParakeetInstall(on: downloader)
+        downloader.postInstallPreparation = { _ in
+            throw NSError(domain: "ModelDownloaderTests", code: 1)
+        }
+
+        downloader.completeSuccessfulDownload(for: .parakeetTdtV3)
+
+        try await waitForCondition {
+            downloader.errorMessage(for: .parakeetTdtV3) != nil
+        }
+
+        XCTAssertFalse(downloader.isDownloading(for: .parakeetTdtV3))
+        XCTAssertTrue(downloader.isModelReady(for: .parakeetTdtV3))
+        XCTAssertTrue(downloader.requiresArtifactUpdate(for: .parakeetTdtV3))
+        XCTAssertFalse(
+            FileManager.default.fileExists(
+                atPath: downloader.modelLocator.previousInstallRootURL(for: .parakeetTdtV3).path
+            )
+        )
+    }
+
+    func testLaunchDiscardsReplacedInstallWhenNewInstallIsIntact() throws {
+        try withTemporaryDirectory { dir in
+            let locator = InstalledDictationModelLocator(fileManager: .default, appSupportRootURL: dir)
+            try ParakeetInstallFixture.writeInstall(
+                ParakeetInstallFixture.currentArtifacts,
+                at: locator.installRootURL(for: .parakeetTdtV3)
+            )
+            try ParakeetInstallFixture.writeInstall(
+                ParakeetInstallFixture.legacyArtifacts,
+                at: locator.previousInstallRootURL(for: .parakeetTdtV3)
+            )
+
+            let downloader = ParakeetInstallFixture.makeDownloader(in: dir)
+            downloader.refreshModelStatus()
+
+            XCTAssertFalse(FileManager.default.fileExists(atPath: locator.previousInstallRootURL(for: .parakeetTdtV3).path))
+            XCTAssertTrue(downloader.isModelReady(for: .parakeetTdtV3))
+            XCTAssertFalse(downloader.requiresArtifactUpdate(for: .parakeetTdtV3))
+        }
+    }
+
+    func testLaunchRestoresReplacedInstallWhenNewInstallIsIncomplete() throws {
+        try withTemporaryDirectory { dir in
+            let locator = InstalledDictationModelLocator(fileManager: .default, appSupportRootURL: dir)
+            try writeBytes(
+                count: 1,
+                to: locator.installRootURL(for: .parakeetTdtV3).appendingPathComponent("config.json")
+            )
+            try ParakeetInstallFixture.writeInstall(
+                ParakeetInstallFixture.legacyArtifacts,
+                at: locator.previousInstallRootURL(for: .parakeetTdtV3)
+            )
+
+            let downloader = ParakeetInstallFixture.makeDownloader(in: dir)
+            downloader.refreshModelStatus()
+
+            XCTAssertFalse(FileManager.default.fileExists(atPath: locator.previousInstallRootURL(for: .parakeetTdtV3).path))
+            XCTAssertTrue(downloader.isModelReady(for: .parakeetTdtV3))
+            XCTAssertTrue(downloader.requiresArtifactUpdate(for: .parakeetTdtV3))
+        }
+    }
+
+    private func beginActiveParakeetInstall(on downloader: ModelDownloader) {
+        downloader.activeDownload = ModelDownloader.ActiveDownload(
+            token: UUID(),
+            modelID: .parakeetTdtV3,
+            descriptor: downloader.modelLocator.descriptor(for: .parakeetTdtV3)
+        )
+        downloader.updateDownloadState(
+            DictationModelInstallState(isReady: true, isDownloading: true, progress: 0.99, errorMessage: nil),
+            for: .parakeetTdtV3
+        )
+    }
+
     private func makeDownloader(
         in directory: URL,
         minBytes: Int64,

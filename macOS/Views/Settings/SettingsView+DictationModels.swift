@@ -317,6 +317,14 @@ private struct DictationModelCardRow: View {
     private var actionButton: some View {
         if installState.isDownloading {
             EmptyView()
+        } else if installState.isReady && requiresArtifactUpdate {
+            AppActionButton(
+                title: DictationModelsCardCopy.updateAction,
+                style: .primary,
+                minWidth: actionPillWidth,
+                isEnabled: !isBlockedByAnotherActiveInstall,
+                action: installModel
+            )
         } else if installState.isReady {
             AppActionButton(
                 title: DictationModelsCardCopy.deleteAction,
@@ -347,9 +355,17 @@ private struct DictationModelCardRow: View {
         downloader.downloadModel(withID: configuration.modelID)
     }
 
+    private var requiresArtifactUpdate: Bool {
+        downloader.requiresArtifactUpdate(for: configuration.modelID)
+    }
+
     private var statusText: String {
         if installState.isDownloading {
-            return DictationModelsCardCopy.installingStatus
+            return installState.phase.statusText
+        }
+
+        if installState.isReady && requiresArtifactUpdate {
+            return DictationModelsCardCopy.updateAvailableStatus
         }
 
         if installState.isReady {
@@ -360,20 +376,7 @@ private struct DictationModelCardRow: View {
             return DictationModelsCardCopy.failedStatus
         }
 
-        if let approximateSizeText {
-            return "\(DictationModelsCardCopy.notInstalledStatus) (\(approximateSizeText))"
-        }
-
-        return DictationModelsCardCopy.notInstalledStatus
-    }
-
-    private var approximateSizeText: String? {
-        switch configuration.modelID {
-        case .whisperBase:
-            return "~190 MB"
-        case .parakeetTdtV3:
-            return "~480 MB"
-        }
+        return "\(DictationModelsCardCopy.notInstalledStatus) (\(configuration.modelID.approximateDownloadSizeText))"
     }
 }
 
@@ -385,10 +388,11 @@ private enum DictationModelsCardCopy {
     static let whisperDescription = "Accurate and lightweight."
     static let parakeetDescription = "Lightning fast, heavier footprint."
     static let notInstalledStatus = "Not installed"
-    static let installingStatus = "Installing"
     static let failedStatus = "Install failed"
     static let readyStatus = "Ready"
+    static let updateAvailableStatus = "Update available"
     static let downloadAction = "Download"
     static let repairAction = "Repair"
+    static let updateAction = "Update"
     static let deleteAction = "Delete"
 }

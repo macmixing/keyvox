@@ -34,6 +34,7 @@ enum UserDefaultsKeys {
         static let hasSeenKeyVoxVibesIntro = "KeyVox.App.HasSeenKeyVoxVibesIntro"
         static let hasCompletedFirstDictation = "KeyVox.App.HasCompletedFirstDictation"
         static let hasSkippedFirstDictation = "KeyVox.App.HasSkippedFirstDictation"
+        static let dismissedDictationModelUpdatePromptID = "KeyVox.App.DismissedDictationModelUpdatePromptID"
     }
 
     enum iCloud {

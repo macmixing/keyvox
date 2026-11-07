@@ -245,13 +245,14 @@ struct KeyVoxApp: App {
     private let appServiceRegistry = AppServiceRegistry.shared
     private let onboardingStartupDelay: TimeInterval = 0.1
 
-    static func presentVibesIntroIfEligibleAfterUpdateGate() {
+    static func presentLaunchPromptsIfEligibleAfterUpdateGate() {
         let appSettings = AppSettingsStore.shared
         guard appSettings.hasCompletedOnboarding else { return }
         guard AppUpdateCoordinator.shared.postUpdateNoticeVersion == nil else { return }
         guard AppUpdateService.shared.hasCompletedInitialAutomaticUpdateCheck else { return }
         guard AppUpdateService.shared.hasAvailableUpdateForCurrentVersion == false else { return }
 
+        ParakeetUpdatePromptController.shared.presentIfNeeded()
         MacVibesIntroController.shared.scheduleColdLaunchPresentationIfNeeded(
             hasCompletedOnboarding: true,
             hasCompletedFirstDictation: appSettings.hasCompletedFirstDictation,
@@ -283,7 +284,7 @@ struct KeyVoxApp: App {
             } else if !AppSettingsStore.shared.hasCompletedOnboarding || MacRuntimeFlags.forceOnboarding {
                 WindowManager.shared.showOnboarding()
             } else {
-                KeyVoxApp.presentVibesIntroIfEligibleAfterUpdateGate()
+                KeyVoxApp.presentLaunchPromptsIfEligibleAfterUpdateGate()
             }
         }
 
@@ -291,7 +292,7 @@ struct KeyVoxApp: App {
             AppUpdateCoordinator.shared.prepareForLaunch()
             AppUpdateService.shared.startUpdateTimer { didFindAvailableUpdate in
                 guard didFindAvailableUpdate == false else { return }
-                Self.presentVibesIntroIfEligibleAfterUpdateGate()
+                Self.presentLaunchPromptsIfEligibleAfterUpdateGate()
             }
             if AppUpdateCoordinator.shared.postUpdateNoticeVersion != nil {
                 WindowManager.shared.showPostUpdateNoticeWindow()

@@ -35,6 +35,9 @@ struct UpdatePrompt {
     let primaryButtonTitle: String?
     let onPrimaryAction: (() -> Void)?
     let onDismiss: () -> Void
+    var progress: UpdatePromptProgress? = nil
+    var dismissesOnPrimaryAction: Bool = true
+    var holdsPanelUntilDismissed: Bool = false
 }
 
 @MainActor

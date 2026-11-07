@@ -49,6 +49,7 @@ extension ModelDownloader {
                 let coreMLZipURL = self.coreMLZipURL
                 let minGGMLBytes = self.minGGMLBytes
                 self.debugLog("Finalizing install for \(completedDownload.modelID.rawValue)")
+                self.updateInstallPhase(.verifying, for: completedDownload.modelID)
 
                 Task { [weak self] in
                     guard let self else { return }
@@ -59,7 +60,10 @@ extension ModelDownloader {
                             appSupportRootURL: appSupportRootURL,
                             modelURL: modelURL,
                             coreMLZipURL: coreMLZipURL,
-                            minGGMLBytes: minGGMLBytes
+                            minGGMLBytes: minGGMLBytes,
+                            onInstallPhase: { [weak self] phase in
+                                self?.updateInstallPhase(phase, for: completedDownload.modelID)
+                            }
                         )
                         guard self.activeDownload?.token == completedDownload.token else { return }
                         self.completeSuccessfulDownload(for: completedDownload.modelID)
@@ -174,7 +178,8 @@ extension ModelDownloader {
         appSupportRootURL: URL,
         modelURL: URL,
         coreMLZipURL: URL,
-        minGGMLBytes: Int64
+        minGGMLBytes: Int64,
+        onInstallPhase: @escaping (DictationModelInstallPhase) -> Void
     ) async throws {
         try await withCheckedThrowingContinuation { continuation in
             DispatchQueue.global(qos: .userInitiated).async {
@@ -199,7 +204,8 @@ extension ModelDownloader {
                         try Self.finalizeStrictManifestModel(
                             activeDownload,
                             fileManager: fileManager,
-                            modelLocator: modelLocator
+                            modelLocator: modelLocator,
+                            onInstallPhase: onInstallPhase
                         )
                     }
 
@@ -214,7 +220,8 @@ extension ModelDownloader {
     private static func finalizeStrictManifestModel(
         _ activeDownload: ActiveDownload,
         fileManager: FileManager,
-        modelLocator: InstalledDictationModelLocator
+        modelLocator: InstalledDictationModelLocator,
+        onInstallPhase: (DictationModelInstallPhase) -> Void
     ) throws {
         var hashes: [String: String] = [:]
 
@@ -249,25 +256,20 @@ extension ModelDownloader {
             using: fileManager
         )
 
+        onInstallPhase(.installing)
         let installRootURL = modelLocator.installRootURL(for: activeDownload.modelID)
-        let stagingRootURL = modelLocator.stagingRootURL(for: activeDownload.modelID)
+        let previousRootURL = modelLocator.previousInstallRootURL(for: activeDownload.modelID)
+        let installSwap = StagedModelInstallSwap(fileManager: fileManager)
 
-        if fileManager.fileExists(atPath: installRootURL.path) {
-            try fileManager.removeItem(at: installRootURL)
-        }
-
-        try fileManager.createDirectory(
-            at: installRootURL.deletingLastPathComponent(),
-            withIntermediateDirectories: true
+        try installSwap.install(
+            stagedRootURL: modelLocator.stagingRootURL(for: activeDownload.modelID),
+            installRootURL: installRootURL,
+            previousRootURL: previousRootURL
         )
-        try fileManager.moveItem(at: stagingRootURL, to: installRootURL)
 
         guard modelLocator.strictlyValidatedInstallRootURL(for: activeDownload.modelID) != nil else {
-            let validationError = NSError(domain: "ModelDownloader", code: 2004)
-            if fileManager.fileExists(atPath: installRootURL.path) {
-                try? fileManager.removeItem(at: installRootURL)
-            }
-            throw validationError
+            try? installSwap.restorePrevious(installRootURL: installRootURL, previousRootURL: previousRootURL)
+            throw NSError(domain: "ModelDownloader", code: 2004)
         }
     }
 
@@ -305,9 +307,13 @@ extension ModelDownloader {
         return digest.map { String(format: "%02x", $0) }.joined()
     }
 
-    private func completeSuccessfulDownload(for modelID: DictationModelID) {
+    func completeSuccessfulDownload(for modelID: DictationModelID) {
+        updateInstallPhase(.warmingUp, for: modelID)
+
         Task { [weak self] in
             guard let self else { return }
+            let installSwap = StagedModelInstallSwap(fileManager: self.fileManager)
+            let previousRootURL = self.modelLocator.previousInstallRootURL(for: modelID)
 
             do {
                 try await self.postInstallPreparation(modelID)
@@ -315,6 +321,7 @@ extension ModelDownloader {
                     guard let self else { return }
                     guard self.activeDownload?.modelID == modelID else { return }
                     self.debugLog("Download completed successfully for \(modelID.rawValue)")
+                    installSwap.discardPrevious(previousRootURL: previousRootURL)
                     var state = self.state(for: modelID)
                     state.isDownloading = false
                     state.progress = 1.0
@@ -326,11 +333,49 @@ extension ModelDownloader {
             } catch {
                 self.debugLog("Post-install preparation failed for \(modelID.rawValue): \(error)")
                 if case .subdirectory = self.modelLocator.descriptor(for: modelID).installLayout {
-                    try? self.fileManager.removeItem(at: self.modelLocator.installRootURL(for: modelID))
+                    try? installSwap.restorePrevious(
+                        installRootURL: self.modelLocator.installRootURL(for: modelID),
+                        previousRootURL: previousRootURL
+                    )
                 }
                 self.failActiveDownload(for: modelID, message: Self.userFacingErrorMessage(for: error))
             }
         }
+    }
+
+    /// An install swap interrupted before warm-up finished leaves the replaced install
+    /// aside. Keep the new install when it is intact, otherwise put the old one back.
+    func recoverInterruptedInstallSwaps() {
+        let installSwap = StagedModelInstallSwap(fileManager: fileManager)
+
+        for modelID in DictationModelID.allCases {
+            guard case .subdirectory = modelLocator.descriptor(for: modelID).installLayout else { continue }
+            let previousRootURL = modelLocator.previousInstallRootURL(for: modelID)
+            guard fileManager.fileExists(atPath: previousRootURL.path) else { continue }
+
+            if modelLocator.resolvedInstallRootURL(for: modelID) != nil {
+                installSwap.discardPrevious(previousRootURL: previousRootURL)
+            } else {
+                try? installSwap.restorePrevious(
+                    installRootURL: modelLocator.installRootURL(for: modelID),
+                    previousRootURL: previousRootURL
+                )
+            }
+        }
+    }
+
+    func updateInstallPhase(_ phase: DictationModelInstallPhase, for modelID: DictationModelID) {
+        guard Thread.isMainThread else {
+            DispatchQueue.main.async { [weak self] in
+                self?.updateInstallPhase(phase, for: modelID)
+            }
+            return
+        }
+
+        guard activeDownload?.modelID == modelID else { return }
+        var state = state(for: modelID)
+        state.phase = phase
+        updateDownloadState(state, for: modelID)
     }
 
     private func failActiveDownload(for modelID: DictationModelID, message: String) {

@@ -113,6 +113,7 @@ class ModelDownloader: ObservableObject {
             appSupportRootURL: appSupportRootURL
         )
         try? self.modelLocator.migrateLegacyWhisperInstallIfNeeded()
+        recoverInterruptedInstallSwaps()
 
         if refreshOnInit {
             refreshModelStatus()
@@ -248,6 +249,7 @@ class ModelDownloader: ObservableObject {
         case .subdirectory:
             try? fileManager.removeItem(at: modelLocator.installRootURL(for: modelID))
             try? fileManager.removeItem(at: modelLocator.stagingRootURL(for: modelID))
+            try? fileManager.removeItem(at: modelLocator.previousInstallRootURL(for: modelID))
         }
 
         let resetState = {

@@ -27,7 +27,7 @@ extension ModelDownloader {
             return false
         }
 
-        for artifact in descriptor.artifacts {
+        for artifact in modelLocator.installedArtifacts(for: modelID) {
             let artifactURL = modelLocator.installedArtifactURL(for: modelID, relativePath: artifact.relativePath)
             guard fileManager.fileExists(atPath: artifactURL.path) else {
                 return false
@@ -53,6 +53,17 @@ extension ModelDownloader {
         }
 
         return true
+    }
+
+    /// True when a working install predates the current catalog artifacts and can be
+    /// replaced without interrupting dictation until the new install is ready.
+    func requiresArtifactUpdate(for modelID: DictationModelID) -> Bool {
+        switch modelID {
+        case .parakeetTdtV3:
+            return isModelReady(for: modelID) && modelLocator.isLegacyParakeetInstall()
+        case .whisperBase:
+            return false
+        }
     }
 
     func sha256Hex(forFileAt url: URL) throws -> String {

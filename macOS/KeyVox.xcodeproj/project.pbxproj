@@ -46,6 +46,7 @@
 		8E9E38262F5BBA5400EAFA72 /* AudioRecorderStopRecordingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9E38252F5BBA5400EAFA72 /* AudioRecorderStopRecordingTests.swift */; };
 		8EA1C1022F3D111100A1B2C3 /* AudioDeviceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EA1C1012F3D111100A1B2C3 /* AudioDeviceManager.swift */; };
 		8EBB01032F41000200BB1101 /* UpdatePromptOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EBB01022F41000200BB1101 /* UpdatePromptOverlay.swift */; };
+		9281E6C8116E4600AFE6C47A /* UpdatePromptPanelQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02573E446A124D9FA1619E8F /* UpdatePromptPanelQueue.swift */; };
 		8EC700012F42000100C70001 /* WarningKind.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EC700112F42000100C70001 /* WarningKind.swift */; };
 		8EC700022F42000100C70001 /* WarningOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EC700122F42000100C70001 /* WarningOverlayView.swift */; };
 		8EC700032F42000100C70001 /* WarningManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EC700132F42000100C70001 /* WarningManager.swift */; };
@@ -60,6 +61,8 @@
 		8F5502012F47010000EE5501 /* UpdateFeedConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F5501012F47010000EE5501 /* UpdateFeedConfig.swift */; };
 		8F5502022F47010000EE5501 /* AppUpdateLogic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F5501022F47010000EE5501 /* AppUpdateLogic.swift */; };
 		8F6602012F48010000FF6601 /* UpdatePromptPresenting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F6601012F48010000FF6601 /* UpdatePromptPresenting.swift */; };
+		EF9464A6E48D4A629797283C /* ParakeetUpdatePromptController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CED544C31D047DDA4FFF3AA /* ParakeetUpdatePromptController.swift */; };
+		07CCF3D9F5C54466B4311E81 /* UpdatePromptProgress.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C6866A2CC94425A94C6098F /* UpdatePromptProgress.swift */; };
 		8F7702012F49010000117701 /* PasteFailureRecoveryCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F7701012F49010000117701 /* PasteFailureRecoveryCoordinator.swift */; };
 		8F7702022F49010000117701 /* PasteFailureRecoveryOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F7701022F49010000117701 /* PasteFailureRecoveryOverlayView.swift */; };
 		9A1000122F4B000100AA0001 /* PasteModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1000022F4B000100AA0001 /* PasteModels.swift */; };
@@ -96,13 +99,16 @@
 		A7E100032FFD000100AA0001 /* PasteTerminalPunctuationCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7E100042FFD000100AA0001 /* PasteTerminalPunctuationCoordinatorTests.swift */; };
 		AA1000112F50000100AA0001 /* OFL.txt in Resources */ = {isa = PBXBuildFile; fileRef = AA1000012F50000100AA0001 /* OFL.txt */; };
 		AB3000012F60000100AA0001 /* TestHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000012F60000100AA0001 /* TestHelpers.swift */; };
+		155B736EB6234CB090A4F3CD /* ParakeetInstallFixture.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFE65681E46D4C6AAF32104F /* ParakeetInstallFixture.swift */; };
 		AB3000032F60000100AA0001 /* OverlayScreenPersistenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000032F60000100AA0001 /* OverlayScreenPersistenceTests.swift */; };
 		AB3000042F60000100AA0001 /* OverlayFlingPhysicsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000042F60000100AA0001 /* OverlayFlingPhysicsTests.swift */; };
 		AB3000122F60000100AA0001 /* WarningKindTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000142F60000100AA0001 /* WarningKindTests.swift */; };
+		333F4E6BD3734E409DEDB489 /* UpdatePromptPanelQueueTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F0E57E02D344C98BB838DAE /* UpdatePromptPanelQueueTests.swift */; };
 		AB3000132F60000100AA0001 /* AppUpdateLogicTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000152F60000100AA0001 /* AppUpdateLogicTests.swift */; };
 		AB3000142F60000100AA0001 /* PasteServiceListRenderModeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000162F60000100AA0001 /* PasteServiceListRenderModeTests.swift */; };
 		AB3000152F60000100AA0001 /* PasteFailureRecoveryPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000172F60000100AA0001 /* PasteFailureRecoveryPolicyTests.swift */; };
 		AB3000162F60000100AA0001 /* AppUpdateServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000182F60000100AA0001 /* AppUpdateServiceTests.swift */; };
+		CD07A00AAD51448D8773AEF8 /* ParakeetUpdatePromptControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 232BBC5CAC0D423BB8FEDE8F /* ParakeetUpdatePromptControllerTests.swift */; };
 		AB3000172F60000100AA0001 /* UpdateFeedResolverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000192F60000100AA0001 /* UpdateFeedResolverTests.swift */; };
 		AB3000212F60000100AA0001 /* latest_without_dmg.json in Resources */ = {isa = PBXBuildFile; fileRef = AB2000122F60000100AA0001 /* latest_without_dmg.json */; };
 		AB3000222F60000100AA0001 /* latest_with_dmg.json in Resources */ = {isa = PBXBuildFile; fileRef = AB2000132F60000100AA0001 /* latest_with_dmg.json */; };
@@ -129,6 +135,8 @@
 		BF1000022F70000100AA0001 /* OnboardingMicrophonePickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2000022F70000100AA0001 /* OnboardingMicrophonePickerView.swift */; };
 		C11000122F90000100AA0001 /* ModelDownloader+DownloadLifecycle.swift in Sources */ = {isa = PBXBuildFile; fileRef = C11000022F90000100AA0001 /* ModelDownloader+DownloadLifecycle.swift */; };
 		C11000132F90000100AA0001 /* ModelDownloader+Validation.swift in Sources */ = {isa = PBXBuildFile; fileRef = C11000032F90000100AA0001 /* ModelDownloader+Validation.swift */; };
+		1EBD8602BFFB4976AE30C6DA /* StagedModelInstallSwap.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4810BA9C3554DEDB5B38CD0 /* StagedModelInstallSwap.swift */; };
+		3B5B21740C234B818340F1DE /* DictationModelInstallPhase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61DE259412984073AE1A4F1D /* DictationModelInstallPhase.swift */; };
 		C11000142F90000100AA0001 /* ModelDownloadTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = C11000042F90000100AA0001 /* ModelDownloadTransport.swift */; };
 		C11000152FD4000100AA0001 /* InstalledDictationModelLocator.swift in Sources */ = {isa = PBXBuildFile; fileRef = C11000052FD4000100AA0001 /* InstalledDictationModelLocator.swift */; };
 		C11000162FD5000100AA0001 /* DictationModelCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = C11000062FD5000100AA0001 /* DictationModelCatalog.swift */; };
@@ -226,6 +234,8 @@
 		F26000102FF1000100AA0001 /* MacVibesIntroControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F260000F2FF1000100AA0001 /* MacVibesIntroControllerTests.swift */; };
 		F30000022FC2000100AA0001 /* WindowManager+Updates.swift in Sources */ = {isa = PBXBuildFile; fileRef = F30000012FC2000100AA0001 /* WindowManager+Updates.swift */; };
 		F30000042FC2000100AA0001 /* AppUpdateProgressBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = F30000032FC2000100AA0001 /* AppUpdateProgressBar.swift */; };
+		1D7566ED92B74A8AA4ABFE5B /* DictationModelID+ApproximateSize.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42065B726E89429E992055DA /* DictationModelID+ApproximateSize.swift */; };
+		BD23033EAD444273A0EF48D5 /* DictationModelInstallPhase+StatusText.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5BC8425582D44589C12FC17 /* DictationModelInstallPhase+StatusText.swift */; };
 		F30000072FC2000100AA0001 /* AppReleaseInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = F30000062FC2000100AA0001 /* AppReleaseInfo.swift */; };
 		F30000092FC2000100AA0001 /* AppUpdateManifestLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = F30000082FC2000100AA0001 /* AppUpdateManifestLoader.swift */; };
 		F300000B2FC2000100AA0001 /* AppUpdateCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = F300000A2FC2000100AA0001 /* AppUpdateCoordinator.swift */; };
@@ -241,6 +251,7 @@
 		F300001F2FC2000100AA0001 /* AppUpdateLaunchNoticeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F300001E2FC2000100AA0001 /* AppUpdateLaunchNoticeService.swift */; };
 		F30000212FC2000100AA0001 /* AppUpdateCleanupService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F30000202FC2000100AA0001 /* AppUpdateCleanupService.swift */; };
 		F30000242FC2000100AA0001 /* UpdateWindowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F30000232FC2000100AA0001 /* UpdateWindowView.swift */; };
+		57BB469580E04CE084B6E0B6 /* ParakeetUpdatePromptContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = F18135DDE6164241A28BFF9D /* ParakeetUpdatePromptContent.swift */; };
 		F30000262FC2000100AA0001 /* UpdateHeaderCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = F30000252FC2000100AA0001 /* UpdateHeaderCard.swift */; };
 		F30000282FC2000100AA0001 /* UpdateReleaseNotesCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = F30000272FC2000100AA0001 /* UpdateReleaseNotesCard.swift */; };
 		F300002A2FC2000100AA0001 /* UpdateProgressCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = F30000292FC2000100AA0001 /* UpdateProgressCard.swift */; };
@@ -302,6 +313,7 @@
 		8E9E38252F5BBA5400EAFA72 /* AudioRecorderStopRecordingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioRecorderStopRecordingTests.swift; sourceTree = "<group>"; };
 		8EA1C1012F3D111100A1B2C3 /* AudioDeviceManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioDeviceManager.swift; sourceTree = "<group>"; };
 		8EBB01022F41000200BB1101 /* UpdatePromptOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdatePromptOverlay.swift; sourceTree = "<group>"; };
+		02573E446A124D9FA1619E8F /* UpdatePromptPanelQueue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdatePromptPanelQueue.swift; sourceTree = "<group>"; };
 		8EC700112F42000100C70001 /* WarningKind.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WarningKind.swift; sourceTree = "<group>"; };
 		8EC700122F42000100C70001 /* WarningOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WarningOverlayView.swift; sourceTree = "<group>"; };
 		8EC700132F42000100C70001 /* WarningManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WarningManager.swift; sourceTree = "<group>"; };
@@ -318,6 +330,8 @@
 		8F5501012F47010000EE5501 /* UpdateFeedConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateFeedConfig.swift; sourceTree = "<group>"; };
 		8F5501022F47010000EE5501 /* AppUpdateLogic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateLogic.swift; sourceTree = "<group>"; };
 		8F6601012F48010000FF6601 /* UpdatePromptPresenting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdatePromptPresenting.swift; sourceTree = "<group>"; };
+		7CED544C31D047DDA4FFF3AA /* ParakeetUpdatePromptController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParakeetUpdatePromptController.swift; sourceTree = "<group>"; };
+		2C6866A2CC94425A94C6098F /* UpdatePromptProgress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdatePromptProgress.swift; sourceTree = "<group>"; };
 		8F7701012F49010000117701 /* PasteFailureRecoveryCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteFailureRecoveryCoordinator.swift; sourceTree = "<group>"; };
 		8F7701022F49010000117701 /* PasteFailureRecoveryOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteFailureRecoveryOverlayView.swift; sourceTree = "<group>"; };
 		9A1000022F4B000100AA0001 /* PasteModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteModels.swift; sourceTree = "<group>"; };
@@ -354,15 +368,18 @@
 		A7E100042FFD000100AA0001 /* PasteTerminalPunctuationCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteTerminalPunctuationCoordinatorTests.swift; sourceTree = "<group>"; };
 		AA1000012F50000100AA0001 /* OFL.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = OFL.txt; sourceTree = "<group>"; };
 		AB2000012F60000100AA0001 /* TestHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestHelpers.swift; sourceTree = "<group>"; };
+		DFE65681E46D4C6AAF32104F /* ParakeetInstallFixture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParakeetInstallFixture.swift; sourceTree = "<group>"; };
 		AB2000032F60000100AA0001 /* OverlayScreenPersistenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayScreenPersistenceTests.swift; sourceTree = "<group>"; };
 		AB2000042F60000100AA0001 /* OverlayFlingPhysicsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayFlingPhysicsTests.swift; sourceTree = "<group>"; };
 		AB2000122F60000100AA0001 /* latest_without_dmg.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = latest_without_dmg.json; sourceTree = "<group>"; };
 		AB2000132F60000100AA0001 /* latest_with_dmg.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = latest_with_dmg.json; sourceTree = "<group>"; };
 		AB2000142F60000100AA0001 /* WarningKindTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WarningKindTests.swift; sourceTree = "<group>"; };
+		6F0E57E02D344C98BB838DAE /* UpdatePromptPanelQueueTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdatePromptPanelQueueTests.swift; sourceTree = "<group>"; };
 		AB2000152F60000100AA0001 /* AppUpdateLogicTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateLogicTests.swift; sourceTree = "<group>"; };
 		AB2000162F60000100AA0001 /* PasteServiceListRenderModeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteServiceListRenderModeTests.swift; sourceTree = "<group>"; };
 		AB2000172F60000100AA0001 /* PasteFailureRecoveryPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteFailureRecoveryPolicyTests.swift; sourceTree = "<group>"; };
 		AB2000182F60000100AA0001 /* AppUpdateServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateServiceTests.swift; sourceTree = "<group>"; };
+		232BBC5CAC0D423BB8FEDE8F /* ParakeetUpdatePromptControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParakeetUpdatePromptControllerTests.swift; sourceTree = "<group>"; };
 		AB2000192F60000100AA0001 /* UpdateFeedResolverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateFeedResolverTests.swift; sourceTree = "<group>"; };
 		AB2000232F60000100AA0001 /* KeyVoxAppActivationPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyVoxAppActivationPolicyTests.swift; sourceTree = "<group>"; };
 		AB2000242F60000100AA0001 /* AudioDeviceManagerCompatibilityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioDeviceManagerCompatibilityTests.swift; sourceTree = "<group>"; };
@@ -386,6 +403,8 @@
 		BF2000022F70000100AA0001 /* OnboardingMicrophonePickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingMicrophonePickerView.swift; sourceTree = "<group>"; };
 		C11000022F90000100AA0001 /* ModelDownloader+DownloadLifecycle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ModelDownloader+DownloadLifecycle.swift"; sourceTree = "<group>"; };
 		C11000032F90000100AA0001 /* ModelDownloader+Validation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ModelDownloader+Validation.swift"; sourceTree = "<group>"; };
+		D4810BA9C3554DEDB5B38CD0 /* StagedModelInstallSwap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StagedModelInstallSwap.swift; sourceTree = "<group>"; };
+		61DE259412984073AE1A4F1D /* DictationModelInstallPhase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictationModelInstallPhase.swift; sourceTree = "<group>"; };
 		C11000042F90000100AA0001 /* ModelDownloadTransport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelDownloadTransport.swift; sourceTree = "<group>"; };
 		C11000052FD4000100AA0001 /* InstalledDictationModelLocator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstalledDictationModelLocator.swift; sourceTree = "<group>"; };
 		C11000062FD5000100AA0001 /* DictationModelCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictationModelCatalog.swift; sourceTree = "<group>"; };
@@ -474,6 +493,8 @@
 		F260000F2FF1000100AA0001 /* MacVibesIntroControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacVibesIntroControllerTests.swift; sourceTree = "<group>"; };
 		F30000012FC2000100AA0001 /* WindowManager+Updates.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WindowManager+Updates.swift"; sourceTree = "<group>"; };
 		F30000032FC2000100AA0001 /* AppUpdateProgressBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateProgressBar.swift; sourceTree = "<group>"; };
+		42065B726E89429E992055DA /* DictationModelID+ApproximateSize.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DictationModelID+ApproximateSize.swift"; sourceTree = "<group>"; };
+		A5BC8425582D44589C12FC17 /* DictationModelInstallPhase+StatusText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DictationModelInstallPhase+StatusText.swift"; sourceTree = "<group>"; };
 		F30000062FC2000100AA0001 /* AppReleaseInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppReleaseInfo.swift; sourceTree = "<group>"; };
 		F30000082FC2000100AA0001 /* AppUpdateManifestLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateManifestLoader.swift; sourceTree = "<group>"; };
 		F300000A2FC2000100AA0001 /* AppUpdateCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateCoordinator.swift; sourceTree = "<group>"; };
@@ -489,6 +510,7 @@
 		F300001E2FC2000100AA0001 /* AppUpdateLaunchNoticeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateLaunchNoticeService.swift; sourceTree = "<group>"; };
 		F30000202FC2000100AA0001 /* AppUpdateCleanupService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateCleanupService.swift; sourceTree = "<group>"; };
 		F30000232FC2000100AA0001 /* UpdateWindowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateWindowView.swift; sourceTree = "<group>"; };
+		F18135DDE6164241A28BFF9D /* ParakeetUpdatePromptContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParakeetUpdatePromptContent.swift; sourceTree = "<group>"; };
 		F30000252FC2000100AA0001 /* UpdateHeaderCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateHeaderCard.swift; sourceTree = "<group>"; };
 		F30000272FC2000100AA0001 /* UpdateReleaseNotesCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateReleaseNotesCard.swift; sourceTree = "<group>"; };
 		F30000292FC2000100AA0001 /* UpdateProgressCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateProgressCard.swift; sourceTree = "<group>"; };
@@ -586,6 +608,8 @@
 				8EE6025E2F3FC5C80094EC16 /* AppUpdateService.swift */,
 				9A1000012F4B000100AA0001 /* Paste */,
 				8F6601012F48010000FF6601 /* UpdatePromptPresenting.swift */,
+				7CED544C31D047DDA4FFF3AA /* ParakeetUpdatePromptController.swift */,
+				2C6866A2CC94425A94C6098F /* UpdatePromptProgress.swift */,
 				8F5501012F47010000EE5501 /* UpdateFeedConfig.swift */,
 			);
 			path = Services;
@@ -642,6 +666,8 @@
 				C22000022FA5000100AA0001 /* SettingsLastTranscriptionCard.swift */,
 				F30000372FC2000100AA0001 /* AppActionButton.swift */,
 				F30000032FC2000100AA0001 /* AppUpdateProgressBar.swift */,
+				42065B726E89429E992055DA /* DictationModelID+ApproximateSize.swift */,
+				A5BC8425582D44589C12FC17 /* DictationModelInstallPhase+StatusText.swift */,
 				8F2201072F44010000BB2201 /* ConfirmDeletePromptView.swift */,
 				F20000032FB0000100AA0001 /* LogoBarView.swift */,
 				8E4B08602FD0000100C5DB85 /* MacAppTheme.swift */,
@@ -666,6 +692,7 @@
 				E90000142FE1000100AA0001 /* VibePillOverlay.swift */,
 				8E6D05DA2F3C51D6003BD458 /* StatusMenuView.swift */,
 				8EBB01022F41000200BB1101 /* UpdatePromptOverlay.swift */,
+				02573E446A124D9FA1619E8F /* UpdatePromptPanelQueue.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -808,6 +835,7 @@
 				8E03671B2F49848500017017 /* PasteServiceExecutionMocks.swift */,
 				AB2000152F60000100AA0001 /* AppUpdateLogicTests.swift */,
 				AB2000182F60000100AA0001 /* AppUpdateServiceTests.swift */,
+				232BBC5CAC0D423BB8FEDE8F /* ParakeetUpdatePromptControllerTests.swift */,
 				AB2000332F60000100AA0001 /* PasteClipboardSnapshotTests.swift */,
 				AB2000262F60000100AA0001 /* PasteDecisionMatrixTests.swift */,
 				AB2000172F60000100AA0001 /* PasteFailureRecoveryPolicyTests.swift */,
@@ -831,6 +859,7 @@
 			isa = PBXGroup;
 			children = (
 				AB2000012F60000100AA0001 /* TestHelpers.swift */,
+				DFE65681E46D4C6AAF32104F /* ParakeetInstallFixture.swift */,
 			);
 			path = TestSupport;
 			sourceTree = "<group>";
@@ -840,6 +869,7 @@
 			children = (
 				F1D100B42FEA000100AA0001 /* FirstDictationPracticeStateTests.swift */,
 				AB2000142F60000100AA0001 /* WarningKindTests.swift */,
+				6F0E57E02D344C98BB838DAE /* UpdatePromptPanelQueueTests.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -867,6 +897,8 @@
 				C11000052FD4000100AA0001 /* InstalledDictationModelLocator.swift */,
 				C11000022F90000100AA0001 /* ModelDownloader+DownloadLifecycle.swift */,
 				C11000032F90000100AA0001 /* ModelDownloader+Validation.swift */,
+				D4810BA9C3554DEDB5B38CD0 /* StagedModelInstallSwap.swift */,
+				61DE259412984073AE1A4F1D /* DictationModelInstallPhase.swift */,
 				C11000042F90000100AA0001 /* ModelDownloadTransport.swift */,
 			);
 			path = ModelDownloader;
@@ -1051,6 +1083,7 @@
 				F30000292FC2000100AA0001 /* UpdateProgressCard.swift */,
 				F30000272FC2000100AA0001 /* UpdateReleaseNotesCard.swift */,
 				F30000232FC2000100AA0001 /* UpdateWindowView.swift */,
+				F18135DDE6164241A28BFF9D /* ParakeetUpdatePromptContent.swift */,
 			);
 			path = Updates;
 			sourceTree = "<group>";
@@ -1209,6 +1242,8 @@
 				F26000062FF1000100AA0001 /* MacVibesIntroSceneCView.swift in Sources */,
 				F30000382FC2000100AA0001 /* AppActionButton.swift in Sources */,
 				F30000042FC2000100AA0001 /* AppUpdateProgressBar.swift in Sources */,
+				1D7566ED92B74A8AA4ABFE5B /* DictationModelID+ApproximateSize.swift in Sources */,
+				BD23033EAD444273A0EF48D5 /* DictationModelInstallPhase+StatusText.swift in Sources */,
 				F30000072FC2000100AA0001 /* AppReleaseInfo.swift in Sources */,
 				F30000092FC2000100AA0001 /* AppUpdateManifestLoader.swift in Sources */,
 				F300000B2FC2000100AA0001 /* AppUpdateCoordinator.swift in Sources */,
@@ -1224,6 +1259,7 @@
 				F300001F2FC2000100AA0001 /* AppUpdateLaunchNoticeService.swift in Sources */,
 				F30000212FC2000100AA0001 /* AppUpdateCleanupService.swift in Sources */,
 				F30000242FC2000100AA0001 /* UpdateWindowView.swift in Sources */,
+				57BB469580E04CE084B6E0B6 /* ParakeetUpdatePromptContent.swift in Sources */,
 				F30000262FC2000100AA0001 /* UpdateHeaderCard.swift in Sources */,
 				F30000282FC2000100AA0001 /* UpdateReleaseNotesCard.swift in Sources */,
 				F300002A2FC2000100AA0001 /* UpdateProgressCard.swift in Sources */,
@@ -1312,6 +1348,8 @@
 				8E6D05E02F3C5246003BD458 /* ModelDownloader.swift in Sources */,
 				C11000122F90000100AA0001 /* ModelDownloader+DownloadLifecycle.swift in Sources */,
 				C11000132F90000100AA0001 /* ModelDownloader+Validation.swift in Sources */,
+				1EBD8602BFFB4976AE30C6DA /* StagedModelInstallSwap.swift in Sources */,
+				3B5B21740C234B818340F1DE /* DictationModelInstallPhase.swift in Sources */,
 				C11000142F90000100AA0001 /* ModelDownloadTransport.swift in Sources */,
 				8E6D05E12F3C5246003BD458 /* KeyboardMonitor.swift in Sources */,
 				8F1100022F43000100AA0001 /* OverlayManager.swift in Sources */,
@@ -1346,8 +1384,11 @@
 				F1D100172FEA000100AA0001 /* FirstDictationOptionKeyPromptView.swift in Sources */,
 				F1D1001A2FEA000100AA0001 /* FirstDictationSuccessCelebrationView.swift in Sources */,
 				8EBB01032F41000200BB1101 /* UpdatePromptOverlay.swift in Sources */,
+				9281E6C8116E4600AFE6C47A /* UpdatePromptPanelQueue.swift in Sources */,
 				8F5502012F47010000EE5501 /* UpdateFeedConfig.swift in Sources */,
 				8F6602012F48010000FF6601 /* UpdatePromptPresenting.swift in Sources */,
+				EF9464A6E48D4A629797283C /* ParakeetUpdatePromptController.swift in Sources */,
+				07CCF3D9F5C54466B4311E81 /* UpdatePromptProgress.swift in Sources */,
 				8F7702022F49010000117701 /* PasteFailureRecoveryOverlayView.swift in Sources */,
 				9A1000122F4B000100AA0001 /* PasteModels.swift in Sources */,
 				9A1000132F4B000100AA0001 /* PasteAXInspector.swift in Sources */,
@@ -1381,10 +1422,12 @@
 				F30000342FC2000100AA0001 /* AppUpdateLaunchNoticeServiceTests.swift in Sources */,
 				AB3000232F60000100AA0001 /* KeyVoxAppActivationPolicyTests.swift in Sources */,
 				AB3000012F60000100AA0001 /* TestHelpers.swift in Sources */,
+				155B736EB6234CB090A4F3CD /* ParakeetInstallFixture.swift in Sources */,
 				AB3000242F60000100AA0001 /* AudioDeviceManagerCompatibilityTests.swift in Sources */,
 				AB3000032F60000100AA0001 /* OverlayScreenPersistenceTests.swift in Sources */,
 				AB3000042F60000100AA0001 /* OverlayFlingPhysicsTests.swift in Sources */,
 				AB3000122F60000100AA0001 /* WarningKindTests.swift in Sources */,
+				333F4E6BD3734E409DEDB489 /* UpdatePromptPanelQueueTests.swift in Sources */,
 				8E37FC672FB0F954004DD69A /* WindowManagerOnboardingWindowLevelTests.swift in Sources */,
 				B12000012FD4000100AA0001 /* InstalledDictationModelLocatorTests.swift in Sources */,
 				AB3000342F60000100AA0001 /* AppSettingsStoreTests.swift in Sources */,
@@ -1409,6 +1452,7 @@
 				8E03671C2F49848500017017 /* PasteServiceExecutionMocks.swift in Sources */,
 				AB3000282F60000100AA0001 /* PasteWarningGuardrailTests.swift in Sources */,
 				AB3000162F60000100AA0001 /* AppUpdateServiceTests.swift in Sources */,
+				CD07A00AAD51448D8773AEF8 /* ParakeetUpdatePromptControllerTests.swift in Sources */,
 				AB3000172F60000100AA0001 /* UpdateFeedResolverTests.swift in Sources */,
 				AB3000302F60000100AA0001 /* ModelDownloaderTests.swift in Sources */,
 				AB3000362F60000100AA0001 /* AudioDeviceManagerTests.swift in Sources */,
