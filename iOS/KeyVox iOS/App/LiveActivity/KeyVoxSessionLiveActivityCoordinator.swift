@@ -139,7 +139,7 @@ final class KeyVoxSessionLiveActivityCoordinator {
 
         isAudioRecordingStartPending = true
         do {
-            try await liveActivityController.startOrUpdate(weeklyWordCount: weeklyWordCount)
+            try await requireAudioRecordingActivity()
         } catch {
             isAudioRecordingStartPending = false
             throw error
@@ -150,12 +150,26 @@ final class KeyVoxSessionLiveActivityCoordinator {
         recordingStarted: Bool,
         isSessionActive: Bool,
         sessionDisablePending: Bool
-    ) async {
+    ) async throws {
         self.isSessionActive = isSessionActive
         self.sessionDisablePending = sessionDisablePending
         isAudioRecordingIntentSessionActive = recordingStarted && isSessionActive
         isAudioRecordingStartPending = false
-        await reconcileActivity()
+        guard isAudioRecordingIntentSessionActive else {
+            await reconcileActivity()
+            return
+        }
+        do {
+            try await requireAudioRecordingActivity()
+        } catch {
+            isAudioRecordingIntentSessionActive = false
+            throw error
+        }
+    }
+
+    private func requireAudioRecordingActivity() async throws {
+        try await liveActivityController.startOrUpdate(weeklyWordCount: weeklyWordCount)
+        guard isLiveActivityActive else { throw CancellationError() }
     }
 
     private func bind(

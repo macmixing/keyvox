@@ -169,7 +169,7 @@ struct KeyVoxSessionLiveActivityCoordinatorTests {
         await Task.yield()
 
         try await coordinator.prepareForAudioRecordingIntent()
-        await coordinator.completeAudioRecordingIntentStart(
+        try await coordinator.completeAudioRecordingIntentStart(
             recordingStarted: false,
             isSessionActive: false,
             sessionDisablePending: false
@@ -202,7 +202,7 @@ struct KeyVoxSessionLiveActivityCoordinatorTests {
         await Task.yield()
 
         try await coordinator.prepareForAudioRecordingIntent()
-        await coordinator.completeAudioRecordingIntentStart(
+        try await coordinator.completeAudioRecordingIntentStart(
             recordingStarted: true,
             isSessionActive: true,
             sessionDisablePending: false
@@ -212,13 +212,32 @@ struct KeyVoxSessionLiveActivityCoordinatorTests {
         #expect(controller.isActivityActive)
     }
 
+    @Test func recordingStartPropagatesFailureToRestoreTheRequiredActivity() async throws {
+        let controller = MockKeyVoxSessionLiveActivityController()
+        let coordinator = makeCoordinator(controller: controller)
+        await Task.yield()
+
+        try await coordinator.prepareForAudioRecordingIntent()
+        controller.isActivityActive = false
+        controller.startError = TestLiveActivityError.requestFailed
+
+        await #expect(throws: TestLiveActivityError.self) {
+            try await coordinator.completeAudioRecordingIntentStart(
+                recordingStarted: true,
+                isSessionActive: true,
+                sessionDisablePending: false
+            )
+        }
+        #expect(controller.isActivityActive == false)
+    }
+
     @Test func disablingPreferenceKeepsRequiredIntentActivityUntilSessionEnds() async throws {
         let controller = MockKeyVoxSessionLiveActivityController()
         let coordinator = makeCoordinator(controller: controller)
         await Task.yield()
 
         try await coordinator.prepareForAudioRecordingIntent()
-        await coordinator.completeAudioRecordingIntentStart(
+        try await coordinator.completeAudioRecordingIntentStart(
             recordingStarted: true,
             isSessionActive: true,
             sessionDisablePending: false

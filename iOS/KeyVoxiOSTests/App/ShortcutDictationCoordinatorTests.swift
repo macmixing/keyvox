@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 @testable import KeyVox_iOS
 
@@ -34,6 +35,25 @@ struct ShortcutDictationCoordinatorTests {
 
         #expect(outcome == .failed("Microphone unavailable"))
         #expect(calls.values == ["prepareActivity", "startRecording", "completeActivity:false:false:false"])
+    }
+
+    @Test func cancelsTheRecordingIfTheRequiredActivityCannotBeRestored() async {
+        let calls = ShortcutDictationCallRecorder()
+        let session = MockShortcutDictationSessionController(calls: calls)
+        let activity = MockShortcutRecordingActivityCoordinator(calls: calls)
+        let error = CancellationError()
+        activity.completionError = error
+        let coordinator = ShortcutDictationCoordinator(
+            sessionController: session,
+            liveActivityCoordinator: activity
+        )
+
+        let outcome = await coordinator.toggleRecording()
+
+        #expect(outcome == .failed(error.localizedDescription))
+        #expect(session.shortcutDictationState == .idle)
+        #expect(session.isSessionActive == false)
+        #expect(calls.values.last == "disableSession")
     }
 
     @Test func stopsRecordingStartedByAnotherSurfaceAndReturnsTranscript() async {
@@ -119,6 +139,12 @@ private final class MockShortcutDictationSessionController: ShortcutDictationSes
         return startResult
     }
 
+    func performDisableSessionCommand() async {
+        calls.values.append("disableSession")
+        shortcutDictationState = .idle
+        isSessionActive = false
+    }
+
     func performStopRecordingCommand(
         releaseMicImmediately: Bool,
         shouldReleaseMicAtCompletion: (@MainActor () -> Bool)?
@@ -134,6 +160,7 @@ private final class MockShortcutRecordingActivityCoordinator: ShortcutRecordingA
     private let calls: ShortcutDictationCallRecorder
 
     var isLiveActivityActive = true
+    var completionError: Error?
 
     init(calls: ShortcutDictationCallRecorder) {
         self.calls = calls
@@ -147,10 +174,11 @@ private final class MockShortcutRecordingActivityCoordinator: ShortcutRecordingA
         recordingStarted: Bool,
         isSessionActive: Bool,
         sessionDisablePending: Bool
-    ) async {
+    ) async throws {
         calls.values.append(
             "completeActivity:\(recordingStarted):\(isSessionActive):\(sessionDisablePending)"
         )
+        if let completionError { throw completionError }
     }
 }
 
