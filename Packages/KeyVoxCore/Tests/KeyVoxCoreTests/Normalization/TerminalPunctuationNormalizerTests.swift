@@ -458,17 +458,41 @@ final class TerminalPunctuationNormalizerTests: LinguisticAnalyzerTestCase {
             "The trial period ends Friday.",
             "We had a long period of rain.",
             "Add a comma here.",
-            "I'm not doing it, period.",
-            "No, full stop.",
             "During the trial period the company offered refunds",
             "It was a tough period I think",
             "I love the Oxford comma",
             "Use a serial comma before and",
             "Comma is a punctuation mark",
+            "I just started the trial period.",
+            "Their return period ends Monday",
+            "The holiday period starts Monday",
+            "We met during the third period",
+            "We had a long period.",
+            "My period started today",
+            "I love period dramas",
         ]
 
         for input in unchangedInputs {
             XCTAssertEqual(inEnglish { normalizer.normalizeSpokenTerminalPunctuation(in: input) }, input)
+        }
+    }
+
+    func testConvertsSpokenPeriodCommandsWhereNoPhraseNeedsTheWord() {
+        let normalizer = TerminalPunctuationNormalizer()
+        let cases = [
+            (input: "Yeah, I'll go out with him, period.", expected: "Yeah, I'll go out with him."),
+            (input: "I'm not doing it, period.", expected: "I'm not doing it."),
+            (input: "No, full stop.", expected: "No."),
+            (input: "I went to the store period.", expected: "I went to the store."),
+            (input: "I went to the store period and I bought some apples today", expected: "I went to the store. and I bought some apples today"),
+            (input: "I'm done period see you later", expected: "I'm done. see you later"),
+        ]
+
+        for testCase in cases {
+            XCTAssertEqual(
+                inEnglish { normalizer.normalizeSpokenTerminalPunctuation(in: testCase.input) },
+                testCase.expected
+            )
         }
     }
 

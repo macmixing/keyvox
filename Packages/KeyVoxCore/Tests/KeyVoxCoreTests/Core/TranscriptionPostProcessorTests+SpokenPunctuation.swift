@@ -16,6 +16,19 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "I'm home. We leave at noon.")
     }
 
+    func testCapitalizesSentenceAfterSpokenPeriodBeforeAnyWord() async {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "I went to the store period and I bought some apples today",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline,
+            languageCode: "en"
+        )
+
+        XCTAssertEqual(output, "I went to the store. And I bought some apples today.")
+    }
+
     func testSpokenPeriodBeforeTranscribedPeriodLeavesOnePeriod() async {
         let processor = TranscriptionPostProcessor()
 
