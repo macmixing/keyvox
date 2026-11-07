@@ -215,7 +215,7 @@ extension TranscriptionManager {
                     self.appSettings.hasCompletedFirstDictation = true
                     if hadCompletedFirstDictation == false,
                        WindowManager.shared.firstDictationOnboardingWindow == nil {
-                        KeyVoxApp.presentVibesIntroIfEligibleAfterUpdateGate()
+                        KeyVoxApp.presentLaunchPromptsIfEligibleAfterUpdateGate()
                     }
                     UserDefaults.standard.set(
                         pipelineResult.finalText,

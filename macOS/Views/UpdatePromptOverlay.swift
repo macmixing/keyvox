@@ -47,24 +47,14 @@ struct UpdatePromptOverlay: View {
 
             Spacer(minLength: 0)
 
-            HStack(spacing: 10) {
-                AppActionButton(
-                    title: prompt.dismissButtonTitle,
-                    style: .secondary,
-                    minWidth: 150,
-                    action: onDismiss
+            if let progress = prompt.progress {
+                LabeledProgressBar(
+                    progress: min(max(progress.value, 0), 1),
+                    statusText: progress.statusText
                 )
-
-                if let primaryButtonTitle = prompt.primaryButtonTitle {
-                    AppActionButton(
-                        title: primaryButtonTitle,
-                        style: .primary,
-                        minWidth: 150,
-                        action: onPrimaryAction
-                    )
-                }
+            } else {
+                actionButtons
             }
-            .frame(maxWidth: .infinity, alignment: .center)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .padding(UpdatePromptLayout.shellPadding)
@@ -82,12 +72,34 @@ struct UpdatePromptOverlay: View {
         )
         .preferredColorScheme(.dark)
     }
+
+    private var actionButtons: some View {
+        HStack(spacing: 10) {
+            AppActionButton(
+                title: prompt.dismissButtonTitle,
+                style: .secondary,
+                minWidth: 150,
+                action: onDismiss
+            )
+
+            if let primaryButtonTitle = prompt.primaryButtonTitle {
+                AppActionButton(
+                    title: primaryButtonTitle,
+                    style: .primary,
+                    minWidth: 150,
+                    action: onPrimaryAction
+                )
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .center)
+    }
 }
 
 @MainActor
 final class UpdatePromptManager {
     static let shared = UpdatePromptManager()
     private var window: NSPanel?
+    private var hostingView: NSHostingView<UpdatePromptOverlay>?
 
     func show(prompt: UpdatePrompt) {
         if window == nil {
@@ -106,19 +118,16 @@ final class UpdatePromptManager {
             window = panel
         }
 
-        let hostingView = NSHostingView(
-            rootView: UpdatePromptOverlay(
-                prompt: prompt,
-                onPrimaryAction: {
-                    prompt.onPrimaryAction?()
-                    UpdatePromptManager.shared.hide()
-                },
-                onDismiss: {
-                    prompt.onDismiss()
-                    UpdatePromptManager.shared.hide()
-                }
-            )
-        )
+        let overlay = makeOverlay(for: prompt)
+
+        // A prompt that is already on screen changes its content in place.
+        if window?.isVisible == true, let hostingView {
+            hostingView.rootView = overlay
+            return
+        }
+
+        let hostingView = NSHostingView(rootView: overlay)
+        self.hostingView = hostingView
         hostingView.frame = NSRect(x: 0, y: 0, width: UpdatePromptLayout.width, height: UpdatePromptLayout.height)
         window?.contentView = hostingView
         window?.setContentSize(NSSize(width: UpdatePromptLayout.width, height: UpdatePromptLayout.height))
@@ -129,6 +138,22 @@ final class UpdatePromptManager {
 
     func hide() {
         window?.orderOut(nil)
+    }
+
+    private func makeOverlay(for prompt: UpdatePrompt) -> UpdatePromptOverlay {
+        UpdatePromptOverlay(
+            prompt: prompt,
+            onPrimaryAction: {
+                prompt.onPrimaryAction?()
+                if prompt.dismissesOnPrimaryAction {
+                    UpdatePromptManager.shared.hide()
+                }
+            },
+            onDismiss: {
+                prompt.onDismiss()
+                UpdatePromptManager.shared.hide()
+            }
+        )
     }
 
     private func centerPromptWindow() {

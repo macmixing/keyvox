@@ -46,7 +46,7 @@ extension WindowManager {
                     window.close()
                     self.firstDictationOnboardingWindow = nil
                     self.openSettings(centered: true)
-                    KeyVoxApp.presentVibesIntroIfEligibleAfterUpdateGate()
+                    KeyVoxApp.presentLaunchPromptsIfEligibleAfterUpdateGate()
                 }
             )
             .keyVoxWindowDragGesture(allowsActivationEvents: true)
