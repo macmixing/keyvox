@@ -6,6 +6,25 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.0.5] - 2026-11-06
+
+Bundled Polished adapter refresh for casual spoken reductions.
+
+### Includes
+
+- Updated the bundled Polished adapter resource to `polished-alpha-028-lora.gguf`.
+- Continued Polished from alpha-027 using the `alpha-028-continuation-casual-reductions` dataset so `gonna`, `wanna`, `gotta`, and related reductions are written out in standard form.
+- Added guards that keep `gotta` meaning `got a`, clause-joining `and`, sentence-start `Anyway,`, already-standard phrasing, and list commas after removed filler.
+- Replayed the alpha-027 continuation and the alpha-017 `ain't` examples so meaning preservation and standard-English repair hold.
+- Updated the adapter catalog so Polished resolves to the promoted bundled adapter resource.
+
+### Notes
+
+- `1.0.5` bumps the tracked adapter package version for the refreshed bundled Polished adapter resource.
+- Casual remains on `casual-alpha-9-lora.gguf`.
+
+---
+
 ## [1.0.4] - 2026-06-05
 
 Bundled Polished adapter refresh for bad-rating meaning preservation.

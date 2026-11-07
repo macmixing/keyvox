@@ -57,6 +57,30 @@ final class LocalLanguageModelPolishedGauntletLiveTests: XCTestCase {
 
     private static let polishedAddressOrdinalSecondInput = "She said her address was eleven thirty seven North Twelfth Street."
 
+    private static let polishedCasualReductionsMixedQuestionInput = "Hey, what's up? I'm gonna do this, but do you wanna go there? I gotta get there tomorrow at two."
+
+    private static let polishedCasualReductionsClausesInput = "I wanna go but I gotta work, so I'm gonna skip it."
+
+    private static let polishedCasualReductionsFillerInput = "Um, so I'm gonna, like, head out, and I gotta be back by six."
+
+    private static let polishedSubjectFreeGottaInput = "Gotta run, talk soon."
+
+    private static let polishedGottaArticleInput = "I gotta question for you."
+
+    private static let polishedNegatedGottaInput = "You don't gotta do that."
+
+    private static let polishedSentenceStartWannaInput = "Wanna come over later?"
+
+    private static let polishedAintGonnaInput = "I ain't gonna do it."
+
+    private static let polishedRelatedReductionsInput = "Lemme know if you need anything."
+
+    private static let polishedDunnoInput = "I dunno what happened."
+
+    private static let polishedStandardGoingToInput = "I'm going to the store."
+
+    private static let polishedStandardGotToInput = "We've got to leave now."
+
     private static let cases = [
         LiveStylePromptCase(
             style: .polished,
@@ -142,6 +166,66 @@ final class LocalLanguageModelPolishedGauntletLiveTests: XCTestCase {
             style: .polished,
             input: polishedAddressOrdinalSecondInput,
             expected: "She said her address was 1137 North 12th Street."
+        ),
+        LiveStylePromptCase(
+            style: .polished,
+            input: polishedCasualReductionsMixedQuestionInput,
+            expected: "Hey, what's up? I'm going to do this, but do you want to go there? I have to get there tomorrow at two."
+        ),
+        LiveStylePromptCase(
+            style: .polished,
+            input: polishedCasualReductionsClausesInput,
+            expected: "I want to go, but I have to work, so I'm going to skip it."
+        ),
+        LiveStylePromptCase(
+            style: .polished,
+            input: polishedCasualReductionsFillerInput,
+            expected: "I'm going to head out, and I have to be back by six."
+        ),
+        LiveStylePromptCase(
+            style: .polished,
+            input: polishedSubjectFreeGottaInput,
+            expected: "Have to run, talk soon."
+        ),
+        LiveStylePromptCase(
+            style: .polished,
+            input: polishedGottaArticleInput,
+            expected: "I have a question for you."
+        ),
+        LiveStylePromptCase(
+            style: .polished,
+            input: polishedNegatedGottaInput,
+            expected: "You don't have to do that."
+        ),
+        LiveStylePromptCase(
+            style: .polished,
+            input: polishedSentenceStartWannaInput,
+            expected: "Want to come over later?"
+        ),
+        LiveStylePromptCase(
+            style: .polished,
+            input: polishedAintGonnaInput,
+            expected: "I'm not going to do it."
+        ),
+        LiveStylePromptCase(
+            style: .polished,
+            input: polishedRelatedReductionsInput,
+            expected: "Let me know if you need anything."
+        ),
+        LiveStylePromptCase(
+            style: .polished,
+            input: polishedDunnoInput,
+            expected: "I don't know what happened."
+        ),
+        LiveStylePromptCase(
+            style: .polished,
+            input: polishedStandardGoingToInput,
+            expected: polishedStandardGoingToInput
+        ),
+        LiveStylePromptCase(
+            style: .polished,
+            input: polishedStandardGotToInput,
+            expected: polishedStandardGotToInput
         ),
     ]
 
@@ -358,6 +442,114 @@ final class LocalLanguageModelPolishedGauntletLiveTests: XCTestCase {
                 "1137 North 2nd Street",
                 "North 2nd Street",
                 "eleven thirty seven",
+            ]
+        ),
+        polishedCasualReductionsMixedQuestionInput: LiveStylePromptRequirements(
+            requiredFragments: [
+                "I'm going to do this",
+                "want to go there",
+                "I have to get there tomorrow",
+            ],
+            extraForbiddenFragments: [
+                "gonna",
+                "wanna",
+                "gotta",
+            ]
+        ),
+        polishedCasualReductionsClausesInput: LiveStylePromptRequirements(
+            requiredFragments: [
+                "I want to go",
+                "I have to work",
+                "I'm going to skip it",
+            ],
+            extraForbiddenFragments: [
+                "gonna",
+                "wanna",
+                "gotta",
+            ]
+        ),
+        polishedCasualReductionsFillerInput: LiveStylePromptRequirements(
+            requiredFragments: [
+                "going to head out",
+                "and I have to be back by six",
+            ],
+            extraForbiddenFragments: [
+                "gonna",
+                "gotta",
+                "um,",
+                " like",
+            ]
+        ),
+        polishedSubjectFreeGottaInput: LiveStylePromptRequirements(
+            requiredFragments: [
+                "Have to run",
+                "talk soon",
+            ],
+            extraForbiddenFragments: [
+                "gotta",
+            ]
+        ),
+        polishedGottaArticleInput: LiveStylePromptRequirements(
+            requiredFragments: [
+                "I have a question for you",
+            ],
+            extraForbiddenFragments: [
+                "gotta",
+                "have to question",
+            ]
+        ),
+        polishedNegatedGottaInput: LiveStylePromptRequirements(
+            requiredFragments: [
+                "You don't have to do that",
+            ],
+            extraForbiddenFragments: [
+                "gotta",
+            ]
+        ),
+        polishedSentenceStartWannaInput: LiveStylePromptRequirements(
+            requiredFragments: [
+                "Want to come over later?",
+            ],
+            extraForbiddenFragments: [
+                "wanna",
+            ]
+        ),
+        polishedAintGonnaInput: LiveStylePromptRequirements(
+            requiredFragments: [
+                "I'm not going to do it",
+            ],
+            extraForbiddenFragments: [
+                "ain't",
+                "gonna",
+            ]
+        ),
+        polishedRelatedReductionsInput: LiveStylePromptRequirements(
+            requiredFragments: [
+                "Let me know if you need anything",
+            ],
+            extraForbiddenFragments: [
+                "lemme",
+            ]
+        ),
+        polishedDunnoInput: LiveStylePromptRequirements(
+            requiredFragments: [
+                "I don't know what happened",
+            ],
+            extraForbiddenFragments: [
+                "dunno",
+            ]
+        ),
+        polishedStandardGoingToInput: LiveStylePromptRequirements(
+            requiredFragments: [
+                polishedStandardGoingToInput,
+            ]
+        ),
+        polishedStandardGotToInput: LiveStylePromptRequirements(
+            requiredFragments: [
+                polishedStandardGotToInput,
+            ],
+            extraForbiddenFragments: [
+                "have to",
             ]
         ),
     ]

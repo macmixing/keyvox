@@ -1,0 +1,32 @@
+{
+  "categories": {
+    "bad_grammar_aint": 39,
+    "bad_grammar_aint_context": 14,
+    "casual_reduction_control": 12,
+    "casual_reduction_gonna": 19,
+    "casual_reduction_gotta": 48,
+    "casual_reduction_meaning_guard": 13,
+    "casual_reduction_mixed": 12,
+    "casual_reduction_other": 20,
+    "casual_reduction_wanna": 18,
+    "duplicate_article_cleanup": 7,
+    "filler_list_guard": 4,
+    "invention_guard": 7,
+    "live_prompt_compatibility": 19,
+    "live_regression_guard": 27,
+    "negation_preservation": 7,
+    "pronoun_preservation": 7,
+    "though_preservation": 7,
+    "uncertainty_preservation": 7
+  },
+  "continued_from": "ModelTraining/artifacts/current/polished-lora-alpha-027/adapters/polished-alpha-027/adapters.safetensors",
+  "purpose": "continue polished alpha-027 with casual spoken reductions written out in standard form",
+  "replayed_from": [
+    "ModelTraining/runs/polished/alpha-027/scripts/generate_dataset.py",
+    "ModelTraining/datasets/polished/alpha-017-continuation-aint"
+  ],
+  "test_count": 21,
+  "train_count": 245,
+  "valid_count": 21,
+  "version": "polished-alpha-028"
+}

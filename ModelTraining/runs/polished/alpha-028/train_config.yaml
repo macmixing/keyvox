@@ -1,0 +1,6 @@
+fine_tune_type: lora
+num_layers: -1
+lora_parameters:
+  rank: 16
+  scale: 40.0
+  dropout: 0.0
