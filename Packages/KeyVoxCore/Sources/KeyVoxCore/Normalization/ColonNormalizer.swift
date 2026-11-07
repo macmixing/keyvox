@@ -4,10 +4,12 @@ import Foundation
 /// Writes a spoken colon, or a word the transcriber heard in its place, as a colon, replacing
 /// whatever punctuation the transcriber put on either side of it. The word stays a word when it is
 /// part of a hyphenated word or one of the user's dictionary entries, belongs to a listed phrase
-/// that names the body part, addresses a person after a phrase that opens with a greeting,
-/// farewell, or thanks, follows a word that needs a noun after it, or ends a phrase opened by a
-/// determiner where its sentence ends or what follows needs it as a noun, and when nothing comes
-/// before it in the dictation.
+/// that names the body part, or follows a word that needs a noun after it, and when nothing comes
+/// before it in the dictation. The written word also stays a word when it ends a phrase opened by
+/// a determiner where its sentence ends or what follows needs it as a noun, or opens a sentence
+/// and runs straight into the next word. A misheard spelling, such as "Colin", also stays a name when it addresses a
+/// person after a phrase that opens with a greeting, farewell, or thanks, or sits next to a
+/// spoken punctuation mark, which the speaker would not say beside a spoken colon.
 public struct ColonNormalizer {
     private struct WordToken {
         let text: String
@@ -73,11 +75,20 @@ public struct ColonNormalizer {
         guard isSpokenColon(at: index, words: words, text: text, dictionaryEntries: dictionaryEntries) else {
             return nil
         }
-        let replacement = replacementRange(for: words[index].range, in: text)
+        let word = words[index].range
+        let replacement = replacementRange(for: word, in: text)
         // Words must come before the colon in the dictation, and it either ends the dictation,
         // introducing what the speaker sends next, or has words after it.
         guard text[..<replacement.lowerBound].contains(where: isContent),
               replacement.upperBound == text.endIndex || text[replacement.upperBound...].contains(where: isContent) else {
+            return nil
+        }
+        // The written word opening a sentence and running straight into the next word is that
+        // sentence's subject, as in "Colon health matters".
+        if isWrittenName(words[index].text),
+           text[replacement.lowerBound..<word.lowerBound].contains(where: isSentenceBoundary),
+           replacement.upperBound < text.endIndex,
+           text[word.upperBound..<replacement.upperBound].allSatisfy(\.isWhitespace) {
             return nil
         }
         return replacement
@@ -93,8 +104,12 @@ public struct ColonNormalizer {
         guard isColonHomophone(word.text),
               !isHyphenated(word.range, in: text),
               !isInsideDictionaryEntry(word.range, in: text, dictionaryEntries: dictionaryEntries),
-              Self.namePhrases?.phraseRange(around: word.range, named: Self.writtenName, in: text) == nil,
-              !addressesPerson(replacementRange(for: word.range, in: text), in: text) else {
+              Self.namePhrases?.phraseRange(around: word.range, named: Self.writtenName, in: text) == nil else {
+            return false
+        }
+        if !isWrittenName(word.text),
+           addressesPerson(replacementRange(for: word.range, in: text), in: text)
+            || neighborsSpokenCommand(at: index, words: words) {
             return false
         }
 
@@ -109,10 +124,10 @@ public struct ColonNormalizer {
                 default:
                     break
                 }
-                // A phrase opened by a determiner names the thing when the sentence ends after it,
-                // as in "the word colon.", or what follows needs it as a noun, as in "the word
-                // colon appears".
-                if opensNounPhrase(endingAt: previousIndex, words: words, text: text) {
+                // The written word ending a phrase opened by a determiner names the thing when the
+                // sentence ends after it, as in "the word colon.", or what follows needs it as a
+                // noun, as in "the word colon appears".
+                if isWrittenName(word.text), opensNounPhrase(endingAt: previousIndex, words: words, text: text) {
                     if endsSentence(after: word.range, in: text) {
                         return false
                     }
@@ -141,6 +156,24 @@ public struct ColonNormalizer {
             phraseStart = text.index(before: phraseStart)
         }
         return greetingPhrases.startsWithPhrase(text[phraseStart..<span.lowerBound])
+    }
+
+    /// Whether a spoken punctuation mark comes right before or right after the word at `index`,
+    /// whatever punctuation the transcriber put between them, as in "Colin comma" or "period Colin".
+    private func neighborsSpokenCommand(at index: Int, words: [WordToken]) -> Bool {
+        let lowercased = words.map { $0.text.lowercased() }
+        return SpokenCommand.all.contains { command in
+            let after = index + 1
+            let before = index - command.count
+            return (after + command.count <= lowercased.count
+                    && Array(lowercased[after..<(after + command.count)]) == command)
+                || (before >= 0 && Array(lowercased[before..<index]) == command)
+        }
+    }
+
+    /// Whether the word is spelled as the mark's written name rather than a misheard spelling.
+    private func isWrittenName(_ word: String) -> Bool {
+        word.lowercased() == Self.writtenName
     }
 
     /// Whether the descriptive words ending at `index` follow a determiner within one phrase.
@@ -234,25 +267,53 @@ public struct ColonNormalizer {
     }
 
     /// The spoken colon with the spaces, line breaks, and separating punctuation the transcriber
-    /// put on either side of it, which the written colon replaces.
+    /// put on either side of it, which the written colon replaces. A dash joined to a word beyond
+    /// it, such as a minus sign, stays, and so does everything on a new line after the word, such
+    /// as a list's first bullet.
     private func replacementRange(for range: Range<String.Index>, in text: String) -> Range<String.Index> {
         var start = range.lowerBound
-        while start > text.startIndex, isSeparator(text[text.index(before: start)]) {
-            start = text.index(before: start)
+        while start > text.startIndex {
+            let previous = text.index(before: start)
+            let character = text[previous]
+            if character.isWhitespace {
+                start = previous
+                continue
+            }
+            guard isSeparatingPunctuation(character) else { break }
+            if isDash(character), previous > text.startIndex,
+               !text[text.index(before: previous)].isWhitespace {
+                break
+            }
+            start = previous
         }
 
         var end = range.upperBound
-        while end < text.endIndex, isSeparator(text[end]) {
-            end = text.index(after: end)
+        var passedLineBreak = false
+        while end < text.endIndex {
+            let character = text[end]
+            if character.isWhitespace {
+                passedLineBreak = passedLineBreak || character.isNewline
+                end = text.index(after: end)
+                continue
+            }
+            guard !passedLineBreak, isSeparatingPunctuation(character) else { break }
+            let next = text.index(after: end)
+            if isDash(character), next < text.endIndex, !text[next].isWhitespace {
+                break
+            }
+            end = next
         }
         return start..<end
     }
 
-    /// Whether the character is a space, a line break, a dash, or punctuation that Unicode marks as
-    /// ending a sentence or clause, rather than a quote, bracket, or mark that belongs to a word.
-    private func isSeparator(_ character: Character) -> Bool {
-        if character.isWhitespace { return true }
-        return character.unicodeScalars.allSatisfy { $0.properties.isTerminalPunctuation || $0.properties.isDash }
+    /// Whether the character is a dash or punctuation that Unicode marks as ending a sentence or
+    /// clause, rather than a quote, bracket, or mark that belongs to a word.
+    private func isSeparatingPunctuation(_ character: Character) -> Bool {
+        character.unicodeScalars.allSatisfy { $0.properties.isTerminalPunctuation || $0.properties.isDash }
+    }
+
+    private func isDash(_ character: Character) -> Bool {
+        character.unicodeScalars.allSatisfy { $0.properties.isDash }
     }
 
     private func isSentenceBoundary(_ character: Character) -> Bool {

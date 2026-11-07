@@ -469,6 +469,68 @@ extension TranscriptionPostProcessorTests {
         }
     }
 
+    func testNormalizesWrittenColonInClauseOpenedByGreetingWord() async {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Thanks for coming colon here is the plan for today.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "Thanks for coming: Here is the plan for today.")
+    }
+
+    func testKeepsWrittenColonOpeningSentenceAsItsSubject() async {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "The doctor called. Colon screening starts next week.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "The doctor called. Colon screening starts next week.")
+    }
+
+    func testKeepsMinusSignAfterSpokenColon() async {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Here is the forecast for tomorrow colon -3 degrees and snow.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "Here is the forecast for tomorrow: -3 degrees and snow.")
+    }
+
+    func testKeepsFirstBulletAfterSpokenColonOnItsLine() async {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Here is the packing list Colin.\n- socks\n- boots",
+            dictionaryEntries: [],
+            renderMode: .multiline
+        )
+
+        XCTAssertEqual(output, "Here is the packing list:\n- socks\n- boots")
+    }
+
+    func testKeepsColinNextToSpokenPunctuationMarkLiteral() async {
+        let processor = TranscriptionPostProcessor()
+
+        let cases: [(input: String, expected: String)] = [
+            ("I met Colin comma and we talked about the trip", "I met Colin, and we talked about the trip."),
+            ("We finished the project period Colin will present it tomorrow", "We finished the project. Colin will present it tomorrow."),
+        ]
+        for (input, expected) in cases {
+            let output = processor.process(input, dictionaryEntries: [], renderMode: .singleLineInline)
+
+            XCTAssertEqual(output, expected, input)
+        }
+    }
+
     func testKeepsColinSentenceAtDictationStartLiteral() async {
         let processor = TranscriptionPostProcessor()
 
