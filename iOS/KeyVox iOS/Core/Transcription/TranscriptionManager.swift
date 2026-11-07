@@ -11,6 +11,11 @@ final class TranscriptionManager: ObservableObject {
         case transcribing
     }
 
+    private enum CaptureMonitoring: Equatable {
+        case ownedBy(UUID)
+        case releasing
+    }
+
     @Published var state: State = .idle
     @Published var isSessionActive = false
     @Published var sessionDisablePending = false
@@ -46,6 +51,8 @@ final class TranscriptionManager: ObservableObject {
     let sessionPolicy: SessionPolicy
 
     private var cancellables = Set<AnyCancellable>()
+    // Cancellation invalidates transcription output while the same capture still owns the mic.
+    private var captureMonitoring: CaptureMonitoring?
     var pendingPipelineOutputText: String?
     var idleTimeoutTask: Task<Void, Never>?
     var utteranceSafetyTask: Task<Void, Never>?
@@ -208,7 +215,8 @@ final class TranscriptionManager: ObservableObject {
     }
 
     func performEnableSessionCommand() async {
-        guard !isSessionActive else { return }
+        guard !isSessionActive, captureMonitoring != .releasing else { return }
+        captureMonitoring = nil
         lastErrorMessage = nil
 
         do {
@@ -238,12 +246,13 @@ final class TranscriptionManager: ObservableObject {
     }
 
     func performStartRecordingCommand(isFromURL: Bool = false) async -> TranscriptionStartCommandResult {
-        guard state == .idle else { return .alreadyInProgress }
+        guard state == .idle, captureMonitoring != .releasing else { return .alreadyInProgress }
         KeyVoxIPCBridge.removeTranscription()
         state = .recording
         lastErrorMessage = nil
         pendingPipelineOutputText = nil
         activeUtteranceID = UUID()
+        captureMonitoring = .ownedBy(activeUtteranceID)
         refreshModelAvailability()
         cancelIdleTimeout()
 
@@ -271,6 +280,10 @@ final class TranscriptionManager: ObservableObject {
     func repairMonitoringSessionIfNeeded() async {
         guard state == .idle else { return }
         guard sessionDisablePending == false else { return }
+        guard captureMonitoring != .releasing else { return }
+        if !isSessionActive {
+            captureMonitoring = nil
+        }
 
         do {
             try await recorder.repairMonitoringAfterPlayback()
@@ -285,7 +298,8 @@ final class TranscriptionManager: ObservableObject {
     }
 
     func performStopRecordingCommand(
-        releaseMicImmediately: Bool = false
+        releaseMicImmediately: Bool = false,
+        shouldReleaseMicAtCompletion: (@MainActor () -> Bool)? = nil
     ) async -> TranscriptionStopCommandResult {
         guard state == .recording else { return .notRecording }
         let utteranceID = activeUtteranceID
@@ -299,8 +313,8 @@ final class TranscriptionManager: ObservableObject {
 
         let stoppedCapture = await recorder.stopRecording()
         var shouldRetryImmediateRelease = false
-        if releaseMicImmediately {
-            await releaseSessionMonitoringAfterCapture()
+        if releaseMicImmediately, captureMonitoring == .ownedBy(utteranceID) {
+            await releaseCaptureMonitoring(for: utteranceID)
             shouldRetryImmediateRelease = isSessionActive
         }
 
@@ -310,13 +324,20 @@ final class TranscriptionManager: ObservableObject {
             startTime: startTime
         )
 
-        if shouldRetryImmediateRelease, isSessionActive {
-            await releaseSessionMonitoringAfterCapture()
+        if isSessionActive, captureMonitoring == .ownedBy(utteranceID),
+           shouldRetryImmediateRelease || shouldReleaseMicAtCompletion?() == true {
+            await releaseCaptureMonitoring(for: utteranceID)
             if isSessionActive {
                 armIdleTimeout()
             }
         }
         return result
+    }
+
+    private func releaseCaptureMonitoring(for utteranceID: UUID) async {
+        captureMonitoring = .releasing
+        await releaseSessionMonitoringAfterCapture()
+        captureMonitoring = isSessionActive ? .ownedBy(utteranceID) : nil
     }
 
     func completeStopRecording(

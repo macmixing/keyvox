@@ -260,7 +260,7 @@ final class KeyboardViewController: UIInputViewController {
 
     override func textDidChange(_ textInput: UITextInput?) {
         super.textDidChange(textInput)
-        if awaitsFieldState, rootContainerView != nil {
+        if awaitsFieldState, isPresentationBound {
             awaitsFieldState = false
             prepareTypingForCurrentField()
             return
@@ -278,7 +278,7 @@ final class KeyboardViewController: UIInputViewController {
         // The system keyboard ends its emoji search when it goes away.
         leaveEmojiSearch()
         guard extensionHostIsActive else { return }
-        tearDownPresentation()
+        deactivatePresentationBindings()
     }
 
     override func viewDidDisappear(_ animated: Bool) {
@@ -286,12 +286,13 @@ final class KeyboardViewController: UIInputViewController {
         rootContainerView?.keyGridView.resetInteractionState()
         if extensionHostIsActive {
             resetCapsLockStateIfNeeded()
-            tearDownPresentation()
+            deactivatePresentationBindings()
         }
     }
 
     deinit {
-        tearDownPresentation()
+        stopPresentationUpdates()
+        emojiDeleteRepeatController.cancel()
         removeHostLifecycleObservers()
     }
 
@@ -373,6 +374,11 @@ final class KeyboardViewController: UIInputViewController {
             return
         }
 
+        defer {
+            indicatorDriver.phase = keyboardState.indicatorPhase
+            indicatorDriver.isPlaybackActive = keyboardState.isTTSPlaybackActive
+        }
+        guard isPresentationBound else { return }
         let toolbarMode = currentToolbarMode()
         rootContainerView?.emojiPageView.returnKey = emojiPageReturnKey
         rootContainerView?.apply(
@@ -404,8 +410,6 @@ final class KeyboardViewController: UIInputViewController {
         if toolbarMode != .fullAccessWarning {
             setFullAccessInstructionsPresented(false)
         }
-        indicatorDriver.phase = keyboardState.indicatorPhase
-        indicatorDriver.isPlaybackActive = keyboardState.isTTSPlaybackActive
     }
 
     /// Hands the chosen theme to every view below the keyboard, which recolor themselves with it.
@@ -459,13 +463,15 @@ final class KeyboardViewController: UIInputViewController {
     }
 
     func setFullAccessInstructionsPresented(_ isPresented: Bool) {
-        if isPresented {
+        let showsInstructions = isPresentationBound && isPresented
+        if showsInstructions {
             ensureFullAccessView().isHidden = false
         } else {
             fullAccessView?.isHidden = true
         }
-        rootContainerView?.isHidden = isPresented
-        popupOverlayView?.isHidden = isPresented
+        let hidesKeyboard = !isPresentationBound || showsInstructions
+        rootContainerView?.isHidden = hidesKeyboard
+        popupOverlayView?.isHidden = hidesKeyboard
     }
 
     @objc

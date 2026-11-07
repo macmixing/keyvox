@@ -21,7 +21,11 @@ protocol ShortcutDictationSessionControlling: AnyObject {
     var sessionDisablePending: Bool { get }
 
     func performStartRecordingCommand(isFromURL: Bool) async -> TranscriptionStartCommandResult
-    func performStopRecordingCommand(releaseMicImmediately: Bool) async -> TranscriptionStopCommandResult
+    func performDisableSessionCommand() async
+    func performStopRecordingCommand(
+        releaseMicImmediately: Bool,
+        shouldReleaseMicAtCompletion: (@MainActor () -> Bool)?
+    ) async -> TranscriptionStopCommandResult
 }
 
 @MainActor
@@ -33,7 +37,7 @@ protocol ShortcutRecordingActivityCoordinating: AnyObject {
         recordingStarted: Bool,
         isSessionActive: Bool,
         sessionDisablePending: Bool
-    ) async
+    ) async throws
 }
 
 extension TranscriptionManager: ShortcutDictationSessionControlling {
@@ -83,11 +87,16 @@ final class ShortcutDictationCoordinator {
         }
 
         let result = await sessionController.performStartRecordingCommand(isFromURL: false)
-        await liveActivityCoordinator.completeAudioRecordingIntentStart(
-            recordingStarted: result == .started,
-            isSessionActive: sessionController.isSessionActive,
-            sessionDisablePending: sessionController.sessionDisablePending
-        )
+        do {
+            try await liveActivityCoordinator.completeAudioRecordingIntentStart(
+                recordingStarted: result == .started,
+                isSessionActive: sessionController.isSessionActive,
+                sessionDisablePending: sessionController.sessionDisablePending
+            )
+        } catch {
+            await sessionController.performDisableSessionCommand()
+            return .failed(error.localizedDescription)
+        }
 
         switch result {
         case .started:
@@ -103,7 +112,8 @@ final class ShortcutDictationCoordinator {
         // The system requires a Live Activity whenever this intent leaves the mic active.
         let shouldReleaseMic = releaseMicImmediately || liveActivityCoordinator.isLiveActivityActive == false
         switch await sessionController.performStopRecordingCommand(
-            releaseMicImmediately: shouldReleaseMic
+            releaseMicImmediately: shouldReleaseMic,
+            shouldReleaseMicAtCompletion: { self.liveActivityCoordinator.isLiveActivityActive == false }
         ) {
         case .completed(let text):
             return .transcriptionCompleted(text)

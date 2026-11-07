@@ -373,6 +373,39 @@ struct TranscriptionManagerTests {
         #expect(harness.manager.lastTranscriptionText != nil)
     }
 
+    @Test(arguments: [false, true])
+    func shortcutStopRechecksTheLiveActivityAfterTranscription(activityEnds: Bool) async throws {
+        let harness = try makeHarness(serviceShouldSuspend: true)
+        defer { harness.cleanup() }
+        harness.recorder.stoppedCapture = acceptedCapture()
+        harness.transcriptionService.nextResult = TranscriptionProviderResult(
+            text: "test phrase",
+            languageCode: "en",
+            paragraphsText: nil,
+            inlineText: nil
+        )
+        let activity = ShortcutLiveActivityProbe()
+        let coordinator = ShortcutDictationCoordinator(
+            sessionController: harness.manager,
+            liveActivityCoordinator: activity
+        )
+
+        _ = await harness.manager.performStartRecordingCommand()
+        let task = Task { await coordinator.toggleRecording() }
+        await waitForManagerState(harness.manager, toBe: .transcribing)
+
+        #expect(harness.manager.state == .transcribing)
+        #expect(harness.recorder.stopMonitoringCallCount == 0)
+        activity.isLiveActivityActive = !activityEnds
+        harness.transcriptionService.resumeSuccess()
+        let result = await task.value
+
+        let text = try #require(harness.manager.lastTranscriptionText)
+        #expect(result == .transcriptionCompleted(text))
+        #expect(harness.manager.isSessionActive == !activityEnds)
+        #expect(harness.recorder.stopMonitoringCallCount == (activityEnds ? 1 : 0))
+    }
+
     @Test func immediateMicReleaseRetriesAfterTranscriptionWithoutLosingText() async throws {
         let harness = try makeHarness()
         defer { harness.cleanup() }
@@ -860,6 +893,19 @@ struct TranscriptionManagerTests {
             await Task.yield()
         }
     }
+}
+
+@MainActor
+private final class ShortcutLiveActivityProbe: ShortcutRecordingActivityCoordinating {
+    var isLiveActivityActive = true
+
+    func prepareForAudioRecordingIntent() async throws {}
+
+    func completeAudioRecordingIntentStart(
+        recordingStarted: Bool,
+        isSessionActive: Bool,
+        sessionDisablePending: Bool
+    ) async {}
 }
 
 @MainActor
