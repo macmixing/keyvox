@@ -203,7 +203,7 @@ public final class TranscriptionPostProcessor: @unchecked Sendable {
         #if DEBUG
         logPipelineStage("idiomNormalized", idiomNormalized)
         #endif
-        let colonNormalized = colonNormalizer.normalize(in: idiomNormalized)
+        let colonNormalized = colonNormalizer.normalize(in: idiomNormalized, dictionaryEntries: dictionaryEntries)
         #if DEBUG
         logPipelineStage("colonNormalized", colonNormalized)
         #endif

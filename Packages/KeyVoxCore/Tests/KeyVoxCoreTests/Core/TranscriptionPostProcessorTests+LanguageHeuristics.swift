@@ -265,7 +265,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "Example: Exhibit A")
     }
-    func testKeepsCommaDelimitedCapitalizedColinPhraseLiteral() async {
+    func testNormalizesCommaDelimitedCapitalizedColinPhraseToPunctuation() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -274,18 +274,40 @@ extension TranscriptionPostProcessorTests {
             renderMode: .singleLineInline
         )
 
-        XCTAssertEqual(output, "I'm going to the store, Colin, to buy some groceries.")
+        XCTAssertEqual(output, "I'm going to the store: To buy some groceries.")
     }
-    func testKeepsCommaDelimitedCollinNameLiteral() async {
+    func testNormalizesCommaDelimitedColinBeforeListToPunctuation() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
-            "I met, Collin, yesterday at lunch.",
+            "Here's what we need, Colin, apples and pears.",
             dictionaryEntries: [],
             renderMode: .singleLineInline
         )
 
+        XCTAssertEqual(output, "Here's what we need: Apples and pears")
+    }
+    func testKeepsCommaDelimitedDictionaryNameLiteral() async {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "I met, Collin, yesterday at lunch.",
+            dictionaryEntries: [DictionaryEntry(phrase: "Collin")],
+            renderMode: .singleLineInline
+        )
+
         XCTAssertEqual(output, "I met, Collin, yesterday at lunch.")
+    }
+    func testKeepsListedColonPhraseLiteral() async {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "The scan showed the sigmoid colon was healthy",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "The scan showed the sigmoid colon was healthy.")
     }
     func testColonNormalizationStaysCompatibleWithWebsiteNormalization() async {
         let processor = TranscriptionPostProcessor()
