@@ -18,7 +18,7 @@ enum ParakeetUpdatePromptContent {
     static func progress(_ state: DictationModelInstallState) -> UpdatePrompt {
         UpdatePrompt(
             title: "Updating Parakeet",
-            message: "You can keep dictating with your current Parakeet model while the update downloads.",
+            message: "KeyVox will let you know as soon as the updated Parakeet model is ready.",
             version: nil,
             build: nil,
             dismissButtonTitle: "Later",

@@ -3,7 +3,7 @@ import AppKit
 
 private enum UpdatePromptLayout {
     static let width: CGFloat = 430
-    static let height: CGFloat = 280
+    static let fallbackHeight: CGFloat = 280
     static let shellPadding = EdgeInsets(top: 20, leading: 24, bottom: 30, trailing: 24)
 }
 
@@ -45,8 +45,6 @@ struct UpdatePromptOverlay: View {
                     .frame(maxWidth: .infinity, alignment: .center)
             }
 
-            Spacer(minLength: 0)
-
             if let progress = prompt.progress {
                 LabeledProgressBar(
                     progress: min(max(progress.value, 0), 1),
@@ -56,9 +54,9 @@ struct UpdatePromptOverlay: View {
                 actionButtons
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .frame(maxWidth: .infinity, alignment: .topLeading)
         .padding(UpdatePromptLayout.shellPadding)
-        .frame(width: UpdatePromptLayout.width, height: UpdatePromptLayout.height)
+        .frame(width: UpdatePromptLayout.width)
         .background(
             ZStack {
                 VisualEffectView(material: .menu, blendingMode: .behindWindow)
@@ -104,7 +102,7 @@ final class UpdatePromptManager {
     func show(prompt: UpdatePrompt) {
         if window == nil {
             let panel = NSPanel(
-                contentRect: NSRect(x: 0, y: 0, width: UpdatePromptLayout.width, height: UpdatePromptLayout.height),
+                contentRect: NSRect(x: 0, y: 0, width: UpdatePromptLayout.width, height: UpdatePromptLayout.fallbackHeight),
                 styleMask: [.nonactivatingPanel, .fullSizeContentView],
                 backing: .buffered,
                 defer: false
@@ -121,16 +119,18 @@ final class UpdatePromptManager {
         let overlay = makeOverlay(for: prompt)
 
         // A prompt that is already on screen changes its content in place.
-        if window?.isVisible == true, let hostingView {
+        if let window, window.isVisible, let hostingView {
             hostingView.rootView = overlay
+            resizeKeepingTopEdge(window, to: resolvedContentSize(for: hostingView))
             return
         }
 
         let hostingView = NSHostingView(rootView: overlay)
         self.hostingView = hostingView
-        hostingView.frame = NSRect(x: 0, y: 0, width: UpdatePromptLayout.width, height: UpdatePromptLayout.height)
+        let contentSize = resolvedContentSize(for: hostingView)
+        hostingView.frame = NSRect(origin: .zero, size: contentSize)
         window?.contentView = hostingView
-        window?.setContentSize(NSSize(width: UpdatePromptLayout.width, height: UpdatePromptLayout.height))
+        window?.setContentSize(contentSize)
         centerPromptWindow()
 
         window?.orderFrontRegardless()
@@ -138,6 +138,22 @@ final class UpdatePromptManager {
 
     func hide() {
         window?.orderOut(nil)
+    }
+
+    private func resolvedContentSize(for hostingView: NSHostingView<UpdatePromptOverlay>) -> NSSize {
+        let fittingSize = hostingView.fittingSize
+        guard fittingSize.width > 0, fittingSize.height > 0 else {
+            return NSSize(width: UpdatePromptLayout.width, height: UpdatePromptLayout.fallbackHeight)
+        }
+
+        return fittingSize
+    }
+
+    private func resizeKeepingTopEdge(_ window: NSWindow, to contentSize: NSSize) {
+        var frame = window.frameRect(forContentRect: NSRect(origin: .zero, size: contentSize))
+        frame.origin.x = window.frame.minX
+        frame.origin.y = window.frame.maxY - frame.height
+        window.setFrame(frame, display: true, animate: false)
     }
 
     private func makeOverlay(for prompt: UpdatePrompt) -> UpdatePromptOverlay {
