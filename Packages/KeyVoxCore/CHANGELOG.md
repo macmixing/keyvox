@@ -6,6 +6,21 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.3.12] - 2026-11-07
+
+Parakeet now reports whether its model actually loaded, so an app can confirm a model is ready before telling the user.
+
+### Includes
+
+- Added `ParakeetService.isModelLoaded`, which is true only once the Parakeet model is loaded in memory and stays false when loading fails.
+- Added regression coverage for a failed load leaving the model unloaded.
+
+### Notes
+
+- `1.3.12` tracks the Parakeet model loaded state.
+
+---
+
 ## [1.3.11] - 2026-11-06
 
 Spoken periods, commas, and colons now become punctuation, and capitals that belong to a word survive a spoken comma or ellipsis.
