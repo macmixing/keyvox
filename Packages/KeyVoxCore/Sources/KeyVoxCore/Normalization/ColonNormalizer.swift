@@ -1,14 +1,13 @@
 import KeyVoxLinguistics
 import Foundation
 
-/// Writes a spoken colon, or a word the transcriber heard in its place, as a colon. The word
-/// stays a word when it is part of a hyphenated word or one of the user's dictionary entries,
-/// belongs to a listed phrase that names the body part, addresses a person after a phrase that
-/// opens with a greeting, farewell, or thanks, follows a word that needs a
-/// noun after it, or ends a phrase opened by a determiner where its sentence ends or what follows
-/// needs it as a noun, and when nothing comes before it in its sentence or after it, unless it
-/// ends the dictation after other words or stands as a sentence of its own after a sentence,
-/// which the transcriber split at the spoken colon.
+/// Writes a spoken colon, or a word the transcriber heard in its place, as a colon, replacing
+/// whatever punctuation the transcriber put on either side of it. The word stays a word when it is
+/// part of a hyphenated word or one of the user's dictionary entries, belongs to a listed phrase
+/// that names the body part, addresses a person after a phrase that opens with a greeting,
+/// farewell, or thanks, follows a word that needs a noun after it, or ends a phrase opened by a
+/// determiner where its sentence ends or what follows needs it as a noun, and when nothing comes
+/// before it in the dictation.
 public struct ColonNormalizer {
     private struct WordToken {
         let text: String
@@ -30,18 +29,25 @@ public struct ColonNormalizer {
         guard !text.isEmpty else { return text }
 
         let words = wordTokens(in: text)
-        let replacements = words.indices.reversed().compactMap { index -> Range<String.Index>? in
+        let replacements = words.indices.reversed().compactMap { index -> (word: Range<String.Index>, span: Range<String.Index>)? in
             spokenColonRange(at: index, words: words, text: text, dictionaryEntries: dictionaryEntries)
+                .map { (words[index].range, $0) }
         }
         guard !replacements.isEmpty else { return text }
 
         let mutable = NSMutableString(string: text)
         var replacedFrom = text.endIndex
-        for range in replacements where range.upperBound <= replacedFrom {
-            let lineBreaks = text[range].filter(\.isNewline)
-            let separator = range.upperBound == text.endIndex ? "" : (lineBreaks.isEmpty ? " " : String(lineBreaks))
-            mutable.replaceCharacters(in: NSRange(range, in: text), with: ":" + separator)
-            replacedFrom = range.lowerBound
+        for replacement in replacements where replacement.span.upperBound <= replacedFrom {
+            // The line breaks the transcriber put around the spoken colon still start the next line,
+            // taking those after it when it has breaks on both sides.
+            let breaksAfter = text[replacement.word.upperBound..<replacement.span.upperBound].filter(\.isNewline)
+            let breaksBefore = text[replacement.span.lowerBound..<replacement.word.lowerBound].filter(\.isNewline)
+            let lineBreaks = breaksAfter.isEmpty ? breaksBefore : breaksAfter
+            let separator = replacement.span.upperBound == text.endIndex
+                ? ""
+                : (lineBreaks.isEmpty ? " " : String(lineBreaks))
+            mutable.replaceCharacters(in: NSRange(replacement.span, in: text), with: ":" + separator)
+            replacedFrom = replacement.span.lowerBound
         }
         let normalized = mutable as String
 
@@ -67,16 +73,14 @@ public struct ColonNormalizer {
         guard isSpokenColon(at: index, words: words, text: text, dictionaryEntries: dictionaryEntries) else {
             return nil
         }
-        let range = words[index].range
-        if hasSentenceContent(before: range, in: text) {
-            if hasSentenceContent(after: range, in: text) {
-                return replacementRange(for: range, in: text)
-            }
-            // A colon ending the dictation introduces what the speaker sends next.
-            let replacement = replacementRange(for: range, in: text)
-            return replacement.upperBound == text.endIndex ? replacement : nil
+        let replacement = replacementRange(for: words[index].range, in: text)
+        // Words must come before the colon in the dictation, and it either ends the dictation,
+        // introducing what the speaker sends next, or has words after it.
+        guard text[..<replacement.lowerBound].contains(where: isContent),
+              replacement.upperBound == text.endIndex || text[replacement.upperBound...].contains(where: isContent) else {
+            return nil
         }
-        return ownSentenceReplacementRange(for: range, in: text)
+        return replacement
     }
 
     private func isSpokenColon(
@@ -90,7 +94,7 @@ public struct ColonNormalizer {
               !isHyphenated(word.range, in: text),
               !isInsideDictionaryEntry(word.range, in: text, dictionaryEntries: dictionaryEntries),
               Self.namePhrases?.phraseRange(around: word.range, named: Self.writtenName, in: text) == nil,
-              !addressesPerson(word.range, in: text) else {
+              !addressesPerson(replacementRange(for: word.range, in: text), in: text) else {
             return false
         }
 
@@ -124,54 +128,19 @@ public struct ColonNormalizer {
         return true
     }
 
-    /// The span from the period ending the sentence before the word through the punctuation and
-    /// spaces after it, when the word is a sentence of its own after a sentence, either between two
-    /// sentences or at the end of the dictation.
-    private func ownSentenceReplacementRange(
-        for range: Range<String.Index>,
-        in text: String
-    ) -> Range<String.Index>? {
-        var start = range.lowerBound
-        while start > text.startIndex, text[text.index(before: start)].isWhitespace,
-              !text[text.index(before: start)].isNewline {
-            start = text.index(before: start)
-        }
-        guard start > text.startIndex else { return nil }
-        let periodIndex = text.index(before: start)
-        guard text[periodIndex] == ".",
-              hasSentenceContent(before: periodIndex..<start, in: text) else {
-            return nil
-        }
-
-        let end = replacementRange(for: range, in: text).upperBound
-        guard end == text.endIndex
-                || (text[range.upperBound..<end].contains(where: isSentenceBoundary)
-                    && text[end...].contains(where: { $0.isLetter || $0.isNumber })) else {
-            return nil
-        }
-        return periodIndex..<end
-    }
-
-    /// Whether the word is a name spoken to someone after a phrase that opens with a greeting,
-    /// farewell, or thanks, as in "thank you so much for the help, Colin" or "okay, goodbye,
-    /// Colin", where the phrase runs back from the word to the comma before it or the start of
-    /// its sentence.
-    private func addressesPerson(_ range: Range<String.Index>, in text: String) -> Bool {
+    /// Whether the word whose replaced span is `span` is a name spoken to someone after a phrase
+    /// that opens with a greeting, farewell, or thanks, as in "thank you so much for the help,
+    /// Colin", "okay, goodbye, Colin", or "good morning. Colin", where the phrase runs back from the
+    /// punctuation before the word to the comma before it or the start of its sentence.
+    private func addressesPerson(_ span: Range<String.Index>, in text: String) -> Bool {
         guard let greetingPhrases = Self.greetingPhrases else { return false }
-        var phraseEnd = range.lowerBound
-        while phraseEnd > text.startIndex, text[text.index(before: phraseEnd)].isWhitespace {
-            phraseEnd = text.index(before: phraseEnd)
-        }
-        if phraseEnd > text.startIndex, text[text.index(before: phraseEnd)] == "," {
-            phraseEnd = text.index(before: phraseEnd)
-        }
-        var phraseStart = phraseEnd
+        var phraseStart = span.lowerBound
         while phraseStart > text.startIndex {
             let previous = text[text.index(before: phraseStart)]
             if isSentenceBoundary(previous) || previous == "," { break }
             phraseStart = text.index(before: phraseStart)
         }
-        return greetingPhrases.startsWithPhrase(text[phraseStart..<phraseEnd])
+        return greetingPhrases.startsWithPhrase(text[phraseStart..<span.lowerBound])
     }
 
     /// Whether the descriptive words ending at `index` follow a determiner within one phrase.
@@ -260,47 +229,30 @@ public struct ColonNormalizer {
         return true
     }
 
-    /// Whether any letter or digit comes between the sentence start and the replaced span.
-    private func hasSentenceContent(before range: Range<String.Index>, in text: String) -> Bool {
-        let start = replacementRange(for: range, in: text).lowerBound
-        for character in text[..<start].reversed() {
-            if isSentenceBoundary(character) { return false }
-            if character.isLetter || character.isNumber { return true }
-        }
-        return false
+    private func isContent(_ character: Character) -> Bool {
+        character.isLetter || character.isNumber
     }
 
-    /// Whether any letter or digit comes between the replaced span and the sentence end.
-    private func hasSentenceContent(after range: Range<String.Index>, in text: String) -> Bool {
-        let end = replacementRange(for: range, in: text).upperBound
-        for character in text[end...] {
-            if isSentenceBoundary(character) { return false }
-            if character.isLetter || character.isNumber { return true }
-        }
-        return false
-    }
-
-    /// The spoken colon with the space and one comma before it and the commas, periods, and
-    /// spaces after it, which the written colon replaces.
+    /// The spoken colon with the spaces, line breaks, and separating punctuation the transcriber
+    /// put on either side of it, which the written colon replaces.
     private func replacementRange(for range: Range<String.Index>, in text: String) -> Range<String.Index> {
         var start = range.lowerBound
-        while start > text.startIndex {
-            let previous = text.index(before: start)
-            if text[previous].isWhitespace {
-                start = previous
-                continue
-            }
-            if text[previous] == "," {
-                start = previous
-            }
-            break
+        while start > text.startIndex, isSeparator(text[text.index(before: start)]) {
+            start = text.index(before: start)
         }
 
         var end = range.upperBound
-        while end < text.endIndex, text[end] == "," || text[end] == "." || text[end].isWhitespace {
+        while end < text.endIndex, isSeparator(text[end]) {
             end = text.index(after: end)
         }
         return start..<end
+    }
+
+    /// Whether the character is a space, a line break, a dash, or punctuation that Unicode marks as
+    /// ending a sentence or clause, rather than a quote, bracket, or mark that belongs to a word.
+    private func isSeparator(_ character: Character) -> Bool {
+        if character.isWhitespace { return true }
+        return character.unicodeScalars.allSatisfy { $0.properties.isTerminalPunctuation || $0.properties.isDash }
     }
 
     private func isSentenceBoundary(_ character: Character) -> Bool {

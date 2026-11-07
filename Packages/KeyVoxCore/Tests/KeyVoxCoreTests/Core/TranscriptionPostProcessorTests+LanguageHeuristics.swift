@@ -419,6 +419,56 @@ extension TranscriptionPostProcessorTests {
         }
     }
 
+    func testNormalizesColinOpeningSentenceAfterSentenceToPunctuation() async {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Here is what I learned on the trip. Colin, the river was higher than we expected.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "Here is what I learned on the trip: The river was higher than we expected.")
+    }
+
+    func testKeepsColinOpeningSentenceAfterGreetingLiteral() async {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Good morning. Colin, the meeting moved to noon.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "Good morning. Colin, the meeting moved to noon.")
+    }
+
+    func testNormalizesColinWhereverTheTranscriberPunctuatesAroundIt() async {
+        let processor = TranscriptionPostProcessor()
+        let before = "Here is the plan for the weekend"
+        let after = "we leave early on Saturday"
+        let joined = "Here is the plan for the weekend: We leave early on Saturday."
+
+        let cases: [(input: String, expected: String)] = [
+            ("\(before). Colin, \(after).", joined),
+            ("\(before). Colin. \(after).", joined),
+            ("\(before), Colin. \(after).", joined),
+            ("\(before)! Colin, \(after).", joined),
+            ("\(before)? Colin, \(after).", joined),
+            ("\(before) - Colin - \(after).", joined),
+            ("\(before).\nColin, \(after).", "Here is the plan for the weekend:\nWe leave early on Saturday."),
+            ("\(before).\n\nColin.\n\n\(after).", "Here is the plan for the weekend:\n\nWe leave early on Saturday."),
+            ("\(before), Colin!", "Here is the plan for the weekend:"),
+            ("\(before), Colin?", "Here is the plan for the weekend:"),
+            ("\(before), Colin;", "Here is the plan for the weekend:"),
+        ]
+        for (input, expected) in cases {
+            let output = processor.process(input, dictionaryEntries: [], renderMode: .multiline)
+
+            XCTAssertEqual(output, expected, input)
+        }
+    }
+
     func testKeepsColinSentenceAtDictationStartLiteral() async {
         let processor = TranscriptionPostProcessor()
 
