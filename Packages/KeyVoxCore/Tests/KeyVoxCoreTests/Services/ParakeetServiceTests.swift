@@ -105,6 +105,20 @@ final class ParakeetServiceTests: LinguisticAnalyzerTestCase {
         await fulfillment(of: [expectation], timeout: 1.0)
     }
 
+    func testPreloadLeavesModelUnloadedWhenLoaderFails() async throws {
+        let modelURL = try makeModelDirectory()
+        let service = ParakeetService(
+            modelURLResolver: { modelURL },
+            parakeetLoader: { _ in
+                throw NSError(domain: "ParakeetServiceTests", code: 1)
+            }
+        )
+
+        await service.preloadIfNeeded()
+
+        XCTAssertFalse(service.isModelLoaded)
+    }
+
     func testWarmupLoadsVoiceActivityAnalyzerOffMainThread() async {
         let expectation = expectation(description: "voice activity analyzer factory invoked")
         let service = ParakeetService(
