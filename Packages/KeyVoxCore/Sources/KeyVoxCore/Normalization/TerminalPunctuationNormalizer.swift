@@ -17,15 +17,6 @@ public struct TerminalPunctuationNormalizer {
         var firstCommandEndIndex: Int? = nil
     }
 
-    private enum SpokenCommand {
-        static let questionMark = ["question", "mark"]
-        static let exclamationPoint = ["exclamation", "point"]
-        static let exclamationMark = ["exclamation", "mark"]
-        static let period = ["period"]
-        static let fullStop = ["full", "stop"]
-        static let comma = ["comma"]
-    }
-
     private enum PauseSymbol {
         static let period: Character = "."
         static let comma: Character = ","
