@@ -6,6 +6,47 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.6.3] - 2026-11-07
+
+Turns spoken periods, commas, and colons into punctuation, writes out casual words in Polished, and fixes crashes in the keyboard and Shortcut dictation.
+
+### Added
+
+- Added spoken periods and commas to dictation, so saying `period`, `full stop`, or `comma` types the mark, with the next sentence capitalized after a spoken period.
+- Added spoken colons to dictation, including when `colon` is heard as the name `Colin`, while keeping real names in place.
+
+### Changed
+
+- Changed the Polished style to write out casual words such as `gonna`, `wanna`, and `gotta` in standard form.
+
+### Fixed
+
+- Fixed names and capital-only words losing their capitals after a spoken ellipsis.
+- Fixed a keyboard crash that could happen while the keyboard was closing.
+- Fixed a crash during Shortcut dictation when its Live Activity went away.
+
+### Package versions
+
+KeyVox iOS 1.6.3
+  KeyVoxCore               1.3.11
+  KeyVoxEmoji              1.0.1
+  KeyVoxKeyboardThemes     1.0.0
+  KeyVoxLinguistics        1.0.1
+  KeyVoxLocalInference     1.0.5
+  KeyVoxModels             1.0.0
+  KeyVoxParakeet           1.1.0
+  KeyVoxPredictiveKeyboard 1.0.4
+  KeyVoxPromotions         1.1.0
+  KeyVoxState              1.0.0
+  KeyVoxStyleRewrite       1.1.0
+  KeyVoxTTS                1.1.0
+  KeyVoxTextComposition    1.1.0
+  KeyVoxVibesAdapters      1.0.5
+  KeyVoxVoiceActivity      1.1.1
+  KeyVoxWhisper            1.2.0
+
+---
+
 ## [1.6.2] - 2026-11-02
 
 Keeps emoji on the keyboard's suggestion bar after the keyboard restarts, and stops dictation from joining words into a dictionary entry that was only partly spoken.
