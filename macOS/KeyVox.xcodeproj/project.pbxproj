@@ -96,6 +96,7 @@
 		A7E100032FFD000100AA0001 /* PasteTerminalPunctuationCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7E100042FFD000100AA0001 /* PasteTerminalPunctuationCoordinatorTests.swift */; };
 		AA1000112F50000100AA0001 /* OFL.txt in Resources */ = {isa = PBXBuildFile; fileRef = AA1000012F50000100AA0001 /* OFL.txt */; };
 		AB3000012F60000100AA0001 /* TestHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000012F60000100AA0001 /* TestHelpers.swift */; };
+		155B736EB6234CB090A4F3CD /* ParakeetInstallFixture.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFE65681E46D4C6AAF32104F /* ParakeetInstallFixture.swift */; };
 		AB3000032F60000100AA0001 /* OverlayScreenPersistenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000032F60000100AA0001 /* OverlayScreenPersistenceTests.swift */; };
 		AB3000042F60000100AA0001 /* OverlayFlingPhysicsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000042F60000100AA0001 /* OverlayFlingPhysicsTests.swift */; };
 		AB3000122F60000100AA0001 /* WarningKindTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000142F60000100AA0001 /* WarningKindTests.swift */; };
@@ -129,6 +130,8 @@
 		BF1000022F70000100AA0001 /* OnboardingMicrophonePickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF2000022F70000100AA0001 /* OnboardingMicrophonePickerView.swift */; };
 		C11000122F90000100AA0001 /* ModelDownloader+DownloadLifecycle.swift in Sources */ = {isa = PBXBuildFile; fileRef = C11000022F90000100AA0001 /* ModelDownloader+DownloadLifecycle.swift */; };
 		C11000132F90000100AA0001 /* ModelDownloader+Validation.swift in Sources */ = {isa = PBXBuildFile; fileRef = C11000032F90000100AA0001 /* ModelDownloader+Validation.swift */; };
+		1EBD8602BFFB4976AE30C6DA /* StagedModelInstallSwap.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4810BA9C3554DEDB5B38CD0 /* StagedModelInstallSwap.swift */; };
+		3B5B21740C234B818340F1DE /* DictationModelInstallPhase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61DE259412984073AE1A4F1D /* DictationModelInstallPhase.swift */; };
 		C11000142F90000100AA0001 /* ModelDownloadTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = C11000042F90000100AA0001 /* ModelDownloadTransport.swift */; };
 		C11000152FD4000100AA0001 /* InstalledDictationModelLocator.swift in Sources */ = {isa = PBXBuildFile; fileRef = C11000052FD4000100AA0001 /* InstalledDictationModelLocator.swift */; };
 		C11000162FD5000100AA0001 /* DictationModelCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = C11000062FD5000100AA0001 /* DictationModelCatalog.swift */; };
@@ -354,6 +357,7 @@
 		A7E100042FFD000100AA0001 /* PasteTerminalPunctuationCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteTerminalPunctuationCoordinatorTests.swift; sourceTree = "<group>"; };
 		AA1000012F50000100AA0001 /* OFL.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = OFL.txt; sourceTree = "<group>"; };
 		AB2000012F60000100AA0001 /* TestHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestHelpers.swift; sourceTree = "<group>"; };
+		DFE65681E46D4C6AAF32104F /* ParakeetInstallFixture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParakeetInstallFixture.swift; sourceTree = "<group>"; };
 		AB2000032F60000100AA0001 /* OverlayScreenPersistenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayScreenPersistenceTests.swift; sourceTree = "<group>"; };
 		AB2000042F60000100AA0001 /* OverlayFlingPhysicsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayFlingPhysicsTests.swift; sourceTree = "<group>"; };
 		AB2000122F60000100AA0001 /* latest_without_dmg.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = latest_without_dmg.json; sourceTree = "<group>"; };
@@ -386,6 +390,8 @@
 		BF2000022F70000100AA0001 /* OnboardingMicrophonePickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingMicrophonePickerView.swift; sourceTree = "<group>"; };
 		C11000022F90000100AA0001 /* ModelDownloader+DownloadLifecycle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ModelDownloader+DownloadLifecycle.swift"; sourceTree = "<group>"; };
 		C11000032F90000100AA0001 /* ModelDownloader+Validation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ModelDownloader+Validation.swift"; sourceTree = "<group>"; };
+		D4810BA9C3554DEDB5B38CD0 /* StagedModelInstallSwap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StagedModelInstallSwap.swift; sourceTree = "<group>"; };
+		61DE259412984073AE1A4F1D /* DictationModelInstallPhase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictationModelInstallPhase.swift; sourceTree = "<group>"; };
 		C11000042F90000100AA0001 /* ModelDownloadTransport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelDownloadTransport.swift; sourceTree = "<group>"; };
 		C11000052FD4000100AA0001 /* InstalledDictationModelLocator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstalledDictationModelLocator.swift; sourceTree = "<group>"; };
 		C11000062FD5000100AA0001 /* DictationModelCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictationModelCatalog.swift; sourceTree = "<group>"; };
@@ -831,6 +837,7 @@
 			isa = PBXGroup;
 			children = (
 				AB2000012F60000100AA0001 /* TestHelpers.swift */,
+				DFE65681E46D4C6AAF32104F /* ParakeetInstallFixture.swift */,
 			);
 			path = TestSupport;
 			sourceTree = "<group>";
@@ -867,6 +874,8 @@
 				C11000052FD4000100AA0001 /* InstalledDictationModelLocator.swift */,
 				C11000022F90000100AA0001 /* ModelDownloader+DownloadLifecycle.swift */,
 				C11000032F90000100AA0001 /* ModelDownloader+Validation.swift */,
+				D4810BA9C3554DEDB5B38CD0 /* StagedModelInstallSwap.swift */,
+				61DE259412984073AE1A4F1D /* DictationModelInstallPhase.swift */,
 				C11000042F90000100AA0001 /* ModelDownloadTransport.swift */,
 			);
 			path = ModelDownloader;
@@ -1312,6 +1321,8 @@
 				8E6D05E02F3C5246003BD458 /* ModelDownloader.swift in Sources */,
 				C11000122F90000100AA0001 /* ModelDownloader+DownloadLifecycle.swift in Sources */,
 				C11000132F90000100AA0001 /* ModelDownloader+Validation.swift in Sources */,
+				1EBD8602BFFB4976AE30C6DA /* StagedModelInstallSwap.swift in Sources */,
+				3B5B21740C234B818340F1DE /* DictationModelInstallPhase.swift in Sources */,
 				C11000142F90000100AA0001 /* ModelDownloadTransport.swift in Sources */,
 				8E6D05E12F3C5246003BD458 /* KeyboardMonitor.swift in Sources */,
 				8F1100022F43000100AA0001 /* OverlayManager.swift in Sources */,
@@ -1381,6 +1392,7 @@
 				F30000342FC2000100AA0001 /* AppUpdateLaunchNoticeServiceTests.swift in Sources */,
 				AB3000232F60000100AA0001 /* KeyVoxAppActivationPolicyTests.swift in Sources */,
 				AB3000012F60000100AA0001 /* TestHelpers.swift in Sources */,
+				155B736EB6234CB090A4F3CD /* ParakeetInstallFixture.swift in Sources */,
 				AB3000242F60000100AA0001 /* AudioDeviceManagerCompatibilityTests.swift in Sources */,
 				AB3000032F60000100AA0001 /* OverlayScreenPersistenceTests.swift in Sources */,
 				AB3000042F60000100AA0001 /* OverlayFlingPhysicsTests.swift in Sources */,

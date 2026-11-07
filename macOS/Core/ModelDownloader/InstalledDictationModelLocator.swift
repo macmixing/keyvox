@@ -62,6 +62,10 @@ struct InstalledDictationModelLocator {
         downloadStagingRootURL.appendingPathComponent(modelID.rawValue, isDirectory: true)
     }
 
+    func previousInstallRootURL(for modelID: DictationModelID) -> URL {
+        downloadStagingRootURL.appendingPathComponent("\(modelID.rawValue)-previous", isDirectory: true)
+    }
+
     func manifestURL(for modelID: DictationModelID) -> URL? {
         guard let manifestFilename = descriptor(for: modelID).manifestFilename else {
             return nil
@@ -100,7 +104,7 @@ struct InstalledDictationModelLocator {
                 return nil
             }
 
-            for artifact in descriptor.artifacts {
+            for artifact in installedArtifacts(for: modelID) {
                 let installedURL = installedArtifactURL(for: modelID, relativePath: artifact.relativePath)
                 guard fileManager.fileExists(atPath: installedURL.path) else {
                     return nil
@@ -121,8 +125,7 @@ struct InstalledDictationModelLocator {
             return nil
         }
 
-        let descriptor = descriptor(for: modelID)
-        guard case .subdirectory = descriptor.installLayout,
+        guard case .subdirectory = descriptor(for: modelID).installLayout,
               let manifestURL = manifestURL(for: modelID),
               let manifestData = try? Data(contentsOf: manifestURL),
               let manifest = try? JSONDecoder().decode(DictationModelInstallManifest.self, from: manifestData),
@@ -130,7 +133,7 @@ struct InstalledDictationModelLocator {
             return nil
         }
 
-        for artifact in descriptor.artifacts {
+        for artifact in installedArtifacts(for: modelID) {
             let installedURL = installedArtifactURL(for: modelID, relativePath: artifact.relativePath)
             guard let manifestHash = manifest.artifactSHA256ByRelativePath[artifact.relativePath]?.lowercased(),
                   let installedHash = try? sha256Hex(forFileAt: installedURL),
@@ -140,6 +143,31 @@ struct InstalledDictationModelLocator {
         }
 
         return installRootURL
+    }
+
+    /// The artifacts an existing install is checked against. Older Parakeet installs
+    /// keep validating against their own artifacts until they are replaced.
+    func installedArtifacts(for modelID: DictationModelID) -> [DictationModelArtifact] {
+        if modelID == .parakeetTdtV3, isLegacyParakeetInstall() {
+            return DictationModelCatalog.legacyParakeetArtifacts
+        }
+
+        return descriptor(for: modelID).artifacts
+    }
+
+    func isLegacyParakeetInstall() -> Bool {
+        let installRootURL = installRootURL(for: .parakeetTdtV3)
+        let legacyEncoderURL = installRootURL.appendingPathComponent("Encoder.mlmodelc", isDirectory: true)
+        let legacyJointURL = installRootURL.appendingPathComponent("JointDecision.mlmodelc", isDirectory: true)
+        let currentEncoderURL = installRootURL.appendingPathComponent("EncoderInt4.mlmodelc", isDirectory: true)
+        let currentJointURL = installRootURL.appendingPathComponent("JointDecisionv3.mlmodelc", isDirectory: true)
+
+        let hasLegacyArtifacts = fileManager.fileExists(atPath: legacyEncoderURL.path)
+            && fileManager.fileExists(atPath: legacyJointURL.path)
+        let hasCurrentArtifacts = fileManager.fileExists(atPath: currentEncoderURL.path)
+            && fileManager.fileExists(atPath: currentJointURL.path)
+
+        return hasLegacyArtifacts && hasCurrentArtifacts == false
     }
 
     func migrateLegacyWhisperInstallIfNeeded() throws {

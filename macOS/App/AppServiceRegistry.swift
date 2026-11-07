@@ -138,7 +138,12 @@ final class AppServiceRegistry {
                 await whisperService?.preloadIfNeeded()
             case .parakeetTdtV3:
                 try Task.checkCancellation()
-                await parakeetService?.preloadIfNeeded()
+                guard let parakeetService else { return }
+                parakeetService.unloadModel()
+                await parakeetService.preloadIfNeeded()
+                guard parakeetService.isModelLoaded else {
+                    throw NSError(domain: "ModelDownloader", code: 3001)
+                }
             }
         }
         canSwitchActiveProvider = { true }
