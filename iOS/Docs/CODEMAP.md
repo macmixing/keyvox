@@ -642,7 +642,6 @@ Packages/
 │   ├── Sources/
 │   │   ├── KeyVoxPredictiveKeyboard/
 │   │   │   ├── AccentSuggestionOverlay.swift
-│   │   │   ├── CapitalizedSpellings.swift
 │   │   │   ├── CharacterList.swift
 │   │   │   ├── ContestedTap.swift
 │   │   │   ├── ContestedTapPolicy.swift
@@ -737,6 +736,7 @@ Packages/
 │   │   ├── AppleLexicalRole.swift
 │   │   ├── AppleLinguisticAnalyzer.swift
 │   │   ├── AppleLinguisticCapabilities.swift
+│   │   ├── CapitalizedSpellings.swift
 │   │   ├── HealthRoutingLinguisticAnalyzer.swift
 │   │   ├── LexicalRole.swift
 │   │   ├── LinguisticAnalysis.swift
@@ -903,6 +903,8 @@ Packages/
   - Builds the shared health-routed analyzer and loads the perceptron and WordNet resources only when the normalized request language matches the configured portable language.
 - `Packages/KeyVoxLinguistics/Sources/KeyVoxLinguistics/PerceptronLinguisticAnalyzer.swift`
   - Supplies portable token boundaries and grammatical roles, with WordNet-backed lexical resolution where requested.
+- `Packages/KeyVoxLinguistics/Sources/KeyVoxLinguistics/CapitalizedSpellings.swift`
+  - Looks up the bundled list of words spelled only with capitals, shared by keyboard predictions and dictation continuation casing.
 - `KeyVox iOS.xcodeproj/project.pbxproj`
   - The containing-app target copies `averaged-perceptron-tagger-eng` and `wordnet-3.0` into its bundle. The keyboard target has no ownership of these resources.
 

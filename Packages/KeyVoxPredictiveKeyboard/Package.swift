@@ -14,6 +14,9 @@ let package = Package(
             targets: ["KeyVoxPredictiveKeyboard"]
         ),
     ],
+    dependencies: [
+        .package(path: "../KeyVoxLinguistics"),
+    ],
     targets: [
         .target(
             name: "KeyVoxPredictiveNative",
@@ -30,7 +33,10 @@ let package = Package(
         ),
         .target(
             name: "KeyVoxPredictiveKeyboard",
-            dependencies: ["KeyVoxPredictiveNative"],
+            dependencies: [
+                "KeyVoxPredictiveNative",
+                .product(name: "KeyVoxLinguistics", package: "KeyVoxLinguistics"),
+            ],
             path: "Sources/KeyVoxPredictiveKeyboard",
             resources: [.copy("PredictiveData")]
         ),

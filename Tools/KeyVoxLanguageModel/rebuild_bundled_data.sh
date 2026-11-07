@@ -25,6 +25,7 @@ fi
 PYTHON="${PYTHON:-python3}"
 TOOLS_DIR="$(cd "$(dirname "$0")" && pwd)"
 BUNDLED_DIR="$TOOLS_DIR/../../Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/PredictiveData"
+LINGUISTICS_DIR="$TOOLS_DIR/../../Packages/KeyVoxLinguistics/Sources/KeyVoxLinguistics/Resources"
 BUILT_DIR="$DATA_DIR/bundled"
 SCRATCH_DIR="$(mktemp -d)"
 
@@ -67,7 +68,9 @@ xcrun swiftc -O tag_word_kinds.swift -o "$SCRATCH_DIR/tag_word_kinds"
 differ=0
 for file in context_artifact_800k.bin sentence_openers.txt capitalized_spellings.txt unknown_word_followers.txt \
   word_followers.txt grammar_words.txt; do
-  if cmp -s "$BUILT_DIR/$file" "$BUNDLED_DIR/$file"; then
+  destination="$BUNDLED_DIR"
+  [[ "$file" == capitalized_spellings.txt ]] && destination="$LINGUISTICS_DIR"
+  if cmp -s "$BUILT_DIR/$file" "$destination/$file"; then
     echo "$file: same as the bundled file"
     continue
   fi
@@ -75,7 +78,7 @@ for file in context_artifact_800k.bin sentence_openers.txt capitalized_spellings
   if [[ $CHECK -eq 1 ]]; then
     echo "$file: differs from the bundled file"
   else
-    cp "$BUILT_DIR/$file" "$BUNDLED_DIR/$file"
+    cp "$BUILT_DIR/$file" "$destination/$file"
     echo "$file: replaced the bundled file"
   fi
 done

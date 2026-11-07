@@ -176,6 +176,7 @@ KeyVox/
 │   ├── KeyVoxLinguistics/
 │   │   ├── Sources/KeyVoxLinguistics/
 │   │   │   ├── AppleLinguisticAnalyzer.swift
+│   │   │   ├── CapitalizedSpellings.swift
 │   │   │   ├── HealthRoutingLinguisticAnalyzer.swift
 │   │   │   ├── LinguisticAnalysisHealth.swift
 │   │   │   ├── LinguisticAnalyzerFactory.swift

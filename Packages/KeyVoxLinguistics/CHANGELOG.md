@@ -6,6 +6,21 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.0.1] - 2026-11-06
+
+Shared capitalized spellings for every KeyVox surface that decides a word's capitals.
+
+### Includes
+
+- Added `CapitalizedSpellings`, the bundled list of words spelled only with capitals, such as `Monday`, `Sarah`, and `iPhone`, moved here from `KeyVoxPredictiveKeyboard` so the keyboard and dictation share one list.
+- Bundled `capitalized_spellings.txt` as a package resource, so the list loads the same way on every platform.
+
+### Notes
+
+- `1.0.1` adds public API for the shared capitalized spellings list.
+
+---
+
 ## [1.0.0] - 2026-09-12
 
 Initial shared linguistic-analysis package for native Apple and portable KeyVox clients.
