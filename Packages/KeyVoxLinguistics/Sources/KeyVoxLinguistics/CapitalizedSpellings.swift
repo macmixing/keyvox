@@ -17,9 +17,9 @@ public struct CapitalizedSpellings: Sendable {
     /// word, mapped rather than read so they take no memory of their own.
     private let list: Data
 
-    /// The list bundled with this package.
+    /// The list bundled with this package, found through `KeyVoxLinguisticsResources`.
     public init() throws {
-        guard let url = Bundle.module.url(
+        guard let url = KeyVoxLinguisticsResources.bundle.url(
             forResource: Self.resourceName,
             withExtension: Self.resourceExtension
         ) else {
