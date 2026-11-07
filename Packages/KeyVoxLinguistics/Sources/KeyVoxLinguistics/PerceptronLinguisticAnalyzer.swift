@@ -26,7 +26,8 @@ public struct PerceptronLinguisticAnalyzer: LinguisticAnalyzing {
                                                        features: features, grouping: grouping)
         }
         let words = UnicodeWordTokenizer.tokens(in: text)
-        guard let tags = model.tags(for: words.map(\.text)) else {
+        let taggingWords = words.map { Self.taggingForm(of: $0.text) }
+        guard let tags = model.tags(for: taggingWords) else {
             return UnicodeLinguisticAnalyzer().analyze(text, range: range, languageCode: languageCode,
                                                        features: features, grouping: grouping)
         }
@@ -38,11 +39,11 @@ public struct PerceptronLinguisticAnalyzer: LinguisticAnalyzing {
                 : .unknown
             let role = features.contains(.roles)
                 ? WordNetLexicalRoleResolver.role(
-                    for: token.text,
+                    for: taggingWords[index],
                     predictedTag: tag,
                     at: index,
                     tags: tags,
-                    allowsLexicalOverride: model.knownTag(for: token.text) == nil,
+                    allowsLexicalOverride: model.knownTag(for: taggingWords[index]) == nil,
                     database: lexicalDatabase
                 )
                 : nil
@@ -56,6 +57,17 @@ public struct PerceptronLinguisticAnalyzer: LinguisticAnalyzing {
         var available: LinguisticFeatures = [.roles, .wordBoundaries]
         if features.contains(.names) { available.insert(.names) }
         return LinguisticAnalysis(tokens: tokens, availableFeatures: features.intersection(available))
+    }
+
+    /// The model was trained on text that splits an attached `'s` from its word, as in a
+    /// possessive or a contraction, so a word written with one is tagged as the word it is
+    /// attached to.
+    static func taggingForm(of word: String) -> String {
+        let normalized = word.replacingOccurrences(of: "’", with: "'").lowercased()
+        guard normalized.hasSuffix("'s") else { return word }
+
+        let base = String(word.dropLast(2))
+        return base.contains(where: \.isLetter) ? base : word
     }
 
     private func identity(for word: String, tag: String, index: Int, tags: [String]) -> LinguisticToken.Identity {

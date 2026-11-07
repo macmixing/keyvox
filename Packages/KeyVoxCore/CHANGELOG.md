@@ -19,6 +19,7 @@ Spoken periods and commas now become punctuation, and capitals that belong to a 
 - Lowercased a capital the transcriber put on the word after a spoken comma, while keeping names, capital-only words such as `Monday` and `English`, dictionary entries, `I`, and acronyms.
 - Shared the same continuation casing rules with inline ellipses, so capital-only words and names keep their capitals after a spoken ellipsis too.
 - Added regression coverage for spoken periods, full stops, commas, and their capitals on both linguistic analyzers.
+- Judged the noun before a spoken terminal command in the finished sentence, so plural-possessive repair works when the command words would make the noun read as a modifier, and the plural-possessive coverage now passes on the portable analyzer too.
 
 ### Notes
 

@@ -214,6 +214,25 @@ public struct TerminalPunctuationNormalizer {
         }
     }
 
+    /// Whether `word` reads as an ordinary noun once the spoken command after it is written as
+    /// its mark, since the command's own words are not part of the sentence and can make the
+    /// word before them read as a modifier.
+    private func isOrdinaryNounInFinishedSentence(
+        _ word: WordToken,
+        before match: CommandMatch,
+        words: [WordToken],
+        text: String
+    ) -> Bool {
+        var finishedText = text
+        finishedText.replaceSubrange(replacementRange(for: match, words: words, text: text), with: match.symbols)
+        let location = NSRange(word.range, in: text).location
+        let analysis = TextLinguistics.analyze(finishedText, features: [.roles, .names, .wordBoundaries])
+        guard let token = analysis.tokens.first(where: { NSLocationInRange(location, $0.range) }) else {
+            return false
+        }
+        return token.role == .noun && token.identity == .ordinaryWord
+    }
+
     private func pluralPossessiveRepair(
         before match: CommandMatch,
         words: [WordToken],
@@ -221,8 +240,6 @@ public struct TerminalPunctuationNormalizer {
     ) -> (start: String.Index, pluralSuffix: String)? {
         let nounIndex = words.index(before: match.firstWordIndex)
         guard nounIndex >= words.startIndex + 2,
-              words[nounIndex].lexicalClass == .noun,
-              words[nounIndex].identity == .ordinaryWord,
               words[nounIndex - 1].lexicalClass == .determiner,
               words[nounIndex - 2].lexicalClass == .preposition,
               isWhitespaceOnly(text[words[nounIndex].range.upperBound..<words[match.firstWordIndex].range.lowerBound]) else {
@@ -236,7 +253,8 @@ public struct TerminalPunctuationNormalizer {
         }
 
         let apostrophe = noun.index(noun.endIndex, offsetBy: -2)
-        guard noun[apostrophe] == "'" || noun[apostrophe] == "’" else {
+        guard noun[apostrophe] == "'" || noun[apostrophe] == "’",
+              isOrdinaryNounInFinishedSentence(words[nounIndex], before: match, words: words, text: text) else {
             return nil
         }
 
