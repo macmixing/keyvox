@@ -2,9 +2,10 @@ import KeyVoxLinguistics
 import Foundation
 
 /// Writes a spoken colon, or a word the transcriber heard in its place, as a colon. The word
-/// stays a word when it is one of the user's dictionary words, belongs to a listed phrase that
-/// names the body part, follows a word that needs a noun after it, or ends a phrase that what
-/// follows needs as its subject, and when nothing comes before or after it in its sentence.
+/// stays a word when it is part of a hyphenated word or one of the user's dictionary entries,
+/// belongs to a listed phrase that names the body part, follows a word that needs a noun after
+/// it, or ends a phrase opened by a determiner where its sentence ends or what follows needs it
+/// as a noun, and when nothing comes before it in its sentence or after it.
 public struct ColonNormalizer {
     private struct WordToken {
         let text: String
@@ -61,7 +62,8 @@ public struct ColonNormalizer {
     ) -> Bool {
         let word = words[index]
         guard isColonHomophone(word.text),
-              !beginsDictionaryEntry(at: word.range, in: text, dictionaryEntries: dictionaryEntries),
+              !isHyphenated(word.range, in: text),
+              !isInsideDictionaryEntry(word.range, in: text, dictionaryEntries: dictionaryEntries),
               Self.namePhrases?.phraseRange(around: word.range, named: Self.writtenName, in: text) == nil else {
             return false
         }
@@ -77,11 +79,18 @@ public struct ColonNormalizer {
                 default:
                     break
                 }
-                if opensNounPhrase(endingAt: previousIndex, words: words, text: text),
-                   index + 1 < words.endIndex,
-                   isAdjacent(words[index], words[index + 1], in: text),
-                   words[index + 1].role == .verb || words[index + 1].role == .preposition {
-                    return false
+                // A phrase opened by a determiner names the thing when the sentence ends after it,
+                // as in "the word colon.", or what follows needs it as a noun, as in "the word
+                // colon appears".
+                if opensNounPhrase(endingAt: previousIndex, words: words, text: text) {
+                    if endsSentence(after: word.range, in: text) {
+                        return false
+                    }
+                    if index + 1 < words.endIndex,
+                       isAdjacent(words[index], words[index + 1], in: text),
+                       words[index + 1].role == .verb || words[index + 1].role == .preposition {
+                        return false
+                    }
                 }
             }
         }
@@ -115,28 +124,65 @@ public struct ColonNormalizer {
         text[first.range.upperBound..<second.range.lowerBound].allSatisfy(\.isWhitespace)
     }
 
-    private func beginsDictionaryEntry(
-        at range: Range<String.Index>,
+    /// Whether the word is joined to another by a hyphen, as in "semi-colon", so it is part of
+    /// that compound word.
+    private func isHyphenated(_ range: Range<String.Index>, in text: String) -> Bool {
+        (range.lowerBound > text.startIndex && text[text.index(before: range.lowerBound)] == "-")
+            || (range.upperBound < text.endIndex && text[range.upperBound] == "-")
+    }
+
+    /// Whether the word is part of one of the user's dictionary entries as written in `text`,
+    /// wherever it falls in the entry, as in "Kristen Colon".
+    private func isInsideDictionaryEntry(
+        _ range: Range<String.Index>,
         in text: String,
         dictionaryEntries: [DictionaryEntry]
     ) -> Bool {
-        let suffix = text[range.lowerBound...]
         for entry in dictionaryEntries {
             let phrase = entry.phrase.trimmingCharacters(in: .whitespacesAndNewlines)
-            guard !phrase.isEmpty,
-                  let match = suffix.range(
-                      of: phrase,
-                      options: [.anchored, .caseInsensitive, .diacriticInsensitive]
-                  ) else {
-                continue
-            }
-            guard match.upperBound < suffix.endIndex else { return true }
-            let nextCharacter = suffix[match.upperBound]
-            if !nextCharacter.isLetter, !nextCharacter.isNumber, nextCharacter != "_" {
-                return true
+            guard !phrase.isEmpty else { continue }
+
+            var searchStart = text.startIndex
+            while let match = text.range(
+                of: phrase,
+                options: [.caseInsensitive, .diacriticInsensitive],
+                range: searchStart..<text.endIndex
+            ) {
+                if match.lowerBound <= range.lowerBound,
+                   match.upperBound >= range.upperBound,
+                   isWordBoundary(before: match.lowerBound, in: text),
+                   isWordBoundary(after: match.upperBound, in: text) {
+                    return true
+                }
+                guard match.lowerBound < range.lowerBound else { break }
+                searchStart = text.index(after: match.lowerBound)
             }
         }
         return false
+    }
+
+    private func isWordBoundary(before index: String.Index, in text: String) -> Bool {
+        guard index > text.startIndex else { return true }
+        return !isWordCharacter(text[text.index(before: index)])
+    }
+
+    private func isWordBoundary(after index: String.Index, in text: String) -> Bool {
+        guard index < text.endIndex else { return true }
+        return !isWordCharacter(text[index])
+    }
+
+    private func isWordCharacter(_ character: Character) -> Bool {
+        character.isLetter || character.isNumber || character == "_"
+    }
+
+    /// Whether only spaces and closing punctuation come between the word and the end of its
+    /// sentence.
+    private func endsSentence(after range: Range<String.Index>, in text: String) -> Bool {
+        for character in text[range.upperBound...] {
+            if isSentenceBoundary(character) { return true }
+            if character.isLetter || character.isNumber { return false }
+        }
+        return true
     }
 
     /// Whether any letter or digit comes between the sentence start and the replaced span.

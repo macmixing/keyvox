@@ -298,6 +298,39 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "I met, Collin, yesterday at lunch.")
     }
+    func testKeepsHyphenatedColonWordLiteral() async {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Use a semi-colon here",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "Use a semi-colon here.")
+    }
+    func testKeepsColonWordEndingDeterminerPhraseAtSentenceEnd() async {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Write the word colon. Then stop.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "Write the word colon. Then stop.")
+    }
+    func testKeepsColonWordInsideDictionaryName() async {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "I met Kristen Colon yesterday",
+            dictionaryEntries: [DictionaryEntry(phrase: "Kristen Colon")],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "I met Kristen Colon yesterday.")
+    }
     func testKeepsListedColonPhraseLiteral() async {
         let processor = TranscriptionPostProcessor()
 
