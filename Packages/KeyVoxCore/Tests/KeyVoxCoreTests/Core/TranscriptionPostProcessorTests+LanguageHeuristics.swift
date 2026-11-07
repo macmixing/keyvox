@@ -520,6 +520,19 @@ extension TranscriptionPostProcessorTests {
         }
     }
 
+    func testKeepsListedMedicalColonPhrasesLiteral() async {
+        let processor = TranscriptionPostProcessor()
+
+        for input in [
+            "She was treated for irritable colon last spring",
+            "The doctor said I should get colon screening next year",
+        ] {
+            let output = processor.process(input, dictionaryEntries: [], renderMode: .singleLineInline)
+
+            XCTAssertEqual(output, input + ".", input)
+        }
+    }
+
     func testKeepsLongerNameNearColonSpellingLiteral() async {
         let processor = TranscriptionPostProcessor()
 

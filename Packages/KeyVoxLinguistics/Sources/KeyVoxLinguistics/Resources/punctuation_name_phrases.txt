@@ -1,18 +1,30 @@
 accounting period
+adenomatous polyposis of the colon
 ascending colon
 baroque period
 billing period
 cambrian period
+cancer of colon
+cancer of the colon
 canicular period
 carboniferous period
 chinese full stop
 class period
 classical period
 closed period
+colon adenocarcinoma
+colon and rectal surgery specialty
 colon cancer
 colon cleansing
+colon diverticula
+colon diverticulum
+colon health
 colon hydrotherapies
 colon hydrotherapy
+colon neoplasms
+colon problems
+colon screening
+colon surgery specialty
 colon therapies
 colon therapy
 colon-point
@@ -41,6 +53,9 @@ double period
 dun comma
 duty period
 enumeration comma
+familial adenomatous polyposis of the colon
+familial nonpolyposis colon cancer
+familial polyposis of the colon
 fat comma
 fertile period
 final period
@@ -54,6 +69,7 @@ grace period
 grand period of growth
 hamilton period
 harvard comma
+hereditary nonpolyposis colon cancer
 high comma
 historic period
 honeymoon period
@@ -61,6 +77,7 @@ ideographic comma
 ideographic full stop
 incubation period
 inverted comma
+irritable colon
 japanese full stop
 johannine comma
 julian period
@@ -114,6 +131,7 @@ ptolemaic comma
 quaternary period
 question period
 reconstruction period
+rectosigmoid colon aganglionosis
 redundant colon
 refractory period
 rest period
@@ -138,6 +156,9 @@ sidereal orbital period
 sidereal period
 sidereal rotation period
 sigmoid colon
+sigmoid colon cancer
+sigmoid colon diseases
+sigmoid colon neoplasms
 silurian period
 sothic period
 spastic colon
