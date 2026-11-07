@@ -396,6 +396,16 @@ END OF TERMS AND CONDITIONS
 
 Attribution: Based on Wiktionary content contributed by the Wiktionary community.
 
+### Medical Subject Headings (MeSH) (derived dictation phrase list)
+
+- Source: U.S. National Library of Medicine (NLM), <https://www.nlm.nih.gov/mesh/>
+- Version: MeSH 2026. These terms reflect MeSH 2026 and may not reflect the most current data available from NLM.
+- Terms and conditions: <https://www.nlm.nih.gov/databases/download/terms_and_conditions_mesh.html>
+- Use: `KeyVoxLinguistics` `Resources/punctuation_name_phrases.txt` includes medical phrases containing the word "colon" taken from MeSH 2026 topical descriptor terms, with inverted headings written in natural order and lowercased.
+- NLM has not endorsed KeyVox. NLM provides the data with no warranties, express or implied, regarding its accuracy or completeness.
+
+Attribution: Courtesy of the U.S. National Library of Medicine.
+
 Pronunciation-data notices for `KeyVoxCore` are bundled with the package resources:
 
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Resources/Pronunciation/LICENSES.md`

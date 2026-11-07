@@ -44,6 +44,7 @@ Notable third-party items include:
   model assets (MIT)
 - Princeton WordNet 3.0 lexical indexes (WordNet 3.0 License)
 - Wiktionary-derived dictation phrase lists bundled in `Packages/KeyVoxLinguistics` (CC BY-SA 4.0); these two data files are excluded from this repository's MIT source-code license
+- Medical Subject Headings (MeSH) 2026 terms in a dictation phrase list, courtesy of the U.S. National Library of Medicine (NLM terms and conditions)
 - Kanit font (`OFL-1.1`)
 
 For full third-party notices, see `THIRD_PARTY_NOTICES.md` and
