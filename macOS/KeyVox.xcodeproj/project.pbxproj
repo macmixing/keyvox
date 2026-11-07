@@ -229,6 +229,8 @@
 		F26000102FF1000100AA0001 /* MacVibesIntroControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F260000F2FF1000100AA0001 /* MacVibesIntroControllerTests.swift */; };
 		F30000022FC2000100AA0001 /* WindowManager+Updates.swift in Sources */ = {isa = PBXBuildFile; fileRef = F30000012FC2000100AA0001 /* WindowManager+Updates.swift */; };
 		F30000042FC2000100AA0001 /* AppUpdateProgressBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = F30000032FC2000100AA0001 /* AppUpdateProgressBar.swift */; };
+		1D7566ED92B74A8AA4ABFE5B /* DictationModelID+ApproximateSize.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42065B726E89429E992055DA /* DictationModelID+ApproximateSize.swift */; };
+		BD23033EAD444273A0EF48D5 /* DictationModelInstallPhase+StatusText.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5BC8425582D44589C12FC17 /* DictationModelInstallPhase+StatusText.swift */; };
 		F30000072FC2000100AA0001 /* AppReleaseInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = F30000062FC2000100AA0001 /* AppReleaseInfo.swift */; };
 		F30000092FC2000100AA0001 /* AppUpdateManifestLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = F30000082FC2000100AA0001 /* AppUpdateManifestLoader.swift */; };
 		F300000B2FC2000100AA0001 /* AppUpdateCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = F300000A2FC2000100AA0001 /* AppUpdateCoordinator.swift */; };
@@ -480,6 +482,8 @@
 		F260000F2FF1000100AA0001 /* MacVibesIntroControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacVibesIntroControllerTests.swift; sourceTree = "<group>"; };
 		F30000012FC2000100AA0001 /* WindowManager+Updates.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WindowManager+Updates.swift"; sourceTree = "<group>"; };
 		F30000032FC2000100AA0001 /* AppUpdateProgressBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateProgressBar.swift; sourceTree = "<group>"; };
+		42065B726E89429E992055DA /* DictationModelID+ApproximateSize.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DictationModelID+ApproximateSize.swift"; sourceTree = "<group>"; };
+		A5BC8425582D44589C12FC17 /* DictationModelInstallPhase+StatusText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DictationModelInstallPhase+StatusText.swift"; sourceTree = "<group>"; };
 		F30000062FC2000100AA0001 /* AppReleaseInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppReleaseInfo.swift; sourceTree = "<group>"; };
 		F30000082FC2000100AA0001 /* AppUpdateManifestLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateManifestLoader.swift; sourceTree = "<group>"; };
 		F300000A2FC2000100AA0001 /* AppUpdateCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateCoordinator.swift; sourceTree = "<group>"; };
@@ -648,6 +652,8 @@
 				C22000022FA5000100AA0001 /* SettingsLastTranscriptionCard.swift */,
 				F30000372FC2000100AA0001 /* AppActionButton.swift */,
 				F30000032FC2000100AA0001 /* AppUpdateProgressBar.swift */,
+				42065B726E89429E992055DA /* DictationModelID+ApproximateSize.swift */,
+				A5BC8425582D44589C12FC17 /* DictationModelInstallPhase+StatusText.swift */,
 				8F2201072F44010000BB2201 /* ConfirmDeletePromptView.swift */,
 				F20000032FB0000100AA0001 /* LogoBarView.swift */,
 				8E4B08602FD0000100C5DB85 /* MacAppTheme.swift */,
@@ -1218,6 +1224,8 @@
 				F26000062FF1000100AA0001 /* MacVibesIntroSceneCView.swift in Sources */,
 				F30000382FC2000100AA0001 /* AppActionButton.swift in Sources */,
 				F30000042FC2000100AA0001 /* AppUpdateProgressBar.swift in Sources */,
+				1D7566ED92B74A8AA4ABFE5B /* DictationModelID+ApproximateSize.swift in Sources */,
+				BD23033EAD444273A0EF48D5 /* DictationModelInstallPhase+StatusText.swift in Sources */,
 				F30000072FC2000100AA0001 /* AppReleaseInfo.swift in Sources */,
 				F30000092FC2000100AA0001 /* AppUpdateManifestLoader.swift in Sources */,
 				F300000B2FC2000100AA0001 /* AppUpdateCoordinator.swift in Sources */,
