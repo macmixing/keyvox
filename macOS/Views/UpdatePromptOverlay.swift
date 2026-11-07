@@ -8,9 +8,19 @@ private enum UpdatePromptLayout {
 }
 
 struct UpdatePromptOverlay: View {
+    private struct MessageWidthPreferenceKey: PreferenceKey {
+        static var defaultValue: CGFloat = 0
+
+        static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+            value = max(value, nextValue())
+        }
+    }
+
     let prompt: UpdatePrompt
     let onPrimaryAction: () -> Void
     let onDismiss: () -> Void
+
+    @State private var messageWidth: CGFloat = 0
 
     private var versionBadgeTitle: String? {
         guard let version = prompt.version, !version.isEmpty else { return nil }
@@ -42,7 +52,18 @@ struct UpdatePromptOverlay: View {
                     .truncationMode(.tail)
                     .lineLimit(4)
                     .fixedSize(horizontal: false, vertical: true)
+                    .background(
+                        GeometryReader { geometry in
+                            Color.clear.preference(
+                                key: MessageWidthPreferenceKey.self,
+                                value: geometry.size.width
+                            )
+                        }
+                    )
                     .frame(maxWidth: .infinity, alignment: .center)
+            }
+            .onPreferenceChange(MessageWidthPreferenceKey.self) { width in
+                messageWidth = width
             }
 
             if let progress = prompt.progress {
@@ -50,6 +71,8 @@ struct UpdatePromptOverlay: View {
                     progress: min(max(progress.value, 0), 1),
                     statusText: progress.statusText
                 )
+                .frame(maxWidth: messageWidth > 0 ? messageWidth : .infinity)
+                .frame(maxWidth: .infinity, alignment: .center)
             } else {
                 actionButtons
             }
