@@ -242,8 +242,7 @@ public struct TerminalPunctuationNormalizer {
         guard nounIndex >= words.startIndex + 2,
               words[nounIndex - 1].lexicalClass == .determiner,
               words[nounIndex - 2].lexicalClass == .preposition,
-              isWhitespaceOnly(text[words[nounIndex].range.upperBound..<words[match.firstWordIndex].range.lowerBound]),
-              isOrdinaryNounInFinishedSentence(words[nounIndex], before: match, words: words, text: text) else {
+              isWhitespaceOnly(text[words[nounIndex].range.upperBound..<words[match.firstWordIndex].range.lowerBound]) else {
             return nil
         }
 
@@ -254,7 +253,8 @@ public struct TerminalPunctuationNormalizer {
         }
 
         let apostrophe = noun.index(noun.endIndex, offsetBy: -2)
-        guard noun[apostrophe] == "'" || noun[apostrophe] == "’" else {
+        guard noun[apostrophe] == "'" || noun[apostrophe] == "’",
+              isOrdinaryNounInFinishedSentence(words[nounIndex], before: match, words: words, text: text) else {
             return nil
         }
 
