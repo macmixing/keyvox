@@ -65,6 +65,12 @@ final class ShortcutDictationCoordinator {
     }
 
     func toggleRecording(releaseMicImmediately: Bool = false) async -> ShortcutDictationOutcome {
+        #if DEBUG
+        defer {
+            print("[\(#function)] state=\(sessionController.shortcutDictationState) sessionActive=\(sessionController.isSessionActive) disablePending=\(sessionController.sessionDisablePending) activityActive=\(liveActivityCoordinator.isLiveActivityActive)")
+        }
+        print("[\(#function)] state=\(sessionController.shortcutDictationState) releaseMicImmediately=\(releaseMicImmediately) activityActive=\(liveActivityCoordinator.isLiveActivityActive)")
+        #endif
         switch sessionController.shortcutDictationState {
         case .idle:
             return await startRecording()

@@ -226,7 +226,13 @@ extension KeyboardViewController {
         }
 
         if let rootContainerView {
+            #if DEBUG
+            print("[\(#function)] mainThread=\(Thread.isMainThread) inWindow=\(rootContainerView.window != nil) bound=\(isPresentationBound) hostActive=\(extensionHostIsActive)")
+            #endif
             rootContainerView.removeFromSuperview()
+            #if DEBUG
+            print("[\(#function)] rootDetached=\(rootContainerView.superview == nil)")
+            #endif
             self.rootContainerView = nil
         }
 

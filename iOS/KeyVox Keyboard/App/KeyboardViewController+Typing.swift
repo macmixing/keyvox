@@ -206,6 +206,11 @@ extension KeyboardViewController {
             self?.barEmoji(for: word) ?? []
         }
         KeyboardEmojiPredictionsIndex.shared.load { [weak self] in
+            #if DEBUG
+            if let self {
+                print("[\(#function)] awaitsFieldState=\(awaitsFieldState) hostActive=\(extensionHostIsActive) bound=\(isPresentationBound)")
+            }
+            #endif
             self?.refreshPredictions()
         }
     }
