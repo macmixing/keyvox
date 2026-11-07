@@ -412,7 +412,8 @@ public struct TerminalPunctuationNormalizer {
 
     /// Whether the first spoken mark name in `match` belongs to a listed phrase that names a
     /// thing, such as "the trial period" or "colon cancer", read as that phrase when nothing
-    /// comes before it, a determiner introduces it, or words follow the mark name within it.
+    /// comes before it, a determiner or preposition introduces it, or words follow the mark name
+    /// within it.
     private func belongsToNamePhrase(match: CommandMatch, words: [WordToken], text: String) -> Bool {
         guard let namePhrases = Self.namePhrases,
               let firstCommandEndIndex = match.firstCommandEndIndex else {
@@ -433,7 +434,7 @@ public struct TerminalPunctuationNormalizer {
         guard let previousWord = words.last(where: { $0.range.upperBound <= phraseRange.lowerBound }) else {
             return true
         }
-        return previousWord.lexicalClass == .determiner
+        return (previousWord.lexicalClass == .determiner || previousWord.lexicalClass == .preposition)
             && isWhitespaceOnly(text[previousWord.range.upperBound..<phraseRange.lowerBound])
     }
 
@@ -479,6 +480,10 @@ public struct TerminalPunctuationNormalizer {
         }
 
         if endsInPauseSymbol, endsNounPhrase(match: match, previousIndex: previousIndex, words: words, text: text) {
+            return false
+        }
+
+        if namesNumberedPeriod(match: match, previousIndex: previousIndex, words: words, text: text) {
             return false
         }
 
@@ -553,13 +558,40 @@ public struct TerminalPunctuationNormalizer {
         }
     }
 
-    /// Whether the descriptive words ending at `index` follow a determiner within one phrase.
+    /// Whether a spoken period is the noun a preposition takes, followed by the number that names
+    /// it, as in "in period two".
+    private func namesNumberedPeriod(match: CommandMatch, previousIndex: Int, words: [WordToken], text: String) -> Bool {
+        guard match.symbols.last == PauseSymbol.period,
+              words[previousIndex].lexicalClass == .preposition,
+              isWhitespaceOnly(text[words[previousIndex].range.upperBound..<words[match.firstWordIndex].range.lowerBound]),
+              match.nextWordIndex < words.endIndex,
+              isWhitespaceOnly(text[words[match.nextWordIndex - 1].range.upperBound..<words[match.nextWordIndex].range.lowerBound]) else {
+            return false
+        }
+        switch words[match.nextWordIndex].lexicalClass {
+        case .number, .ordinal:
+            return true
+        default:
+            return false
+        }
+    }
+
+    /// Whether the descriptive words ending at `index` follow a determiner or preposition within
+    /// one phrase, where a word describing the next one, as in "a really hard", belongs to it.
     private func opensNounPhrase(endingAt index: Int, words: [WordToken], text: String) -> Bool {
         var current = index
         while current > words.startIndex {
             switch words[current].lexicalClass {
             case .adjective, .noun, .number, .ordinal:
                 break
+            case .adverb:
+                guard current < index else { return false }
+                switch words[current + 1].lexicalClass {
+                case .adjective, .adverb:
+                    break
+                default:
+                    return false
+                }
             default:
                 return false
             }
@@ -568,10 +600,12 @@ public struct TerminalPunctuationNormalizer {
             guard isWhitespaceOnly(text[words[previous].range.upperBound..<words[current].range.lowerBound]) else {
                 return false
             }
-            if words[previous].lexicalClass == .determiner {
+            switch words[previous].lexicalClass {
+            case .determiner, .preposition:
                 return true
+            default:
+                current = previous
             }
-            current = previous
         }
         return false
     }

@@ -29,6 +29,26 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "I went to the store. And I bought some apples today.")
     }
 
+    func testKeepsPeriodAsNounAfterPrepositionOrDescribingPhrase() async {
+        let processor = TranscriptionPostProcessor()
+
+        for input in [
+            "My sister has art during period five",
+            "We always eat snacks in third period before the bell",
+            "That was an incredibly quiet period for the shop",
+            "At lunch period the cafeteria gets loud",
+        ] {
+            let output = processor.process(
+                input,
+                dictionaryEntries: [],
+                renderMode: .singleLineInline,
+                languageCode: "en"
+            )
+
+            XCTAssertEqual(output, input + ".", input)
+        }
+    }
+
     func testKeepsNamedPunctuationWordsLiteral() async {
         let processor = TranscriptionPostProcessor()
 
