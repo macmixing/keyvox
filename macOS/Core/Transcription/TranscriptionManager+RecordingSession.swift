@@ -60,6 +60,11 @@ extension TranscriptionManager {
     func startRecording() {
         guard case .idle = state else { return }
         triggerController.cancelDeferredRecordingStart()
+        guard modelDownloader.isDownloading(for: appSettings.activeDictationProvider.modelID) == false else {
+            OverlayManager.shared.hide()
+            WarningManager.shared.show(.modelUpdating)
+            return
+        }
         modelDownloader.refreshModelStatus()
         guard provider.isModelReady else {
             OverlayManager.shared.hide()
