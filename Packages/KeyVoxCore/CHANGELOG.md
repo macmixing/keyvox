@@ -6,6 +6,26 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.3.11] - 2026-11-06
+
+Spoken periods and commas now become punctuation, and capitals that belong to a word survive a spoken comma or ellipsis.
+
+### Includes
+
+- Converted spoken `period` and `full stop` into a period and spoken `comma` into a comma, at the end of a dictation or mid-sentence, with the next sentence capitalized after a spoken period.
+- Left one mark when the transcriber already added punctuation after the spoken word, and collapsed repeated spoken periods or commas into one.
+- Kept `period` and `comma` as words when they follow a determiner such as `this period` or `a comma`, and kept an emphatic `, period` at the end of a dictation.
+- Kept a spoken period on a one-word dictation and kept a trailing spoken comma without adding a period after it.
+- Lowercased a capital the transcriber put on the word after a spoken comma, while keeping names, capital-only words such as `Monday` and `English`, dictionary entries, `I`, and acronyms.
+- Shared the same continuation casing rules with inline ellipses, so capital-only words and names keep their capitals after a spoken ellipsis too.
+- Added regression coverage for spoken periods, full stops, commas, and their capitals on both linguistic analyzers.
+
+### Notes
+
+- `1.3.11` tracks spoken period and comma punctuation and shared continuation casing.
+
+---
+
 ## [1.3.10] - 2026-11-02
 
 Dictionary matching no longer joins two spoken words into a brand-style entry when part of the entry was never said.

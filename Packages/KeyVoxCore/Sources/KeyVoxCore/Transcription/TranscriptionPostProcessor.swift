@@ -257,8 +257,10 @@ public final class TranscriptionPostProcessor: @unchecked Sendable {
         #if DEBUG
         logPipelineStage("whitespaceNormalized", whitespaceNormalized)
         #endif
+        let endsWithSpokenPause = terminalPunctuationNormalizer.endsWithSpokenPauseCommand(whitespaceNormalized)
         let spokenTerminalPunctuationNormalized = terminalPunctuationNormalizer.normalizeSpokenTerminalPunctuation(
-            in: whitespaceNormalized
+            in: whitespaceNormalized,
+            dictionaryEntries: dictionaryEntries
         )
         #if DEBUG
         logPipelineStage("spokenTerminalPunctuationNormalized", spokenTerminalPunctuationNormalized)
@@ -281,7 +283,8 @@ public final class TranscriptionPostProcessor: @unchecked Sendable {
         )
         let terminalPeriodNormalized = terminalPeriodNormalizer.appendTerminalPeriodIfNeeded(
             to: punctuatedOutput,
-            languageCode: languageCode
+            languageCode: languageCode,
+            keepsSpokenTerminalPunctuation: endsWithSpokenPause
         )
         let modelEllipsisArtifactsRemoved = modelEllipsisArtifactNormalizer.removeArtifacts(
             from: terminalPeriodNormalized
