@@ -211,7 +211,7 @@ extension KeyboardViewController {
                 print("[\(#function)] awaitsFieldState=\(awaitsFieldState) hostActive=\(extensionHostIsActive) bound=\(isPresentationBound)")
             }
             #endif
-            self?.refreshPredictions()
+            self?.predictionCoordinator.refreshEmojiSuggestions()
         }
     }
 
