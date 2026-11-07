@@ -5,8 +5,9 @@ import Foundation
 /// stays a word when it is part of a hyphenated word or one of the user's dictionary entries,
 /// belongs to a listed phrase that names the body part, follows a word that needs a noun after
 /// it, or ends a phrase opened by a determiner where its sentence ends or what follows needs it
-/// as a noun, and when nothing comes before it in its sentence or after it, unless it stands as a
-/// sentence of its own after a sentence, which the transcriber split at the spoken colon.
+/// as a noun, and when nothing comes before it in its sentence or after it, unless it ends the
+/// dictation after more than a lone greeting word, or stands as a sentence of its own after a
+/// sentence, which the transcriber split at the spoken colon.
 public struct ColonNormalizer {
     private struct WordToken {
         let text: String
@@ -65,8 +66,23 @@ public struct ColonNormalizer {
             return nil
         }
         let range = words[index].range
-        if hasSentenceContent(before: range, in: text), hasSentenceContent(after: range, in: text) {
-            return replacementRange(for: range, in: text)
+        if hasSentenceContent(before: range, in: text) {
+            if hasSentenceContent(after: range, in: text) {
+                return replacementRange(for: range, in: text)
+            }
+            // A colon ending the dictation introduces what the speaker sends next, unless a lone
+            // word comes before it, which greets or thanks the person, as in "hi, Colin".
+            let replacement = replacementRange(for: range, in: text)
+            guard replacement.upperBound == text.endIndex,
+                  index >= words.startIndex + 2 else {
+                return nil
+            }
+            let previous = words[words.index(before: index)]
+            let secondPrevious = words[index - 2]
+            guard !text[secondPrevious.range.upperBound..<previous.range.lowerBound].contains(where: isSentenceBoundary) else {
+                return nil
+            }
+            return replacement
         }
         return ownSentenceReplacementRange(for: range, in: text)
     }

@@ -379,6 +379,18 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "These are the things we need for the trip:")
     }
 
+    func testNormalizesCommaDelimitedColinAtDictationEndToPunctuation() async {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "Here is everything I packed for the trip, Colin.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "Here is everything I packed for the trip:")
+    }
+
     func testKeepsColinSentenceAtDictationStartLiteral() async {
         let processor = TranscriptionPostProcessor()
 
@@ -438,7 +450,7 @@ extension TranscriptionPostProcessorTests {
 
         XCTAssertEqual(output, "The word colon appears here.")
     }
-    func testKeepsTerminalCommaDelimitedColinPhraseLiteral() async {
+    func testNormalizesTerminalCommaDelimitedColinToPunctuation() async {
         let processor = TranscriptionPostProcessor()
 
         let output = processor.process(
@@ -447,7 +459,7 @@ extension TranscriptionPostProcessorTests {
             renderMode: .singleLineInline
         )
 
-        XCTAssertEqual(output, "Next task, Colin.")
+        XCTAssertEqual(output, "Next task:")
     }
     func testNormalizesBareColonAssociationLabel() async {
         let processor = TranscriptionPostProcessor()
