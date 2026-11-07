@@ -1,17 +1,6 @@
 import Foundation
+import KeyVoxPredictiveKeyboard
 import UIKit
-
-#if DEBUG
-enum KeyboardPresentationLifecycleDiagnostics {
-    static var createdPresentationViewTreeCount = 0
-    static var destroyedPresentationViewTreeCount = 0
-
-    static func reset() {
-        createdPresentationViewTreeCount = 0
-        destroyedPresentationViewTreeCount = 0
-    }
-}
-#endif
 
 extension KeyboardViewController {
     func preparePresentationIfNeeded() {
@@ -20,11 +9,7 @@ extension KeyboardViewController {
     }
 
     func ensurePresentationViews() {
-        guard rootContainerView == nil || popupOverlayView == nil else { return }
-
-        if rootContainerView != nil || popupOverlayView != nil {
-            tearDownPresentation()
-        }
+        guard rootContainerView == nil else { return }
 
         let rootView = KeyboardRootView()
         rootView.translatesAutoresizingMaskIntoConstraints = false
@@ -52,16 +37,16 @@ extension KeyboardViewController {
 
         self.rootContainerView = rootView
         self.popupOverlayView = popupOverlayView
-
-#if DEBUG
-        KeyboardPresentationLifecycleDiagnostics.createdPresentationViewTreeCount += 1
-#endif
     }
 
     func activatePresentationBindingsIfNeeded() {
         guard isPresentationBound == false,
               let rootContainerView,
               let popupOverlayView else { return }
+
+        rootContainerView.suggestionBarView.apply(.empty)
+        rootContainerView.emojiPageView.resetScrollPosition()
+        fullAccessView?.resetScrollPosition()
 
         rootContainerView.settingsButton.addTarget(self, action: #selector(handleSettingsTap), for: .touchUpInside)
         rootContainerView.cancelButton.addTarget(self, action: #selector(handleCancelTap), for: .touchUpInside)
@@ -152,17 +137,18 @@ extension KeyboardViewController {
 
         dictationController.registerObservers()
         isPresentationBound = true
+        setFullAccessInstructionsPresented(false)
     }
 
     func deactivatePresentationBindings() {
         guard isPresentationBound else { return }
 
-        indicatorDriver.detach()
+        stopPresentationUpdates()
         indicatorDriver.sampleProvider = nil
         indicatorDriver.onUpdate = nil
         predictionCoordinator.onBarChange = nil
+        predictionCoordinator.clearBar()
         rootContainerView?.logoBarView.applyPlaybackProgress(0)
-        dictationController.unregisterObservers()
 
         if let rootContainerView {
             rootContainerView.settingsButton.removeTarget(self, action: #selector(handleSettingsTap), for: .touchUpInside)
@@ -205,41 +191,16 @@ extension KeyboardViewController {
             rootContainerView.keyGridView.resetInteractionState()
         }
 
-        fullAccessView?.onBack = nil
-        primaryHeightConstraint?.isActive = false
-        primaryHeightConstraint = nil
+        // UIKit can still be moving the input view between layout engines during dismissal.
+        // Keep the constrained views mounted for the lifetime of the input view.
         isPresentationBound = false
+        setFullAccessInstructionsPresented(false)
     }
 
-    func destroyPresentationViews() {
-        let hadPresentationViews = fullAccessView != nil || popupOverlayView != nil || rootContainerView != nil
-
-        if let fullAccessView {
-            fullAccessView.removeFromSuperview()
-            self.fullAccessView = nil
-        }
-
-        if let popupOverlayView {
-            popupOverlayView.subviews.forEach { $0.removeFromSuperview() }
-            popupOverlayView.removeFromSuperview()
-            self.popupOverlayView = nil
-        }
-
-        if let rootContainerView {
-            rootContainerView.removeFromSuperview()
-            self.rootContainerView = nil
-        }
-
-#if DEBUG
-        if hadPresentationViews {
-            KeyboardPresentationLifecycleDiagnostics.destroyedPresentationViewTreeCount += 1
-        }
-#endif
-    }
-
-    func tearDownPresentation() {
-        deactivatePresentationBindings()
-        destroyPresentationViews()
+    func stopPresentationUpdates() {
+        guard isPresentationBound else { return }
+        indicatorDriver.detach()
+        dictationController.unregisterObservers()
     }
 
     func configureHostLifecycleObservers() {

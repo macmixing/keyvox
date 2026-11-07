@@ -29,6 +29,10 @@ final class FullAccessView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
+    func resetScrollPosition() {
+        scrollView.setContentOffset(.zero, animated: false)
+    }
+
     private func configureView() {
         backgroundColor = .clear
         translatesAutoresizingMaskIntoConstraints = false

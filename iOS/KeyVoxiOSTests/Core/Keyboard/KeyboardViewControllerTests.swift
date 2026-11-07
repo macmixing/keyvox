@@ -4,77 +4,91 @@ import Testing
 
 @MainActor
 struct KeyboardViewControllerTests {
-    @Test func viewDisappearanceTearsDownPresentationTreeButKeepsHostLifecycleObservers() {
-        KeyboardViewController.resetPresentationLifecycleDiagnostics()
+    @Test func disappearanceLeavesTheConstrainedViewsMountedAndStopsIPC() throws {
         let controller = KeyboardViewController(nibName: nil, bundle: nil)
-
         controller.loadViewIfNeeded()
         controller.viewWillAppear(false)
+        let root = try #require(controller.rootContainerView)
+        let overlay = try #require(controller.popupOverlayView)
 
-        #expect(controller.debugHasPresentationViewTree)
         #expect(controller.debugIPCObserverRegistrationActive)
-        #expect(controller.debugHasHostLifecycleObservers)
-        #expect(KeyboardViewController.debugCreatedPresentationViewTreeCount == 1)
 
+        controller.viewWillDisappear(false)
         controller.viewDidDisappear(false)
 
-        #expect(controller.debugHasPresentationViewTree == false)
+        #expect(root.superview === controller.view)
+        #expect(overlay.superview === controller.view)
+        #expect(root.isHidden)
+        #expect(overlay.isHidden)
         #expect(controller.debugIPCObserverRegistrationActive == false)
         #expect(controller.debugHasHostLifecycleObservers)
-        #expect(KeyboardViewController.debugDestroyedPresentationViewTreeCount == 1)
     }
 
-    @Test func reappearingRebuildsExactlyOneFreshPresentationTree() {
-        KeyboardViewController.resetPresentationLifecycleDiagnostics()
+    @Test func reappearingShowsAndRebindsTheSameViews() throws {
         let controller = KeyboardViewController(nibName: nil, bundle: nil)
-
         controller.loadViewIfNeeded()
         controller.viewWillAppear(false)
-        let firstRootViewIdentifier = controller.debugRootViewIdentifier
+        let root = try #require(controller.rootContainerView)
 
+        controller.viewWillDisappear(false)
         controller.viewDidDisappear(false)
         controller.viewWillAppear(false)
 
-        #expect(controller.debugHasPresentationViewTree)
-        #expect(controller.debugRootViewIdentifier != nil)
-        #expect(controller.debugRootViewIdentifier != firstRootViewIdentifier)
-        #expect(KeyboardViewController.debugCreatedPresentationViewTreeCount == 2)
-        #expect(KeyboardViewController.debugDestroyedPresentationViewTreeCount == 1)
+        #expect(controller.rootContainerView === root)
+        #expect(root.isHidden == false)
+        #expect(controller.debugIPCObserverRegistrationActive)
     }
 
-    @Test func fullAccessInstructionsDoNotPersistAcrossPresentationTeardown() {
-        KeyboardViewController.resetPresentationLifecycleDiagnostics()
+    @Test func fullAccessInstructionsCloseAcrossPresentations() throws {
         let controller = KeyboardViewController(nibName: nil, bundle: nil)
-
         controller.loadViewIfNeeded()
         controller.viewWillAppear(false)
-        controller.debugPresentFullAccessInstructionsForTesting()
+        controller.setFullAccessInstructionsPresented(true)
+        let instructions = try #require(controller.fullAccessView)
 
-        #expect(controller.debugFullAccessViewIdentifier != nil)
+        #expect(instructions.isHidden == false)
 
+        controller.viewWillDisappear(false)
         controller.viewDidDisappear(false)
         controller.viewWillAppear(false)
 
-        #expect(controller.debugFullAccessViewIdentifier == nil)
+        #expect(instructions.superview === controller.view)
+        #expect(instructions.isHidden)
+        #expect(controller.rootContainerView?.isHidden == false)
     }
 
-    @Test func hostBackgroundingDoesNotTearDownActivePresentationTree() {
-        KeyboardViewController.resetPresentationLifecycleDiagnostics()
+    @Test func hostBackgroundingKeepsThePresentationBound() throws {
         let controller = KeyboardViewController(nibName: nil, bundle: nil)
-
         controller.loadViewIfNeeded()
         controller.viewWillAppear(false)
-        let firstRootViewIdentifier = controller.debugRootViewIdentifier
+        let root = try #require(controller.rootContainerView)
 
         NotificationCenter.default.post(name: NSNotification.Name.NSExtensionHostWillResignActive, object: nil)
         controller.viewWillDisappear(false)
         controller.viewDidDisappear(false)
         NotificationCenter.default.post(name: NSNotification.Name.NSExtensionHostDidBecomeActive, object: nil)
 
-        #expect(controller.debugHasPresentationViewTree)
-        #expect(controller.debugRootViewIdentifier == firstRootViewIdentifier)
+        #expect(controller.rootContainerView === root)
+        #expect(root.isHidden == false)
+        #expect(controller.debugIPCObserverRegistrationActive)
         #expect(controller.debugHasHostLifecycleObservers)
-        #expect(KeyboardViewController.debugCreatedPresentationViewTreeCount == 1)
-        #expect(KeyboardViewController.debugDestroyedPresentationViewTreeCount == 0)
+    }
+
+    @Test func deallocationLeavesRemovalToTheHostViewOwner() throws {
+        weak var releasedController: KeyboardViewController?
+        let (hostView, root) = try autoreleasepool {
+            let controller = KeyboardViewController(nibName: nil, bundle: nil)
+            controller.loadViewIfNeeded()
+            controller.viewWillAppear(false)
+            releasedController = controller
+            let hostView = try #require(controller.view)
+            let root = try #require(controller.rootContainerView)
+            // Model UIKit retaining the old input view after disconnecting the controller.
+            controller.view = UIView()
+            return (hostView, root)
+        }
+
+        #expect(releasedController == nil)
+        #expect(root.superview === hostView)
     }
 }
