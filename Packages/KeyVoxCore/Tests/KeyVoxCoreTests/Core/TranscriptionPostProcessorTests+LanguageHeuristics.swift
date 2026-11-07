@@ -367,6 +367,18 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "Here is the plan for the week:\n\nWe start the painting on Monday.")
     }
 
+    func testNormalizesColinSentenceAtDictationEndToPunctuation() async {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "These are the things we need for the trip. Colin.",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "These are the things we need for the trip:")
+    }
+
     func testKeepsColinSentenceAtDictationStartLiteral() async {
         let processor = TranscriptionPostProcessor()
 

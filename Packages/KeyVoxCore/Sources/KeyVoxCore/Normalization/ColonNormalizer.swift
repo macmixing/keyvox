@@ -6,7 +6,7 @@ import Foundation
 /// belongs to a listed phrase that names the body part, follows a word that needs a noun after
 /// it, or ends a phrase opened by a determiner where its sentence ends or what follows needs it
 /// as a noun, and when nothing comes before it in its sentence or after it, unless it stands as a
-/// sentence of its own between two sentences, which the transcriber split at the spoken colon.
+/// sentence of its own after a sentence, which the transcriber split at the spoken colon.
 public struct ColonNormalizer {
     private struct WordToken {
         let text: String
@@ -36,10 +36,8 @@ public struct ColonNormalizer {
         var replacedFrom = text.endIndex
         for range in replacements where range.upperBound <= replacedFrom {
             let lineBreaks = text[range].filter(\.isNewline)
-            mutable.replaceCharacters(
-                in: NSRange(range, in: text),
-                with: lineBreaks.isEmpty ? ": " : ":" + String(lineBreaks)
-            )
+            let separator = range.upperBound == text.endIndex ? "" : (lineBreaks.isEmpty ? " " : String(lineBreaks))
+            mutable.replaceCharacters(in: NSRange(range, in: text), with: ":" + separator)
             replacedFrom = range.lowerBound
         }
         let normalized = mutable as String
@@ -118,7 +116,8 @@ public struct ColonNormalizer {
     }
 
     /// The span from the period ending the sentence before the word through the punctuation and
-    /// spaces after it, when the word is a sentence of its own between two sentences.
+    /// spaces after it, when the word is a sentence of its own after a sentence, either between two
+    /// sentences or at the end of the dictation.
     private func ownSentenceReplacementRange(
         for range: Range<String.Index>,
         in text: String
@@ -136,8 +135,9 @@ public struct ColonNormalizer {
         }
 
         let end = replacementRange(for: range, in: text).upperBound
-        guard text[range.upperBound..<end].contains(where: isSentenceBoundary),
-              text[end...].contains(where: { $0.isLetter || $0.isNumber }) else {
+        guard end == text.endIndex
+                || (text[range.upperBound..<end].contains(where: isSentenceBoundary)
+                    && text[end...].contains(where: { $0.isLetter || $0.isNumber })) else {
             return nil
         }
         return periodIndex..<end
