@@ -11,6 +11,7 @@ let package = Package(
             resources: [
                 .copy("Resources/PERCEPTRON-LICENSE.txt"),
                 .copy("Resources/capitalized_spellings.txt"),
+                .copy("Resources/punctuation_name_phrases.txt"),
             ]
         ),
         .testTarget(name: "KeyVoxLinguisticsTests", dependencies: ["KeyVoxLinguistics"]),
