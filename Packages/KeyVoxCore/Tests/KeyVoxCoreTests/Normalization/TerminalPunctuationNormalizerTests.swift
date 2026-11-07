@@ -1,3 +1,4 @@
+import KeyVoxLinguistics
 import XCTest
 @testable import KeyVoxCore
 
@@ -342,10 +343,147 @@ final class TerminalPunctuationNormalizerTests: LinguisticAnalyzerTestCase {
         )
     }
 
-    func testDoesNotConvertUnsupportedTerminalPunctuationWords() {
+    func testConvertsSpokenPeriodCommands() {
+        let normalizer = TerminalPunctuationNormalizer()
+        let cases = [
+            (input: "I'm home period", expected: "I'm home."),
+            (input: "I'm home full stop", expected: "I'm home."),
+            (input: "I'm home period.", expected: "I'm home."),
+            (input: "I'm home full stop.", expected: "I'm home."),
+            (input: "I'm home period I'll call you later", expected: "I'm home. I'll call you later"),
+            (input: "I'm home period. I'll call you later.", expected: "I'm home. I'll call you later."),
+            (input: "I'm home full stop we can talk later", expected: "I'm home. we can talk later"),
+        ]
+
+        for testCase in cases {
+            XCTAssertEqual(normalizer.normalizeSpokenTerminalPunctuation(in: testCase.input), testCase.expected)
+        }
+    }
+
+    func testConvertsSpokenCommaCommands() {
+        let normalizer = TerminalPunctuationNormalizer()
+        let cases = [
+            (input: "Hi John comma how are you", expected: "Hi John, how are you"),
+            (input: "Hi John comma. How are you?", expected: "Hi John, how are you?"),
+            (input: "Hi John, comma, how are you", expected: "Hi John, how are you"),
+            (input: "Keep going comma", expected: "Keep going,"),
+            (input: "I said comma I'm here", expected: "I said, I'm here"),
+        ]
+
+        for testCase in cases {
+            XCTAssertEqual(
+                inEnglish { normalizer.normalizeSpokenTerminalPunctuation(in: testCase.input) },
+                testCase.expected
+            )
+        }
+    }
+
+    func testKeepsCapitalsThatBelongToTheWordAfterSpokenComma() {
+        let normalizer = TerminalPunctuationNormalizer()
+        let cases = [
+            (input: "Okay comma. Monday works.", expected: "Okay, Monday works."),
+            (input: "Okay comma. English is hard.", expected: "Okay, English is hard."),
+            (input: "Thanks comma. Sarah will call you.", expected: "Thanks, Sarah will call you."),
+            (input: "Thanks comma. John will call you.", expected: "Thanks, John will call you."),
+            (input: "Okay comma. I'm here.", expected: "Okay, I'm here."),
+            (input: "Okay comma. NASA called.", expected: "Okay, NASA called."),
+            (input: "Okay comma. Will you call?", expected: "Okay, will you call?"),
+        ]
+
+        for testCase in cases {
+            XCTAssertEqual(
+                inEnglish { normalizer.normalizeSpokenTerminalPunctuation(in: testCase.input) },
+                testCase.expected
+            )
+        }
+    }
+
+    func testKeepsDictionaryEntryCapitalAfterSpokenComma() {
+        let normalizer = TerminalPunctuationNormalizer()
+        let entry = DictionaryEntry(phrase: "Rose")
+
+        XCTAssertEqual(
+            inEnglish {
+                normalizer.normalizeSpokenTerminalPunctuation(
+                    in: "Fine comma. Rose will bring it.",
+                    dictionaryEntries: [entry]
+                )
+            },
+            "Fine, Rose will bring it."
+        )
+    }
+
+    func testConvertsSpokenPauseCommandsAfterNounPhrases() {
+        let normalizer = TerminalPunctuationNormalizer()
+        let cases = [
+            (input: "Thanks for the update comma I'll review it", expected: "Thanks for the update, I'll review it"),
+            (input: "I fed the cat period. Then I left.", expected: "I fed the cat. Then I left."),
+        ]
+
+        for testCase in cases {
+            XCTAssertEqual(
+                inEnglish { normalizer.normalizeSpokenTerminalPunctuation(in: testCase.input) },
+                testCase.expected
+            )
+        }
+    }
+
+    func testDropsSpokenPauseCommandsNextToQuestionAndExclamationCommands() {
+        let normalizer = TerminalPunctuationNormalizer()
+        let cases = [
+            (input: "Is it ready question mark period", expected: "Is it ready?"),
+            (input: "Wow exclamation point comma that is great", expected: "Wow! that is great"),
+            (input: "Is that right comma question mark", expected: "Is that right?"),
+        ]
+
+        for testCase in cases {
+            XCTAssertEqual(
+                inEnglish { normalizer.normalizeSpokenTerminalPunctuation(in: testCase.input) },
+                testCase.expected
+            )
+        }
+    }
+
+    func testCollapsesRepeatedSpokenPauseCommands() {
         let normalizer = TerminalPunctuationNormalizer()
 
-        XCTAssertEqual(normalizer.normalizeSpokenTerminalPunctuation(in: "Finish this period"), "Finish this period")
-        XCTAssertEqual(normalizer.normalizeSpokenTerminalPunctuation(in: "Keep going comma"), "Keep going comma")
+        XCTAssertEqual(normalizer.normalizeSpokenTerminalPunctuation(in: "Done period period."), "Done.")
+        XCTAssertEqual(normalizer.normalizeSpokenTerminalPunctuation(in: "Wait comma comma okay"), "Wait, okay")
+    }
+
+    func testKeepsPeriodAndCommaWordsOutsideCommands() {
+        let normalizer = TerminalPunctuationNormalizer()
+        let unchangedInputs = [
+            "Finish this period",
+            "The trial period ends Friday.",
+            "We had a long period of rain.",
+            "Add a comma here.",
+            "I'm not doing it, period.",
+            "No, full stop.",
+            "During the trial period the company offered refunds",
+            "It was a tough period I think",
+            "I love the Oxford comma",
+            "Use a serial comma before and",
+            "Comma is a punctuation mark",
+        ]
+
+        for input in unchangedInputs {
+            XCTAssertEqual(inEnglish { normalizer.normalizeSpokenTerminalPunctuation(in: input) }, input)
+        }
+    }
+
+    func testDetectsTerminalSpokenPauseCommand() {
+        let normalizer = TerminalPunctuationNormalizer()
+
+        XCTAssertTrue(normalizer.endsWithSpokenPauseCommand("Thanks period"))
+        XCTAssertTrue(normalizer.endsWithSpokenPauseCommand("Thanks full stop."))
+        XCTAssertTrue(normalizer.endsWithSpokenPauseCommand("Keep going comma"))
+        XCTAssertFalse(normalizer.endsWithSpokenPauseCommand("Thanks."))
+        XCTAssertFalse(normalizer.endsWithSpokenPauseCommand("Finish this period"))
+        XCTAssertFalse(normalizer.endsWithSpokenPauseCommand("Ready question mark"))
+    }
+
+    private func inEnglish<T>(_ body: () -> T) -> T {
+        TextLinguistics.$processingLanguageCode.withValue("en", operation: body)
     }
 }

@@ -1,6 +1,6 @@
 """Writes the words the predictive keyboard spells with capitals, such as "Jennifer" or
 "iPhone": one per line as the lowercase word, a tab, and that spelling, in byte order of
-the lowercase word, for `CapitalizedSpellings` in KeyVoxPredictiveKeyboard.
+the lowercase word, for `CapitalizedSpellings` in KeyVoxLinguistics.
 
 A word is listed when its dictionary's SCOWL word list (size 60, from `scowl_words.sh`)
 spells it only one way, with capitals. Left out, so they stay as typed:

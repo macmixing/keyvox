@@ -6,8 +6,12 @@ public struct TerminalPeriodNormalizer {
 
     public init() {}
 
-    public func appendTerminalPeriodIfNeeded(to text: String, languageCode: String? = nil) -> String {
-        guard !text.isEmpty else { return text }
+    public func appendTerminalPeriodIfNeeded(
+        to text: String,
+        languageCode: String? = nil,
+        keepsSpokenTerminalPunctuation: Bool = false
+    ) -> String {
+        guard !text.isEmpty, !keepsSpokenTerminalPunctuation else { return text }
 
         if wordCount(in: text) == 1 {
             return removingTerminalPeriod(from: text)

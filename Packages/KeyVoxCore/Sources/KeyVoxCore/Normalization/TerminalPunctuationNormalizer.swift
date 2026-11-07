@@ -19,6 +19,14 @@ public struct TerminalPunctuationNormalizer {
         static let questionMark = ["question", "mark"]
         static let exclamationPoint = ["exclamation", "point"]
         static let exclamationMark = ["exclamation", "mark"]
+        static let period = ["period"]
+        static let fullStop = ["full", "stop"]
+        static let comma = ["comma"]
+    }
+
+    private enum PauseSymbol {
+        static let period: Character = "."
+        static let comma: Character = ","
     }
 
     private static let terminalTimeRegex = try? NSRegularExpression(
@@ -27,9 +35,14 @@ public struct TerminalPunctuationNormalizer {
     private static let terminalSentencePunctuationRegex = try? NSRegularExpression(
         pattern: #"[.!?…][\"'”’\)\]\}]*\s*$"#
     )
+    private let casingPolicy = ContinuationCasingPolicy()
+
     public init() {}
 
-    public func normalizeSpokenTerminalPunctuation(in text: String) -> String {
+    public func normalizeSpokenTerminalPunctuation(
+        in text: String,
+        dictionaryEntries: [DictionaryEntry] = []
+    ) -> String {
         guard !text.isEmpty else { return text }
 
         let artifactNormalized = text.replacingOccurrences(
@@ -44,7 +57,16 @@ public struct TerminalPunctuationNormalizer {
             .filter { isEligibleCommand(match: $0, words: words, text: normalized) }
         guard !commandMatches.isEmpty else { return normalized }
 
+        var commaContinuationDistancesFromEnd: [Int] = []
         for commandMatch in commandMatches.reversed() {
+            if commandMatch.symbols.last == PauseSymbol.comma, commandMatch.nextWordIndex < words.endIndex {
+                commaContinuationDistancesFromEnd.append(
+                    normalized.distance(
+                        from: words[commandMatch.nextWordIndex].range.lowerBound,
+                        to: normalized.endIndex
+                    )
+                )
+            }
             let replacementRange = replacementRange(for: commandMatch, words: words, text: normalized)
             if let repair = pluralPossessiveRepair(
                 before: commandMatch,
@@ -59,7 +81,51 @@ public struct TerminalPunctuationNormalizer {
                 normalized.replaceSubrange(replacementRange, with: commandMatch.symbols)
             }
         }
-        return normalized
+        return lowercasingCommaContinuations(
+            in: normalized,
+            distancesFromEnd: commaContinuationDistancesFromEnd,
+            dictionaryEntries: dictionaryEntries
+        )
+    }
+
+    /// Lowercases a capital the transcriber gave the word after a spoken comma, unless the
+    /// continuation casing policy says the capital belongs to the word.
+    private func lowercasingCommaContinuations(
+        in text: String,
+        distancesFromEnd: [Int],
+        dictionaryEntries: [DictionaryEntry]
+    ) -> String {
+        var result = text
+        for distance in distancesFromEnd.sorted(by: >) {
+            let start = result.index(result.endIndex, offsetBy: -distance)
+            let token = String(result[start...].prefix { $0.isLetter || $0.isNumber || "_'’-".contains($0) })
+            guard let firstCharacter = token.first, firstCharacter.isUppercase else { continue }
+
+            let tokenRange = NSRange(start..<result.index(start, offsetBy: token.count), in: result)
+            guard !casingPolicy.preservesCapital(
+                of: token,
+                at: tokenRange,
+                in: result,
+                dictionaryEntries: dictionaryEntries
+            ) else {
+                continue
+            }
+
+            result.replaceSubrange(start..<result.index(after: start), with: String(firstCharacter).lowercased())
+        }
+        return result
+    }
+
+    public func endsWithSpokenPauseCommand(_ text: String) -> Bool {
+        let words = wordTokens(in: text)
+        guard let lastMatch = terminalCommandMatches(in: words, text: text)
+            .filter({ isEligibleCommand(match: $0, words: words, text: text) })
+            .last,
+              let lastSymbol = lastMatch.symbols.last else {
+            return false
+        }
+
+        return lastMatch.nextWordIndex == words.endIndex && isPauseSymbol(lastSymbol)
     }
 
     private func normalizeSpokenEllipses(in text: String) -> String {
@@ -221,17 +287,34 @@ public struct TerminalPunctuationNormalizer {
         while startIndex < words.endIndex {
             var currentIndex = startIndex
             var symbols = ""
+            var lastSpokenSymbol = ""
 
             while currentIndex < words.count {
                 guard let command = commandSymbol(startingAt: currentIndex, in: words, text: text) else {
                     break
                 }
 
-                symbols += command.symbol
+                lastSpokenSymbol = command.symbol
                 currentIndex = command.nextIndex
+                guard let commandSymbol = command.symbol.first, let lastSymbol = symbols.last else {
+                    symbols += command.symbol
+                    continue
+                }
+
+                // A period or comma spoken after a question mark or exclamation adds nothing,
+                // and a question mark or exclamation spoken after one replaces it.
+                if isPauseSymbol(commandSymbol), !isPauseSymbol(lastSymbol) {
+                    continue
+                }
+                if isPauseSymbol(lastSymbol) {
+                    symbols.removeLast()
+                }
+                symbols += command.symbol
             }
 
-            if !symbols.isEmpty, isTerminalBoundary(afterWordAt: currentIndex - 1, nextWordIndex: currentIndex, words: words, text: text) {
+            if !symbols.isEmpty,
+               isTerminalBoundary(afterWordAt: currentIndex - 1, nextWordIndex: currentIndex, words: words, text: text)
+                || continuesAfterPauseCommand(symbols: lastSpokenSymbol, nextWordIndex: currentIndex, words: words) {
                 matches.append(CommandMatch(firstWordIndex: startIndex, nextWordIndex: currentIndex, symbols: symbols))
                 startIndex = currentIndex
             } else {
@@ -256,7 +339,55 @@ public struct TerminalPunctuationNormalizer {
             return ("!", index + SpokenCommand.exclamationPoint.count)
         }
 
+        if matches(SpokenCommand.period, startingAt: index, in: words, text: text) {
+            return (String(PauseSymbol.period), index + SpokenCommand.period.count)
+        }
+
+        if matches(SpokenCommand.fullStop, startingAt: index, in: words, text: text) {
+            return (String(PauseSymbol.period), index + SpokenCommand.fullStop.count)
+        }
+
+        if matches(SpokenCommand.comma, startingAt: index, in: words, text: text) {
+            return (String(PauseSymbol.comma), index + SpokenCommand.comma.count)
+        }
+
         return nil
+    }
+
+    private func isPauseSymbol(_ symbol: Character) -> Bool {
+        symbol == PauseSymbol.period || symbol == PauseSymbol.comma
+    }
+
+    private func continuesAfterPauseCommand(symbols: String, nextWordIndex: Int, words: [WordToken]) -> Bool {
+        guard nextWordIndex < words.endIndex, let lastSymbol = symbols.last else { return false }
+
+        if lastSymbol == PauseSymbol.comma {
+            return true
+        }
+
+        guard lastSymbol == PauseSymbol.period else { return false }
+        return startsSentence(words[nextWordIndex])
+    }
+
+    private func startsSentence(_ word: WordToken) -> Bool {
+        if word.lexicalClass == .pronoun || word.lexicalClass == .determiner {
+            return true
+        }
+
+        guard let firstCharacter = word.text.first else { return false }
+        return firstCharacter.isUppercase && word.identity != .name
+    }
+
+    private func isEmphaticSpokenPeriod(match: CommandMatch, words: [WordToken], text: String) -> Bool {
+        guard match.symbols.last == PauseSymbol.period,
+              match.nextWordIndex == words.endIndex,
+              match.firstWordIndex > words.startIndex else {
+            return false
+        }
+
+        let previousWord = words[words.index(before: match.firstWordIndex)]
+        let leadingBoundary = text[previousWord.range.upperBound..<words[match.firstWordIndex].range.lowerBound]
+        return leadingBoundary.contains(PauseSymbol.comma)
     }
 
     private func matches(
@@ -281,13 +412,27 @@ public struct TerminalPunctuationNormalizer {
     }
 
     private func isEligibleCommand(match: CommandMatch, words: [WordToken], text: String) -> Bool {
-        guard match.firstWordIndex > words.startIndex else { return true }
+        if isEmphaticSpokenPeriod(match: match, words: words, text: text) {
+            return false
+        }
+
+        // A comma has nothing to separate before the first word, so a leading "comma" is the word.
+        guard match.firstWordIndex > words.startIndex else { return match.symbols.last != PauseSymbol.comma }
 
         let previousIndex = words.index(before: match.firstWordIndex)
         let previousWord = words[previousIndex]
         let leadingBoundary = text[previousWord.range.upperBound..<words[match.firstWordIndex].range.lowerBound]
         if leadingBoundary.contains(where: isCommandSentenceBoundary) || leadingBoundary.contains(where: \.isNewline) {
             return true
+        }
+
+        let endsInPauseSymbol = match.symbols.last.map(isPauseSymbol) ?? false
+        if previousWord.lexicalClass == .determiner, endsInPauseSymbol {
+            return false
+        }
+
+        if endsInPauseSymbol, endsNounPhrase(match: match, previousIndex: previousIndex, words: words, text: text) {
+            return false
         }
 
         if previousWord.lexicalClass == .determiner,
@@ -313,11 +458,58 @@ public struct TerminalPunctuationNormalizer {
         }
 
         if previousWord.lexicalClass == .verb,
+           !endsInPauseSymbol,
            !hasExplicitCommandBoundaryAfter(match: match, words: words, text: text) {
             return false
         }
 
         return true
+    }
+
+    /// Whether a spoken period or comma is the noun ending a phrase opened by a determiner, as in
+    /// "the trial period" or "a serial comma", rather than a command after that phrase.
+    private func endsNounPhrase(match: CommandMatch, previousIndex: Int, words: [WordToken], text: String) -> Bool {
+        guard opensNounPhrase(endingAt: previousIndex, words: words, text: text) else { return false }
+
+        if match.symbols.last == PauseSymbol.period {
+            return !hasExplicitCommandBoundaryAfter(match: match, words: words, text: text)
+        }
+
+        let previousWord = words[previousIndex]
+        if previousWord.text.first?.isUppercase == true {
+            return true
+        }
+
+        guard previousWord.lexicalClass == .adjective, match.nextWordIndex < words.endIndex else { return false }
+        switch words[match.nextWordIndex].lexicalClass {
+        case .preposition, .conjunction, .verb:
+            return true
+        default:
+            return false
+        }
+    }
+
+    /// Whether the descriptive words ending at `index` follow a determiner within one phrase.
+    private func opensNounPhrase(endingAt index: Int, words: [WordToken], text: String) -> Bool {
+        var current = index
+        while current > words.startIndex {
+            switch words[current].lexicalClass {
+            case .adjective, .noun, .number, .ordinal:
+                break
+            default:
+                return false
+            }
+
+            let previous = words.index(before: current)
+            guard isWhitespaceOnly(text[words[previous].range.upperBound..<words[current].range.lowerBound]) else {
+                return false
+            }
+            if words[previous].lexicalClass == .determiner {
+                return true
+            }
+            current = previous
+        }
+        return false
     }
 
     private func isEligibleDeterminerCommand(

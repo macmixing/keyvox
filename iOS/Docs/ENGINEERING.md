@@ -1299,7 +1299,7 @@ Current order:
 5. normalize math expressions through the split math normalization helpers
 6. apply list formatting when enabled
 7. run late cleanup for laughter, character spam, provider asterisk artifacts, time expressions, dates, email boundaries, website/domain casing, and numeric grouping
-8. run render-mode whitespace cleanup, sentence capitalization, spoken terminal punctuation, terminal-time punctuation completion, removal of model-generated literal ellipsis artifacts, and the all-caps override
+8. run render-mode whitespace cleanup, sentence capitalization, spoken punctuation (question mark, exclamation, period, full stop, and comma), terminal-time punctuation completion, removal of model-generated literal ellipsis artifacts, and the all-caps override
 
 Model ellipsis artifact removal runs after continuation casing has been resolved, leaves spoken ellipses intact, and keeps a single space where removing an artifact would otherwise join two words.
 

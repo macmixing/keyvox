@@ -6,6 +6,20 @@ The format loosely follows Keep a Changelog, and the package uses semantic versi
 
 ---
 
+## [1.0.4] - 2026-11-06
+
+Capitalized spellings now come from the shared language package.
+
+### Includes
+
+- `EnglishPredictiveEngine.capitalizedSpellings` now uses `CapitalizedSpellings` from `KeyVoxLinguistics`, which owns the bundled list, so the keyboard and dictation share one list.
+
+### Notes
+
+- `1.0.4` moves `CapitalizedSpellings` to `KeyVoxLinguistics`; its API is unchanged, and keyboard hosts that name the type import `KeyVoxLinguistics`.
+
+---
+
 ## [1.0.3] - 2026-10-29
 
 A next-word bar that keeps offering three words while the user picks its words in a row, and autocorrection that fixes a real word typed with two keys a key off without dropping a letter the user tapped.

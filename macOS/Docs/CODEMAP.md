@@ -176,6 +176,7 @@ KeyVox/
 │   ├── KeyVoxLinguistics/
 │   │   ├── Sources/KeyVoxLinguistics/
 │   │   │   ├── AppleLinguisticAnalyzer.swift
+│   │   │   ├── CapitalizedSpellings.swift
 │   │   │   ├── HealthRoutingLinguisticAnalyzer.swift
 │   │   │   ├── LinguisticAnalysisHealth.swift
 │   │   │   ├── LinguisticAnalyzerFactory.swift
@@ -572,12 +573,14 @@ KeyVox/
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/ColonNormalizer.swift`
   - Converts spoken/delimiter forms of `colon` into punctuation (`:`) with lightweight homophone tolerance and punctuation cleanup guards.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/TerminalPunctuationNormalizer.swift`
-  - Converts eligible spoken terminal punctuation commands into `?`/`!` during post-processing and appends terminal periods for sentence-like outputs ending in formatted times when punctuation is absent.
+  - Converts eligible spoken punctuation commands into `?`/`!`/`.`/`,` during post-processing (`question mark`, `exclamation point`/`mark`, `period`, `full stop`, `comma`), keeps `period` and `comma` as words when they end a determiner-led noun phrase or an emphatic trailing `, period`, collapses repeated or mixed commands into one mark, lowercases a transcriber capital after a spoken comma through `ContinuationCasingPolicy`, and appends terminal periods for sentence-like outputs ending in formatted times when punctuation is absent.
   - Converts three consecutive spoken dot commands into an ellipsis character, rewrites the model's dotted-word ellipsis artifact into a period run for later artifact removal, and repairs a plural-possessive artifact on an ordinary noun after a preposition and determiner before the terminal symbol.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/TerminalPeriodNormalizer.swift`
-  - Appends a terminal period to multi-word prose without sentence punctuation, skips lists, list items, and non-prose shapes, and removes a lone terminal period from single-word output.
+  - Appends a terminal period to multi-word prose without sentence punctuation, skips lists, list items, and non-prose shapes, and removes a lone terminal period from single-word output; output that ends with a spoken period or comma is left as spoken.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/EllipsisContinuationNormalizer.swift`
-  - Lowercases the first letter of a word that continues after an ellipsis while preserving first-person pronoun forms, internal-uppercase tokens, recognized name phrases, dotted acronyms, and supplied dictionary entries.
+  - Lowercases the first letter of a word that continues after an ellipsis unless `ContinuationCasingPolicy` keeps its capital.
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/ContinuationCasingPolicy.swift`
+  - Decides whether a capital opening a continuation after an ellipsis or spoken comma belongs to the word: first-person pronoun forms, internal-uppercase tokens, capital-only words from `CapitalizedSpellings`, names that still read as content words in lowercase, recognized name phrases, dotted acronyms, and supplied dictionary entries keep it.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/ModelEllipsisArtifactNormalizer.swift`
   - Removes runs of three or more ASCII periods as model artifacts after terminal-period completion, keeping one space only when the removal would join two word characters.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/AllCapsOverrideNormalizer.swift`
@@ -779,7 +782,7 @@ KeyVox/
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/DateNormalizer.swift`
   - Late cleanup pass for spoken date forms after time normalization and before final email/website/numeric finishing.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/TerminalPunctuationNormalizer.swift`
-  - Handles spoken terminal punctuation and terminal-time punctuation completion near the end of post-processing.
+  - Handles spoken punctuation commands and terminal-time punctuation completion near the end of post-processing.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Normalization/AllCapsOverrideNormalizer.swift`
   - Final-stage output override that forces uppercase while preserving prior list/email/website/time formatting.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/Email/DictionaryEmailEntry.swift`

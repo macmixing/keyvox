@@ -1,4 +1,5 @@
 import Foundation
+import KeyVoxLinguistics
 import KeyVoxPredictiveNative
 #if canImport(CoreGraphics)
 import CoreGraphics
@@ -26,9 +27,7 @@ public final class EnglishPredictiveEngine: @unchecked Sendable {
         let actionURL = try locator.url(name: "production_action_800k", extension: "kvtr")
         let accentURL = try locator.url(name: "accent_overlay", extension: "bin")
         accentOverlay = try AccentSuggestionOverlay(data: Data(contentsOf: accentURL))
-        capitalizedSpellings = try CapitalizedSpellings(
-            contentsOf: locator.url(name: "capitalized_spellings", extension: "txt")
-        )
+        capitalizedSpellings = try CapitalizedSpellings()
         sentenceOpeners = try SentenceOpeners(
             contentsOf: locator.url(name: "sentence_openers", extension: "txt")
         )

@@ -1,5 +1,6 @@
 import Foundation
 import KeyVoxCore
+import KeyVoxLinguistics
 import KeyVoxVoiceActivity
 
 @MainActor
@@ -31,6 +32,9 @@ final class EngineSession {
         self.autoParagraphsEnabled = autoParagraphsEnabled
         self.listFormattingEnabled = listFormattingEnabled
         try KeyVoxCoreResources.configure(bundleURL: resources.appendingPathComponent("KeyVoxCore_KeyVoxCore.resources"))
+        try KeyVoxLinguisticsResources.configure(
+            bundleURL: resources.appendingPathComponent("KeyVoxLinguistics_KeyVoxLinguistics.resources")
+        )
         let vadDirectory = resources.appendingPathComponent("KeyVoxVoiceActivity_KeyVoxVoiceActivity.resources")
         let vadModels = try FileManager.default.contentsOfDirectory(at: vadDirectory, includingPropertiesForKeys: nil)
             .filter { $0.pathExtension == "bin" }

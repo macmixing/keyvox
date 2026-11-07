@@ -1,7 +1,8 @@
 # KeyVox Language Model
 
 Builds the language data the predictive keyboard bundles in
-`Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/PredictiveData`:
+`Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/PredictiveData`, and the
+capitalized spellings shared with dictation in `Packages/KeyVoxLinguistics/Sources/KeyVoxLinguistics/Resources`:
 
 | Bundled file | Built by | Reads |
 | --- | --- | --- |
@@ -66,8 +67,8 @@ xcrun swiftc -O tag_word_kinds.swift -o <scratch>/tag_word_kinds
 
 ## Words spelled with capitals
 
-`capitalized_spellings.txt` holds the words the keyboard writes with their capitals, such as
-"Jennifer" or "iPhone". It is built from SCOWL, the word list the dictionary comes from, and
+`capitalized_spellings.txt` holds the words the keyboard and dictation write with their capitals, such as
+"Jennifer" or "iPhone". It is bundled in `Packages/KeyVoxLinguistics`. It is built from SCOWL, the word list the dictionary comes from, and
 the written sources in the data directory:
 
 ```bash
