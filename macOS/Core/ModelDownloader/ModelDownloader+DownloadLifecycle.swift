@@ -343,6 +343,27 @@ extension ModelDownloader {
         }
     }
 
+    /// An install swap interrupted before warm-up finished leaves the replaced install
+    /// aside. Keep the new install when it is intact, otherwise put the old one back.
+    func recoverInterruptedInstallSwaps() {
+        let installSwap = StagedModelInstallSwap(fileManager: fileManager)
+
+        for modelID in DictationModelID.allCases {
+            guard case .subdirectory = modelLocator.descriptor(for: modelID).installLayout else { continue }
+            let previousRootURL = modelLocator.previousInstallRootURL(for: modelID)
+            guard fileManager.fileExists(atPath: previousRootURL.path) else { continue }
+
+            if modelLocator.resolvedInstallRootURL(for: modelID) != nil {
+                installSwap.discardPrevious(previousRootURL: previousRootURL)
+            } else {
+                try? installSwap.restorePrevious(
+                    installRootURL: modelLocator.installRootURL(for: modelID),
+                    previousRootURL: previousRootURL
+                )
+            }
+        }
+    }
+
     func updateInstallPhase(_ phase: DictationModelInstallPhase, for modelID: DictationModelID) {
         guard Thread.isMainThread else {
             DispatchQueue.main.async { [weak self] in

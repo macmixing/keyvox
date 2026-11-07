@@ -590,6 +590,48 @@ final class ModelDownloaderTests: XCTestCase {
         )
     }
 
+    func testLaunchDiscardsReplacedInstallWhenNewInstallIsIntact() throws {
+        try withTemporaryDirectory { dir in
+            let locator = InstalledDictationModelLocator(fileManager: .default, appSupportRootURL: dir)
+            try ParakeetInstallFixture.writeInstall(
+                ParakeetInstallFixture.currentArtifacts,
+                at: locator.installRootURL(for: .parakeetTdtV3)
+            )
+            try ParakeetInstallFixture.writeInstall(
+                ParakeetInstallFixture.legacyArtifacts,
+                at: locator.previousInstallRootURL(for: .parakeetTdtV3)
+            )
+
+            let downloader = ParakeetInstallFixture.makeDownloader(in: dir)
+            downloader.refreshModelStatus()
+
+            XCTAssertFalse(FileManager.default.fileExists(atPath: locator.previousInstallRootURL(for: .parakeetTdtV3).path))
+            XCTAssertTrue(downloader.isModelReady(for: .parakeetTdtV3))
+            XCTAssertFalse(downloader.requiresArtifactUpdate(for: .parakeetTdtV3))
+        }
+    }
+
+    func testLaunchRestoresReplacedInstallWhenNewInstallIsIncomplete() throws {
+        try withTemporaryDirectory { dir in
+            let locator = InstalledDictationModelLocator(fileManager: .default, appSupportRootURL: dir)
+            try writeBytes(
+                count: 1,
+                to: locator.installRootURL(for: .parakeetTdtV3).appendingPathComponent("config.json")
+            )
+            try ParakeetInstallFixture.writeInstall(
+                ParakeetInstallFixture.legacyArtifacts,
+                at: locator.previousInstallRootURL(for: .parakeetTdtV3)
+            )
+
+            let downloader = ParakeetInstallFixture.makeDownloader(in: dir)
+            downloader.refreshModelStatus()
+
+            XCTAssertFalse(FileManager.default.fileExists(atPath: locator.previousInstallRootURL(for: .parakeetTdtV3).path))
+            XCTAssertTrue(downloader.isModelReady(for: .parakeetTdtV3))
+            XCTAssertTrue(downloader.requiresArtifactUpdate(for: .parakeetTdtV3))
+        }
+    }
+
     private func beginActiveParakeetInstall(on downloader: ModelDownloader) {
         downloader.activeDownload = ModelDownloader.ActiveDownload(
             token: UUID(),

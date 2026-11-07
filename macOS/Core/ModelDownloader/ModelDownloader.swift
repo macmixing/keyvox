@@ -113,6 +113,7 @@ class ModelDownloader: ObservableObject {
             appSupportRootURL: appSupportRootURL
         )
         try? self.modelLocator.migrateLegacyWhisperInstallIfNeeded()
+        recoverInterruptedInstallSwaps()
 
         if refreshOnInit {
             refreshModelStatus()
