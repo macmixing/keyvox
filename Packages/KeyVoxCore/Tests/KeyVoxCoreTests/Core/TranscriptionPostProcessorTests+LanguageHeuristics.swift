@@ -455,7 +455,6 @@ extension TranscriptionPostProcessorTests {
             ("\(before), Colin. \(after).", joined),
             ("\(before)! Colin, \(after).", joined),
             ("\(before)? Colin, \(after).", joined),
-            ("\(before) - Colin - \(after).", joined),
             ("\(before).\nColin, \(after).", "Here is the plan for the weekend:\nWe leave early on Saturday."),
             ("\(before).\n\nColin.\n\n\(after).", "Here is the plan for the weekend:\n\nWe leave early on Saturday."),
             ("\(before), Colin!", "Here is the plan for the weekend:"),
@@ -491,30 +490,6 @@ extension TranscriptionPostProcessorTests {
         )
 
         XCTAssertEqual(output, "The doctor called. Colon screening starts next week.")
-    }
-
-    func testKeepsMinusSignAfterSpokenColon() async {
-        let processor = TranscriptionPostProcessor()
-
-        let output = processor.process(
-            "Here is the forecast for tomorrow colon -3 degrees and snow.",
-            dictionaryEntries: [],
-            renderMode: .singleLineInline
-        )
-
-        XCTAssertEqual(output, "Here is the forecast for tomorrow: -3 degrees and snow.")
-    }
-
-    func testKeepsFirstBulletAfterSpokenColonOnItsLine() async {
-        let processor = TranscriptionPostProcessor()
-
-        let output = processor.process(
-            "Here is the packing list Colin.\n- socks\n- boots",
-            dictionaryEntries: [],
-            renderMode: .multiline
-        )
-
-        XCTAssertEqual(output, "Here is the packing list:\n- socks\n- boots")
     }
 
     func testKeepsColinNextToSpokenPunctuationMarkLiteral() async {

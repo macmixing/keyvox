@@ -7,7 +7,7 @@ import Foundation
 /// that names the body part, or follows a word that needs a noun after it, and when nothing comes
 /// before it in the dictation. The written word also stays a word when it ends a phrase opened by
 /// a determiner where its sentence ends or what follows needs it as a noun, or opens a sentence
-/// and runs straight into the next word. A misheard spelling, such as "Colin", also stays a name when it addresses a
+/// and runs straight into a noun or verb it belongs to. A misheard spelling, such as "Colin", also stays a name when it addresses a
 /// person after a phrase that opens with a greeting, farewell, or thanks, or sits next to a
 /// spoken punctuation mark, which the speaker would not say beside a spoken colon.
 public struct ColonNormalizer {
@@ -83,12 +83,13 @@ public struct ColonNormalizer {
               replacement.upperBound == text.endIndex || text[replacement.upperBound...].contains(where: isContent) else {
             return nil
         }
-        // The written word opening a sentence and running straight into the next word is that
-        // sentence's subject, as in "Colon health matters".
+        // The written word opening a sentence and running straight into a noun or verb belongs to
+        // that sentence's subject, as in "Colon health matters" or "Colon is part of the gut".
         if isWrittenName(words[index].text),
            text[replacement.lowerBound..<word.lowerBound].contains(where: isSentenceBoundary),
-           replacement.upperBound < text.endIndex,
-           text[word.upperBound..<replacement.upperBound].allSatisfy(\.isWhitespace) {
+           index + 1 < words.endIndex,
+           isAdjacent(words[index], words[index + 1], in: text),
+           words[index + 1].role == .noun || words[index + 1].role == .verb {
             return nil
         }
         return replacement
@@ -109,7 +110,7 @@ public struct ColonNormalizer {
         }
         if !isWrittenName(word.text),
            addressesPerson(replacementRange(for: word.range, in: text), in: text)
-            || neighborsSpokenCommand(at: index, words: words) {
+            || neighborsSpokenCommand(at: index, words: words, text: text) {
             return false
         }
 
@@ -159,15 +160,25 @@ public struct ColonNormalizer {
     }
 
     /// Whether a spoken punctuation mark comes right before or right after the word at `index`,
-    /// whatever punctuation the transcriber put between them, as in "Colin comma" or "period Colin".
-    private func neighborsSpokenCommand(at index: Int, words: [WordToken]) -> Bool {
+    /// whatever punctuation the transcriber put between them, as in "Colin comma" or "period Colin",
+    /// and is not an ordinary word inside a listed phrase, as in "trial period".
+    private func neighborsSpokenCommand(at index: Int, words: [WordToken], text: String) -> Bool {
         let lowercased = words.map { $0.text.lowercased() }
         return SpokenCommand.all.contains { command in
             let after = index + 1
             let before = index - command.count
-            return (after + command.count <= lowercased.count
-                    && Array(lowercased[after..<(after + command.count)]) == command)
-                || (before >= 0 && Array(lowercased[before..<index]) == command)
+            let candidates = [after, before].filter { start in
+                start >= 0 && start + command.count <= lowercased.count && start != index
+                    && Array(lowercased[start..<(start + command.count)]) == command
+            }
+            return candidates.contains { start in
+                let markRange = words[start].range.lowerBound..<words[start + command.count - 1].range.upperBound
+                return Self.namePhrases?.phraseRange(
+                    around: markRange,
+                    named: command.joined(separator: " "),
+                    in: text
+                ) == nil
+            }
         }
     }
 
@@ -266,54 +277,26 @@ public struct ColonNormalizer {
         character.isLetter || character.isNumber
     }
 
-    /// The spoken colon with the spaces, line breaks, and separating punctuation the transcriber
-    /// put on either side of it, which the written colon replaces. A dash joined to a word beyond
-    /// it, such as a minus sign, stays, and so does everything on a new line after the word, such
-    /// as a list's first bullet.
+    /// The spoken colon with the spaces, line breaks, and sentence or clause punctuation the
+    /// transcriber put on either side of it, which the written colon replaces.
     private func replacementRange(for range: Range<String.Index>, in text: String) -> Range<String.Index> {
         var start = range.lowerBound
-        while start > text.startIndex {
-            let previous = text.index(before: start)
-            let character = text[previous]
-            if character.isWhitespace {
-                start = previous
-                continue
-            }
-            guard isSeparatingPunctuation(character) else { break }
-            if isDash(character), previous > text.startIndex,
-               !text[text.index(before: previous)].isWhitespace {
-                break
-            }
-            start = previous
+        while start > text.startIndex, isSeparator(text[text.index(before: start)]) {
+            start = text.index(before: start)
         }
 
         var end = range.upperBound
-        var passedLineBreak = false
-        while end < text.endIndex {
-            let character = text[end]
-            if character.isWhitespace {
-                passedLineBreak = passedLineBreak || character.isNewline
-                end = text.index(after: end)
-                continue
-            }
-            guard !passedLineBreak, isSeparatingPunctuation(character) else { break }
-            let next = text.index(after: end)
-            if isDash(character), next < text.endIndex, !text[next].isWhitespace {
-                break
-            }
-            end = next
+        while end < text.endIndex, isSeparator(text[end]) {
+            end = text.index(after: end)
         }
         return start..<end
     }
 
-    /// Whether the character is a dash or punctuation that Unicode marks as ending a sentence or
-    /// clause, rather than a quote, bracket, or mark that belongs to a word.
-    private func isSeparatingPunctuation(_ character: Character) -> Bool {
-        character.unicodeScalars.allSatisfy { $0.properties.isTerminalPunctuation || $0.properties.isDash }
-    }
-
-    private func isDash(_ character: Character) -> Bool {
-        character.unicodeScalars.allSatisfy { $0.properties.isDash }
+    /// Whether the character is a space, a line break, or punctuation that Unicode marks as ending
+    /// a sentence or clause.
+    private func isSeparator(_ character: Character) -> Bool {
+        character.isWhitespace
+            || character.unicodeScalars.allSatisfy { $0.properties.isTerminalPunctuation }
     }
 
     private func isSentenceBoundary(_ character: Character) -> Bool {
