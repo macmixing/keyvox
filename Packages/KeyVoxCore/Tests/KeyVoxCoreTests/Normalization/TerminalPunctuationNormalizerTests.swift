@@ -413,6 +413,37 @@ final class TerminalPunctuationNormalizerTests: LinguisticAnalyzerTestCase {
         )
     }
 
+    func testConvertsSpokenPauseCommandsAfterNounPhrases() {
+        let normalizer = TerminalPunctuationNormalizer()
+        let cases = [
+            (input: "Thanks for the update comma I'll review it", expected: "Thanks for the update, I'll review it"),
+            (input: "I fed the cat period. Then I left.", expected: "I fed the cat. Then I left."),
+        ]
+
+        for testCase in cases {
+            XCTAssertEqual(
+                inEnglish { normalizer.normalizeSpokenTerminalPunctuation(in: testCase.input) },
+                testCase.expected
+            )
+        }
+    }
+
+    func testDropsSpokenPauseCommandsNextToQuestionAndExclamationCommands() {
+        let normalizer = TerminalPunctuationNormalizer()
+        let cases = [
+            (input: "Is it ready question mark period", expected: "Is it ready?"),
+            (input: "Wow exclamation point comma that is great", expected: "Wow! that is great"),
+            (input: "Is that right comma question mark", expected: "Is that right?"),
+        ]
+
+        for testCase in cases {
+            XCTAssertEqual(
+                inEnglish { normalizer.normalizeSpokenTerminalPunctuation(in: testCase.input) },
+                testCase.expected
+            )
+        }
+    }
+
     func testCollapsesRepeatedSpokenPauseCommands() {
         let normalizer = TerminalPunctuationNormalizer()
 
@@ -429,6 +460,11 @@ final class TerminalPunctuationNormalizerTests: LinguisticAnalyzerTestCase {
             "Add a comma here.",
             "I'm not doing it, period.",
             "No, full stop.",
+            "During the trial period the company offered refunds",
+            "It was a tough period I think",
+            "I love the Oxford comma",
+            "Use a serial comma before and",
+            "Comma is a punctuation mark",
         ]
 
         for input in unchangedInputs {

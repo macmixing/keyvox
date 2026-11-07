@@ -13,8 +13,8 @@ Spoken periods and commas now become punctuation, and capitals that belong to a 
 ### Includes
 
 - Converted spoken `period` and `full stop` into a period and spoken `comma` into a comma, at the end of a dictation or mid-sentence, with the next sentence capitalized after a spoken period.
-- Left one mark when the transcriber already added punctuation after the spoken word, and collapsed repeated spoken periods or commas into one.
-- Kept `period` and `comma` as words when they follow a determiner such as `this period` or `a comma`, and kept an emphatic `, period` at the end of a dictation.
+- Left one mark when the transcriber already added punctuation after the spoken word, collapsed repeated spoken periods or commas into one, and dropped a spoken period or comma next to a spoken question mark or exclamation.
+- Kept `period` and `comma` as words when they end a noun phrase such as `this period`, `the trial period`, `a serial comma`, or `the Oxford comma`, when a dictation starts with `comma`, and for an emphatic `, period` at the end of a dictation.
 - Kept a spoken period on a one-word dictation and kept a trailing spoken comma without adding a period after it.
 - Lowercased a capital the transcriber put on the word after a spoken comma, while keeping names, capital-only words such as `Monday` and `English`, dictionary entries, `I`, and acronyms.
 - Shared the same continuation casing rules with inline ellipses, so capital-only words and names keep their capitals after a spoken ellipsis too.
