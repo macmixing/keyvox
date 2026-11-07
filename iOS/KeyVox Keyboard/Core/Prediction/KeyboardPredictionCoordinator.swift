@@ -34,7 +34,8 @@ final class KeyboardPredictionCoordinator {
     /// The newest request read from the text; every change to the text or cursor makes one.
     private var newestRequest: PredictionRequest?
     private var barWithoutEmoji = SuggestionBar.empty
-    private var emojiWordForBar: String?
+    private var barRequest: PredictionRequest?
+    private var newestEmojiWord: String?
     private var publishedBar = SuggestionBar.empty
 
     // Owned by `engine.queue`.
@@ -132,13 +133,13 @@ final class KeyboardPredictionCoordinator {
         tapCheckEngine.queue.async { [weak self] in
             self?.latestIntendedLetter = nil
         }
-        newestRequest = nil
-        publish(.empty)
+        clearBar()
     }
 
     func clearBar() {
         newestRequest = nil
-        publish(.empty)
+        newestEmojiWord = nil
+        publish(.empty, for: nil)
     }
 
     /// Requests suggestions for the text as it is now.
@@ -147,10 +148,10 @@ final class KeyboardPredictionCoordinator {
         let selected = selectedText()
         let after = textAfterCursor()
         let request = session.request(textBeforeCursor: text, selectedText: selected, textAfterCursor: after)
-        let emojiWord = session.emojiWord(textBeforeCursor: text, selectedText: selected, textAfterCursor: after)
+        newestEmojiWord = session.emojiWord(textBeforeCursor: text, selectedText: selected, textAfterCursor: after)
         newestRequest = request
         if let latestResult, latestResult.request == request {
-            publish(Self.bar(for: latestResult, allowsAutocorrection: allowsAutocorrection), emojiWord: emojiWord)
+            publish(Self.bar(for: latestResult, allowsAutocorrection: allowsAutocorrection), for: request)
             return
         }
         guard request != pendingRequest else { return }
@@ -164,7 +165,7 @@ final class KeyboardPredictionCoordinator {
                 }
                 guard self.newestRequest == request else { return }
                 self.latestResult = result
-                self.publish(Self.bar(for: result, allowsAutocorrection: allowsAutocorrection), emojiWord: emojiWord)
+                self.publish(Self.bar(for: result, allowsAutocorrection: allowsAutocorrection), for: request)
                 if allowsAutocorrection, request.currentWord.isEmpty == false {
                     self.prepareRevision(self.session.revisionRequest(textBeforeCursor: text, result: result))
                 }
@@ -329,15 +330,16 @@ final class KeyboardPredictionCoordinator {
         return result
     }
 
-    private func publish(_ bar: SuggestionBar, emojiWord: String? = nil) {
+    private func publish(_ bar: SuggestionBar, for request: PredictionRequest?) {
         barWithoutEmoji = bar
-        emojiWordForBar = emojiWord
+        barRequest = request
         refreshEmojiSuggestions()
     }
 
     // The emoji index finishes asynchronously, when the host may be replacing the document.
     func refreshEmojiSuggestions() {
-        let bar = barWithoutEmoji.showing(emoji: emojiWordForBar.map(emojiForWord) ?? [])
+        guard barRequest == newestRequest else { return }
+        let bar = barWithoutEmoji.showing(emoji: newestEmojiWord.map(emojiForWord) ?? [])
         guard bar != publishedBar else { return }
         publishedBar = bar
         onBarChange?(bar)
