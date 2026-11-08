@@ -196,7 +196,7 @@ final class AppUpdateService: ObservableObject {
         let fallbackMessage = "A new version of KeyVox is available. Please update for the best experience."
         let promptMessage: String
         if let body = remoteInfo.message, !body.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            promptMessage = summarizedReleaseBody(body) ?? fallbackMessage
+            promptMessage = releasePromptMessage(body) ?? fallbackMessage
         } else {
             promptMessage = fallbackMessage
         }
@@ -320,6 +320,21 @@ final class AppUpdateService: ObservableObject {
         return truncateReleasePreview(normalized)
     }
 
+    /// The update prompt sizes itself to its message, so a release summary is shown in full.
+    /// Notes without a summary fall back to the short preview.
+    private func releasePromptMessage(_ body: String) -> String? {
+        let normalized = body.replacingOccurrences(of: "\r\n", with: "\n")
+
+        if let summarySection = extractSummarySection(from: normalized) {
+            let summaryLines = sanitizedReleaseLines(summarySection)
+            if !summaryLines.isEmpty {
+                return summaryLines.joined(separator: "\n")
+            }
+        }
+
+        return truncateReleasePreview(normalized)
+    }
+
     private func extractSummarySection(from body: String) -> String? {
         let lines = body.components(separatedBy: .newlines)
         guard let summaryHeadingIndex = lines.firstIndex(where: { line in
@@ -350,11 +365,15 @@ final class AppUpdateService: ObservableObject {
         return summary.isEmpty ? nil : summary
     }
 
-    private func truncateReleasePreview(_ text: String) -> String? {
-        let lines = text
+    private func sanitizedReleaseLines(_ text: String) -> [String] {
+        text
             .components(separatedBy: .newlines)
             .map(sanitizeReleaseLine)
             .filter { !$0.isEmpty }
+    }
+
+    private func truncateReleasePreview(_ text: String) -> String? {
+        let lines = sanitizedReleaseLines(text)
 
         guard !lines.isEmpty else { return nil }
 
