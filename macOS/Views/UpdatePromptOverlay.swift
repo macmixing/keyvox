@@ -1,9 +1,11 @@
 import SwiftUI
 import AppKit
 
-private enum UpdatePromptLayout {
+enum UpdatePromptLayout {
     static let width: CGFloat = 430
+    static let maxHeight: CGFloat = 600
     static let fallbackHeight: CGFloat = 280
+    static let sectionSpacing: CGFloat = 16
     static let shellPadding = EdgeInsets(top: 20, leading: 24, bottom: 30, trailing: 24)
 }
 
@@ -31,7 +33,38 @@ struct UpdatePromptOverlay: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: UpdatePromptLayout.sectionSpacing) {
+            // The message scrolls once the prompt reaches its maximum height, keeping the
+            // actions below it on screen.
+            ScrollView(.vertical) {
+                scrollableContent
+            }
+
+            footer
+        }
+        .onPreferenceChange(MessageWidthPreferenceKey.self) { width in
+            messageWidth = width
+        }
+        .frame(maxWidth: .infinity, alignment: .topLeading)
+        .padding(UpdatePromptLayout.shellPadding)
+        .frame(width: UpdatePromptLayout.width)
+        .frame(maxHeight: UpdatePromptLayout.maxHeight)
+        .background(
+            ZStack {
+                VisualEffectView(material: .menu, blendingMode: .behindWindow)
+                MacAppTheme.screenBackground
+            }
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 28, style: .continuous)
+                .stroke(MacAppTheme.windowStroke, lineWidth: 0.7)
+        )
+        .preferredColorScheme(.dark)
+    }
+
+    private var scrollableContent: some View {
+        VStack(alignment: .leading, spacing: UpdatePromptLayout.sectionSpacing) {
             AnimatedWaveHeader {
                 if let versionBadgeTitle {
                     StatusBadge(title: versionBadgeTitle, backgroundColor: MacAppTheme.accent)
@@ -60,36 +93,21 @@ struct UpdatePromptOverlay: View {
                     )
                     .frame(maxWidth: .infinity, alignment: .center)
             }
-            .onPreferenceChange(MessageWidthPreferenceKey.self) { width in
-                messageWidth = width
-            }
-
-            if let progress = prompt.progress {
-                LabeledProgressBar(
-                    progress: min(max(progress.value, 0), 1),
-                    statusText: progress.statusText
-                )
-                .frame(maxWidth: messageWidth > 0 ? messageWidth : .infinity)
-                .frame(maxWidth: .infinity, alignment: .center)
-            } else {
-                actionButtons
-            }
         }
-        .frame(maxWidth: .infinity, alignment: .topLeading)
-        .padding(UpdatePromptLayout.shellPadding)
-        .frame(width: UpdatePromptLayout.width)
-        .background(
-            ZStack {
-                VisualEffectView(material: .menu, blendingMode: .behindWindow)
-                MacAppTheme.screenBackground
-            }
-        )
-        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 28, style: .continuous)
-                .stroke(MacAppTheme.windowStroke, lineWidth: 0.7)
-        )
-        .preferredColorScheme(.dark)
+    }
+
+    @ViewBuilder
+    private var footer: some View {
+        if let progress = prompt.progress {
+            LabeledProgressBar(
+                progress: min(max(progress.value, 0), 1),
+                statusText: progress.statusText
+            )
+            .frame(maxWidth: messageWidth > 0 ? messageWidth : .infinity)
+            .frame(maxWidth: .infinity, alignment: .center)
+        } else {
+            actionButtons
+        }
     }
 
     private var actionButtons: some View {

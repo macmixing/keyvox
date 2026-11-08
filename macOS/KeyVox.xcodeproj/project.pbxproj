@@ -103,6 +103,7 @@
 		AB3000032F60000100AA0001 /* OverlayScreenPersistenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000032F60000100AA0001 /* OverlayScreenPersistenceTests.swift */; };
 		AB3000042F60000100AA0001 /* OverlayFlingPhysicsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000042F60000100AA0001 /* OverlayFlingPhysicsTests.swift */; };
 		AB3000122F60000100AA0001 /* WarningKindTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000142F60000100AA0001 /* WarningKindTests.swift */; };
+		C604DD0866464B25A31D073B /* UpdatePromptOverlayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CF5FDA58DD34D348B8B34FA /* UpdatePromptOverlayTests.swift */; };
 		333F4E6BD3734E409DEDB489 /* UpdatePromptPanelQueueTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F0E57E02D344C98BB838DAE /* UpdatePromptPanelQueueTests.swift */; };
 		AB3000132F60000100AA0001 /* AppUpdateLogicTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000152F60000100AA0001 /* AppUpdateLogicTests.swift */; };
 		AB3000142F60000100AA0001 /* PasteServiceListRenderModeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2000162F60000100AA0001 /* PasteServiceListRenderModeTests.swift */; };
@@ -374,6 +375,7 @@
 		AB2000122F60000100AA0001 /* latest_without_dmg.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = latest_without_dmg.json; sourceTree = "<group>"; };
 		AB2000132F60000100AA0001 /* latest_with_dmg.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = latest_with_dmg.json; sourceTree = "<group>"; };
 		AB2000142F60000100AA0001 /* WarningKindTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WarningKindTests.swift; sourceTree = "<group>"; };
+		2CF5FDA58DD34D348B8B34FA /* UpdatePromptOverlayTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdatePromptOverlayTests.swift; sourceTree = "<group>"; };
 		6F0E57E02D344C98BB838DAE /* UpdatePromptPanelQueueTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdatePromptPanelQueueTests.swift; sourceTree = "<group>"; };
 		AB2000152F60000100AA0001 /* AppUpdateLogicTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateLogicTests.swift; sourceTree = "<group>"; };
 		AB2000162F60000100AA0001 /* PasteServiceListRenderModeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteServiceListRenderModeTests.swift; sourceTree = "<group>"; };
@@ -869,6 +871,7 @@
 			children = (
 				F1D100B42FEA000100AA0001 /* FirstDictationPracticeStateTests.swift */,
 				AB2000142F60000100AA0001 /* WarningKindTests.swift */,
+				2CF5FDA58DD34D348B8B34FA /* UpdatePromptOverlayTests.swift */,
 				6F0E57E02D344C98BB838DAE /* UpdatePromptPanelQueueTests.swift */,
 			);
 			path = Views;
@@ -1427,6 +1430,7 @@
 				AB3000032F60000100AA0001 /* OverlayScreenPersistenceTests.swift in Sources */,
 				AB3000042F60000100AA0001 /* OverlayFlingPhysicsTests.swift in Sources */,
 				AB3000122F60000100AA0001 /* WarningKindTests.swift in Sources */,
+				C604DD0866464B25A31D073B /* UpdatePromptOverlayTests.swift in Sources */,
 				333F4E6BD3734E409DEDB489 /* UpdatePromptPanelQueueTests.swift in Sources */,
 				8E37FC672FB0F954004DD69A /* WindowManagerOnboardingWindowLevelTests.swift in Sources */,
 				B12000012FD4000100AA0001 /* InstalledDictationModelLocatorTests.swift in Sources */,
