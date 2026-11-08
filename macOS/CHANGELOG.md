@@ -6,6 +6,45 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.3.18] - 2026-11-07
+
+Updates Parakeet to the current model, turns spoken periods, commas, and colons into punctuation, and writes out casual words in Polished.
+
+### Added
+
+- Added spoken periods and commas to dictation, so saying `period`, `full stop`, or `comma` types the mark, with the next sentence capitalized after a spoken period.
+- Added spoken colons to dictation, including when `colon` is heard as the name `Colin`, while keeping real names in place.
+- Added a Parakeet model update, offered once per launch in the update prompt with live progress, a retry if it fails, and a Later option that is remembered.
+
+### Changed
+
+- Changed the Parakeet card in Settings to show Update instead of Delete while an update is available, along with each download, check, install, and loading step.
+- Changed the Polished style to write out casual words such as `gonna`, `wanna`, and `gotta` in standard form.
+- Changed dictation to pause with a warning while its model is updating, keeping the current Parakeet model if the update fails or is interrupted.
+
+### Fixed
+
+- Fixed names and capital-only words losing their capitals after a spoken ellipsis.
+- Fixed the app update prompt cutting off release summaries, now showing the full summary and scrolling long messages while its buttons stay in view.
+
+### Package versions
+
+KeyVox macOS 1.3.18:
+- KeyVoxCore            1.3.12
+- KeyVoxLinguistics     1.0.1
+- KeyVoxLocalInference  1.0.5
+- KeyVoxModels          1.0.0
+- KeyVoxParakeet        1.1.0
+- KeyVoxPromotions      1.1.0
+- KeyVoxState           1.0.0
+- KeyVoxStyleRewrite    1.1.0
+- KeyVoxTextComposition 1.1.0
+- KeyVoxVibesAdapters   1.0.5
+- KeyVoxVoiceActivity   1.1.1
+- KeyVoxWhisper         1.2.0
+
+---
+
 ## [1.3.17] - 2026-11-02
 
 Improves custom-dictionary accuracy and spoken-list formatting.
