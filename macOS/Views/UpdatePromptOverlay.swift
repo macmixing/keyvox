@@ -49,8 +49,6 @@ struct UpdatePromptOverlay: View {
                     .foregroundColor(.secondary)
                     .lineSpacing(0.5)
                     .multilineTextAlignment(.center)
-                    .truncationMode(.tail)
-                    .lineLimit(4)
                     .fixedSize(horizontal: false, vertical: true)
                     .background(
                         GeometryReader { geometry in

@@ -78,6 +78,30 @@ final class AppUpdateServiceTests: XCTestCase {
         XCTAssertTrue(promptPresenter.prompts[0].message == "Faster startup time\nBetter paste reliability")
     }
 
+    func testUpdatePromptShowsLongSummaryInFull() async throws {
+        let promptPresenter = RecordingPromptPresenter()
+        let now = MutableNow(Date(timeIntervalSince1970: 1_700_000_000))
+        let session = makeMockSession()
+        let summaryLines = (1...6).map { "Summary line \($0) " + String(repeating: "A", count: 60) }
+
+        MockURLProtocol.handler = { _ in
+            let body = "## Summary\n" + summaryLines.joined(separator: "\n") + "\n\n## Details\nFull details follow here."
+            let data = self.releaseData(
+                tag: "999.0.0",
+                htmlURL: "https://github.com/macmixing/keyvox/releases/tag/v999.0.0",
+                body: body,
+                dmgURL: "https://github.com/macmixing/keyvox/releases/download/v999.0.0/KeyVox-999.0.0.dmg"
+            )
+            return (self.okResponse(), data)
+        }
+
+        let service = makeService(promptPresenter: promptPresenter, now: now, session: session, checkInterval: 60 * 60 * 24)
+        service.checkForUpdatesIfNeeded()
+        try await waitForCondition { promptPresenter.prompts.count == 1 }
+
+        XCTAssertEqual(promptPresenter.prompts[0].message, summaryLines.joined(separator: "\n"))
+    }
+
     func testUpdatePromptFallsBackToShortPreviewWithoutSummary() async throws {
         let promptPresenter = RecordingPromptPresenter()
         let now = MutableNow(Date(timeIntervalSince1970: 1_700_000_000))
