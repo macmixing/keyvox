@@ -13,8 +13,8 @@ A spoken colon after a phrase that introduces examples, such as `like` or `such 
 ### Includes
 
 - Converted the spoken word `colon` into a colon after a phrase from `ExamplePhrases`, such as `things like colon`, `snacks such as colon`, or `tools for instance colon`, where a preposition before it used to keep it as a word.
-- Kept `colon` as a word after other prepositions such as `between colon`, and kept a misheard spelling such as `Colin` as a name after an example phrase, such as `friends like Colin`.
-- Added regression coverage for spoken colons after example phrases and for names after them.
+- Kept `colon` as a word after other prepositions such as `between colon`, after an example phrase when it runs straight into a conjunction or preposition such as `such as colon and liver` or `a word like colon in the box`, and kept a misheard spelling such as `Colin` as a name after an example phrase, such as `friends like Colin`.
+- Added regression coverage for spoken colons after example phrases, for the word `colon` joined to the rest of the sentence after them, and for names after them.
 
 ### Notes
 
