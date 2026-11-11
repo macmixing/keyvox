@@ -4,8 +4,8 @@ import Foundation
 /// Writes a spoken colon, or a word the transcriber heard in its place, as a colon, replacing
 /// whatever punctuation the transcriber put on either side of it. The word stays a word when it is
 /// part of a hyphenated word or one of the user's dictionary entries, belongs to a listed phrase
-/// that names the body part, or follows a word that needs a noun after it, and when nothing comes
-/// before it in the dictation. The written word also stays a word when it opens a sentence and runs
+/// that names the body part, or follows a word that needs a noun after it, unless the written word
+/// follows a phrase that introduces examples, and when nothing comes before it in the dictation. The written word also stays a word when it opens a sentence and runs
 /// straight into a noun or verb it belongs to. A misheard spelling, such as "Colin", also stays a name when it addresses a
 /// person after a phrase that opens with a greeting, farewell, or thanks, or sits next to a
 /// spoken punctuation mark, which the speaker would not say beside a spoken colon.
@@ -18,6 +18,7 @@ public struct ColonNormalizer {
 
     private static let namePhrases = try? PunctuationNamePhrases()
     private static let greetingPhrases = try? GreetingPhrases()
+    private static let examplePhrases = try? ExamplePhrases()
     private static let writtenName = "colon"
     private static let collapsedWhitespaceRegex: NSRegularExpression? = try? NSRegularExpression(
         pattern: #"[^\S\r\n]{2,}"#,
@@ -111,6 +112,14 @@ public struct ColonNormalizer {
            addressesPerson(replacementRange(for: word.range, in: text), in: text)
             || neighborsSpokenCommand(at: index, words: words, text: text) {
             return false
+        }
+
+        // A phrase that introduces examples leads into what the colon introduces, as in "things
+        // like colon", rather than needing the word itself after it. A misheard spelling there
+        // stays a name, as in "friends like Colin".
+        if isWrittenName(word.text),
+           Self.examplePhrases?.endsWithPhrase(text[..<word.range.lowerBound]) == true {
+            return true
         }
 
         if index > words.startIndex {
