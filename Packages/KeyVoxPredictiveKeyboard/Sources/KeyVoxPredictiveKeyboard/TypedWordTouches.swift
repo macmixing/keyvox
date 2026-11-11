@@ -29,11 +29,14 @@ public struct TypedWordTouches: Sendable, Equatable {
         }
     }
 
-    /// Call after any other change to the text before the cursor.
-    public mutating func synchronize(currentWord: String) {
+    /// Call after any other change to the text before the cursor. `restOfWord` is the rest of the
+    /// word right after the cursor: letters of the word that now sit there were passed over by a
+    /// cursor move rather than deleted, which drops the touches.
+    public mutating func synchronize(currentWord: String, restOfWord: String = "") {
         let normalized = currentWord.lowercased()
         guard normalized != word else { return }
-        if normalized.isEmpty == false, word.hasPrefix(normalized) {
+        if normalized.isEmpty == false, word.hasPrefix(normalized),
+           restOfWord.lowercased().hasPrefix(word.dropFirst(normalized.count)) == false {
             touches = Array(touches.prefix(normalized.count))
             word = normalized
         } else {
