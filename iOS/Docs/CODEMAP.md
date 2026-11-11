@@ -1710,7 +1710,7 @@ Packages/
 ### Keyboard Typing and Predictions
 
 - `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/PredictiveTypingSession.swift`
-  - UI-independent typing state of one text field: the host reports taps and text changes and asks for the `TextEdit` that space, return, word-ending characters, picked-word spacing, or a suggestion tap should apply. Owns autocorrection undo, previous-word revision requests, deleted-into correction holds, picked-word runs, and the suggestion bar's emoji word. Use from one thread only.
+  - UI-independent typing state of one text field: the host reports taps and text changes, with the text on both sides of the cursor, and asks for the `TextEdit` that space, return, word-ending characters, picked-word spacing, or a suggestion tap should apply. Owns autocorrection undo, previous-word revision requests, deleted-into correction holds, picked-word runs, and the suggestion bar's emoji word. Use from one thread only.
 - `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/PredictionComputer.swift`
   - Computes the suggestion bar and space-bar autocorrection for a `PredictionRequest`, revisions for a `RevisionRequest`, and the intended letter for a contested tap; takes the keyboard geometry, personal vocabulary, and learned vocabulary from the host.
 - `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/EnglishPredictiveEngine.swift`
@@ -1727,6 +1727,8 @@ Packages/
   - Bundled held-key characters per key with the side each popup opens toward, and the popup cell layout that reaches the keyboard's edge and spills to the other side, or takes a second row, when an offer does not fit.
 - `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/SmartQuotes.swift`, `CharacterList.swift`, and `TypingTextContext.swift`
   - Opening and closing quote marks, the bundled character lists that end words, shape picked-word spacing, or suppress next-word suggestions, and the word and sentence context read around the cursor.
+- `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/TypedWordTouches.swift`
+  - Where each letter of the word before the cursor was tapped, kept only while the taps line up with its letters; tells a word the user tapped out apart from one the cursor was moved into.
 - `KeyVox Keyboard/Core/Prediction/KeyboardPredictionCoordinator.swift`
   - Runs the shared typing session on the main thread and suggestion work on a serial background engine, publishing a result only when no newer request was made; at a word boundary it uses the current result or computes it on the spot so a fast space never skips an autocorrection. Contested-tap checks run on a second engine so keys such as delete never wait for suggestions.
   - Never rereads the document proxy when background work finishes.
