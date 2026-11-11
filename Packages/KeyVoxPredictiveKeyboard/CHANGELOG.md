@@ -6,6 +6,21 @@ The format loosely follows Keep a Changelog, and the package uses semantic versi
 
 ---
 
+## [1.0.5] - 2026-11-11
+
+A word typed right before another word is suggested for on its own, as on the system keyboard.
+
+### Includes
+
+- When the user taps every letter of the word before the cursor and another word follows right after it, the bar suggests for the typed letters alone, and a pick replaces only them and keeps the following word.
+- A word the cursor was moved into is still suggested for as a whole: `TypedWordTouches` drops its touches when a cursor move puts letters it recorded after the cursor, while deleting a letter keeps the touches of the letters before it; `PredictiveTypingSession.textDidChange` takes the text after the cursor to tell the two apart.
+
+### Notes
+
+- `1.0.5` adds an optional `textAfterCursor` to `PredictiveTypingSession.textDidChange` and an optional `restOfWord` to `TypedWordTouches.synchronize`; existing calls compile unchanged, and keyboard hosts pass the text after the cursor to get the new behavior.
+
+---
+
 ## [1.0.4] - 2026-11-06
 
 Capitalized spellings now come from the shared language package.

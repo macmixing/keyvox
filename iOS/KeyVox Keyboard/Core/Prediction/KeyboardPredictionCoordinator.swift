@@ -121,7 +121,7 @@ final class KeyboardPredictionCoordinator {
     }
 
     func textDidChange() {
-        session.textDidChange(textBeforeCursor: textBeforeCursor())
+        session.textDidChange(textBeforeCursor: textBeforeCursor(), textAfterCursor: textAfterCursor())
     }
 
     func reset() {

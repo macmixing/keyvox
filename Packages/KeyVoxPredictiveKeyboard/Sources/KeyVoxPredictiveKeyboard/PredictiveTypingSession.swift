@@ -156,7 +156,7 @@ public final class PredictiveTypingSession {
     }
 
     /// Call after any change the session did not ask for, such as a cursor move.
-    public func textDidChange(textBeforeCursor: String?) {
+    public func textDidChange(textBeforeCursor: String?, textAfterCursor: String? = nil) {
         if let lastAutocorrection,
            textBeforeCursor?.hasSuffix(lastAutocorrection.insertedText) != true {
             // Deleting the separator keeps the correction, as on the system keyboard; the bar
@@ -185,7 +185,8 @@ public final class PredictiveTypingSession {
             watchDeletion(textBeforeCursor: text)
         }
         lastTextCount = text.count
-        wordTouches.synchronize(currentWord: TypingTextContext(textBeforeCursor: textBeforeCursor).currentWord)
+        let context = TypingTextContext(textBeforeCursor: textBeforeCursor, textAfterCursor: textAfterCursor)
+        wordTouches.synchronize(currentWord: context.currentWord, restOfWord: context.restOfWord)
     }
 
     /// Lets changes apply again once the user deletes on past the word typed in their place
@@ -250,7 +251,7 @@ public final class PredictiveTypingSession {
             selectedText: selectedText,
             textAfterCursor: textAfterCursor
         )
-        let word = Self.suggestedWord(in: context)
+        let word = suggestedWord(in: context)
         let isAllLetters = word.text.allSatisfy(\.isLetter)
         return PredictionRequest(
             currentWord: word.text,
@@ -505,7 +506,7 @@ public final class PredictiveTypingSession {
             selectedText: selectedText,
             textAfterCursor: textAfterCursor
         )
-        let word = Self.suggestedWord(in: context)
+        let word = suggestedWord(in: context)
         if item.kind == .revert, word.endsAtCursor,
            let reverted = revertibleAutocorrection(endingAt: textBeforeCursor) {
             return revertEdit(reverted, followingText: context.followingText)
@@ -576,7 +577,10 @@ public final class PredictiveTypingSession {
         return TextEdit(deleteCount: reverted.correctedText.count, insertText: reverted.original + space)
     }
 
-    private static func suggestedWord(in context: TypingTextContext) -> SuggestedWord {
+    /// The word the bar is for: the selected word; the word before the cursor when the cursor ends
+    /// it or the user tapped every letter of it there, so a word typed right before another is
+    /// suggested for alone; otherwise the whole word the cursor was moved into.
+    private func suggestedWord(in context: TypingTextContext) -> SuggestedWord {
         if let selected = context.selectedWord {
             return SuggestedWord(
                 text: selected,
@@ -585,7 +589,8 @@ public final class PredictiveTypingSession {
                 endsAtCursor: false
             )
         }
-        guard context.currentWord.isEmpty == false, context.restOfWord.isEmpty == false else {
+        guard context.currentWord.isEmpty == false, context.restOfWord.isEmpty == false,
+              wordTouches.touches(for: context.currentWord).isEmpty else {
             return SuggestedWord(
                 text: context.currentWord,
                 charactersBeforeCursor: context.currentWord.count,

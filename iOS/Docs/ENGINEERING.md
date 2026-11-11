@@ -1930,7 +1930,7 @@ Installed-model availability comes from `KeyboardInstalledModels`, checked when 
 
 ### Letter Typing and Prediction Rules
 
-`KeyVoxPredictiveKeyboard.PredictiveTypingSession` is the typing source of truth for the letter page. The keyboard reports taps and text changes, asks the session what space, return, a word-ending character, a character after a suggestion tap, or a suggestion tap should change, and applies the returned `TextEdit` through `KeyboardTextInputController`. The keyboard must not re-implement correction, completion, next-word, sentence-opener, personal-word casing, or undo rules locally.
+`KeyVoxPredictiveKeyboard.PredictiveTypingSession` is the typing source of truth for the letter page. The keyboard reports taps, and text changes with the text on both sides of the cursor, asks the session what space, return, a word-ending character, a character after a suggestion tap, or a suggestion tap should change, and applies the returned `TextEdit` through `KeyboardTextInputController`. The keyboard must not re-implement correction, completion, next-word, sentence-opener, personal-word casing, or undo rules locally.
 
 Field preparation:
 
@@ -1947,6 +1947,11 @@ Prediction threading:
 - a word boundary uses the current result, or computes it synchronously when it has not arrived, so a fast space never skips an autocorrection; the previous-word revision is worked out ahead in the same way
 - contested-tap checks for space, return, shift, delete, 123, and the emoji key landing close to a letter run on a separate engine, start when the finger lands, and are skipped off the letter page, during the emoji search, for repeats, and when the field allows no predictions; a touch on the delete key itself always deletes, and only a touch in the gap beside delete is judged against nearby letters
 - suggestions are worked out only while they are shown; a word boundary still works out its autocorrection on the spot when they are hidden
+
+Word around the cursor:
+
+- a word the user taps out right before another word is suggested for on its own, and a suggestion tap replaces only the tapped letters and keeps the word after them
+- a word the cursor was moved into, or a selected word, is suggested for as a whole
 
 Vocabulary:
 

@@ -12,6 +12,8 @@ import Foundation
 public struct TypedWordTouches: Sendable, Equatable {
     public private(set) var word = ""
     public private(set) var touches: [CGPoint] = []
+    /// The rest of the word right after the cursor, lowercased, as last synchronized.
+    private var restOfWord = ""
 
     public init() {}
 
@@ -29,11 +31,16 @@ public struct TypedWordTouches: Sendable, Equatable {
         }
     }
 
-    /// Call after any other change to the text before the cursor.
-    public mutating func synchronize(currentWord: String) {
+    /// Call after any other change to the text around the cursor. `restOfWord` is the rest of the
+    /// word right after the cursor: a deletion leaves it as it was, while a cursor move puts the
+    /// letters it passed over in front of it, which drops the touches.
+    public mutating func synchronize(currentWord: String, restOfWord: String = "") {
         let normalized = currentWord.lowercased()
+        let rest = restOfWord.lowercased()
+        defer { self.restOfWord = rest }
         guard normalized != word else { return }
-        if normalized.isEmpty == false, word.hasPrefix(normalized) {
+        if normalized.isEmpty == false, word.hasPrefix(normalized),
+           rest != word.dropFirst(normalized.count) + self.restOfWord {
             touches = Array(touches.prefix(normalized.count))
             word = normalized
         } else {
@@ -49,5 +56,6 @@ public struct TypedWordTouches: Sendable, Equatable {
     public mutating func reset() {
         word = ""
         touches = []
+        restOfWord = ""
     }
 }
