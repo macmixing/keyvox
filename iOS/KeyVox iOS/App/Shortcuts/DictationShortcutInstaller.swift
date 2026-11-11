@@ -13,7 +13,7 @@ enum DictationShortcutInstaller {
 
         if #available(iOS 26.0, *) {
             guard await UIApplication.shared.open(shortcutURL) else {
-                throw DictationShortcutInstallationError.unableToOpenShortcut
+                throw DictationShortcutInstallationError.shortcutsAppUnavailable
             }
             return
         }
@@ -59,11 +59,14 @@ enum DictationShortcutInstaller {
 private enum DictationShortcutInstallationError: LocalizedError {
     case missingBundledShortcut
     case unableToOpenShortcut
+    case shortcutsAppUnavailable
 
     var errorDescription: String? {
         switch self {
         case .missingBundledShortcut:
             String(localized: "The KeyVox dictation shortcut is missing from this build.")
+        case .shortcutsAppUnavailable:
+            String(localized: "Install the Shortcuts app from the App Store, then try adding the KeyVox dictation shortcut again.")
         case .unableToOpenShortcut:
             String(localized: "The KeyVox dictation shortcut could not be opened.")
         }
