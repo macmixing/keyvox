@@ -6,6 +6,22 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.0.2] - 2026-11-11
+
+A shared list of phrases that introduce examples, so dictation can tell when a spoken colon follows one.
+
+### Includes
+
+- Added `ExamplePhrases`, a bundled list of phrases that introduce examples, such as `like`, `such as`, and `for instance`, drawn from Wiktionary's `for example` entry and the synonyms it lists for its "as an example" sense.
+- Bundled `example_phrases.txt` as a package resource, so the list loads the same way on every platform.
+- Added regression coverage for finding a listed phrase at the end of text.
+
+### Notes
+
+- `1.0.2` adds public API for the shared example phrase list.
+
+---
+
 ## [1.0.1] - 2026-11-06
 
 Shared capitalized spellings for every KeyVox surface that decides a word's capitals.
