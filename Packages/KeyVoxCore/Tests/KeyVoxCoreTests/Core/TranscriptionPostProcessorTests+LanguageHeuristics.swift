@@ -548,6 +548,19 @@ extension TranscriptionPostProcessorTests {
         XCTAssertEqual(output, "I need more friends like Colin and Maya.")
     }
 
+    func testKeepsColonWordJoinedToSentenceAfterExamplePhrase() async {
+        let processor = TranscriptionPostProcessor()
+
+        for input in [
+            "Organs such as colon and liver can be affected",
+            "Type a word like colon in the box",
+        ] {
+            let output = processor.process(input, dictionaryEntries: [], renderMode: .singleLineInline)
+
+            XCTAssertEqual(output, input + ".", input)
+        }
+    }
+
     func testKeepsListedMedicalColonPhrasesLiteral() async {
         let processor = TranscriptionPostProcessor()
 

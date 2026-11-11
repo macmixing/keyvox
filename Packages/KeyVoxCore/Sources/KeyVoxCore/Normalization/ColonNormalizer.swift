@@ -5,7 +5,8 @@ import Foundation
 /// whatever punctuation the transcriber put on either side of it. The word stays a word when it is
 /// part of a hyphenated word or one of the user's dictionary entries, belongs to a listed phrase
 /// that names the body part, or follows a word that needs a noun after it, unless the written word
-/// follows a phrase that introduces examples, and when nothing comes before it in the dictation. The written word also stays a word when it opens a sentence and runs
+/// follows a phrase that introduces examples and does not run straight into a conjunction or
+/// preposition, and when nothing comes before it in the dictation. The written word also stays a word when it opens a sentence and runs
 /// straight into a noun or verb it belongs to. A misheard spelling, such as "Colin", also stays a name when it addresses a
 /// person after a phrase that opens with a greeting, farewell, or thanks, or sits next to a
 /// spoken punctuation mark, which the speaker would not say beside a spoken colon.
@@ -118,7 +119,8 @@ public struct ColonNormalizer {
         // like colon", rather than needing the word itself after it. A misheard spelling there
         // stays a name, as in "friends like Colin".
         if isWrittenName(word.text),
-           Self.examplePhrases?.endsWithPhrase(text[..<word.range.lowerBound]) == true {
+           Self.examplePhrases?.endsWithPhrase(text[..<word.range.lowerBound]) == true,
+           !joinsFollowingWord(at: index, words: words, text: text) {
             return true
         }
 
@@ -175,6 +177,15 @@ public struct ColonNormalizer {
                 ) == nil
             }
         }
+    }
+
+    /// Whether the word at `index` runs straight into a conjunction or preposition that joins it to
+    /// the rest of the sentence, as in "colon and liver" or "colon in the box", so it is the example
+    /// itself rather than a mark introducing one.
+    private func joinsFollowingWord(at index: Int, words: [WordToken], text: String) -> Bool {
+        let next = index + 1
+        guard next < words.endIndex, isAdjacent(words[index], words[next], in: text) else { return false }
+        return words[next].role == .conjunction || words[next].role == .preposition
     }
 
     /// Whether the word is spelled as the mark's written name rather than a misheard spelling.
