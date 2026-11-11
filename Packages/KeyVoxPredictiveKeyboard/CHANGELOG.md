@@ -13,7 +13,7 @@ A word typed right before another word is suggested for on its own, as on the sy
 ### Includes
 
 - When the user taps every letter of the word before the cursor and another word follows right after it, the bar suggests for the typed letters alone, and a pick replaces only them and keeps the following word.
-- A word the cursor was moved into is still suggested for as a whole: `TypedWordTouches` drops its touches when letters it recorded now sit after the cursor, and `PredictiveTypingSession.textDidChange` takes the text after the cursor to tell.
+- A word the cursor was moved into is still suggested for as a whole: `TypedWordTouches` drops its touches when a cursor move puts letters it recorded after the cursor, while deleting a letter keeps the touches of the letters before it; `PredictiveTypingSession.textDidChange` takes the text after the cursor to tell the two apart.
 
 ### Notes
 
