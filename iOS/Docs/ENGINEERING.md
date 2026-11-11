@@ -1739,20 +1739,22 @@ The extension is a transport and insertion surface, not the transcription owner.
 
 ### Keyboard Presentation Lifecycle Rules
 
-The keyboard presentation tree is intentionally disposable.
+Each keyboard controller builds its presentation tree once and keeps it mounted while the controller lives. Dismissal unbinds and hides the tree; it never removes it.
 
 Rules:
 
 - `KeyboardViewController` may be preloaded before the keyboard is actually shown, so it must **not** build the presentation tree in `viewDidLoad`
-- the keyboard presentation tree is created only on the appearance path
-- teardown must run on real keyboard dismissal and presentation-swap boundaries while the extension host is active, including `viewWillDisappear`
-- extension-host resign-active notifications must pause the active presentation without destroying the current tree so host app background/foreground does not blank the keyboard
-- `deinit` is not a safe ownership boundary for keyboard cleanup
-- teardown must remove the presentation tree, popup overlay, full-access overlay, IPC observers, indicator callbacks, key-grid and suggestion-bar callbacks, the prediction bar callback, and emoji page and search bindings
+- the keyboard presentation tree is created only on the appearance path (`preparePresentationIfNeeded()`), once per controller
+- dismissal while the extension host is active (`viewWillDisappear` and `viewDidDisappear`) deactivates the presentation: it removes IPC observers, indicator callbacks, key-grid and suggestion-bar callbacks, the prediction bar callback, toolbar button targets, and emoji page and search bindings, and hides the presentation tree, popup overlay, and full-access overlay
+- the presentation views must not be removed during dismissal: removing them there crashed inside Auto Layout
+- UIKit can keep a dismissed keyboard's input view after releasing its controller, which leaves that controller's presentation views mounted and in memory; `KeyboardPresentationViewRegistry` records the views each controller mounts, and every appearance removes the ones whose controller has been released and that are off screen
+- every view that stays mounted in the input view after dismissal must be registered with `KeyboardPresentationViewRegistry`
+- extension-host resign-active notifications must pause the active presentation without deactivating it so host app background/foreground does not blank the keyboard
+- `deinit` does not remove the presentation views; it stops presentation updates, cancels the emoji delete repeat, and removes the host lifecycle observers
 - the emoji search ends when the keyboard is about to disappear, as the system keyboard's does
-- host lifecycle observers are controller-scoped and remain installed until controller teardown
-- rebuild must preserve the same visuals, toolbar behavior, warning precedence, haptics, and insertion rules as a fresh keyboard presentation
-- rebuild must resolve the opening page and Compact Keys mode from App Group defaults through `KeyboardOpeningLayout` before presentation setup; the persisted compact mode applies whenever the number page shows, so the extension returns to the user's persisted mode after a keyboard switch
+- host lifecycle observers are controller-scoped and remain installed until the controller is released
+- reactivation must preserve the same visuals, toolbar behavior, warning precedence, haptics, and insertion rules as a fresh keyboard presentation
+- each appearance must resolve the opening page and Compact Keys mode from App Group defaults through `KeyboardOpeningLayout` before presentation setup; the persisted compact mode applies whenever the number page shows, so the extension returns to the user's persisted mode after a keyboard switch
 - the controller must not read the focused field's document state until the host hands it over with the first `textDidChange(_:)` after appearing; reading earlier, even on a later main-thread turn, can reach freed host state
 - each appearance and each extension-host activation adopts any typing-memory reset and rechecks installed models through `KeyboardInstalledModels`
 - `AudioIndicatorDriver` attaches its update link to the logo bar view when presentation bindings activate and detaches it when they deactivate; frames come from the screen the keyboard is on and only while it shows, so host activity and keyboard appearance do not start or stop the indicator

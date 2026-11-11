@@ -24,13 +24,17 @@ final class EmojiKeyboardProbeTests: XCTestCase {
 
     func testRecordEmojiKeyboardLayout() throws {
         let environment = ProcessInfo.processInfo.environment
-        let outputPath = try XCTUnwrap(environment["EMOJI_PROBE_OUTPUT"], "EMOJI_PROBE_OUTPUT is not set")
+        let requestedOutputPath = try XCTUnwrap(environment["EMOJI_PROBE_OUTPUT"], "EMOJI_PROBE_OUTPUT is not set")
+        // On a phone the runner can only write inside its own container, so a relative path lands in its tmp folder.
+        let outputPath = requestedOutputPath.hasPrefix("/")
+            ? requestedOutputPath
+            : URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(requestedOutputPath).path
 
         let app = XCUIApplication()
         app.launch()
         let input = app.textViews["input"]
         XCTAssertTrue(input.waitForExistence(timeout: 15))
-        input.tap()
+        input.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
         var screens: [Screen] = []
 
         func record(_ name: String) throws {
