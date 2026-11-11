@@ -24,6 +24,20 @@ final class TypedWordBeforeWordTests: XCTestCase {
         XCTAssertEqual(edit, TextEdit(deleteCount: typed.count, insertText: pick.text + " "))
     }
 
+    func testDeletingALetterThatMatchesTheNextWordKeepsTheTypedWordAlone() {
+        let session = PredictiveTypingSession()
+        let extra = String(textAfter.prefix(1))
+        type(typed + extra, after: textBefore, before: textAfter, in: session)
+        session.textDidChange(textBeforeCursor: textBefore + typed, textAfterCursor: textAfter)
+
+        let request = session.request(textBeforeCursor: textBefore + typed, textAfterCursor: textAfter)
+        XCTAssertEqual(request.currentWord, typed)
+        XCTAssertEqual(request.touches.count, typed.count)
+
+        let edit = session.choiceEdit(pick, textBeforeCursor: textBefore + typed, textAfterCursor: textAfter)
+        XCTAssertEqual(edit, TextEdit(deleteCount: typed.count, insertText: pick.text + " "))
+    }
+
     func testCursorMovedIntoAWordJustTypedSuggestsForTheWholeWord() {
         let session = PredictiveTypingSession()
         let word = typed + textAfter.prefix { $0.isLetter }
