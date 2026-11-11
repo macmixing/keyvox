@@ -392,7 +392,8 @@ END OF TERMS AND CONDITIONS
 - Upstream: <https://en.wiktionary.org/>
 - License: Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0). Full text: <https://creativecommons.org/licenses/by-sa/4.0/legalcode>.
 - Use: `KeyVoxLinguistics` bundles `Resources/punctuation_name_phrases.txt`, phrases in which a punctuation mark's name is an ordinary word, and `Resources/greeting_phrases.txt`, spoken greetings, farewells, and thanks. Both were built from English Wiktionary entry titles and category membership, which were selected, lowercased, and combined with Princeton WordNet 3.0 entries. The greeting list keeps only phrases that Tatoeba English sentences use before a person's name and that WordNet 3.0, Wiktionary's phrasebook, or Apple's lexical classes also mark.
-- These two data files are licensed under CC BY-SA 4.0 and are excluded from this repository's MIT source-code license. They are provided as is, without warranties, as described in the license.
+- Use: `KeyVoxLinguistics` also bundles `Resources/example_phrases.txt`, phrases that introduce examples, built from the English Wiktionary entry title `for example` and the synonyms that entry lists for its "as an example" sense, lowercased.
+- These three data files are licensed under CC BY-SA 4.0 and are excluded from this repository's MIT source-code license. They are provided as is, without warranties, as described in the license.
 
 Attribution: Based on Wiktionary content contributed by the Wiktionary community.
 
