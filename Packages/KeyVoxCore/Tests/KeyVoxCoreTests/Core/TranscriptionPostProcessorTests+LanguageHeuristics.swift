@@ -520,6 +520,47 @@ extension TranscriptionPostProcessorTests {
         }
     }
 
+    func testNormalizesSpokenColonAfterExamplePhrase() async {
+        let processor = TranscriptionPostProcessor()
+
+        let cases: [(input: String, expected: String)] = [
+            ("As a developer, you may have thoughts like colon.", "As a developer, you may have thoughts like:"),
+            ("I wanted to share this, like colon.", "I wanted to share this, like:"),
+            ("The recipe needs spices like colon cumin and paprika", "The recipe needs spices like: Cumin and paprika"),
+            ("Bring snacks such as colon grapes and crackers", "Bring snacks such as: Grapes and crackers"),
+        ]
+        for (input, expected) in cases {
+            let output = processor.process(input, dictionaryEntries: [], renderMode: .singleLineInline)
+
+            XCTAssertEqual(output, expected, input)
+        }
+    }
+
+    func testKeepsColinNameAfterExamplePhrase() async {
+        let processor = TranscriptionPostProcessor()
+
+        let output = processor.process(
+            "I need more friends like Colin and Maya",
+            dictionaryEntries: [],
+            renderMode: .singleLineInline
+        )
+
+        XCTAssertEqual(output, "I need more friends like Colin and Maya.")
+    }
+
+    func testKeepsColonWordJoinedToSentenceAfterExamplePhrase() async {
+        let processor = TranscriptionPostProcessor()
+
+        for input in [
+            "Organs such as colon and liver can be affected",
+            "Type a word like colon in the box",
+        ] {
+            let output = processor.process(input, dictionaryEntries: [], renderMode: .singleLineInline)
+
+            XCTAssertEqual(output, input + ".", input)
+        }
+    }
+
     func testKeepsListedMedicalColonPhrasesLiteral() async {
         let processor = TranscriptionPostProcessor()
 
