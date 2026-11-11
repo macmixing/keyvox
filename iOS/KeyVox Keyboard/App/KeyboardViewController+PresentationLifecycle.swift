@@ -194,8 +194,9 @@ extension KeyboardViewController {
             rootContainerView.keyGridView.resetInteractionState()
         }
 
-        // UIKit can still be moving the input view between layout engines during dismissal.
-        // Keep the constrained views mounted for the lifetime of the input view.
+        // Removing these views while the keyboard is dismissed crashed inside Auto Layout, so they
+        // stay mounted through dismissal. Once this controller is released and they are off screen,
+        // the next keyboard to appear removes them (`KeyboardPresentationViewRegistry`).
         isPresentationBound = false
         setFullAccessInstructionsPresented(false)
     }
