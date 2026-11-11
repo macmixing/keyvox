@@ -1710,7 +1710,7 @@ Packages/
 ### Keyboard Typing and Predictions
 
 - `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/PredictiveTypingSession.swift`
-  - UI-independent typing state of one text field: the host reports taps and text changes, with the text on both sides of the cursor, and asks for the `TextEdit` that space, return, word-ending characters, picked-word spacing, or a suggestion tap should apply. Owns autocorrection undo, previous-word revision requests, deleted-into correction holds, picked-word runs, and the suggestion bar's emoji word. Use from one thread only.
+  - UI-independent typing state of one text field: the host reports taps, and text changes with the text on both sides of the cursor, and asks for the `TextEdit` that space, return, word-ending characters, picked-word spacing, or a suggestion tap should apply. Owns autocorrection undo, previous-word revision requests, deleted-into correction holds, picked-word runs, and the suggestion bar's emoji word. Use from one thread only.
 - `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/PredictionComputer.swift`
   - Computes the suggestion bar and space-bar autocorrection for a `PredictionRequest`, revisions for a `RevisionRequest`, and the intended letter for a contested tap; takes the keyboard geometry, personal vocabulary, and learned vocabulary from the host.
 - `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/EnglishPredictiveEngine.swift`
