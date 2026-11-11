@@ -448,6 +448,7 @@ final class KeyboardViewController: UIInputViewController {
         ])
 
         self.fullAccessView = fullAccessView
+        KeyboardPresentationViewRegistry.register(fullAccessView, mountedBy: self)
         return fullAccessView
     }
 

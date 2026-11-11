@@ -4,6 +4,7 @@ import UIKit
 
 extension KeyboardViewController {
     func preparePresentationIfNeeded() {
+        KeyboardPresentationViewRegistry.removeViewsOfReleasedControllers()
         ensurePresentationViews()
         activatePresentationBindingsIfNeeded()
     }
@@ -37,6 +38,8 @@ extension KeyboardViewController {
 
         self.rootContainerView = rootView
         self.popupOverlayView = popupOverlayView
+        KeyboardPresentationViewRegistry.register(rootView, mountedBy: self)
+        KeyboardPresentationViewRegistry.register(popupOverlayView, mountedBy: self)
     }
 
     func activatePresentationBindingsIfNeeded() {
