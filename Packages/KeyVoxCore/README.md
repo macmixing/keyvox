@@ -64,6 +64,8 @@ That split is intentional. `KeyVoxCore` should stay focused on reusable engine b
   Shared signal metrics, silence policy, capture classification, and frame post-processing helpers.
 - `Sources/KeyVoxCore/Resources/Pronunciation/`
   Bundled lexicon data, common-word data, and source/license metadata.
+- `Sources/KeyVoxCore/Resources/Localizable.xcstrings`
+  Translations of the dictionary messages and the `Auto Detect` language option, read through `KeyVoxCoreResources.bundle`.
 - `Tests/KeyVoxCoreTests/`
   Package-owned regression coverage for engine behavior.
 

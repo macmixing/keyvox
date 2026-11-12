@@ -136,6 +136,7 @@ iOS/
 │   │   │   ├── AppDevice.swift
 │   │   │   ├── AppForegroundWindow.swift
 │   │   │   ├── AppReviewRequestBlockingPreference.swift
+│   │   │   ├── ApproximateDownloadSize.swift
 │   │   │   ├── AppTypography.swift
 │   │   │   ├── InlineWarningRules.swift
 │   │   │   ├── KeyboardObserver.swift
@@ -263,6 +264,7 @@ iOS/
 │   ├── KeyVoxiOS.entitlements
 │   ├── PrivacyInfo.xcprivacy
 │   ├── Resources/
+│   │   ├── AppShortcuts.xcstrings
 │   │   ├── Assets.xcassets/
 │   │   ├── DictationShortcutSetup/
 │   │   │   ├── ActionButtonDemoHandoff.mov
@@ -273,9 +275,11 @@ iOS/
 │   │   │   ├── ActionButtonShortcutSelection.mov
 │   │   │   ├── AddShortcutPage.mov
 │   │   │   └── ShortcutHero.mov
+│   │   ├── InfoPlist.xcstrings
 │   │   ├── Kanit-Light.ttf
 │   │   ├── Kanit-Medium.ttf
 │   │   ├── KeyVoxProducts.storekit
+│   │   ├── Localizable.xcstrings
 │   │   ├── Onboarding/
 │   │   │   ├── EnableKeyboard.mov
 │   │   │   └── KeyVoxKeyboardSelection.mov
@@ -488,6 +492,7 @@ iOS/
 │   │   └── KeyboardTypography.swift
 │   ├── Info.plist
 │   ├── KeyVoxKeyboard.entitlements
+│   ├── Localizable.xcstrings
 │   ├── PrivacyInfo.xcprivacy
 │   └── Views/
 │       ├── FullAccessView.swift
@@ -544,6 +549,7 @@ iOS/
 │   ├── KeyVoxShare.entitlements
 │   ├── KeyVoxShareAppLauncher.swift
 │   ├── KeyVoxShareBridge.swift
+│   ├── Localizable.xcstrings
 │   ├── PrivacyInfo.xcprivacy
 │   └── ShareViewController.swift
 ├── KeyVox Widget/
@@ -553,6 +559,7 @@ iOS/
 │   ├── KeyVox Widget.entitlements
 │   ├── KeyVox_WidgetBundle.swift
 │   ├── KeyVox_WidgetLiveActivity.swift
+│   ├── Localizable.xcstrings
 │   └── PrivacyInfo.xcprivacy
 ├── KeyVoxiOSTests/
 │   ├── App/
@@ -777,10 +784,12 @@ Packages/
 │   ├── Package.swift
 │   ├── Sources/KeyVoxPromotions/
 │   │   ├── PromotionCampaign.swift
+│   │   ├── PromotionCampaign+Copy.swift
 │   │   ├── PromotionCenter*.swift
 │   │   ├── PromotionContent.swift
 │   │   ├── PromotionDefaults.swift
 │   │   ├── PromotionEligibility.swift
+│   │   ├── PromotionLocalizedCopy.swift
 │   │   ├── PromotionManifest*.swift
 │   │   ├── PromotionPlatform.swift
 │   │   ├── PromotionResources.swift
@@ -803,6 +812,8 @@ Packages/
 ├── KeyVoxWhisper/
 │   ├── Package.swift
 │   ├── Sources/KeyVoxWhisper/
+│   │   ├── KeyVoxWhisperLocalization.swift
+│   │   ├── Resources/Localizable.xcstrings
 │   │   ├── Segment.swift
 │   │   ├── Whisper.swift
 │   │   ├── WhisperComputePolicy.swift
@@ -835,6 +846,7 @@ Packages/
 │   │   │   ├── OutputRepair.swift
 │   │   │   ├── Repairs/
 │   │   │   └── Support/
+│   │   ├── Resources/Localizable.xcstrings
 │   │   ├── StyleRewriteDictationConfiguration.swift
 │   │   ├── StyleRewriteInputVariantSelection.swift
 │   │   ├── StyleRewritePromptLeakGuard.swift
@@ -881,6 +893,7 @@ Packages/
     │   ├── PocketTTSMimiInference.swift
     │   ├── PocketTTSSpokenNumberNormalizer.swift
     │   ├── PocketTTSTextNormalizer.swift
+    │   ├── Resources/Localizable.xcstrings
     │   ├── SentencePieceModelParser.swift
     │   └── SentencePieceTokenizer.swift
     └── Tests/KeyVoxTTSTests/
@@ -1008,6 +1021,8 @@ Packages/
   - Pure scene-selection and scene-fallback rules shared by the intro sheet, unlock sheet, and the Home help presentation path so branch coverage stays deterministic in tests.
 - `KeyVox iOS/App/Presentation/InlineWarningRules.swift`
   - Pure warning-visibility rules shared by onboarding, KeyVox Speak setup, Home copied-text playback, and Settings install surfaces so Wi-Fi warning coverage stays deterministic in iOS tests.
+- `KeyVox iOS/App/Presentation/ApproximateDownloadSize.swift`
+  - Holds the approximate download sizes shown before model, voice, and engine downloads and writes them with the user's language's byte units.
 - `KeyVox iOS/App/Presentation/AppTypography.swift`
   - App-wide typography helpers for SwiftUI surfaces that should share the same app font treatment.
 - `KeyVox iOS/App/Presentation/KeyboardObserver.swift`
@@ -1389,7 +1404,7 @@ Packages/
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/FileTypes/`
   - Loads the packaged `mime-db.json` registry and protects recognized file extensions during sentence capitalization.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Support/KeyVoxCoreResources.swift`
-  - Centralizes access to packaged pronunciation and file-type data through the default SwiftPM bundle, with a one-time host configuration seam.
+  - Centralizes access to packaged pronunciation and file-type data and the package string catalog through the default SwiftPM bundle, with a one-time host configuration seam.
 - `KeyVox iOS/Core/Transcription/DictationService.swift`
   - iOS-local transcription-service abstraction used by the runtime manager.
 - `KeyVox iOS/Core/Transcription/TranscriptionManager.swift`
