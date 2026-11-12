@@ -6,6 +6,23 @@ The format loosely follows Keep a Changelog, and the package uses semantic versi
 
 ---
 
+## [1.2.0] - 2026-11-11
+
+Campaigns can carry wording for each language, and hosts show the user's language with the base wording as the fallback.
+
+### Includes
+
+- Added optional `localizations` to campaigns, keyed by language code, with title, message, button title, and share title.
+- Added `PromotionCampaign.copy(forLanguage:)`, which matches the exact language code first, then its base language, and otherwise returns the base wording.
+- Validated translated wording with the same rules as the base wording: no empty title or message, and a button or share title only when the campaign has that action or sharing link.
+- Kept the manifest schema at version `1`; hosts that predate the field ignore it.
+
+### Notes
+
+- `1.2.0` tracks translated campaign wording.
+
+---
+
 ## [1.1.0] - 2026-09-12
 
 Shared campaign delivery now supports Android alongside the existing Apple clients.
