@@ -1,0 +1,144 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "Lowercase with limited punctuation and no filler words for a relaxed vibe." : {
+      "comment" : "Description of the Chill vibe.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Kleinschreibung mit wenigen Satzzeichen und ohne Füllwörter für einen entspannten Vibe."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Minúsculas, puntuación mínima y sin muletillas para un tono relajado."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Minuscules, ponctuation réduite et sans mots parasites, pour une vibe détendue."
+          }
+        }
+      }
+    },
+    "None" : {
+      "comment" : "Name of the Vibes option that leaves dictated text unchanged. Shown on the keyboard's Vibes button and in the Vibes picker.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ohne"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ninguna"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aucun"
+          }
+        }
+      }
+    },
+    "Remove filler words, format text, and preserve the original tone." : {
+      "comment" : "Description of the Casual vibe.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Entfernt Füllwörter, formatiert den Text und bewahrt den ursprünglichen Ton."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Elimina muletillas, da formato al texto y conserva el tono original."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Supprime les mots parasites, met en forme le texte et préserve le ton d’origine."
+          }
+        }
+      }
+    },
+    "Rewrite dictated text while preserving the original intent and structure." : {
+      "comment" : "Description of the Polished vibe.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Schreibt diktierten Text um und bewahrt dabei die ursprüngliche Absicht und Struktur."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Reescribe el texto dictado conservando la intención y la estructura originales."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Réécrit le texte dicté en préservant l’intention et la structure d’origine."
+          }
+        }
+      }
+    },
+    "Use the normal post-processed dictation text without KeyVox Vibes." : {
+      "comment" : "Description of the None Vibes option. KeyVox Vibes is a brand name and stays in English.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Normalen, nachbearbeiteten Diktattext ohne KeyVox Vibes verwenden."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Usa el texto dictado con el posprocesado normal, sin KeyVox Vibes."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Utilise le texte dicté post-traité habituel, sans KeyVox Vibes."
+          }
+        }
+      }
+    },
+    "Vibes are currently supported for English only." : {
+      "comment" : "Note shown with the Vibes styles saying they only rewrite English dictation. Vibes is a brand name and stays in English.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vibes werden derzeit nur für Englisch unterstützt."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Por ahora, Vibes solo funciona con el dictado en inglés."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Les Vibes ne sont actuellement disponibles qu’en anglais."
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

@@ -21,7 +21,7 @@ public enum StyleRewriteStyle: String, CaseIterable, Identifiable, Codable, Send
 
     public var displayName: String {
         switch self {
-        case .none: return "None"
+        case .none: return NSLocalizedString("None", bundle: .module, comment: "Name of the Vibes option that leaves dictated text unchanged. Shown on the keyboard's Vibes button and in the Vibes picker.")
         case .polished: return "Polished"
         case .casual: return "Casual"
         case .chill: return "Chill"
@@ -31,14 +31,19 @@ public enum StyleRewriteStyle: String, CaseIterable, Identifiable, Codable, Send
     public var description: String {
         switch self {
         case .none:
-            return "Use the normal post-processed dictation text without KeyVox Vibes."
+            return NSLocalizedString("Use the normal post-processed dictation text without KeyVox Vibes.", bundle: .module, comment: "Description of the None Vibes option. KeyVox Vibes is a brand name and stays in English.")
         case .polished:
-            return "Rewrite dictated text while preserving the original intent and structure."
+            return NSLocalizedString("Rewrite dictated text while preserving the original intent and structure.", bundle: .module, comment: "Description of the Polished vibe.")
         case .casual:
-            return "Remove filler words, format text, and preserve the original tone."
+            return NSLocalizedString("Remove filler words, format text, and preserve the original tone.", bundle: .module, comment: "Description of the Casual vibe.")
         case .chill:
-            return "Lowercase with limited punctuation and no filler words for a relaxed vibe."
+            return NSLocalizedString("Lowercase with limited punctuation and no filler words for a relaxed vibe.", bundle: .module, comment: "Description of the Chill vibe.")
         }
+    }
+
+    /// States which dictation language the rewrite styles support.
+    public static var languageSupportNote: String {
+        NSLocalizedString("Vibes are currently supported for English only.", bundle: .module, comment: "Note shown with the Vibes styles saying they only rewrite English dictation. Vibes is a brand name and stays in English.")
     }
 
     public var exampleText: String {
