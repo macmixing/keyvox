@@ -820,7 +820,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Autorisez KeyVox à afficher des activités en direct. Requis pour l’option Raccourci de dictée."
+            "value" : "Autorisez KeyVox à afficher des Activités en direct. Requis pour l’option Raccourci de dictée."
           }
         }
       }
@@ -923,7 +923,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Die Audioeingabe ist noch nicht bereit. sampleRate=%lf, channelCount=%lld"
+            "value" : "Die Audioeingabe ist noch nicht bereit. sampleRate=%1$lf, channelCount=%2$lld"
           }
         },
         "en" : {
@@ -935,7 +935,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "La entrada de audio aún no está lista. sampleRate=%lf, channelCount=%lld"
+            "value" : "La entrada de audio aún no está lista. sampleRate=%1$lf, channelCount=%2$lld"
           }
         },
         "fr" : {
@@ -998,7 +998,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Auto-Korrektur und Vorschläge unterstützen derzeit nur Englisch."
+            "value" : "Auto-Korrektur und Textvorschläge unterstützen derzeit nur Englisch."
           }
         },
         "es" : {
@@ -1923,7 +1923,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Dicta con el botón Acción."
+            "value" : "Dicta con el botón de acción."
           }
         },
         "fr" : {
@@ -2199,7 +2199,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Pulsa dos veces la barra espaciadora para insertar un punto seguido de un espacio."
+            "value" : "Toca dos veces la barra espaciadora para insertar un punto seguido de un espacio."
           }
         },
         "fr" : {
@@ -2262,7 +2262,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Die Stimme von %@ (%@) laden, um kopierten Text auf diesem Gerät vorzulesen?"
+            "value" : "Die Stimme von %1$@ (%2$@) laden, um kopierten Text auf diesem Gerät vorzulesen?"
           }
         },
         "en" : {
@@ -2274,7 +2274,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "¿Descargar la voz de %@ (%@) para leer en voz alta el texto copiado en este dispositivo?"
+            "value" : "¿Descargar la voz de %1$@ (%2$@) para leer en voz alta el texto copiado en este dispositivo?"
           }
         },
         "fr" : {
@@ -2291,7 +2291,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Lade die Stimme von %@ (%@), um kopierten Text vorlesen zu lassen."
+            "value" : "Lade die Stimme von %1$@ (%2$@), um kopierten Text vorlesen zu lassen."
           }
         },
         "en" : {
@@ -2303,7 +2303,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Descarga la voz de %@ (%@) para leer en voz alta el texto copiado."
+            "value" : "Descarga la voz de %1$@ (%2$@) para leer en voz alta el texto copiado."
           }
         },
         "fr" : {
@@ -2550,7 +2550,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Die KeyVox Speak-Engine und die Stimme von %@ (%@ insgesamt) laden, um kopierten Text auf diesem Gerät vorzulesen?"
+            "value" : "Die KeyVox Speak-Engine und die Stimme von %1$@ (%2$@ insgesamt) laden, um kopierten Text auf diesem Gerät vorzulesen?"
           }
         },
         "en" : {
@@ -2562,7 +2562,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "¿Descargar el motor de KeyVox Speak y la voz de %@ (%@ en total) para leer en voz alta el texto copiado en este dispositivo?"
+            "value" : "¿Descargar el motor de KeyVox Speak y la voz de %1$@ (%2$@ en total) para leer en voz alta el texto copiado en este dispositivo?"
           }
         },
         "fr" : {
@@ -3005,7 +3005,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Maj. verrouillées"
+            "value" : "Majuscules verrouillées"
           }
         }
       }
@@ -3246,7 +3246,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Konfiguration abschließen"
+            "value" : "Einrichtung abschließen"
           }
         },
         "es" : {
@@ -3568,7 +3568,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Installiere %@ und KeyVox lädt zuerst die Speak-Engine, dann die Stimme von %@"
+            "value" : "Installiere %1$@ und KeyVox lädt zuerst die Speak-Engine, dann die Stimme von %2$@"
           }
         },
         "en" : {
@@ -3580,7 +3580,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Instala la voz %@ y KeyVox descargará primero el motor de Speak y después la voz de %@"
+            "value" : "Instala la voz %1$@ y KeyVox descargará primero el motor de Speak y después la voz de %2$@"
           }
         },
         "fr" : {
@@ -3879,7 +3879,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Instala la app Atajos desde el App Store y vuelve a intentar añadir el atajo de dictado de KeyVox."
+            "value" : "Instala la app Atajos desde App Store y vuelve a intentar añadir el atajo de dictado de KeyVox."
           }
         },
         "fr" : {
@@ -4247,7 +4247,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "KeyVox %@ ya está disponible en el App Store."
+            "value" : "KeyVox %@ ya está disponible en App Store."
           }
         },
         "fr" : {
@@ -5015,7 +5015,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Les activités en direct doivent être activées dans KeyVox pour lancer la dictée en arrière-plan."
+            "value" : "Les Activités en direct doivent être activées dans KeyVox pour lancer la dictée en arrière-plan."
           }
         }
       }
@@ -5170,7 +5170,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Asignar al botón Acción"
+            "value" : "Asignar al botón de acción"
           }
         },
         "fr" : {
@@ -5193,7 +5193,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Asígnalo al botón Acción o al Centro de control."
+            "value" : "Asígnalo al botón de acción o al Centro de control."
           }
         },
         "fr" : {
@@ -5762,7 +5762,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Nicht genug freier Speicherplatz zum Installieren des Modells (%@ verfügbar, %@ erforderlich)."
+            "value" : "Nicht genug freier Speicherplatz zum Installieren des Modells (%1$@ verfügbar, %2$@ erforderlich)."
           }
         },
         "en" : {
@@ -5774,7 +5774,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "No hay espacio suficiente para instalar el modelo (%@ disponibles, %@ necesarios)."
+            "value" : "No hay espacio suficiente para instalar el modelo (%1$@ disponibles, %2$@ necesarios)."
           }
         },
         "fr" : {
@@ -6027,7 +6027,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Abre Ajustes en el iPhone y toca “Botón Acción”."
+            "value" : "Abre Ajustes en el iPhone y toca “Botón de acción”."
           }
         },
         "fr" : {
@@ -6073,7 +6073,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "O empieza pulsando el botón Acción y hablando. Muestra el teclado de KeyVox y toca el botón de dictado. Convierte tu voz en texto."
+            "value" : "O empieza pulsando el botón de acción y hablando. Muestra el teclado de KeyVox y toca el botón de dictado. Convierte tu voz en texto."
           }
         },
         "fr" : {
@@ -6090,7 +6090,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Seite %lld von %lld"
+            "value" : "Seite %1$lld von %2$lld"
           }
         },
         "en" : {
@@ -6102,7 +6102,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Página %lld de %lld"
+            "value" : "Página %1$lld de %2$lld"
           }
         },
         "fr" : {
@@ -6355,7 +6355,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "PocketTTS ha generado un fotograma de audio no válido."
+            "value" : "PocketTTS ha generado una trama de audio no válida."
           }
         },
         "fr" : {
@@ -6395,7 +6395,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Vorschläge"
+            "value" : "Textvorschläge"
           }
         },
         "es" : {
@@ -6493,7 +6493,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Pulsa el botón Acción para activar el dictado de KeyVox. Vuelve a pulsarlo para transcribir tus palabras. Pega el texto en cualquier app."
+            "value" : "Pulsa el botón de acción para activar el dictado de KeyVox. Vuelve a pulsarlo para transcribir tus palabras. Pega el texto en cualquier app."
           }
         },
         "fr" : {
@@ -6568,7 +6568,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Noter et évaluer"
+            "value" : "Donner une note et un avis"
           }
         }
       }
@@ -6969,7 +6969,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Konfigurieren"
+            "value" : "Einrichten"
           }
         },
         "es" : {
@@ -6992,7 +6992,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "%@ konfigurieren"
+            "value" : "%@ einrichten"
           }
         },
         "es" : {
@@ -7205,7 +7205,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Comparte tu opinión en el App Store."
+            "value" : "Comparte tu opinión en App Store."
           }
         },
         "fr" : {
@@ -7479,7 +7479,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Speak-Download fehlgeschlagen (HTTP %lld) für %@."
+            "value" : "Speak-Download für %2$@ fehlgeschlagen (HTTP %1$lld)."
           }
         },
         "en" : {
@@ -7491,7 +7491,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "La descarga de Speak ha fallado con el error HTTP %lld para %@."
+            "value" : "La descarga de Speak ha fallado con el error HTTP %1$lld para %2$@."
           }
         },
         "fr" : {
@@ -7924,7 +7924,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "¡Todo listo!"
+            "value" : "¡Perfecto!"
           }
         },
         "fr" : {
@@ -8016,7 +8016,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Desliza por las opciones hasta encontrar “Atajo” y toca “Elegir un atajo…”"
+            "value" : "Desliza por las opciones hasta encontrar “Atajo” y toca “Seleccionar un atajo…”"
           }
         },
         "fr" : {
@@ -9143,7 +9143,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Úsalo desde el Centro de control,\nel botón Acción y mucho más."
+            "value" : "Úsalo desde el Centro de control,\nel botón de acción y mucho más."
           }
         },
         "fr" : {
@@ -9781,13 +9781,13 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Kurzbefehl „.“"
+            "value" : "„.“-Kurzbefehl"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Atajo “.”"
+            "value" : "Atajo de “.”"
           }
         },
         "fr" : {
