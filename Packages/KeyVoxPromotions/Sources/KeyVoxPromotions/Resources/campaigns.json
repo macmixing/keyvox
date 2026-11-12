@@ -105,19 +105,19 @@
         "name": "keyboard.chevron.compact.down"
       },
       "title": "More room while you type",
-      "message": "Long press #+= to enter Compact Mode. Tap the keyboard icon whenever you want the full keyboard back.",
+      "message": "Long press #+= to enter Compact Keys. Tap the keyboard icon whenever you want the full keyboard back.",
       "localizations": {
         "de": {
           "title": "Mehr Platz beim Tippen",
-          "message": "Drücke lange auf #+=, um den Kompaktmodus zu aktivieren. Tippe auf das Tastatursymbol, wenn du die volle Tastatur zurückhaben möchtest."
+          "message": "Drücke lange auf #+=, um Compact Keys zu aktivieren. Tippe auf das Tastatursymbol, wenn du die volle Tastatur zurückhaben möchtest."
         },
         "es": {
           "title": "Más espacio mientras escribes",
-          "message": "Mantén pulsado #+= para activar el modo compacto. Toca el icono del teclado cuando quieras recuperar el teclado completo."
+          "message": "Mantén pulsado #+= para activar Compact Keys. Toca el icono del teclado cuando quieras recuperar el teclado completo."
         },
         "fr": {
           "title": "Plus d’espace pendant la saisie",
-          "message": "Appuyez longuement sur #+= pour passer en mode compact. Touchez l’icône du clavier pour retrouver le clavier complet à tout moment."
+          "message": "Appuyez longuement sur #+= pour activer Compact Keys. Touchez l’icône du clavier pour retrouver le clavier complet à tout moment."
         }
       }
     },
@@ -176,7 +176,7 @@
         "name": "ic_keyboard"
       },
       "title": "More room while you type",
-      "message": "Long press #+= to enter Compact Mode. Tap the keyboard icon whenever you want the full keyboard back."
+      "message": "Long press #+= to enter Compact Keys. Tap the keyboard icon whenever you want the full keyboard back."
     },
     {
       "id": "android-keyvox-for-mac",
