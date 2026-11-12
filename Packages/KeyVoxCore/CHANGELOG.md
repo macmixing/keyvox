@@ -16,6 +16,7 @@ A spoken colon after a phrase that introduces examples, such as `like` or `such 
 - Kept `colon` as a word after other prepositions such as `between colon`, after an example phrase when it runs straight into a conjunction or preposition such as `such as colon and liver` or `a word like colon in the box`, and kept a misheard spelling such as `Colin` as a name after an example phrase, such as `friends like Colin`.
 - Added regression coverage for spoken colons after example phrases, for the word `colon` joined to the rest of the sentence after them, and for names after them.
 - Made the dictionary error and warning messages, the `Auto Detect` language option, and the fallback microphone name translatable through a package string catalog read from `KeyVoxCoreResources.bundle`, so hosts that supply Core resources keep working.
+- Started dictation language names with a capital letter in every language, since they stand alone in pickers and lists where locale data writes some of them in lowercase.
 
 ### Notes
 
