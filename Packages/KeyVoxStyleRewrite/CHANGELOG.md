@@ -6,6 +6,22 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.2.0] - 2026-11-11
+
+The `None` style name, the style descriptions, and the English-only note are now translatable.
+
+### Includes
+
+- Made the `None` style name and every style description translatable through a package string catalog; the Polished, Casual, and Chill names stay as written.
+- Added `StyleRewriteStyle.languageSupportNote` as the single source for the note that rewrite styles support English dictation only.
+- Kept the example sentences and the model instructions in English.
+
+### Notes
+
+- `1.2.0` tracks translatable style wording.
+
+---
+
 ## [1.1.0] - 2026-09-12
 
 Vibes rewrite repair now uses shared, health-routed linguistic analysis across supported platforms.
