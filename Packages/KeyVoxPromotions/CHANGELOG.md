@@ -17,6 +17,7 @@ Campaigns can carry wording for each language, and hosts show the user's languag
 - Validated translated wording with the same rules as the base wording: no empty title or message, and a button or share title only when the campaign has that action or sharing link.
 - Kept the manifest schema at version `1`; hosts that predate the field ignore it.
 - Named the Compact Keys feature as Compact Keys in the iOS and Android compact keys campaigns, in English and in every translation.
+- Added German, Spanish, and French wording to the iOS, macOS, and Android campaigns.
 
 ### Notes
 
