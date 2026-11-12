@@ -7,7 +7,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Das BOS-Embedding hat zu wenige Werte: erwartet %ld, erhalten %ld"
+            "value" : "Das BOS-Embedding hat zu wenige Werte: erwartet %1$ld, erhalten %2$ld"
           }
         },
         "en" : {
@@ -19,7 +19,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "El embedding BOS no tiene suficientes valores: se esperaban %ld y se han recibido %ld"
+            "value" : "El embedding BOS no tiene suficientes valores: se esperaban %1$ld y se han recibido %2$ld"
           }
         },
         "fr" : {
@@ -36,7 +36,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Die latente Sequenz hat zu wenige Werte: erwartet %ld, erhalten %ld"
+            "value" : "Die latente Sequenz hat zu wenige Werte: erwartet %1$ld, erhalten %2$ld"
           }
         },
         "en" : {
@@ -48,7 +48,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "La secuencia latente no tiene suficientes valores: se esperaban %ld y se han recibido %ld"
+            "value" : "La secuencia latente no tiene suficientes valores: se esperaban %1$ld y se han recibido %2$ld"
           }
         },
         "fr" : {
@@ -65,7 +65,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Der latente Vektor hat zu wenige Werte: erwartet %ld, erhalten %ld"
+            "value" : "Der latente Vektor hat zu wenige Werte: erwartet %1$ld, erhalten %2$ld"
           }
         },
         "en" : {
@@ -77,7 +77,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "El vector latente no tiene suficientes valores: se esperaban %ld y se han recibido %ld"
+            "value" : "El vector latente no tiene suficientes valores: se esperaban %1$ld y se han recibido %2$ld"
           }
         },
         "fr" : {
@@ -209,7 +209,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Der PocketTTS-Mimi-Zustandstensor %@ hat zu wenige Daten: erwartet %ld Bytes, erhalten %ld"
+            "value" : "Der PocketTTS-Mimi-Zustandstensor %1$@ hat zu wenige Daten: erwartet %2$ld Bytes, erhalten %3$ld"
           }
         },
         "en" : {
@@ -221,7 +221,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "El tensor de estado %@ de Mimi en PocketTTS no tiene suficientes datos: se esperaban %ld bytes y se han recibido %ld"
+            "value" : "El tensor de estado %1$@ de Mimi en PocketTTS no tiene suficientes datos: se esperaban %2$ld bytes y se han recibido %3$ld"
           }
         },
         "fr" : {
