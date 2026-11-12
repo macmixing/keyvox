@@ -59,13 +59,13 @@
         "es" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Actividad"
+            "value" : "Actividades"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Activité"
+            "value" : "Activités"
           }
         }
       }
@@ -249,7 +249,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Verr. maj."
+            "value" : "Verrouillage des majuscules"
           }
         }
       }
@@ -306,7 +306,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Diktat konnte nicht starten"
+            "value" : "Diktat konnte nicht gestartet werden"
           }
         },
         "es" : {
@@ -433,7 +433,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Utilisés fréquemment"
+            "value" : "Souvent utilisés"
           }
         }
       }
@@ -962,7 +962,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Rechercher des emoji"
+            "value" : "Rechercher un Emoji"
           }
         }
       }
@@ -1330,7 +1330,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Attente"
+            "value" : "En attente"
           }
         }
       }
