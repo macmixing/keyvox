@@ -1,0 +1,36 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "NSMicrophoneUsageDescription" : {
+      "comment" : "Mac system permission prompt asking for microphone access. KeyVox is a brand name and stays in English.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox benötigt für die Transkription Zugriff auf das Mikrofon."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "KeyVox Transcription requires microphone access."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox necesita acceso al micrófono para la transcripción."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La transcription KeyVox nécessite l’accès au micro."
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

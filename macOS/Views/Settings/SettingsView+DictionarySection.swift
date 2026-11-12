@@ -6,6 +6,15 @@ enum DictionarySortMode: String, CaseIterable, Identifiable {
     case recentlyAdded = "Recently Added"
 
     var id: Self { self }
+
+    var title: String {
+        switch self {
+        case .alphabetical:
+            return String(localized: "A-Z", comment: "Dictionary sort option that orders entries alphabetically.")
+        case .recentlyAdded:
+            return String(localized: "Recently Added", comment: "Dictionary sort option that shows the newest entries first.")
+        }
+    }
 }
 
 extension SettingsView {
@@ -26,10 +35,10 @@ extension SettingsView {
                         }
 
                         VStack(alignment: .leading, spacing: 4) {
-                            Text("Dictionary")
+                            Text("Dictionary", comment: "Title of the Dictionary card in Settings.")
                                 .font(.appFont(17))
 
-                            Text("Add custom words, email addresses, and short phrases to improve transcription accuracy.")
+                            Text("Add custom words, email addresses, and short phrases to improve transcription accuracy.", comment: "Description on the Dictionary card in Settings.")
                                 .font(.appFont(12, variant: .light))
                                 .foregroundColor(.secondary)
                                 .lineSpacing(2)
@@ -63,7 +72,7 @@ extension SettingsView {
                         : Array(dictionaryStore.entries.reversed())
 
                     if displayedEntries.isEmpty {
-                        Text("No custom words added yet.")
+                        Text("No custom words added yet.", comment: "Empty state on the Dictionary card in Settings when no words were added.")
                             .font(.appFont(12, variant: .light))
                             .foregroundColor(.secondary)
                     } else {
@@ -71,7 +80,7 @@ extension SettingsView {
                             Spacer()
                             Picker("", selection: $dictionarySortMode) {
                                 ForEach(DictionarySortMode.allCases) { mode in
-                                    Text(mode.rawValue).tag(mode)
+                                    Text(mode.title).tag(mode)
                                 }
                             }
                             .pickerStyle(.segmented)

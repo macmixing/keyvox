@@ -19,29 +19,29 @@ enum AppUpdateError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .networkUnavailable:
-            return "Updates are temporarily unavailable."
+            return String(localized: "Updates are temporarily unavailable.", comment: "Status and error text in the KeyVox update window when the update server cannot be reached.")
         case .applicationsMoveFailed:
-            return "KeyVox could not move itself into Applications."
+            return String(localized: "KeyVox could not move itself into Applications.", comment: "Error message shown in the KeyVox update window when an app update fails. KeyVox is a brand name and stays in English. Applications is the macOS Applications folder; use the name macOS uses in this language.")
         case .checksumMismatch:
-            return "The downloaded update did not match the expected checksum."
+            return String(localized: "The downloaded update did not match the expected checksum.", comment: "Error message shown in the KeyVox update window when an app update fails.")
         case .extractionFailed:
-            return "KeyVox could not unpack the update archive."
+            return String(localized: "KeyVox could not unpack the update archive.", comment: "Error message shown in the KeyVox update window when an app update fails. KeyVox is a brand name and stays in English.")
         case .invalidBundle:
-            return "The downloaded update bundle was not valid."
+            return String(localized: "The downloaded update bundle was not valid.", comment: "Error message shown in the KeyVox update window when an app update fails.")
         case .bundleIdentifierMismatch:
-            return "The downloaded update did not match this app."
+            return String(localized: "The downloaded update did not match this app.", comment: "Error message shown in the KeyVox update window when an app update fails.")
         case .versionMismatch:
-            return "The downloaded update version did not match the release metadata."
+            return String(localized: "The downloaded update version did not match the release metadata.", comment: "Error message shown in the KeyVox update window when an app update fails.")
         case .signatureVerificationFailed:
-            return "The downloaded update could not be verified by macOS."
+            return String(localized: "The downloaded update could not be verified by macOS.", comment: "Error message shown in the KeyVox update window when an app update fails.")
         case .releaseUnavailable:
-            return "No update release is available right now."
+            return String(localized: "No update release is available right now.", comment: "Error message shown in the KeyVox update window when an app update fails.")
         case .missingInstallAsset:
-            return "This release is only available as a manual download."
+            return String(localized: "This release is only available as a manual download.", comment: "Error message shown in the KeyVox update window when an app update fails.")
         case .missingInstallerScript:
-            return "The updater script could not be found in the app bundle."
+            return String(localized: "The updater script could not be found in the app bundle.", comment: "Error message shown in the KeyVox update window when an app update fails.")
         case .installerLaunchFailed:
-            return "KeyVox could not start the installer."
+            return String(localized: "KeyVox could not start the installer.", comment: "Error message shown in the KeyVox update window when an app update fails. KeyVox is a brand name and stays in English.")
         }
     }
 }
@@ -57,7 +57,7 @@ final class AppUpdateCoordinator: ObservableObject {
     @Published private(set) var progress: Double = 0
     @Published private(set) var downloadedBytes: Int64 = 0
     @Published private(set) var totalBytes: Int64 = 0
-    @Published private(set) var statusMessage: String = "Check for updates to begin."
+    @Published private(set) var statusMessage: String = String(localized: "Check for updates to begin.", comment: "Status text shown in the KeyVox update window before any update check has run.")
     @Published private(set) var failureMessage: String?
     @Published private(set) var currentVersion: String
     @Published private(set) var targetVersion: String?
@@ -180,36 +180,36 @@ final class AppUpdateCoordinator: ObservableObject {
     var primaryButtonTitle: String {
         switch state {
         case .available:
-            return "Install Update"
+            return String(localized: "Install Update", comment: "Main button in the KeyVox update window that installs the available update.")
         case .manualOnly:
-            return "Open Release Page"
+            return String(localized: "Open Release Page", comment: "Main button in the KeyVox update window that opens the release web page for a manual download.")
         case .requiresApplicationsInstall:
-            return "Move To Applications"
+            return String(localized: "Move To Applications", comment: "Main button in the KeyVox update window that moves the app into the Applications folder. Use the name macOS uses for the Applications folder in this language.")
         case .failed, .completed, .idle:
-            return "Check Again"
+            return String(localized: "Check Again", comment: "Main button in the KeyVox update window that checks for updates again.")
         case .downloading:
-            return "Downloading..."
+            return String(localized: "Downloading...", comment: "Main button in the KeyVox update window while an update is in progress. The update is downloading.")
         case .verifyingChecksum:
-            return "Verifying..."
+            return String(localized: "Verifying...", comment: "Main button in the KeyVox update window while an update is in progress. The download is being verified.")
         case .extracting:
-            return "Extracting..."
+            return String(localized: "Extracting...", comment: "Main button in the KeyVox update window while an update is in progress. The download is being unpacked.")
         case .verifyingSignature:
-            return "Validating..."
+            return String(localized: "Validating...", comment: "Main button in the KeyVox update window while an update is in progress. The app signature is being validated.")
         case .readyToInstall:
-            return "Installing..."
+            return String(localized: "Installing...", comment: "Main button in the KeyVox update window while an update is in progress. The update is installing.")
         case .installing:
-            return "Installing..."
+            return String(localized: "Installing...", comment: "Main button in the KeyVox update window while an update is in progress. The update is installing.")
         case .checking:
-            return "Checking..."
+            return String(localized: "Checking...", comment: "Main button in the KeyVox update window while an update is in progress. KeyVox is checking for updates.")
         }
     }
 
     var secondaryButtonTitle: String {
         switch state {
         case .downloading, .verifyingChecksum, .extracting, .verifyingSignature, .readyToInstall, .installing, .checking:
-            return "Close"
+            return String(localized: "Close", comment: "Secondary button in the KeyVox update window that closes the window while an update runs.")
         default:
-            return "Later"
+            return String(localized: "Later", comment: "Secondary button in the KeyVox update window that postpones the update.")
         }
     }
 
@@ -238,8 +238,8 @@ final class AppUpdateCoordinator: ObservableObject {
         progress = 0
         downloadedBytes = 0
         totalBytes = 0
-        releaseNotesPreview = "KeyVox \(currentVersion) is currently the latest version."
-        statusMessage = "You're up to date."
+        releaseNotesPreview = String(localized: "KeyVox \(currentVersion) is currently the latest version.", comment: "Text in the KeyVox update window when no update is available. %@ is the installed app version. KeyVox is a brand name and stays in English.")
+        statusMessage = String(localized: "You're up to date.", comment: "Status text shown in the KeyVox update window when no update is available.")
     }
 
     private func applyReleaseInfo(_ releaseInfo: AppReleaseInfo, userInitiated: Bool) {
@@ -259,17 +259,17 @@ final class AppUpdateCoordinator: ObservableObject {
         if releaseInfo.isInstallableInApp {
             if applicationsPrereflight.requiresApplicationsInstall() {
                 state = .requiresApplicationsInstall
-                statusMessage = "Move KeyVox to Applications to use in-app updates."
+                statusMessage = String(localized: "Move KeyVox to Applications to use in-app updates.", comment: "Status text shown in the KeyVox update window. KeyVox is a brand name and stays in English. Applications is the macOS Applications folder; use the name macOS uses in this language.")
             } else if isResumingInstallAfterApplicationsMove {
                 state = .checking
-                statusMessage = "Resuming update..."
+                statusMessage = String(localized: "Resuming update...", comment: "Status text shown in the KeyVox update window when an update continues after KeyVox moved itself into Applications.")
             } else {
                 state = .available
-                statusMessage = userInitiated ? "Update ready to install." : "A new version of KeyVox is available."
+                statusMessage = userInitiated ? String(localized: "Update ready to install.", comment: "Status text shown in the KeyVox update window when an update is ready.") : String(localized: "A new version of KeyVox is available.", comment: "Status text shown in the KeyVox update window when an update is available. KeyVox is a brand name and stays in English.")
             }
         } else {
             state = .manualOnly
-            statusMessage = "This release needs to be installed manually."
+            statusMessage = String(localized: "This release needs to be installed manually.", comment: "Status text shown in the KeyVox update window when the update cannot be installed from inside the app.")
         }
     }
 
@@ -280,7 +280,7 @@ final class AppUpdateCoordinator: ObservableObject {
 
     private func moveToApplicationsAndResumeUpdater() {
         do {
-            statusMessage = "Moving KeyVox to Applications..."
+            statusMessage = String(localized: "Moving KeyVox to Applications...", comment: "Status text shown in the KeyVox update window. KeyVox is a brand name and stays in English. Applications is the macOS Applications folder; use the name macOS uses in this language.")
             let destinationURL = try applicationsPrereflight.moveCurrentAppToApplications()
             applicationsPrereflight.stageResumeAfterApplicationsMove(
                 preferredDisplayKey: AppUpdateDisplayCoordinator.shared.preferredDisplayKeyForResume
@@ -289,26 +289,26 @@ final class AppUpdateCoordinator: ObservableObject {
                 NSLog("[AppUpdateCoordinator] Failed to reopen KeyVox from Applications at %@", destinationURL.path)
                 applicationsPrereflight.clearResumeAfterApplicationsMove()
                 state = .failed
-                statusMessage = "KeyVox could not reopen from Applications."
-                failureMessage = "KeyVox was moved to Applications, but macOS could not reopen it. Open KeyVox from Applications and try the update again."
+                statusMessage = String(localized: "KeyVox could not reopen from Applications.", comment: "Status text shown in the KeyVox update window. KeyVox is a brand name and stays in English. Applications is the macOS Applications folder; use the name macOS uses in this language.")
+                failureMessage = String(localized: "KeyVox was moved to Applications, but macOS could not reopen it. Open KeyVox from Applications and try the update again.", comment: "Error message shown in the KeyVox update window when an app update fails. KeyVox is a brand name and stays in English. Applications is the macOS Applications folder; use the name macOS uses in this language.")
                 return
             }
             AppProcessTerminator.terminateImmediately()
         } catch {
             state = .failed
-            statusMessage = "KeyVox could not move into Applications."
+            statusMessage = String(localized: "KeyVox could not move into Applications.", comment: "Status text shown in the KeyVox update window. KeyVox is a brand name and stays in English. Applications is the macOS Applications folder; use the name macOS uses in this language.")
             failureMessage = AppUpdateError.applicationsMoveFailed.errorDescription ?? error.localizedDescription
         }
     }
 
     private func refreshRelease(userInitiated: Bool) async {
         state = .checking
-        statusMessage = "Checking for updates..."
+        statusMessage = String(localized: "Checking for updates...", comment: "Status text shown in the KeyVox update window.")
         failureMessage = nil
 
         guard let releaseInfo = await service.fetchLatestReleaseInfo() else {
             state = .failed
-            statusMessage = "Updates are temporarily unavailable."
+            statusMessage = String(localized: "Updates are temporarily unavailable.", comment: "Status and error text in the KeyVox update window when the update server cannot be reached.")
             failureMessage = AppUpdateError.releaseUnavailable.errorDescription
             if !userInitiated {
                 WindowManager.shared.hideUpdateWindow()
@@ -349,7 +349,7 @@ final class AppUpdateCoordinator: ObservableObject {
         do {
             if applicationsPrereflight.requiresApplicationsInstall() {
                 state = .requiresApplicationsInstall
-                statusMessage = "Move KeyVox to Applications to use in-app updates."
+                statusMessage = String(localized: "Move KeyVox to Applications to use in-app updates.", comment: "Status text shown in the KeyVox update window. KeyVox is a brand name and stays in English. Applications is the macOS Applications folder; use the name macOS uses in this language.")
                 return
             }
 
@@ -366,7 +366,7 @@ final class AppUpdateCoordinator: ObservableObject {
             }
 
             state = .downloading
-            statusMessage = "Downloading update..."
+            statusMessage = String(localized: "Downloading update...", comment: "Status text shown in the KeyVox update window.")
             try await downloadService.download(from: installAssetURL, to: zipURL) { [weak self] written, expected in
                 DispatchQueue.main.async {
                     guard let self else { return }
@@ -379,21 +379,21 @@ final class AppUpdateCoordinator: ObservableObject {
             }
 
             state = .verifyingChecksum
-            statusMessage = "Verifying download..."
+            statusMessage = String(localized: "Verifying download...", comment: "Status text shown in the KeyVox update window.")
             let checksumVerifier = self.checksumVerifier
             try await runBlockingWork {
                 try checksumVerifier.verify(fileURL: zipURL, expectedSHA256: manifest.sha256)
             }
 
             state = .extracting
-            statusMessage = "Preparing update..."
+            statusMessage = String(localized: "Preparing update...", comment: "Status text shown in the KeyVox update window while the download is unpacked.")
             let archiveExtractor = self.archiveExtractor
             try await runBlockingWork {
                 try archiveExtractor.extract(zipURL: zipURL, to: extractedURL)
             }
 
             state = .verifyingSignature
-            statusMessage = "Validating signed app..."
+            statusMessage = String(localized: "Validating signed app...", comment: "Status text shown in the KeyVox update window while the downloaded app's signature is checked.")
             let bundleVerifier = self.bundleVerifier
             try await runBlockingWork {
                 _ = try bundleVerifier.verifyExtractedApp(
@@ -404,11 +404,11 @@ final class AppUpdateCoordinator: ObservableObject {
             }
 
             state = .readyToInstall
-            statusMessage = "Installing KeyVox..."
+            statusMessage = String(localized: "Installing KeyVox...", comment: "Status text shown in the KeyVox update window. KeyVox is a brand name and stays in English.")
             try await installLauncher.launchInstall(version: releaseInfo.version, stagedZipURL: zipURL)
         } catch {
             state = .failed
-            statusMessage = "The update could not be installed."
+            statusMessage = String(localized: "The update could not be installed.", comment: "Status text shown in the KeyVox update window when the update fails.")
             failureMessage = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
         }
     }

@@ -376,9 +376,9 @@ enum MacLocalRewriteModelInstallError: LocalizedError {
 }
 
 private enum MacLocalRewriteModelManagerCopy {
-    static let downloadFailed = "Vibes model download failed. Check your network/storage and retry."
-    static let downloadCancelled = "Vibes model download was cancelled."
-    static let integrityCheckFailed = "Downloaded Vibes model did not match the expected SHA-256."
+    static let downloadFailed = String(localized: "Vibes model download failed. Check your network/storage and retry.", comment: "Error shown on the Vibes setup card in Settings when the Vibes model download fails. Vibes is a brand name and stays in English.")
+    static let downloadCancelled = String(localized: "Vibes model download was cancelled.", comment: "Error shown on the Vibes setup card in Settings when the Vibes model download is cancelled. Vibes is a brand name and stays in English.")
+    static let integrityCheckFailed = String(localized: "Downloaded Vibes model did not match the expected SHA-256.", comment: "Error shown on the Vibes setup card in Settings when the downloaded Vibes model fails its integrity check. SHA-256 is a technical name and stays as written. Vibes is a brand name and stays in English.")
 }
 
 struct MacLocalRewriteModelDownloadProgressSnapshot: Sendable {

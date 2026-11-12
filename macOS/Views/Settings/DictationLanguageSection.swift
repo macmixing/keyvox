@@ -1,3 +1,4 @@
+import Foundation
 import KeyVoxCore
 import SwiftUI
 
@@ -19,19 +20,25 @@ struct DictationLanguageSection: View {
                     }
                 }
                 .pickerStyle(.menu)
-                .frame(width: 160)
                 .labelsHidden()
                 .accessibilityLabel(DictationLanguageSectionCopy.pickerAccessibilityLabel)
+                .menuPickerWidth(
+                    fitting: DictationLanguageDisplayNameFormatter.displayName(for: whisperLanguageSelection.wrappedValue),
+                    minimumWidth: 160
+                )
             } else {
                 Picker("", selection: automaticLanguageSelection) {
                     Text(DictationLanguageDisplayNameFormatter.displayName(for: .automatic))
                         .tag(DictationLanguage.automatic)
                 }
                 .pickerStyle(.menu)
-                .frame(width: 160)
                 .labelsHidden()
                 .disabled(true)
                 .accessibilityLabel(DictationLanguageSectionCopy.pickerAccessibilityLabel)
+                .menuPickerWidth(
+                    fitting: DictationLanguageDisplayNameFormatter.displayName(for: .automatic),
+                    minimumWidth: 160
+                )
             }
         }
     }
@@ -77,8 +84,8 @@ struct DictationLanguageSection: View {
 }
 
 private enum DictationLanguageSectionCopy {
-    static let title = "Language"
-    static let pickerAccessibilityLabel = "Dictation Language"
-    static let whisperDescription = "Choose the language KeyVox uses for dictation."
-    static let parakeetDescription = "Parakeet automatically detects the language used for dictation. Visit the FAQ in the Need Help? card to see its supported languages."
+    static let title = String(localized: "Language", comment: "Title of the dictation language row in Settings.")
+    static let pickerAccessibilityLabel = String(localized: "Dictation Language", comment: "VoiceOver label for the dictation language picker in Settings.")
+    static let whisperDescription = String(localized: "Choose the language KeyVox uses for dictation.", comment: "Description of the dictation language row in Settings when Whisper is the dictation model. KeyVox is a brand name and stays in English.")
+    static let parakeetDescription = String(localized: "Parakeet automatically detects the language used for dictation. Visit the FAQ in the Need Help? card to see its supported languages.", comment: "Description of the dictation language row in Settings when Parakeet is the dictation model. Parakeet is a brand name and stays in English. Need Help? is the title of a card in Settings; translate it the same way as that card's title.")
 }

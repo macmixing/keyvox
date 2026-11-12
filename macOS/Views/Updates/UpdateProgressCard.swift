@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 
 struct UpdateProgressCard: View {
@@ -14,13 +15,13 @@ struct UpdateProgressCard: View {
 
     private var detailText: String? {
         guard totalBytes > 0 else { return nil }
-        return "\(Self.byteFormatter.string(fromByteCount: downloadedBytes)) of \(Self.byteFormatter.string(fromByteCount: totalBytes))"
+        return String(localized: "\(AppTypography.fontSupportedSpacing(Self.byteFormatter.string(fromByteCount: downloadedBytes))) of \(AppTypography.fontSupportedSpacing(Self.byteFormatter.string(fromByteCount: totalBytes)))", comment: "Download size progress in the KeyVox update window. The first %@ is the amount downloaded and the second %@ is the total size; both are formatted file sizes.")
     }
 
     var body: some View {
         SettingsCard {
             VStack(alignment: .leading, spacing: 12) {
-                Text("Download Progress")
+                Text("Download Progress", comment: "Title of the progress card in the KeyVox update window.")
                     .font(.appFont(15))
                     .foregroundColor(.white)
 

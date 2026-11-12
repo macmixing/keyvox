@@ -1,3 +1,4 @@
+import Foundation
 import KeyVoxStyleRewrite
 import SwiftUI
 
@@ -95,7 +96,7 @@ struct MacVibesIntroWindowView: View {
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel("Close")
+                .accessibilityLabel(String(localized: "Close", comment: "VoiceOver label for the close button in the KeyVox Vibes introduction window."))
                 .padding(.trailing, 5)
             }
         }
@@ -142,10 +143,10 @@ struct MacVibesIntroWindowView: View {
 
     private var actionTitle: String {
         if isStandaloneSceneB {
-            return "Done"
+            return String(localized: "Done", comment: "Button that closes the KeyVox Vibes introduction window.")
         }
 
-        return selectedScene == .c ? "Try it" : "Next"
+        return selectedScene == .c ? String(localized: "Try it", comment: "Button on the last page of the KeyVox Vibes introduction window that closes it so the user can try Vibes.") : String(localized: "Next", comment: "Button in the KeyVox Vibes introduction window that goes to the next page.")
     }
 
     private var isStandaloneSceneB: Bool {

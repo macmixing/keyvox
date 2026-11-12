@@ -1,5 +1,6 @@
 import AppKit
 import AVFoundation
+import Foundation
 import SwiftUI
 
 struct OnboardingSetupScreen: View {
@@ -34,11 +35,11 @@ struct OnboardingSetupScreen: View {
                     LogoBarView(size: 75)
 
                     VStack(spacing: 4) {
-                        Text("Just a few steps...")
+                        Text("Just a few steps...", comment: "Title of the onboarding setup screen.")
                             .font(.appFont(32))
                             .foregroundColor(.white)
 
-                        Text("After this, you may never type again.")
+                        Text("After this, you may never type again.", comment: "Subtitle of the onboarding setup screen.")
                             .font(.appFont(14, variant: .light))
                             .foregroundColor(.secondary)
                     }
@@ -49,13 +50,14 @@ struct OnboardingSetupScreen: View {
                     OnboardingStepRow(
                         isCompleted: downloader.isModelDownloaded,
                         stepNumber: 1,
-                        title: "AI Model Setup",
-                        description: "OpenAI Whisper Base (~190 MB)",
-                        buttonTitle: downloader.isModelDownloaded ? "Ready" : (downloader.isDownloading ? "Downloading..." : "Download"),
+                        title: String(localized: "AI Model Setup", comment: "Title of the onboarding step that downloads the dictation model."),
+                        description: "OpenAI Whisper Base (\(ApproximateDownloadSize.whisperBase))",
+                        buttonTitle: downloader.isModelDownloaded ? String(localized: "Ready", comment: "Button on an onboarding setup step after the step is complete.") : (downloader.isDownloading ? String(localized: "Downloading...", comment: "Button on the onboarding step while the dictation model is downloading.") : String(localized: "Download", comment: "Button on the onboarding step that downloads the dictation model.")),
+                        isActionInProgress: downloader.isDownloading,
                         action: setupModel
                     ) {
                         if downloader.isDownloading {
-                            LabeledProgressBar(progress: downloader.progress, statusText: "Downloading AI model.")
+                            LabeledProgressBar(progress: downloader.progress, statusText: String(localized: "Downloading AI model.", comment: "Progress label on the onboarding step while the dictation model downloads."))
                                 .padding(.top, 8)
                         } else if let error = downloader.errorMessage {
                             Text(error)
@@ -70,18 +72,18 @@ struct OnboardingSetupScreen: View {
                     OnboardingStepRow(
                         isCompleted: microphoneStepController.isMicStepCompleted,
                         stepNumber: 2,
-                        title: "Microphone Access",
-                        description: "KeyVox needs to hear you to transcribe.",
-                        buttonTitle: microphoneStepController.isMicStepCompleted ? "Ready" : "Continue",
+                        title: String(localized: "Microphone Access", comment: "Title of the onboarding step that asks for microphone access."),
+                        description: String(localized: "KeyVox needs to hear you to transcribe.", comment: "Description of the Microphone Access onboarding step. KeyVox is a brand name and stays in English."),
+                        buttonTitle: microphoneStepController.isMicStepCompleted ? String(localized: "Ready", comment: "Button on an onboarding setup step after the step is complete.") : String(localized: "Continue", comment: "Button on the Microphone Access onboarding step."),
                         action: requestMicrophoneAccess
                     )
 
                     OnboardingStepRow(
                         isCompleted: accessibilityAuthorized,
                         stepNumber: 3,
-                        title: "Accessibility Access",
-                        description: "Required to paste text into other apps.",
-                        buttonTitle: accessibilityAuthorized ? "Ready" : "Open Settings",
+                        title: String(localized: "Accessibility Access", comment: "Title of the onboarding step that asks for macOS Accessibility access. Use the name macOS uses for Accessibility in this language."),
+                        description: String(localized: "Required to paste text into other apps.", comment: "Description of the Accessibility Access onboarding step."),
+                        buttonTitle: accessibilityAuthorized ? String(localized: "Ready", comment: "Button on an onboarding setup step after the step is complete.") : String(localized: "Open Settings", comment: "Button on the Accessibility Access onboarding step that opens System Settings. Use the name macOS uses for System Settings in this language."),
                         action: requestAccessibilityAccess
                     )
                 }
@@ -89,7 +91,7 @@ struct OnboardingSetupScreen: View {
 
                 VStack(spacing: 12) {
                     AppActionButton(
-                        title: "Start Using KeyVox",
+                        title: String(localized: "Start Using KeyVox", comment: "Button that finishes onboarding. KeyVox is a brand name and stays in English."),
                         style: .primary,
                         minWidth: 240,
                         fontSize: 18,
@@ -98,7 +100,7 @@ struct OnboardingSetupScreen: View {
                         onComplete()
                     }
 
-                    Text("Complete all steps to proceed")
+                    Text("Complete all steps to proceed", comment: "Hint under the finish button on the onboarding setup screen.")
                         .font(.appFont(11, variant: .light))
                         .foregroundColor(.secondary.opacity(0.5))
                         .opacity(allStepsCompleted ? 0 : 1)
@@ -130,7 +132,7 @@ struct OnboardingSetupScreen: View {
                             .background(Circle().fill(MacAppTheme.cardFill))
                     }
                     .buttonStyle(.plain)
-                    .accessibilityLabel("Back")
+                    .accessibilityLabel(String(localized: "Back", comment: "VoiceOver label for the back button on the onboarding setup screen."))
                     .disabled(microphoneStepController.showMicSelectionPrompt)
 
                     Spacer()
@@ -231,6 +233,7 @@ private struct OnboardingStepRow<Content: View>: View {
     let title: String
     let description: String
     let buttonTitle: String
+    let isActionInProgress: Bool
     let action: @MainActor () -> Void
     let extraContent: Content
 
@@ -240,6 +243,7 @@ private struct OnboardingStepRow<Content: View>: View {
         title: String,
         description: String,
         buttonTitle: String,
+        isActionInProgress: Bool = false,
         action: @escaping @MainActor () -> Void,
         @ViewBuilder extraContent: () -> Content = { EmptyView() }
     ) {
@@ -248,6 +252,7 @@ private struct OnboardingStepRow<Content: View>: View {
         self.title = title
         self.description = description
         self.buttonTitle = buttonTitle
+        self.isActionInProgress = isActionInProgress
         self.action = action
         self.extraContent = extraContent()
     }
@@ -302,6 +307,6 @@ private struct OnboardingStepRow<Content: View>: View {
     }
 
     private var isActionDisabled: Bool {
-        isCompleted || (stepNumber == 1 && buttonTitle == "Downloading...")
+        isCompleted || isActionInProgress
     }
 }

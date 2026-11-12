@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 import KeyVoxStyleRewrite
 
@@ -196,17 +197,17 @@ struct SettingsVibesCard: View {
 
 enum SettingsVibesCardCopy {
     static let cardTitle = "KeyVox Vibes"
-    static let cardSubtitle = "On-device, reversible writing styles for Mac & iOS."
+    static let cardSubtitle = String(localized: "On-device, reversible writing styles for Mac & iOS.", comment: "Subtitle of the KeyVox Vibes card in Settings. Mac and iOS are Apple product names; use Apple's official names in this language.")
     static let pickerAccessibilityLabel = "KeyVox Vibes"
-    static let downloadRequiredStatus = "Install Vibes AI first (~491 MB), then you can use KeyVox Vibes."
-    static let downloadingStatus = "Downloading KeyVox Vibes AI."
-    static let installingStatus = "Installing KeyVox Vibes AI."
-    static let installFailedStatus = "Install failed."
-    static let readyStatus = "KeyVox Vibes AI is installed and ready."
-    static let downloadingAction = "Downloading"
-    static let installingAction = "Installing"
-    static let downloadAction = "Download"
-    static let repairAction = "Repair"
-    static let triggerTip = "Tap the trigger key to apply / undo the current Vibe. Double-tap to cycle Vibes."
-    static let helpAccessibilityLabel = "Learn about KeyVox Vibes"
+    static let downloadRequiredStatus = String(localized: "Install Vibes AI first (\(ApproximateDownloadSize.vibesAI)), then you can use KeyVox Vibes.", comment: "Subtitle of the KeyVox Vibes AI card in Settings before the Vibes model is installed. The placeholder in parentheses is the approximate download size. Vibes AI and KeyVox Vibes are brand names and stay in English.")
+    static let downloadingStatus = String(localized: "Downloading KeyVox Vibes AI.", comment: "Progress label on the KeyVox Vibes AI card in Settings while the Vibes model downloads. KeyVox Vibes AI is a brand name and stays in English.")
+    static let installingStatus = String(localized: "Installing KeyVox Vibes AI.", comment: "Progress label on the KeyVox Vibes AI card in Settings while the Vibes model installs. KeyVox Vibes AI is a brand name and stays in English.")
+    static let installFailedStatus = String(localized: "Install failed.", comment: "Progress label on the KeyVox Vibes AI card in Settings when the Vibes model install fails.")
+    static let readyStatus = String(localized: "KeyVox Vibes AI is installed and ready.", comment: "Subtitle of the KeyVox Vibes AI card in Settings when the Vibes model is installed. KeyVox Vibes AI is a brand name and stays in English.")
+    static let downloadingAction = String(localized: "Downloading", comment: "Disabled button on the KeyVox Vibes card in Settings while the Vibes model downloads.")
+    static let installingAction = String(localized: "Installing", comment: "Disabled button on the KeyVox Vibes card in Settings while the Vibes model installs.")
+    static let downloadAction = String(localized: "Download", comment: "Button on the KeyVox Vibes card in Settings that downloads the Vibes model.")
+    static let repairAction = String(localized: "Repair", comment: "Button on the KeyVox Vibes card in Settings that downloads the Vibes model again after a failed install.")
+    static let triggerTip = String(localized: "Tap the trigger key to apply / undo the current Vibe. Double-tap to cycle Vibes.", comment: "Tip under the KeyVox Vibes card in Settings. Vibe and Vibes are brand names and stay in English.")
+    static let helpAccessibilityLabel = String(localized: "Learn about KeyVox Vibes", comment: "VoiceOver label for the help button on the KeyVox Vibes card in Settings. KeyVox Vibes is a brand name and stays in English.")
 }

@@ -71,13 +71,13 @@ final class AppSettingsStore: ObservableObject {
 
         var displayName: String {
             switch self {
-            case .leftOption: return "Left Option (⌥)"
-            case .rightOption: return "Right Option (⌥)"
-            case .leftCommand: return "Left Command (⌘)"
-            case .rightCommand: return "Right Command (⌘)"
-            case .leftControl: return "Left Control (⌃)"
-            case .rightControl: return "Right Control (⌃)"
-            case .function: return "Fn (Function)"
+            case .leftOption: return String(localized: "Left Option (⌥)", comment: "Dictation trigger key choice in the trigger key picker. Use the name macOS uses for this keyboard key in this language.")
+            case .rightOption: return String(localized: "Right Option (⌥)", comment: "Dictation trigger key choice in the trigger key picker. Use the name macOS uses for this keyboard key in this language.")
+            case .leftCommand: return String(localized: "Left Command (⌘)", comment: "Dictation trigger key choice in the trigger key picker. Use the name macOS uses for this keyboard key in this language.")
+            case .rightCommand: return String(localized: "Right Command (⌘)", comment: "Dictation trigger key choice in the trigger key picker. Use the name macOS uses for this keyboard key in this language.")
+            case .leftControl: return String(localized: "Left Control (⌃)", comment: "Dictation trigger key choice in the trigger key picker. Use the name macOS uses for this keyboard key in this language.")
+            case .rightControl: return String(localized: "Right Control (⌃)", comment: "Dictation trigger key choice in the trigger key picker. Use the name macOS uses for this keyboard key in this language.")
+            case .function: return String(localized: "Fn (Function)", comment: "Dictation trigger key choice in the trigger key picker for the Fn key. Use the name macOS uses for this keyboard key in this language.")
             }
         }
     }

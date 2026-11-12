@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 
 struct OnboardingMicrophonePickerView: View {
@@ -16,24 +17,24 @@ struct OnboardingMicrophonePickerView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             VStack(alignment: .leading, spacing: 8) {
-                Text("Choose Your Microphone")
+                Text("Choose Your Microphone", comment: "Title of the microphone picker shown during onboarding.")
                     .font(.appFont(19))
                     .foregroundColor(.white)
 
                 if microphones.isEmpty {
-                    Text("No microphone detected. Connect one to continue onboarding.")
+                    Text("No microphone detected. Connect one to continue onboarding.", comment: "Message in the onboarding microphone picker when no microphone is connected.")
                         .font(.appFont(12, variant: .light))
                         .foregroundColor(.secondary)
                         .lineSpacing(2)
                 } else {
-                    Text("No built-in microphone was found. Select a default microphone to continue.")
+                    Text("No built-in microphone was found. Select a default microphone to continue.", comment: "Message in the onboarding microphone picker when the Mac has no built-in microphone.")
                         .font(.appFont(12, variant: .light))
                         .foregroundColor(.secondary)
                         .lineSpacing(2)
                 }
             }
 
-            Picker("Microphone", selection: $selectedMicrophoneUID) {
+            Picker(String(localized: "Microphone", comment: "Hidden label of the microphone picker during onboarding, read by VoiceOver."), selection: $selectedMicrophoneUID) {
                 ForEach(microphones) { microphone in
                     Text(microphone.name).tag(microphone.id)
                 }
@@ -45,7 +46,7 @@ struct OnboardingMicrophonePickerView: View {
 
             HStack {
                 AppActionButton(
-                    title: "Use Microphone",
+                    title: String(localized: "Use Microphone", comment: "Button in the onboarding microphone picker that confirms the selected microphone."),
                     style: .primary,
                     minWidth: Layout.actionButtonWidth,
                     isEnabled: canConfirmSelection,

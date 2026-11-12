@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 import KeyVoxCore
 
@@ -7,14 +8,14 @@ extension SettingsView {
 
         private var pronunciationLicensesText: String {
             KeyVoxCoreResourceText.pronunciationLicensesText
-                ?? "Pronunciation third-party attributions are bundled in the KeyVoxCore package resources."
+                ?? String(localized: "Pronunciation third-party attributions are bundled in the KeyVoxCore package resources.", comment: "Fallback text in the Legal & Licenses window in Settings when the pronunciation data attributions cannot be loaded. KeyVoxCore is a package name and stays in English.")
         }
 
         private var projectLicenseText: String {
             bundledText(
                 fileName: "LICENSE",
                 fileExtension: "md",
-                fallback: "Unable to load bundled project license."
+                fallback: String(localized: "Unable to load bundled project license.", comment: "Fallback text in the Legal & Licenses window in Settings when the KeyVox license file cannot be loaded.")
             )
         }
 
@@ -22,7 +23,7 @@ extension SettingsView {
             bundledText(
                 fileName: "OFL",
                 fileExtension: "txt",
-                fallback: "Unable to load bundled OFL text."
+                fallback: String(localized: "Unable to load bundled OFL text.", comment: "Fallback text in the Legal & Licenses window in Settings when the font license file cannot be loaded. OFL is the SIL Open Font License and stays as written.")
             )
         }
 
@@ -30,7 +31,7 @@ extension SettingsView {
             bundledText(
                 fileName: "THIRD_PARTY_NOTICES",
                 fileExtension: "md",
-                fallback: "Unable to load bundled third-party notices."
+                fallback: String(localized: "Unable to load bundled third-party notices.", comment: "Fallback text in the Legal & Licenses window in Settings when the third-party notices file cannot be loaded.")
             )
         }
 
@@ -64,7 +65,7 @@ extension SettingsView {
                 VStack(spacing: 0) {
                     // Header
                     HStack {
-                        Text("Legal & Licenses")
+                        Text("Legal & Licenses", comment: "Title of the Legal & Licenses window in Settings.")
                             .font(.appFont(18))
                             .foregroundColor(MacAppTheme.accent)
                         Spacer()
@@ -108,7 +109,7 @@ extension SettingsView {
                             )
                             
                             LicenseGroup(
-                                title: "OpenAI Whisper Model",
+                                title: String(localized: "OpenAI Whisper Model", comment: "Section title in the Legal & Licenses window in Settings for the Whisper speech model license. OpenAI Whisper is a brand name and stays in English."),
                                 copyright: "OpenAI",
                                 license: """
     MIT License
@@ -122,7 +123,7 @@ extension SettingsView {
                             )
 
                             LicenseGroup(
-                                title: "NVIDIA Parakeet Model",
+                                title: String(localized: "NVIDIA Parakeet Model", comment: "Section title in the Legal & Licenses window in Settings for the Parakeet speech model license. NVIDIA Parakeet is a brand name and stays in English."),
                                 copyright: "NVIDIA, with Apple-platform Core ML distribution via FluidInference",
                                 license: """
     KeyVox optionally downloads Core ML artifacts derived from NVIDIA's `parakeet-tdt-0.6b-v3` multilingual automatic speech recognition model.
@@ -136,20 +137,20 @@ extension SettingsView {
                             )
                             
                             LicenseGroup(
-                                title: "Kanit Font",
+                                title: String(localized: "Kanit Font", comment: "Section title in the Legal & Licenses window in Settings for the Kanit font license. Kanit is a font name and stays in English."),
                                 copyright: "Copyright 2015 Cadson Demak",
                                 license: oflText
                             )
 
                             LicenseGroup(
-                                title: "Pronunciation Data (CMUdict + SCOWL)",
-                                copyright: "Third-party data attributions",
+                                title: String(localized: "Pronunciation Data (CMUdict + SCOWL)", comment: "Section title in the Legal & Licenses window in Settings for pronunciation data licenses. CMUdict and SCOWL are data set names and stay in English."),
+                                copyright: String(localized: "Third-party data attributions", comment: "Subtitle of the pronunciation data section in the Legal & Licenses window in Settings."),
                                 license: pronunciationLicensesText
                             )
 
                             LicenseGroup(
-                                title: "Third-Party Notices (Authoritative)",
-                                copyright: "Bundled notice index",
+                                title: String(localized: "Third-Party Notices (Authoritative)", comment: "Section title in the Legal & Licenses window in Settings for the full list of third-party notices."),
+                                copyright: String(localized: "Bundled notice index", comment: "Subtitle of the third-party notices section in the Legal & Licenses window in Settings."),
                                 license: thirdPartyNoticesText
                             )
                         }

@@ -38,6 +38,12 @@ enum AppTypography {
 
         return nil
     }
+
+    /// Kanit has no narrow no-break space (U+202F), which French formatting puts between a number and its unit
+    /// and between thousands groups. The regular no-break space keeps the value together without a wide fallback gap.
+    nonisolated static func fontSupportedSpacing(_ text: String) -> String {
+        text.replacingOccurrences(of: "\u{202F}", with: "\u{00A0}")
+    }
 }
 
 extension Font {
@@ -98,7 +104,7 @@ struct LabeledProgressBar: View {
                     .foregroundColor(.secondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
 
-                Text("\(Int((progress * 100).rounded()))%")
+                Text(progress.formatted(.percent.precision(.fractionLength(0)).rounded(rule: .toNearestOrAwayFromZero)))
                     .font(.appFont(12))
                     .foregroundStyle(.yellow)
             }

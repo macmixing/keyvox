@@ -18,12 +18,12 @@ extension SettingsView {
             VStack(alignment: .leading, spacing: 14) {
 
                 VStack(alignment: .center, spacing: -4) {
-                    Text(weeklyWordStatsStore.combinedWordCount.formatted())
+                    Text(verbatim: AppTypography.fontSupportedSpacing(weeklyWordStatsStore.combinedWordCount.formatted()))
                         .font(.appFont(65))
                         .fontWeight(.heavy)
                         .foregroundColor(.yellow)
 
-                    Text("Words this week!")
+                    Text("Words this week!", comment: "Label under the large weekly word count on the Home page in Settings. The number is shown separately above this label.")
                         .font(.appFont(16))
                         .foregroundColor(.white)
                 }

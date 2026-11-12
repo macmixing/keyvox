@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 
 struct ConfirmDeletePromptConfig {
@@ -9,8 +10,8 @@ struct ConfirmDeletePromptConfig {
     init(
         title: String,
         message: String,
-        confirmButtonTitle: String = "Delete",
-        cancelButtonTitle: String = "Cancel"
+        confirmButtonTitle: String = String(localized: "Delete", comment: "Default confirm button in a delete confirmation prompt."),
+        cancelButtonTitle: String = String(localized: "Cancel", comment: "Default cancel button in a delete confirmation prompt.")
     ) {
         self.title = title
         self.message = message

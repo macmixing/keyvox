@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 
 struct WarningOverlayView: View {
@@ -25,13 +26,13 @@ struct WarningOverlayView: View {
 
             HStack(spacing: 8) {
                 if kind.systemSettingsURL != nil {
-                    Button("System Settings", action: openSystemSettings)
+                    Button(String(localized: "System Settings", comment: "Button on the warning panel that opens macOS System Settings. Use the name macOS uses for System Settings in this language."), action: openSystemSettings)
                         .buttonStyle(.bordered)
                         .controlSize(.small)
                 }
 
                 if kind.showsKeyVoxSettingsButton {
-                    Button("KeyVox Settings", action: openKeyVoxSettings)
+                    Button(String(localized: "KeyVox Settings", comment: "Button on the warning panel that opens the KeyVox settings window. KeyVox is a brand name and stays in English."), action: openKeyVoxSettings)
                         .buttonStyle(.borderedProminent)
                         .tint(.indigo)
                         .controlSize(.small)

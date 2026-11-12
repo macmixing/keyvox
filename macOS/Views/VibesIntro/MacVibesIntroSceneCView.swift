@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 
 struct MacVibesIntroSceneCView: View {
@@ -11,8 +12,8 @@ struct MacVibesIntroSceneCView: View {
     private static let downloadDetailID = 0
 
     private static let details: [Detail] = [
-        Detail(id: Self.downloadDetailID, icon: "arrow.down.circle.fill", title: "Download Vibes AI", subtitle: "Install the local model that powers KeyVox Vibes."),
-        Detail(id: 1, icon: "text.bubble.fill", title: "Pick a Style", subtitle: "Choose Casual, Polished, or Chill before you dictate.")
+        Detail(id: Self.downloadDetailID, icon: "arrow.down.circle.fill", title: String(localized: "Download Vibes AI", comment: "Step title on the setup page of the KeyVox Vibes introduction window. Vibes AI is a brand name and stays in English."), subtitle: String(localized: "Install the local model that powers KeyVox Vibes.", comment: "Step description on the setup page of the KeyVox Vibes introduction window. KeyVox Vibes is a brand name and stays in English.")),
+        Detail(id: 1, icon: "text.bubble.fill", title: String(localized: "Pick a Style", comment: "Step title on the setup page of the KeyVox Vibes introduction window."), subtitle: String(localized: "Choose Casual, Polished, or Chill before you dictate.", comment: "Step description on the setup page of the KeyVox Vibes introduction window. Casual, Polished and Chill are brand names of writing styles and stay in English."))
     ]
 
     let isVisible: Bool
@@ -38,14 +39,14 @@ struct MacVibesIntroSceneCView: View {
                 .scaleEffect(logoScale)
                 .padding(.bottom, 12)
 
-            Text("Get Vibes Ready")
+            Text("Get Vibes Ready", comment: "Title of the setup page of the KeyVox Vibes introduction window. Vibes is a brand name and stays in English.")
                 .font(.appFont(31, variant: .medium))
                 .foregroundStyle(.white)
                 .multilineTextAlignment(.center)
                 .opacity(titleOpacity)
                 .padding(.bottom, 6)
 
-            Text("Download Vibes AI once, then try writing styles locally.")
+            Text("Download Vibes AI once, then try writing styles locally.", comment: "Subtitle of the setup page of the KeyVox Vibes introduction window. Vibes AI is a brand name and stays in English.")
                 .font(.appFont(17, variant: .light))
                 .foregroundStyle(.white.opacity(0.78))
                 .multilineTextAlignment(.center)
@@ -98,12 +99,12 @@ struct MacVibesIntroSceneCView: View {
                 .font(.system(size: 18, weight: .medium))
                 .foregroundStyle(isReadyDownloadDetail ? .green : .yellow)
 
-            Text(isReadyDownloadDetail ? "Vibes AI is Ready" : detail.title)
+            Text(isReadyDownloadDetail ? String(localized: "Vibes AI is Ready", comment: "Step title on the setup page of the KeyVox Vibes introduction window after the Vibes model is installed. Vibes AI is a brand name and stays in English.") : detail.title)
                 .font(.appFont(16, variant: .medium))
                 .foregroundStyle(.white)
                 .multilineTextAlignment(.center)
 
-            Text(isReadyDownloadDetail ? "You're all set to experience a new kind of vibe." : detail.subtitle)
+            Text(isReadyDownloadDetail ? String(localized: "You're all set to experience a new kind of vibe.", comment: "Step description on the setup page of the KeyVox Vibes introduction window after the Vibes model is installed.") : detail.subtitle)
                 .font(.appFont(15, variant: .light))
                 .foregroundStyle(.white.opacity(0.55))
                 .multilineTextAlignment(.center)
@@ -220,7 +221,7 @@ private struct MacVibesIntroInstallCard: View {
                             .foregroundStyle(.yellow)
                     }
 
-                Text("Install Vibes AI")
+                Text("Install Vibes AI", comment: "Title of the install row on the setup page of the KeyVox Vibes introduction window. Vibes AI is a brand name and stays in English.")
                     .font(.appFont(15, variant: .medium))
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -266,15 +267,15 @@ private struct MacVibesIntroInstallCard: View {
     private var statusText: String {
         switch state {
         case .notInstalled:
-            return "Install Vibes AI first (~491 MB), then you can use KeyVox Vibes."
+            return String(localized: "Install Vibes AI first (\(ApproximateDownloadSize.vibesAI)), then you can use KeyVox Vibes.", comment: "Status on the setup page of the KeyVox Vibes introduction window before the Vibes model is installed. The placeholder in parentheses is the approximate download size. Vibes AI and KeyVox Vibes are brand names and stay in English.")
         case .downloading:
-            return "Downloading KeyVox Vibes AI."
+            return String(localized: "Downloading KeyVox Vibes AI.", comment: "Progress label on the setup page of the KeyVox Vibes introduction window while the Vibes model downloads. KeyVox Vibes AI is a brand name and stays in English.")
         case .installing:
-            return "Installing KeyVox Vibes AI."
+            return String(localized: "Installing KeyVox Vibes AI.", comment: "Progress label on the setup page of the KeyVox Vibes introduction window while the Vibes model installs. KeyVox Vibes AI is a brand name and stays in English.")
         case .ready:
-            return "KeyVox Vibes AI is installed and ready."
+            return String(localized: "KeyVox Vibes AI is installed and ready.", comment: "Status on the setup page of the KeyVox Vibes introduction window when the Vibes model is installed. KeyVox Vibes AI is a brand name and stays in English.")
         case .failed:
-            return "Install failed."
+            return String(localized: "Install failed.", comment: "Status on the setup page of the KeyVox Vibes introduction window when the Vibes model install fails.")
         }
     }
 
@@ -297,9 +298,9 @@ private struct MacVibesIntroInstallCard: View {
     private var actionTitle: String? {
         switch state {
         case .notInstalled:
-            return "Download"
+            return String(localized: "Download", comment: "Button on the setup page of the KeyVox Vibes introduction window that downloads the Vibes model.")
         case .failed:
-            return "Repair"
+            return String(localized: "Repair", comment: "Button on the setup page of the KeyVox Vibes introduction window that downloads the Vibes model again after a failed install.")
         case .downloading, .installing, .ready:
             return nil
         }

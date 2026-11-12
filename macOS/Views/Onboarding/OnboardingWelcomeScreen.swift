@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 
 struct OnboardingWelcomeScreen: View {
@@ -23,14 +24,14 @@ struct OnboardingWelcomeScreen: View {
                     .padding(.bottom, 32)
                     .offset(y: logoCenterOffset)
 
-                Text("Welcome to KeyVox")
+                Text("Welcome to KeyVox", comment: "Title of the onboarding welcome screen. KeyVox is a brand name and stays in English.")
                     .font(.appFont(34))
                     .foregroundStyle(.white)
                     .multilineTextAlignment(.center)
                     .padding(.bottom, 8)
                     .opacity(titleOpacity)
 
-                Text("Free Your Voice")
+                Text("Free Your Voice", comment: "Tagline on the onboarding welcome screen.")
                     .font(.appFont(22, variant: .light))
                     .foregroundStyle(.white.opacity(0.8))
                     .multilineTextAlignment(.center)
@@ -39,7 +40,7 @@ struct OnboardingWelcomeScreen: View {
                 Spacer()
 
                 AppActionButton(
-                    title: "Let's go",
+                    title: String(localized: "Let's go", comment: "Button on the onboarding welcome screen that starts setup."),
                     style: .primary,
                     minWidth: 240,
                     fontSize: 20,

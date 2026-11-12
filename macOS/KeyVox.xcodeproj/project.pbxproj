@@ -39,6 +39,8 @@
 		8E6D05E42F3C524B003BD458 /* UIComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D05D52F3C51D6003BD458 /* UIComponents.swift */; };
 		8E70C6ED2F623AFA00E9E555 /* updater.sh in Resources */ = {isa = PBXBuildFile; fileRef = 8E70C6EC2F623AFA00E9E555 /* updater.sh */; };
 		8E927F652F3C532800C071B3 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8E6D05D02F3C51D6003BD458 /* Assets.xcassets */; };
+		AC5000112F70000100AA0001 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = AC5000012F70000100AA0001 /* Localizable.xcstrings */; };
+		AC5000122F70000100AA0001 /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = AC5000022F70000100AA0001 /* InfoPlist.xcstrings */; };
 		8E927F662F3C532D00C071B3 /* Kanit-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8E6D05D12F3C51D6003BD458 /* Kanit-Medium.ttf */; };
 		8E927F6B2F3C7AA000C071B3 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 8E927F6A2F3C7AA000C071B3 /* Credits.rtf */; };
 		8E95400B2F6AA90B00B1F3B5 /* LICENSE.md in Resources */ = {isa = PBXBuildFile; fileRef = 8E9540092F6AA90B00B1F3B5 /* LICENSE.md */; };
@@ -236,6 +238,8 @@
 		F30000022FC2000100AA0001 /* WindowManager+Updates.swift in Sources */ = {isa = PBXBuildFile; fileRef = F30000012FC2000100AA0001 /* WindowManager+Updates.swift */; };
 		F30000042FC2000100AA0001 /* AppUpdateProgressBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = F30000032FC2000100AA0001 /* AppUpdateProgressBar.swift */; };
 		1D7566ED92B74A8AA4ABFE5B /* DictationModelID+ApproximateSize.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42065B726E89429E992055DA /* DictationModelID+ApproximateSize.swift */; };
+		AC5000132F70000100AA0001 /* ApproximateDownloadSize.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC5000032F70000100AA0001 /* ApproximateDownloadSize.swift */; };
+		AC5000142F70000100AA0001 /* MenuPickerWidth.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC5000042F70000100AA0001 /* MenuPickerWidth.swift */; };
 		BD23033EAD444273A0EF48D5 /* DictationModelInstallPhase+StatusText.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5BC8425582D44589C12FC17 /* DictationModelInstallPhase+StatusText.swift */; };
 		F30000072FC2000100AA0001 /* AppReleaseInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = F30000062FC2000100AA0001 /* AppReleaseInfo.swift */; };
 		F30000092FC2000100AA0001 /* AppUpdateManifestLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = F30000082FC2000100AA0001 /* AppUpdateManifestLoader.swift */; };
@@ -301,6 +305,8 @@
 		8E6D05CC2F3C51D6003BD458 /* KeyboardMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardMonitor.swift; sourceTree = "<group>"; };
 		8E6D05CD2F3C51D6003BD458 /* ModelDownloader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelDownloader.swift; sourceTree = "<group>"; };
 		8E6D05D02F3C51D6003BD458 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		AC5000012F70000100AA0001 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
+		AC5000022F70000100AA0001 /* InfoPlist.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = InfoPlist.xcstrings; sourceTree = "<group>"; };
 		8E6D05D12F3C51D6003BD458 /* Kanit-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Kanit-Medium.ttf"; sourceTree = "<group>"; };
 		8E6D05D52F3C51D6003BD458 /* UIComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIComponents.swift; sourceTree = "<group>"; };
 		8E6D05D72F3C51D6003BD458 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
@@ -496,6 +502,8 @@
 		F30000012FC2000100AA0001 /* WindowManager+Updates.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WindowManager+Updates.swift"; sourceTree = "<group>"; };
 		F30000032FC2000100AA0001 /* AppUpdateProgressBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateProgressBar.swift; sourceTree = "<group>"; };
 		42065B726E89429E992055DA /* DictationModelID+ApproximateSize.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DictationModelID+ApproximateSize.swift"; sourceTree = "<group>"; };
+		AC5000032F70000100AA0001 /* ApproximateDownloadSize.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApproximateDownloadSize.swift; sourceTree = "<group>"; };
+		AC5000042F70000100AA0001 /* MenuPickerWidth.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuPickerWidth.swift; sourceTree = "<group>"; };
 		A5BC8425582D44589C12FC17 /* DictationModelInstallPhase+StatusText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DictationModelInstallPhase+StatusText.swift"; sourceTree = "<group>"; };
 		F30000062FC2000100AA0001 /* AppReleaseInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppReleaseInfo.swift; sourceTree = "<group>"; };
 		F30000082FC2000100AA0001 /* AppUpdateManifestLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateManifestLoader.swift; sourceTree = "<group>"; };
@@ -648,6 +656,8 @@
 				AA1000012F50000100AA0001 /* OFL.txt */,
 				8E6D05D02F3C51D6003BD458 /* Assets.xcassets */,
 				8E6D05D12F3C51D6003BD458 /* Kanit-Medium.ttf */,
+				AC5000012F70000100AA0001 /* Localizable.xcstrings */,
+				AC5000022F70000100AA0001 /* InfoPlist.xcstrings */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -669,6 +679,8 @@
 				F30000372FC2000100AA0001 /* AppActionButton.swift */,
 				F30000032FC2000100AA0001 /* AppUpdateProgressBar.swift */,
 				42065B726E89429E992055DA /* DictationModelID+ApproximateSize.swift */,
+				AC5000032F70000100AA0001 /* ApproximateDownloadSize.swift */,
+				AC5000042F70000100AA0001 /* MenuPickerWidth.swift */,
 				A5BC8425582D44589C12FC17 /* DictationModelInstallPhase+StatusText.swift */,
 				8F2201072F44010000BB2201 /* ConfirmDeletePromptView.swift */,
 				F20000032FB0000100AA0001 /* LogoBarView.swift */,
@@ -1174,6 +1186,9 @@
 			knownRegions = (
 				en,
 				Base,
+				de,
+				es,
+				fr,
 			);
 			mainGroup = 8EE004512F3BA59900BBAB30;
 			packageReferences = (
@@ -1215,6 +1230,8 @@
 				8E95400B2F6AA90B00B1F3B5 /* LICENSE.md in Resources */,
 				8E95400C2F6AA90B00B1F3B5 /* THIRD_PARTY_NOTICES.md in Resources */,
 				8ED2E7C72F7ACF4900256F9E /* keyvox.icon in Resources */,
+				AC5000112F70000100AA0001 /* Localizable.xcstrings in Resources */,
+				AC5000122F70000100AA0001 /* InfoPlist.xcstrings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1246,6 +1263,8 @@
 				F30000382FC2000100AA0001 /* AppActionButton.swift in Sources */,
 				F30000042FC2000100AA0001 /* AppUpdateProgressBar.swift in Sources */,
 				1D7566ED92B74A8AA4ABFE5B /* DictationModelID+ApproximateSize.swift in Sources */,
+				AC5000132F70000100AA0001 /* ApproximateDownloadSize.swift in Sources */,
+				AC5000142F70000100AA0001 /* MenuPickerWidth.swift in Sources */,
 				BD23033EAD444273A0EF48D5 /* DictationModelInstallPhase+StatusText.swift in Sources */,
 				F30000072FC2000100AA0001 /* AppReleaseInfo.swift in Sources */,
 				F30000092FC2000100AA0001 /* AppUpdateManifestLoader.swift in Sources */,

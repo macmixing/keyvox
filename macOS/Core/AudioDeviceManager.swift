@@ -162,7 +162,7 @@ final class AudioDeviceManager: ObservableObject {
         // Preserve a missing persisted selection so users can see why the old choice is no longer active.
         let unavailable = MicrophoneOption(
             id: settingsStore.selectedMicrophoneUID,
-            name: "Previously Selected Microphone (Unavailable)",
+            name: String(localized: "Previously Selected Microphone (Unavailable)", comment: "Microphone picker entry for a microphone that was chosen before but is no longer connected."),
             kind: .wiredOrOther,
             isAvailable: false
         )

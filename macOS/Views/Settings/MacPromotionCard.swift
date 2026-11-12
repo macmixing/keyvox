@@ -1,9 +1,15 @@
 import AppKit
+import Foundation
 import KeyVoxPromotions
 import SwiftUI
 
 struct MacPromotionCard: View {
     let campaign: PromotionCampaign
+
+    /// The campaign wording in the language the app is showing.
+    private var copy: PromotionCopy {
+        campaign.copy(forLanguage: Bundle.main.preferredLocalizations.first)
+    }
 
     var body: some View {
         SettingsCard(
@@ -14,7 +20,7 @@ struct MacPromotionCard: View {
                 HStack(alignment: .center, spacing: 12) {
                     iconView
 
-                    Text(campaign.title)
+                    Text(copy.title)
                         .font(.appFont(16))
                         .lineLimit(1)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -25,13 +31,13 @@ struct MacPromotionCard: View {
                 }
 
                 HStack(alignment: .center, spacing: 16) {
-                    Text(campaign.message)
+                    Text(copy.message)
                         .font(.appFont(13, variant: .light))
                         .foregroundColor(.primary)
                         .lineSpacing(2)
                         .frame(maxWidth: .infinity, alignment: .leading)
 
-                    if let buttonTitle = campaign.buttonTitle,
+                    if let buttonTitle = copy.buttonTitle,
                        let action = campaign.action {
                         AppActionButton(
                             title: buttonTitle,
@@ -87,8 +93,8 @@ struct MacPromotionCard: View {
     private func shareButton(for sharing: PromotionSharing) -> some View {
         ShareLink(
             item: sharing.url,
-            subject: Text(sharing.title ?? campaign.title),
-            message: Text(campaign.message)
+            subject: Text(copy.sharingTitle ?? copy.title),
+            message: Text(copy.message)
         ) {
             Image(systemName: "square.and.arrow.up")
                 .font(.system(size: 14, weight: .semibold))
@@ -97,6 +103,6 @@ struct MacPromotionCard: View {
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("Share \(campaign.title)")
+        .accessibilityLabel(String(localized: "Share \(copy.title)", comment: "VoiceOver label for the share button on a promotion card in Settings. %@ is the promotion's title."))
     }
 }
