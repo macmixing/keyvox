@@ -1520,7 +1520,7 @@ Packages/
   - Includes a top-right dismiss control for returning to the Home surface without waiting for an external host-app switch.
   - Lays out through `ReturnToHostAdaptiveLayout`.
 - `KeyVox iOS/Views/ReturnToHostAdaptiveLayout.swift`
-  - Chooses the return-to-app and playback-preparation layout from the whole display's shape: text beside the video on a display wider than it is tall, the usual layout with the video held at full size or else the tighter layout on a squat display, and otherwise the usual layout.
+  - Chooses the return-to-app and playback-preparation layout from the whole display's shape: text beside the video on a display wider than it is tall, the usual layout with the video held at full size or else the tighter layout on a squat display, and otherwise the usual layout; every layout holds its text at the standard size.
   - Locates the fold from the active top-to-bottom division the system reports, or else the middle of the display.
 - `KeyVox iOS/Views/ReturnToHostLayoutMetrics.swift`
   - Spacing, text size, video sizing, state-text reservation, and fold position for the usual, full-size, tighter, and side-by-side return-to-app layouts.
