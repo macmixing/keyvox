@@ -1,4 +1,5 @@
 import ActivityKit
+import Foundation
 import WidgetKit
 import SwiftUI
 import AppIntents
@@ -40,7 +41,7 @@ struct KeyVox_WidgetLiveActivity: Widget {
 
 private struct KeyVoxExpandedDynamicIslandTitleView: View {
     var body: some View {
-        Text("KeyVox")
+        Text(verbatim: "KeyVox")
             .font(.custom("Kanit-Medium", size: 23))
             .foregroundStyle(.primary)
             .lineLimit(1)
@@ -76,7 +77,7 @@ private struct KeyVoxDynamicIslandBrandView: View {
         HStack(spacing: 6) {
             KeyVoxDynamicIslandLogo()
 
-            Text("KeyVox")
+            Text(verbatim: "KeyVox")
                 .font(.custom("Kanit-Medium", size: 22))
                 .foregroundStyle(.primary)
         }
@@ -106,7 +107,7 @@ private struct KeyVoxSessionStopButton: View {
                 .padding(10)
         }
         .buttonStyle(KeyVoxLiveActivityButtonStyle())
-        .accessibilityLabel("End dictation session")
+        .accessibilityLabel(String(localized: "End dictation session", comment: "VoiceOver label for the power button in the KeyVox Live Activity that ends the dictation session."))
     }
 }
 
@@ -121,8 +122,7 @@ private struct KeyVoxLiveActivityButtonStyle: ButtonStyle {
 }
 
 private func wordsThisWeekLabel(for weeklyWordCount: Int) -> String {
-    let wordLabel = weeklyWordCount == 1 ? "word" : "words"
-    return "\(weeklyWordCount.formatted()) \(wordLabel) this week!"
+    String(localized: "\(weeklyWordCount) words this week!", comment: "Live Activity text for the number of words dictated this week. %lld is the word count; use plural forms.")
 }
 
 #Preview("Notification", as: .content, using: KeyVoxSessionLiveActivityAttributes()) {

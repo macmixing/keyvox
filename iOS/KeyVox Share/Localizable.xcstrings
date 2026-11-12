@@ -1,0 +1,52 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "Opening KeyVox" : {
+      "comment" : "Title on the share screen while the KeyVox app opens. KeyVox is a brand name and stays in English.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox wird geöffnet"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Abriendo KeyVox"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ouverture de KeyVox"
+          }
+        }
+      }
+    },
+    "Preparing to speak text" : {
+      "comment" : "Subtitle on the share screen while the shared text is prepared to be read aloud.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Text wird zum Vorlesen vorbereitet"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Preparando el texto para leerlo en voz alta"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Préparation de la lecture du texte"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}
