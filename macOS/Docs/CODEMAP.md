@@ -112,11 +112,13 @@ KeyVox/
 │   │   ├── Components/
 │   │   │   ├── AppActionButton.swift
 │   │   │   ├── AppUpdateProgressBar.swift
+│   │   │   ├── ApproximateDownloadSize.swift
 │   │   │   ├── ConfirmDeletePromptView.swift
 │   │   │   ├── DictionaryFloatingAddButton.swift
 │   │   │   ├── LogoBarView.swift
 │   │   │   ├── MacAppTheme.swift
 │   │   │   ├── MacFormattingPillView.swift
+│   │   │   ├── MenuPickerWidth.swift
 │   │   │   ├── OverlayPillCompletionStroke.swift
 │   │   │   ├── OverlayPillMetrics.swift
 │   │   │   ├── OverlayPillOverlay.swift
@@ -169,7 +171,8 @@ KeyVox/
 │   │       ├── Audio/
 │   │       └── Resources/
 │   │           ├── Pronunciation/
-│   │           └── FileTypes/
+│   │           ├── FileTypes/
+│   │           └── Localizable.xcstrings
 │   ├── KeyVoxTextComposition/
 │   │   ├── Sources/KeyVoxTextComposition/
 │   │   └── Tests/KeyVoxTextCompositionTests/
@@ -246,6 +249,7 @@ KeyVox/
 │   │       │       ├── RepairMatching.swift
 │   │       │       ├── RepairNumberParsing.swift
 │   │       │       └── RepairTokenization.swift
+│   │       ├── Resources/Localizable.xcstrings
 │   │       ├── StyleRewriteDictationConfiguration.swift
 │   │       ├── StyleRewritePromptLeakGuard.swift
 │   │       └── StyleRewriteTextTransformer.swift
@@ -442,6 +446,10 @@ KeyVox/
   - Keeps the dropdown visible but disabled on Auto Detect for Parakeet and owns the nearby FAQ guidance copy.
 - `Views/Settings/SettingsView+Legal.swift`
   - Bundled project/license/OFL/pronunciation/third-party notices viewer presented from Settings.
+- `Views/Components/ApproximateDownloadSize.swift`
+  - Holds the approximate Whisper, Parakeet, and Vibes AI download sizes and writes them with the user's language's byte units; `DictationModelID+ApproximateSize.swift` reads it.
+- `Views/Components/MenuPickerWidth.swift`
+  - Keeps a menu picker at its usual width and widens it only when the selected title needs more room; the Trigger Key and dictation Language pickers in Settings use it.
 - `Views/Components/ConfirmDeletePromptView.swift`
   - Reusable destructive confirmation sheet used for dictionary-entry deletion and Vibes AI model deletion.
 - `Views/VibesIntro/MacVibesIntroWindowView.swift`
@@ -724,7 +732,7 @@ KeyVox/
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/DictationLanguage.swift`
   - Shared stable language-code value with an explicit Auto Detect identifier.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/DictationLanguageDisplayNameFormatter.swift`
-  - Produces localized language display names for platform settings surfaces.
+  - Produces localized language display names for platform settings surfaces, starting each with a capital letter because they stand alone in pickers and lists.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/WhisperBaseLanguageCatalog.swift`
   - Derives the Whisper Base picker options from `KeyVoxWhisper.WhisperLanguage` so platform apps do not duplicate language lists.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Parakeet/ParakeetService.swift`

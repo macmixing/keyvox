@@ -314,6 +314,7 @@ Both dictation providers use the shared `KeyVoxVoiceActivity` analyzer after mac
 - `PromotionCenter.currentCampaign` is the observable app-facing value. Views render that state and do not duplicate campaign selection rules.
 - A refresh updates the repository cache for a later center initialization; the current center keeps the campaign selected from its startup manifest.
 - Preview configuration uses a separate defaults namespace so preview selection does not mutate production campaign state.
+- Campaigns may carry `localizations` keyed by language code. `MacPromotionCard` shows `PromotionCampaign.copy(forLanguage:)` for the app's current language and falls back to the base wording; app versions that predate the field ignore it.
 
 ## Update Feed and Release Checks
 
@@ -386,6 +387,22 @@ Maintainers can override the update feed locally without changing tracked defaul
   `Tools/UpdateFeed/configure_local_feed.sh`
 - Example template:
   `Tools/UpdateFeed/update-feed.override.example.json`
+
+## Localization Contract
+
+KeyVox for Mac ships in English (the development language), German (`de`), Spanish (`es`), and French (`fr`). The project's `knownRegions` lists all four.
+
+- `Resources/Localizable.xcstrings` holds the app text and `Resources/InfoPlist.xcstrings` holds the microphone permission prompt. The Mac project does not use synchronized folders, so both catalogs are registered as app target resources in `KeyVox.xcodeproj`.
+- Shared package text comes from the package catalogs described in the iOS engineering notes (KeyVoxCore, KeyVoxStyleRewrite, KeyVoxWhisper, KeyVoxParakeet).
+- SwiftUI `Text` literals carry a translator `comment:`; every other user-visible string, including `*Copy` enum values, menu items, overlay pill text, warnings, update prompts, and `.help` tooltips, is created with `String(localized:comment:)`. Copy stays beside the view that renders it.
+- Identifiers, raw values, keys, logs, menu titles matched in other apps (`PasteMenuScanner`), and text compared in code are never localized. `SettingsTab.title` and `DictionarySortMode.title` carry translated names while their raw values stay identifiers, and the onboarding model step disables its button from download state, not from its title.
+- Brand names stay English (KeyVox, KeyVox Vibes, Vibes, Polished, Casual, Chill, Whisper, Parakeet). License text in the Legal window stays English.
+- Mac-only system names use the macOS wording in each language: the catalog entry for the Accessibility step's Open Settings button names System Settings.
+- Percentages use `.formatted(.percent…)` so spacing follows the user's language. Approximate download sizes live in `ApproximateDownloadSize` and are written with `.formatted(.byteCount(style: .file, allowedUnits: .mb))`, so units follow the user's language.
+- Settings menu pickers that show a translated selection use `menuPickerWidth(fitting:minimumWidth:)`, so they keep their 160-point width and widen only when the selected title needs more room. Single-line titles that must not wrap, such as sidebar items and the first dictation title, stay on one line instead of truncating.
+- Kanit has no narrow no-break space (U+202F), which French number and file-size formatting uses. Formatted counts and sizes shown in the app font pass through `AppTypography.fontSupportedSpacing(_:)`, which swaps in the regular no-break space.
+- Vibes rewrites English dictation only. `StyleRewriteStyle.languageSupportNote` is the single source of the English-only note, shown in the Style examples and on the first page of the Vibes introduction window.
+- Command-line `xcodebuild` does not update catalogs; run `xcrun xcstringstool sync <catalog> --stringsdata <files>` with the app target's `Objects-normal` output. Translations not reviewed by a native speaker are stored with the `needs_review` state and still ship.
 
 ## Testing and Quality Gates
 
