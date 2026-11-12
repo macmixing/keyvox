@@ -11,6 +11,7 @@ public struct PromotionCampaign: Codable, Equatable, Identifiable, Sendable {
     public let sharing: PromotionSharing?
     public let startsAt: Date?
     public let endsAt: Date?
+    public let localizations: [String: PromotionLocalizedCopy]?
 
     public init(
         id: String,
@@ -22,7 +23,8 @@ public struct PromotionCampaign: Codable, Equatable, Identifiable, Sendable {
         action: PromotionAction? = nil,
         sharing: PromotionSharing? = nil,
         startsAt: Date? = nil,
-        endsAt: Date? = nil
+        endsAt: Date? = nil,
+        localizations: [String: PromotionLocalizedCopy]? = nil
     ) {
         self.id = id
         self.targets = targets
@@ -34,5 +36,6 @@ public struct PromotionCampaign: Codable, Equatable, Identifiable, Sendable {
         self.sharing = sharing
         self.startsAt = startsAt
         self.endsAt = endsAt
+        self.localizations = localizations
     }
 }
