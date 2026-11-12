@@ -1,0 +1,190 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "Auto Detect" : {
+      "comment" : "Dictation language option that lets the dictation model detect the spoken language automatically.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Automatisch erkennen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Detección automática"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Détection automatique"
+          }
+        }
+      }
+    },
+    "Couldn't save dictionary to disk. Please try again." : {
+      "comment" : "Dictionary error shown when saving the dictionary fails.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Das Wörterbuch konnte nicht gespeichert werden. Bitte versuche es erneut."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No se ha podido guardar el diccionario en el disco. Inténtalo de nuevo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Impossible d’enregistrer le dictionnaire sur le disque. Veuillez réessayer."
+          }
+        }
+      }
+    },
+    "Dictionary data was corrupted and reset." : {
+      "comment" : "Dictionary warning shown when the dictionary file was unreadable and had to be emptied.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Die Wörterbuchdaten waren beschädigt und wurden zurückgesetzt."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Los datos del diccionario estaban dañados y se han restablecido."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Les données du dictionnaire étaient corrompues et ont été réinitialisées."
+          }
+        }
+      }
+    },
+    "Dictionary was recovered from backup after a file issue." : {
+      "comment" : "Dictionary warning shown when the dictionary was restored from its backup copy.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Das Wörterbuch wurde nach einem Dateiproblem aus dem Backup wiederhergestellt."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "El diccionario se ha recuperado de una copia de seguridad tras un problema con el archivo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Le dictionnaire a été restauré à partir d’une sauvegarde après un problème de fichier."
+          }
+        }
+      }
+    },
+    "Please enter a word or phrase." : {
+      "comment" : "Dictionary error shown when the user tries to save an empty entry.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Bitte gib ein Wort oder eine Phrase ein."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Introduce una palabra o frase."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Veuillez saisir un mot ou une expression."
+          }
+        }
+      }
+    },
+    "That word is already in your dictionary." : {
+      "comment" : "Dictionary error shown when the user adds a word that already exists.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dieses Wort ist bereits in deinem Wörterbuch."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Esa palabra ya está en tu diccionario."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ce mot figure déjà dans votre dictionnaire."
+          }
+        }
+      }
+    },
+    "The synced dictionary data was invalid and could not be applied." : {
+      "comment" : "Dictionary error shown when dictionary data synced from another device cannot be used.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Die synchronisierten Wörterbuchdaten waren ungültig und konnten nicht übernommen werden."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Los datos del diccionario sincronizados no eran válidos y no se han podido aplicar."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Les données du dictionnaire synchronisées n’étaient pas valides et n’ont pas pu être appliquées."
+          }
+        }
+      }
+    },
+    "current device" : {
+      "comment" : "Stands in for the microphone name inside microphone warnings when the name is unknown, as in \"Your current device mic may be muted.\" Keep it lowercase so it fits mid-sentence.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "aktuelles Gerät"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "actual"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "de l’appareil actuel"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

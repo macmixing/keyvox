@@ -6,7 +6,7 @@ public enum DictationLanguageDisplayNameFormatter {
         locale: Locale = .current
     ) -> String {
         guard !language.isAutomatic else {
-            return "Auto Detect"
+            return NSLocalizedString("Auto Detect", bundle: KeyVoxCoreResources.bundle, comment: "Dictation language option that lets the dictation model detect the spoken language automatically.")
         }
 
         return locale.localizedString(forLanguageCode: language.rawValue)
