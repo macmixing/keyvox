@@ -31,9 +31,6 @@
       "comment" : "Approximate voice download size shown right after the install status sentence on the KeyVox Speak setup card; keep the leading space.",
       "shouldTranslate" : false
     },
-    "%@" : {
-      "shouldTranslate" : false
-    },
     "%@ %@" : {
       "comment" : "Dictation model install status. The first placeholder is the current install step and the second is the percent complete.",
       "localizations" : {
@@ -1359,29 +1356,6 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Fermer"
-          }
-        }
-      }
-    },
-    "Compact Keys" : {
-      "comment" : "Keyboard settings toggle for a shorter keyboard.",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Kompakte Tasten"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Teclas compactas"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Touches compactes"
           }
         }
       }
@@ -5162,7 +5136,7 @@
       }
     },
     "Long-press #+= to use a shorter keyboard." : {
-      "comment" : "Description under the Compact Keys toggle. #+= is the keyboard's symbols key label and stays as written.",
+      "comment" : "Description under the Compact Keys toggle. Compact Keys is a KeyVox feature name and stays in English. #+= is the keyboard's symbols key label and stays as written.",
       "localizations" : {
         "de" : {
           "stringUnit" : {

@@ -17,8 +17,8 @@ enum KeyboardSettingsCopy {
     static let leftHandedLayoutDescription = String(localized: "Mirror KeyVox controls for easier left-hand access.", comment: "Description under the Left-Handed Layout toggle.")
     static let classicThemeTitle = String(localized: "Classic Theme", comment: "Keyboard settings toggle that switches the keyboard to neutral key colors.")
     static let classicThemeDescription = String(localized: "Use neutral keys instead of KeyVox colors.", comment: "Description under the Classic Theme toggle.")
-    static let compactKeysTitle = String(localized: "Compact Keys", comment: "Keyboard settings toggle for a shorter keyboard.")
-    static let compactKeysDescription = String(localized: "Long-press #+= to use a shorter keyboard.", comment: "Description under the Compact Keys toggle. #+= is the keyboard's symbols key label and stays as written.")
+    static let compactKeysTitle = "Compact Keys"
+    static let compactKeysDescription = String(localized: "Long-press #+= to use a shorter keyboard.", comment: "Description under the Compact Keys toggle. Compact Keys is a KeyVox feature name and stays in English. #+= is the keyboard's symbols key label and stays as written.")
     static let openOnNumberPageTitle = String(localized: "Open on 123", comment: "Keyboard settings toggle. 123 is the keyboard's numbers key label and stays as written.")
     static let openOnNumberPageDescription = String(localized: "Show numbers and symbols when the keyboard opens. Tap ABC for letters.", comment: "Description under the Open on 123 toggle. ABC is the keyboard's letters key label and stays as written.")
     static let resetLearnedWordsTitle = String(localized: "Reset Learned Words", comment: "Keyboard settings button that clears words the keyboard has learned.")
