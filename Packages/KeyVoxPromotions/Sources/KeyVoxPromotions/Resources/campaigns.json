@@ -18,7 +18,21 @@
         "name": "paintpalette"
       },
       "title": "Change the keyboard theme!",
-      "message": "Inside of the KeyVox keyboard settings, enable our Classic theme for a more familiar look."
+      "message": "Inside of the KeyVox keyboard settings, enable our Classic theme for a more familiar look.",
+      "localizations": {
+        "de": {
+          "title": "Ändere das Tastaturdesign!",
+          "message": "Aktiviere in den Einstellungen der KeyVox-Tastatur „Klassisches Design“ für einen vertrauteren Look."
+        },
+        "es": {
+          "title": "¡Cambia el tema del teclado!",
+          "message": "En los ajustes del teclado de KeyVox, activa el Tema clásico para disfrutar de un aspecto más familiar."
+        },
+        "fr": {
+          "title": "Changez le thème du clavier !",
+          "message": "Dans les réglages du clavier KeyVox, activez notre Thème classique pour un rendu plus familier."
+        }
+      }
     },
     {
       "id": "ios-keyboard-settings",
@@ -33,7 +47,21 @@
         "name": "keyboard"
       },
       "title": "Make the keyboard yours",
-      "message": "Go to Settings > Keyboard to try options like Open on 123, adjust auto-correction, and more."
+      "message": "Go to Settings > Keyboard to try options like Open on 123, adjust auto-correction, and more.",
+      "localizations": {
+        "de": {
+          "title": "Mach die Tastatur zu deiner",
+          "message": "Unter Einstellungen > Tastatur kannst du Optionen wie „Mit 123 öffnen“ ausprobieren, die Auto-Korrektur anpassen und mehr."
+        },
+        "es": {
+          "title": "Haz tuyo el teclado",
+          "message": "Ve a Ajustes > Teclado para probar opciones como Abrir en 123, ajustar la autocorrección y mucho más."
+        },
+        "fr": {
+          "title": "Un clavier à votre image",
+          "message": "Accédez à Réglages > Clavier pour essayer des options comme « Ouvrir sur 123 », ajuster la correction automatique, et plus encore."
+        }
+      }
     },
     {
       "id": "ios-text-replacement",
@@ -48,7 +76,21 @@
         "name": "character.cursor.ibeam"
       },
       "title": "Your text replacements work here",
-      "message": "Shortcuts from iOS text replacement work in the KeyVox keyboard. Fine-tune them in iOS Settings > General > Keyboard > Text Replacement."
+      "message": "Shortcuts from iOS text replacement work in the KeyVox keyboard. Fine-tune them in iOS Settings > General > Keyboard > Text Replacement.",
+      "localizations": {
+        "de": {
+          "title": "Deine Textersetzungen funktionieren hier",
+          "message": "Kurzbefehle aus der iOS-Textersetzung funktionieren in der KeyVox-Tastatur. Passe sie in iOS unter Einstellungen > Allgemein > Tastatur > Textersetzung an."
+        },
+        "es": {
+          "title": "Tus sustituciones de texto funcionan aquí",
+          "message": "Las funciones rápidas de la sustitución de texto de iOS funcionan en el teclado de KeyVox. Ajústalas en iOS, en Ajustes > General > Teclado > Sustitución de texto."
+        },
+        "fr": {
+          "title": "Vos remplacements de texte fonctionnent ici",
+          "message": "Les raccourcis du remplacement de texte d’iOS fonctionnent dans le clavier KeyVox. Ajustez-les dans les Réglages d’iOS : Général > Clavier > Remplacement de texte."
+        }
+      }
     },
     {
       "id": "ios-compact-keys",
@@ -63,7 +105,21 @@
         "name": "keyboard.chevron.compact.down"
       },
       "title": "More room while you type",
-      "message": "Long press #+= to enter Compact Mode. Tap the keyboard icon whenever you want the full keyboard back."
+      "message": "Long press #+= to enter Compact Mode. Tap the keyboard icon whenever you want the full keyboard back.",
+      "localizations": {
+        "de": {
+          "title": "Mehr Platz beim Tippen",
+          "message": "Drücke lange auf #+=, um den Kompaktmodus zu aktivieren. Tippe auf das Tastatursymbol, wenn du die volle Tastatur zurückhaben möchtest."
+        },
+        "es": {
+          "title": "Más espacio mientras escribes",
+          "message": "Mantén pulsado #+= para activar el modo compacto. Toca el icono del teclado cuando quieras recuperar el teclado completo."
+        },
+        "fr": {
+          "title": "Plus d’espace pendant la saisie",
+          "message": "Appuyez longuement sur #+= pour passer en mode compact. Touchez l’icône du clavier pour retrouver le clavier complet à tout moment."
+        }
+      }
     },
     {
       "id": "ios-keyvox-for-mac",
@@ -85,6 +141,26 @@
       "sharing": {
         "url": "https://keyvox.app/?utm_source=keyvox_ios&utm_medium=share&utm_campaign=mac_app_share",
         "title": "KeyVox for Mac"
+      },
+      "localizations": {
+        "de": {
+          "title": "Hol dir KeyVox auf deinen Mac",
+          "message": "Nutze dasselbe private Diktieren auf dem Gerät auch unter macOS.",
+          "buttonTitle": "Weitere Infos",
+          "sharingTitle": "KeyVox für Mac"
+        },
+        "es": {
+          "title": "Lleva KeyVox a tu Mac",
+          "message": "Disfruta de la misma experiencia de dictado privada y en el dispositivo también en macOS.",
+          "buttonTitle": "Más información",
+          "sharingTitle": "KeyVox para Mac"
+        },
+        "fr": {
+          "title": "Profitez de KeyVox sur votre Mac",
+          "message": "Retrouvez la même dictée privée, sur l’appareil, partout dans macOS.",
+          "buttonTitle": "En savoir plus",
+          "sharingTitle": "KeyVox pour Mac"
+        }
       }
     },
     {
@@ -144,6 +220,26 @@
       "sharing": {
         "url": "https://apps.apple.com/us/app/keyvox-ai-voice-keyboard/id6760396964?ct=mac-settings-ios-share&mt=8",
         "title": "KeyVox Keyboard for iPhone"
+      },
+      "localizations": {
+        "de": {
+          "title": "Hol dir die KeyVox-Tastatur fürs iPhone",
+          "message": "Das gleiche großartige KeyVox-Diktat gibt es auch auf dem iPhone – mit einer Tastatur, die für iOS entwickelt wurde.",
+          "buttonTitle": "Anzeigen",
+          "sharingTitle": "KeyVox-Tastatur für iPhone"
+        },
+        "es": {
+          "title": "Consigue el teclado de KeyVox para iPhone",
+          "message": "El fantástico dictado de KeyVox también está disponible en el iPhone, con un teclado diseñado para iOS.",
+          "buttonTitle": "Ver",
+          "sharingTitle": "Teclado de KeyVox para iPhone"
+        },
+        "fr": {
+          "title": "Obtenez le clavier KeyVox pour iPhone",
+          "message": "La même excellente dictée KeyVox est disponible sur iPhone, avec un clavier conçu pour iOS.",
+          "buttonTitle": "Afficher",
+          "sharingTitle": "Clavier KeyVox pour iPhone"
+        }
       }
     }
   ]
