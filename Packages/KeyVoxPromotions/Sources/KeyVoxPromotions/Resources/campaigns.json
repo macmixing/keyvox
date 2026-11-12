@@ -176,7 +176,21 @@
         "name": "ic_keyboard"
       },
       "title": "More room while you type",
-      "message": "Long press #+= to enter Compact Keys. Tap the keyboard icon whenever you want the full keyboard back."
+      "message": "Long press #+= to enter Compact Keys. Tap the keyboard icon whenever you want the full keyboard back.",
+      "localizations": {
+        "de": {
+          "title": "Mehr Platz beim Tippen",
+          "message": "Drücke lange auf #+=, um Compact Keys zu aktivieren. Tippe auf das Tastatursymbol, wenn du die volle Tastatur zurückhaben möchtest."
+        },
+        "es": {
+          "title": "Más espacio mientras escribes",
+          "message": "Mantén pulsado #+= para activar Compact Keys. Toca el icono del teclado cuando quieras recuperar el teclado completo."
+        },
+        "fr": {
+          "title": "Plus d’espace pendant la saisie",
+          "message": "Appuyez de manière prolongée sur #+= pour activer Compact Keys. Appuyez sur l’icône du clavier pour retrouver le clavier complet à tout moment."
+        }
+      }
     },
     {
       "id": "android-keyvox-for-mac",
@@ -198,6 +212,26 @@
       "sharing": {
         "url": "https://keyvox.app/?utm_source=keyvox_android&utm_medium=share&utm_campaign=mac_app_share",
         "title": "KeyVox for Mac"
+      },
+      "localizations": {
+        "de": {
+          "title": "Hast du einen Mac?",
+          "message": "Hol dir mit KeyVox dasselbe private Diktieren auf dem Gerät auch auf deinen Mac.",
+          "buttonTitle": "Weitere Infos",
+          "sharingTitle": "KeyVox für Mac"
+        },
+        "es": {
+          "title": "¿Tienes un Mac?",
+          "message": "Lleva a tu Mac la misma experiencia de dictado privada y en el dispositivo con KeyVox.",
+          "buttonTitle": "Más información",
+          "sharingTitle": "KeyVox para Mac"
+        },
+        "fr": {
+          "title": "Vous avez un Mac ?",
+          "message": "Profitez de la même dictée privée, sur l’appareil, sur votre Mac avec KeyVox.",
+          "buttonTitle": "En savoir plus",
+          "sharingTitle": "KeyVox pour Mac"
+        }
       }
     },
     {
