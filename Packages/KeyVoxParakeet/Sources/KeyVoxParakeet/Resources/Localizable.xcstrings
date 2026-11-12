@@ -1,0 +1,173 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "Parakeet initialization failed." : {
+      "comment" : "Dictation error shown when the Parakeet speech model cannot start. Parakeet is a brand name and stays in English.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Parakeet-Initialisierung fehlgeschlagen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Error al inicializar Parakeet."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Échec de l’initialisation de Parakeet."
+          }
+        }
+      }
+    },
+    "Parakeet model not found." : {
+      "comment" : "Dictation error shown when the Parakeet model files are missing. Parakeet is a brand name and stays in English.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Parakeet-Modell nicht gefunden."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No se ha encontrado el modelo Parakeet."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Modèle Parakeet introuvable."
+          }
+        }
+      }
+    },
+    "Parakeet runtime is unavailable." : {
+      "comment" : "Dictation error shown when the Parakeet speech engine cannot run on this device. Parakeet is a brand name and stays in English.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Parakeet-Laufzeit ist nicht verfügbar."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "El entorno de ejecución de Parakeet no está disponible."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "L’environnement d’exécution Parakeet n’est pas disponible."
+          }
+        }
+      }
+    },
+    "Parakeet transcription failed (%d)." : {
+      "comment" : "Dictation error shown when the Parakeet speech model fails. %d is a technical error number. Parakeet is a brand name and stays in English.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Parakeet-Transkription fehlgeschlagen (%d)."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Error en la transcripción de Parakeet (%d)."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Échec de la transcription Parakeet (%d)."
+          }
+        }
+      }
+    },
+    "Parakeet transcription failed (%d): %@" : {
+      "comment" : "Dictation error shown when the Parakeet speech model fails. %d is a technical error number and %@ is the engine's own technical message. Parakeet is a brand name and stays in English.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Parakeet-Transkription fehlgeschlagen (%d): %@"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Parakeet transcription failed (%1$d): %2$@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Error en la transcripción de Parakeet (%d): %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Échec de la transcription Parakeet (%d) : %@"
+          }
+        }
+      }
+    },
+    "Parakeet transcription requires non-empty audio frames." : {
+      "comment" : "Dictation error shown when no audio was recorded. Parakeet is a brand name and stays in English.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Die Parakeet-Transkription benötigt Audiodaten."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La transcripción de Parakeet necesita fotogramas de audio no vacíos."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La transcription Parakeet nécessite des trames audio non vides."
+          }
+        }
+      }
+    },
+    "Parakeet transcription was cancelled." : {
+      "comment" : "Dictation message shown when a Parakeet transcription was stopped before finishing. Parakeet is a brand name and stays in English.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Die Parakeet-Transkription wurde abgebrochen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Se ha cancelado la transcripción de Parakeet."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La transcription Parakeet a été annulée."
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

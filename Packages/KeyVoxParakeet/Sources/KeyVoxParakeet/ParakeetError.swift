@@ -11,20 +11,20 @@ public enum ParakeetError: Error, LocalizedError, Equatable {
     public var errorDescription: String? {
         switch self {
         case .initializationFailed:
-            return "Parakeet initialization failed."
+            return NSLocalizedString("Parakeet initialization failed.", bundle: KeyVoxParakeetLocalization.bundle, comment: "Dictation error shown when the Parakeet speech model cannot start. Parakeet is a brand name and stays in English.")
         case .invalidFrames:
-            return "Parakeet transcription requires non-empty audio frames."
+            return NSLocalizedString("Parakeet transcription requires non-empty audio frames.", bundle: KeyVoxParakeetLocalization.bundle, comment: "Dictation error shown when no audio was recorded. Parakeet is a brand name and stays in English.")
         case let .transcriptionFailed(code, message):
             if let message, !message.isEmpty {
-                return "Parakeet transcription failed (\(code)): \(message)"
+                return String(format: NSLocalizedString("Parakeet transcription failed (%d): %@", bundle: KeyVoxParakeetLocalization.bundle, comment: "Dictation error shown when the Parakeet speech model fails. %d is a technical error number and %@ is the engine's own technical message. Parakeet is a brand name and stays in English."), code, message)
             }
-            return "Parakeet transcription failed (\(code))."
+            return String(format: NSLocalizedString("Parakeet transcription failed (%d).", bundle: KeyVoxParakeetLocalization.bundle, comment: "Dictation error shown when the Parakeet speech model fails. %d is a technical error number. Parakeet is a brand name and stays in English."), code)
         case .modelNotFound:
-            return "Parakeet model not found."
+            return NSLocalizedString("Parakeet model not found.", bundle: KeyVoxParakeetLocalization.bundle, comment: "Dictation error shown when the Parakeet model files are missing. Parakeet is a brand name and stays in English.")
         case .runtimeUnavailable:
-            return "Parakeet runtime is unavailable."
+            return NSLocalizedString("Parakeet runtime is unavailable.", bundle: KeyVoxParakeetLocalization.bundle, comment: "Dictation error shown when the Parakeet speech engine cannot run on this device. Parakeet is a brand name and stays in English.")
         case .cancelled:
-            return "Parakeet transcription was cancelled."
+            return NSLocalizedString("Parakeet transcription was cancelled.", bundle: KeyVoxParakeetLocalization.bundle, comment: "Dictation message shown when a Parakeet transcription was stopped before finishing. Parakeet is a brand name and stays in English.")
         }
     }
 }
