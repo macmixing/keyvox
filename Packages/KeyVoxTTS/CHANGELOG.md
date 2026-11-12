@@ -6,6 +6,20 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.1.1] - 2026-11-11
+
+Speech engine error messages are now translatable on Apple platforms.
+
+### Includes
+
+- Made every PocketTTS error message translatable through a package string catalog, with technical names, file names, and counts passed in as values.
+
+### Notes
+
+- `1.1.1` tracks translatable error messages.
+
+---
+
 ## [1.1.0] - 2026-09-12
 
 KeyVox Speak chunk planning now uses shared linguistic analysis without depending on dictation settings.
