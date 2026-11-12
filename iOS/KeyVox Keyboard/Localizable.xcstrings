@@ -1,0 +1,1363 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "%@ category" : {
+      "comment" : "VoiceOver label for an emoji category button in the emoji keyboard. %@ is the category name.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Kategorie „%@“"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Categoría “%@”"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Catégorie %@"
+          }
+        }
+      }
+    },
+    "Active" : {
+      "comment" : "VoiceOver value for the keyboard's speak button while copied text is being read aloud.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aktiv"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Activo"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Actif"
+          }
+        }
+      }
+    },
+    "Activity" : {
+      "comment" : "Emoji category name read by VoiceOver in the emoji keyboard. Use the name the system emoji keyboard uses in this language.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aktivität"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Actividad"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Activité"
+          }
+        }
+      }
+    },
+    "Allow Full Access for dictation" : {
+      "comment" : "Warning shown in the keyboard toolbar when Full Access is off. Use Apple's official name for Full Access in this language.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vollen Zugriff fürs Diktieren erlauben"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Permite el acceso total para dictar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Autorisez l’accès complet pour la dictée"
+          }
+        }
+      }
+    },
+    "Allow Microphone Access for dictation" : {
+      "comment" : "Warning shown in the keyboard toolbar when microphone permission is off.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mikrofonzugriff fürs Diktieren erlauben"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Permite el acceso al micrófono para dictar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Autorisez l’accès au micro pour la dictée"
+          }
+        }
+      }
+    },
+    "Alternate Symbols" : {
+      "comment" : "VoiceOver label for the keyboard key that shows the second page of symbols.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Weitere Symbole"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Símbolos alternativos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Autres symboles"
+          }
+        }
+      }
+    },
+    "Animals & Nature" : {
+      "comment" : "Emoji category name read by VoiceOver in the emoji keyboard. Use the name the system emoji keyboard uses in this language.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Tiere & Natur"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Animales y naturaleza"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Animaux et nature"
+          }
+        }
+      }
+    },
+    "Back to keyboard" : {
+      "comment" : "VoiceOver label for the back button on the keyboard's Full Access instructions screen.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zurück zur Tastatur"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Volver al teclado"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Retour au clavier"
+          }
+        }
+      }
+    },
+    "Cancel recording" : {
+      "comment" : "VoiceOver label for the keyboard button that cancels dictation.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aufnahme abbrechen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Cancelar grabación"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Annuler l’enregistrement"
+          }
+        }
+      }
+    },
+    "Cancels the current recording without transcribing" : {
+      "comment" : "VoiceOver hint for the keyboard button that cancels dictation.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Bricht die aktuelle Aufnahme ohne Transkription ab"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Cancela la grabación actual sin transcribirla"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Annule l’enregistrement en cours sans le transcrire"
+          }
+        }
+      }
+    },
+    "Caps Lock" : {
+      "comment" : "VoiceOver label for the keyboard toolbar's caps lock toggle. Use the name the system keyboard uses in this language.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Feststelltaste"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Bloqueo de mayúsculas"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Verr. maj."
+          }
+        }
+      }
+    },
+    "Clear text" : {
+      "comment" : "VoiceOver label for the button that clears the emoji keyboard's search field.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Text löschen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Borrar texto"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Effacer le texte"
+          }
+        }
+      }
+    },
+    "Delete" : {
+      "comment" : "VoiceOver label for the keyboard's delete key. Use the name the system keyboard uses in this language.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Löschen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Eliminar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Supprimer"
+          }
+        }
+      }
+    },
+    "Dictation couldn't start" : {
+      "comment" : "VoiceOver label for the keyboard's dictation button after dictation failed to start.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Diktat konnte nicht starten"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No se ha podido iniciar el dictado"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Impossible de démarrer la dictée"
+          }
+        }
+      }
+    },
+    "Dictionary" : {
+      "comment" : "VoiceOver label for the keyboard toolbar button that opens the KeyVox dictionary of custom words.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wörterbuch"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Diccionario"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dictionnaire"
+          }
+        }
+      }
+    },
+    "Emoji" : {
+      "comment" : "VoiceOver label for the keyboard key that opens the emoji keyboard.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Emoji-Symbole"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Emoji"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Emoji"
+          }
+        }
+      }
+    },
+    "Flags" : {
+      "comment" : "Emoji category name read by VoiceOver in the emoji keyboard. Use the name the system emoji keyboard uses in this language.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Flaggen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Banderas"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Drapeaux"
+          }
+        }
+      }
+    },
+    "Food & Drink" : {
+      "comment" : "Emoji category name read by VoiceOver in the emoji keyboard. Use the name the system emoji keyboard uses in this language.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Essen & Trinken"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Comida y bebida"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nourriture et boissons"
+          }
+        }
+      }
+    },
+    "Frequently Used" : {
+      "comment" : "Emoji category name read by VoiceOver in the emoji keyboard. Use the name the system emoji keyboard uses in this language.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Oft benutzt"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Más usados"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Utilisés fréquemment"
+          }
+        }
+      }
+    },
+    "Full Access instructions" : {
+      "comment" : "VoiceOver label for the info button that opens the keyboard's Full Access instructions. Use Apple's official name for Full Access in this language.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Anleitung für vollen Zugriff"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Instrucciones para el acceso total"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Instructions pour l’accès complet"
+          }
+        }
+      }
+    },
+    "Full Keyboard" : {
+      "comment" : "VoiceOver label for the key that switches from compact keys back to the full keyboard.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vollständige Tastatur"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Teclado completo"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Clavier complet"
+          }
+        }
+      }
+    },
+    "How to Allow Full Access" : {
+      "comment" : "Title of the keyboard's Full Access instructions screen. Use Apple's official name for Allow Full Access in this language.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "So erlaubst du vollen Zugriff"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Cómo permitir el acceso total"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Comment autoriser l’accès complet"
+          }
+        }
+      }
+    },
+    "Inactive" : {
+      "comment" : "VoiceOver value for the keyboard's speak button when nothing is being read aloud.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Inaktiv"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Inactivo"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Inactif"
+          }
+        }
+      }
+    },
+    "Install a dictation model" : {
+      "comment" : "Warning shown in the keyboard toolbar when no dictation model is installed.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Diktiermodell installieren"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Instala un modelo de dictado"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Installez un modèle de dictée"
+          }
+        }
+      }
+    },
+    "Lists" : {
+      "comment" : "VoiceOver label for the keyboard toolbar toggle that turns automatic lists in dictation on or off.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Listen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Listas"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Listes"
+          }
+        }
+      }
+    },
+    "Next keyboard" : {
+      "comment" : "VoiceOver label for the key that switches to the next keyboard. Use the name the system keyboard uses in this language.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nächste Tastatur"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Teclado siguiente"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Clavier suivant"
+          }
+        }
+      }
+    },
+    "Number Symbols" : {
+      "comment" : "VoiceOver label for the keyboard key that shows numbers and symbols.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zahlen und Symbole"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Números y símbolos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Chiffres et symboles"
+          }
+        }
+      }
+    },
+    "Objects" : {
+      "comment" : "Emoji category name read by VoiceOver in the emoji keyboard. Use the name the system emoji keyboard uses in this language.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Objekte"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Objetos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Objets"
+          }
+        }
+      }
+    },
+    "Off" : {
+      "comment" : "VoiceOver value for a keyboard toolbar toggle that is turned off.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aus"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Non"
+          }
+        }
+      }
+    },
+    "On" : {
+      "comment" : "VoiceOver value for a keyboard toolbar toggle that is turned on.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ein"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sí"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Oui"
+          }
+        }
+      }
+    },
+    "Open KeyVox Settings and repair %@" : {
+      "comment" : "Warning shown in the keyboard toolbar when the dictation model needs repair. KeyVox is a brand name and stays in English; Settings is the KeyVox app's Settings tab. %@ is the dictation model name (a brand name).",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Öffne die KeyVox-Einstellungen und repariere %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Abre los ajustes de KeyVox y repara %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ouvrez Réglages dans KeyVox et réparez %@"
+          }
+        }
+      }
+    },
+    "Open Settings" : {
+      "comment" : "Step in the keyboard's Full Access instructions. Use Apple's official name for the Settings app in this language.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Einstellungen öffnen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Abrir Ajustes"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ouvrir Réglages"
+          }
+        }
+      }
+    },
+    "Opening app" : {
+      "comment" : "VoiceOver label for the keyboard's dictation button while the KeyVox app is opening.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "App wird geöffnet"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Abriendo la app"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ouverture de l’app"
+          }
+        }
+      }
+    },
+    "Paragraphs" : {
+      "comment" : "VoiceOver label for the keyboard toolbar toggle that turns automatic paragraphs in dictation on or off.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Absätze"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Párrafos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Paragraphes"
+          }
+        }
+      }
+    },
+    "Pause playback" : {
+      "comment" : "VoiceOver label for the keyboard's button while copied text is being read aloud.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wiedergabe pausieren"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pausar reproducción"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mettre la lecture en pause"
+          }
+        }
+      }
+    },
+    "Paused" : {
+      "comment" : "VoiceOver value for the keyboard's button while reading aloud is paused.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Angehalten"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "En pausa"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "En pause"
+          }
+        }
+      }
+    },
+    "Ready" : {
+      "comment" : "VoiceOver value for the keyboard's dictation button when it is ready to record.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Bereit"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Listo"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Prêt"
+          }
+        }
+      }
+    },
+    "Recording" : {
+      "comment" : "VoiceOver value for the keyboard's dictation button while recording (the state, not the verb).",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aufnahme"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Grabando"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Enregistrement"
+          }
+        }
+      }
+    },
+    "Resume playback" : {
+      "comment" : "VoiceOver label for the keyboard's button while reading aloud is paused.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wiedergabe fortsetzen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Reanudar reproducción"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Reprendre la lecture"
+          }
+        }
+      }
+    },
+    "Return" : {
+      "comment" : "VoiceOver label for the keyboard's return key. Use the name the system keyboard uses in this language.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Return"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Retorno"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Retour"
+          }
+        }
+      }
+    },
+    "Search" : {
+      "comment" : "VoiceOver label for the magnifying glass in the emoji keyboard's search field.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Suchen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Buscar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Rechercher"
+          }
+        }
+      }
+    },
+    "Search Emoji" : {
+      "comment" : "Placeholder in the emoji keyboard's search field. Use the wording the system emoji keyboard uses in this language.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Emoji suchen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Buscar emoji"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Rechercher des emoji"
+          }
+        }
+      }
+    },
+    "Settings" : {
+      "comment" : "VoiceOver label for the keyboard toolbar button that opens KeyVox settings.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Einstellungen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ajustes"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Réglages"
+          }
+        }
+      }
+    },
+    "Shift" : {
+      "comment" : "VoiceOver label for the keyboard's shift key. Use the name the system keyboard uses in this language.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Umschalttaste"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mayúsculas"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Majuscules"
+          }
+        }
+      }
+    },
+    "Smileys & People" : {
+      "comment" : "Emoji category name read by VoiceOver in the emoji keyboard. Use the name the system emoji keyboard uses in this language.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Smileys & Personen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Emoticonos y personas"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Émoticônes et personnages"
+          }
+        }
+      }
+    },
+    "Space" : {
+      "comment" : "VoiceOver label for the keyboard's space bar. Use the name the system keyboard uses in this language.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Leerzeichen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Espacio"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Espace"
+          }
+        }
+      }
+    },
+    "Speak copied text" : {
+      "comment" : "VoiceOver label for the keyboard button that reads copied text aloud.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Kopierten Text vorlesen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Leer en voz alta el texto copiado"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Lire le texte copié"
+          }
+        }
+      }
+    },
+    "Speaking" : {
+      "comment" : "VoiceOver value for the keyboard's button while copied text is being read aloud.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Liest vor"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Leyendo"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Lecture en cours"
+          }
+        }
+      }
+    },
+    "Start recording" : {
+      "comment" : "VoiceOver label for the keyboard's dictation button when it is ready to record.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aufnahme starten"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Empezar a grabar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Démarrer l’enregistrement"
+          }
+        }
+      }
+    },
+    "Stop recording and transcribe" : {
+      "comment" : "VoiceOver label for the keyboard's dictation button while recording.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aufnahme beenden und transkribieren"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Detener grabación y transcribir"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Arrêter l’enregistrement et transcrire"
+          }
+        }
+      }
+    },
+    "Symbols" : {
+      "comment" : "Emoji category name read by VoiceOver in the emoji keyboard. Use the name the system emoji keyboard uses in this language.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Symbole"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Símbolos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Symboles"
+          }
+        }
+      }
+    },
+    "Tap Apps" : {
+      "comment" : "Step in the keyboard's Full Access instructions. Apps is the Apps row in the Settings app; use Apple's official name in this language.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Tippe auf „Apps“"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Toca Apps"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Touchez Apps"
+          }
+        }
+      }
+    },
+    "Tap KeyVox" : {
+      "comment" : "Step in the keyboard's Full Access instructions. KeyVox is the app name in Settings and must stay exactly as written in English.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Tippe auf „KeyVox“"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Toca KeyVox"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Touchez KeyVox"
+          }
+        }
+      }
+    },
+    "Tap Keyboards" : {
+      "comment" : "Step in the keyboard's Full Access instructions. Use Apple's official name for the Keyboards row in Settings in this language.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Tippe auf „Tastaturen“"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Toca Teclados"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Touchez Claviers"
+          }
+        }
+      }
+    },
+    "Transcribing" : {
+      "comment" : "VoiceOver label and value for the keyboard's dictation button while speech is being turned into text.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wird transkribiert"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Transcribiendo"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Transcription"
+          }
+        }
+      }
+    },
+    "Travel & Places" : {
+      "comment" : "Emoji category name read by VoiceOver in the emoji keyboard. Use the name the system emoji keyboard uses in this language.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Reisen & Orte"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Viajes y destinos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Voyages et lieux"
+          }
+        }
+      }
+    },
+    "Turn on Allow Full Access" : {
+      "comment" : "Step in the keyboard's Full Access instructions. Use Apple's official name for the Allow Full Access toggle in this language.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aktiviere „Vollen Zugriff erlauben“"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Activa “Permitir acceso total”"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Activez Autoriser l’accès complet"
+          }
+        }
+      }
+    },
+    "Waiting" : {
+      "comment" : "VoiceOver value for the keyboard's dictation button while the KeyVox app is opening.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Warten"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Esperando"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Attente"
+          }
+        }
+      }
+    },
+    "done" : {
+      "comment" : "VoiceOver label for the key that ends emoji search. Use the name the system keyboard uses for this key in this language.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "fertig"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "OK"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "OK"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

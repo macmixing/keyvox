@@ -1,3 +1,4 @@
+import Foundation
 import UIKit
 
 /// The emoji search field in the toolbar's place, as the system emoji keyboard draws it: a rounded
@@ -44,7 +45,7 @@ final class KeyboardEmojiSearchFieldView: UIView {
         static let clearPointSize: CGFloat = 16.7
     }
 
-    static let placeholder = "Search Emoji"
+    static let placeholder = String(localized: "Search Emoji", comment: "Placeholder in the emoji keyboard's search field. Use the wording the system emoji keyboard uses in this language.")
 
     var onBegin: (() -> Void)?
     var onClear: (() -> Void)?
@@ -82,7 +83,7 @@ final class KeyboardEmojiSearchFieldView: UIView {
         )
         // Named as the system keyboard names its magnifying glass, the element that starts a search.
         magnifierView.isAccessibilityElement = true
-        magnifierView.accessibilityLabel = "Search"
+        magnifierView.accessibilityLabel = String(localized: "Search", comment: "VoiceOver label for the magnifying glass in the emoji keyboard's search field.")
         magnifierView.accessibilityTraits = .button
         let font = UIFont.systemFont(ofSize: Measured.fontSize)
         textLabel.font = font
@@ -101,7 +102,7 @@ final class KeyboardEmojiSearchFieldView: UIView {
             for: .normal
         )
         clearButton.minimumHitTargetSize = CGSize(width: Geometry.fieldHeight, height: Geometry.fieldHeight)
-        clearButton.accessibilityLabel = "Clear text"
+        clearButton.accessibilityLabel = String(localized: "Clear text", comment: "VoiceOver label for the button that clears the emoji keyboard's search field.")
         clearButton.addTarget(self, action: #selector(handleClear), for: .touchUpInside)
         for view in [magnifierView, placeholderLabel, textLabel, caretView, clearButton] as [UIView] {
             addSubview(view)

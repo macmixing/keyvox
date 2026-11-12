@@ -1,3 +1,4 @@
+import Foundation
 import UIKit
 
 final class KeyboardCancelButton: UIControl {
@@ -164,8 +165,8 @@ final class KeyboardCancelButton: UIControl {
     }
 
     private func updateAccessibility() {
-        accessibilityLabel = "Cancel recording"
-        accessibilityHint = "Cancels the current recording without transcribing"
+        accessibilityLabel = String(localized: "Cancel recording", comment: "VoiceOver label for the keyboard button that cancels dictation.")
+        accessibilityHint = String(localized: "Cancels the current recording without transcribing", comment: "VoiceOver hint for the keyboard button that cancels dictation.")
     }
     
     private func colorsForState(isHighlighted: Bool) -> (fill: UIColor, border: UIColor, icon: UIColor) {

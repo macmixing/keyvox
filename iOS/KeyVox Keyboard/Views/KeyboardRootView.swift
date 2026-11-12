@@ -1,3 +1,4 @@
+import Foundation
 import KeyVoxStyleRewrite
 import UIKit
 
@@ -335,7 +336,7 @@ final class KeyboardRootView: UIView {
         cancelButton.alpha = 1
         cancelButton.transform = .identity
         settingsButton.symbolName = "gearshape.fill"
-        settingsButton.accessibilityTitle = "Settings"
+        settingsButton.accessibilityTitle = String(localized: "Settings", comment: "VoiceOver label for the keyboard toolbar button that opens KeyVox settings.")
         settingsButton.showsStateValue = false
         settingsButton.isHidden = true
         speakButton.isHidden = true
@@ -343,13 +344,13 @@ final class KeyboardRootView: UIView {
         speakButton.transform = .identity
         vibesButton.isHidden = true
         paragraphButton.symbolName = "text.alignleft"
-        paragraphButton.accessibilityTitle = "Paragraphs"
+        paragraphButton.accessibilityTitle = String(localized: "Paragraphs", comment: "VoiceOver label for the keyboard toolbar toggle that turns automatic paragraphs in dictation on or off.")
         paragraphButton.isHidden = true
         listsButton.symbolName = "list.number"
-        listsButton.accessibilityTitle = "Lists"
+        listsButton.accessibilityTitle = String(localized: "Lists", comment: "VoiceOver label for the keyboard toolbar toggle that turns automatic lists in dictation on or off.")
         listsButton.isHidden = true
         dictionaryButton.symbolName = "text.book.closed.fill"
-        dictionaryButton.accessibilityTitle = "Dictionary"
+        dictionaryButton.accessibilityTitle = String(localized: "Dictionary", comment: "VoiceOver label for the keyboard toolbar button that opens the KeyVox dictionary of custom words.")
         dictionaryButton.showsStateValue = false
         dictionaryButton.isHidden = true
         settingsButton.translatesAutoresizingMaskIntoConstraints = false
@@ -370,7 +371,7 @@ final class KeyboardRootView: UIView {
         fullAccessWarningLabel.textColor = .systemRed
         fullAccessWarningLabel.textAlignment = .center
         fullAccessWarningLabel.numberOfLines = 1
-        fullAccessWarningLabel.text = "Allow Full Access for dictation"
+        fullAccessWarningLabel.text = String(localized: "Allow Full Access for dictation", comment: "Warning shown in the keyboard toolbar when Full Access is off. Use Apple's official name for Full Access in this language.")
         fullAccessWarningLabel.adjustsFontSizeToFitWidth = true
         fullAccessWarningLabel.minimumScaleFactor = 0.8
         fullAccessWarningLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
@@ -385,7 +386,7 @@ final class KeyboardRootView: UIView {
             ),
             for: .normal
         )
-        fullAccessInfoButton.accessibilityLabel = "Full Access instructions"
+        fullAccessInfoButton.accessibilityLabel = String(localized: "Full Access instructions", comment: "VoiceOver label for the info button that opens the keyboard's Full Access instructions. Use Apple's official name for Full Access in this language.")
         fullAccessInfoButton.isHidden = true
 
         centerContainerView.translatesAutoresizingMaskIntoConstraints = false

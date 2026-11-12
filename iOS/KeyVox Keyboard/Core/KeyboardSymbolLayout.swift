@@ -84,29 +84,29 @@ struct KeyboardKeyModel: Equatable {
         case let .character(value):
             return value
         case .delete:
-            return "Delete"
+            return String(localized: "Delete", comment: "VoiceOver label for the keyboard's delete key. Use the name the system keyboard uses in this language.")
         case .space:
-            return "Space"
+            return String(localized: "Space", comment: "VoiceOver label for the keyboard's space bar. Use the name the system keyboard uses in this language.")
         case .returnKey:
-            return "Return"
+            return String(localized: "Return", comment: "VoiceOver label for the keyboard's return key. Use the name the system keyboard uses in this language.")
         case .abc:
             return "ABC"
         case .alternateSymbols:
-            return "Alternate Symbols"
+            return String(localized: "Alternate Symbols", comment: "VoiceOver label for the keyboard key that shows the second page of symbols.")
         case .numberSymbols:
-            return "Number Symbols"
+            return String(localized: "Number Symbols", comment: "VoiceOver label for the keyboard key that shows numbers and symbols.")
         case .emoji:
-            return "Emoji"
+            return String(localized: "Emoji", comment: "VoiceOver label for the keyboard key that opens the emoji keyboard.")
         case .emojiSearchDone:
             // Named as the system keyboard names its key.
-            return "done"
+            return String(localized: "done", comment: "VoiceOver label for the key that ends emoji search. Use the name the system keyboard uses for this key in this language.")
         case .restoreFullKeyboard:
-            return "Full Keyboard"
+            return String(localized: "Full Keyboard", comment: "VoiceOver label for the key that switches from compact keys back to the full keyboard.")
         case .shift:
-            return "Shift"
+            return String(localized: "Shift", comment: "VoiceOver label for the keyboard's shift key. Use the name the system keyboard uses in this language.")
         case .nextKeyboard:
             // Named as the system keyboard names its key.
-            return "Next keyboard"
+            return String(localized: "Next keyboard", comment: "VoiceOver label for the key that switches to the next keyboard. Use the name the system keyboard uses in this language.")
         }
     }
 

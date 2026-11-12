@@ -37,7 +37,7 @@ enum KeyboardDictationModelStatus {
         case .missing:
             return .notInstalled
         case .repairRequired:
-            return .actionRequired("Open KeyVox Settings and repair \(provider.displayName)")
+            return .actionRequired(String(localized: "Open KeyVox Settings and repair \(provider.displayName)", comment: "Warning shown in the keyboard toolbar when the dictation model needs repair. KeyVox is a brand name and stays in English; Settings is the KeyVox app's Settings tab. %@ is the dictation model name (a brand name)."))
         }
     }
 

@@ -1,3 +1,4 @@
+import Foundation
 import UIKit
 
 final class KeyboardSettingsToggleButton: UIControl {
@@ -173,7 +174,7 @@ final class KeyboardSettingsToggleButton: UIControl {
 
     private func updateAccessibility() {
         accessibilityLabel = accessibilityTitle.isEmpty ? nil : accessibilityTitle
-        accessibilityValue = showsStateValue ? (isOn ? "On" : "Off") : nil
+        accessibilityValue = showsStateValue ? (isOn ? String(localized: "On", comment: "VoiceOver value for a keyboard toolbar toggle that is turned on.") : String(localized: "Off", comment: "VoiceOver value for a keyboard toolbar toggle that is turned off.")) : nil
     }
 
     private func colorsForState(isPressed: Bool, isEnabled: Bool) -> (fill: UIColor, border: UIColor, foreground: UIColor) {

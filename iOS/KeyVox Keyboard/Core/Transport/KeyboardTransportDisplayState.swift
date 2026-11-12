@@ -1,3 +1,4 @@
+import Foundation
 import UIKit
 
 // Non-visual transport state and accessibility behavior for the keyboard logo control
@@ -86,36 +87,36 @@ extension KeyboardLogoBarView {
     func updateAccessibility() {
         switch keyboardState {
         case .idle:
-            accessibilityLabel = "Start recording"
-            accessibilityValue = "Ready"
+            accessibilityLabel = String(localized: "Start recording", comment: "VoiceOver label for the keyboard's dictation button when it is ready to record.")
+            accessibilityValue = String(localized: "Ready", comment: "VoiceOver value for the keyboard's dictation button when it is ready to record.")
             isEnabled = true
         case .waitingForApp:
-            accessibilityLabel = "Opening app"
-            accessibilityValue = "Waiting"
+            accessibilityLabel = String(localized: "Opening app", comment: "VoiceOver label for the keyboard's dictation button while the KeyVox app is opening.")
+            accessibilityValue = String(localized: "Waiting", comment: "VoiceOver value for the keyboard's dictation button while the KeyVox app is opening.")
             isEnabled = false
         case .dictationStartFailed:
-            accessibilityLabel = "Dictation couldn't start"
+            accessibilityLabel = String(localized: "Dictation couldn't start", comment: "VoiceOver label for the keyboard's dictation button after dictation failed to start.")
             accessibilityValue = nil
             isEnabled = false
         case .recording:
-            accessibilityLabel = "Stop recording and transcribe"
-            accessibilityValue = "Recording"
+            accessibilityLabel = String(localized: "Stop recording and transcribe", comment: "VoiceOver label for the keyboard's dictation button while recording.")
+            accessibilityValue = String(localized: "Recording", comment: "VoiceOver value for the keyboard's dictation button while recording (the state, not the verb).")
             isEnabled = true
         case .transcribing:
-            accessibilityLabel = "Transcribing"
-            accessibilityValue = "Transcribing"
+            accessibilityLabel = String(localized: "Transcribing", comment: "VoiceOver label and value for the keyboard's dictation button while speech is being turned into text.")
+            accessibilityValue = String(localized: "Transcribing", comment: "VoiceOver label and value for the keyboard's dictation button while speech is being turned into text.")
             isEnabled = false
         case .preparingPlayback:
-            accessibilityLabel = "Opening app"
-            accessibilityValue = "Waiting"
+            accessibilityLabel = String(localized: "Opening app", comment: "VoiceOver label for the keyboard's dictation button while the KeyVox app is opening.")
+            accessibilityValue = String(localized: "Waiting", comment: "VoiceOver value for the keyboard's dictation button while the KeyVox app is opening.")
             isEnabled = false
         case .speaking:
-            accessibilityLabel = "Pause playback"
-            accessibilityValue = "Speaking"
+            accessibilityLabel = String(localized: "Pause playback", comment: "VoiceOver label for the keyboard's button while copied text is being read aloud.")
+            accessibilityValue = String(localized: "Speaking", comment: "VoiceOver value for the keyboard's button while copied text is being read aloud.")
             isEnabled = true
         case .pausedSpeaking:
-            accessibilityLabel = "Resume playback"
-            accessibilityValue = "Paused"
+            accessibilityLabel = String(localized: "Resume playback", comment: "VoiceOver label for the keyboard's button while reading aloud is paused.")
+            accessibilityValue = String(localized: "Paused", comment: "VoiceOver value for the keyboard's button while reading aloud is paused.")
             isEnabled = true
         }
     }

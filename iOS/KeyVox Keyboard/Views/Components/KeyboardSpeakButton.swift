@@ -1,3 +1,4 @@
+import Foundation
 import UIKit
 
 final class KeyboardSpeakButton: UIControl {
@@ -151,8 +152,8 @@ final class KeyboardSpeakButton: UIControl {
     }
 
     private func updateAccessibility() {
-        accessibilityLabel = "Speak copied text"
-        accessibilityValue = isSpeaking ? "Active" : "Inactive"
+        accessibilityLabel = String(localized: "Speak copied text", comment: "VoiceOver label for the keyboard button that reads copied text aloud.")
+        accessibilityValue = isSpeaking ? String(localized: "Active", comment: "VoiceOver value for the keyboard's speak button while copied text is being read aloud.") : String(localized: "Inactive", comment: "VoiceOver value for the keyboard's speak button when nothing is being read aloud.")
     }
 
     private func colorsForState(isPressed: Bool, isEnabled: Bool) -> (fill: UIColor, border: UIColor, foreground: UIColor) {

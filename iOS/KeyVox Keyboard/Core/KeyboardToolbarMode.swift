@@ -36,13 +36,13 @@ enum KeyboardToolbarMode: Equatable {
     var warningText: String? {
         switch self {
         case .dictationModelWarning:
-            return "Install a dictation model"
+            return String(localized: "Install a dictation model", comment: "Warning shown in the keyboard toolbar when no dictation model is installed.")
         case .dictationModelActionWarning(let message):
             return message
         case .fullAccessWarning:
-            return "Allow Full Access for dictation"
+            return String(localized: "Allow Full Access for dictation", comment: "Warning shown in the keyboard toolbar when Full Access is off. Use Apple's official name for Full Access in this language.")
         case .microphoneWarning:
-            return "Allow Microphone Access for dictation"
+            return String(localized: "Allow Microphone Access for dictation", comment: "Warning shown in the keyboard toolbar when microphone permission is off.")
         case .hidden, .branded:
             return nil
         }

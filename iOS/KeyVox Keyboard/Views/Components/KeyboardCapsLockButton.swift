@@ -1,3 +1,4 @@
+import Foundation
 import UIKit
 
 final class KeyboardCapsLockButton: UIControl {
@@ -169,8 +170,8 @@ final class KeyboardCapsLockButton: UIControl {
     }
 
     private func updateAccessibility() {
-        accessibilityLabel = "Caps Lock"
-        accessibilityValue = isVisuallyLocked ? "On" : "Off"
+        accessibilityLabel = String(localized: "Caps Lock", comment: "VoiceOver label for the keyboard toolbar's caps lock toggle. Use the name the system keyboard uses in this language.")
+        accessibilityValue = isVisuallyLocked ? String(localized: "On", comment: "VoiceOver value for a keyboard toolbar toggle that is turned on.") : String(localized: "Off", comment: "VoiceOver value for a keyboard toolbar toggle that is turned off.")
     }
 
     var isVisuallyLocked: Bool {
