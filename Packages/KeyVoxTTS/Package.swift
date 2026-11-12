@@ -3,6 +3,7 @@ import PackageDescription
 
 let package = Package(
     name: "KeyVoxTTS",
+    defaultLocalization: "en",
     platforms: [
         .macOS(.v13),
         .iOS("18.0"),
@@ -22,7 +23,10 @@ let package = Package(
             dependencies: [
                 .product(name: "KeyVoxLinguistics", package: "KeyVoxLinguistics"),
             ],
-            path: "Sources/KeyVoxTTS"
+            path: "Sources/KeyVoxTTS",
+            resources: [
+                .process("Resources"),
+            ]
         ),
         .testTarget(
             name: "KeyVoxTTSTests",

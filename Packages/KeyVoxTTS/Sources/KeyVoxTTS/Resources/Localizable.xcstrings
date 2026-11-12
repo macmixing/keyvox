@@ -1,0 +1,628 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "BOS embedding has insufficient values: expected %ld, got %ld" : {
+      "comment" : "Error shown when reading copied text aloud fails: a speech engine file is incomplete. BOS embedding is a technical term; the first %ld is the expected value count and the second the actual count. PocketTTS and Mimi are technical engine names and stay in English.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Das BOS-Embedding hat zu wenige Werte: erwartet %ld, erhalten %ld"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "BOS embedding has insufficient values: expected %1$ld, got %2$ld"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "El embedding BOS no tiene suficientes valores: se esperaban %ld y se han recibido %ld"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "L’embedding BOS ne contient pas assez de valeurs : attendu %ld, obtenu %ld"
+          }
+        }
+      }
+    },
+    "Latent sequence has insufficient values: expected %ld, got %ld" : {
+      "comment" : "Error shown when reading copied text aloud fails: internal speech data is incomplete. The first %ld is the expected value count and the second the actual count. PocketTTS and Mimi are technical engine names and stay in English.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Die latente Sequenz hat zu wenige Werte: erwartet %ld, erhalten %ld"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Latent sequence has insufficient values: expected %1$ld, got %2$ld"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La secuencia latente no tiene suficientes valores: se esperaban %ld y se han recibido %ld"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La séquence latente ne contient pas assez de valeurs : attendu %ld, obtenu %ld"
+          }
+        }
+      }
+    },
+    "Latent vector has insufficient values: expected %ld, got %ld" : {
+      "comment" : "Error shown when reading copied text aloud fails: internal speech data is incomplete. The first %ld is the expected value count and the second the actual count. PocketTTS and Mimi are technical engine names and stay in English.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Der latente Vektor hat zu wenige Werte: erwartet %ld, erhalten %ld"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Latent vector has insufficient values: expected %1$ld, got %2$ld"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "El vector latente no tiene suficientes valores: se esperaban %ld y se han recibido %ld"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Le vecteur latent ne contient pas assez de valeurs : attendu %ld, obtenu %ld"
+          }
+        }
+      }
+    },
+    "PocketTTS %@ model set is not loaded." : {
+      "comment" : "Error shown when reading copied text aloud fails: speech engine models were not loaded. %@ is an internal mode name and stays as written. PocketTTS and Mimi are technical engine names and stay in English.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Der PocketTTS-Modellsatz %@ ist nicht geladen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "El conjunto de modelos %@ de PocketTTS no está cargado."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "L’ensemble de modèles PocketTTS %@ n’est pas chargé."
+          }
+        }
+      }
+    },
+    "PocketTTS EOS output is missing." : {
+      "comment" : "Error shown when reading copied text aloud fails: a speech engine step produced no output. EOS is a technical term. PocketTTS and Mimi are technical engine names and stay in English.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Die EOS-Ausgabe von PocketTTS fehlt."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Falta la salida EOS de PocketTTS."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La sortie EOS de PocketTTS est manquante."
+          }
+        }
+      }
+    },
+    "PocketTTS Mimi audio output is missing." : {
+      "comment" : "Error shown when reading copied text aloud fails: a speech engine step produced no audio. PocketTTS and Mimi are technical engine names and stay in English.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Die Mimi-Audioausgabe von PocketTTS fehlt."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Falta la salida de audio de Mimi en PocketTTS."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La sortie audio Mimi de PocketTTS est manquante."
+          }
+        }
+      }
+    },
+    "PocketTTS Mimi manifest is invalid." : {
+      "comment" : "Error shown when reading copied text aloud fails: a speech engine file is damaged. PocketTTS and Mimi are technical engine names and stay in English.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Das Mimi-Manifest von PocketTTS ist ungültig."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "El manifiesto de Mimi de PocketTTS no es válido."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Le manifeste Mimi de PocketTTS n’est pas valide."
+          }
+        }
+      }
+    },
+    "PocketTTS Mimi state output is incomplete." : {
+      "comment" : "Error shown when reading copied text aloud fails: a speech engine step produced incomplete output. PocketTTS and Mimi are technical engine names and stay in English.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Die Mimi-Zustandsausgabe von PocketTTS ist unvollständig."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La salida de estado de Mimi en PocketTTS está incompleta."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La sortie d’état Mimi de PocketTTS est incomplète."
+          }
+        }
+      }
+    },
+    "PocketTTS Mimi state tensor %@ has insufficient data: expected %ld bytes, got %ld" : {
+      "comment" : "Error shown when reading copied text aloud fails: a speech engine file is incomplete. %@ is an internal tensor name and stays as written; the first %ld is the expected byte count and the second the actual byte count. PocketTTS and Mimi are technical engine names and stay in English.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Der PocketTTS-Mimi-Zustandstensor %@ hat zu wenige Daten: erwartet %ld Bytes, erhalten %ld"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "PocketTTS Mimi state tensor %1$@ has insufficient data: expected %2$ld bytes, got %3$ld"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "El tensor de estado %@ de Mimi en PocketTTS no tiene suficientes datos: se esperaban %ld bytes y se han recibido %ld"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Le tenseur d’état Mimi %@ de PocketTTS ne contient pas assez de données : attendu %ld octets, obtenu %ld"
+          }
+        }
+      }
+    },
+    "PocketTTS asset %@ has an unexpected size." : {
+      "comment" : "Error shown when reading copied text aloud fails: a speech engine file is damaged. %@ is a file name and stays as written. PocketTTS and Mimi are technical engine names and stay in English.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Die PocketTTS-Datei %@ hat eine unerwartete Größe."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "El recurso %@ de PocketTTS tiene un tamaño inesperado."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La ressource PocketTTS %@ a une taille inattendue."
+          }
+        }
+      }
+    },
+    "PocketTTS asset %@ has misaligned byte count." : {
+      "comment" : "Error shown when reading copied text aloud fails: a speech engine file is damaged. %@ is a file name and stays as written. PocketTTS and Mimi are technical engine names and stay in English.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Die Byteanzahl der PocketTTS-Datei %@ ist falsch ausgerichtet."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "El recurso %@ de PocketTTS tiene un número de bytes no alineado."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La ressource PocketTTS %@ a un nombre d’octets non aligné."
+          }
+        }
+      }
+    },
+    "PocketTTS asset %@ is missing." : {
+      "comment" : "Error shown when reading copied text aloud fails: a speech engine file is missing. %@ is a file name and stays as written. PocketTTS and Mimi are technical engine names and stay in English.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Die PocketTTS-Datei %@ fehlt."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Falta el recurso %@ de PocketTTS."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La ressource PocketTTS %@ est manquante."
+          }
+        }
+      }
+    },
+    "PocketTTS conditioning cache outputs are incomplete." : {
+      "comment" : "Error shown when reading copied text aloud fails: a speech engine step produced incomplete output. PocketTTS and Mimi are technical engine names and stay in English.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Die Ausgaben des PocketTTS-Konditionierungscache sind unvollständig."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Las salidas de la caché de condicionamiento de PocketTTS están incompletas."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Les sorties du cache de conditionnement PocketTTS sont incomplètes."
+          }
+        }
+      }
+    },
+    "PocketTTS constants are not loaded." : {
+      "comment" : "Error shown when reading copied text aloud fails: speech engine data was not loaded. PocketTTS and Mimi are technical engine names and stay in English.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Die PocketTTS-Konstanten sind nicht geladen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Las constantes de PocketTTS no están cargadas."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Les constantes PocketTTS ne sont pas chargées."
+          }
+        }
+      }
+    },
+    "PocketTTS constants directory is missing." : {
+      "comment" : "Error shown when reading copied text aloud fails: a speech engine folder is missing. PocketTTS and Mimi are technical engine names and stay in English.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Der Ordner mit den PocketTTS-Konstanten fehlt."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Falta la carpeta de constantes de PocketTTS."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Le dossier des constantes PocketTTS est manquant."
+          }
+        }
+      }
+    },
+    "PocketTTS could not derive any synthesis chunks." : {
+      "comment" : "Error shown when reading copied text aloud fails: the text could not be split into speakable parts. PocketTTS and Mimi are technical engine names and stay in English.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "PocketTTS konnte keine Syntheseabschnitte bilden."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "PocketTTS no ha podido obtener ningún fragmento de síntesis."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "PocketTTS n’a pu extraire aucun segment de synthèse."
+          }
+        }
+      }
+    },
+    "PocketTTS flow decoder output is missing." : {
+      "comment" : "Error shown when reading copied text aloud fails: a speech engine step produced no output. PocketTTS and Mimi are technical engine names and stay in English.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Die Ausgabe des PocketTTS-Flow-Decoders fehlt."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Falta la salida del decodificador de flujo de PocketTTS."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La sortie du décodeur de flux PocketTTS est manquante."
+          }
+        }
+      }
+    },
+    "PocketTTS flow language model output is missing." : {
+      "comment" : "Error shown when reading copied text aloud fails: a speech engine step produced no output. PocketTTS and Mimi are technical engine names and stay in English.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Die Ausgabe des PocketTTS-Flow-Sprachmodells fehlt."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Falta la salida del modelo de lenguaje de flujo de PocketTTS."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La sortie du modèle de langage de flux PocketTTS est manquante."
+          }
+        }
+      }
+    },
+    "PocketTTS generation cache outputs are incomplete." : {
+      "comment" : "Error shown when reading copied text aloud fails: a speech engine step produced incomplete output. PocketTTS and Mimi are technical engine names and stay in English.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Die Ausgaben des PocketTTS-Generierungscache sind unvollständig."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Las salidas de la caché de generación de PocketTTS están incompletas."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Les sorties du cache de génération PocketTTS sont incomplètes."
+          }
+        }
+      }
+    },
+    "PocketTTS model %@ is missing." : {
+      "comment" : "Error shown when reading copied text aloud fails: a speech engine model is missing. %@ is a model file name and stays as written. PocketTTS and Mimi are technical engine names and stay in English.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Das PocketTTS-Modell %@ fehlt."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Falta el modelo %@ de PocketTTS."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Le modèle PocketTTS %@ est manquant."
+          }
+        }
+      }
+    },
+    "PocketTTS requires non-empty text." : {
+      "comment" : "Error shown when reading copied text aloud fails: there was no text to read aloud. PocketTTS and Mimi are technical engine names and stay in English.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "PocketTTS benötigt einen Text, der nicht leer ist."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "PocketTTS necesita un texto que no esté vacío."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "PocketTTS nécessite un texte non vide."
+          }
+        }
+      }
+    },
+    "PocketTTS tokenizer model is missing." : {
+      "comment" : "Error shown when reading copied text aloud fails: a speech engine file is missing. PocketTTS and Mimi are technical engine names and stay in English.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Das Tokenizer-Modell von PocketTTS fehlt."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Falta el modelo del tokenizador de PocketTTS."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Le modèle de tokenisation PocketTTS est manquant."
+          }
+        }
+      }
+    },
+    "PocketTTS voice prompt for %@ exceeds the supported length." : {
+      "comment" : "Error shown when reading copied text aloud fails: a voice file is too long. %@ is the voice identifier and stays as written. PocketTTS and Mimi are technical engine names and stay in English.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Der PocketTTS-Stimmprompt für %@ überschreitet die unterstützte Länge."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La muestra de voz de PocketTTS para %@ supera la longitud admitida."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "L’invite vocale PocketTTS de %@ dépasse la longueur prise en charge."
+          }
+        }
+      }
+    },
+    "PocketTTS voice prompt for %@ has an invalid size." : {
+      "comment" : "Error shown when reading copied text aloud fails: a voice file is damaged. %@ is the voice identifier and stays as written. PocketTTS and Mimi are technical engine names and stay in English.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Der PocketTTS-Stimmprompt für %@ hat eine ungültige Größe."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La muestra de voz de PocketTTS para %@ tiene un tamaño no válido."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "L’invite vocale PocketTTS de %@ a une taille non valide."
+          }
+        }
+      }
+    },
+    "PocketTTS voice prompt for %@ has misaligned byte count." : {
+      "comment" : "Error shown when reading copied text aloud fails: a voice file is damaged. %@ is the voice identifier and stays as written. PocketTTS and Mimi are technical engine names and stay in English.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Die Byteanzahl des PocketTTS-Stimmprompts für %@ ist falsch ausgerichtet."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La muestra de voz de PocketTTS para %@ tiene un número de bytes no alineado."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "L’invite vocale PocketTTS de %@ a un nombre d’octets non aligné."
+          }
+        }
+      }
+    },
+    "PocketTTS voice prompt for %@ is missing." : {
+      "comment" : "Error shown when reading copied text aloud fails: a voice file is missing. %@ is the voice identifier and stays as written. PocketTTS and Mimi are technical engine names and stay in English.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Der PocketTTS-Stimmprompt für %@ fehlt."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Falta la muestra de voz de PocketTTS para %@."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "L’invite vocale PocketTTS de %@ est manquante."
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

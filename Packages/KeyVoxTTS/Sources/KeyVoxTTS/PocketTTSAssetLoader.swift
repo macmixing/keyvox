@@ -28,7 +28,7 @@ enum PocketTTSAssetLoader {
             assetName: "text_embed_table.bin"
         )
         guard FileManager.default.fileExists(atPath: tokenizerURL.path) else {
-            throw KeyVoxTTSError.missingAsset("PocketTTS tokenizer model is missing.")
+            throw KeyVoxTTSError.missingAsset(NSLocalizedString("PocketTTS tokenizer model is missing.", bundle: .module, comment: "Error shown when reading copied text aloud fails: a speech engine file is missing. PocketTTS and Mimi are technical engine names and stay in English."))
         }
         let tokenizerData = try Data(contentsOf: tokenizerURL)
         let tokenizer = try SentencePieceTokenizer(modelData: tokenizerData)
@@ -42,21 +42,21 @@ enum PocketTTSAssetLoader {
     static func loadVoice(_ voice: KeyVoxTTSVoice, from layout: KeyVoxTTSAssetLayout) throws -> PocketTTSVoiceConditioning {
         let promptURL = layout.voicePromptURL(for: voice)
         guard FileManager.default.fileExists(atPath: promptURL.path) else {
-            throw KeyVoxTTSError.missingAsset("PocketTTS voice prompt for \(voice.rawValue) is missing.")
+            throw KeyVoxTTSError.missingAsset(String(format: NSLocalizedString("PocketTTS voice prompt for %@ is missing.", bundle: .module, comment: "Error shown when reading copied text aloud fails: a voice file is missing. %@ is the voice identifier and stays as written. PocketTTS and Mimi are technical engine names and stay in English."), voice.rawValue))
         }
 
         let data = try Data(contentsOf: promptURL)
         guard data.count % MemoryLayout<Float>.size == 0 else {
-            throw KeyVoxTTSError.invalidAssetData("PocketTTS voice prompt for \(voice.rawValue) has misaligned byte count.")
+            throw KeyVoxTTSError.invalidAssetData(String(format: NSLocalizedString("PocketTTS voice prompt for %@ has misaligned byte count.", bundle: .module, comment: "Error shown when reading copied text aloud fails: a voice file is damaged. %@ is the voice identifier and stays as written. PocketTTS and Mimi are technical engine names and stay in English."), voice.rawValue))
         }
         let floatCount = data.count / MemoryLayout<Float>.size
         guard floatCount > 0, floatCount % PocketTTSConstants.embeddingDimension == 0 else {
-            throw KeyVoxTTSError.invalidAssetData("PocketTTS voice prompt for \(voice.rawValue) has an invalid size.")
+            throw KeyVoxTTSError.invalidAssetData(String(format: NSLocalizedString("PocketTTS voice prompt for %@ has an invalid size.", bundle: .module, comment: "Error shown when reading copied text aloud fails: a voice file is damaged. %@ is the voice identifier and stays as written. PocketTTS and Mimi are technical engine names and stay in English."), voice.rawValue))
         }
 
         let promptLength = floatCount / PocketTTSConstants.embeddingDimension
         guard promptLength <= PocketTTSConstants.maxVoicePromptFrames else {
-            throw KeyVoxTTSError.invalidAssetData("PocketTTS voice prompt for \(voice.rawValue) exceeds the supported length.")
+            throw KeyVoxTTSError.invalidAssetData(String(format: NSLocalizedString("PocketTTS voice prompt for %@ exceeds the supported length.", bundle: .module, comment: "Error shown when reading copied text aloud fails: a voice file is too long. %@ is the voice identifier and stays as written. PocketTTS and Mimi are technical engine names and stay in English."), voice.rawValue))
         }
 
         let values = data.withUnsafeBytes { rawBuffer in
@@ -67,16 +67,16 @@ enum PocketTTSAssetLoader {
 
     private static func loadFloatArray(at url: URL, expectedCount: Int, assetName: String) throws -> [Float] {
         guard FileManager.default.fileExists(atPath: url.path) else {
-            throw KeyVoxTTSError.missingAsset("PocketTTS asset \(assetName) is missing.")
+            throw KeyVoxTTSError.missingAsset(String(format: NSLocalizedString("PocketTTS asset %@ is missing.", bundle: .module, comment: "Error shown when reading copied text aloud fails: a speech engine file is missing. %@ is a file name and stays as written. PocketTTS and Mimi are technical engine names and stay in English."), assetName))
         }
 
         let data = try Data(contentsOf: url)
         guard data.count % MemoryLayout<Float>.size == 0 else {
-            throw KeyVoxTTSError.invalidAssetData("PocketTTS asset \(assetName) has misaligned byte count.")
+            throw KeyVoxTTSError.invalidAssetData(String(format: NSLocalizedString("PocketTTS asset %@ has misaligned byte count.", bundle: .module, comment: "Error shown when reading copied text aloud fails: a speech engine file is damaged. %@ is a file name and stays as written. PocketTTS and Mimi are technical engine names and stay in English."), assetName))
         }
         let actualCount = data.count / MemoryLayout<Float>.size
         guard actualCount == expectedCount else {
-            throw KeyVoxTTSError.invalidAssetData("PocketTTS asset \(assetName) has an unexpected size.")
+            throw KeyVoxTTSError.invalidAssetData(String(format: NSLocalizedString("PocketTTS asset %@ has an unexpected size.", bundle: .module, comment: "Error shown when reading copied text aloud fails: a speech engine file is damaged. %@ is a file name and stays as written. PocketTTS and Mimi are technical engine names and stay in English."), assetName))
         }
 
         return data.withUnsafeBytes { rawBuffer in

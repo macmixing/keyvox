@@ -106,16 +106,16 @@ enum PocketTTSKVCacheInference {
         let output = try await model.keyVoxPrediction(from: provider)
 
         guard let transformer = output.featureValue(for: PocketTTSInferenceTypes.FlowLMOutput.transformerOut)?.multiArrayValue else {
-            throw KeyVoxTTSError.inferenceFailure("PocketTTS flow language model output is missing.")
+            throw KeyVoxTTSError.inferenceFailure(NSLocalizedString("PocketTTS flow language model output is missing.", bundle: .module, comment: "Error shown when reading copied text aloud fails: a speech engine step produced no output. PocketTTS and Mimi are technical engine names and stay in English."))
         }
         guard let eosArray = output.featureValue(for: PocketTTSInferenceTypes.FlowLMOutput.eosLogit)?.multiArrayValue else {
-            throw KeyVoxTTSError.inferenceFailure("PocketTTS EOS output is missing.")
+            throw KeyVoxTTSError.inferenceFailure(NSLocalizedString("PocketTTS EOS output is missing.", bundle: .module, comment: "Error shown when reading copied text aloud fails: a speech engine step produced no output. EOS is a technical term. PocketTTS and Mimi are technical engine names and stay in English."))
         }
 
         for layerIndex in 0..<PocketTTSConstants.kvCacheLayers {
             guard let cache = output.featureValue(for: PocketTTSInferenceTypes.FlowLMOutput.cacheKeys[layerIndex])?.multiArrayValue,
                   let position = output.featureValue(for: PocketTTSInferenceTypes.FlowLMOutput.positionKeys[layerIndex])?.multiArrayValue else {
-                throw KeyVoxTTSError.inferenceFailure("PocketTTS generation cache outputs are incomplete.")
+                throw KeyVoxTTSError.inferenceFailure(NSLocalizedString("PocketTTS generation cache outputs are incomplete.", bundle: .module, comment: "Error shown when reading copied text aloud fails: a speech engine step produced incomplete output. PocketTTS and Mimi are technical engine names and stay in English."))
             }
             state.caches[layerIndex] = cache
             state.positions[layerIndex] = position
@@ -141,7 +141,7 @@ enum PocketTTSKVCacheInference {
         for layerIndex in 0..<PocketTTSConstants.kvCacheLayers {
             guard let cache = output.featureValue(for: PocketTTSInferenceTypes.CondStepOutput.cacheKeys[layerIndex])?.multiArrayValue,
                   let position = output.featureValue(for: PocketTTSInferenceTypes.CondStepOutput.positionKeys[layerIndex])?.multiArrayValue else {
-                throw KeyVoxTTSError.inferenceFailure("PocketTTS conditioning cache outputs are incomplete.")
+                throw KeyVoxTTSError.inferenceFailure(NSLocalizedString("PocketTTS conditioning cache outputs are incomplete.", bundle: .module, comment: "Error shown when reading copied text aloud fails: a speech engine step produced incomplete output. PocketTTS and Mimi are technical engine names and stay in English."))
             }
             state.caches[layerIndex] = cache
             state.positions[layerIndex] = position

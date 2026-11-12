@@ -13,18 +13,18 @@ extension KeyVoxPocketTTSRuntime {
         for modelName in requiredModelNames {
             let modelURL = assetLayout.compiledModelURL(named: modelName)
             guard FileManager.default.fileExists(atPath: modelURL.path) else {
-                throw KeyVoxTTSError.missingModel("PocketTTS model \(modelName) is missing.")
+                throw KeyVoxTTSError.missingModel(String(format: NSLocalizedString("PocketTTS model %@ is missing.", bundle: .module, comment: "Error shown when reading copied text aloud fails: a speech engine model is missing. %@ is a model file name and stays as written. PocketTTS and Mimi are technical engine names and stay in English."), modelName))
             }
         }
 
         guard FileManager.default.fileExists(atPath: assetLayout.constantsDirectoryURL.path) else {
-            throw KeyVoxTTSError.invalidAssetLayout("PocketTTS constants directory is missing.")
+            throw KeyVoxTTSError.invalidAssetLayout(NSLocalizedString("PocketTTS constants directory is missing.", bundle: .module, comment: "Error shown when reading copied text aloud fails: a speech engine folder is missing. PocketTTS and Mimi are technical engine names and stay in English."))
         }
     }
 
     func constants() throws -> PocketTTSConstantsBundle {
         guard let constantsBundle else {
-            throw KeyVoxTTSError.missingAsset("PocketTTS constants are not loaded.")
+            throw KeyVoxTTSError.missingAsset(NSLocalizedString("PocketTTS constants are not loaded.", bundle: .module, comment: "Error shown when reading copied text aloud fails: speech engine data was not loaded. PocketTTS and Mimi are technical engine names and stay in English."))
         }
         return constantsBundle
     }
@@ -84,7 +84,7 @@ extension KeyVoxPocketTTSRuntime {
 
     func modelSet(_ modelSet: ModelSet?, modeName: String) throws -> ModelSet {
         guard let modelSet else {
-            throw KeyVoxTTSError.missingModel("PocketTTS \(modeName) model set is not loaded.")
+            throw KeyVoxTTSError.missingModel(String(format: NSLocalizedString("PocketTTS %@ model set is not loaded.", bundle: .module, comment: "Error shown when reading copied text aloud fails: speech engine models were not loaded. %@ is an internal mode name and stays as written. PocketTTS and Mimi are technical engine names and stay in English."), modeName))
         }
         return modelSet
     }

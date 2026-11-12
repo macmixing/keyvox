@@ -4,7 +4,7 @@ import Foundation
 enum PocketTTSInferenceUtilities {
     static func createBeginningOfSequenceEmbedding(_ values: [Float]) throws -> MLMultiArray {
         guard values.count >= PocketTTSConstants.latentDimension else {
-            throw KeyVoxTTSError.invalidAssetData("BOS embedding has insufficient values: expected \(PocketTTSConstants.latentDimension), got \(values.count)")
+            throw KeyVoxTTSError.invalidAssetData(String(format: NSLocalizedString("BOS embedding has insufficient values: expected %ld, got %ld", bundle: .module, comment: "Error shown when reading copied text aloud fails: a speech engine file is incomplete. BOS embedding is a technical term; the first %ld is the expected value count and the second the actual count. PocketTTS and Mimi are technical engine names and stay in English."), PocketTTSConstants.latentDimension, values.count))
         }
         let array = try MLMultiArray(shape: [NSNumber(value: PocketTTSConstants.latentDimension)], dataType: .float32)
         let pointer = array.dataPointer.bindMemory(to: Float.self, capacity: PocketTTSConstants.latentDimension)
@@ -29,7 +29,7 @@ enum PocketTTSInferenceUtilities {
 
     static func createSequence(from latent: [Float]) throws -> MLMultiArray {
         guard latent.count >= PocketTTSConstants.latentDimension else {
-            throw KeyVoxTTSError.invalidAssetData("Latent sequence has insufficient values: expected \(PocketTTSConstants.latentDimension), got \(latent.count)")
+            throw KeyVoxTTSError.invalidAssetData(String(format: NSLocalizedString("Latent sequence has insufficient values: expected %ld, got %ld", bundle: .module, comment: "Error shown when reading copied text aloud fails: internal speech data is incomplete. The first %ld is the expected value count and the second the actual count. PocketTTS and Mimi are technical engine names and stay in English."), PocketTTSConstants.latentDimension, latent.count))
         }
         let array = try MLMultiArray(
             shape: [1, 1, NSNumber(value: PocketTTSConstants.latentDimension)],
