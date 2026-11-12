@@ -84,7 +84,7 @@
         },
         "es": {
           "title": "Tus sustituciones de texto funcionan aquí",
-          "message": "Las funciones rápidas de la sustitución de texto de iOS funcionan en el teclado de KeyVox. Ajústalas en iOS, en Ajustes > General > Teclado > Sustitución de texto."
+          "message": "Los atajos de la sustitución de texto de iOS funcionan en el teclado de KeyVox. Ajústalos en iOS, en Ajustes > General > Teclado > Sustitución de texto."
         },
         "fr": {
           "title": "Vos remplacements de texte fonctionnent ici",
