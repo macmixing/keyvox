@@ -4,6 +4,7 @@ import PackageDescription
 
 let package = Package(
     name: "KeyVoxWhisper",
+    defaultLocalization: "en",
     platforms: [
         .macOS("13.3"),
         .iOS("18.0"),
@@ -22,6 +23,9 @@ let package = Package(
             name: "KeyVoxWhisper",
             dependencies: [
                 .product(name: "KeyVoxSpeechRuntime", package: "KeyVoxVoiceActivity"),
+            ],
+            resources: [
+                .process("Resources"),
             ]
         ),
         .testTarget(

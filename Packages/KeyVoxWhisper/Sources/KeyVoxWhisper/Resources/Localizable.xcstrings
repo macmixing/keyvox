@@ -1,0 +1,75 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "Audio frames are empty" : {
+      "comment" : "Dictation error shown when no audio was recorded.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Keine Audiodaten aufgenommen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Los fotogramas de audio están vacíos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Les trames audio sont vides"
+          }
+        }
+      }
+    },
+    "Failed to initialize Whisper context" : {
+      "comment" : "Dictation error shown when the Whisper speech model cannot start. Whisper is a brand name and stays in English.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Whisper-Kontext konnte nicht initialisiert werden"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No se ha podido inicializar el contexto de Whisper"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Échec de l’initialisation du contexte Whisper"
+          }
+        }
+      }
+    },
+    "Whisper transcription failed with error code %d" : {
+      "comment" : "Dictation error shown when the Whisper speech model fails. %d is a technical error number. Whisper is a brand name and stays in English.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Whisper-Transkription fehlgeschlagen mit Fehlercode %d"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Error en la transcripción de Whisper con el código %d"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Échec de la transcription Whisper (code d’erreur %d)"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}
