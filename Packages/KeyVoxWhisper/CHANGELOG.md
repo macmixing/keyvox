@@ -6,6 +6,21 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.2.1] - 2026-11-11
+
+Whisper error messages are now translatable on Apple platforms.
+
+### Includes
+
+- Made the Whisper error descriptions translatable through a package string catalog.
+- Read translations through `KeyVoxWhisperLocalization.bundle`, which uses the package bundle on Apple platforms and the English text written in code elsewhere, so portable clients never require the resource bundle at runtime.
+
+### Notes
+
+- `1.2.1` tracks translatable error messages.
+
+---
+
 ## [1.2.0] - 2026-09-12
 
 Whisper now supports portable runtime initialization and optional external encoder acceleration.
