@@ -8533,26 +8533,7 @@
       }
     },
     "Toggle KeyVox Dictation" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "KeyVox-Diktat ein-/ausschalten"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Activar/desactivar dictado de KeyVox"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Toggle KeyVox Dictation"
-          }
-        }
-      }
+      "shouldTranslate" : false
     },
     "Trigger directly from the KeyVox keyboard." : {
       "comment" : "Row description on the KeyVox Speak page listing the ways to start Speak. KeyVox is a brand name and stays in English.",
