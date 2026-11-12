@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 import UIKit
 import KeyVoxCore
@@ -35,40 +36,40 @@ struct DictionaryEntryRowView: View {
                 )
         )
         .contextMenu {
-            Button("Copy", systemImage: "doc.on.doc") {
+            Button(String(localized: "Copy", comment: "Context menu button that copies a Dictionary entry."), systemImage: "doc.on.doc") {
                 UIPasteboard.general.string = entry.phrase
             }
             .tint(.white)
 
-            Button("Edit", systemImage: "pencil", action: onEdit)
+            Button(String(localized: "Edit", comment: "Context menu button that edits a Dictionary entry."), systemImage: "pencil", action: onEdit)
                 .tint(.white)
 
             Button(role: .destructive) {
                 isDeleteConfirmationPresented = true
             }
             label: {
-                Label("Delete", systemImage: "trash")
+                Label(String(localized: "Delete", comment: "Context menu button that deletes a Dictionary entry."), systemImage: "trash")
             }
             .tint(.red)
         }
         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-            Button("Delete", systemImage: "trash") {
+            Button(String(localized: "Delete", comment: "Swipe action that deletes a Dictionary entry."), systemImage: "trash") {
                 isDeleteConfirmationPresented = true
             }
             .tint(.red)
 
-            Button("Edit", systemImage: "pencil", action: onEdit)
+            Button(String(localized: "Edit", comment: "Swipe action that edits a Dictionary entry."), systemImage: "pencil", action: onEdit)
                 .tint(AppTheme.accent)
         }
         .confirmationDialog(
-            "Delete Entry?",
+            String(localized: "Delete Entry?", comment: "Title of the confirmation shown before deleting a Dictionary entry."),
             isPresented: $isDeleteConfirmationPresented,
             titleVisibility: .visible
         ) {
-            Button("Delete Entry", role: .destructive, action: onDelete)
-            Button("Cancel", role: .cancel) {}
+            Button(String(localized: "Delete Entry", comment: "Destructive button in the confirmation that deletes a Dictionary entry."), role: .destructive, action: onDelete)
+            Button(String(localized: "Cancel", comment: "Button that closes the Dictionary entry delete confirmation without deleting."), role: .cancel) {}
         } message: {
-            Text("This dictionary entry will be removed from KeyVox.")
+            Text("This dictionary entry will be removed from KeyVox.", comment: "Message in the confirmation shown before deleting a Dictionary entry. KeyVox is a brand name and stays in English.")
         }
         .blocksAppReviewRequest(isDeleteConfirmationPresented)
     }

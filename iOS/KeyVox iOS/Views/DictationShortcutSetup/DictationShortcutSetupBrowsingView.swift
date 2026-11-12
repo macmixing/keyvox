@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 
 struct DictationShortcutSetupBrowsingView: View {
@@ -63,7 +64,7 @@ struct DictationShortcutSetupBrowsingView: View {
             selectedPage = .shortcutIntro
         }
         .alert(
-            "Unable to Complete Action",
+            String(localized: "Unable to Complete Action", comment: "Title of the alert shown when a dictation shortcut setup action fails."),
             isPresented: Binding(
                 get: { errorMessage != nil },
                 set: { isPresented in
@@ -73,7 +74,7 @@ struct DictationShortcutSetupBrowsingView: View {
                 }
             )
         ) {
-            Button("OK", role: .cancel) {
+            Button(String(localized: "OK", comment: "Button that dismisses the dictation shortcut setup error alert."), role: .cancel) {
                 errorMessage = nil
             }
         } message: {
@@ -90,7 +91,7 @@ struct DictationShortcutSetupBrowsingView: View {
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("Close")
+        .accessibilityLabel(String(localized: "Close", comment: "VoiceOver label for the button that closes the dictation shortcut setup."))
     }
 
     private var selectedPageScrollPosition: Binding<DictationShortcutSetupPage?> {
@@ -186,7 +187,7 @@ struct DictationShortcutSetupBrowsingView: View {
             switch page {
             case .addShortcut:
                 AppActionButton(
-                    title: "Add Shortcut",
+                    title: String(localized: "Add Shortcut", comment: "Button in the dictation shortcut setup that adds the KeyVox shortcut to the Shortcuts app."),
                     style: .primary,
                     fillsWidth: true,
                     size: .compact,
@@ -195,7 +196,7 @@ struct DictationShortcutSetupBrowsingView: View {
                 )
             case .actionButtonShortcutSelection:
                 AppActionButton(
-                    title: "Open Settings",
+                    title: String(localized: "Open Settings", comment: "Button in the dictation shortcut setup that opens the Settings app. Use Apple's official name for Settings in this language."),
                     style: .primary,
                     fillsWidth: true,
                     size: .compact,
@@ -215,21 +216,21 @@ struct DictationShortcutSetupBrowsingView: View {
     private func guidedActionTitle(for page: DictationShortcutSetupPage) -> String {
         switch page {
         case .shortcutIntro, .actionButtonIntro:
-            "Continue"
+            String(localized: "Continue", comment: "Button that moves to the next page of the dictation shortcut setup.")
         case .addShortcut:
             if hasRequestedShortcutInstallation {
-                finishesSetup(on: page) ? "Finish" : "Next"
+                finishesSetup(on: page) ? String(localized: "Finish", comment: "Button that finishes the dictation shortcut setup.") : String(localized: "Next", comment: "Button that moves to the next page of the dictation shortcut setup.")
             } else {
-                "Add Shortcut"
+                String(localized: "Add Shortcut", comment: "Button in the dictation shortcut setup that adds the KeyVox shortcut to the Shortcuts app.")
             }
         case .actionButtonSettings, .actionButtonShortcutOption:
-            "Next"
+            String(localized: "Next", comment: "Button that moves to the next page of the dictation shortcut setup.")
         case .actionButtonShortcutSelection:
-            hasRequestedSettings ? "Next" : "Open Settings"
+            hasRequestedSettings ? String(localized: "Next", comment: "Button that moves to the next page of the dictation shortcut setup.") : String(localized: "Open Settings", comment: "Button in the dictation shortcut setup that opens the Settings app. Use Apple's official name for Settings in this language.")
         case .actionButtonDemoPaste:
-            "Next"
+            String(localized: "Next", comment: "Button that moves to the next page of the dictation shortcut setup.")
         case .actionButtonDemoHandoff:
-            "Finish"
+            String(localized: "Finish", comment: "Button that finishes the dictation shortcut setup.")
         }
     }
 
@@ -307,7 +308,7 @@ struct DictationShortcutSetupBrowsingView: View {
         appHaptics.light()
         Task {
             guard await DictationShortcutSettingsOpener.open() else {
-                errorMessage = "The Settings app could not be opened."
+                errorMessage = String(localized: "The Settings app could not be opened.", comment: "Error message in the dictation shortcut setup when the Settings app could not be opened. Use Apple's official name for Settings in this language.")
                 return
             }
         }

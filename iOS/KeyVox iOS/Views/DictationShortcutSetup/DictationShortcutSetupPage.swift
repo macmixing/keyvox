@@ -52,19 +52,19 @@ enum DictationShortcutSetupPage: Int, CaseIterable, Hashable {
         case .shortcutIntro:
             nil
         case .addShortcut:
-            "Tap the button below to add the KeyVox shortcut."
+            String(localized: "Tap the button below to add the KeyVox shortcut.", comment: "VoiceOver label for the dictation shortcut setup video on the Add Shortcut page. KeyVox is a brand name and stays in English.")
         case .actionButtonIntro:
-            "Dictate with the Action Button."
+            String(localized: "Dictate with the Action Button.", comment: "VoiceOver label for the dictation shortcut setup video introducing the Action Button. Use Apple's official name for the Action Button in this language.")
         case .actionButtonSettings:
-            "Open iPhone Settings and tap “Action Button.”"
+            String(localized: "Open iPhone Settings and tap “Action Button.”", comment: "VoiceOver label for the dictation shortcut setup video showing the Action Button page in Settings. Use Apple's official names for Settings and Action Button in this language.")
         case .actionButtonShortcutOption:
-            "Swipe through the options and find “Shortcut,” then tap “Choose a Shortcut…”"
+            String(localized: "Swipe through the options and find “Shortcut,” then tap “Choose a Shortcut…”", comment: "VoiceOver label for the dictation shortcut setup video showing the Action Button options. Use Apple's official names for the Shortcut option and the Choose a Shortcut… button in this language.")
         case .actionButtonShortcutSelection:
-            "Tap “Toggle KeyVox Dictation.”"
+            String(localized: "Tap “Toggle KeyVox Dictation.”", comment: "VoiceOver label for the dictation shortcut setup video showing the shortcut list. “Toggle KeyVox Dictation” is the name of the bundled KeyVox shortcut and stays as written.")
         case .actionButtonDemoPaste:
-            "Press the Action Button to toggle KeyVox dictation. Press it again to transcribe your words. Paste your text into any app."
+            String(localized: "Press the Action Button to toggle KeyVox dictation. Press it again to transcribe your words. Paste your text into any app.", comment: "VoiceOver label for the dictation shortcut setup video demonstrating dictation with the Action Button. KeyVox is a brand name and stays in English; use Apple's official name for the Action Button in this language.")
         case .actionButtonDemoHandoff:
-            "Or start by pressing the Action Button and talking. Pull up the KeyVox keyboard and tap the dictation button. Turn your speech into text."
+            String(localized: "Or start by pressing the Action Button and talking. Pull up the KeyVox keyboard and tap the dictation button. Turn your speech into text.", comment: "VoiceOver label for the dictation shortcut setup video demonstrating starting dictation with the Action Button and finishing it on the keyboard. KeyVox is a brand name and stays in English; use Apple's official name for the Action Button in this language.")
         }
     }
 

@@ -64,11 +64,11 @@ private enum DictationShortcutInstallationError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .missingBundledShortcut:
-            String(localized: "The KeyVox dictation shortcut is missing from this build.")
+            String(localized: "The KeyVox dictation shortcut is missing from this build.", comment: "Error shown on the dictation shortcut setup screen when the bundled shortcut file is missing. KeyVox is a brand name and stays in English.")
         case .shortcutsAppUnavailable:
-            String(localized: "Install the Shortcuts app from the App Store, then try adding the KeyVox dictation shortcut again.")
+            String(localized: "Install the Shortcuts app from the App Store, then try adding the KeyVox dictation shortcut again.", comment: "Error shown on the dictation shortcut setup screen when the Shortcuts app is not installed. Use Apple's official names for the Shortcuts app and the App Store in this language. KeyVox is a brand name and stays in English.")
         case .unableToOpenShortcut:
-            String(localized: "The KeyVox dictation shortcut could not be opened.")
+            String(localized: "The KeyVox dictation shortcut could not be opened.", comment: "Error shown on the dictation shortcut setup screen when the shortcut could not be opened for installation. KeyVox is a brand name and stays in English.")
         }
     }
 }

@@ -18,11 +18,11 @@ enum SessionDisableTiming: String, CaseIterable, Identifiable {
 
     var displayName: String {
         switch self {
-        case .immediately: return "Immediately"
-        case .fiveMinutes: return "5 Minutes"
-        case .fifteenMinutes: return "15 Minutes"
-        case .oneHour: return "1 Hour"
-        case .never: return "Never"
+        case .immediately: return String(localized: "Immediately", comment: "Dictation settings picker for when the dictation session turns off after idle; timing option meaning right away.")
+        case .fiveMinutes: return String(localized: "5 Minutes", comment: "Dictation settings picker for when the dictation session turns off after idle; timing option.")
+        case .fifteenMinutes: return String(localized: "15 Minutes", comment: "Dictation settings picker for when the dictation session turns off after idle; timing option.")
+        case .oneHour: return String(localized: "1 Hour", comment: "Dictation settings picker for when the dictation session turns off after idle; timing option.")
+        case .never: return String(localized: "Never", comment: "Dictation settings picker for when the dictation session turns off after idle; timing option.")
         }
     }
     /// Returns the idle timeout before disabling, or `nil` if no timeout applies.
@@ -53,11 +53,11 @@ enum SpeakTimeoutTiming: String, CaseIterable, Identifiable {
 
     var displayName: String {
         switch self {
-        case .immediately: return "Immediately"
-        case .fiveMinutes: return "5 Minutes"
-        case .fifteenMinutes: return "15 Minutes"
-        case .oneHour: return "1 Hour"
-        case .never: return "Never"
+        case .immediately: return String(localized: "Immediately", comment: "KeyVox Speak settings picker for when the Speak engine unloads after idle; timing option meaning right away.")
+        case .fiveMinutes: return String(localized: "5 Minutes", comment: "KeyVox Speak settings picker for when the Speak engine unloads after idle; timing option.")
+        case .fifteenMinutes: return String(localized: "15 Minutes", comment: "KeyVox Speak settings picker for when the Speak engine unloads after idle; timing option.")
+        case .oneHour: return String(localized: "1 Hour", comment: "KeyVox Speak settings picker for when the Speak engine unloads after idle; timing option.")
+        case .never: return String(localized: "Never", comment: "KeyVox Speak settings picker for when the Speak engine unloads after idle; timing option.")
         }
     }
     /// Returns the delay before unloading, or `nil` if no delay applies.
@@ -130,9 +130,9 @@ final class AppSettingsStore: ObservableObject {
         var missingModelMessage: String {
             switch self {
             case .whisper:
-                return "Whisper model not found."
+                return String(localized: "Whisper model not found.", comment: "Dictation error message when the selected model is missing. Whisper is a brand name and stays in English.")
             case .parakeet:
-                return "Parakeet model not found."
+                return String(localized: "Parakeet model not found.", comment: "Dictation error message when the selected model is missing. Parakeet is a brand name and stays in English.")
             }
         }
 

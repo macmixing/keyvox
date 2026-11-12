@@ -272,7 +272,7 @@ enum KeyVoxRequiredLiveActivityError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .disabled:
-            String(localized: "Live Activities must be enabled in KeyVox before background dictation can start.")
+            String(localized: "Live Activities must be enabled in KeyVox before background dictation can start.", comment: "Error shown when background dictation needs Live Activities turned on. KeyVox is a brand name and stays in English; use Apple's official name for Live Activities in this language.")
         }
     }
 }

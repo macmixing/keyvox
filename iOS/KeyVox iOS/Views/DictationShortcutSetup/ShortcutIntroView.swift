@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 
 struct ShortcutIntroView: View {
@@ -11,9 +12,9 @@ struct ShortcutIntroView: View {
         let label: String
     }
 
-    private static let controlCenterItem = FeatureItem(id: 0, symbol: "switch.2", label: "Add to Control Center")
-    private static let actionButtonItem = FeatureItem(id: 1, symbol: "hand.tap.fill", label: "Map to Action Button")
-    private static let anyAppItem = FeatureItem(id: 2, symbol: "mic.fill", label: "Dictate in any app, instantly")
+    private static let controlCenterItem = FeatureItem(id: 0, symbol: "switch.2", label: String(localized: "Add to Control Center", comment: "Feature list item on the dictation shortcut intro page. Use Apple's official name for Control Center in this language."))
+    private static let actionButtonItem = FeatureItem(id: 1, symbol: "hand.tap.fill", label: String(localized: "Map to Action Button", comment: "Feature list item on the dictation shortcut intro page about assigning the shortcut to the Action Button. Use Apple's official name for the Action Button in this language."))
+    private static let anyAppItem = FeatureItem(id: 2, symbol: "mic.fill", label: String(localized: "Dictate in any app, instantly", comment: "Feature list item on the dictation shortcut intro page."))
 
     /// iPad has no Action Button, so it leaves that item out.
     private static let featureItems: [FeatureItem] = AppDevice.isPad
@@ -67,7 +68,7 @@ struct ShortcutIntroView: View {
             ScrollView {
                 VStack(spacing: 0) {
                     VStack(spacing: 10) {
-                        Text("Dictate Anywhere")
+                        Text("Dictate Anywhere", comment: "Title of the dictation shortcut intro page.")
                             .font(.appFont(35, variant: .medium))
                             .foregroundStyle(.white)
                             .multilineTextAlignment(.center)
@@ -101,7 +102,7 @@ struct ShortcutIntroView: View {
                     }
                     .padding(.bottom, 20)
 
-                    Text("Setup only takes a few quick steps.")
+                    Text("Setup only takes a few quick steps.", comment: "Note at the bottom of the dictation shortcut intro page.")
                         .font(.appFont(15, variant: .light))
                         .foregroundStyle(.white.opacity(0.5))
                         .multilineTextAlignment(.center)

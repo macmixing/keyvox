@@ -27,7 +27,7 @@ struct OnboardingKeyboardTourSceneAView: View {
         }
 
         var body: some View {
-            Text("Tap & hold the Globe, \n then select KeyVox.")
+            Text("Tap & hold the Globe, \n then select KeyVox.", comment: "Instruction in the onboarding keyboard tour for switching to the KeyVox keyboard; keep the line break. Globe is the keyboard switch key, use Apple's official name for it in this language. KeyVox is a brand name and stays in English.")
                 .font(.appFont(Metrics.fontSize, variant: .light))
                 .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
                 .lineSpacing(Metrics.lineSpacing)

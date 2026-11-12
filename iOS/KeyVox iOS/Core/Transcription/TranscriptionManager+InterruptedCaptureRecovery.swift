@@ -100,7 +100,7 @@ extension TranscriptionManager {
 
         let trimmedText = finalText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedText.isEmpty else {
-            markInterruptedCaptureRecoveryFailed("Interrupted capture recovery produced no transcription.")
+            markInterruptedCaptureRecoveryFailed(String(localized: "Interrupted capture recovery produced no transcription.", comment: "Dictation error message when a recording that was interrupted could not be turned into text."))
             return
         }
 

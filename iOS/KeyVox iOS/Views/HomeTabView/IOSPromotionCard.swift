@@ -1,3 +1,4 @@
+import Foundation
 import KeyVoxPromotions
 import SwiftUI
 
@@ -5,12 +6,17 @@ struct IOSPromotionCard: View {
     let campaign: PromotionCampaign
     @Environment(\.openURL) private var openURL
 
+    /// The campaign wording in the language the app is showing.
+    private var copy: PromotionCopy {
+        campaign.copy(forLanguage: Bundle.main.preferredLocalizations.first)
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .center, spacing: 12) {
                 iconView
 
-                Text(campaign.title)
+                Text(copy.title)
                     .font(.appFont(18))
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -20,12 +26,12 @@ struct IOSPromotionCard: View {
                 }
             }
 
-            Text(campaign.message)
+            Text(copy.message)
                 .font(.appFont(15, variant: .light))
                 .foregroundStyle(.white)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
-            if let buttonTitle = campaign.buttonTitle,
+            if let buttonTitle = copy.buttonTitle,
                let action = campaign.action {
                 AppActionButton(
                     title: buttonTitle,
@@ -88,8 +94,8 @@ struct IOSPromotionCard: View {
     private func shareButton(for sharing: PromotionSharing) -> some View {
         ShareLink(
             item: sharing.url,
-            subject: Text(sharing.title ?? campaign.title),
-            message: Text(campaign.message)
+            subject: Text(copy.sharingTitle ?? copy.title),
+            message: Text(copy.message)
         ) {
             Image(systemName: "square.and.arrow.up")
                 .font(.system(size: 15, weight: .semibold))
@@ -98,7 +104,7 @@ struct IOSPromotionCard: View {
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("Share \(campaign.title)")
+        .accessibilityLabel(String(localized: "Share \(copy.title)", comment: "VoiceOver label for the share button on a promotion card on the Home tab. The placeholder is the promotion's title."))
         .padding(.trailing, -8)
     }
 }

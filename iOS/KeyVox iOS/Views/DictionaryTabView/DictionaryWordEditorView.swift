@@ -1,4 +1,5 @@
 import Combine
+import Foundation
 import SwiftUI
 import KeyVoxCore
 
@@ -88,7 +89,7 @@ struct DictionaryWordEditorView: View {
                 }
 
                 if mode.showsDescription {
-                    Text("Add custom words, email addresses, and short phrases to improve transcription accuracy.")
+                    Text("Add custom words, email addresses, and short phrases to improve transcription accuracy.", comment: "Description in the sheet for adding a word to the Dictionary.")
                         .font(.appFont(12))
                         .foregroundStyle(.yellow)
                         .frame(maxWidth: 380)
@@ -106,7 +107,7 @@ struct DictionaryWordEditorView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button("Cancel") {
+                    Button(String(localized: "Cancel", comment: "Button that closes the Dictionary word sheet without saving.")) {
                         dismiss()
                     }
                     .tint(.white)

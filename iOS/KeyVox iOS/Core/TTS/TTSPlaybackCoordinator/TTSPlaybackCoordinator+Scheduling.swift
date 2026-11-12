@@ -27,7 +27,7 @@ extension TTSPlaybackCoordinator {
         totalGeneratedSampleCount += frame.sampleCount
         activePlaybackSamples.append(contentsOf: frame.samples)
         guard let buffer = makeBuffer(from: frame.samples) else {
-            handleFailure(KeyVoxTTSError.inferenceFailure("PocketTTS produced an invalid audio frame."))
+            handleFailure(KeyVoxTTSError.inferenceFailure(String(localized: "PocketTTS produced an invalid audio frame.", comment: "Error shown when KeyVox Speak playback fails. PocketTTS is a brand name and stays in English.")))
             return
         }
 

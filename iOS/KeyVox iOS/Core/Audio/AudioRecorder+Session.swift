@@ -468,15 +468,15 @@ enum AudioRecorderError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .microphonePermissionDenied:
-            return "Microphone access is required to start recording."
+            return String(localized: "Microphone access is required to start recording.", comment: "Dictation error message when microphone permission is missing.")
         case let .engineStartFailed(underlying):
-            return "Couldn't start audio capture: \(underlying.localizedDescription)"
+            return String(localized: "Couldn't start audio capture: \(underlying.localizedDescription)", comment: "Dictation error message when recording could not start. The placeholder is the system's error description.")
         case let .engineStopFailed(underlying):
-            return "Couldn't stop audio capture: \(underlying.localizedDescription)"
+            return String(localized: "Couldn't stop audio capture: \(underlying.localizedDescription)", comment: "Dictation error message when recording could not stop. The placeholder is the system's error description.")
         case .monitoringShutdownWhileRecording:
-            return "Can't disable the session while audio is actively recording."
+            return String(localized: "Can't disable the session while audio is actively recording.", comment: "Dictation error message when turning off the dictation session during a recording.")
         case let .invalidInputFormat(sampleRate, channelCount):
-            return "Audio input is not ready yet. sampleRate=\(sampleRate), channelCount=\(channelCount)"
+            return String(localized: "Audio input is not ready yet. sampleRate=\(sampleRate), channelCount=\(Int(channelCount))", comment: "Dictation error message when the microphone input is not ready. sampleRate and channelCount are technical labels and stay as written; the first placeholder is the audio sample rate and the second is the number of audio channels.")
         }
     }
 }

@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 
 struct KeyVoxVibesSceneCView: View {
@@ -21,8 +22,8 @@ struct KeyVoxVibesSceneCView: View {
     }
 
     private static let details: [Detail] = [
-        Detail(id: 0, icon: "clock.fill", title: "Try it now", subtitle: "Why not vibe out for a while? You deserve it."),
-        Detail(id: 1, icon: "infinity", title: "No Subscription", subtitle: "Pay once and keep the Vibes going."),
+        Detail(id: 0, icon: "clock.fill", title: String(localized: "Try it now", comment: "Detail title on the KeyVox Vibes trial page."), subtitle: String(localized: "Why not vibe out for a while? You deserve it.", comment: "Detail description on the KeyVox Vibes trial page; a playful invitation to try Vibes.")),
+        Detail(id: 1, icon: "infinity", title: String(localized: "No Subscription", comment: "Detail title on the KeyVox Vibes trial page."), subtitle: String(localized: "Pay once and keep the Vibes going.", comment: "Detail description on the KeyVox Vibes trial page. Vibes is a brand name and stays in English.")),
     ]
 
     let isVisible: Bool
@@ -56,14 +57,14 @@ struct KeyVoxVibesSceneCView: View {
                         .scaleEffect(logoScale)
                         .padding(.bottom, 12)
 
-                    Text("Catch the Vibes")
+                    Text("Catch the Vibes", comment: "Title of the KeyVox Vibes trial page. Vibes is a brand name and stays in English.")
                         .font(.appFont(31, variant: .medium))
                         .foregroundStyle(.white)
                         .multilineTextAlignment(.center)
                         .opacity(titleOpacity)
                         .padding(.bottom, 6)
 
-                    Text("Vibe now. Unlock it later.")
+                    Text("Vibe now. Unlock it later.", comment: "Subtitle of the KeyVox Vibes trial page; to Vibe means to restyle text with Vibes. Vibe is a brand name and stays in English.")
                         .font(.appFont(17, variant: .light))
                         .foregroundStyle(.white.opacity(0.78))
                         .multilineTextAlignment(.center)
@@ -89,7 +90,7 @@ struct KeyVoxVibesSceneCView: View {
 
                     installCardSlot
 
-                    Text("\(KeyVoxVibesTrialRemainingTimeFormatter.fullDayCountText(for: KeyVoxVibesTrialPolicy.duration))-day trial. One-time purchase.")
+                    Text("\(KeyVoxVibesTrialRemainingTimeFormatter.fullDayCount(for: KeyVoxVibesTrialPolicy.duration))-day trial. One-time purchase.", comment: "Footer on the KeyVox Vibes trial page. %lld is the number of trial days; use plural forms if the language needs them.")
                         .font(.appFont(15, variant: .light))
                         .foregroundStyle(.yellow.opacity(0.72))
                         .opacity(footerOpacity)
@@ -146,7 +147,7 @@ struct KeyVoxVibesSceneCView: View {
         let remainingText = KeyVoxVibesTrialRemainingTimeFormatter.remainingText(
             for: vibesPurchaseController.trialRemaining
         )
-        return "You’re trying Vibes, you have \(remainingText) left."
+        return String(localized: "You’re trying Vibes, you have \(remainingText) left.", comment: "Trial status on the KeyVox Vibes trial page. Vibes is a brand name and stays in English. The placeholder is the remaining trial time, such as days and hours.")
     }
 
     private func subtitleStyle(for detail: Detail) -> Color {
@@ -180,7 +181,7 @@ struct KeyVoxVibesSceneCView: View {
         if let displayedInstallState {
             ModelDownloaderCardView(
                 iconSystemName: "arrowshape.down.fill",
-                title: "Install Vibes AI",
+                title: String(localized: "Install Vibes AI", comment: "Title of the Vibes AI install card. Vibes AI is a brand name and stays in English."),
                 subtitle: nil,
                 statusText: vibesAIInstallStatusText(for: displayedInstallState),
                 progress: vibesAIProgress(for: displayedInstallState),
@@ -225,15 +226,15 @@ struct KeyVoxVibesSceneCView: View {
     private func vibesAIInstallStatusText(for state: LocalRewriteModelInstallState) -> String {
         switch state {
         case .notInstalled:
-            return "Install Vibes AI first (~491 MB), then you can use KeyVox Vibes."
+            return String(localized: "Install Vibes AI first (\(ApproximateDownloadSize.vibesAI)), then you can use KeyVox Vibes.", comment: "Status on the Vibes AI install card before download, with the approximate download size. Vibes AI and KeyVox Vibes are brand names and stay in English.")
         case .downloading:
-            return "Downloading KeyVox Vibes AI."
+            return String(localized: "Downloading KeyVox Vibes AI.", comment: "Status on the Vibes AI install card while downloading. KeyVox Vibes AI is a brand name and stays in English.")
         case .installing:
-            return "Installing KeyVox Vibes AI."
+            return String(localized: "Installing KeyVox Vibes AI.", comment: "Status on the Vibes AI install card while installing. KeyVox Vibes AI is a brand name and stays in English.")
         case .ready:
-            return "KeyVox Vibes AI is installed and ready."
+            return String(localized: "KeyVox Vibes AI is installed and ready.", comment: "Status on the Vibes AI install card when installed. KeyVox Vibes AI is a brand name and stays in English.")
         case .failed:
-            return "Install failed."
+            return String(localized: "Install failed.", comment: "Status on the Vibes AI install card when the install failed.")
         }
     }
 
@@ -248,7 +249,7 @@ struct KeyVoxVibesSceneCView: View {
 
     private func vibesAIProgressText(for state: LocalRewriteModelInstallState) -> String? {
         guard let progress = vibesAIProgress(for: state) else { return nil }
-        return "\(Int((progress * 100).rounded()))%"
+        return progress.formatted(.percent.precision(.fractionLength(0)).rounded(rule: .toNearestOrAwayFromZero))
     }
 
     private func vibesAIErrorText(for state: LocalRewriteModelInstallState) -> String? {
@@ -261,9 +262,9 @@ struct KeyVoxVibesSceneCView: View {
     private func vibesAIActionTitle(for state: LocalRewriteModelInstallState) -> String? {
         switch state {
         case .notInstalled:
-            return "Download"
+            return String(localized: "Download", comment: "Button on the Vibes AI install card that starts the download.")
         case .failed:
-            return "Repair"
+            return String(localized: "Repair", comment: "Button on the Vibes AI install card that repairs a broken install.")
         case .downloading, .installing, .ready:
             return nil
         }

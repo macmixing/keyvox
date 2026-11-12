@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 
 extension SettingsTabView {
@@ -27,7 +28,7 @@ extension SettingsTabView {
                             .frame(width: 18, height: 18)
                     }
 
-                    Text("KeyVox Vibes AI")
+                    Text(verbatim: "KeyVox Vibes AI")
                         .font(.appFont(18))
                         .foregroundStyle(.white)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -127,7 +128,7 @@ extension SettingsTabView {
         switch localRewriteModelManager.installState {
         case .notInstalled:
             AppActionButton(
-                title: "Download",
+                title: String(localized: "Download", comment: "Button on the KeyVox Vibes AI card in Settings that downloads the model."),
                 style: .primary,
                 size: .compact,
                 fontSize: 15,
@@ -137,7 +138,7 @@ extension SettingsTabView {
             )
         case .ready:
             AppActionButton(
-                title: "Delete",
+                title: String(localized: "Delete", comment: "Button on the KeyVox Vibes AI card in Settings that deletes the model."),
                 style: .destructive,
                 size: .compact,
                 fontSize: 15,
@@ -147,7 +148,7 @@ extension SettingsTabView {
             )
         case .failed:
             AppActionButton(
-                title: "Repair",
+                title: String(localized: "Repair", comment: "Button on the KeyVox Vibes AI card in Settings that retries a failed install."),
                 style: .primary,
                 size: .compact,
                 fontSize: 15,
@@ -162,20 +163,20 @@ extension SettingsTabView {
 
     private var vibesAISubtitleText: String {
         if case .ready = localRewriteModelManager.installState {
-            return "KeyVox Vibes AI is installed and ready."
+            return String(localized: "KeyVox Vibes AI is installed and ready.", comment: "Description on the KeyVox Vibes AI card in Settings once the model is installed. KeyVox Vibes AI is a brand name and stays in English.")
         }
 
-        return "Install Vibes AI first (~491 MB), then you can use KeyVox Vibes"
+        return String(localized: "Install Vibes AI first (\(ApproximateDownloadSize.vibesAI)), then you can use KeyVox Vibes", comment: "Description on the KeyVox Vibes AI card in Settings when the model is not installed. Vibes AI and KeyVox Vibes are brand names and stay in English. The value in parentheses is the approximate download size.")
     }
 
     private func vibesAIStatusText(for state: LocalRewriteModelInstallState) -> String {
         switch state {
         case .downloading:
-            return "Downloading KeyVox Vibes AI."
+            return String(localized: "Downloading KeyVox Vibes AI.", comment: "Status on the KeyVox Vibes AI card in Settings while the model downloads. KeyVox Vibes AI is a brand name and stays in English.")
         case .installing:
-            return "Installing KeyVox Vibes AI."
+            return String(localized: "Installing KeyVox Vibes AI.", comment: "Status on the KeyVox Vibes AI card in Settings while the model installs. KeyVox Vibes AI is a brand name and stays in English.")
         case .failed:
-            return "Install failed"
+            return String(localized: "Install failed", comment: "Status on the KeyVox Vibes AI card in Settings when the model failed to install.")
         case .notInstalled, .ready:
             return ""
         }
@@ -193,7 +194,7 @@ extension SettingsTabView {
     private func vibesAIProgressPercentageText(for state: LocalRewriteModelInstallState) -> String? {
         guard let progress = vibesAIProgress(for: state) else { return nil }
 
-        return "\(Int((progress * 100).rounded()))%"
+        return progress.formatted(.percent.precision(.fractionLength(0)).rounded(rule: .toNearestOrAwayFromZero))
     }
 
     private var shouldShowVibesAIInstallContent: Bool {

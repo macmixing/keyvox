@@ -227,7 +227,7 @@ final class AppServiceRegistry {
                 activeProviderRouter?.isModelReady ?? false
             },
             missingModelMessageProvider: { [weak settingsStore] in
-                settingsStore?.activeDictationProvider.missingModelMessage ?? "Required dictation model not found."
+                settingsStore?.activeDictationProvider.missingModelMessage ?? String(localized: "Required dictation model not found.", comment: "Dictation error message when the selected dictation model is missing.")
             },
             autoParagraphsEnabledProvider: { [weak settingsStore] in
                 settingsStore?.autoParagraphsEnabled ?? true

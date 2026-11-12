@@ -1,0 +1,88 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "Speak copied text in ${applicationName}" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringSet" : {
+            "state" : "needs_review",
+            "values" : [
+              "Kopierten Text in ${applicationName} vorlesen",
+              "KeyVox Speak in ${applicationName} starten",
+              "KeyVox Speak in ${applicationName} verwenden"
+            ]
+          }
+        },
+        "en" : {
+          "stringSet" : {
+            "state" : "new",
+            "values" : [
+              "Speak copied text in ${applicationName}",
+              "Start KeyVox Speak in ${applicationName}",
+              "Use KeyVox Speak in ${applicationName}"
+            ]
+          }
+        },
+        "es" : {
+          "stringSet" : {
+            "state" : "needs_review",
+            "values" : [
+              "Lee el texto copiado en ${applicationName}",
+              "Inicia KeyVox Speak en ${applicationName}",
+              "Usa KeyVox Speak en ${applicationName}"
+            ]
+          }
+        },
+        "fr" : {
+          "stringSet" : {
+            "state" : "needs_review",
+            "values" : [
+              "Lire le texte copié dans ${applicationName}",
+              "Lancer KeyVox Speak dans ${applicationName}",
+              "Utiliser KeyVox Speak dans ${applicationName}"
+            ]
+          }
+        }
+      }
+    },
+    "Toggle dictation in ${applicationName}" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringSet" : {
+            "state" : "needs_review",
+            "values" : [
+              "Diktat in ${applicationName} umschalten"
+            ]
+          }
+        },
+        "en" : {
+          "stringSet" : {
+            "state" : "new",
+            "values" : [
+              "Toggle dictation in ${applicationName}"
+            ]
+          }
+        },
+        "es" : {
+          "stringSet" : {
+            "state" : "needs_review",
+            "values" : [
+              "Activa o desactiva el dictado en ${applicationName}"
+            ]
+          }
+        },
+        "fr" : {
+          "stringSet" : {
+            "state" : "needs_review",
+            "values" : [
+              "Activer ou désactiver la dictée dans ${applicationName}"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

@@ -101,9 +101,9 @@ extension ModelManager {
         }
         let nsError = error as NSError
         if nsError.domain == NSCocoaErrorDomain && nsError.code == NSFileWriteOutOfSpaceError {
-            return "Model download failed due to low disk space. Free space and try again."
+            return String(localized: "Model download failed due to low disk space. Free space and try again.", comment: "Error shown when a dictation model download fails because the device is out of storage.")
         }
-        return "Model download failed. Check your network/storage and retry."
+        return String(localized: "Model download failed. Check your network/storage and retry.", comment: "Error shown when a dictation model download fails.")
     }
 
     nonisolated static func sha256Hex(
@@ -115,7 +115,7 @@ extension ModelManager {
 
     nonisolated static func validateExtractedCoreMLBundle(at rootURL: URL, fileManager: FileManager) -> String? {
         guard fileManager.fileExists(atPath: rootURL.path) else {
-            return "Model install is incomplete. Missing ggml-base-encoder.mlmodelc."
+            return String(localized: "Model install is incomplete. Missing ggml-base-encoder.mlmodelc.", comment: "Error shown when a dictation model install is missing a file. ggml-base-encoder.mlmodelc is a file name and stays as written.")
         }
 
         let enumerator = fileManager.enumerator(
@@ -133,7 +133,7 @@ extension ModelManager {
         }
 
         guard regularFileCount > 0 else {
-            return "The extracted Core ML bundle was empty after installation."
+            return String(localized: "The extracted Core ML bundle was empty after installation.", comment: "Error shown when a dictation model install produced an empty folder. Core ML is an Apple technology name and stays as written.")
         }
 
         return nil
@@ -145,7 +145,7 @@ extension ModelManager {
         progress: ((Int64, Int64) -> Void)? = nil
     ) throws -> String {
         guard fileManager.fileExists(atPath: rootURL.path) else {
-            throw ModelInstallError.integrityCheckFailed("Missing extracted Core ML bundle for integrity verification.")
+            throw ModelInstallError.integrityCheckFailed(String(localized: "Missing extracted Core ML bundle for integrity verification.", comment: "Error shown when a dictation model install is missing files needed for its integrity check. Core ML is an Apple technology name and stays as written."))
         }
 
         let enumerator = fileManager.enumerator(
@@ -256,9 +256,9 @@ enum ModelInstallError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case let .insufficientDiskSpace(requiredBytes, availableBytes):
-            let required = ByteCountFormatter.string(fromByteCount: requiredBytes, countStyle: .file)
-            let available = ByteCountFormatter.string(fromByteCount: availableBytes, countStyle: .file)
-            return "Not enough free disk space to install the model (\(available) available, \(required) required)."
+            let required = AppTypography.fontSupportedSpacing(ByteCountFormatter.string(fromByteCount: requiredBytes, countStyle: .file))
+            let available = AppTypography.fontSupportedSpacing(ByteCountFormatter.string(fromByteCount: availableBytes, countStyle: .file))
+            return String(localized: "Not enough free disk space to install the model (\(available) available, \(required) required).", comment: "Error shown when the device lacks storage for a dictation model. The first placeholder is the free space and the second is the space needed, both as file sizes.")
         case let .unzipFailed(message):
             return message
         case let .integrityCheckFailed(message):

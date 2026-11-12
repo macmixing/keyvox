@@ -1,3 +1,4 @@
+import Foundation
 import KeyVoxCore
 import SwiftUI
 
@@ -18,7 +19,7 @@ extension DictationSettingsView {
                     }
 
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Dictation Model")
+                        Text("Dictation Model", comment: "Title of the dictation settings card for choosing and installing speech recognition models.")
                             .font(.appFont(18))
                             .foregroundStyle(.white)
 
@@ -29,7 +30,7 @@ extension DictationSettingsView {
                     .frame(maxWidth: .infinity, alignment: .leading)
 
                     if selectableProviders.isEmpty {
-                        Text("Install model")
+                        Text("Install model", comment: "Shown in place of the Change button on the Dictation Model card when no model is installed yet.")
                             .font(.appFont(14))
                             .foregroundStyle(.white.opacity(0.5))
                     } else {
@@ -41,7 +42,7 @@ extension DictationSettingsView {
                             }
                             .pickerStyle(.inline)
                         } label: {
-                            Text("Change")
+                            Text("Change", comment: "Menu button on the Dictation Model card that opens the list of installed models.")
                                 .font(.appFont(16))
                                 .foregroundStyle(.yellow)
                         }
@@ -115,7 +116,7 @@ extension DictationSettingsView {
                 }
 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Language")
+                    Text("Language", comment: "Title of the dictation language setting.")
                         .font(.appFont(18))
                         .foregroundStyle(.white)
 
@@ -130,7 +131,7 @@ extension DictationSettingsView {
                         appHaptics.light()
                         isLanguagePickerPresented = true
                     } label: {
-                        Text("Change")
+                        Text("Change", comment: "Button on the dictation Language setting that opens the language list.")
                             .font(.appFont(16))
                             .foregroundStyle(.yellow)
                     }
@@ -262,7 +263,7 @@ extension DictationSettingsView {
         switch state {
         case .notInstalled:
             AppActionButton(
-                title: "Download",
+                title: String(localized: "Download", comment: "Button on a dictation model row that downloads the model."),
                 style: .primary,
                 size: .compact,
                 fontSize: 15,
@@ -272,7 +273,7 @@ extension DictationSettingsView {
         case .ready:
             if modelManager.requiresArtifactUpdate(for: modelID) {
                 AppActionButton(
-                    title: "Update",
+                    title: String(localized: "Update", comment: "Button on a dictation model row that downloads a newer version of the model."),
                     style: .primary,
                     size: .compact,
                     fontSize: 15,
@@ -281,7 +282,7 @@ extension DictationSettingsView {
                 )
             } else {
                 AppActionButton(
-                    title: "Delete",
+                    title: String(localized: "Delete", comment: "Button on a dictation model row that deletes the downloaded model."),
                     style: .destructive,
                     size: .compact,
                     fontSize: 15,
@@ -290,7 +291,7 @@ extension DictationSettingsView {
             }
         case .failed:
             AppActionButton(
-                title: "Repair",
+                title: String(localized: "Repair", comment: "Button on a dictation model row that retries a failed install."),
                 style: .primary,
                 size: .compact,
                 fontSize: 15,
@@ -308,7 +309,7 @@ extension DictationSettingsView {
             return phase.statusText
         case .ready:
             if modelManager.requiresArtifactUpdate(for: modelID) {
-                return "Update available"
+                return String(localized: "Update available", comment: "Status on a dictation model row when a newer version of the installed model can be downloaded.")
             }
         case .failed, .notInstalled:
             break
@@ -319,7 +320,7 @@ extension DictationSettingsView {
             return state.statusText
         }
 
-        return "\(state.statusText) (\(approximateSizeText))"
+        return String(localized: "\(state.statusText) (\(approximateSizeText))", comment: "Status on a dictation model row that is not installed. The first placeholder is the install status and the second is the approximate download size.")
     }
 
     func modelProgressPercentageText(for state: ModelInstallState) -> String? {
@@ -331,24 +332,24 @@ extension DictationSettingsView {
             return nil
         }
 
-        return "\(Int((progress * 100).rounded()))%"
+        return progress.formatted(.percent.precision(.fractionLength(0)).rounded(rule: .toNearestOrAwayFromZero))
     }
 
     func notInstalledApproximateSizeText(for modelID: DictationModelID) -> String? {
         switch modelID {
         case .whisperBase:
-            return "~190 MB"
+            return ApproximateDownloadSize.whisperBase
         case .parakeetTdtV3:
-            return "~335 MB"
+            return ApproximateDownloadSize.parakeet
         }
     }
 
     func modelDescriptionText(for modelID: DictationModelID) -> String? {
         switch modelID {
         case .whisperBase:
-            return "Accurate and lightweight."
+            return String(localized: "Accurate and lightweight.", comment: "Short description of the Whisper Base dictation model on its row in dictation settings.")
         case .parakeetTdtV3:
-            return "Lightning fast, heavier footprint."
+            return String(localized: "Lightning fast, heavier footprint.", comment: "Short description of the Parakeet dictation model on its row in dictation settings: very fast, but uses more storage and memory.")
         }
     }
 
@@ -382,17 +383,17 @@ extension DictationSettingsView {
     var dictationLanguageDescriptionText: String {
         switch settingsStore.activeDictationProvider {
         case .whisper:
-            return "Choose the language KeyVox uses for dictation."
+            return String(localized: "Choose the language KeyVox uses for dictation.", comment: "Description under the dictation Language setting when Whisper is the active model. KeyVox is a brand name and stays in English.")
         case .parakeet:
-            return "Parakeet automatically detects the language used for dictation. Visit the FAQ in the Need Help? card to see its supported languages."
+            return String(localized: "Parakeet automatically detects the language used for dictation. Visit the FAQ in the Need Help? card to see its supported languages.", comment: "Description under the dictation Language setting when Parakeet is the active model. Parakeet is a brand name and stays in English. Need Help? is the title of a card in Settings; translate it the same way as that card's title.")
         }
     }
 
     var textModelDescriptionText: String {
         if selectableProviders.isEmpty {
-            return "Install a dictation model to let KeyVox transcribe speech on this device."
+            return String(localized: "Install a dictation model to let KeyVox transcribe speech on this device.", comment: "Description on the Dictation Model card when no model is installed. KeyVox is a brand name and stays in English.")
         }
-        return "Choose which installed model KeyVox uses when transcribing speech on this device."
+        return String(localized: "Choose which installed model KeyVox uses when transcribing speech on this device.", comment: "Description on the Dictation Model card when at least one model is installed. KeyVox is a brand name and stays in English.")
     }
 
     var shouldShowExpandedModelContent: Bool {

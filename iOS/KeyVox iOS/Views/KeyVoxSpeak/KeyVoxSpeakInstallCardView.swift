@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 
 struct KeyVoxSpeakInstallCardView: View {
@@ -33,11 +34,11 @@ struct KeyVoxSpeakInstallCardView: View {
                 }
 
                 VStack(alignment: .leading, spacing: 3) {
-                    Text("Set Up \(Self.featuredVoice.displayName)")
+                    Text("Set Up \(Self.featuredVoice.displayName)", comment: "Title of the KeyVox Speak setup card. The placeholder is the voice name, which stays in English.")
                         .font(.appFont(17, variant: .medium))
                         .foregroundStyle(.white)
 
-                    Text("Install \(Self.featuredVoice.displayName)'s voice and KeyVox will handle the Speak engine for you.")
+                    Text("Install \(Self.featuredVoice.displayName)'s voice and KeyVox will handle the Speak engine for you.", comment: "Description on the KeyVox Speak setup card. KeyVox and Speak are brand names and stay in English. The placeholder is the voice name, which stays in English.")
                         .font(.appFont(14, variant: .light))
                         .foregroundStyle(.white.opacity(0.68))
                         .fixedSize(horizontal: false, vertical: true)
@@ -129,7 +130,7 @@ struct KeyVoxSpeakInstallCardView: View {
                         }
 
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("Model + Voice")
+                        Text("Model + Voice", comment: "Row title on the KeyVox Speak setup card for installing the Speak engine and voice together.")
                             .font(.appFont(15, variant: .medium))
                             .foregroundStyle(.white)
 
@@ -196,7 +197,7 @@ struct KeyVoxSpeakInstallCardView: View {
     private func progressText(for state: PocketTTSInstallState) -> String? {
         switch state {
         case .downloading(let progress), .installing(let progress):
-            return "\(Int(progress * 100))%"
+            return progress.formatted(.percent.precision(.fractionLength(0)).rounded(rule: .down))
         case .notInstalled, .ready, .failed:
             return nil
         }
@@ -208,18 +209,18 @@ struct KeyVoxSpeakInstallCardView: View {
         }
 
         if case .failed = sharedModelState {
-            return "Repair"
+            return String(localized: "Repair", comment: "Button on the KeyVox Speak setup card that repairs a broken install.")
         }
 
         if case .failed = albaVoiceState {
-            return "Repair"
+            return String(localized: "Repair", comment: "Button on the KeyVox Speak setup card that repairs a broken install.")
         }
 
         if activeInstallState != nil {
             return nil
         }
 
-        return "Download"
+        return String(localized: "Download", comment: "Button on the KeyVox Speak setup card that starts the download.")
     }
 
     private var isActionEnabled: Bool {
@@ -230,41 +231,41 @@ struct KeyVoxSpeakInstallCardView: View {
     private var installSizeAnnotation: String? {
         if pocketTTSReadyForAlba { return nil }
 
-        if case .notInstalled = sharedModelState { return " (~661 MB total)." }
+        if case .notInstalled = sharedModelState { return String(localized: " (\(ApproximateDownloadSize.speakEngineAndVoice) total).", comment: "Approximate download size shown right after the install status sentence on the KeyVox Speak setup card; keep the leading space.") }
 
         if case .ready = sharedModelState,
-           case .notInstalled = albaVoiceState { return " (~19 MB)." }
+           case .notInstalled = albaVoiceState { return String(localized: " (\(ApproximateDownloadSize.speakVoice)).", comment: "Approximate voice download size shown right after the install status sentence on the KeyVox Speak setup card; keep the leading space.") }
 
         return nil
     }
 
     private var installStatusText: String {
         if pocketTTSReadyForAlba {
-            return "\(Self.featuredVoice.displayName)'s voice is installed, selected, and ready for KeyVox Speak."
+            return String(localized: "\(Self.featuredVoice.displayName)'s voice is installed, selected, and ready for KeyVox Speak.", comment: "Install status on the KeyVox Speak setup card when everything is ready. KeyVox Speak is a brand name and stays in English. The placeholder is the voice name, which stays in English.")
         }
 
         switch sharedModelState {
         case .notInstalled:
-            return "Install \(Self.featuredVoice.displayName) and KeyVox will download the Speak engine first, then \(Self.featuredVoice.displayName)'s voice"
+            return String(localized: "Install \(Self.featuredVoice.displayName) and KeyVox will download the Speak engine first, then \(Self.featuredVoice.displayName)'s voice", comment: "Install status on the KeyVox Speak setup card before anything is installed; a download size follows it. KeyVox and Speak are brand names and stay in English. Both placeholders are the voice name, which stays in English.")
         case .downloading:
-            return "Downloading the Speak engine before installing \(Self.featuredVoice.displayName)."
+            return String(localized: "Downloading the Speak engine before installing \(Self.featuredVoice.displayName).", comment: "Install status on the KeyVox Speak setup card while the Speak engine downloads. Speak is a brand name and stays in English. The placeholder is the voice name, which stays in English.")
         case .installing:
-            return "Installing the Speak engine before \(Self.featuredVoice.displayName)."
+            return String(localized: "Installing the Speak engine before \(Self.featuredVoice.displayName).", comment: "Install status on the KeyVox Speak setup card while the Speak engine installs. Speak is a brand name and stays in English. The placeholder is the voice name, which stays in English.")
         case .ready:
             switch albaVoiceState {
             case .notInstalled:
-                return "KeyVox Speak engine is ready. Now we'll finish by installing \(Self.featuredVoice.displayName)'s voice."
+                return String(localized: "KeyVox Speak engine is ready. Now we'll finish by installing \(Self.featuredVoice.displayName)'s voice.", comment: "Install status on the KeyVox Speak setup card when the engine is ready but the voice is not; a download size follows it. KeyVox Speak is a brand name and stays in English. The placeholder is the voice name, which stays in English.")
             case .downloading:
-                return "Downloading \(Self.featuredVoice.displayName)."
+                return String(localized: "Downloading \(Self.featuredVoice.displayName).", comment: "Install status on the KeyVox Speak setup card while the voice downloads. The placeholder is the voice name, which stays in English.")
             case .installing:
-                return "Installing \(Self.featuredVoice.displayName)."
+                return String(localized: "Installing \(Self.featuredVoice.displayName).", comment: "Install status on the KeyVox Speak setup card while the voice installs. The placeholder is the voice name, which stays in English.")
             case .ready:
-                return "\(Self.featuredVoice.displayName) is installed, selected, and ready for KeyVox Speak."
+                return String(localized: "\(Self.featuredVoice.displayName) is installed, selected, and ready for KeyVox Speak.", comment: "Install status on the KeyVox Speak setup card when the voice is ready. KeyVox Speak is a brand name and stays in English. The placeholder is the voice name, which stays in English.")
             case .failed:
-                return "\(Self.featuredVoice.displayName) needs repair."
+                return String(localized: "\(Self.featuredVoice.displayName) needs repair.", comment: "Install status on the KeyVox Speak setup card when the voice install is broken. The placeholder is the voice name, which stays in English.")
             }
         case .failed:
-            return "Speak engine setup needs repair before \(Self.featuredVoice.displayName) can finish installing."
+            return String(localized: "Speak engine setup needs repair before \(Self.featuredVoice.displayName) can finish installing.", comment: "Install status on the KeyVox Speak setup card when the Speak engine install is broken. Speak is a brand name and stays in English. The placeholder is the voice name, which stays in English.")
         }
     }
 

@@ -2,7 +2,7 @@ import Foundation
 
 extension TTSManager {
     private enum WarningCopy {
-        static let emptyClipboard = "Copy something first."
+        static let emptyClipboard = String(localized: "Copy something first.", comment: "Warning on the Home tab when KeyVox Speak is started with nothing copied.")
     }
 
     func showEmptyClipboardWarning() {

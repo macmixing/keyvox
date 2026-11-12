@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 import KeyVoxStyleRewrite
 
@@ -22,7 +23,7 @@ extension StyleTabView {
 
                     VStack(alignment: .leading, spacing: 4) {
                         HStack(alignment: .center, spacing: 4) {
-                            Text("KeyVox Vibes")
+                            Text(verbatim: "KeyVox Vibes")
                                 .font(.appFont(18))
                                 .foregroundStyle(.white)
 
@@ -36,7 +37,7 @@ extension StyleTabView {
                             }
                             .buttonStyle(.plain)
                             .frame(width: 32, height: 32)
-                            .accessibilityLabel("Learn about KeyVox Vibes")
+                            .accessibilityLabel(String(localized: "Learn about KeyVox Vibes", comment: "VoiceOver label for the help button next to the KeyVox Vibes title on the Style tab. KeyVox Vibes is a brand name and stays in English."))
                         }
 
                         if shouldShowVibeSelector {
@@ -56,7 +57,7 @@ extension StyleTabView {
                             }
                             .pickerStyle(.inline)
                         } label: {
-                            Text("Change")
+                            Text("Change", comment: "Menu button on the KeyVox Vibes card that opens the list of vibes.")
                                 .font(.appFont(16))
                                 .foregroundStyle(.yellow)
                         }
@@ -84,7 +85,7 @@ extension StyleTabView {
                                 .frame(maxWidth: .infinity, alignment: .leading)
 
                             if case .downloading(let progress) = localRewriteModelManager.installState {
-                                Text("\(Int((progress * 100).rounded()))%")
+                                Text(progress.formatted(.percent.precision(.fractionLength(0)).rounded(rule: .toNearestOrAwayFromZero)))
                                     .font(.appFont(14, variant: .medium))
                                     .foregroundStyle(.yellow)
                             }
@@ -118,7 +119,11 @@ extension StyleTabView {
                             .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
-                    .accessibilityLabel(isVibeExamplesExpanded ? "Hide vibe examples" : "Show vibe examples")
+                    .accessibilityLabel(
+                        isVibeExamplesExpanded
+                            ? String(localized: "Hide vibe examples", comment: "VoiceOver label for the button that collapses the vibe examples on the Style tab. A vibe is one of the KeyVox Vibes rewrite styles.")
+                            : String(localized: "Show vibe examples", comment: "VoiceOver label for the button that expands the vibe examples on the Style tab. A vibe is one of the KeyVox Vibes rewrite styles.")
+                    )
                 }
 
                 vibeExamplesExpandedContent
@@ -154,7 +159,7 @@ extension StyleTabView {
                 }
             }
 
-            Text("Vibes are currently supported for English only.")
+            Text(StyleRewriteStyle.languageSupportNote)
                 .font(.appFont(13, variant: .light))
                 .foregroundStyle(.secondary)
                 .frame(maxWidth: .infinity, alignment: .center)
@@ -261,23 +266,23 @@ extension StyleTabView {
 
     private var keyVoxVibesStatusText: String? {
         if case .downloading = localRewriteModelManager.installState {
-            return "Downloading KeyVox Vibes AI..."
+            return String(localized: "Downloading KeyVox Vibes AI...", comment: "Status on the KeyVox Vibes card on the Style tab while the model downloads. KeyVox Vibes AI is a brand name and stays in English.")
         }
 
         if keyVoxVibesMatrix.dynamicText == .mainCardTrialRemaining {
             let remainingText = KeyVoxVibesTrialRemainingTimeFormatter.remainingText(
                 for: keyVoxVibesPurchaseController.trialRemaining
             )
-            return "You’re trying Vibes, you have \(remainingText) left."
+            return String(localized: "You’re trying Vibes, you have \(remainingText) left.", comment: "Status on the KeyVox Vibes card during the free trial. Vibes is a brand name and stays in English. The placeholder is the remaining trial time, already formatted with its unit.")
         }
 
         switch keyVoxVibesMatrix.mainCardContent {
         case .downloadRequired:
-            return "Download Vibes AI to use Vibes."
+            return String(localized: "Download Vibes AI to use Vibes.", comment: "Status on the KeyVox Vibes card when the model is not installed. Vibes AI and Vibes are brand names and stay in English.")
         case .unlockOffer:
-            return "Unlock and keep the Vibes flowing."
+            return String(localized: "Unlock and keep the Vibes flowing.", comment: "Status on the KeyVox Vibes card after the free trial, inviting the user to buy. Vibes is a brand name and stays in English; a playful tone is fine.")
         case .trialOffer:
-            return "Try KeyVox Vibes for free."
+            return String(localized: "Try KeyVox Vibes for free.", comment: "Status on the KeyVox Vibes card before the free trial starts. KeyVox Vibes is a brand name and stays in English.")
         case .selectedVibe:
             return nil
         }
@@ -288,11 +293,11 @@ extension StyleTabView {
         case .change:
             return nil
         case .download:
-            return "Download"
+            return String(localized: "Download", comment: "Button on the KeyVox Vibes card that downloads the Vibes AI model.")
         case .unlock:
-            return "Unlock"
+            return String(localized: "Unlock", comment: "Button on the KeyVox Vibes card that opens the purchase.")
         case .tryNow:
-            return "Try Now"
+            return String(localized: "Try Now", comment: "Button on the KeyVox Vibes card that starts the free trial.")
         }
     }
 

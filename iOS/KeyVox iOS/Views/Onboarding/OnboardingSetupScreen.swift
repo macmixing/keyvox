@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 import UIKit
 
@@ -39,11 +40,11 @@ struct OnboardingSetupScreen: View {
             AppScrollScreen {
                 VStack(alignment: .center, spacing: 16) {
                     VStack(spacing: 4) {
-                        Text("Just a few steps...")
+                        Text("Just a few steps...", comment: "Title of the onboarding setup checklist screen.")
                             .font(.appFont(34))
                             .foregroundStyle(.white)
 
-                        Text("After this, you may never type again.")
+                        Text("After this, you may never type again.", comment: "Subtitle on the onboarding setup checklist screen.")
                             .font(.appFont(14, variant: .light))
                             .foregroundStyle(.secondary)
                     }
@@ -62,7 +63,7 @@ struct OnboardingSetupScreen: View {
                         appHaptics.light()
                         onboardingStore.returnToLanguageSelection()
                     } label: {
-                        Label("Back", systemImage: "chevron.left")
+                        Label(String(localized: "Back", comment: "Toolbar button that goes back to the previous onboarding screen."), systemImage: "chevron.left")
                     }
                 }
             }
@@ -122,14 +123,14 @@ struct OnboardingSetupScreen: View {
         OnboardingStepRow(
             isCompleted: isModelStepCompleted,
             stepNumber: 1,
-            title: "AI Model Setup",
+            title: String(localized: "AI Model Setup", comment: "Title of the onboarding setup step that downloads the dictation model."),
             description: modelStepDescription,
             buttonTitle: modelStepButton?.title,
             isButtonEnabled: modelStepButton?.isEnabled ?? true,
             action: modelStepButton?.action,
             trailingContent: {
                 if let progress = modelDownloadProgress {
-                    Text("\(Int(progress * 100))%")
+                    Text(progress.formatted(.percent.precision(.fractionLength(0)).rounded(rule: .down)))
                         .font(.appFont(11))
                         .foregroundStyle(.yellow)
                 }
@@ -147,7 +148,7 @@ struct OnboardingSetupScreen: View {
                     }
 
                     if shouldShowOfflineModelError {
-                        Text("An internet connection is required for model download.")
+                        Text("An internet connection is required for model download.", comment: "Error on the onboarding model setup step when the device is offline.")
                             .font(.appFont(12))
                             .foregroundStyle(.red)
                     } else if let storageError = preflightModelStorageError {
@@ -172,8 +173,8 @@ struct OnboardingSetupScreen: View {
         OnboardingStepRow(
             isCompleted: displaysMicrophoneStepCompletion,
             stepNumber: 2,
-            title: "Microphone Access",
-            description: "KeyVox needs to hear you to transcribe.",
+            title: String(localized: "Microphone Access", comment: "Title of the onboarding setup step that asks for microphone permission."),
+            description: String(localized: "KeyVox needs to hear you to transcribe.", comment: "Description of the onboarding microphone permission step. KeyVox is a brand name and stays in English."),
             buttonTitle: microphoneStepButton?.title,
             isButtonEnabled: microphoneStepButton?.isEnabled ?? true,
             action: microphoneStepButton?.action
@@ -184,9 +185,9 @@ struct OnboardingSetupScreen: View {
         OnboardingStepRow(
             isCompleted: false,
             stepNumber: 3,
-            title: "Keyboard & Shortcut",
+            title: String(localized: "Keyboard & Shortcut", comment: "Title of the onboarding setup step that sets up the KeyVox keyboard and dictation shortcut."),
             description: keyboardStepDescription,
-            buttonTitle: "Continue",
+            buttonTitle: String(localized: "Continue", comment: "Button on the onboarding keyboard and shortcut step that moves on to setup."),
             isButtonEnabled: isKeyboardRequirementAvailable,
             action: beginDictationShortcutSetup
         )
@@ -194,17 +195,17 @@ struct OnboardingSetupScreen: View {
 
     private var keyboardStepDescription: String {
         guard isKeyboardRequirementAvailable else {
-            return "Finish downloading the model and allow microphone access before continuing."
+            return String(localized: "Finish downloading the model and allow microphone access before continuing.", comment: "Description of the onboarding keyboard step while earlier steps are unfinished.")
         }
 
-        return "Set up the KeyVox keyboard and shortcut to access dictation anywhere."
+        return String(localized: "Set up the KeyVox keyboard and shortcut to access dictation anywhere.", comment: "Description of the onboarding keyboard and shortcut step. KeyVox is a brand name and stays in English.")
     }
 
     private var modelStepButton: OnboardingStepButton? {
         switch onboardingModelState {
         case .notInstalled:
             return OnboardingStepButton(
-                title: downloadNetworkMonitor.isOnCellular ? "Download Now" : "Download",
+                title: downloadNetworkMonitor.isOnCellular ? String(localized: "Download Now", comment: "Button on the onboarding model setup step that starts the model download while on cellular data.") : String(localized: "Download", comment: "Button on the onboarding model setup step that starts the model download."),
                 isEnabled: downloadNetworkMonitor.isOnline && preflightModelStorageError == nil,
                 action: {
                     appHaptics.light()
@@ -213,7 +214,7 @@ struct OnboardingSetupScreen: View {
             )
         case .failed:
             return OnboardingStepButton(
-                title: "Repair",
+                title: String(localized: "Repair", comment: "Button on the onboarding model setup step that repairs a broken model install."),
                 isEnabled: true,
                 action: {
                     appHaptics.light()
@@ -228,13 +229,13 @@ struct OnboardingSetupScreen: View {
     private var modelStepDescription: String {
         switch onboardingModelState {
         case .notInstalled:
-            return "OpenAI Whisper Base (~190 MB)"
+            return "OpenAI Whisper Base (\(ApproximateDownloadSize.whisperBase))"
         case .downloading(_, let phase), .installing(_, let phase):
             return phase.statusText
         case .ready:
-            return "Model ready"
+            return String(localized: "Model ready", comment: "Description of the onboarding model setup step when the model is installed.")
         case .failed:
-            return "Model repair needed"
+            return String(localized: "Model repair needed", comment: "Description of the onboarding model setup step when the model install is broken.")
         }
     }
 
@@ -242,7 +243,7 @@ struct OnboardingSetupScreen: View {
         switch microphonePermissionController.status {
         case .undetermined:
             return OnboardingStepButton(
-                title: "Continue",
+                title: String(localized: "Continue", comment: "Button on the onboarding microphone step that asks for microphone permission."),
                 isEnabled: true,
                 action: {
                     appHaptics.light()
@@ -253,7 +254,7 @@ struct OnboardingSetupScreen: View {
             )
         case .denied:
             return OnboardingStepButton(
-                title: "Open Settings",
+                title: String(localized: "Open Settings", comment: "Button on the onboarding microphone step that opens the app's page in Settings after permission was denied. Use Apple's official name for Settings in this language."),
                 isEnabled: true,
                 action: {
                     appHaptics.light()

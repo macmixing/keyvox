@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 
 struct MainTabView: View {
@@ -135,19 +136,19 @@ struct MainTabView: View {
         TabView(selection: $appTabRouter.selectedTab) {
             HomeTabView(pendingDownloadConfirmation: $pendingDownloadConfirmation)
                 .tabItem {
-                    Label("Home", systemImage: "house.fill")
+                    Label(String(localized: "Home", comment: "Name of the app's Home tab, used as its screen title."), systemImage: "house.fill")
                 }
                 .tag(ContainingAppTab.home)
 
             DictionaryTabView(isActive: selectedTab == .dictionary)
                 .tabItem {
-                    Label("Dictionary", systemImage: "text.book.closed.fill")
+                    Label(String(localized: "Dictionary", comment: "Name of the app's Dictionary tab, where the user manages custom words. Used as its screen title."), systemImage: "text.book.closed.fill")
                 }
                 .tag(ContainingAppTab.dictionary)
 
             StyleTabView()
                 .tabItem {
-                    Label("Style", systemImage: "scribble.variable")
+                    Label(String(localized: "Style", comment: "Name of the app's Style tab, where the user picks formatting and Vibes options. Used as its screen title."), systemImage: "scribble.variable")
                 }
                 .tag(ContainingAppTab.style)
 
@@ -156,7 +157,7 @@ struct MainTabView: View {
                 pendingDownloadConfirmation: $pendingDownloadConfirmation
             )
                 .tabItem {
-                    Label("Settings", systemImage: "gearshape.fill")
+                    Label(String(localized: "Settings", comment: "Name of the app's Settings tab, used as its screen title."), systemImage: "gearshape.fill")
                 }
                 .tag(ContainingAppTab.settings)
         }

@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 import KeyVoxCore
 
@@ -32,9 +33,9 @@ struct DictionaryTabView: View {
                     statusMessageRow(saveError)
                 }
 
-                Picker("Sort Dictionary Entries", selection: $dictionarySortMode) {
+                Picker(String(localized: "Sort Dictionary Entries", comment: "VoiceOver label for the sort control at the top of the Dictionary tab."), selection: $dictionarySortMode) {
                     ForEach(DictionarySortMode.allCases) { mode in
-                        Text(mode.rawValue).tag(mode)
+                        Text(mode.title).tag(mode)
                     }
                 }
                 .pickerStyle(.segmented)
@@ -43,9 +44,9 @@ struct DictionaryTabView: View {
 
                 if displayedEntries.isEmpty {
                     ContentUnavailableView(
-                        "No custom words added yet.",
+                        String(localized: "No custom words added yet.", comment: "Title of the empty state on the Dictionary tab."),
                         systemImage: "text.book.closed",
-                        description: Text("Tap the plus button to add your first custom word.")
+                        description: Text("Tap the plus button to add your first custom word.", comment: "Description of the empty state on the Dictionary tab.")
                     )
                     .frame(maxWidth: .infinity)
                     .padding(.bottom, 6)
@@ -65,7 +66,7 @@ struct DictionaryTabView: View {
                     }
                 }
 
-                Text("Custom dictionary correction is currently supported for English dictation only.")
+                Text("Custom dictionary correction is currently supported for English dictation only.", comment: "Note at the bottom of the Dictionary tab explaining that custom words only apply to English dictation.")
                     .font(.appFont(11))
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, alignment: .center)

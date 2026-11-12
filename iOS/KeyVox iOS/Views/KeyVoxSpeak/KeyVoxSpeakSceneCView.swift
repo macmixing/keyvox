@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 
 struct KeyVoxSpeakSceneCView: View {
@@ -26,11 +27,11 @@ struct KeyVoxSpeakSceneCView: View {
                     Spacer(minLength: 20)
 
                     VStack(spacing: 6) {
-                        Text(titleOverride ?? (isUnlockContext ? "Finish Setup" : "One More Thing"))
+                        Text(titleOverride ?? (isUnlockContext ? String(localized: "Finish Setup", comment: "Title of the KeyVox Speak setup page shown after unlocking.") : String(localized: "One More Thing", comment: "Title of the KeyVox Speak setup page in the intro.")))
                             .font(.appFont(35, variant: .medium))
                             .foregroundStyle(.white)
 
-                        Text("Install \(Self.featuredVoice.displayName) and be ready to speak right away.")
+                        Text("Install \(Self.featuredVoice.displayName) and be ready to speak right away.", comment: "Subtitle on the KeyVox Speak setup page. The placeholder is the voice name, which stays in English.")
                             .font(.appFont(18, variant: .light))
                             .foregroundStyle(.white.opacity(0.7))
                             .multilineTextAlignment(.center)
@@ -38,7 +39,7 @@ struct KeyVoxSpeakSceneCView: View {
                     .opacity(headerOpacity)
                     .padding(.bottom, 10)
 
-                    Text("You can download up to 8 total voices in Settings.")
+                    Text("You can download up to 8 total voices in Settings.", comment: "Note on the KeyVox Speak setup page. Settings is the KeyVox app's Settings tab.")
                         .font(.appFont(16, variant: .medium))
                         .foregroundStyle(.yellow)
                         .multilineTextAlignment(.center)
@@ -106,14 +107,14 @@ struct KeyVoxSpeakSceneCView: View {
 
     private var setupHintText: String {
         if pocketTTSReadyForAlba {
-            return "\(Self.featuredVoice.displayName) is ready. You can start KeyVox Speak from the Home tab now."
+            return String(localized: "\(Self.featuredVoice.displayName) is ready. You can start KeyVox Speak from the Home tab now.", comment: "Hint on the KeyVox Speak setup page when the voice is installed. KeyVox Speak is a brand name and stays in English. The placeholder is the voice name, which stays in English.")
         }
 
         if case .ready = sharedModelState {
-            return "The Speak engine is ready. Finish by installing \(Self.featuredVoice.displayName)'s voice and you'll be ready to speak."
+            return String(localized: "The Speak engine is ready. Finish by installing \(Self.featuredVoice.displayName)'s voice and you'll be ready to speak.", comment: "Hint on the KeyVox Speak setup page when only the engine is installed. Speak is a brand name and stays in English. The placeholder is the voice name, which stays in English.")
         }
 
-        return "Install \(Self.featuredVoice.displayName) and KeyVox will take care of everything under the hood."
+        return String(localized: "Install \(Self.featuredVoice.displayName) and KeyVox will take care of everything under the hood.", comment: "Hint on the KeyVox Speak setup page before anything is installed. KeyVox is a brand name and stays in English. The placeholder is the voice name, which stays in English.")
     }
 
     private var fastModeHint: some View {
@@ -122,7 +123,7 @@ struct KeyVoxSpeakSceneCView: View {
                 .font(.system(size: 18, weight: .medium))
                 .foregroundStyle(.yellow.opacity(0.8))
 
-            Text("Don't forget: Fast Mode starts speaking ~50% faster.")
+            Text("Don't forget: Fast Mode starts speaking ~50% faster.", comment: "Hint on the KeyVox Speak setup page about the Fast Mode option.")
                 .font(.appFont(15, variant: .light))
                 .foregroundStyle(.white.opacity(0.55))
         }

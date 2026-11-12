@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 
 struct KeyVoxSpeakSceneBView: View {
@@ -9,14 +10,14 @@ struct KeyVoxSpeakSceneBView: View {
     }
 
     private static let accessMethods: [AccessMethod] = [
-        AccessMethod(id: 0, icon: "house.fill", title: "Home Tab", subtitle: "Tap Speak from the main screen."),
-        AccessMethod(id: 1, icon: "keyboard.fill", title: "Keyboard Shortcut", subtitle: "Trigger directly from the KeyVox keyboard."),
-        AccessMethod(id: 2, icon: "square.and.arrow.up.fill", title: "Share to Speak", subtitle: "Share PDFs, websites, and images with text from any app."),
+        AccessMethod(id: 0, icon: "house.fill", title: String(localized: "Home Tab", comment: "Row title on the KeyVox Speak page listing the ways to start Speak: from the app's Home tab."), subtitle: String(localized: "Tap Speak from the main screen.", comment: "Row description on the KeyVox Speak page listing the ways to start Speak. Speak is the name of the button and a brand name; it stays in English.")),
+        AccessMethod(id: 1, icon: "keyboard.fill", title: String(localized: "Keyboard Shortcut", comment: "Row title on the KeyVox Speak page listing the ways to start Speak: a button on the KeyVox keyboard."), subtitle: String(localized: "Trigger directly from the KeyVox keyboard.", comment: "Row description on the KeyVox Speak page listing the ways to start Speak. KeyVox is a brand name and stays in English.")),
+        AccessMethod(id: 2, icon: "square.and.arrow.up.fill", title: String(localized: "Share to Speak", comment: "Row title on the KeyVox Speak page listing the ways to start Speak: sharing content to KeyVox Speak from the share sheet. Speak is a brand name and stays in English."), subtitle: String(localized: "Share PDFs, websites, and images with text from any app.", comment: "Row description on the KeyVox Speak page listing the ways to start Speak.")),
         AccessMethod(
             id: 3,
             icon: "link",
-            title: "Shortcuts & Actions",
-            subtitle: AppDevice.isPad ? "Map to Control Center." : "Map to Action Button or Control Center."
+            title: String(localized: "Shortcuts & Actions", comment: "Row title on the KeyVox Speak page listing the ways to start Speak: system shortcuts and the Action Button."),
+            subtitle: AppDevice.isPad ? String(localized: "Map to Control Center.", comment: "Row description on the KeyVox Speak page listing the ways to start Speak, shown on iPad. Use Apple's official name for Control Center in this language.") : String(localized: "Map to Action Button or Control Center.", comment: "Row description on the KeyVox Speak page listing the ways to start Speak. Use Apple's official names for the Action Button and Control Center in this language.")
         )
     ]
 
@@ -48,11 +49,11 @@ struct KeyVoxSpeakSceneBView: View {
                             .shadow(color: .yellow.opacity(0.3), radius: 8)
 
                         VStack(alignment: .leading, spacing: -6) {
-                            Text("Speak Anywhere")
+                            Text("Speak Anywhere", comment: "Title of the KeyVox Speak page listing the ways to start Speak. Speak is a brand name and stays in English.")
                                 .font(.appFont(35, variant: .medium))
                                 .foregroundStyle(.white)
 
-                            Text(isUnlockContext ? "All of this. No daily cap." : "It's everywhere you are.")
+                            Text(isUnlockContext ? String(localized: "All of this. No daily cap.", comment: "Subtitle on the KeyVox Speak unlock page: unlocking removes the daily limit.") : String(localized: "It's everywhere you are.", comment: "Subtitle on the KeyVox Speak page listing the ways to start Speak."))
                                 .font(.appFont(18, variant: .light))
                                 .foregroundStyle(.white.opacity(0.7))
                         }
@@ -74,7 +75,7 @@ struct KeyVoxSpeakSceneBView: View {
                     fastModeCard
                         .opacity(fastModeCardOpacity)
 
-                    Text("Speak currently supports English only.")
+                    Text("Speak currently supports English only.", comment: "Note on the KeyVox Speak page about language support. Speak is a brand name and stays in English.")
                         .font(.appFont(15, variant: .light))
                         .foregroundStyle(.yellow.opacity(0.7))
                         .frame(maxWidth: .infinity, alignment: .center)
@@ -108,11 +109,11 @@ struct KeyVoxSpeakSceneBView: View {
             }
 
             VStack(alignment: .leading, spacing: 2) {
-                Text("Fast Mode Available")
+                Text("Fast Mode Available", comment: "Title of the card on the KeyVox Speak page about the Fast Mode option.")
                     .font(.appFont(16, variant: .medium))
                     .foregroundStyle(.white)
 
-                Text("Starts speaking ~50% faster. Toggle in the toolbar.")
+                Text("Starts speaking ~50% faster. Toggle in the toolbar.", comment: "Description of the Fast Mode card on the KeyVox Speak page.")
                     .font(.appFont(14, variant: .light))
                     .foregroundStyle(.white.opacity(0.6))
                     .fixedSize(horizontal: false, vertical: true)

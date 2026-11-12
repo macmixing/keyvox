@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 
 struct KeyVoxVibesUnlockScene: View {
@@ -17,9 +18,9 @@ struct KeyVoxVibesUnlockScene: View {
     }
 
     private static let benefits: [Benefit] = [
-        Benefit(id: 0, icon: "infinity", title: "Vibe Without Limits", subtitle: "Unlock once and keep using every built-in Vibe."),
-        Benefit(id: 1, icon: "hand.tap.fill", title: "Long Press Included", subtitle: "Restyle or undo the latest untouched dictation."),
-        Benefit(id: 2, icon: "desktopcomputer", title: "Available on Mac", subtitle: "KeyVox Vibes is also available on Mac.")
+        Benefit(id: 0, icon: "infinity", title: String(localized: "Vibe Without Limits", comment: "Benefit title on the KeyVox Vibes unlock page; to Vibe means to restyle text with Vibes. Vibe is a brand name and stays in English."), subtitle: String(localized: "Unlock once and keep using every built-in Vibe.", comment: "Benefit description on the KeyVox Vibes unlock page. Vibe is a brand name for one writing style and stays in English.")),
+        Benefit(id: 1, icon: "hand.tap.fill", title: String(localized: "Long Press Included", comment: "Benefit title on the KeyVox Vibes unlock page about the long-press restyle feature."), subtitle: String(localized: "Restyle or undo the latest untouched dictation.", comment: "Benefit description on the KeyVox Vibes unlock page.")),
+        Benefit(id: 2, icon: "desktopcomputer", title: String(localized: "Available on Mac", comment: "Benefit title on the KeyVox Vibes unlock page."), subtitle: String(localized: "KeyVox Vibes is also available on Mac.", comment: "Benefit description on the KeyVox Vibes unlock page. KeyVox Vibes is a brand name and stays in English."))
     ]
 
     @Environment(\.appHaptics) private var appHaptics
@@ -56,7 +57,7 @@ struct KeyVoxVibesUnlockScene: View {
                         .scaleEffect(logoScale)
                         .padding(.bottom, 14)
 
-                    Text("Want to Keep Vibing?")
+                    Text("Want to Keep Vibing?", comment: "Title of the KeyVox Vibes unlock page; Vibing means using Vibes. Vibe is a brand name and stays in English.")
                         .font(.appFont(30, variant: .medium))
                         .foregroundStyle(.white)
                         .multilineTextAlignment(.center)
@@ -89,7 +90,7 @@ struct KeyVoxVibesUnlockScene: View {
 
                     installCardSlot
 
-                    Text("One-time purchase. No subscription.")
+                    Text("One-time purchase. No subscription.", comment: "Pricing note on the KeyVox Vibes unlock page.")
                         .font(.appFont(15, variant: .light))
                         .foregroundStyle(.yellow.opacity(0.72))
                         .frame(maxWidth: .infinity, alignment: .center)
@@ -122,10 +123,10 @@ struct KeyVoxVibesUnlockScene: View {
             let remainingText = KeyVoxVibesTrialRemainingTimeFormatter.remainingText(
                 for: vibesPurchaseController.trialRemaining
             )
-            return "You’re trying Vibes, you have \(remainingText) left."
+            return String(localized: "You’re trying Vibes, you have \(remainingText) left.", comment: "Trial status on the KeyVox Vibes unlock page. Vibes is a brand name and stays in English. The placeholder is the remaining trial time, such as days and hours.")
         }
 
-        return "Keep the Vibes flowing."
+        return String(localized: "Keep the Vibes flowing.", comment: "Subtitle on the KeyVox Vibes unlock page when no trial is active. Vibes is a brand name and stays in English.")
     }
 
     private func benefitSpotlight(_ benefit: Benefit) -> some View {
@@ -171,7 +172,7 @@ struct KeyVoxVibesUnlockScene: View {
         if let displayedInstallState {
             ModelDownloaderCardView(
                 iconSystemName: "arrowshape.down.fill",
-                title: "Install Vibes AI",
+                title: String(localized: "Install Vibes AI", comment: "Title of the Vibes AI install card. Vibes AI is a brand name and stays in English."),
                 subtitle: nil,
                 statusText: vibesAIInstallStatusText(for: displayedInstallState),
                 progress: vibesAIProgress(for: displayedInstallState),
@@ -216,15 +217,15 @@ struct KeyVoxVibesUnlockScene: View {
     private func vibesAIInstallStatusText(for state: LocalRewriteModelInstallState) -> String {
         switch state {
         case .notInstalled:
-            return "Install Vibes AI first (~491 MB), then you can use KeyVox Vibes."
+            return String(localized: "Install Vibes AI first (\(ApproximateDownloadSize.vibesAI)), then you can use KeyVox Vibes.", comment: "Status on the Vibes AI install card before download, with the approximate download size. Vibes AI and KeyVox Vibes are brand names and stay in English.")
         case .downloading:
-            return "Downloading KeyVox Vibes AI."
+            return String(localized: "Downloading KeyVox Vibes AI.", comment: "Status on the Vibes AI install card while downloading. KeyVox Vibes AI is a brand name and stays in English.")
         case .installing:
-            return "Installing KeyVox Vibes AI."
+            return String(localized: "Installing KeyVox Vibes AI.", comment: "Status on the Vibes AI install card while installing. KeyVox Vibes AI is a brand name and stays in English.")
         case .ready:
-            return "KeyVox Vibes AI is installed and ready."
+            return String(localized: "KeyVox Vibes AI is installed and ready.", comment: "Status on the Vibes AI install card when installed. KeyVox Vibes AI is a brand name and stays in English.")
         case .failed:
-            return "Install failed."
+            return String(localized: "Install failed.", comment: "Status on the Vibes AI install card when the install failed.")
         }
     }
 
@@ -239,7 +240,7 @@ struct KeyVoxVibesUnlockScene: View {
 
     private func vibesAIProgressText(for state: LocalRewriteModelInstallState) -> String? {
         guard let progress = vibesAIProgress(for: state) else { return nil }
-        return "\(Int((progress * 100).rounded()))%"
+        return progress.formatted(.percent.precision(.fractionLength(0)).rounded(rule: .toNearestOrAwayFromZero))
     }
 
     private func vibesAIErrorText(for state: LocalRewriteModelInstallState) -> String? {
@@ -252,9 +253,9 @@ struct KeyVoxVibesUnlockScene: View {
     private func vibesAIActionTitle(for state: LocalRewriteModelInstallState) -> String? {
         switch state {
         case .notInstalled:
-            return "Download"
+            return String(localized: "Download", comment: "Button on the Vibes AI install card that starts the download.")
         case .failed:
-            return "Repair"
+            return String(localized: "Repair", comment: "Button on the Vibes AI install card that repairs a broken install.")
         case .downloading, .installing, .ready:
             return nil
         }

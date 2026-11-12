@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 
 struct KeyVoxSpeakSheetView: View {
@@ -105,7 +106,7 @@ struct KeyVoxSpeakSheetView: View {
                                 .frame(width: 36, height: 36)
                                 .contentShape(Rectangle())
                         }
-                        .accessibilityLabel("Close")
+                        .accessibilityLabel(String(localized: "Close", comment: "VoiceOver label for the button that closes the KeyVox Speak sheet."))
                         .buttonStyle(.plain)
                         .padding(.top, 7)
                         .padding(.trailing, 7)
@@ -172,7 +173,7 @@ struct KeyVoxSpeakSheetView: View {
                 )
 
                 Button(action: restorePurchases) {
-                    Text("Restore Purchases")
+                    Text("Restore Purchases", comment: "Button on the KeyVox Speak unlock sheet that restores previous App Store purchases.")
                         .font(.appFont(14, variant: .light))
                         .foregroundStyle(.white.opacity(0.8))
                         .frame(maxWidth: .infinity)
@@ -187,22 +188,22 @@ struct KeyVoxSpeakSheetView: View {
 
     private var purchaseButtonTitle: String {
         if ttsPurchaseController.isTTSUnlocked {
-            return "Unlocked"
+            return String(localized: "Unlocked", comment: "Purchase button title on the KeyVox Speak unlock sheet after the purchase.")
         }
 
         if let unlockProduct = ttsPurchaseController.unlockProduct {
-            return "Unlock \(unlockProduct.displayPrice)"
+            return String(localized: "Unlock \(unlockProduct.displayPrice)", comment: "Purchase button title on the KeyVox Speak unlock sheet. The placeholder is the price.")
         }
 
-        return "Unlock"
+        return String(localized: "Unlock", comment: "Purchase button title on the KeyVox Speak unlock sheet while the price is loading.")
     }
 
     private var introActionTitle: String {
         if nextIntroScene != nil {
-            return selectedScene == .a ? "Get Started" : "Next"
+            return selectedScene == .a ? String(localized: "Get Started", comment: "Button on the first page of the KeyVox Speak intro.") : String(localized: "Next", comment: "Button that moves to the next page of the KeyVox Speak intro.")
         }
 
-        return selectedScene == .c ? "Try Now" : "Speak Now"
+        return selectedScene == .c ? String(localized: "Try Now", comment: "Button on the last KeyVox Speak intro page that closes the intro and starts Speak.") : String(localized: "Speak Now", comment: "Button on the last KeyVox Speak intro page that closes the intro and starts Speak.")
     }
 
     private var isIntroActionEnabled: Bool {

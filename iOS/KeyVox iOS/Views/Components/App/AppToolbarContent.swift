@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 
 struct AppToolbarContent: ToolbarContent {
@@ -25,7 +26,7 @@ struct AppToolbarContent: ToolbarContent {
             ToolbarItem(placement: .principal) {
                 HStack(spacing: 12) {
                     LogoBarView(size: 32)
-                    Text("KeyVox")
+                    Text(verbatim: "KeyVox")
                         .font(.appFont(28))
                         .foregroundStyle(.white)
                 }
@@ -92,7 +93,11 @@ struct AppToolbarContent: ToolbarContent {
                 .scaledToFit()
                 .frame(width: 28, height: 28)
         }
-        .accessibilityLabel(isSessionEnabled ? "Disable dictation session" : "Enable dictation session")
+        .accessibilityLabel(
+            isSessionEnabled
+                ? String(localized: "Disable dictation session", comment: "VoiceOver label for the toolbar button that turns off the dictation session.")
+                : String(localized: "Enable dictation session", comment: "VoiceOver label for the toolbar button that turns on the dictation session.")
+        )
     }
 
     private func toggleSession() {
@@ -160,7 +165,11 @@ struct AppToolbarContent: ToolbarContent {
                 .frame(width: 28, height: 28)
         }
         .allowsHitTesting(ttsManager.isFastModeToggleLocked == false)
-        .accessibilityLabel(settingsStore.fastPlaybackModeEnabled ? "Disable fast playback" : "Enable fast playback")
+        .accessibilityLabel(
+            settingsStore.fastPlaybackModeEnabled
+                ? String(localized: "Disable fast playback", comment: "VoiceOver label for the toolbar button that turns off fast playback for KeyVox Speak.")
+                : String(localized: "Enable fast playback", comment: "VoiceOver label for the toolbar button that turns on fast playback for KeyVox Speak.")
+        )
     }
 
     private func toggleFastMode() {

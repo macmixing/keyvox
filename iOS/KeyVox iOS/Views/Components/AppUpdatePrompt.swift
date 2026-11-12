@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 
 extension View {
@@ -76,7 +77,7 @@ private struct AppUpdatePromptModifier: ViewModifier {
         case .optional:
             HStack(spacing: 12) {
                 AppActionButton(
-                    title: "Later",
+                    title: String(localized: "Later", comment: "Button in the app update prompt that postpones the update."),
                     style: .secondary,
                     fillsWidth: true,
                     size: .regular,
@@ -93,7 +94,7 @@ private struct AppUpdatePromptModifier: ViewModifier {
 
     private var updateButton: some View {
         AppActionButton(
-            title: "Update",
+            title: String(localized: "Update", comment: "Button in the app update prompt that opens the App Store to update KeyVox."),
             style: .primary,
             fillsWidth: true,
             size: .regular,
@@ -106,18 +107,18 @@ private struct AppUpdatePromptModifier: ViewModifier {
     private func title(for prompt: AppUpdateCoordinator.Prompt) -> String {
         switch prompt.decision.urgency {
         case .optional:
-            return "Update Available"
+            return String(localized: "Update Available", comment: "Title of the prompt shown when a newer KeyVox version is available.")
         case .forced:
-            return "Update Required"
+            return String(localized: "Update Required", comment: "Title of the prompt shown when the user must update KeyVox to keep using it.")
         }
     }
 
     private func message(for prompt: AppUpdateCoordinator.Prompt) -> String {
         switch prompt.decision.urgency {
         case .optional:
-            return "KeyVox \(prompt.decision.release.version.rawValue) is available on the App Store."
+            return String(localized: "KeyVox \(prompt.decision.release.version.rawValue) is available on the App Store.", comment: "Message in the optional app update prompt. KeyVox is a brand name and stays in English; use Apple's official name for the App Store. The placeholder is the new version number.")
         case .forced:
-            return "KeyVox \(prompt.decision.release.version.rawValue) is required to continue using the app."
+            return String(localized: "KeyVox \(prompt.decision.release.version.rawValue) is required to continue using the app.", comment: "Message in the required app update prompt. KeyVox is a brand name and stays in English. The placeholder is the required version number.")
         }
     }
 }

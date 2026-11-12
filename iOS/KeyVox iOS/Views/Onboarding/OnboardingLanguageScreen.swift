@@ -1,3 +1,4 @@
+import Foundation
 import KeyVoxCore
 import SwiftUI
 
@@ -25,15 +26,15 @@ struct OnboardingLanguageScreen: View {
         AppScrollScreen {
             VStack(alignment: .leading, spacing: 20) {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Choose your language")
+                    Text("Choose your language", comment: "Title of the dictation language picker screen.")
                         .font(.appFont(30))
                         .foregroundStyle(.white)
 
-                    Text("We recommend choosing the language you use most for more reliable dictation.")
+                    Text("We recommend choosing the language you use most for more reliable dictation.", comment: "Advice on the dictation language picker screen.")
                         .font(.appFont(17, variant: .light))
                         .foregroundStyle(.yellow.opacity(0.78))
 
-                    Text("Choose Auto Detect for multilingual conversations. You can change this anytime in Settings.")
+                    Text("Choose Auto Detect for multilingual conversations. You can change this anytime in Settings.", comment: "Advice on the dictation language picker screen. Auto Detect is the name of the language option that detects the spoken language; Settings is the KeyVox app's Settings tab.")
                         .font(.appFont(15, variant: .light))
                         .foregroundStyle(.white.opacity(0.6))
                 }
@@ -42,7 +43,7 @@ struct OnboardingLanguageScreen: View {
                     Image(systemName: "magnifyingglass")
                         .foregroundStyle(.white.opacity(0.5))
 
-                    TextField("Search languages", text: $searchText)
+                    TextField(String(localized: "Search languages", comment: "Placeholder for the search field on the dictation language picker screen."), text: $searchText)
                         .font(.appFont(17, variant: .light))
                         .foregroundStyle(.white)
                         .textInputAutocapitalization(.never)
@@ -73,7 +74,7 @@ struct OnboardingLanguageScreen: View {
                         }
 
                         if filteredLanguages.isEmpty {
-                            Text("No languages found")
+                            Text("No languages found", comment: "Empty state on the dictation language picker screen when the search matches nothing.")
                                 .font(.appFont(16, variant: .light))
                                 .foregroundStyle(.white.opacity(0.6))
                                 .frame(maxWidth: .infinity)
@@ -117,9 +118,9 @@ struct OnboardingLanguageScreen: View {
     private var actionTitle: String {
         switch presentationContext {
         case .onboarding:
-            "Continue"
+            String(localized: "Continue", comment: "Button on the dictation language picker screen during onboarding that confirms the choice and moves on.")
         case .settings:
-            "Done"
+            String(localized: "Done", comment: "Button on the dictation language picker screen opened from Settings that confirms the choice.")
         }
     }
 

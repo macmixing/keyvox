@@ -9,7 +9,7 @@ struct ModelDownloadProgress: View {
             if showLabel {
                 HStack {
                     Spacer()
-                    Text("\(Int(progress * 100))%")
+                    Text(progress.formatted(.percent.precision(.fractionLength(0)).rounded(rule: .down)))
                         .font(.appFont(11))
                         .foregroundStyle(AppTheme.accent)
                 }

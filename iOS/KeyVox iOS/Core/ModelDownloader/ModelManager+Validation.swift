@@ -31,7 +31,7 @@ extension ModelManager {
         let descriptor = descriptorProvider(modelID)
         guard let installRootURL = modelLocator.installRootURL(for: modelID),
               let manifestURL = modelLocator.manifestURL(for: modelID) else {
-            return .failed(message: "App Group container unavailable.")
+            return .failed(message: String(localized: "App Group container unavailable.", comment: "Error shown when the app's shared storage cannot be reached during a model install."))
         }
 
         if modelID == .whisperBase {
@@ -51,22 +51,22 @@ extension ModelManager {
         }
 
         guard installRootExists else {
-            return .failed(message: "Model install is incomplete.")
+            return .failed(message: String(localized: "Model install is incomplete.", comment: "Error shown when a dictation model install is missing files."))
         }
 
         guard manifestExists else {
-            return .failed(message: "Model install is incomplete.")
+            return .failed(message: String(localized: "Model install is incomplete.", comment: "Error shown when a dictation model install is missing files."))
         }
 
         let manifest: DictationModelInstallManifest
         do {
             manifest = try readManifest(from: manifestURL)
         } catch {
-            return .failed(message: "Model install manifest is missing or unreadable.")
+            return .failed(message: String(localized: "Model install manifest is missing or unreadable.", comment: "Error shown when a dictation model install record cannot be read."))
         }
 
         guard DictationModelInstallManifest.supportedVersions.contains(manifest.version) else {
-            return .failed(message: "Model install manifest version is not supported.")
+            return .failed(message: String(localized: "Model install manifest version is not supported.", comment: "Error shown when a dictation model install record is from an unsupported version."))
         }
 
         let artifactsToValidate = modelID == .parakeetTdtV3
@@ -78,12 +78,12 @@ extension ModelManager {
             if artifact.retainedAfterInstall {
                 guard let artifactURL = modelLocator.artifactURL(for: modelID, relativePath: artifact.relativePath),
                       fileManager.fileExists(atPath: artifactURL.path) else {
-                    return .failed(message: "Model install is incomplete.")
+                    return .failed(message: String(localized: "Model install is incomplete.", comment: "Error shown when a dictation model install is missing files."))
                 }
             }
 
             guard manifest.artifactSHA256ByRelativePath[artifact.relativePath]?.lowercased() == artifact.expectedSHA256.lowercased() else {
-                return .failed(message: "Model install manifest does not match the expected artifacts.")
+                return .failed(message: String(localized: "Model install manifest does not match the expected artifacts.", comment: "Error shown when a dictation model install record does not match the expected files."))
             }
         }
 

@@ -3,7 +3,7 @@ import Foundation
 final class LocalRewriteBackgroundDownloadCoordinator: ResumableDownloadTransportDelegate {
     static let sessionIdentifier = "com.cueit.keyvox.vibes-download.background-session"
     static let minimumProgressPersistenceFraction = 0.01
-    static let downloadFailureMessage = "Vibes model download failed. Check your network/storage and retry."
+    static let downloadFailureMessage = String(localized: "Vibes model download failed. Check your network/storage and retry.", comment: "Error shown when the Vibes AI model download fails. Vibes is a brand name and stays in English.")
 
     var stateDidChange: (@Sendable (LocalRewriteBackgroundDownloadJob?) -> Void)?
 

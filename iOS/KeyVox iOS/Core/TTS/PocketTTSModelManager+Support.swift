@@ -6,7 +6,7 @@ extension PocketTTSModelManager {
             throw NSError(
                 domain: "PocketTTSModelManager",
                 code: 2,
-                userInfo: [NSLocalizedDescriptionKey: "Unable to locate the Speak engine install directory."]
+                userInfo: [NSLocalizedDescriptionKey: String(localized: "Unable to locate the Speak engine install directory.", comment: "Error shown when the KeyVox Speak engine install folder cannot be found. Speak is a brand name and stays in English.")]
             )
         }
         return rootURL
@@ -17,7 +17,7 @@ extension PocketTTSModelManager {
             throw NSError(
                 domain: "PocketTTSModelManager",
                 code: 10,
-                userInfo: [NSLocalizedDescriptionKey: "Unable to locate the Speak engine root directory."]
+                userInfo: [NSLocalizedDescriptionKey: String(localized: "Unable to locate the Speak engine root directory.", comment: "Error shown when the KeyVox Speak engine folder cannot be found. Speak is a brand name and stays in English.")]
             )
         }
         return rootURL
@@ -29,7 +29,7 @@ extension PocketTTSModelManager {
             throw NSError(
                 domain: "PocketTTSModelManager",
                 code: 9,
-                userInfo: [NSLocalizedDescriptionKey: "Unable to locate the \(voice.displayName) voice install directory."]
+                userInfo: [NSLocalizedDescriptionKey: String(localized: "Unable to locate the \(voice.displayName) voice install directory.", comment: "Error shown when a KeyVox Speak voice install folder cannot be found. The placeholder is the voice name, which stays in English.")]
             )
         }
         return rootURL
@@ -43,7 +43,7 @@ extension PocketTTSModelManager {
             throw NSError(
                 domain: "PocketTTSModelManager",
                 code: 3,
-                userInfo: [NSLocalizedDescriptionKey: "Unable to create the Speak engine staging directory."]
+                userInfo: [NSLocalizedDescriptionKey: String(localized: "Unable to create the Speak engine staging directory.", comment: "Error shown when KeyVox Speak cannot create its temporary install folder. Speak is a brand name and stays in English.")]
             )
         }
 

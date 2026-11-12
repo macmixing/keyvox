@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 
 struct KeyVoxSpeakUnlockScene: View {
@@ -12,22 +13,22 @@ struct KeyVoxSpeakUnlockScene: View {
         Benefit(
             id: 0,
             icon: "infinity",
-            title: "Unlimited Daily Speaks",
-            subtitle: "No daily cap. Use it as much as you need."
+            title: String(localized: "Unlimited Daily Speaks", comment: "Benefit title on the KeyVox Speak unlock page; Speaks means uses of KeyVox Speak."),
+            subtitle: String(localized: "No daily cap. Use it as much as you need.", comment: "Benefit description on the KeyVox Speak unlock page.")
         ),
         Benefit(
             id: 1,
             icon: "lock.fill",
-            title: "Always Private",
+            title: String(localized: "Always Private", comment: "Benefit title on the KeyVox Speak unlock page."),
             subtitle: AppDevice.isPad
-                ? "AI voices run entirely on-device. Nothing leaves your iPad."
-                : "AI voices run entirely on-device. Nothing leaves your iPhone."
+                ? String(localized: "AI voices run entirely on-device. Nothing leaves your iPad.", comment: "Benefit description on the KeyVox Speak unlock page, shown on iPad.")
+                : String(localized: "AI voices run entirely on-device. Nothing leaves your iPhone.", comment: "Benefit description on the KeyVox Speak unlock page, shown on iPhone.")
         ),
         Benefit(
             id: 2,
             icon: "bolt.fill",
-            title: "Fast Mode Included",
-            subtitle: "Starts speaking ~50% faster with one tap."
+            title: String(localized: "Fast Mode Included", comment: "Benefit title on the KeyVox Speak unlock page."),
+            subtitle: String(localized: "Starts speaking ~50% faster with one tap.", comment: "Benefit description on the KeyVox Speak unlock page for Fast Mode.")
         )
     ]
 
@@ -53,14 +54,14 @@ struct KeyVoxSpeakUnlockScene: View {
                         .scaleEffect(logoScale)
                         .padding(.bottom, 14)
 
-                    Text("Get Speak Unlimited")
+                    Text("Get Speak Unlimited", comment: "Title of the KeyVox Speak unlock page. Speak Unlimited is the product name; Speak is a brand name and stays in English.")
                         .font(.appFont(28, variant: .medium))
                         .foregroundStyle(.white)
                         .multilineTextAlignment(.center)
                         .opacity(titleOpacity)
                         .padding(.bottom, 6)
 
-                    Text("Unlock once. Speak forever.")
+                    Text("Unlock once. Speak forever.", comment: "Tagline on the KeyVox Speak unlock page.")
                         .font(.appFont(18, variant: .light))
                         .foregroundStyle(.white.opacity(0.78))
                         .multilineTextAlignment(.center)
@@ -84,7 +85,7 @@ struct KeyVoxSpeakUnlockScene: View {
                     }
                     .padding(.bottom, 14)
 
-                    Text("One-time purchase. No subscription.")
+                    Text("One-time purchase. No subscription.", comment: "Pricing note on the KeyVox Speak unlock page.")
                         .font(.appFont(15, variant: .light))
                         .foregroundStyle(.yellow.opacity(0.72))
                         .frame(maxWidth: .infinity, alignment: .center)

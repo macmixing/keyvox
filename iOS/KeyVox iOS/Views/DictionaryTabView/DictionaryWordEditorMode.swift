@@ -17,18 +17,18 @@ enum DictionaryWordEditorMode: Identifiable {
     var title: String {
         switch self {
         case .add:
-            return "Add Word"
+            return String(localized: "Add Word", comment: "Title of the sheet for adding a word to the Dictionary.")
         case .edit:
-            return "Edit Word"
+            return String(localized: "Edit Word", comment: "Title of the sheet for editing a Dictionary entry.")
         }
     }
 
     var actionTitle: String {
         switch self {
         case .add:
-            return "Add"
+            return String(localized: "Add", comment: "Button in the Dictionary word sheet that adds the typed word.")
         case .edit:
-            return "Save"
+            return String(localized: "Save", comment: "Button in the Dictionary word sheet that saves changes to an entry.")
         }
     }
 

@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 import UIKit
 
@@ -20,11 +21,11 @@ struct OnboardingEnableKeyboardScreen: View {
             VStack(spacing: 0) {
                 ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 20) {
-                        Text("Enable Keyboard")
+                        Text("Enable Keyboard", comment: "Title of the onboarding screen that asks the user to turn on the KeyVox keyboard.")
                             .font(.appFont(30))
                             .foregroundStyle(.white)
 
-                        Text("Enable KeyVox’s keyboard and turn on Allow Full Access in Settings, then come back here.")
+                        Text("Enable KeyVox’s keyboard and turn on Allow Full Access in Settings, then come back here.", comment: "Instructions on the onboarding Enable Keyboard screen. KeyVox is a brand name and stays in English; use Apple's official names for Allow Full Access and Settings in this language.")
                             .font(.appFont(17, variant: .light))
                             .foregroundStyle(.white.opacity(0.72))
 
@@ -45,7 +46,7 @@ struct OnboardingEnableKeyboardScreen: View {
                 }
 
                 AppActionButton(
-                    title: "Open Settings",
+                    title: String(localized: "Open Settings", comment: "Button on the onboarding Enable Keyboard screen that opens the Settings app. Use Apple's official name for Settings in this language."),
                     style: .primary,
                     fillsWidth: true,
                     fontSize: 20,
@@ -60,7 +61,7 @@ struct OnboardingEnableKeyboardScreen: View {
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button(action: returnToDictationShortcutSetup) {
-                        Label("Back", systemImage: "chevron.left")
+                        Label(String(localized: "Back", comment: "Toolbar button that goes back to the previous onboarding screen."), systemImage: "chevron.left")
                     }
                 }
             }

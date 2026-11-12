@@ -13,21 +13,21 @@ enum ModelInstallPhase: Equatable {
     var statusText: String {
         switch self {
         case .downloadingAssets:
-            return "Downloading model assets"
+            return String(localized: "Downloading model assets", comment: "Dictation model install progress step.")
         case .resumingInstall:
-            return "Preparing model install"
+            return String(localized: "Preparing model install", comment: "Dictation model install progress step.")
         case .movingFiles:
-            return "Moving downloaded files"
+            return String(localized: "Moving downloaded files", comment: "Dictation model install progress step.")
         case .verifyingArtifacts:
-            return "Verifying model assets"
+            return String(localized: "Verifying model assets", comment: "Dictation model install progress step.")
         case .extractingModelAssets:
-            return "Extracting model assets"
+            return String(localized: "Extracting model assets", comment: "Dictation model install progress step.")
         case .validatingInstalledArtifacts:
-            return "Validating installed model"
+            return String(localized: "Validating installed model", comment: "Dictation model install progress step.")
         case .writingManifest:
-            return "Finalizing install"
+            return String(localized: "Finalizing install", comment: "Dictation model install progress step.")
         case .warmingModel:
-            return "Warming model"
+            return String(localized: "Warming model", comment: "Dictation model install progress step: loading the model so it is ready to use.")
         }
     }
 }
@@ -42,9 +42,9 @@ enum ModelInstallState: Equatable {
     var actionText: String? {
         switch self {
         case .downloading:
-            return "Downloading..."
+            return String(localized: "Downloading...", comment: "Status text while a dictation model is downloading.")
         case .installing:
-            return "Installing..."
+            return String(localized: "Installing...", comment: "Status text while a dictation model is installing.")
         default:
             return nil
         }
@@ -53,14 +53,14 @@ enum ModelInstallState: Equatable {
     var statusText: String {
         switch self {
         case .notInstalled:
-            return "Not installed"
+            return String(localized: "Not installed", comment: "Dictation model status when the model is not on the device.")
         case .downloading(let progress, let phase),
              .installing(let progress, let phase):
-            return "\(phase.statusText) \(Int(progress * 100))%"
+            return String(localized: "\(phase.statusText) \(progress.formatted(.percent.precision(.fractionLength(0)).rounded(rule: .down)))", comment: "Dictation model install status. The first placeholder is the current install step and the second is the percent complete.")
         case .ready:
-            return "Ready"
+            return String(localized: "Ready", comment: "Dictation model status when the model is installed and ready to use.")
         case .failed(let message):
-            return "Repair needed (\(message))"
+            return String(localized: "Repair needed (\(message))", comment: "Dictation model status when the install is broken. The placeholder is the error message.")
         }
     }
 }

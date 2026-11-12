@@ -37,7 +37,7 @@ extension PocketTTSBackgroundDownloadCoordinator {
                     domain: "PocketTTSBackgroundDownloadCoordinator",
                     code: response.statusCode,
                     userInfo: [
-                        NSLocalizedDescriptionKey: "Speak download failed with HTTP \(response.statusCode) for \(descriptor.artifactID).",
+                        NSLocalizedDescriptionKey: String(localized: "Speak download failed with HTTP \(response.statusCode) for \(descriptor.artifactID).", comment: "Error shown when a KeyVox Speak download fails. Speak is a brand name and stays in English. The first placeholder is the HTTP status code and the second is the file being downloaded."),
                     ]
                 )
             }

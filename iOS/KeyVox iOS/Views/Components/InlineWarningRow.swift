@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 
 struct InlineWarningRow: View {
@@ -7,8 +8,8 @@ struct InlineWarningRow: View {
     }
 
     enum Copy {
-        static let cellularDownloadRecommended = "Wi-Fi is recommended for this download."
-        static let cellularModelDownloadRecommended = "Wi-Fi is recommended to download."
+        static let cellularDownloadRecommended = String(localized: "Wi-Fi is recommended for this download.", comment: "Warning shown near a download button while the device is on cellular data. Use the system's usual name for Wi-Fi in this language.")
+        static let cellularModelDownloadRecommended = String(localized: "Wi-Fi is recommended to download.", comment: "Short warning shown on a model download card while the device is on cellular data. Use the system's usual name for Wi-Fi in this language.")
     }
 
     let text: String

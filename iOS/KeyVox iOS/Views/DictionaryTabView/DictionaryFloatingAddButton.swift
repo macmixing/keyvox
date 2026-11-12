@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 
 struct DictionaryFloatingAddButton: View {
@@ -32,6 +33,6 @@ struct DictionaryFloatingAddButton: View {
                     state = true
                 }
         )
-        .accessibilityLabel("Add Word")
+        .accessibilityLabel(String(localized: "Add Word", comment: "VoiceOver label for the floating plus button that adds a word to the Dictionary."))
     }
 }

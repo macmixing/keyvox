@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 
 struct KeyVoxSpeakSceneAView: View {
@@ -30,13 +31,13 @@ struct KeyVoxSpeakSceneAView: View {
                         .scaleEffect(logoScale)
                         .padding(.bottom, 28)
 
-                    Text("KeyVox Speak")
+                    Text(verbatim: "KeyVox Speak")
                         .font(.appFont(35, variant: .medium))
                         .foregroundStyle(.white)
                         .opacity(titleOpacity)
                         .padding(.bottom, 6)
 
-                    Text("Copy text. Hear it speak.")
+                    Text("Copy text. Hear it speak.", comment: "Tagline on the KeyVox Speak intro page.")
                         .font(.appFont(20, variant: .light))
                         .foregroundStyle(.white.opacity(0.78))
                         .opacity(subtitleOpacity)
@@ -47,7 +48,7 @@ struct KeyVoxSpeakSceneAView: View {
                         .offset(y: demoCardOffset)
                         .padding(.bottom, 23)
 
-                    Text("Up to 8 on-device AI voices")
+                    Text("Up to 8 on-device AI voices", comment: "Feature note on the KeyVox Speak intro page.")
                         .font(.appFont(18, variant: .light))
                         .foregroundStyle(.white.opacity(0.78))
                         .opacity(localAITextOpacity)
@@ -83,11 +84,11 @@ struct KeyVoxSpeakSceneAView: View {
                     .shadow(color: .yellow.opacity(isPlaying ? 0.5 : 0.25), radius: isPlaying ? 12 : 6)
 
                 VStack(alignment: .leading, spacing: 3) {
-                    Text("Listen to this first")
+                    Text("Listen to this first", comment: "Title of the demo playback card on the KeyVox Speak intro page.")
                         .font(.appFont(18, variant: .medium))
                         .foregroundStyle(.white)
 
-                    Text("Tap play to hear \(Self.featuredVoice.displayName)'s voice.")
+                    Text("Tap play to hear \(Self.featuredVoice.displayName)'s voice.", comment: "Description on the demo playback card on the KeyVox Speak intro page. The placeholder is the voice name, which stays in English.")
                         .font(.appFont(15, variant: .light))
                         .foregroundStyle(.white.opacity(0.6))
                 }
@@ -112,7 +113,7 @@ struct KeyVoxSpeakSceneAView: View {
         .buttonStyle(NoOpacityButtonStyle())
         .disabled(!canPlayPreview)
         .animation(.easeInOut(duration: 0.3), value: isPlaying)
-        .accessibilityLabel(isPlaying ? "Pause KeyVox Speak demo" : "Play KeyVox Speak demo")
+        .accessibilityLabel(isPlaying ? String(localized: "Pause KeyVox Speak demo", comment: "VoiceOver label for the demo playback button on the KeyVox Speak intro page while it plays. KeyVox Speak is a brand name and stays in English.") : String(localized: "Play KeyVox Speak demo", comment: "VoiceOver label for the demo playback button on the KeyVox Speak intro page. KeyVox Speak is a brand name and stays in English."))
     }
     
     private struct NoOpacityButtonStyle: ButtonStyle {

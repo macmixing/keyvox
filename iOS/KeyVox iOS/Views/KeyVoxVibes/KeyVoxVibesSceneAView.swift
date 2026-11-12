@@ -24,12 +24,12 @@ struct KeyVoxVibesSceneAView: View {
                         .scaleEffect(logoScale)
                         .padding(.bottom, 10)
 
-                    Text("Try KeyVox Vibes")
+                    Text("Try KeyVox Vibes", comment: "Title of the first KeyVox Vibes intro page. KeyVox Vibes is a brand name and stays in English.")
                         .font(.appFont(35, variant: .medium))
                         .foregroundStyle(.white)
                         .opacity(titleOpacity)
 
-                    Text("On-device, reversible writing styles.")
+                    Text("On-device, reversible writing styles.", comment: "Tagline on the first KeyVox Vibes intro page.")
                         .font(.appFont(17, variant: .light))
                         .foregroundStyle(.white.opacity(0.78))
                         .multilineTextAlignment(.center)

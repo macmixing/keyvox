@@ -12,7 +12,7 @@ extension PocketTTSModelManager {
                 throw NSError(
                     domain: "PocketTTSModelManager",
                     code: 11,
-                    userInfo: [NSLocalizedDescriptionKey: "Another Speak download is already in progress."]
+                    userInfo: [NSLocalizedDescriptionKey: String(localized: "Another Speak download is already in progress.", comment: "Error shown when a KeyVox Speak download is started while another one is running. Speak is a brand name and stays in English.")]
                 )
             }
             try await backgroundDownloadCoordinator.startOrResumeJob(existingJob)
@@ -127,7 +127,7 @@ private extension PocketTTSModelManager {
             throw NSError(
                 domain: "PocketTTSModelManager",
                 code: 12,
-                userInfo: [NSLocalizedDescriptionKey: "Speak download integrity check failed."]
+                userInfo: [NSLocalizedDescriptionKey: String(localized: "Speak download integrity check failed.", comment: "Error shown when a downloaded KeyVox Speak file fails its integrity check. Speak is a brand name and stays in English.")]
             )
         }
     }
@@ -163,7 +163,7 @@ private extension PocketTTSModelManager {
                 throw NSError(
                     domain: "PocketTTSModelManager",
                     code: 5,
-                    userInfo: [NSLocalizedDescriptionKey: "Speak engine install validation failed."]
+                    userInfo: [NSLocalizedDescriptionKey: String(localized: "Speak engine install validation failed.", comment: "Error shown when the KeyVox Speak engine install could not be verified. Speak is a brand name and stays in English.")]
                 )
             }
 
@@ -187,7 +187,7 @@ private extension PocketTTSModelManager {
                 throw NSError(
                     domain: "PocketTTSModelManager",
                     code: 8,
-                    userInfo: [NSLocalizedDescriptionKey: "\(voice.displayName) voice install validation failed."]
+                    userInfo: [NSLocalizedDescriptionKey: String(localized: "\(voice.displayName) voice install validation failed.", comment: "Error shown when a KeyVox Speak voice install could not be verified. The placeholder is the voice name, which stays in English.")]
                 )
             }
         }

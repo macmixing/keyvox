@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 
 extension DictationSettingsView {
@@ -18,7 +19,7 @@ extension DictationSettingsView {
                         }
 
                         VStack(alignment: .leading, spacing: 4) {
-                            Text("Dictation Timeout")
+                            Text("Dictation Timeout", comment: "Title of the setting that chooses when the dictation session turns off.")
                                 .font(.appFont(18))
                                 .foregroundStyle(.white)
 
@@ -36,14 +37,14 @@ extension DictationSettingsView {
                             }
                             .pickerStyle(.inline)
                         } label: {
-                            Text("Change")
+                            Text("Change", comment: "Menu button that opens the choices for the dictation timeout.")
                                 .font(.appFont(16))
                                 .foregroundColor(.yellow)
                         }
                         .padding(.top, 2)
                     }
 
-                    Text("Decide when the dictation session turns off.")
+                    Text("Decide when the dictation session turns off.", comment: "Description under the Dictation Timeout setting.")
                         .font(.appFont(15, variant: .light))
                         .foregroundStyle(.white.opacity(0.7))
                 }
@@ -53,8 +54,8 @@ extension DictationSettingsView {
 
                 SettingsRow(
                     icon: "widget.small",
-                    title: "Live Activities",
-                    description: "Allow KeyVox to show live activity updates. Required for the Dictation Shortcut.",
+                    title: String(localized: "Live Activities", comment: "Dictation settings toggle. Use Apple's official name for Live Activities in this language."),
+                    description: String(localized: "Allow KeyVox to show live activity updates. Required for the Dictation Shortcut.", comment: "Description under the Live Activities toggle. KeyVox is a brand name and stays in English; use Apple's official term for live activities in this language. Dictation Shortcut is the name of the KeyVox setting below it."),
                     isOn: $settingsStore.liveActivitiesEnabled
                 )
 
@@ -63,11 +64,11 @@ extension DictationSettingsView {
 
                 SettingsRow(
                     assetIcon: "keyvox-circle",
-                    title: "Dictation Shortcut",
-                    description: "Add a quick shortcut to toggle KeyVox dictation anywhere."
+                    title: String(localized: "Dictation Shortcut", comment: "Dictation settings row for setting up a shortcut that turns KeyVox dictation on or off."),
+                    description: String(localized: "Add a quick shortcut to toggle KeyVox dictation anywhere.", comment: "Description under the Dictation Shortcut row. KeyVox is a brand name and stays in English.")
                 ) {
                     AppActionButton(
-                        title: "Set Up",
+                        title: String(localized: "Set Up", comment: "Button on the Dictation Shortcut row that opens the shortcut setup guide."),
                         style: .primary,
                         size: .compact,
                         fontSize: 15
@@ -85,10 +86,10 @@ extension DictationSettingsView {
         AppCard {
             SettingsRow(
                 icon: "mic.fill",
-                title: "Prefer Built-In Microphone",
+                title: String(localized: "Prefer Built-In Microphone", comment: "Dictation settings toggle that makes KeyVox use the device's own microphone."),
                 description: settingsStore.preferBuiltInMicrophone
-                    ? "KeyVox will prefer the built-in microphone whenever one is available."
-                    : "KeyVox will use the currently connected input device.",
+                    ? String(localized: "KeyVox will prefer the built-in microphone whenever one is available.", comment: "Description under the Prefer Built-In Microphone toggle when it is on. KeyVox is a brand name and stays in English.")
+                    : String(localized: "KeyVox will use the currently connected input device.", comment: "Description under the Prefer Built-In Microphone toggle when it is off. KeyVox is a brand name and stays in English."),
                 isOn: $settingsStore.preferBuiltInMicrophone
             )
         }
