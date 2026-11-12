@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="app_language_code">fr</string>
     <string name="enable_keyboard">Activer le clavier</string>
     <string name="select_keyboard">Sélectionner le clavier</string>
     <string name="open_app">Ouvrir KeyVox</string>

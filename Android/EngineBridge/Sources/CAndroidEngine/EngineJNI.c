@@ -69,6 +69,13 @@ JNIEXPORT void JNICALL Java_org_keyvox_android_engine_NativeEngine_configureProm
     if (version) (*env)->ReleaseStringUTFChars(env, app_version, version);
     if (campaign) (*env)->ReleaseStringUTFChars(env, preview_campaign_id, campaign);
 }
+JNIEXPORT void JNICALL Java_org_keyvox_android_engine_NativeEngine_setPromotionLanguage(
+    JNIEnv *env, jclass type, jstring language_code) {
+    const char *language = (*env)->GetStringUTFChars(env, language_code, 0);
+    if (!language) return;
+    keyvox_promotions_set_language(language);
+    (*env)->ReleaseStringUTFChars(env, language_code, language);
+}
 JNIEXPORT void JNICALL Java_org_keyvox_android_engine_NativeEngine_refreshPromotions(JNIEnv *env, jclass type) { keyvox_promotions_refresh(); }
 
 JNIEXPORT void JNICALL Java_org_keyvox_android_engine_NativeEngine_dictionaryList(

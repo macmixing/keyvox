@@ -13,7 +13,7 @@ public final class HomeTabView extends ScrollView {
     private final WeeklyWordStatsCard weeklyStats;
     private final LastTranscriptionCard lastTranscription;
     private PromotionCard promotion;
-    private String campaignID;
+    private PromotionCampaign shownCampaign;
 
     public HomeTabView(Context context) {
         super(context);
@@ -38,9 +38,9 @@ public final class HomeTabView extends ScrollView {
     public void render(int wordCount, String transcription, PromotionCampaign campaign) {
         weeklyStats.render(wordCount);
         lastTranscription.render(transcription);
-        String nextCampaignID = campaign == null ? null : campaign.id;
-        if (java.util.Objects.equals(campaignID, nextCampaignID)) return;
-        campaignID = nextCampaignID;
+        // Each engine update is a new campaign object, so wording changes for the same campaign redraw the card.
+        if (shownCampaign == campaign) return;
+        shownCampaign = campaign;
         if (promotion != null) page.removeView(promotion);
         promotion = campaign == null ? null : new PromotionCard(getContext(), campaign);
         if (promotion != null) page.addView(promotion, sectionParams(true));
