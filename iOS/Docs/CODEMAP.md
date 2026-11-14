@@ -1714,7 +1714,7 @@ Packages/
 - `KeyVox Keyboard/Views/Components/KeyboardKeyGridPage.swift`
   - One built-and-kept page of key rows per symbol page, keys mode, emoji-search row, emoji key, globe, and field keys combination, with its row-geometry helpers, so switching pages never rebuilds a page already shown.
 - `KeyVox Keyboard/Views/Components/KeyboardKeyTouchSession.swift`
-  - One finger's key, typed location, timestamp, and rollover state.
+  - One finger's key, typed location, current location, timestamp, and rollover state.
 - `KeyVox Keyboard/Views/Components/KeyboardKeyView.swift`
   - Renders one key with two alternating labels so case switches only show and hide labels, a number pad digit's letters under it on keys tall enough, and the blue action look; draws no per-key blur and gives its shadow an explicit rounded path.
 - `KeyVox Keyboard/Views/Components/KeyboardHeldKeyPopupView.swift`

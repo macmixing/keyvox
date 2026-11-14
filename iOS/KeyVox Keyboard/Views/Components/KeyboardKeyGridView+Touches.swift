@@ -96,6 +96,7 @@ extension KeyboardKeyGridView {
         for touch in touches {
             guard let session = touchSessions[ObjectIdentifier(touch)] else { continue }
             let location = touch.location(in: self)
+            session.location = location
             switch session.kind {
             case .delete:
                 continue
@@ -278,7 +279,7 @@ extension KeyboardKeyGridView {
         heldKeyController.begin(followsMovement: offer.direction == .centered) { [weak self, weak keyView, weak session] in
             guard let self, let keyView, let session else { return nil }
             let layout = self.openHeldKeyPopup(offer, from: keyView)
-            return (layout, self.convert(session.activationLocation, to: self.popupContainerView ?? self))
+            return (layout, self.convert(session.location, to: self.popupContainerView ?? self))
         }
     }
 
