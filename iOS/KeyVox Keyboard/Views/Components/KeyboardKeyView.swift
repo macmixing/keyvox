@@ -15,6 +15,9 @@ final class KeyboardKeyView: UIView {
     private let titleLabels = [UILabel(), UILabel()]
     private var visibleTitleLabel: UILabel { titleLabels.first { $0.isHidden == false } ?? titleLabels[0] }
     private let imageView = UIImageView()
+    /// The letters under a number pad digit, laid out by hand under the raised title.
+    private let subtitleLabel = UILabel()
+    private var titleCenterYConstraints: [NSLayoutConstraint] = []
     private lazy var borderRenderer = KeyboardRoundedBorderRenderer(containerView: backgroundView)
 
     private(set) var model: KeyboardKeyModel
@@ -51,6 +54,7 @@ final class KeyboardKeyView: UIView {
     }
 
     override func layoutSubviews() {
+        layoutSubtitle()
         super.layoutSubviews()
         updateBorderPath()
         updateShadowPath()
@@ -88,6 +92,13 @@ final class KeyboardKeyView: UIView {
                 titleLabels.forEach { $0.font = titleFont }
             }
             showTitle(model.systemImageName == nil ? model.attributedTitle() : nil)
+            subtitleLabel.attributedText = model.subtitle.map { subtitle in
+                NSAttributedString(string: subtitle, attributes: [
+                    .font: KeyboardStyle.numberPadSubtitleFont,
+                    .kern: KeyboardStyle.numberPadSubtitleKerning,
+                ])
+            }
+            setNeedsLayout()
             if previousModel == nil || previousModel?.systemImageName != model.systemImageName {
                 imageView.image = model.systemImageName.flatMap { name in
                     UIImage(systemName: name, withConfiguration: KeyboardStyle.keySymbolConfiguration)
@@ -103,6 +114,7 @@ final class KeyboardKeyView: UIView {
         tintOverlay.backgroundColor = colors.fill
         borderRenderer.strokeColor = effectiveBorderColor.cgColor
         titleLabels.forEach { $0.textColor = colors.foreground }
+        subtitleLabel.textColor = colors.foreground
         imageView.tintColor = colors.foreground
 
         let shadow = state == .pressed ? KeyboardStyle.pressedKeyShadow : KeyboardStyle.keyShadow
@@ -136,6 +148,7 @@ final class KeyboardKeyView: UIView {
         let titleAlpha: CGFloat = isTrackpadModeActive ? 0 : 1
         let applyGlyphVisibility = {
             self.titleLabels.forEach { $0.alpha = titleAlpha }
+            self.subtitleLabel.alpha = titleAlpha
             self.imageView.alpha = titleAlpha
         }
         if animated {
@@ -151,6 +164,7 @@ final class KeyboardKeyView: UIView {
         layer.removeAllAnimations()
         backgroundView.layer.removeAllAnimations()
         titleLabels.forEach { $0.layer.removeAllAnimations() }
+        subtitleLabel.layer.removeAllAnimations()
         imageView.layer.removeAllAnimations()
         isTrackpadModeActive = false
         apply(model: model, state: .normal, isTrackpadModeActive: false, animated: false)
@@ -183,9 +197,14 @@ final class KeyboardKeyView: UIView {
         imageView.contentMode = .scaleAspectFit
         imageView.isUserInteractionEnabled = false
 
+        subtitleLabel.textAlignment = .center
+        subtitleLabel.isUserInteractionEnabled = false
+        subtitleLabel.isHidden = true
+
         addSubview(backgroundView)
         backgroundView.addSubview(tintOverlay)
         titleLabels.forEach(addSubview)
+        addSubview(subtitleLabel)
         addSubview(imageView)
         _ = borderRenderer
 
@@ -203,10 +222,11 @@ final class KeyboardKeyView: UIView {
             imageView.centerXAnchor.constraint(equalTo: centerXAnchor),
             imageView.centerYAnchor.constraint(equalTo: centerYAnchor),
         ])
+        titleCenterYConstraints = titleLabels.map { $0.centerYAnchor.constraint(equalTo: centerYAnchor) }
+        NSLayoutConstraint.activate(titleCenterYConstraints)
         NSLayoutConstraint.activate(titleLabels.flatMap { titleLabel in
             [
                 titleLabel.centerXAnchor.constraint(equalTo: centerXAnchor),
-                titleLabel.centerYAnchor.constraint(equalTo: centerYAnchor),
                 titleLabel.leadingAnchor.constraint(greaterThanOrEqualTo: leadingAnchor, constant: 6),
                 titleLabel.trailingAnchor.constraint(lessThanOrEqualTo: trailingAnchor, constant: -6),
             ]
@@ -225,6 +245,25 @@ final class KeyboardKeyView: UIView {
         }
         label.isHidden = false
         current.isHidden = true
+    }
+
+    /// Raises a number pad digit's title and puts its letters under it, on keys tall enough for
+    /// both; shorter keys, such as in landscape on iPhone, show the digit alone.
+    private func layoutSubtitle() {
+        let showsSubtitle = model.subtitle != nil
+            && bounds.height >= KeyboardStyle.numberPadSubtitleMinimumKeyHeight
+        let titleOffset = showsSubtitle ? -bounds.height * KeyboardStyle.numberPadTitleRaise : 0
+        for constraint in titleCenterYConstraints where constraint.constant != titleOffset {
+            constraint.constant = titleOffset
+        }
+        subtitleLabel.isHidden = showsSubtitle == false || model.subtitle?.isEmpty != false
+        guard subtitleLabel.isHidden == false else { return }
+        subtitleLabel.sizeToFit()
+        // The kerning follows the last letter too, so the letters sit that much left of center.
+        subtitleLabel.center = CGPoint(
+            x: bounds.midX + KeyboardStyle.numberPadSubtitleKerning / 2,
+            y: bounds.midY + bounds.height * KeyboardStyle.numberPadSubtitleDrop
+        )
     }
 
     private func observeBorderAppearanceChanges() {
@@ -258,16 +297,16 @@ final class KeyboardKeyView: UIView {
         model: KeyboardKeyModel,
         state: VisualState
     ) -> (fill: UIColor, border: UIColor, foreground: UIColor) {
-        // The emoji search's done key is solid blue, and pressed it looks like a letter key, as the
-        // system keyboard's does.
-        if model.kind == .emojiSearchDone, state == .normal || state == .trackpadActive {
+        // An action key is solid blue, and pressed it looks like a letter key, as the system
+        // keyboard's does.
+        if model.isActionKey, state == .normal || state == .trackpadActive {
             return (
-                fill: KeyboardStyle.emojiSearchDoneFillColor,
+                fill: KeyboardStyle.actionKeyFillColor,
                 border: .clear,
-                foreground: KeyboardStyle.emojiSearchDoneLabelColor
+                foreground: KeyboardStyle.actionKeyLabelColor
             )
         }
-        if model.kind == .emojiSearchDone, state == .pressed {
+        if model.isActionKey, state == .pressed {
             return (
                 fill: KeyboardStyle.keyTintColor(KeyboardStyle.keyFillColor),
                 border: KeyboardStyle.keyBorderColor,

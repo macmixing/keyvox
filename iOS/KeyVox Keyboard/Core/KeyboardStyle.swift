@@ -73,6 +73,9 @@ enum KeyboardStyle {
     static let heldKeyPopupHighlightColor = UIColor.keyboardTheme(\.heldKeyPopupHighlight)
     /// How large the popup's characters are next to the same characters on the keys.
     static let heldKeyPopupFontScale: CGFloat = 0.88
+    /// How much wider than the held key a cell of the web endings popup is, as the system keyboard
+    /// draws them: about 19 points wider on every key that offers them.
+    static let heldKeyPopupWebEndingCellWidthAddition: CGFloat = 19
 
     static let backgroundColor = UIColor.clear
     /// Invisible, but not fully transparent: keyboard extensions only receive touches on
@@ -97,10 +100,11 @@ enum KeyboardStyle {
     static let keyDisabledFillColor = UIColor.keyboardTheme(\.keyDisabledFill)
     /// A toolbar key that is on, such as Caps Lock while it is locked.
     static let activeKeyFillColor = UIColor.keyboardTheme(\.activeKeyFill)
-    /// The emoji search's done key, as the system keyboard draws it, light and dark, measured with
+    /// The solid blue key that finishes a field, the emoji search's done key and an action return
+    /// key, as the system keyboard draws it, light and dark, measured with
     /// Tools/AppleKeyboardBaseline (`EmojiFrequentlyUsedProbeTests`).
-    static let emojiSearchDoneFillColor = UIColor(red: 0, green: 122 / 255, blue: 1, alpha: 1)
-    static let emojiSearchDoneLabelColor = UIColor.white
+    static let actionKeyFillColor = UIColor(red: 0, green: 122 / 255, blue: 1, alpha: 1)
+    static let actionKeyLabelColor = UIColor.white
     static let specialKeyDisabledFillColor = UIColor.keyboardTheme(\.specialKeyDisabledFill)
     static let keyBorderColor = UIColor.keyboardTheme(\.keyBorder)
     static let keyPressedBorderColor = UIColor { trait in
@@ -143,6 +147,16 @@ enum KeyboardStyle {
     }
 
     static let keyFont = UIFont.systemFont(ofSize: 22, weight: .regular)
+    static let numberPadKeyFont = UIFont.systemFont(ofSize: 26, weight: .regular)
+    /// The letters under a number pad digit.
+    static let numberPadSubtitleFont = UIFont.systemFont(ofSize: 10, weight: .semibold)
+    static let numberPadSubtitleKerning: CGFloat = 2
+    /// The shortest number pad key that shows its letters under the digit.
+    static let numberPadSubtitleMinimumKeyHeight: CGFloat = 40
+    /// How far above the key's middle a digit with letters sits, as a share of the key's height.
+    static let numberPadTitleRaise: CGFloat = 0.12
+    /// How far below the key's middle the letters sit, as a share of the key's height.
+    static let numberPadSubtitleDrop: CGFloat = 0.24
     static let specialKeyFont = UIFont.systemFont(ofSize: 17)
     static let buttonSymbolConfiguration = UIImage.SymbolConfiguration(pointSize: 18, weight: .semibold)
     static let keySymbolConfiguration = UIImage.SymbolConfiguration(pointSize: 18, weight: .medium)

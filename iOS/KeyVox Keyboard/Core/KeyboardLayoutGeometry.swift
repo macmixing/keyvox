@@ -101,11 +101,33 @@ enum KeyboardLayoutGeometry {
     }
 
     final class BottomRowLayout: RowLayout {
-        func update(isLandscape: Bool) {
-            guard let keyGridView, let rowStack else { return }
+        private let bottomRow: KeyboardFieldKeys.BottomRow
 
+        init(keyGridView: KeyboardKeyGridView, rowStack: UIStackView, bottomRow: KeyboardFieldKeys.BottomRow) {
+            self.bottomRow = bottomRow
+            super.init(keyGridView: keyGridView, rowStack: rowStack)
+        }
+
+        func update(isLandscape: Bool) {
+            guard let keyGridView, let rowStack,
+                  let widths = Self.widths(
+                      rowWidth: keyGridView.bounds.width,
+                      keyCount: rowStack.arrangedSubviews.count,
+                      bottomRow: bottomRow,
+                      isLandscape: isLandscape
+                  ) else { return }
+            applyLayout(expectedKeyCount: widths.count, targetWidths: widths)
+        }
+
+        /// The widths of a bottom row of `keyCount` keys ending in `bottomRow`'s keys, or nil when
+        /// the row is too narrow or holds no such keys.
+        static func widths(
+            rowWidth: CGFloat,
+            keyCount: Int,
+            bottomRow: KeyboardFieldKeys.BottomRow,
+            isLandscape: Bool
+        ) -> [CGFloat]? {
             let spacing = KeyboardStyle.keySpacing
-            let rowWidth = keyGridView.bounds.width
             let topRowKeyWidth = (rowWidth - (spacing * 9)) / 10
             // In landscape the side keys span two top-row keys, leaving the space bar the six
             // between, as on Apple's landscape keyboard.
@@ -117,30 +139,91 @@ enum KeyboardLayoutGeometry {
             // search's row, without the emoji key, the page key takes the side key's width
             // (`EmojiFrequentlyUsedProbeTests`).
             let pairedKeyWidth = (sideKeyWidth - spacing) / 2
-            let spaceKeyWidth = rowWidth - (sideKeyWidth * 2) - (spacing * 2)
-
-            guard pairedKeyWidth > 0, spaceKeyWidth > 0 else { return }
+            var spaceSlotWidth = rowWidth - (sideKeyWidth * 2) - (spacing * 2)
 
             // On an iPhone with a Home button the globe follows the page key, as wide as it, and the
             // emoji key takes the dictation key's place, a top-row key wide, as on Apple's keyboard
             // there (`KeyboardSymbolLayout.HomeButtonRowMeasured`); the emoji search's row, with the
             // globe and without the emoji key, has the usual row's widths.
-            let targetWidths: [CGFloat]
-            switch rowStack.arrangedSubviews.count {
+            let leadingWidths: [CGFloat]
+            switch keyCount - trailingKeyCount(of: bottomRow) {
+            case 1:
+                leadingWidths = [sideKeyWidth]
+            case 2:
+                leadingWidths = [pairedKeyWidth, pairedKeyWidth]
             case 3:
-                targetWidths = [sideKeyWidth, spaceKeyWidth, sideKeyWidth]
-            case 5:
-                targetWidths = [
-                    pairedKeyWidth,
-                    pairedKeyWidth,
-                    topRowKeyWidth,
-                    spaceKeyWidth - topRowKeyWidth - spacing,
-                    sideKeyWidth,
-                ]
+                leadingWidths = [pairedKeyWidth, pairedKeyWidth, topRowKeyWidth]
+                spaceSlotWidth -= topRowKeyWidth + spacing
             default:
-                targetWidths = [pairedKeyWidth, pairedKeyWidth, spaceKeyWidth, sideKeyWidth]
+                return nil
             }
-            applyLayout(expectedKeyCount: targetWidths.count, targetWidths: targetWidths)
+
+            // A field's keys split the space bar's and the return key's places as the system
+            // keyboard splits them, measured on iOS 27 (`iOS/Docs/ENGINEERING.md`): web address
+            // keys share the space bar's place in thirds; the email keys and the post keys are as
+            // wide as the page key; a search field's dot and return key share the return key's
+            // place one third to two, the space bar giving up a key gap.
+            let returnSlotWidth = sideKeyWidth
+            let trailingWidths: [CGFloat]
+            switch bottomRow {
+            case .standard:
+                trailingWidths = [spaceSlotWidth, returnSlotWidth]
+            case .webAddress:
+                let third = (spaceSlotWidth - (spacing * 2)) / 3
+                trailingWidths = [third, third, third, returnSlotWidth]
+            case .webSearch:
+                trailingWidths = [spaceSlotWidth - spacing, returnSlotWidth / 3, returnSlotWidth * 2 / 3]
+            case .email:
+                trailingWidths = [
+                    spaceSlotWidth - (pairedKeyWidth * 2) - (spacing * 2),
+                    pairedKeyWidth,
+                    pairedKeyWidth,
+                    returnSlotWidth,
+                ]
+            case .socialPost:
+                trailingWidths = [spaceSlotWidth, pairedKeyWidth, pairedKeyWidth]
+            }
+            let widths = leadingWidths + trailingWidths
+            return widths.allSatisfy { $0 > 0 } ? widths : nil
+        }
+
+        /// How many keys `bottomRow` puts in the space bar's and the return key's places.
+        private static func trailingKeyCount(of bottomRow: KeyboardFieldKeys.BottomRow) -> Int {
+            switch bottomRow {
+            case .standard:
+                return 2
+            case .webSearch, .socialPost:
+                return 3
+            case .webAddress, .email:
+                return 4
+            }
+        }
+    }
+
+    /// The number pad's bottom row in its three columns: zero and delete under the last two, the
+    /// first left empty, or holding the decimal separator, or the globe, or both side by side.
+    final class NumberPadBottomRowLayout: RowLayout {
+        func update(isLandscape _: Bool) {
+            guard let keyGridView, let rowStack else { return }
+
+            let spacing = KeyboardStyle.keySpacing
+            let columnWidth = (keyGridView.bounds.width - (spacing * 2)) / 3
+            guard columnWidth > 0 else { return }
+
+            let keyCount = rowStack.arrangedSubviews.count
+            let leadingInset = keyCount == 2 ? columnWidth + spacing : 0
+            rowStack.isLayoutMarginsRelativeArrangement = true
+            rowStack.directionalLayoutMargins = NSDirectionalEdgeInsets(
+                top: 0,
+                leading: leadingInset,
+                bottom: 0,
+                trailing: 0
+            )
+            let sharedWidth = (columnWidth - spacing) / 2
+            let targetWidths = keyCount == 4
+                ? [sharedWidth, sharedWidth, columnWidth, columnWidth]
+                : Array(repeating: columnWidth, count: keyCount)
+            applyLayout(expectedKeyCount: keyCount, targetWidths: targetWidths)
         }
     }
 }
