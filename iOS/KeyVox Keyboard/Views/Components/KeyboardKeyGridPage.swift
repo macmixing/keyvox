@@ -1,8 +1,8 @@
 import UIKit
 
-/// One page of the key grid: the letter, number, or symbol keys in one keys mode, with the emoji
-/// search's bottom row or the usual one, with or without the globe, built once and kept, so switching pages shows a page that
-/// already exists instead of building it again.
+/// One page of the key grid: the letter, number, or symbol keys in one keys mode, or the number
+/// pad, with the emoji search's bottom row or the focused field's, with or without the globe, built
+/// once and kept, so switching pages shows a page that already exists instead of building it again.
 final class KeyboardKeyGridPage {
     struct Layout: Hashable {
         let symbolPage: KeyboardSymbolPage
@@ -10,6 +10,7 @@ final class KeyboardKeyGridPage {
         let isEmojiSearch: Bool
         let showsEmojiKey: Bool
         let showsNextKeyboardKey: Bool
+        let fieldKeys: KeyboardFieldKeys
     }
 
     /// The page's rows, stacked top to bottom.
@@ -21,6 +22,7 @@ final class KeyboardKeyGridPage {
     private var letterThirdRowLayoutGeometry: KeyboardLayoutGeometry.LetterThirdRowLayout?
     private var thirdRowLayoutGeometry: KeyboardLayoutGeometry.ThirdRowLayout?
     private var bottomRowLayoutGeometry: KeyboardLayoutGeometry.BottomRowLayout?
+    private var numberPadBottomRowLayoutGeometry: KeyboardLayoutGeometry.NumberPadBottomRowLayout?
 
     init(layout: Layout, letterCase: KeyboardLetterCase, keyGridView: KeyboardKeyGridView) {
         self.letterCase = letterCase
@@ -36,7 +38,8 @@ final class KeyboardKeyGridPage {
             keysMode: layout.keysMode,
             isEmojiSearch: layout.isEmojiSearch,
             showsEmojiKey: layout.showsEmojiKey,
-            showsNextKeyboardKey: layout.showsNextKeyboardKey
+            showsNextKeyboardKey: layout.showsNextKeyboardKey,
+            fieldKeys: layout.fieldKeys
         )
         for (rowIndex, rowModels) in rows.enumerated() {
             let rowStack = UIStackView()
@@ -57,7 +60,15 @@ final class KeyboardKeyGridPage {
 
             view.addArrangedSubview(rowStack)
 
-            if layout.symbolPage == .letters, layout.keysMode == .full, rowIndex == 1 {
+            let isBottomRow = rowIndex == rows.count - 1
+            if layout.symbolPage == .numberPad {
+                if isBottomRow {
+                    numberPadBottomRowLayoutGeometry = KeyboardLayoutGeometry.NumberPadBottomRowLayout(
+                        keyGridView: keyGridView,
+                        rowStack: rowStack
+                    )
+                }
+            } else if layout.symbolPage == .letters, layout.keysMode == .full, rowIndex == 1 {
                 letterSecondRowLayoutGeometry = KeyboardLayoutGeometry.LetterSecondRowLayout(
                     keyGridView: keyGridView,
                     rowStack: rowStack
@@ -74,10 +85,15 @@ final class KeyboardKeyGridPage {
                         rowStack: rowStack
                     )
                 }
-            } else if rowModels.contains(where: { $0.kind == .space }) {
+            } else if isBottomRow {
                 bottomRowLayoutGeometry = KeyboardLayoutGeometry.BottomRowLayout(
                     keyGridView: keyGridView,
-                    rowStack: rowStack
+                    rowStack: rowStack,
+                    bottomRow: layout.fieldKeys.bottomRow(
+                        on: layout.symbolPage,
+                        keysMode: layout.keysMode,
+                        isEmojiSearch: layout.isEmojiSearch
+                    )
                 )
             }
         }
@@ -106,5 +122,6 @@ final class KeyboardKeyGridPage {
         letterThirdRowLayoutGeometry?.update(isLandscape: isLandscape)
         thirdRowLayoutGeometry?.update(isLandscape: isLandscape)
         bottomRowLayoutGeometry?.update(isLandscape: isLandscape)
+        numberPadBottomRowLayoutGeometry?.update(isLandscape: isLandscape)
     }
 }

@@ -722,6 +722,36 @@ struct TranscriptionManagerTests {
         #expect(harness.interruptedCaptureRecoveryStore.load() == nil)
     }
 
+    @Test func deliveredInterruptedCaptureTranscribesImmediatelyAndClearsRecovery() async throws {
+        let harness = try makeHarness()
+        defer { harness.cleanup() }
+        harness.transcriptionService.nextResult = TranscriptionProviderResult(text: "partial phrase", languageCode: "en", paragraphsText: nil, inlineText: nil)
+
+        _ = await harness.manager.performStartRecordingCommand()
+        harness.recorder.isMonitoring = false
+        await harness.manager.deliverRecorderInterruptedCapture(acceptedCapture())
+
+        #expect(harness.transcriptionService.transcribeCallCount == 1)
+        #expect(harness.manager.state == .idle)
+        #expect(harness.manager.lastTranscriptionText != nil)
+        #expect(harness.manager.hasPendingInterruptedCaptureRecovery == false)
+        #expect(harness.interruptedCaptureRecoveryStore.load() == nil)
+    }
+
+    @Test func deliveredInterruptedCaptureWithoutModelKeepsPendingRecovery() async throws {
+        let harness = try makeHarness(modelPath: "")
+        defer { harness.cleanup() }
+
+        _ = await harness.manager.performStartRecordingCommand()
+        harness.recorder.isMonitoring = false
+        await harness.manager.deliverRecorderInterruptedCapture(acceptedCapture())
+
+        #expect(harness.transcriptionService.transcribeCallCount == 0)
+        #expect(harness.manager.state == .idle)
+        #expect(harness.manager.hasPendingInterruptedCaptureRecovery == true)
+        #expect(harness.interruptedCaptureRecoveryStore.load()?.recovery.status == .pending)
+    }
+
     @Test func appDidBecomeActiveWithoutModelKeepsPendingInterruptedCapture() async throws {
         let harness = try makeHarness(modelPath: "")
         defer { harness.cleanup() }

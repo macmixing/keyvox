@@ -10,7 +10,11 @@ extension KeyboardViewController {
     func prepareTypingForCurrentField() {
         typingTraits = KeyboardTypingTraits(proxy: textDocumentProxy, settings: appSettingsStore)
         fieldHasLetters = fieldHoldsLetters()
-        applyOpeningLayout(prefersNumberPage: typingTraits.prefersNumberPage)
+        isReturnKeyEnabled = fieldAllowsReturn()
+        applyOpeningLayout(
+            prefersNumberPage: typingTraits.prefersNumberPage,
+            opensNumberPad: typingTraits.fieldKeys.numberPad != nil
+        )
         predictionCoordinator.reset()
         if typingTraits.allowsPredictions {
             predictionCoordinator.prepare()
@@ -24,9 +28,10 @@ extension KeyboardViewController {
     }
 
     /// Opens on the page and key size `KeyboardOpeningLayout` picks.
-    func applyOpeningLayout(prefersNumberPage: Bool) {
+    func applyOpeningLayout(prefersNumberPage: Bool, opensNumberPad: Bool = false) {
         let layout = KeyboardOpeningLayout.resolve(
             prefersNumberPage: prefersNumberPage,
+            opensNumberPad: opensNumberPad,
             isCompactKeysEnabled: appSettingsStore.isCompactKeysEnabled,
             isCompactKeysActive: appSettingsStore.isCompactKeysActive
         )
@@ -46,10 +51,17 @@ extension KeyboardViewController {
             return
         }
         fieldHasLetters = fieldHoldsLetters()
+        isReturnKeyEnabled = fieldAllowsReturn()
         predictionCoordinator.textDidChange()
         synchronizeLetterCase()
         refreshPredictions()
         updateActiveInsertionVisualState()
+    }
+
+    /// Whether the return key takes taps: always, unless the field turns it on only once it holds
+    /// text and it holds none.
+    private func fieldAllowsReturn() -> Bool {
+        textDocumentProxy.enablesReturnKeyAutomatically != true || textDocumentProxy.hasText
     }
 
     /// Whether the text around the cursor holds any letters; spaces, digits, punctuation, and

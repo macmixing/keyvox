@@ -1,3 +1,4 @@
+import CoreGraphics
 import Foundation
 import KeyVoxPredictiveKeyboard
 
@@ -25,8 +26,12 @@ final class KeyboardHeldKeyController {
 
     private let holdDuration: TimeInterval
     private var openingTimer: Timer?
-    private var opener: (() -> HeldKeyPopupLayout?)?
+    private var opener: (() -> (layout: HeldKeyPopupLayout, fingerLocation: CGPoint)?)?
+    private var followsMovement = false
     private var layout: HeldKeyPopupLayout?
+    /// How far across the finger is read from where it is, so that it starts on the first cell
+    /// when the selection follows its movement.
+    private var selectionOffset: CGFloat = 0
     private var selectedCell: HeldKeyPopupLayout.Cell?
     private var isClosed = false
 
@@ -46,10 +51,18 @@ final class KeyboardHeldKeyController {
     }
 
     /// Starts timing a finger on a key; `open` shows the popup when the finger has stayed long
-    /// enough, returning its layout, or nil when it cannot open.
-    func begin(open: @escaping () -> HeldKeyPopupLayout?) {
+    /// enough, returning its layout and where the finger is in it, or nil when it cannot open.
+    /// - Parameter followsMovement: Whether the selection moves as the finger moves from where it
+    ///   was when the popup opened, rather than to the cell under the finger, as the system
+    ///   keyboard's web endings popup does: it may open beside the key, its first ending still
+    ///   selected until the finger slides.
+    func begin(
+        followsMovement: Bool = false,
+        open: @escaping () -> (layout: HeldKeyPopupLayout, fingerLocation: CGPoint)?
+    ) {
         cancel()
         opener = open
+        self.followsMovement = followsMovement
         let timer = Timer(timeInterval: holdDuration, repeats: false) { [weak self] _ in
             self?.openPopup()
         }
@@ -59,7 +72,7 @@ final class KeyboardHeldKeyController {
 
     func update(location: CGPoint) -> Movement {
         guard let layout, isClosed == false else { return .unchanged }
-        guard let cell = layout.cell(at: location) else {
+        guard let cell = layout.cell(at: CGPoint(x: location.x + selectionOffset, y: location.y)) else {
             isClosed = true
             return .closed
         }
@@ -80,15 +93,21 @@ final class KeyboardHeldKeyController {
         openingTimer?.invalidate()
         openingTimer = nil
         opener = nil
+        followsMovement = false
         layout = nil
+        selectionOffset = 0
         selectedCell = nil
         isClosed = false
     }
 
     private func openPopup() {
         openingTimer = nil
-        layout = opener?()
+        let opened = opener?()
         opener = nil
+        layout = opened?.layout
         selectedCell = layout?.firstCell
+        if let opened, followsMovement {
+            selectionOffset = opened.layout.firstCell.frame.midX - opened.fingerLocation.x
+        }
     }
 }

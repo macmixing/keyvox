@@ -17,6 +17,8 @@ struct KeyboardTypingTraits: Equatable {
     let allowsCapsLock: Bool
     /// Two spaces after a word type a period and a space.
     let allowsPeriodShortcut: Bool
+    /// The keys the field asks for: its bottom row, return key, and number pad.
+    let fieldKeys: KeyboardFieldKeys
 
     /// A field that allows every typing feature, used until the focused field is read.
     static let standard = KeyboardTypingTraits(
@@ -26,7 +28,8 @@ struct KeyboardTypingTraits: Equatable {
         allowsAutocorrection: true,
         autocapitalization: .sentences,
         allowsCapsLock: true,
-        allowsPeriodShortcut: true
+        allowsPeriodShortcut: true,
+        fieldKeys: .standard
     )
 
     private init(
@@ -36,7 +39,8 @@ struct KeyboardTypingTraits: Equatable {
         allowsAutocorrection: Bool,
         autocapitalization: UITextAutocapitalizationType,
         allowsCapsLock: Bool,
-        allowsPeriodShortcut: Bool
+        allowsPeriodShortcut: Bool,
+        fieldKeys: KeyboardFieldKeys
     ) {
         self.prefersNumberPage = prefersNumberPage
         self.allowsPredictions = allowsPredictions
@@ -45,6 +49,7 @@ struct KeyboardTypingTraits: Equatable {
         self.autocapitalization = autocapitalization
         self.allowsCapsLock = allowsCapsLock
         self.allowsPeriodShortcut = allowsPeriodShortcut
+        self.fieldKeys = fieldKeys
     }
 
     init(proxy: UITextDocumentProxy, settings: KeyboardAppSettingsStore) {
@@ -66,11 +71,15 @@ struct KeyboardTypingTraits: Equatable {
         ].contains(contentType)
         let isAddressLike = [UIKeyboardType.emailAddress, .URL].contains(keyboardType)
             || [UITextContentType.emailAddress, .URL, .username].contains(contentType)
+        // Apple's keyboard drops its suggestion bar from a web address or email field that turns
+        // autocorrection off; the toolbar shows in its place.
+        let dropsSuggestions = [UIKeyboardType.emailAddress, .URL].contains(keyboardType)
+            && proxy.autocorrectionType == .no
 
         prefersNumberPage = isNumericOnly
             || keyboardType == .numbersAndPunctuation
             || settings.opensOnNumberPage
-        allowsPredictions = isNumericOnly == false && isCredential == false
+        allowsPredictions = isNumericOnly == false && isCredential == false && dropsSuggestions == false
         showsSuggestions = allowsPredictions && settings.isPredictiveTextEnabled
         allowsAutocorrection = allowsPredictions
             && isAddressLike == false
@@ -81,5 +90,9 @@ struct KeyboardTypingTraits: Equatable {
             : .none
         allowsCapsLock = settings.isShiftCapsLockEnabled
         allowsPeriodShortcut = settings.isPeriodShortcutEnabled
+        fieldKeys = KeyboardFieldKeys(
+            keyboardType: keyboardType,
+            returnKeyType: proxy.returnKeyType ?? .default
+        )
     }
 }

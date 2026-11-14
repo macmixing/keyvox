@@ -277,6 +277,29 @@
         }
       }
     },
+    "Continue" : {
+      "comment" : "VoiceOver label for the keyboard's return key when the text field uses the Continue return key. Use the name the system keyboard uses in this language.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Fortfahren"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Continuar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Continuer"
+          }
+        }
+      }
+    },
     "Delete" : {
       "comment" : "VoiceOver label for the keyboard's delete key. Use the name the system keyboard uses in this language.",
       "localizations" : {
@@ -342,6 +365,52 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Dictionnaire"
+          }
+        }
+      }
+    },
+    "Done" : {
+      "comment" : "VoiceOver label for the keyboard's return key when the text field uses the Done return key. Use the name the system keyboard uses in this language.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Fertig"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "OK"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "OK"
+          }
+        }
+      }
+    },
+    "Emergency Call" : {
+      "comment" : "VoiceOver label for the keyboard's return key when the text field uses the Emergency Call return key. Use the name the system uses in this language.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Notruf"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Llamada SOS"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Appel d’urgence"
           }
         }
       }
@@ -484,6 +553,29 @@
         }
       }
     },
+    "Go" : {
+      "comment" : "VoiceOver label for the keyboard's return key when the text field uses the Go return key. Use the name the system keyboard uses in this language.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Los"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ir"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aller"
+          }
+        }
+      }
+    },
     "How to Allow Full Access" : {
       "comment" : "Title of the keyboard's Full Access instructions screen. Use Apple's official name for Allow Full Access in this language.",
       "localizations" : {
@@ -553,6 +645,29 @@
         }
       }
     },
+    "Join" : {
+      "comment" : "VoiceOver label for the keyboard's return key when the text field uses the Join return key, such as when joining a network. Use the name the system keyboard uses in this language.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Verbinden"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Acceder"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Rejoindre"
+          }
+        }
+      }
+    },
     "Lists" : {
       "comment" : "VoiceOver label for the keyboard toolbar toggle that turns automatic lists in dictation on or off.",
       "localizations" : {
@@ -572,6 +687,29 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Listes"
+          }
+        }
+      }
+    },
+    "Next" : {
+      "comment" : "VoiceOver label for the keyboard's return key when the text field uses the Next return key, which moves to the next field. Use the name the system keyboard uses in this language.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Weiter"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Siguiente"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Suivant"
           }
         }
       }
@@ -921,8 +1059,31 @@
         }
       }
     },
+    "Route" : {
+      "comment" : "VoiceOver label for the keyboard's return key when the text field uses the Route return key in maps and directions. Use the name the system keyboard uses in this language.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Route"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ruta"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Itinéraire"
+          }
+        }
+      }
+    },
     "Search" : {
-      "comment" : "VoiceOver label for the magnifying glass in the emoji keyboard's search field.",
+      "comment" : "VoiceOver label for the keyboard's return key when the text field uses the Search return key. Use the name the system keyboard uses in this language.\nVoiceOver label for the magnifying glass in the emoji keyboard's search field.",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -963,6 +1124,29 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Rechercher un Emoji"
+          }
+        }
+      }
+    },
+    "Send" : {
+      "comment" : "VoiceOver label for the keyboard's return key when the text field uses the Send return key. Use the name the system keyboard uses in this language.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Senden"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Enviar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Envoyer"
           }
         }
       }

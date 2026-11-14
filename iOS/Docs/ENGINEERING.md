@@ -272,6 +272,12 @@ Current root behavior:
 - app update prompts may appear only while the resolved root destination is truly `.main`, and must never interrupt launch hold, onboarding, `ReturnToHostView`, or `PlaybackPreparationView`
 - the KeyVox Speak setup and KeyVox Vibes sheet URL routes are ignored while onboarding is showing
 
+### Main Tab Shell Rules
+
+- `MainTabView`'s `TabView` is the outermost navigation container; each tab owns its own `NavigationStack`, and no `NavigationStack` may wrap the `TabView`. On iOS 27.3, a tab bar nested inside a navigation stack stays stretched across the screen in its bottom-bar layout after the iPhone Duo unfolds, instead of moving into the vertical bar.
+- each tab root carries its own title, the Home-only toolbar from `AppToolbarContent`, and the edge-swipe tab-switch areas, so a pushed screen covers the swipe areas and keeps the system back swipe
+- the Settings stack's path is `MainTabView` view state holding `SettingsDestination` values; leaving the Settings tab clears it, and it resets whenever the tab shell is rebuilt (for example after `ReturnToHostView`), so returning to Settings shows its root list
+
 ### Onboarding Store Rules
 
 `OnboardingStore` owns:
@@ -963,13 +969,18 @@ Interrupted capture recovery is now a first-class iOS runtime feature.
 
 - staging accepted interrupted captures
 - persisting recovery payloads
+- delivering the partial transcript to the keyboard right after an audio interruption
 - resuming recovery on app activation
 - marking failed recovery attempts
 
 Rules:
 
 - only captures with non-empty `outputFrames` are staged
-- recovery requires model readiness
+- when an audio session interruption or stopped engine cuts off an active recording, `deliverRecorderInterruptedCapture` stages the capture and immediately runs recovery with keyboard delivery
+- keyboard delivery publishes transcribing, then publishes the transcript with its recovery ID and style identifier the same way a normal stop does, so a keyboard still waiting on that dictation inserts the partial text; no speech or an empty result publishes no speech
+- keyboard delivery records the pipeline result as the latest KeyVox Vibes artifact; app-activation recovery does not publish to the keyboard
+- the staged capture stays on disk until recovery succeeds, so a delivery that does not finish or the user cancels is retried on the next app activation
+- recovery requires model readiness; without it the capture stays pending for app-activation recovery
 - recovery runs through the shared `DictationPipeline`
 - successful recovery updates `latestTranscription`
 - failed recovery stays visible to the app instead of being silently discarded
@@ -1831,7 +1842,7 @@ Keyboard-specific row geometry must stay separated by responsibility:
 
 - `KeyboardRootView` owns the stable keyboard shell, toolbar stacking, the top-row accessory button containers, the suggestion bar's placement, and the emoji page, search field, and results placement
 - `KeyboardKeyGridView` owns page display and key interaction wiring; `KeyboardKeyGridPage` builds each page's rows once and keeps them, and `KeyboardKeyGridView+Touches.swift` owns multi-finger touch handling
-- `KeyboardSymbolLayout` owns which keys each letter, number, and symbol page, Compact Keys, the emoji search row, and the globe row contain
+- `KeyboardSymbolLayout` owns which keys each letter, number, and symbol page, Compact Keys, the emoji search row, and the globe row contain, taking a field's bottom row from `KeyboardFieldBottomRowKeys` and the number pad's rows from `KeyboardNumberPadLayout`
 - `KeyboardLayoutGeometry` owns live measurement-based row sizing, while `KeyboardTopRowAccessoryLayout` owns accessory alignment rules
 
 Do not push special-case row width math back into `KeyboardSymbolLayout` when the requirement depends on the rendered keyboard width.
@@ -1940,8 +1951,23 @@ Field preparation:
 - after appearing, the keyboard waits for the host's first `textDidChange(_:)` before reading the field; until then it opens as the Open on 123 setting says
 - `KeyboardTypingTraits` resolves what the field allows from its keyboard type, content type, secure entry, autocorrection type, and autocapitalization type, then narrows it by the shared keyboard typing settings; a feature the field turns off stays off whatever the settings say
 - numeric-only keyboard types, secure entry, and password content types turn predictions off; email, URL, and username fields keep predictions but not autocorrection
-- a number-pad style field, a numbers-and-punctuation field, or the Open on 123 setting opens the number page, which stays until the user taps ABC; after that, symbols return to the letters again
+- a web address or email keyboard type whose field turns autocorrection off turns predictions off too, as Apple's keyboard drops its suggestion bar there; the toolbar accessories show in the bar's place
+- a number pad, ASCII number pad, or decimal pad field opens the full-size number pad whatever the Compact Keys and Open on 123 settings say, and keeps it, as the pad has no page keys
+- a numbers-and-punctuation field or the Open on 123 setting opens the number page, which stays until the user taps ABC; after that, symbols return to the letters again
+- `KeyboardTypingTraits` carries the field's `KeyboardFieldKeys`, so a field asking for other keys also counts as a change of fields
 - a change of the field's typing traits while the keyboard stays up means the cursor moved to another field, which starts that field with a fresh session
+
+### Field Keys
+
+`KeyboardFieldKeys` turns the focused field's keyboard type and return key type into the keys it shows, matching Apple's iPhone keyboard as measured on iOS 27 with a throwaway host app that opened one text field per keyboard type and return key type:
+
+- the letter page's bottom row keeps the page key, emoji key, and globe it would have and changes only the space bar's and return key's places (`KeyboardFieldBottomRowKeys`): a URL field shows the dot, the slash, and the common web ending in three equal keys where the space bar was, and no space bar; an email field shows a shorter space bar and the at sign and dot, each as wide as the page key; a Twitter field shows the at sign and hash sign, each as wide as the page key, where the return key was, and no return key; a web search field shows a space bar a key gap shorter and the dot and return key splitting the return key's place one third to two
+- only a web search field keeps its row on the number and symbol pages; Compact Keys and the emoji search keep their own rows
+- holding the web ending key, or the dot of an email or web search field, offers the web endings in a fixed order with the common one first selected (the bundled `centered` offer); the popup slides along to stay on the keyboard, each cell about 19 points wider than the held key, and its selection moves as the finger moves from where it was when the popup opened, so the first selection holds however the popup slid
+- every page's return key takes the field's return key type: the plain return arrow by default, a plain chevron for next and continue, and the solid blue action key (`KeyboardStyle.actionKeyFillColor`, shared with the emoji search's done key) with an arrow for go, join, and route, a magnifying glass for search, Google, and Yahoo, an up arrow for send, a checkmark for done, and a phone for an emergency call (`KeyboardReturnKeyStyle`)
+- a field that turns the return key on only once it holds text greys it out and ignores taps on it while the field is empty
+- a number pad field shows `KeyboardNumberPadLayout`: three columns of digits with a phone keypad's letters under them, over the decimal separator in a decimal pad, zero, and delete; where the keyboard shows the globe, a 123 key that looks like the digits takes the bottom row's first place, beside the decimal separator in a decimal pad, and a tap on it moves on to the next keyboard while holding it lists none, as the system number pad's does there; keys too short for the letters, such as in landscape on iPhone, show the digit alone; number pad keys show no bubble and no held popup
+- secure, password, phone pad, and name phone pad fields never reach the keyboard: iOS shows its own keyboard there even while KeyVox is selected
 
 Prediction threading:
 
@@ -2108,8 +2134,9 @@ Current app-owned surfaces:
 - `ThirdPartyNoticesView`: shared legal-notices sheet that renders the bundled repo-root `THIRD_PARTY_NOTICES.md` markdown with app-owned styling and explicit close-only dismissal
 - `DictionaryTabView`: dictionary browsing/editing
 - `StyleTabView`: dictation style toggles
-- `SettingsTabView`: top-level settings composition with the Dictation, Keyboard, and KeyVox Speak rows, the KeyVox Vibes AI card, and the About sections, plus third-party notices presentation and the Dictation screen push; a dictation-model section request from `AppTabRouter` opens the Dictation screen with its model card expanded
+- `SettingsTabView`: top-level settings composition with the Dictation, Keyboard, and KeyVox Speak rows, the KeyVox Vibes AI card, and the About sections, plus third-party notices presentation and the single navigation destination for its pushed screens, which hides the tab bar on every pushed Settings screen; a dictation-model section request from `AppTabRouter` opens the Dictation screen with its model card expanded
 - `SettingsTabView+General`: the Dictation, Keyboard, and KeyVox Speak rows that open their settings screens
+- `SettingsDestination`: the Dictation, Keyboard, and KeyVox Speak screens the Settings tab pushes onto its navigation stack
 - `DictationSettingsView`: the Dictation settings screen with the Dictation Timeout, Live Activities, and Dictation Shortcut setup-guide card, the dictation model card, and the built-in microphone preference; it owns the full-screen Dictation Shortcut reference-guide and language-picker presentations, and its copy lives in `DictationSettingsCopy`
 - `KeyboardSettingsView`: the Keyboard settings screen, with keyboard haptics (hidden on iPad) and the keyboard typing toggles, Classic Theme, Compact Keys, Open on 123, Left-Handed Layout, and Reset Learned Words; its copy lives in `KeyboardSettingsCopy`
 - `DictationSettingsView+Model`: release-facing `Dictation Model` section for provider selection, per-model install actions, uninstalled model size display, and the attached language section driven by the shared Whisper catalog or Parakeet Auto Detect guidance

@@ -26,14 +26,14 @@ struct ReturnToHostAdaptiveLayout<Content: View>: View {
                 } else if Self.isSquat(displaySize) {
                     ViewThatFits(in: .vertical) {
                         content(.usualAtFullSize(spacing: spacing))
-                        // Text held at the standard size, which the tighter layout is laid out for.
                         content(.compact)
-                            .dynamicTypeSize(.large)
                     }
                 } else {
                     content(.usual(spacing: spacing))
                 }
             }
+            // Text held at the standard size, which every layout is laid out for.
+            .dynamicTypeSize(.large)
             .frame(width: proxy.size.width, height: proxy.size.height)
         }
     }

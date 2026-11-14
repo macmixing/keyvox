@@ -54,6 +54,11 @@ final class KeyboardKeyGridView: UIView {
     private(set) var showsEmojiKey = true
     /// Whether the bottom row has the globe, where the system shows none under the keyboard.
     private(set) var showsNextKeyboardKey = false
+    /// The keys the focused field asks for.
+    private(set) var fieldKeys = KeyboardFieldKeys.standard
+    /// Whether the return key takes taps; a field that turns it on only once it holds text greys it
+    /// out while empty.
+    private(set) var isReturnKeyEnabled = true
     /// Whether holding the space bar turns the keyboard into a trackpad for the cursor; the emoji
     /// search has no cursor to move.
     var allowsSpaceTrackpad = true
@@ -88,16 +93,31 @@ final class KeyboardKeyGridView: UIView {
         keysMode: KeyboardKeysMode,
         isEmojiSearch: Bool,
         showsEmojiKey: Bool,
-        showsNextKeyboardKey: Bool
+        showsNextKeyboardKey: Bool,
+        fieldKeys: KeyboardFieldKeys
     ) {
         guard page != symbolPage || keysMode != self.keysMode || isEmojiSearch != self.isEmojiSearch
-            || showsEmojiKey != self.showsEmojiKey || showsNextKeyboardKey != self.showsNextKeyboardKey else { return }
+            || showsEmojiKey != self.showsEmojiKey || showsNextKeyboardKey != self.showsNextKeyboardKey
+            || fieldKeys != self.fieldKeys else { return }
         symbolPage = page
         self.keysMode = keysMode
         self.isEmojiSearch = isEmojiSearch
         self.showsEmojiKey = showsEmojiKey
         self.showsNextKeyboardKey = showsNextKeyboardKey
+        self.fieldKeys = fieldKeys
         showPage()
+    }
+
+    func setReturnKeyEnabled(_ enabled: Bool) {
+        guard enabled != isReturnKeyEnabled else { return }
+        isReturnKeyEnabled = enabled
+        updateAllKeyStates()
+    }
+
+    /// Whether `keyView` takes taps: every key while the keyboard is on, except a greyed-out
+    /// return key.
+    func isEnabled(_ keyView: KeyboardKeyView) -> Bool {
+        isKeyboardEnabled && (keyView.model.kind != .returnKey || isReturnKeyEnabled)
     }
 
     func setLetterCase(_ letterCase: KeyboardLetterCase) {
@@ -218,7 +238,7 @@ final class KeyboardKeyGridView: UIView {
     }
 
     func setVisualState(_ state: KeyboardKeyView.VisualState, for keyView: KeyboardKeyView) {
-        let resolvedState: KeyboardKeyView.VisualState = isKeyboardEnabled ? state : .disabled
+        let resolvedState: KeyboardKeyView.VisualState = isEnabled(keyView) ? state : .disabled
         guard keyView.visualState != resolvedState else { return }
         keyView.apply(
             model: keyView.model,
@@ -232,7 +252,7 @@ final class KeyboardKeyGridView: UIView {
         let pressedKeys = Set(touchSessions.values.compactMap { $0.keyView.map(ObjectIdentifier.init) })
         for keyView in keyViews {
             let state: KeyboardKeyView.VisualState
-            if !isKeyboardEnabled {
+            if isEnabled(keyView) == false {
                 state = .disabled
             } else if isTrackpadModeActive, keyView === trackpadOriginKeyView {
                 state = .trackpadActive
@@ -295,7 +315,8 @@ final class KeyboardKeyGridView: UIView {
             keysMode: keysMode,
             isEmojiSearch: isEmojiSearch,
             showsEmojiKey: showsEmojiKey,
-            showsNextKeyboardKey: showsNextKeyboardKey
+            showsNextKeyboardKey: showsNextKeyboardKey,
+            fieldKeys: fieldKeys
         )
         let page = pages[layout] ?? makePage(for: layout)
         if page !== currentPage {

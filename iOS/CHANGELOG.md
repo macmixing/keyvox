@@ -6,6 +6,43 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.6.4] - 2026-11-11
+
+Makes spoken colons work after example phrases, improves suggestions typed before another word, and frees memory from closed keyboards.
+
+### Added
+
+- Added a message asking you to install the Shortcuts app when the KeyVox shortcut can't open on iOS 26 and newer.
+
+### Fixed
+
+- Fixed a spoken `colon` staying a word after phrases that introduce examples, such as `such as` or `for instance`.
+- Fixed word suggestions for a word typed right before another word, so picking one replaces only the typed letters and keeps the next word.
+- Fixed closed keyboards leaving their views behind in memory.
+- Fixed the return-to-app and KeyVox Speak preparation text growing with larger text settings on most layouts, so it stays at the standard size everywhere.
+
+### Package versions
+
+KeyVox iOS 1.6.4
+  KeyVoxCore               1.3.13
+  KeyVoxEmoji              1.0.1
+  KeyVoxKeyboardThemes     1.0.0
+  KeyVoxLinguistics        1.0.2
+  KeyVoxLocalInference     1.0.5
+  KeyVoxModels             1.0.0
+  KeyVoxParakeet           1.1.0
+  KeyVoxPredictiveKeyboard 1.0.5
+  KeyVoxPromotions         1.1.0
+  KeyVoxState              1.0.0
+  KeyVoxStyleRewrite       1.1.0
+  KeyVoxTTS                1.1.0
+  KeyVoxTextComposition    1.1.0
+  KeyVoxVibesAdapters      1.0.5
+  KeyVoxVoiceActivity      1.1.1
+  KeyVoxWhisper            1.2.0
+
+---
+
 ## [1.6.3] - 2026-11-07
 
 Turns spoken periods, commas, and colons into punctuation, writes out casual words in Polished, and fixes crashes in the keyboard and Shortcut dictation.

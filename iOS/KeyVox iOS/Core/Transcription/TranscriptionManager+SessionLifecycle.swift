@@ -2,8 +2,9 @@ import Foundation
 import KeyVoxCore
 
 extension TranscriptionManager {
-    func handleRecorderInterruptedCapture(_ stoppedCapture: StoppedCapture) async {
-        guard state == .recording else { return }
+    @discardableResult
+    func handleRecorderInterruptedCapture(_ stoppedCapture: StoppedCapture) async -> Bool {
+        guard state == .recording else { return false }
 
         cancelUtteranceSafetyWatchdog()
         activeUtteranceID = UUID()
@@ -15,8 +16,9 @@ extension TranscriptionManager {
         pendingPipelineOutputText = nil
         lastErrorMessage = nil
 
-        stageInterruptedCaptureIfNeeded(stoppedCapture)
+        let didStageCapture = stageInterruptedCaptureIfNeeded(stoppedCapture)
         keyboardBridge.publishCancelled()
+        return didStageCapture
     }
 
     func armIdleTimeout(timing: SessionDisableTiming? = nil) {

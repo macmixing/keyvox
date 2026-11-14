@@ -27,27 +27,21 @@ struct MainTabView: View {
     @State private var pendingDownloadConfirmation: PendingDownloadConfirmation?
     @State private var pendingModelUpdatePrompt: PendingModelUpdatePrompt?
     @State private var hasPresentedModelUpdatePrompt = false
+    @State private var settingsPath: [SettingsDestination] = []
     @AppStorage(
         UserDefaultsKeys.App.dismissedDictationModelUpdatePromptID,
         store: SharedPaths.appGroupUserDefaults()
     ) private var dismissedModelUpdatePromptID = ""
 
     var body: some View {
-        NavigationStack {
-            Group {
-                if #available(iOS 26.0, *) {
-                    tabContent
-                        .tabBarMinimizeBehavior(.automatic)
-                        .tint(.yellow)
-                } else {
-                    tabContent
-                        .tint(.yellow)
-                }
-            }
-            .navigationTitle(selectedTab == .home ? "" : selectedTab.title)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                AppToolbarContent(selectedTab: selectedTab)
+        Group {
+            if #available(iOS 26.0, *) {
+                tabContent
+                    .tabBarMinimizeBehavior(.automatic)
+                    .tint(.yellow)
+            } else {
+                tabContent
+                    .tint(.yellow)
             }
         }
         .settingsDeletionConfirmation($pendingDeletionConfirmation, onConfirm: performDeletionConfirmation)
@@ -115,6 +109,11 @@ struct MainTabView: View {
                     .environmentObject(keyVoxVibesPurchaseController)
             }
         }
+        .onChange(of: selectedTab, initial: false) { oldTab, _ in
+            if oldTab == .settings {
+                settingsPath = []
+            }
+        }
         .onChange(of: selectedTab, initial: false) { oldTab, newTab in
             guard appTabRouter.consumeShouldSuppressNextSelectionHaptic() == false else {
                 return
@@ -134,39 +133,68 @@ struct MainTabView: View {
 
     private var tabContent: some View {
         TabView(selection: $appTabRouter.selectedTab) {
-            HomeTabView(pendingDownloadConfirmation: $pendingDownloadConfirmation)
+            NavigationStack {
+                tabRoot(for: .home) {
+                    HomeTabView(pendingDownloadConfirmation: $pendingDownloadConfirmation)
+                }
+            }
                 .tabItem {
                     Label(String(localized: "Home", comment: "Name of the app's Home tab, used as its screen title."), systemImage: "house.fill")
                 }
                 .tag(ContainingAppTab.home)
 
-            DictionaryTabView(isActive: selectedTab == .dictionary)
+            NavigationStack {
+                tabRoot(for: .dictionary) {
+                    DictionaryTabView(isActive: selectedTab == .dictionary)
+                }
+            }
                 .tabItem {
                     Label(String(localized: "Dictionary", comment: "Name of the app's Dictionary tab, where the user manages custom words. Used as its screen title."), systemImage: "text.book.closed.fill")
                 }
                 .tag(ContainingAppTab.dictionary)
 
-            StyleTabView()
+            NavigationStack {
+                tabRoot(for: .style) {
+                    StyleTabView()
+                }
+            }
                 .tabItem {
                     Label(String(localized: "Style", comment: "Name of the app's Style tab, where the user picks formatting and Vibes options. Used as its screen title."), systemImage: "scribble.variable")
                 }
                 .tag(ContainingAppTab.style)
 
-            SettingsTabView(
-                pendingDeletionConfirmation: $pendingDeletionConfirmation,
-                pendingDownloadConfirmation: $pendingDownloadConfirmation
-            )
+            NavigationStack(path: $settingsPath) {
+                tabRoot(for: .settings) {
+                    SettingsTabView(
+                        pendingDeletionConfirmation: $pendingDeletionConfirmation,
+                        pendingDownloadConfirmation: $pendingDownloadConfirmation,
+                        navigationPath: $settingsPath
+                    )
+                }
+            }
                 .tabItem {
                     Label(String(localized: "Settings", comment: "Name of the app's Settings tab, used as its screen title."), systemImage: "gearshape.fill")
                 }
                 .tag(ContainingAppTab.settings)
         }
-        .overlay(alignment: .leading) {
-            edgeSwipeCatcher(for: .leading)
-        }
-        .overlay(alignment: .trailing) {
-            edgeSwipeCatcher(for: .trailing)
-        }
+    }
+
+    private func tabRoot<Content: View>(
+        for tab: ContainingAppTab,
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        content()
+            .overlay(alignment: .leading) {
+                edgeSwipeCatcher(for: .leading)
+            }
+            .overlay(alignment: .trailing) {
+                edgeSwipeCatcher(for: .trailing)
+            }
+            .navigationTitle(tab == .home ? "" : tab.title)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                AppToolbarContent(selectedTab: tab)
+            }
     }
 
     private func edgeSwipeCatcher(for edge: Edge) -> some View {

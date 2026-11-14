@@ -6,6 +6,8 @@ enum KeyboardSymbolPage {
     case letters
     case primary
     case alternate
+    /// The number pad a numbers-only field shows in place of every other page.
+    case numberPad
 }
 
 enum KeyboardKeyKind: Equatable {
@@ -24,13 +26,36 @@ enum KeyboardKeyKind: Equatable {
     /// Moves on to the next keyboard, or lists them while held, on an iPhone that shows no globe
     /// under the keyboard.
     case nextKeyboard
+    /// The number pad's 123 key where the globe would be: a tap moves on to the next keyboard and
+    /// holding it lists none, as the system number pad's does on a display that shows no globe
+    /// under the keyboard.
+    case numberPadNextKeyboard
 }
 
 struct KeyboardKeyModel: Equatable {
+    /// What holding a character key offers.
+    enum HeldOffer: Equatable {
+        /// What the bundled list offers for the key's own character.
+        case ownCharacter
+        /// The web endings, as a web address field's dot offers them.
+        case webEndings
+        /// Nothing.
+        case none
+    }
+
     let kind: KeyboardKeyKind
     let widthUnits: CGFloat
     /// Shown by the shift key; letter keys carry their case in their character.
     var letterCase: KeyboardLetterCase = .lowercase
+    /// The return key's look for the focused field.
+    var returnKeyStyle: KeyboardReturnKeyStyle = .standard
+    /// Whether the key is on the number pad, which draws its characters larger and shows no
+    /// bubble while pressed.
+    var isNumberPadKey = false
+    /// The letters a number pad digit carries under it, as on a phone keypad; empty for a digit
+    /// without letters, which still sits as high as those with them.
+    var subtitle: String?
+    var heldOffer: HeldOffer = .ownCharacter
 
     var title: String {
         switch kind {
@@ -41,12 +66,12 @@ struct KeyboardKeyModel: Equatable {
         case .space:
             return ""
         case .returnKey:
-            return "⏎"
+            return returnKeyStyle.systemImageName == nil ? "⏎" : ""
         case .abc:
             return "ABC"
         case .alternateSymbols:
             return "#+="
-        case .numberSymbols:
+        case .numberSymbols, .numberPadNextKeyboard:
             return "123"
         case .emoji, .emojiSearchDone, .restoreFullKeyboard, .shift, .nextKeyboard:
             return ""
@@ -74,6 +99,8 @@ struct KeyboardKeyModel: Equatable {
             return "checkmark"
         case .nextKeyboard:
             return "globe"
+        case .returnKey:
+            return returnKeyStyle.systemImageName
         default:
             return nil
         }
@@ -88,7 +115,7 @@ struct KeyboardKeyModel: Equatable {
         case .space:
             return String(localized: "Space", comment: "VoiceOver label for the keyboard's space bar. Use the name the system keyboard uses in this language.")
         case .returnKey:
-            return String(localized: "Return", comment: "VoiceOver label for the keyboard's return key. Use the name the system keyboard uses in this language.")
+            return returnKeyStyle.accessibilityLabel
         case .abc:
             return "ABC"
         case .alternateSymbols:
@@ -104,7 +131,7 @@ struct KeyboardKeyModel: Equatable {
             return String(localized: "Full Keyboard", comment: "VoiceOver label for the key that switches from compact keys back to the full keyboard.")
         case .shift:
             return String(localized: "Shift", comment: "VoiceOver label for the keyboard's shift key. Use the name the system keyboard uses in this language.")
-        case .nextKeyboard:
+        case .nextKeyboard, .numberPadNextKeyboard:
             // Named as the system keyboard names its key.
             return String(localized: "Next keyboard", comment: "VoiceOver label for the key that switches to the next keyboard. Use the name the system keyboard uses in this language.")
         }
@@ -113,9 +140,9 @@ struct KeyboardKeyModel: Equatable {
     var allowsPopup: Bool {
         switch kind {
         case .character:
-            return true
+            return isNumberPadKey == false
         case .delete, .space, .returnKey, .abc, .alternateSymbols, .numberSymbols, .emoji, .emojiSearchDone,
-             .restoreFullKeyboard, .shift, .nextKeyboard:
+             .restoreFullKeyboard, .shift, .nextKeyboard, .numberPadNextKeyboard:
             return false
         }
     }
@@ -125,9 +152,15 @@ struct KeyboardKeyModel: Equatable {
         case .character:
             return false
         case .delete, .space, .returnKey, .abc, .alternateSymbols, .numberSymbols, .emoji, .emojiSearchDone,
-             .restoreFullKeyboard, .shift, .nextKeyboard:
+             .restoreFullKeyboard, .shift, .nextKeyboard, .numberPadNextKeyboard:
             return true
         }
+    }
+
+    /// Whether the key takes the special keys' fill; the number pad's 123 key looks like its digits,
+    /// as the system number pad's does.
+    var usesSpecialKeyFill: Bool {
+        isSpecialKey && kind != .numberPadNextKeyboard
     }
 
     /// The same key showing `letterCase`: letters switch case and the shift key its symbol.
@@ -148,7 +181,28 @@ struct KeyboardKeyModel: Equatable {
         return value
     }
 
+    /// The bundled list's key for what holding the key offers, or nil when holding it offers nothing.
+    var heldOfferKey: String? {
+        switch heldOffer {
+        case .ownCharacter:
+            return popupText
+        case .webEndings:
+            return KeyboardFieldKeys.commonWebEnding
+        case .none:
+            return nil
+        }
+    }
+
+    /// Whether the key is solid blue, as the system keyboard draws the key that finishes a field:
+    /// the emoji search's done key and an action return key.
+    var isActionKey: Bool {
+        kind == .emojiSearchDone || (kind == .returnKey && returnKeyStyle.isAction)
+    }
+
     var titleFont: UIFont {
+        if isNumberPadKey {
+            return KeyboardStyle.numberPadKeyFont
+        }
         switch kind {
         case .character("•"):
             return UIFont.systemFont(ofSize: KeyboardStyle.keyFont.pointSize, weight: .black)
@@ -190,16 +244,40 @@ enum KeyboardSymbolLayout {
     }
 
     /// The rows of `page`; while the emoji search shows, the bottom row is the system emoji
-    /// keyboard's search row: the page key, space, and done. Without `showsEmojiKey`, the bottom
-    /// row has no emoji key; with `showsNextKeyboardKey`, it has the globe after its page key.
+    /// keyboard's search row: the page key, space, and done. Otherwise the bottom row has the keys
+    /// the focused field asks for (`KeyboardFieldKeys`) and its return key looks as the field asks.
+    /// Without `showsEmojiKey`, the bottom row has no emoji key; with `showsNextKeyboardKey`, it has
+    /// the globe after its page key. The number pad lays out its own rows
+    /// (`KeyboardNumberPadLayout`).
     static func rows(
         for page: KeyboardSymbolPage,
         keysMode: KeyboardKeysMode = .full,
         isEmojiSearch: Bool = false,
         showsEmojiKey: Bool = true,
-        showsNextKeyboardKey: Bool = false
+        showsNextKeyboardKey: Bool = false,
+        fieldKeys: KeyboardFieldKeys = .standard
     ) -> [[KeyboardKeyModel]] {
+        if page == .numberPad {
+            return KeyboardNumberPadLayout.rows(
+                for: fieldKeys.numberPad ?? .digits,
+                showsNextKeyboardKey: showsNextKeyboardKey
+            )
+        }
         var rows = baseRows(for: page, keysMode: keysMode, isEmojiSearch: isEmojiSearch)
+        if let bottomRow = rows.indices.last {
+            rows[bottomRow] = KeyboardFieldBottomRowKeys.row(
+                rows[bottomRow],
+                showing: fieldKeys.bottomRow(on: page, keysMode: keysMode, isEmojiSearch: isEmojiSearch)
+            )
+        }
+        rows = rows.map { row in
+            row.map { key in
+                guard key.kind == .returnKey else { return key }
+                var styledKey = key
+                styledKey.returnKeyStyle = fieldKeys.returnKey
+                return styledKey
+            }
+        }
         if showsEmojiKey == false, let bottomRow = rows.indices.last {
             rows[bottomRow] = removingEmojiKey(from: rows[bottomRow])
         }
@@ -220,6 +298,9 @@ enum KeyboardSymbolLayout {
             rows = primaryRows
         case .alternate:
             rows = alternateRows
+        case .numberPad:
+            // `rows(for:)` takes the number pad's rows from `KeyboardNumberPadLayout`.
+            rows = []
         }
         if isEmojiSearch, keysMode == .full {
             rows[rows.count - 1] = [
@@ -322,11 +403,11 @@ enum KeyboardSymbolLayout {
         return keys.map { $0.kind == .space ? key(.space, width: rowWidth - otherKeysWidth) : $0 }
     }
 
-    private static func characterRow(_ characters: [String]) -> [KeyboardKeyModel] {
+    static func characterRow(_ characters: [String]) -> [KeyboardKeyModel] {
         characters.map { key(.character($0)) }
     }
 
-    private static func key(_ kind: KeyboardKeyKind, width: CGFloat = 1.0) -> KeyboardKeyModel {
+    static func key(_ kind: KeyboardKeyKind, width: CGFloat = 1.0) -> KeyboardKeyModel {
         KeyboardKeyModel(kind: kind, widthUnits: width)
     }
 }

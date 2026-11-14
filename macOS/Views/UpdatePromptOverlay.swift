@@ -7,6 +7,8 @@ enum UpdatePromptLayout {
     static let fallbackHeight: CGFloat = 280
     static let sectionSpacing: CGFloat = 16
     static let shellPadding = EdgeInsets(top: 20, leading: 24, bottom: 30, trailing: 24)
+    static let headerGlowBleed: CGFloat = 12
+    static let headerGlowEdges: Edge.Set = [.top, .horizontal]
 }
 
 struct UpdatePromptOverlay: View {
@@ -36,9 +38,13 @@ struct UpdatePromptOverlay: View {
         VStack(alignment: .leading, spacing: UpdatePromptLayout.sectionSpacing) {
             // The message scrolls once the prompt reaches its maximum height, keeping the
             // actions below it on screen.
+            // The scroll view clips to its bounds, so it reaches into the shell padding by the
+            // header logo's glow while its content keeps its place.
             ScrollView(.vertical) {
                 scrollableContent
+                    .padding(UpdatePromptLayout.headerGlowEdges, UpdatePromptLayout.headerGlowBleed)
             }
+            .padding(UpdatePromptLayout.headerGlowEdges, -UpdatePromptLayout.headerGlowBleed)
 
             footer
         }

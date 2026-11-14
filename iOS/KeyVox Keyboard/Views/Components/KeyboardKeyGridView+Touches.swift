@@ -47,7 +47,8 @@ extension KeyboardKeyGridView {
             let location = touch.location(in: self)
             typePendingCharacters()
 
-            let hitKey = keyView(at: location)
+            // A greyed-out return key takes no taps, as the system keyboard's does.
+            let hitKey = keyView(at: location).flatMap { isEnabled($0) ? $0 : nil }
             let session = KeyboardKeyTouchSession(
                 keyView: hitKey,
                 location: location,
@@ -95,6 +96,7 @@ extension KeyboardKeyGridView {
         for touch in touches {
             guard let session = touchSessions[ObjectIdentifier(touch)] else { continue }
             let location = touch.location(in: self)
+            session.location = location
             switch session.kind {
             case .delete:
                 continue
@@ -122,6 +124,7 @@ extension KeyboardKeyGridView {
                 }
                 guard session.hasTyped == false,
                       let hitKey = keyView(at: location),
+                      isEnabled(hitKey),
                       hitKey !== session.keyView,
                       hitKey.model.isSpecialKey == false || session.kind.map(Self.isCharacter) == false else {
                     continue
@@ -267,15 +270,16 @@ extension KeyboardKeyGridView {
     /// Starts timing the finger on its key when the key offers characters when held.
     private func beginHeldKey(for session: KeyboardKeyTouchSession) {
         cancelHeldKey()
-        guard case let .character(value) = session.kind,
-              let offer = heldKeyController.offer(forKey: value),
-              let keyView = session.keyView else {
+        guard let keyView = session.keyView,
+              let offerKey = keyView.model.heldOfferKey,
+              let offer = heldKeyController.offer(forKey: offerKey) else {
             return
         }
         heldKeyTouchSession = session
-        heldKeyController.begin { [weak self, weak keyView] in
-            guard let self, let keyView else { return nil }
-            return self.openHeldKeyPopup(offer, from: keyView)
+        heldKeyController.begin(followsMovement: offer.direction == .centered) { [weak self, weak keyView, weak session] in
+            guard let self, let keyView, let session else { return nil }
+            let layout = self.openHeldKeyPopup(offer, from: keyView)
+            return (layout, self.convert(session.location, to: self.popupContainerView ?? self))
         }
     }
 
@@ -283,8 +287,12 @@ extension KeyboardKeyGridView {
     private func openHeldKeyPopup(_ offer: HeldKeyCharacters.Offer, from keyView: KeyboardKeyView) -> HeldKeyPopupLayout {
         let container = popupContainerView ?? self
         let isLandscape = KeyboardScreenShape.isWide(self)
+        // The web endings are wider than a character, so their cells are wider than the key.
+        let cellWidth = offer.direction == .centered
+            ? keyView.bounds.width + KeyboardStyle.heldKeyPopupWebEndingCellWidthAddition
+            : keyView.bounds.width + KeyboardStyle.keySpacing - KeyboardStyle.heldKeyPopupCellWidthReduction
         let metrics = HeldKeyPopupLayout.Metrics(
-            cellWidth: keyView.bounds.width + KeyboardStyle.keySpacing - KeyboardStyle.heldKeyPopupCellWidthReduction,
+            cellWidth: cellWidth,
             cellHeight: KeyboardStyle.heldKeyPopupCellHeight,
             padding: KeyboardStyle.heldKeyPopupPadding,
             gapAboveKey: isLandscape ? KeyboardStyle.landscapeHeldKeyPopupGapAboveKey : KeyboardStyle.heldKeyPopupGapAboveKey,

@@ -153,6 +153,14 @@ final class KeyboardViewController: UIInputViewController {
             updateUI()
         }
     }
+    /// Whether the return key takes taps, read as the field is set up or its text changes: a field
+    /// that turns the return key on only once it holds text greys it out while empty.
+    var isReturnKeyEnabled = true {
+        didSet {
+            guard isReturnKeyEnabled != oldValue else { return }
+            updateUI()
+        }
+    }
     /// What the emoji key opened: the emoji page in the key grid's place, or its search over the
     /// letter keys, which makes the keyboard taller; the toolbar offers no suggestions while either
     /// shows.
@@ -403,6 +411,8 @@ final class KeyboardViewController: UIInputViewController {
             emojiPanel: emojiPanel,
             showsEmojiKey: appSettingsStore.isEmojiKeyboardEnabled,
             showsNextKeyboardKey: showsNextKeyboardKey,
+            fieldKeys: typingTraits.fieldKeys,
+            isReturnKeyEnabled: isReturnKeyEnabled,
             hasCompletedOnboarding: appSettingsStore.hasCompletedOnboarding,
             isTrackpadModeActive: isTrackpadModeActive
         )
@@ -663,6 +673,11 @@ final class KeyboardViewController: UIInputViewController {
         let kind = activation.kind
         if kind == .emoji {
             openEmojiPage()
+            return true
+        }
+        if kind == .numberPadNextKeyboard {
+            keypressHaptics.emitKeypressIfEnabled()
+            advanceToNextInputMode()
             return true
         }
         if kind == .restoreFullKeyboard {

@@ -42,7 +42,7 @@ final class TranscriptionManager: ObservableObject {
     private let capsLockEnabledProvider: () -> Bool
     private let processOutputText: (DictationPipelineTextProcessingContext) async -> DictationPipelineTextProcessingResult
     private let outputProcessingRequiresDeterministicVariantsProvider: () -> Bool
-    private let recordPipelineResult: (DictationPipelineResult, String) -> Void
+    let recordPipelineResult: (DictationPipelineResult, String) -> Void
     private let recordSuccessfulDictation: () -> Void
     private let prewarmStyleRewriteForUpcomingDictation: () -> Void
     let releaseStyleRewritePrewarmSession: @MainActor (String) async -> Void
