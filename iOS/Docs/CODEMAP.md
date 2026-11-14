@@ -32,7 +32,7 @@ The current default runtime flow is:
 12. When the user triggers copied-text playback, the containing app owns PocketTTS synthesis, explicit model load/unload lifetime, deterministic playback preparation, replay caching, pause/resume/stop transport state, and return-to-host readiness.
 13. If the user keeps the session active, the Live Activity coordinator mirrors session state and weekly-word updates into the widget extension.
 14. When Compact Keys is available, a long press on `#+=` replaces the first two symbol rows with a shorter two-row keyboard; the keyboard-symbol key restores the full layout.
-15. The keyboard waits for the host to hand over the focused field's document state, reads the field's text traits narrowed by the user's keyboard settings, and opens on the letter page or, when the field or the Open on 123 setting prefers numbers, on the number page.
+15. The keyboard waits for the host to hand over the focused field's document state, reads the field's text traits narrowed by the user's keyboard settings, and opens on the letter page, on the number pad in a numbers-only field, or, when the field or the Open on 123 setting prefers numbers, on the number page; the bottom row and return key take the keys the field's keyboard and return key types ask for.
 16. On the full keyboard's letter page, taps, text changes, word boundaries, and suggestion taps run through the shared `PredictiveTypingSession`; the suggestion bar takes the toolbar accessories' place while the field allows predictions and holds letters, and the dictation accessories return while dictating, in Compact Keys, on the symbol pages, and until the user changes the latest untouched dictation.
 17. The emoji key opens the emoji page in the key grid's place; its search field starts an emoji search over the letter keys that makes the keyboard taller until done is tapped or the keyboard goes away.
 
@@ -475,12 +475,16 @@ iOS/
 │   │   ├── KeyboardLayoutGeometry.swift
 │   │   ├── KeyboardKeysMode.swift
 │   │   ├── KeyboardDisplay.swift
+│   │   ├── KeyboardFieldBottomRowKeys.swift
+│   │   ├── KeyboardFieldKeys.swift
 │   │   ├── KeyboardFoldableDisplay.swift
 │   │   ├── KeyboardScreenShape.swift
 │   │   ├── KeyboardDictationModelStatus.swift
 │   │   ├── KeyboardInstalledModels.swift
 │   │   ├── KeyboardModelAvailability.swift
+│   │   ├── KeyboardNumberPadLayout.swift
 │   │   ├── KeyboardOpeningLayout.swift
+│   │   ├── KeyboardReturnKeyStyle.swift
 │   │   ├── KeyboardState.swift
 │   │   ├── KeyboardStyle.swift
 │   │   ├── KeyboardSymbolLayout.swift
@@ -599,6 +603,7 @@ iOS/
 │   │   │   ├── KeyboardEmojiSearchSkinTonePickerLayoutTests.swift
 │   │   │   ├── KeyboardEmojiSkinTonePickerLayoutTests.swift
 │   │   │   ├── KeyboardEmojiSupportTests.swift
+│   │   │   ├── KeyboardFieldKeysTests.swift
 │   │   │   ├── KeyboardInteractionHapticsTests.swift
 │   │   │   ├── KeyboardLetterCaseControllerTests.swift
 │   │   │   ├── KeyboardToolbarModeTests.swift
@@ -1558,7 +1563,15 @@ Packages/
 - `KeyVox Keyboard/Core/KeyboardInstalledModels.swift`
   - Caches the dictation availability the toolbar depends on and the Speak voice readiness that decides whether a Speak tap plays or opens KeyVox Speak setup; the controller rechecks it when the keyboard appears and when the extension host becomes active instead of inspecting disk on every UI update.
 - `KeyVox Keyboard/Core/KeyboardOpeningLayout.swift`
-  - Resolves the page and keys mode a field opens on: full letter keys, or the number page in the user's Compact Keys mode when the field or Open on 123 prefers numbers.
+  - Resolves the page and keys mode a field opens on: the full-size number pad in a numbers-only field, otherwise full letter keys, or the number page in the user's Compact Keys mode when the field or Open on 123 prefers numbers.
+- `KeyVox Keyboard/Core/KeyboardFieldKeys.swift`
+  - Maps the focused field's keyboard type and return key type to its bottom row (standard, web address, web search, email, or post), its `KeyboardReturnKeyStyle`, and its number pad, and decides which pages show the field's bottom row; owns the common web ending's text.
+- `KeyVox Keyboard/Core/KeyboardFieldBottomRowKeys.swift`
+  - The keys each field bottom row shows in place of the standard row's space bar and return key.
+- `KeyVox Keyboard/Core/KeyboardNumberPadLayout.swift`
+  - The number pad's rows: digits with a phone keypad's letters, and a bottom row of the globe where the keyboard shows it, the decimal separator in a decimal field, zero, and delete.
+- `KeyVox Keyboard/Core/KeyboardReturnKeyStyle.swift`
+  - The return key's symbol, blue action look, and accessibility label for each return key type.
 - `KeyVox Keyboard/App/KeyboardContainingAppLauncher.swift`
   - Responder-chain URL launcher used by the extension whenever it needs to wake the containing app for cold dictation or copied-text playback handoff.
 - `KeyVox Keyboard/App/KeyboardViewController+PresentationLifecycle.swift`
@@ -1625,7 +1638,7 @@ Packages/
 - `KeyVox Keyboard/Core/Input/KeyboardSymbolPageReturnTracker.swift`
   - Returns to the letter page right after a character that belongs inside words (as `TypingTextContext.isWordCharacter` defines it) is typed on a symbol page, or on the space that follows any other symbol-page character.
 - `KeyVox Keyboard/Core/Input/KeyboardHeldKeyController.swift`
-  - Times a finger on a key that offers held-key characters, opens the popup through the bundled `HeldKeyCharacters`, follows the finger across its cells, and reports whether the touch chose a character, closed the popup, or never opened it.
+  - Times a finger on a key that offers held-key characters, opens the popup through the bundled `HeldKeyCharacters`, follows the finger across its cells, and reports whether the touch chose a character, closed the popup, or never opened it; in the web endings popup the selection follows the finger's movement from where it was when the popup opened.
 - `KeyVox Keyboard/Core/Input/KeyboardDeleteRepeatSchedule.swift`
   - Single source of truth for the held delete key's repeat timing and its switch from single characters to whole words; `KeyboardDeleteRepeatController` in `KeyboardSpecialKeyInteractionSupport.swift` runs it.
 - `KeyVox Keyboard/Core/Input/KeyboardWordDeletion.swift`
@@ -1653,7 +1666,7 @@ Packages/
   - Lightweight rooted-install gate used by the extension toolbar for Whisper, Parakeet, PocketTTS, and local Vibes AI availability.
 - `KeyVox Keyboard/Core/KeyboardLayoutGeometry.swift`
   - Row-geometry helper for keyboard-specific sizing rules that should not live in `KeyboardRootView` or `KeyboardKeyGridView`.
-  - Owns the letter page's inset middle row and shift row, the symbol pages' third row, and the bottom row's live widths, including the landscape side-key span, the paired page and emoji keys, the emoji search's three-key row, and the globe row, all driven from the measured key grid.
+  - Owns the letter page's inset middle row and shift row, the symbol pages' third row, and the bottom row's live widths, including the landscape side-key span, the paired page and emoji keys, the emoji search's three-key row, the globe row, and each field bottom row's split of the space bar's and return key's places, plus the number pad's bottom row in its three columns, all driven from the measured key grid.
 - `KeyVox Keyboard/Core/KeyboardKeysMode.swift`
   - Resolves full versus compact presentation from availability and persisted active state.
   - Takes the 286-point full or 174-point compact portrait height from `KeyboardStyle`, changes it by however much shorter or taller the keys are in landscape or on iPad, and owns visible row count, per-orientation and per-display key height, row spacing, the top row's toolbar button height, and derived key-grid height.
@@ -1664,7 +1677,7 @@ Packages/
 - `KeyVox Keyboard/Core/KeyboardScreenShape.swift`
   - Decides landscape from whether the keyboard's scene is wider than it is tall rather than from the interface orientation.
 - `KeyVox Keyboard/Core/KeyboardSymbolLayout.swift`
-  - Defines the letter, number, and alternate symbol pages, the key kinds and their titles, symbols, and accessibility labels, the Compact Keys rows, the emoji search's bottom row, and the bottom-row variants without the emoji key or with the globe key.
+  - Defines the letter, number, and alternate symbol pages and the number pad page, the key kinds and their titles, symbols, and accessibility labels, the Compact Keys rows, the emoji search's bottom row, the field's bottom row and return key look, and the bottom-row variants without the emoji key or with the globe key.
 - `KeyVox Keyboard/Core/KeyboardTopRowAccessoryLayout.swift`
   - Owns top-row accessory alignment driven from the measured key grid.
   - Keeps the left accessory slot stable by showing Settings while idle and the existing Cancel control while recording, transcribing, or playing speech.
@@ -1695,15 +1708,15 @@ Packages/
 - `KeyVox Keyboard/Core/Transport/KeyboardTransportDisplayState.swift`
   - Non-visual keyboard logo transport state, accessibility labels, and playback/dictation presentation inputs kept separate from the proprietary logo-bar rendering file.
 - `KeyVox Keyboard/Views/Components/KeyboardKeyGridView.swift`
-  - Shows the page for the current layout through cached `KeyboardKeyGridPage` instances, applies the letter case and the current row spacing to the page showing and every page shown after it, reports letter-key frames for predictions, resolves a touch to the containing key or the nearest key within its hit slop, and exposes the key, held-key, delete, globe, and touch-down callbacks.
+  - Shows the page for the current layout through cached `KeyboardKeyGridPage` instances, applies the letter case and the current row spacing to the page showing and every page shown after it, reports letter-key frames for predictions, resolves a touch to the containing key or the nearest key within its hit slop, greys out a return key the field has not turned on yet, and exposes the key, held-key, delete, globe, and touch-down callbacks.
 - `KeyVox Keyboard/Views/Components/KeyboardKeyGridView+Touches.swift`
   - Multi-finger key handling: each finger is followed separately, characters type on lift or as soon as another finger lands, delete repeats while held, a held space bar becomes the cursor trackpad, holding `#+=` requests Compact Keys, holding a key with held-key characters opens its popup, and the globe's touches go to the system input-mode list.
 - `KeyVox Keyboard/Views/Components/KeyboardKeyGridPage.swift`
-  - One built-and-kept page of key rows per symbol page, keys mode, emoji-search row, emoji key, and globe combination, with its row-geometry helpers, so switching pages never rebuilds a page already shown.
+  - One built-and-kept page of key rows per symbol page, keys mode, emoji-search row, emoji key, globe, and field keys combination, with its row-geometry helpers, so switching pages never rebuilds a page already shown.
 - `KeyVox Keyboard/Views/Components/KeyboardKeyTouchSession.swift`
   - One finger's key, typed location, timestamp, and rollover state.
 - `KeyVox Keyboard/Views/Components/KeyboardKeyView.swift`
-  - Renders one key with two alternating labels so case switches only show and hide labels; draws no per-key blur and gives its shadow an explicit rounded path.
+  - Renders one key with two alternating labels so case switches only show and hide labels, a number pad digit's letters under it on keys tall enough, and the blue action look; draws no per-key blur and gives its shadow an explicit rounded path.
 - `KeyVox Keyboard/Views/Components/KeyboardHeldKeyPopupView.swift`
   - Renders a held key's popup cells from the package's `HeldKeyPopupLayout`, highlighting the cell under the finger.
 - `KeyVox Keyboard/Views/Components/KeyboardSuggestionBarView.swift`
@@ -1728,7 +1741,7 @@ Packages/
 - `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/TypingMemory.swift`, `TypingMemoryFile.swift`, `CorrectionRejections.swift`, `LearnedWords.swift`, `LearnedCapitals.swift`, and `LearnedVocabulary.swift`
   - What the keyboard learns from typing: turned-down corrections, learned words, and learned capitals, shared by every session while the keyboard runs, saved to a host-chosen JSON file under a reset generation, and forgettable per word.
 - `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/HeldKeyCharacters.swift` and `HeldKeyPopupLayout.swift`
-  - Bundled held-key characters per key with the side each popup opens toward, and the popup cell layout that reaches the keyboard's edge and spills to the other side, or takes a second row, when an offer does not fit.
+  - Bundled held-key characters per key with the side each popup opens toward, and the popup cell layout that reaches the keyboard's edge and spills to the other side, or takes a second row, when an offer does not fit; a centered offer, such as the web endings, keeps its listed order and slides along to stay on the keyboard.
 - `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/SmartQuotes.swift`, `CharacterList.swift`, and `TypingTextContext.swift`
   - Opening and closing quote marks, the bundled character lists that end words, shape picked-word spacing, or suppress next-word suggestions, and the word and sentence context read around the cursor.
 - `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/TypedWordTouches.swift`
@@ -1739,7 +1752,7 @@ Packages/
 - `KeyVox Keyboard/Core/Prediction/KeyboardPredictionEngine.swift`
   - Serial-queue owner of one lazily created `PredictionComputer`, holding geometry, vocabulary, and learned words until the engine exists and remembering when the engine cannot load.
 - `KeyVox Keyboard/Core/Prediction/KeyboardTypingTraits.swift`
-  - Resolves what the letter keyboard may do in the focused field from its keyboard type, content type, secure entry, autocorrection, and autocapitalization traits, narrowed by the shared keyboard typing settings; a feature the field turns off stays off.
+  - Resolves what the letter keyboard may do in the focused field from its keyboard type, content type, secure entry, autocorrection, and autocapitalization traits, narrowed by the shared keyboard typing settings; a feature the field turns off stays off. Carries the field's `KeyboardFieldKeys`.
 - `KeyVox Keyboard/Core/Prediction/KeyboardPersonalVocabularyBuilder.swift`
   - Builds `PersonalVocabulary` from KeyVox Dictionary phrases and the system supplementary lexicon, treating lexicon entries whose input matches their text, ignoring case, as known names and the rest as text replacements.
 - `KeyVox Keyboard/Core/Prediction/KeyboardTypingMemory.swift`
