@@ -140,7 +140,8 @@ iOS/
 │   │   │   ├── AppTypography.swift
 │   │   │   ├── InlineWarningRules.swift
 │   │   │   ├── KeyboardObserver.swift
-│   │   │   └── KeyVoxSpeakFlowRules.swift
+│   │   │   ├── KeyVoxSpeakFlowRules.swift
+│   │   │   └── SetupVideoCaption.swift
 │   │   ├── Purchases/
 │   │   │   └── StoreUnlockStore.swift
 │   │   ├── Routing/
@@ -330,7 +331,8 @@ iOS/
 │   │   │   │   ├── AppTheme.swift
 │   │   │   │   ├── AppTintedScrollIndicator.swift
 │   │   │   │   ├── AppTintedScrollView.swift
-│   │   │   │   └── AppToolbarContent.swift
+│   │   │   │   ├── AppToolbarContent.swift
+│   │   │   │   └── SetupVideoCaptionView.swift
 │   │   │   ├── AppUpdatePrompt.swift
 │   │   │   ├── AutoFocusTextField.swift
 │   │   │   ├── DeletionConfirmation.swift
@@ -1031,6 +1033,8 @@ Packages/
   - Holds the approximate download sizes shown before model, voice, and engine downloads and writes them with the user's language's byte units.
 - `KeyVox iOS/App/Presentation/AppTypography.swift`
   - App-wide typography helpers for SwiftUI surfaces that should share the same app font treatment.
+- `KeyVox iOS/App/Presentation/SetupVideoCaption.swift`
+  - Decides whether setup videos show a translated caption: only when the app shows a language other than the one the videos' English words were made in.
 - `KeyVox iOS/App/Presentation/KeyboardObserver.swift`
   - App-side keyboard-presentation observer used by text-entry flows such as onboarding and dictionary editing.
   - Reports how much of KeyVox's window the keyboard covers, which is less than its full height, or nothing, when the window ends above the keyboard on iPad.
@@ -1093,6 +1097,7 @@ Packages/
   - Owns the steps shown on the current device, leaving the Action Button steps out on iPad, plus each step's position and next/previous step among them.
 - `KeyVox iOS/Views/DictationShortcutSetup/DictationShortcutSetupPageView.swift`
   - Shared per-step presentation that composes `ShortcutIntroView` with the reusable video viewport; on iPad the video is also kept no taller than the page.
+  - In a translated app, shows each step's video sentence as a caption under the video, fades the video's bottom edge above it, and hides the video from VoiceOver so the sentence is read once.
 - `KeyVox iOS/Views/DictationShortcutSetup/DictationShortcutSetupVideoView.swift`
   - Active-page looping playback wrapper for the transparent Shortcut/Action Button instructional media.
 - `KeyVox iOS/Views/Components/App/AppPageIndicator.swift`
@@ -1102,6 +1107,11 @@ Packages/
   - Pauses and seeks inactive pages to the start, restarts when they become active, and resumes active playback after app activation.
 - `KeyVox iOS/Views/Onboarding/OnboardingEnableKeyboardScreen.swift`
   - Dedicated post-Shortcut screen that demonstrates enabling the KeyVox keyboard and Full Access, opens app keyboard settings, and resumes into the keyboard tour when enablement is detected.
+  - In a translated app, shows a caption under the video that names the Keyboards and Allow Full Access steps in the user's language.
+- `KeyVox iOS/Views/Onboarding/Tour/OnboardingKeyboardTourSceneAView.swift`
+  - Keyboard tour's first scene: the keyboard-list video, plus in a translated app a caption under it; the video gives up height first so the caption stays above the input bar on short screens.
+- `KeyVox iOS/Views/Components/App/SetupVideoCaptionView.swift`
+  - Shared centered caption line used under setup videos in a translated app.
 - `KeyVox iOS/Views/Onboarding/OnboardingStepRow.swift`
   - Shared onboarding setup card row with step state, optional action button, trailing status content, and extra content below the description.
   - Keeps the onboarding setup presentation consistent while the screen owns step-specific button state and copy.

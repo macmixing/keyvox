@@ -2100,6 +2100,7 @@ Writing user-visible text:
 - Approximate download sizes live in `ApproximateDownloadSize` as byte counts and are written with `.formatted(.byteCount(style: .file, allowedUnits: .mb))`, so units follow the user's language (for example `Mo` in French). Sentences take the size as a placeholder instead of typing it.
 - Promotion cards show `PromotionCampaign.copy(forLanguage:)` for the language the app is showing (`Bundle.main.preferredLocalizations.first`).
 - Kanit has no narrow no-break space (U+202F), which French number and file-size formatting uses. Formatted counts and sizes shown in the app font pass through `AppTypography.fontSupportedSpacing(_:)`, which swaps in the regular no-break space.
+- The setup and onboarding videos have English words drawn into them. When `SetupVideoCaption.isShown` (the app shows a language other than English), a translated caption appears under every video with words: the shortcut setup pages show each page's `videoAccessibilityLabel` sentence, and the Enable Keyboard screen and the keyboard tour each have their own caption. The video is hidden from VoiceOver while its caption shows, so the sentence is read once. Videos without words (ShortcutHero, ReturnToHost) have no caption. English shows no captions.
 - Vibes rewrites English dictation only. `StyleRewriteStyle.languageSupportNote` is the single source of the English-only note on the Style tab and the KeyVox Vibes intro. Vibes style names and example sentences stay English, and translated text must not suggest Vibes rewrites another language.
 
 Packages:
