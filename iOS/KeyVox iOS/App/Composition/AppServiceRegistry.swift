@@ -408,7 +408,7 @@ final class AppServiceRegistry {
         }
         recorder.audioInterruptedCaptureHandler = { [weak transcriptionManager] interruptedCapture in
             Task { @MainActor [weak transcriptionManager] in
-                await transcriptionManager?.handleRecorderInterruptedCapture(interruptedCapture)
+                await transcriptionManager?.deliverRecorderInterruptedCapture(interruptedCapture)
             }
         }
         recorder.audioSessionInterruptedHandler = { [weak transcriptionManager] in

@@ -1407,7 +1407,7 @@ Packages/
 - `KeyVox iOS/Core/Transcription/TranscriptionCommandResult.swift`
   - Typed start and stop outcomes shared by non-UI transcription command callers.
 - `KeyVox iOS/Core/Transcription/TranscriptionManager+InterruptedCaptureRecovery.swift`
-  - Interrupted-capture staging and recovery on app reactivation.
+  - Interrupted-capture staging, immediate keyboard delivery of the partial transcript after an audio interruption, and recovery on app reactivation.
 - `KeyVox iOS/Core/Transcription/InterruptedCaptureRecoveryStore.swift`
   - Durable storage for interrupted captures that need to be resumed later.
 - `KeyVox iOS/Core/Transcription/SessionPolicy.swift`

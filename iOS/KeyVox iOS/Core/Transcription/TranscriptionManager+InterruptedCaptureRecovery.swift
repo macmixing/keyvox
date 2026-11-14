@@ -20,21 +20,33 @@ extension TranscriptionManager {
         keyboardBridge.publishCancelled()
     }
 
-    func stageInterruptedCaptureIfNeeded(_ stoppedCapture: StoppedCapture) {
+    /// Stages the interrupted capture, then transcribes it right away and sends the text to the keyboard
+    /// so a dictation cut off by a call, alarm, or other audio interruption still reaches the text field.
+    /// The staged capture stays on disk until delivery succeeds, so app-activation recovery still covers
+    /// a delivery that does not finish.
+    func deliverRecorderInterruptedCapture(_ stoppedCapture: StoppedCapture) async {
+        guard await handleRecorderInterruptedCapture(stoppedCapture) else { return }
+        await resumeInterruptedCaptureRecoveryIfNeeded(deliversToKeyboard: true)
+    }
+
+    @discardableResult
+    func stageInterruptedCaptureIfNeeded(_ stoppedCapture: StoppedCapture) -> Bool {
         guard let payload = interruptedCaptureRecoveryPayload(for: stoppedCapture) else {
             setInterruptedCaptureRecoveryPresence(interruptedCaptureRecoveryStore.load() != nil)
-            return
+            return false
         }
 
         do {
             try interruptedCaptureRecoveryStore.save(payload)
             setInterruptedCaptureRecoveryPresence(true)
+            return true
         } catch {
             lastErrorMessage = error.localizedDescription
+            return false
         }
     }
 
-    func resumeInterruptedCaptureRecoveryIfNeeded() async {
+    func resumeInterruptedCaptureRecoveryIfNeeded(deliversToKeyboard: Bool = false) async {
         guard state == .idle else { return }
 
         refreshModelAvailability()
@@ -76,6 +88,9 @@ extension TranscriptionManager {
         isRecoveringInterruptedCapture = true
         state = .transcribing
         transcriptionService.warmup()
+        if deliversToKeyboard {
+            keyboardBridge.publishTranscribing()
+        }
 
         let result = await runDictationPipeline(
             audioFrames: payload.audioFrames,
@@ -95,18 +110,33 @@ extension TranscriptionManager {
 
         if result.wasLikelyNoSpeech {
             clearInterruptedCaptureRecovery()
+            if deliversToKeyboard {
+                keyboardBridge.publishNoSpeech()
+            }
             return
         }
 
         let trimmedText = finalText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedText.isEmpty else {
             markInterruptedCaptureRecoveryFailed("Interrupted capture recovery produced no transcription.")
+            if deliversToKeyboard {
+                keyboardBridge.publishNoSpeech()
+            }
             return
         }
 
         lastErrorMessage = nil
         lastTranscriptionText = finalText
-        KeyVoxIPCBridge.setTranscription(finalText)
+        if deliversToKeyboard {
+            recordPipelineResult(result, finalText)
+            keyboardBridge.publishTranscriptionReady(
+                finalText,
+                id: result.id,
+                styleIdentifier: result.textTransformationStyleIdentifier
+            )
+        } else {
+            KeyVoxIPCBridge.setTranscription(finalText)
+        }
         clearInterruptedCaptureRecovery()
     }
 
