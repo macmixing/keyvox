@@ -132,9 +132,7 @@ extension StyleTabView {
                     .allowsHitTesting(isVibeExamplesExpanded)
                     .accessibilityHidden(!isVibeExamplesExpanded)
                     .background(alignment: .top) {
-                        if isVibeExamplesExpanded || vibeExamplesExpandedContentHeight == 0 {
-                            vibeExamplesExpandedContentMeasurement
-                        }
+                        vibeExamplesExpandedContentMeasurement
                     }
 
             }
