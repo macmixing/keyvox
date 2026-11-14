@@ -969,13 +969,18 @@ Interrupted capture recovery is now a first-class iOS runtime feature.
 
 - staging accepted interrupted captures
 - persisting recovery payloads
+- delivering the partial transcript to the keyboard right after an audio interruption
 - resuming recovery on app activation
 - marking failed recovery attempts
 
 Rules:
 
 - only captures with non-empty `outputFrames` are staged
-- recovery requires model readiness
+- when an audio session interruption or stopped engine cuts off an active recording, `deliverRecorderInterruptedCapture` stages the capture and immediately runs recovery with keyboard delivery
+- keyboard delivery publishes transcribing, then publishes the transcript with its recovery ID and style identifier the same way a normal stop does, so a keyboard still waiting on that dictation inserts the partial text; no speech or an empty result publishes no speech
+- keyboard delivery records the pipeline result as the latest KeyVox Vibes artifact; app-activation recovery does not publish to the keyboard
+- the staged capture stays on disk until recovery succeeds, so a delivery that does not finish or the user cancels is retried on the next app activation
+- recovery requires model readiness; without it the capture stays pending for app-activation recovery
 - recovery runs through the shared `DictationPipeline`
 - successful recovery updates `latestTranscription`
 - failed recovery stays visible to the app instead of being silently discarded
