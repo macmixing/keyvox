@@ -317,7 +317,7 @@ final class KeyboardKeyView: UIView {
         case .disabled:
             return (
                 fill: KeyboardStyle.keyTintColor(
-                    model.isSpecialKey ? KeyboardStyle.specialKeyDisabledFillColor : KeyboardStyle.keyDisabledFillColor
+                    model.usesSpecialKeyFill ? KeyboardStyle.specialKeyDisabledFillColor : KeyboardStyle.keyDisabledFillColor
                 ),
                 border: KeyboardStyle.keyDisabledBorderColor,
                 foreground: KeyboardStyle.keyDisabledLabelColor
@@ -325,7 +325,7 @@ final class KeyboardKeyView: UIView {
         case .normal:
             return (
                 fill: KeyboardStyle.keyTintColor(
-                    model.isSpecialKey ? KeyboardStyle.specialKeyFillColor : KeyboardStyle.keyFillColor
+                    model.usesSpecialKeyFill ? KeyboardStyle.specialKeyFillColor : KeyboardStyle.keyFillColor
                 ),
                 border: KeyboardStyle.keyBorderColor,
                 foreground: KeyboardStyle.keyLabelColor
@@ -333,7 +333,7 @@ final class KeyboardKeyView: UIView {
         case .pressed:
             return (
                 fill: KeyboardStyle.keyTintColor(
-                    model.isSpecialKey ? KeyboardStyle.specialKeyPressedFillColor : KeyboardStyle.keyPressedFillColor
+                    model.usesSpecialKeyFill ? KeyboardStyle.specialKeyPressedFillColor : KeyboardStyle.keyPressedFillColor
                 ),
                 border: KeyboardStyle.keyPressedBorderColor,
                 foreground: KeyboardStyle.keyLabelColor
@@ -341,7 +341,7 @@ final class KeyboardKeyView: UIView {
         case .trackpadActive:
             return (
                 fill: KeyboardStyle.keyTintColor(
-                    model.isSpecialKey ? KeyboardStyle.specialKeyFillColor : KeyboardStyle.keyFillColor
+                    model.usesSpecialKeyFill ? KeyboardStyle.specialKeyFillColor : KeyboardStyle.keyFillColor
                 ),
                 border: .clear,
                 foreground: KeyboardStyle.keyLabelColor

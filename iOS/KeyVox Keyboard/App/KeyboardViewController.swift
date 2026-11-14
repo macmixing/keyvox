@@ -675,6 +675,11 @@ final class KeyboardViewController: UIInputViewController {
             openEmojiPage()
             return true
         }
+        if kind == .numberPadNextKeyboard {
+            keypressHaptics.emitKeypressIfEnabled()
+            advanceToNextInputMode()
+            return true
+        }
         if kind == .restoreFullKeyboard {
             guard keysMode == .compact else { return false }
             appSettingsStore.setCompactKeysActive(false)
