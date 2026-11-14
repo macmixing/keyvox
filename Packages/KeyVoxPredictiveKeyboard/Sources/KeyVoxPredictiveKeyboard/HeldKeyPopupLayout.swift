@@ -5,6 +5,7 @@ import Foundation
 /// running outward toward the offer's side. When that side lacks the room, the row reaches the
 /// keyboard's edge there and the rest spill to the other side; an offer of more than
 /// `maximumCellsPerRow` characters takes two rows instead, the top row continuing the bottom one.
+/// A centered offer keeps its order in one row, sliding along to stay on the keyboard.
 public struct HeldKeyPopupLayout: Sendable, Equatable {
     /// The most cells one row holds; a row narrows its cells to fit the keyboard up to this many.
     static let maximumCellsPerRow = 11
@@ -49,9 +50,14 @@ public struct HeldKeyPopupLayout: Sendable, Equatable {
     ///   - keyFrame: The held key's frame.
     ///   - bounds: The keyboard's area, which the popup stays inside.
     public init(offer: HeldKeyCharacters.Offer, keyFrame: CGRect, bounds: CGRect, metrics: Metrics) {
-        let arrangement = offer.characters.count > Self.maximumCellsPerRow
-            ? Arrangement(twoRowsOf: offer, metrics: metrics)
-            : Arrangement(rowOf: offer, keyMidX: keyFrame.midX, bounds: bounds, metrics: metrics)
+        let arrangement: Arrangement
+        if offer.direction == .centered {
+            arrangement = Arrangement(orderedRowOf: offer, bounds: bounds, metrics: metrics)
+        } else if offer.characters.count > Self.maximumCellsPerRow {
+            arrangement = Arrangement(twoRowsOf: offer, metrics: metrics)
+        } else {
+            arrangement = Arrangement(rowOf: offer, keyMidX: keyFrame.midX, bounds: bounds, metrics: metrics)
+        }
         let rowHeight = metrics.cellHeight + 2 * metrics.padding
         let width = CGFloat(arrangement.columnCount) * arrangement.cellWidth + 2 * metrics.padding
         let height = CGFloat(arrangement.rows.count) * rowHeight
@@ -153,6 +159,17 @@ private struct Arrangement {
         rows = [Row(characters: characters, firstColumn: 0)]
         columnCount = characters.count
         self.cellWidth = cellWidth
+    }
+
+    /// One row in the offer's order, the key's own text over the key, its cells narrowed to fit
+    /// the keyboard.
+    init(orderedRowOf offer: HeldKeyCharacters.Offer, bounds: CGRect, metrics: HeldKeyPopupLayout.Metrics) {
+        let count = offer.characters.count
+        cellWidth = min(metrics.cellWidth, (bounds.width - 2 * metrics.padding) / CGFloat(count))
+        rows = [Row(characters: offer.characters, firstColumn: 0)]
+        columnCount = count
+        firstColumn = offer.ownIndex
+        anchor = .key
     }
 
     /// Two rows of full-width cells over the key: the bottom row holds the key's own character

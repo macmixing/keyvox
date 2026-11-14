@@ -97,6 +97,39 @@ final class HeldKeyPopupLayoutTests: XCTestCase {
         XCTAssertEqual(layout.cell(at: CGPoint(x: layout.rows[1][2].frame.midX, y: middle + 1)), layout.rows[1][2])
     }
 
+    func testCenteredRowKeepsItsOrderWithTheOwnCellOverTheKey() {
+        let layout = centeredLayout(count: 5, ownIndex: 2, keyMidX: 200)
+        XCTAssertEqual(characters(layout), [["0", "1", "2", "3", "4"]])
+        XCTAssertEqual(layout.firstCell.character, "2")
+        XCTAssertEqual(layout.firstCell.frame.midX, 200, accuracy: 0.01)
+    }
+
+    func testCenteredRowSlidesToStayOnTheKeyboardKeepingItsOrder() {
+        let layout = centeredLayout(count: 5, ownIndex: 2, keyMidX: 380)
+        XCTAssertEqual(characters(layout), [["0", "1", "2", "3", "4"]])
+        XCTAssertEqual(layout.firstCell.character, "2")
+        XCTAssertEqual(layout.frame.maxX, uprightBounds.maxX, accuracy: 0.01)
+        XCTAssertLessThan(layout.firstCell.frame.midX, 380)
+    }
+
+    func testCenteredRowNarrowsItsCellsToFitTheKeyboard() {
+        let metrics = HeldKeyPopupLayout.Metrics(cellWidth: 120, cellHeight: 47, padding: 10.2, gapAboveKey: 4.4, closingDistance: 87.8)
+        let layout = centeredLayout(count: 5, ownIndex: 2, keyMidX: 200, metrics: metrics)
+        XCTAssertEqual(layout.frame.minX, uprightBounds.minX, accuracy: 0.01)
+        XCTAssertEqual(layout.frame.maxX, uprightBounds.maxX, accuracy: 0.01)
+    }
+
+    private func centeredLayout(
+        count: Int,
+        ownIndex: Int,
+        keyMidX: CGFloat,
+        metrics: HeldKeyPopupLayout.Metrics? = nil
+    ) -> HeldKeyPopupLayout {
+        let offer = HeldKeyCharacters.Offer(characters: (0..<count).map(String.init), direction: .centered, ownIndex: ownIndex)
+        let keyFrame = CGRect(x: keyMidX - 17, y: 160, width: 34, height: 41)
+        return HeldKeyPopupLayout(offer: offer, keyFrame: keyFrame, bounds: uprightBounds, metrics: metrics ?? uprightMetrics)
+    }
+
     private func layout(
         count: Int,
         _ direction: HeldKeyCharacters.Direction,
