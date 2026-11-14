@@ -207,6 +207,8 @@ final class KeyboardRootView: UIView {
         emojiPanel: KeyboardEmojiPanel,
         showsEmojiKey: Bool,
         showsNextKeyboardKey: Bool,
+        fieldKeys: KeyboardFieldKeys,
+        isReturnKeyEnabled: Bool,
         hasCompletedOnboarding: Bool,
         isTrackpadModeActive: Bool
     ) {
@@ -304,8 +306,10 @@ final class KeyboardRootView: UIView {
             keysMode: keysMode,
             isEmojiSearch: emojiPanel == .searching,
             showsEmojiKey: showsEmojiKey,
-            showsNextKeyboardKey: showsNextKeyboardKey
+            showsNextKeyboardKey: showsNextKeyboardKey,
+            fieldKeys: fieldKeys
         )
+        keyGridView.setReturnKeyEnabled(isReturnKeyEnabled)
         keyGridView.setRowSpacing(
             keysMode.rowSpacing(isLandscape: isLandscape, display: display)
         )

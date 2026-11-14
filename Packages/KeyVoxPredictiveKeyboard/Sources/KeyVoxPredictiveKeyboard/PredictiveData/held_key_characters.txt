@@ -45,3 +45,4 @@ $	right	$ ¢ € £ ¥ ₩ ₽
 !	right	! ¡
 ’	left	' ’ ‘ `
 %	right	% ‰
+.com	centered	.us .edu .com .net .org

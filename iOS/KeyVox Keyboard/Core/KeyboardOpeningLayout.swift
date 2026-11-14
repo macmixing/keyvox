@@ -1,15 +1,19 @@
 /// The page and key size the keyboard opens on in a field: full letter keys, unless the field
 /// or the user's Open on 123 setting prefers numbers, which opens 123 in the Compact Keys size
-/// the user left it in.
+/// the user left it in. A numbers-only field opens its full-size number pad whatever the settings.
 struct KeyboardOpeningLayout: Equatable {
     let symbolPage: KeyboardSymbolPage
     let keysMode: KeyboardKeysMode
 
     static func resolve(
         prefersNumberPage: Bool,
+        opensNumberPad: Bool = false,
         isCompactKeysEnabled: Bool,
         isCompactKeysActive: Bool
     ) -> KeyboardOpeningLayout {
+        if opensNumberPad {
+            return KeyboardOpeningLayout(symbolPage: .numberPad, keysMode: .full)
+        }
         guard prefersNumberPage else {
             return KeyboardOpeningLayout(symbolPage: .letters, keysMode: .full)
         }

@@ -5,6 +5,8 @@ final class KeyboardKeyTouchSession {
     var keyView: KeyboardKeyView?
     /// Where the finger landed on its current key; this is the location typed.
     var activationLocation: CGPoint
+    /// Where the finger is now.
+    var location: CGPoint
     var timestamp: TimeInterval
     /// A character already typed because another finger landed first (rollover).
     var hasTyped = false
@@ -12,6 +14,7 @@ final class KeyboardKeyTouchSession {
     init(keyView: KeyboardKeyView?, location: CGPoint, timestamp: TimeInterval) {
         self.keyView = keyView
         activationLocation = location
+        self.location = location
         self.timestamp = timestamp
     }
 

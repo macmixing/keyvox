@@ -1839,7 +1839,7 @@ Keyboard-specific row geometry must stay separated by responsibility:
 
 - `KeyboardRootView` owns the stable keyboard shell, toolbar stacking, the top-row accessory button containers, the suggestion bar's placement, and the emoji page, search field, and results placement
 - `KeyboardKeyGridView` owns page display and key interaction wiring; `KeyboardKeyGridPage` builds each page's rows once and keeps them, and `KeyboardKeyGridView+Touches.swift` owns multi-finger touch handling
-- `KeyboardSymbolLayout` owns which keys each letter, number, and symbol page, Compact Keys, the emoji search row, and the globe row contain
+- `KeyboardSymbolLayout` owns which keys each letter, number, and symbol page, Compact Keys, the emoji search row, and the globe row contain, taking a field's bottom row from `KeyboardFieldBottomRowKeys` and the number pad's rows from `KeyboardNumberPadLayout`
 - `KeyboardLayoutGeometry` owns live measurement-based row sizing, while `KeyboardTopRowAccessoryLayout` owns accessory alignment rules
 
 Do not push special-case row width math back into `KeyboardSymbolLayout` when the requirement depends on the rendered keyboard width.
@@ -1948,8 +1948,23 @@ Field preparation:
 - after appearing, the keyboard waits for the host's first `textDidChange(_:)` before reading the field; until then it opens as the Open on 123 setting says
 - `KeyboardTypingTraits` resolves what the field allows from its keyboard type, content type, secure entry, autocorrection type, and autocapitalization type, then narrows it by the shared keyboard typing settings; a feature the field turns off stays off whatever the settings say
 - numeric-only keyboard types, secure entry, and password content types turn predictions off; email, URL, and username fields keep predictions but not autocorrection
-- a number-pad style field, a numbers-and-punctuation field, or the Open on 123 setting opens the number page, which stays until the user taps ABC; after that, symbols return to the letters again
+- a web address or email keyboard type whose field turns autocorrection off turns predictions off too, as Apple's keyboard drops its suggestion bar there; the toolbar accessories show in the bar's place
+- a number pad, ASCII number pad, or decimal pad field opens the full-size number pad whatever the Compact Keys and Open on 123 settings say, and keeps it, as the pad has no page keys
+- a numbers-and-punctuation field or the Open on 123 setting opens the number page, which stays until the user taps ABC; after that, symbols return to the letters again
+- `KeyboardTypingTraits` carries the field's `KeyboardFieldKeys`, so a field asking for other keys also counts as a change of fields
 - a change of the field's typing traits while the keyboard stays up means the cursor moved to another field, which starts that field with a fresh session
+
+### Field Keys
+
+`KeyboardFieldKeys` turns the focused field's keyboard type and return key type into the keys it shows, matching Apple's iPhone keyboard as measured on iOS 27 with a throwaway host app that opened one text field per keyboard type and return key type:
+
+- the letter page's bottom row keeps the page key, emoji key, and globe it would have and changes only the space bar's and return key's places (`KeyboardFieldBottomRowKeys`): a URL field shows the dot, the slash, and the common web ending in three equal keys where the space bar was, and no space bar; an email field shows a shorter space bar and the at sign and dot, each as wide as the page key; a Twitter field shows the at sign and hash sign, each as wide as the page key, where the return key was, and no return key; a web search field shows a space bar a key gap shorter and the dot and return key splitting the return key's place one third to two
+- only a web search field keeps its row on the number and symbol pages; Compact Keys and the emoji search keep their own rows
+- holding the web ending key, or the dot of an email or web search field, offers the web endings in a fixed order with the common one first selected (the bundled `centered` offer); the popup slides along to stay on the keyboard, each cell about 19 points wider than the held key, and its selection moves as the finger moves from where it was when the popup opened, so the first selection holds however the popup slid
+- every page's return key takes the field's return key type: the plain return arrow by default, a plain chevron for next and continue, and the solid blue action key (`KeyboardStyle.actionKeyFillColor`, shared with the emoji search's done key) with an arrow for go, join, and route, a magnifying glass for search, Google, and Yahoo, an up arrow for send, a checkmark for done, and a phone for an emergency call (`KeyboardReturnKeyStyle`)
+- a field that turns the return key on only once it holds text greys it out and ignores taps on it while the field is empty
+- a number pad field shows `KeyboardNumberPadLayout`: three columns of digits with a phone keypad's letters under them, over the decimal separator in a decimal pad, zero, and delete; where the keyboard shows the globe, a 123 key that looks like the digits takes the bottom row's first place, beside the decimal separator in a decimal pad, and a tap on it moves on to the next keyboard while holding it lists none, as the system number pad's does there; keys too short for the letters, such as in landscape on iPhone, show the digit alone; number pad keys show no bubble and no held popup
+- secure, password, phone pad, and name phone pad fields never reach the keyboard: iOS shows its own keyboard there even while KeyVox is selected
 
 Prediction threading:
 
