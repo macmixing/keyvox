@@ -276,7 +276,7 @@ Current root behavior:
 
 - `MainTabView`'s `TabView` is the outermost navigation container; each tab owns its own `NavigationStack`, and no `NavigationStack` may wrap the `TabView`. On iOS 27.3, a tab bar nested inside a navigation stack stays stretched across the screen in its bottom-bar layout after the iPhone Duo unfolds, instead of moving into the vertical bar.
 - each tab root carries its own title, the Home-only toolbar from `AppToolbarContent`, and the edge-swipe tab-switch areas, so a pushed screen covers the swipe areas and keeps the system back swipe
-- the Settings stack's path lives in `AppTabRouter.settingsPath` and holds `SettingsDestination` values; leaving the Settings tab clears it, so returning to Settings shows its root list
+- the Settings stack's path is `MainTabView` view state holding `SettingsDestination` values; leaving the Settings tab clears it, and it resets whenever the tab shell is rebuilt (for example after `ReturnToHostView`), so returning to Settings shows its root list
 
 ### Onboarding Store Rules
 

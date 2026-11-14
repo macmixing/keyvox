@@ -304,6 +304,7 @@ iOS/
 │   │   │   ├── KeyVoxSpeakSettingsView+Timeout.swift
 │   │   │   ├── KeyVoxSpeakSettingsView+Voices.swift
 │   │   │   ├── KeyVoxSpeakSettingsView.swift
+│   │   │   ├── SettingsDestination.swift
 │   │   │   ├── SettingsRow.swift
 │   │   │   ├── SettingsTabView+About.swift
 │   │   │   ├── SettingsTabView+General.swift
@@ -1415,8 +1416,9 @@ Packages/
 ### App UI
 
 - `KeyVox iOS/Views/MainTabView.swift`
-  - Four-tab container: Home, Dictionary, Style, Settings.
-  - Adds edge-swipe tab navigation on top of `TabView` and owns unlock-sheet presentation surfaces for KeyVox Speak and KeyVox Vibes monetization flows.
+  - Four-tab container: Home, Dictionary, Style, Settings. The `TabView` is the outermost container, and each tab owns its own `NavigationStack`.
+  - Gives each tab root its title, the Home-only `AppToolbarContent`, and the edge-swipe tab navigation areas, and owns unlock-sheet presentation surfaces for KeyVox Speak and KeyVox Vibes monetization flows.
+  - Owns the Settings stack path, clearing it when the selected tab leaves Settings.
   - Owns the app-shell download confirmation overlay for Home and Settings model downloads so tab bar and toolbar controls are covered while confirmation is active.
   - Performs confirmed Settings deletions, including the learned-words reset through `KeyboardTypingMemoryReset`.
 - `KeyVox iOS/Views/ContainingAppTab.swift`
@@ -1471,7 +1473,9 @@ Packages/
   - Keeps selected Vibe displayed as `None` until both Vibes access and local Vibes AI readiness are active, and exposes an install entry point when the model is missing.
 - `KeyVox iOS/Views/SettingsTabView/SettingsTabView.swift`
   - Top-level settings composition: the Dictation, Keyboard, and KeyVox Speak rows, the KeyVox Vibes AI card, then the About sections.
-  - Owns the deletion- and download-confirmation request bindings, third-party notices sheet presentation, and the Dictation screen push; an `AppTabRouter` model-section request opens that screen with its dictation model card expanded.
+  - Owns the deletion- and download-confirmation request bindings, third-party notices sheet presentation, and the single navigation destination for the Dictation, Keyboard, and KeyVox Speak screens, which hides the tab bar on each; an `AppTabRouter` model-section request opens the Dictation screen with its dictation model card expanded.
+- `KeyVox iOS/Views/SettingsTabView/SettingsDestination.swift`
+  - The Dictation, Keyboard, and KeyVox Speak screens the Settings tab pushes onto its navigation stack.
 - `KeyVox Keyboard/Core/KeyboardToolbarMode.swift`
   - Central warning-priority resolver for the keyboard toolbar: dictation model missing, dictation model action required, Full Access missing, microphone permission missing, then branded.
   - Required app updates are not a keyboard toolbar mode, so dictation stays available from the keyboard while the containing app shows its forced-update prompt.
