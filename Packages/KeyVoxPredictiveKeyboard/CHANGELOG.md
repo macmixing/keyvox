@@ -6,6 +6,22 @@ The format loosely follows Keep a Changelog, and the package uses semantic versi
 
 ---
 
+## [1.1.0] - 2026-11-14
+
+A held key can offer the web endings in a fixed order, as the system keyboard's web address and email keys do.
+
+### Includes
+
+- `HeldKeyCharacters.Direction` gains `centered`: the popup keeps the listed order, the key's own text over the key as far as the keyboard allows, sliding along to stay on it.
+- `HeldKeyCharacters.Offer.ownIndex` says where the key's own text is among the characters; it is the first in a popup toward a side.
+- The bundled list offers the web endings for the common web ending's key.
+
+### Notes
+
+- `1.1.0` adds public API (`Direction.centered`, `Offer.ownIndex`); existing offers and hosts work unchanged, and a host shows the web endings by looking up the common web ending's key.
+
+---
+
 ## [1.0.5] - 2026-11-11
 
 A word typed right before another word is suggested for on its own, as on the system keyboard.
