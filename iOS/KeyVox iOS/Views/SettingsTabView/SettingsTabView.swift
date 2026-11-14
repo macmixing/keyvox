@@ -7,9 +7,10 @@ struct SettingsTabView: View {
     @EnvironmentObject var ttsPurchaseController: TTSPurchaseController
     @EnvironmentObject var keyVoxVibesPurchaseController: KeyVoxVibesPurchaseController
     @EnvironmentObject var settingsStore: AppSettingsStore
-    @EnvironmentObject var appTabRouter: AppTabRouter
+    @EnvironmentObject private var appTabRouter: AppTabRouter
     @Binding var pendingDeletionConfirmation: SettingsPendingDeletionConfirmation?
     @Binding var pendingDownloadConfirmation: PendingDownloadConfirmation?
+    @Binding var navigationPath: [SettingsDestination]
     @State var displayedVibesAIInstallState: LocalRewriteModelInstallState?
     @State var isVibesAIInstallContentVisible = false
     @State var vibesAIInstallCollapseTask: Task<Void, Never>?
@@ -65,8 +66,8 @@ struct SettingsTabView: View {
     }
 
     func openDictationSettings() {
-        if appTabRouter.settingsPath.last != .dictation {
-            appTabRouter.settingsPath.append(.dictation)
+        if navigationPath.last != .dictation {
+            navigationPath.append(.dictation)
         }
     }
 
@@ -107,7 +108,8 @@ struct SettingsTabView: View {
 #Preview {
     SettingsTabView(
         pendingDeletionConfirmation: .constant(nil),
-        pendingDownloadConfirmation: .constant(nil)
+        pendingDownloadConfirmation: .constant(nil),
+        navigationPath: .constant([])
     )
         .environmentObject(AppServiceRegistry.shared.modelManager)
         .environmentObject(AppServiceRegistry.shared.pocketTTSModelManager)

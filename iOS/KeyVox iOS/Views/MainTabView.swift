@@ -26,6 +26,7 @@ struct MainTabView: View {
     @State private var pendingDownloadConfirmation: PendingDownloadConfirmation?
     @State private var pendingModelUpdatePrompt: PendingModelUpdatePrompt?
     @State private var hasPresentedModelUpdatePrompt = false
+    @State private var settingsPath: [SettingsDestination] = []
     @AppStorage(
         UserDefaultsKeys.App.dismissedDictationModelUpdatePromptID,
         store: SharedPaths.appGroupUserDefaults()
@@ -107,6 +108,11 @@ struct MainTabView: View {
                     .environmentObject(keyVoxVibesPurchaseController)
             }
         }
+        .onChange(of: selectedTab, initial: false) { oldTab, _ in
+            if oldTab == .settings {
+                settingsPath = []
+            }
+        }
         .onChange(of: selectedTab, initial: false) { oldTab, newTab in
             guard appTabRouter.consumeShouldSuppressNextSelectionHaptic() == false else {
                 return
@@ -156,11 +162,12 @@ struct MainTabView: View {
                 }
                 .tag(ContainingAppTab.style)
 
-            NavigationStack(path: $appTabRouter.settingsPath) {
+            NavigationStack(path: $settingsPath) {
                 tabRoot(for: .settings) {
                     SettingsTabView(
                         pendingDeletionConfirmation: $pendingDeletionConfirmation,
-                        pendingDownloadConfirmation: $pendingDownloadConfirmation
+                        pendingDownloadConfirmation: $pendingDownloadConfirmation,
+                        navigationPath: $settingsPath
                     )
                 }
             }
