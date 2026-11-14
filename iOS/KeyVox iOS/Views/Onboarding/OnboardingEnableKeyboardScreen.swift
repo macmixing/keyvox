@@ -37,6 +37,12 @@ struct OnboardingEnableKeyboardScreen: View {
                         .frame(maxWidth: 350)
                         .frame(maxWidth: .infinity)
                         .accessibilityHidden(true)
+
+                        if SetupVideoCaption.isShown {
+                            SetupVideoCaptionView(
+                                text: String(localized: "In “Keyboards,” turn on KeyVox, then turn on “Allow Full Access.”", comment: "Caption under the onboarding video that shows the keyboard settings, shown in place of the video's English words. Use Apple's official names for Keyboards and Allow Full Access in this language, matching the Enable Keyboard instructions. KeyVox is a brand name and stays in English.")
+                            )
+                        }
                     }
                     .frame(maxWidth: .infinity, alignment: .topLeading)
                     .padding(.horizontal, AppTheme.screenPadding)

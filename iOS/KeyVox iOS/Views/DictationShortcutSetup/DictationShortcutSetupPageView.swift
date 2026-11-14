@@ -4,6 +4,9 @@ struct DictationShortcutSetupPageView: View {
     private enum Layout {
         static let videoHorizontalInset: CGFloat = 5
         static let videoTopInset: CGFloat = -8
+        static let captionHorizontalInset: CGFloat = 20
+        static let captionTopInset: CGFloat = 8
+        static let captionFadeHeight: CGFloat = 48
     }
 
     let page: DictationShortcutSetupPage
@@ -32,7 +35,35 @@ struct DictationShortcutSetupPageView: View {
         }
     }
 
+    @ViewBuilder
     private var standardPage: some View {
+        if let caption {
+            VStack(spacing: 0) {
+                video
+                    .mask {
+                        VStack(spacing: 0) {
+                            Rectangle()
+                            LinearGradient(colors: [.black, .clear], startPoint: .top, endPoint: .bottom)
+                                .frame(height: Layout.captionFadeHeight)
+                        }
+                    }
+
+                SetupVideoCaptionView(text: caption)
+                    .padding(.horizontal, Layout.captionHorizontalInset)
+                    .padding(.top, Layout.captionTopInset)
+                    .appReadableWidth(horizontalPadding: Layout.captionHorizontalInset)
+            }
+        } else {
+            video
+        }
+    }
+
+    /// The video's sentence, shown under it when the app isn't showing the language the video was made in.
+    private var caption: String? {
+        SetupVideoCaption.isShown ? page.videoAccessibilityLabel : nil
+    }
+
+    private var video: some View {
         ZStack {
             if let videoAsset = page.videoAsset {
                 GeometryReader { geometry in
@@ -53,7 +84,7 @@ struct DictationShortcutSetupPageView: View {
                     .clipped()
                     .accessibilityElement(children: .ignore)
                     .accessibilityLabel(Text(page.videoAccessibilityLabel ?? ""))
-                    .accessibilityHidden(page.videoAccessibilityLabel == nil)
+                    .accessibilityHidden(page.videoAccessibilityLabel == nil || caption != nil)
                     .position(
                         x: geometry.size.width / 2,
                         y: Layout.videoTopInset + (videoHeight / 2)

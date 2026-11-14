@@ -3562,6 +3562,52 @@
         }
       }
     },
+    "In the list of keyboards, choose KeyVox." : {
+      "comment" : "Caption under the onboarding keyboard tour video that shows the keyboard list, shown in place of the video's English words. KeyVox is a brand name and stays in English.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wähle in der Liste der Tastaturen KeyVox aus."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "En la lista de teclados, elige KeyVox."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dans la liste des claviers, choisissez KeyVox."
+          }
+        }
+      }
+    },
+    "In “Keyboards,” turn on KeyVox, then turn on “Allow Full Access.”" : {
+      "comment" : "Caption under the onboarding video that shows the keyboard settings, shown in place of the video's English words. Use Apple's official names for Keyboards and Allow Full Access in this language, matching the Enable Keyboard instructions. KeyVox is a brand name and stays in English.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Schalte unter „Tastaturen“ KeyVox ein und dann „Vollen Zugriff erlauben“."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "En “Teclados”, activa KeyVox y luego “Permitir acceso total”."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dans Claviers, activez KeyVox, puis Autoriser l’accès complet."
+          }
+        }
+      }
+    },
     "Install %@ and KeyVox will download the Speak engine first, then %@'s voice" : {
       "comment" : "Install status on the KeyVox Speak setup card before anything is installed; a download size follows it. KeyVox and Speak are brand names and stay in English. Both placeholders are the voice name, which stays in English.",
       "localizations" : {
