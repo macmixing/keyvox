@@ -5,7 +5,7 @@ extension SettingsTabView {
     var dictationSection: some View {
         Button {
             dictationModelSectionExpansionRequestID = nil
-            isDictationSettingsPresented = true
+            openDictationSettings()
         } label: {
             AppCard {
                 HStack(alignment: .center, spacing: 12) {
@@ -30,12 +30,7 @@ extension SettingsTabView {
 
     @ViewBuilder
     var keyVoxSpeakSection: some View {
-        NavigationLink {
-            KeyVoxSpeakSettingsView(
-                pendingDeletionConfirmation: $pendingDeletionConfirmation,
-                pendingDownloadConfirmation: $pendingDownloadConfirmation
-            )
-        } label: {
+        NavigationLink(value: SettingsDestination.keyVoxSpeak) {
             AppCard {
                 HStack(alignment: .center, spacing: 12) {
                     SettingsRow(
@@ -59,9 +54,7 @@ extension SettingsTabView {
 
     @ViewBuilder
     var keyboardSection: some View {
-        NavigationLink {
-            KeyboardSettingsView(pendingDeletionConfirmation: $pendingDeletionConfirmation)
-        } label: {
+        NavigationLink(value: SettingsDestination.keyboard) {
             AppCard {
                 HStack(alignment: .center, spacing: 12) {
                     SettingsRow(

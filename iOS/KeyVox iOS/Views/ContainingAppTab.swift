@@ -51,7 +51,14 @@ enum ContainingAppTab: Hashable {
 
 @MainActor
 final class AppTabRouter: ObservableObject {
-    @Published var selectedTab: ContainingAppTab = .home
+    @Published var selectedTab: ContainingAppTab = .home {
+        didSet {
+            if oldValue == .settings, selectedTab != .settings {
+                settingsPath = []
+            }
+        }
+    }
+    @Published var settingsPath: [SettingsDestination] = []
     @Published private(set) var settingsModelSectionExpansionRequestID: UUID?
 
     private var shouldSuppressNextSelectionHaptic = false

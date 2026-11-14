@@ -7,7 +7,7 @@ struct SettingsTabView: View {
     @EnvironmentObject var ttsPurchaseController: TTSPurchaseController
     @EnvironmentObject var keyVoxVibesPurchaseController: KeyVoxVibesPurchaseController
     @EnvironmentObject var settingsStore: AppSettingsStore
-    @EnvironmentObject private var appTabRouter: AppTabRouter
+    @EnvironmentObject var appTabRouter: AppTabRouter
     @Binding var pendingDeletionConfirmation: SettingsPendingDeletionConfirmation?
     @Binding var pendingDownloadConfirmation: PendingDownloadConfirmation?
     @State var displayedVibesAIInstallState: LocalRewriteModelInstallState?
@@ -15,7 +15,6 @@ struct SettingsTabView: View {
     @State var vibesAIInstallCollapseTask: Task<Void, Never>?
     @State var vibesAIInstallContentHeight: CGFloat = 0
     @State var isThirdPartyNoticesPresented = false
-    @State var isDictationSettingsPresented = false
     @State var dictationModelSectionExpansionRequestID: UUID?
     @State private var handledModelSectionExpansionRequestID: UUID?
     
@@ -39,14 +38,36 @@ struct SettingsTabView: View {
             .sheet(isPresented: $isThirdPartyNoticesPresented) {
                 ThirdPartyNoticesView()
             }
-            .navigationDestination(isPresented: $isDictationSettingsPresented) {
-                DictationSettingsView(
-                    pendingDeletionConfirmation: $pendingDeletionConfirmation,
-                    pendingDownloadConfirmation: $pendingDownloadConfirmation,
-                    modelSectionExpansionRequestID: dictationModelSectionExpansionRequestID
-                )
+            .navigationDestination(for: SettingsDestination.self) { destination in
+                destinationView(for: destination)
+                    .toolbarVisibility(.hidden, for: .tabBar)
             }
             .blocksAppReviewRequest(isThirdPartyNoticesPresented)
+    }
+
+    @ViewBuilder
+    private func destinationView(for destination: SettingsDestination) -> some View {
+        switch destination {
+        case .dictation:
+            DictationSettingsView(
+                pendingDeletionConfirmation: $pendingDeletionConfirmation,
+                pendingDownloadConfirmation: $pendingDownloadConfirmation,
+                modelSectionExpansionRequestID: dictationModelSectionExpansionRequestID
+            )
+        case .keyboard:
+            KeyboardSettingsView(pendingDeletionConfirmation: $pendingDeletionConfirmation)
+        case .keyVoxSpeak:
+            KeyVoxSpeakSettingsView(
+                pendingDeletionConfirmation: $pendingDeletionConfirmation,
+                pendingDownloadConfirmation: $pendingDownloadConfirmation
+            )
+        }
+    }
+
+    func openDictationSettings() {
+        if appTabRouter.settingsPath.last != .dictation {
+            appTabRouter.settingsPath.append(.dictation)
+        }
     }
 
     private var settingsScrollScreen: some View {
@@ -79,7 +100,7 @@ struct SettingsTabView: View {
 
         handledModelSectionExpansionRequestID = requestID
         dictationModelSectionExpansionRequestID = requestID
-        isDictationSettingsPresented = true
+        openDictationSettings()
     }
 }
 
