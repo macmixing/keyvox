@@ -272,6 +272,12 @@ Current root behavior:
 - app update prompts may appear only while the resolved root destination is truly `.main`, and must never interrupt launch hold, onboarding, `ReturnToHostView`, or `PlaybackPreparationView`
 - the KeyVox Speak setup and KeyVox Vibes sheet URL routes are ignored while onboarding is showing
 
+### Main Tab Shell Rules
+
+- `MainTabView`'s `TabView` is the outermost navigation container; each tab owns its own `NavigationStack`, and no `NavigationStack` may wrap the `TabView`. On iOS 27.3, a tab bar nested inside a navigation stack stays stretched across the screen in its bottom-bar layout after the iPhone Duo unfolds, instead of moving into the vertical bar.
+- each tab root carries its own title, the Home-only toolbar from `AppToolbarContent`, and the edge-swipe tab-switch areas, so a pushed screen covers the swipe areas and keeps the system back swipe
+- the Settings stack's path lives in `AppTabRouter.settingsPath` and holds `SettingsDestination` values; leaving the Settings tab clears it, so returning to Settings shows its root list
+
 ### Onboarding Store Rules
 
 `OnboardingStore` owns:
@@ -2070,8 +2076,9 @@ Current app-owned surfaces:
 - `ThirdPartyNoticesView`: shared legal-notices sheet that renders the bundled repo-root `THIRD_PARTY_NOTICES.md` markdown with app-owned styling and explicit close-only dismissal
 - `DictionaryTabView`: dictionary browsing/editing
 - `StyleTabView`: dictation style toggles
-- `SettingsTabView`: top-level settings composition with the Dictation, Keyboard, and KeyVox Speak rows, the KeyVox Vibes AI card, and the About sections, plus third-party notices presentation and the Dictation screen push; a dictation-model section request from `AppTabRouter` opens the Dictation screen with its model card expanded
+- `SettingsTabView`: top-level settings composition with the Dictation, Keyboard, and KeyVox Speak rows, the KeyVox Vibes AI card, and the About sections, plus third-party notices presentation and the single navigation destination for its pushed screens, which hides the tab bar on every pushed Settings screen; a dictation-model section request from `AppTabRouter` opens the Dictation screen with its model card expanded
 - `SettingsTabView+General`: the Dictation, Keyboard, and KeyVox Speak rows that open their settings screens
+- `SettingsDestination`: the Dictation, Keyboard, and KeyVox Speak screens the Settings tab pushes onto its navigation stack
 - `DictationSettingsView`: the Dictation settings screen with the Dictation Timeout, Live Activities, and Dictation Shortcut setup-guide card, the dictation model card, and the built-in microphone preference; it owns the full-screen Dictation Shortcut reference-guide and language-picker presentations, and its copy lives in `DictationSettingsCopy`
 - `KeyboardSettingsView`: the Keyboard settings screen, with keyboard haptics (hidden on iPad) and the keyboard typing toggles, Classic Theme, Compact Keys, Open on 123, Left-Handed Layout, and Reset Learned Words; its copy lives in `KeyboardSettingsCopy`
 - `DictationSettingsView+Model`: release-facing `Dictation Model` section for provider selection, per-model install actions, uninstalled model size display, and the attached language section driven by the shared Whisper catalog or Parakeet Auto Detect guidance
