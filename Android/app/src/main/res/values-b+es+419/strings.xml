@@ -52,7 +52,7 @@
     <string name="copy">Copiar</string>
     <string name="share_campaign">Compartir %1$s</string>
     <string name="dictionary_sort_alphabetical">A–Z</string>
-    <string name="dictionary_sort_recent">Agregado recientemente</string>
+    <string name="dictionary_sort_recent">Recientes</string>
     <string name="dictionary_empty_title">Aún no agregaste palabras personalizadas.</string>
     <string name="dictionary_empty_description">Toca el botón + para agregar tu primera palabra personalizada.</string>
     <string name="dictionary_unavailable">Diccionario no disponible</string>
