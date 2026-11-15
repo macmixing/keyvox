@@ -27,6 +27,12 @@
             "state" : "needs_review",
             "value" : "Détection automatique"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Détection automatique"
+          }
         }
       }
     },
@@ -52,6 +58,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Impossible d’enregistrer le dictionnaire sur le disque. Veuillez réessayer."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Impossible d’enregistrer le dictionnaire sur le disque. Veuillez réessayer."
@@ -85,6 +97,12 @@
             "state" : "needs_review",
             "value" : "Les données du dictionnaire étaient corrompues et ont été réinitialisées."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Les données du dictionnaire étaient corrompues et ont été réinitialisées."
+          }
         }
       }
     },
@@ -110,6 +128,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Le dictionnaire a été restauré à partir d’une sauvegarde après un problème de fichier."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Le dictionnaire a été restauré à partir d’une sauvegarde après un problème de fichier."
@@ -143,6 +167,12 @@
             "state" : "needs_review",
             "value" : "Veuillez saisir un mot ou une expression."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Veuillez saisir un mot ou une expression."
+          }
         }
       }
     },
@@ -168,6 +198,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ce mot figure déjà dans votre dictionnaire."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Ce mot figure déjà dans votre dictionnaire."
@@ -201,6 +237,12 @@
             "state" : "needs_review",
             "value" : "Les données du dictionnaire synchronisées n’étaient pas valides et n’ont pas pu être appliquées."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Les données du dictionnaire synchronisées n’étaient pas valides et n’ont pas pu être appliquées."
+          }
         }
       }
     },
@@ -226,6 +268,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "de l’appareil actuel"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "de l’appareil actuel"
