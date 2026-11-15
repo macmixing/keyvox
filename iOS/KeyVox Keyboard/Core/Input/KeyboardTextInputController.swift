@@ -251,7 +251,7 @@ final class KeyboardTextInputController {
             emitKeypress()
             symbolPage = .primary
             return true
-        case .restoreFullKeyboard, .shift, .emoji, .emojiSearchDone, .nextKeyboard, .numberPadNextKeyboard:
+        case .restoreFullKeyboard, .shift, .emoji, .emojiSearchDone, .nextKeyboard:
             return false
         }
     }

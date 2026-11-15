@@ -1572,7 +1572,7 @@ Packages/
 - `KeyVox Keyboard/Core/KeyboardNumberPadGeometry.swift`
   - How wide the number pad's keys reach: across the key grid upright, and in landscape the screen's width less `KeyboardStyle.numberPadLandscapeScreenSideInset` at each side, as the system's number pad leaves on iPhone and iPhone Duo folded and open; the pad sits centered in the key grid, which the system centers on the screen.
 - `KeyVox Keyboard/Core/KeyboardNumberPadLayout.swift`
-  - The number pad's rows: digits with a phone keypad's letters, and a bottom row of the 123 key that moves on to the next keyboard where the keyboard shows the globe, the decimal separator in a decimal field, zero, and delete.
+  - The number pad's rows: digits with a phone keypad's letters, and a bottom row of the globe where the keyboard shows it, the decimal separator in a decimal field, zero, and delete.
 - `KeyVox Keyboard/Core/KeyboardReturnKeyStyle.swift`
   - The return key's symbol, blue action look, and accessibility label for each return key type.
 - `KeyVox Keyboard/App/KeyboardContainingAppLauncher.swift`

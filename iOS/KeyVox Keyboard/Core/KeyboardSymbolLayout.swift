@@ -32,10 +32,6 @@ enum KeyboardKeyKind: Equatable {
     /// Moves on to the next keyboard, or lists them while held, on an iPhone that shows no globe
     /// under the keyboard.
     case nextKeyboard
-    /// The number pad's 123 key where the globe would be: a tap moves on to the next keyboard and
-    /// holding it lists none, as the system number pad's does on a display that shows no globe
-    /// under the keyboard.
-    case numberPadNextKeyboard
 }
 
 struct KeyboardKeyModel: Equatable {
@@ -77,7 +73,7 @@ struct KeyboardKeyModel: Equatable {
             return "ABC"
         case .alternateSymbols:
             return "#+="
-        case .numberSymbols, .numberPadNextKeyboard:
+        case .numberSymbols:
             return "123"
         case .emoji, .emojiSearchDone, .restoreFullKeyboard, .shift, .nextKeyboard:
             return ""
@@ -137,7 +133,7 @@ struct KeyboardKeyModel: Equatable {
             return "Full Keyboard"
         case .shift:
             return "Shift"
-        case .nextKeyboard, .numberPadNextKeyboard:
+        case .nextKeyboard:
             // Named as the system keyboard names its key.
             return "Next keyboard"
         }
@@ -148,7 +144,7 @@ struct KeyboardKeyModel: Equatable {
         case .character:
             return isNumberPadKey == false
         case .delete, .space, .returnKey, .abc, .alternateSymbols, .numberSymbols, .emoji, .emojiSearchDone,
-             .restoreFullKeyboard, .shift, .nextKeyboard, .numberPadNextKeyboard:
+             .restoreFullKeyboard, .shift, .nextKeyboard:
             return false
         }
     }
@@ -158,15 +154,9 @@ struct KeyboardKeyModel: Equatable {
         case .character:
             return false
         case .delete, .space, .returnKey, .abc, .alternateSymbols, .numberSymbols, .emoji, .emojiSearchDone,
-             .restoreFullKeyboard, .shift, .nextKeyboard, .numberPadNextKeyboard:
+             .restoreFullKeyboard, .shift, .nextKeyboard:
             return true
         }
-    }
-
-    /// Whether the key takes the special keys' fill; the number pad's 123 key looks like its digits,
-    /// as the system number pad's does.
-    var usesSpecialKeyFill: Bool {
-        isSpecialKey && kind != .numberPadNextKeyboard
     }
 
     /// The same key showing `letterCase`: letters switch case and the shift key its symbol.
