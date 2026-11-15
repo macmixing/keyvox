@@ -27,6 +27,12 @@
             "state" : "needs_review",
             "value" : "Ouverture de KeyVox"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ouverture de KeyVox"
+          }
         }
       }
     },
@@ -52,6 +58,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Préparation de la lecture du texte"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Préparation de la lecture du texte"

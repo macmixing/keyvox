@@ -99,6 +99,30 @@
               }
             }
           }
+        },
+        "fr-CA" : {
+          "variations" : {
+            "plural" : {
+              "many" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "%lld mots cette semaine!"
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "%lld mot cette semaine!"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "%lld mots cette semaine!"
+                }
+              }
+            }
+          }
         }
       }
     },
@@ -128,6 +152,12 @@
             "state" : "needs_review",
             "value" : "Terminer la session"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Terminer la session"
+          }
         }
       }
     },
@@ -153,6 +183,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Terminer la session de dictée"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Terminer la session de dictée"
