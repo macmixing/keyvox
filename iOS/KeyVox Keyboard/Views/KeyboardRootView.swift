@@ -472,6 +472,10 @@ final class KeyboardRootView: UIView {
         keyGridHeightConstraint = keyGridView.heightAnchor.constraint(
             equalToConstant: KeyboardKeysMode.full.keyGridHeight(isLandscape: false)
         )
+        // The height follows the keyboard's shape only once the keyboard lays out, so while it
+        // sizes up it can ask for more than the keyboard holds. Just below required, it gives way
+        // then instead of forcing Auto Layout to break the toolbar's constraints.
+        keyGridHeightConstraint?.priority = .required - 1
 
         NSLayoutConstraint.activate([
             // Fixed width for both control containers ensures the logo stays perfectly centered
