@@ -27,6 +27,12 @@
             "state" : "needs_review",
             "value" : "Les trames audio sont vides"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Les trames audio sont vides"
+          }
         }
       }
     },
@@ -56,6 +62,12 @@
             "state" : "needs_review",
             "value" : "Échec de l’initialisation du contexte Whisper"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Échec de l’initialisation du contexte Whisper"
+          }
         }
       }
     },
@@ -81,6 +93,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Échec de la transcription Whisper (code d’erreur %d)"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Échec de la transcription Whisper (code d’erreur %d)"

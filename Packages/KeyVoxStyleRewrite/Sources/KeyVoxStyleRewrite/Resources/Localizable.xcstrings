@@ -27,6 +27,12 @@
             "state" : "needs_review",
             "value" : "Minuscules, ponctuation réduite et sans mots parasites, pour une vibe détendue."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Minuscules, ponctuation réduite et sans mots parasites, pour une vibe détendue."
+          }
         }
       }
     },
@@ -52,6 +58,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aucune"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Aucune"
@@ -85,6 +97,12 @@
             "state" : "needs_review",
             "value" : "Supprime les mots parasites, met en forme le texte et préserve le ton d’origine."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Supprime les mots parasites, met en forme le texte et préserve le ton d’origine."
+          }
         }
       }
     },
@@ -110,6 +128,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Réécrit le texte dicté en préservant l’intention et la structure d’origine."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Réécrit le texte dicté en préservant l’intention et la structure d’origine."
@@ -143,6 +167,12 @@
             "state" : "needs_review",
             "value" : "Utilise le texte dicté post-traité habituel, sans KeyVox Vibes."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Utilise le texte dicté post-traité habituel, sans KeyVox Vibes."
+          }
         }
       }
     },
@@ -168,6 +198,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Les Vibes ne sont actuellement disponibles qu’en anglais."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Les Vibes ne sont actuellement disponibles qu’en anglais."

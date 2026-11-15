@@ -27,6 +27,12 @@
             "state" : "needs_review",
             "value" : "Échec de l’initialisation de Parakeet."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Échec de l’initialisation de Parakeet."
+          }
         }
       }
     },
@@ -52,6 +58,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Modèle Parakeet introuvable."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Modèle Parakeet introuvable."
@@ -85,6 +97,12 @@
             "state" : "needs_review",
             "value" : "L’environnement d’exécution Parakeet n’est pas disponible."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "L’environnement d’exécution Parakeet n’est pas disponible."
+          }
         }
       }
     },
@@ -110,6 +128,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Échec de la transcription Parakeet (%d)."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Échec de la transcription Parakeet (%d)."
@@ -149,6 +173,12 @@
             "state" : "needs_review",
             "value" : "Échec de la transcription Parakeet (%d) : %@"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Échec de la transcription Parakeet (%d) : %@"
+          }
         }
       }
     },
@@ -178,6 +208,12 @@
             "state" : "needs_review",
             "value" : "La transcription Parakeet nécessite des trames audio non vides."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La transcription Parakeet nécessite des trames audio non vides."
+          }
         }
       }
     },
@@ -203,6 +239,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La transcription Parakeet a été annulée."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "La transcription Parakeet a été annulée."
