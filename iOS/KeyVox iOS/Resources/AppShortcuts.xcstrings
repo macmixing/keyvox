@@ -34,6 +34,16 @@
             ]
           }
         },
+        "es-419" : {
+          "stringSet" : {
+            "state" : "needs_review",
+            "values" : [
+              "Lee el texto copiado en ${applicationName}",
+              "Inicia KeyVox Speak en ${applicationName}",
+              "Usa KeyVox Speak en ${applicationName}"
+            ]
+          }
+        },
         "fr" : {
           "stringSet" : {
             "state" : "needs_review",
@@ -66,6 +76,14 @@
           }
         },
         "es" : {
+          "stringSet" : {
+            "state" : "needs_review",
+            "values" : [
+              "Activa o desactiva el dictado en ${applicationName}"
+            ]
+          }
+        },
+        "es-419" : {
           "stringSet" : {
             "state" : "needs_review",
             "values" : [

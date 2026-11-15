@@ -23,6 +23,12 @@
             "value" : "KeyVox necesita acceder al micrófono para transcribir lo que dices."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox necesita acceder al micrófono para transcribir lo que dices."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
