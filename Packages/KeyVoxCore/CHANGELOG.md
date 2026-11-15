@@ -6,6 +6,22 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.4.0] - 2026-11-15
+
+Dictionary messages, the `Auto Detect` language option, and the fallback microphone name are now translatable, including a Latin American Spanish version.
+
+### Includes
+
+- Made the dictionary error and warning messages, the `Auto Detect` language option, and the fallback microphone name translatable through a package string catalog read from `KeyVoxCoreResources.bundle`, so hosts that supply Core resources keep working.
+- Started dictation language names with a capital letter in every language, since they stand alone in pickers and lists where locale data writes some of them in lowercase.
+- Added Latin American Spanish (`es-419`) beside Spain Spanish (`es`), using Latin American wording where it differs, such as `No se pudo` and `Ingresa`.
+
+### Notes
+
+- `1.4.0` tracks translatable dictionary messages and the new public `microphoneNameFallback`.
+
+---
+
 ## [1.3.13] - 2026-11-11
 
 A spoken colon after a phrase that introduces examples, such as `like` or `such as`, now becomes punctuation.
@@ -15,12 +31,10 @@ A spoken colon after a phrase that introduces examples, such as `like` or `such 
 - Converted the spoken word `colon` into a colon after a phrase from `ExamplePhrases`, such as `things like colon`, `snacks such as colon`, or `tools for instance colon`, where a preposition before it used to keep it as a word.
 - Kept `colon` as a word after other prepositions such as `between colon`, after an example phrase when it runs straight into a conjunction or preposition such as `such as colon and liver` or `a word like colon in the box`, and kept a misheard spelling such as `Colin` as a name after an example phrase, such as `friends like Colin`.
 - Added regression coverage for spoken colons after example phrases, for the word `colon` joined to the rest of the sentence after them, and for names after them.
-- Made the dictionary error and warning messages, the `Auto Detect` language option, and the fallback microphone name translatable through a package string catalog read from `KeyVoxCoreResources.bundle`, so hosts that supply Core resources keep working.
-- Started dictation language names with a capital letter in every language, since they stand alone in pickers and lists where locale data writes some of them in lowercase.
 
 ### Notes
 
-- `1.3.13` tracks the spoken colon after example phrases fix and translatable dictionary messages.
+- `1.3.13` tracks the spoken colon after example phrases fix.
 
 ---
 
