@@ -16,6 +16,12 @@
             "value" : "Abriendo KeyVox"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Abriendo KeyVox"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -34,6 +40,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Preparando el texto para leerlo en voz alta"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Preparando el texto para leerlo en voz alta"

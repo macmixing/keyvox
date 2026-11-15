@@ -58,6 +58,24 @@
             }
           }
         },
+        "es-419" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "¡%lld palabra esta semana!"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "¡%lld palabras esta semana!"
+                }
+              }
+            }
+          }
+        },
         "fr" : {
           "variations" : {
             "plural" : {
@@ -99,6 +117,12 @@
             "value" : "Finalizar sesión"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Finalizar sesión"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -117,6 +141,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Finalizar sesión de dictado"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Finalizar sesión de dictado"
