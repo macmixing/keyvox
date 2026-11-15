@@ -2080,7 +2080,9 @@ These remain extension-facing conveniences, not app-owned business logic.
 
 ## Localization Contract
 
-KeyVox ships in English (the development language), German (`de`), Spanish (`es`), and French (`fr`). The project's `knownRegions` lists all four.
+KeyVox ships in English (the development language), German (`de`), Spain Spanish (`es`), Latin American Spanish (`es-419`), and French (`fr`). The project's `knownRegions` lists all five.
+
+Every catalog entry with an `es` translation also carries a full `es-419` translation. It repeats the Spanish text and uses Apple's Latin American wording where the regions differ, such as `Configuración` for Settings, `Permitir acceso completo`, `presiona`, `agrega`, and `No se pudo`, so the names match the user's own iPhone. A new Spanish string gets both entries.
 
 Each target owns its String Catalog:
 
