@@ -22,6 +22,12 @@
             "value" : "El embedding BOS no tiene suficientes valores: se esperaban %1$ld y se han recibido %2$ld"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "El embedding BOS no tiene suficientes valores: se esperaban %1$ld y se recibieron %2$ld"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -49,6 +55,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "La secuencia latente no tiene suficientes valores: se esperaban %1$ld y se han recibido %2$ld"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La secuencia latente no tiene suficientes valores: se esperaban %1$ld y se recibieron %2$ld"
           }
         },
         "fr" : {
@@ -80,6 +92,12 @@
             "value" : "El vector latente no tiene suficientes valores: se esperaban %1$ld y se han recibido %2$ld"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "El vector latente no tiene suficientes valores: se esperaban %1$ld y se recibieron %2$ld"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -98,6 +116,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "El conjunto de modelos %@ de PocketTTS no está cargado."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "El conjunto de modelos %@ de PocketTTS no está cargado."
@@ -126,6 +150,12 @@
             "value" : "Falta la salida EOS de PocketTTS."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Falta la salida EOS de PocketTTS."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -144,6 +174,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Falta la salida de audio de Mimi en PocketTTS."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Falta la salida de audio de Mimi en PocketTTS."
@@ -172,6 +208,12 @@
             "value" : "El manifiesto de Mimi de PocketTTS no es válido."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "El manifiesto de Mimi de PocketTTS no es válido."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -190,6 +232,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La salida de estado de Mimi en PocketTTS está incompleta."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "La salida de estado de Mimi en PocketTTS está incompleta."
@@ -224,6 +272,12 @@
             "value" : "El tensor de estado %1$@ de Mimi en PocketTTS no tiene suficientes datos: se esperaban %2$ld bytes y se han recibido %3$ld"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "El tensor de estado %1$@ de Mimi en PocketTTS no tiene suficientes datos: se esperaban %2$ld bytes y se recibieron %3$ld"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -242,6 +296,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "El recurso %@ de PocketTTS tiene un tamaño inesperado."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "El recurso %@ de PocketTTS tiene un tamaño inesperado."
@@ -270,6 +330,12 @@
             "value" : "El recurso %@ de PocketTTS tiene un número de bytes no alineado."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "El recurso %@ de PocketTTS tiene un número de bytes no alineado."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -288,6 +354,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Falta el recurso %@ de PocketTTS."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Falta el recurso %@ de PocketTTS."
@@ -316,6 +388,12 @@
             "value" : "Las salidas de la caché de condicionamiento de PocketTTS están incompletas."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Las salidas de la caché de condicionamiento de PocketTTS están incompletas."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -334,6 +412,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Las constantes de PocketTTS no están cargadas."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Las constantes de PocketTTS no están cargadas."
@@ -362,6 +446,12 @@
             "value" : "Falta la carpeta de constantes de PocketTTS."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Falta la carpeta de constantes de PocketTTS."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -385,6 +475,12 @@
             "value" : "PocketTTS no ha podido obtener ningún fragmento de síntesis."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "PocketTTS no pudo obtener ningún fragmento de síntesis."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -403,6 +499,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Falta la salida del decodificador de flujo de PocketTTS."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Falta la salida del decodificador de flujo de PocketTTS."
@@ -431,6 +533,12 @@
             "value" : "Falta la salida del modelo de lenguaje de flujo de PocketTTS."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Falta la salida del modelo de lenguaje de flujo de PocketTTS."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -449,6 +557,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Las salidas de la caché de generación de PocketTTS están incompletas."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Las salidas de la caché de generación de PocketTTS están incompletas."
@@ -477,6 +591,12 @@
             "value" : "Falta el modelo %@ de PocketTTS."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Falta el modelo %@ de PocketTTS."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -495,6 +615,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "PocketTTS necesita un texto que no esté vacío."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "PocketTTS necesita un texto que no esté vacío."
@@ -523,6 +649,12 @@
             "value" : "Falta el modelo del tokenizador de PocketTTS."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Falta el modelo del tokenizador de PocketTTS."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -541,6 +673,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La muestra de voz de PocketTTS para %@ supera la longitud admitida."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "La muestra de voz de PocketTTS para %@ supera la longitud admitida."
@@ -569,6 +707,12 @@
             "value" : "La muestra de voz de PocketTTS para %@ tiene un tamaño no válido."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La muestra de voz de PocketTTS para %@ tiene un tamaño no válido."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -592,6 +736,12 @@
             "value" : "La muestra de voz de PocketTTS para %@ tiene un número de bytes no alineado."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La muestra de voz de PocketTTS para %@ tiene un número de bytes no alineado."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -610,6 +760,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Falta la muestra de voz de PocketTTS para %@."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Falta la muestra de voz de PocketTTS para %@."

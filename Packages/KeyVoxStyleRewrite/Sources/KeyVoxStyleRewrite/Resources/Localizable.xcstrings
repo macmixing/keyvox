@@ -16,6 +16,12 @@
             "value" : "Minúsculas, puntuación mínima y sin muletillas para un tono relajado."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Minúsculas, puntuación mínima y sin muletillas para un tono relajado."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -34,6 +40,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ninguna"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Ninguna"
@@ -62,6 +74,12 @@
             "value" : "Elimina muletillas, da formato al texto y conserva el tono original."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Elimina muletillas, da formato al texto y conserva el tono original."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -80,6 +98,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Reescribe el texto dictado conservando la intención y la estructura originales."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Reescribe el texto dictado conservando la intención y la estructura originales."
@@ -108,6 +132,12 @@
             "value" : "Usa el texto dictado con el posprocesado normal, sin KeyVox Vibes."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Usa el texto dictado con el posprocesado normal, sin KeyVox Vibes."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -126,6 +156,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Por ahora, Vibes solo funciona con el dictado en inglés."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Por ahora, Vibes solo funciona con el dictado en inglés."

@@ -16,6 +16,12 @@
             "value" : "Las tramas de audio están vacías"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Las tramas de audio están vacías"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -39,6 +45,12 @@
             "value" : "No se ha podido inicializar el contexto de Whisper"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No se pudo inicializar el contexto de Whisper"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -57,6 +69,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Error en la transcripción de Whisper con el código %d"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Error en la transcripción de Whisper con el código %d"
