@@ -1672,7 +1672,7 @@ Packages/
   - Owns the letter page's inset middle row and shift row, the symbol pages' third row, and the bottom row's live widths, including the landscape side-key span, the paired page and emoji keys, the emoji search's three-key row, the globe row, and each field bottom row's split of the space bar's and return key's places, all driven from the measured key grid, plus the number pad's bottom row in its three columns across the pad's width from `KeyboardNumberPadGeometry`, with key widths one priority below required so a resize never forces Auto Layout to break key constraints.
 - `KeyVox Keyboard/Core/KeyboardKeysMode.swift`
   - Resolves full versus compact presentation from availability and persisted active state.
-  - Takes the 286-point full or 174-point compact portrait height from `KeyboardStyle`, changes it by however much shorter or taller the keys are in landscape or on iPad, takes the toolbar's row (`KeyboardStyle.toolbarRowHeight`) off on a page without the toolbar, and owns visible row count, per-orientation and per-display key height, row spacing, the top row's toolbar button height, and derived key-grid height.
+  - Takes the 286-point full or 174-point compact portrait height from `KeyboardStyle`, changes it by however much shorter or taller the keys are in landscape or on iPad, takes the toolbar's row (`KeyboardStyle.toolbarRowHeight`) off on a page without the toolbar while the emoji page is closed, and owns visible row count, per-orientation and per-display key height, row spacing, the top row's toolbar button height, and derived key-grid height.
 - `KeyVox Keyboard/Core/KeyboardDisplay.swift`
   - Resolves the display the keyboard is on: standard (an iPhone display or an iPad's floating keyboard), an open foldable's inner display, or a full-width iPad keyboard.
 - `KeyVox Keyboard/Core/KeyboardFoldableDisplay.swift`
@@ -1691,7 +1691,7 @@ Packages/
 - `KeyVox Keyboard/Views/KeyboardRootView.swift`
   - Stable keyboard chrome and key grid.
   - Hosts the branded toolbar row and the shared warning overlay for dictation model, Full Access, and microphone permission warnings.
-  - On the number pad, hides the toolbar and moves its row above the keyboard's top, out of sight, so the keys take its place.
+  - On the number pad, hides the toolbar and moves its row above the keyboard's top, out of sight, so the keys take its place, unless the emoji page or search is open, whose field keeps the row's place.
   - Shows the suggestion bar in place of the toolbar accessories on the full keyboard's letter page while predictions are offered and no cancel control is showing, spanning from the keyboard edge to the logo control.
   - Hosts the emoji page over the key grid's place, the emoji search field in the toolbar's place, and the search results above the keys while searching.
   - Sends touches in the keyboard's outer padding to the key grid so they type the nearest key.

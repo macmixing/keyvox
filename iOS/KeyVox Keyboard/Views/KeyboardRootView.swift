@@ -311,7 +311,7 @@ final class KeyboardRootView: UIView {
         applyEmojiPanel(emojiPanel)
         mainStackTopConstraint?.constant = mainStackTopInset(
             emojiPanel: emojiPanel,
-            showsToolbarRow: symbolPage.showsToolbar
+            showsToolbarRow: symbolPage.keepsToolbarRow(emojiPanel: emojiPanel)
         )
         keyGridView.setLayout(
             symbolPage: symbolPage,

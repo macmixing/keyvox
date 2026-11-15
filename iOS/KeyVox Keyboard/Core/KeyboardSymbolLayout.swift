@@ -14,6 +14,12 @@ enum KeyboardSymbolPage {
     var showsToolbar: Bool {
         self != .numberPad
     }
+
+    /// Whether the toolbar's row keeps its place above the keys: where the page shows the toolbar,
+    /// and while the emoji page or search is open, whose field takes the row's place on any page.
+    func keepsToolbarRow(emojiPanel: KeyboardEmojiPanel) -> Bool {
+        showsToolbar || emojiPanel != .closed
+    }
 }
 
 enum KeyboardKeyKind: Equatable {
