@@ -15,6 +15,7 @@ The `None` style name, the style descriptions, and the English-only note are now
 - Made the `None` style name and every style description translatable through a package string catalog; the Polished, Casual, and Chill names stay as written.
 - Added `StyleRewriteStyle.languageSupportNote` as the single source for the note that rewrite styles support English dictation only.
 - Kept the example sentences and the model instructions in English.
+- Added Latin American Spanish (`es-419`) beside Spain Spanish (`es`); the style wording reads the same in both.
 
 ### Notes
 
