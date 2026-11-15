@@ -30,6 +30,12 @@
             "state" : "needs_review",
             "value" : " (%@ au total)."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : " (%@ au total)."
+          }
         }
       }
     },
@@ -87,6 +93,12 @@
             "state" : "needs_review",
             "value" : "La voix %@ est installée, sélectionnée et prête pour KeyVox Speak."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La voix %@ est installée, sélectionnée et prête pour KeyVox Speak."
+          }
         }
       }
     },
@@ -112,6 +124,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La voix %@ est prête. Vous pouvez lancer KeyVox Speak depuis l’onglet Accueil."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "La voix %@ est prête. Vous pouvez lancer KeyVox Speak depuis l’onglet Accueil."
@@ -145,6 +163,12 @@
             "state" : "needs_review",
             "value" : "La voix %@ doit être réparée."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La voix %@ doit être réparée."
+          }
         }
       }
     },
@@ -170,6 +194,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Échec de l’installation de la voix %@."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Échec de l’installation de la voix %@."
@@ -203,6 +233,12 @@
             "state" : "needs_review",
             "value" : "Échec de la validation de l’installation de la voix %@."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Échec de la validation de l’installation de la voix %@."
+          }
         }
       }
     },
@@ -228,6 +264,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La voix de %@ est installée, sélectionnée et prête pour KeyVox Speak."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "La voix de %@ est installée, sélectionnée et prête pour KeyVox Speak."
@@ -314,6 +356,30 @@
           }
         },
         "fr" : {
+          "variations" : {
+            "plural" : {
+              "many" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "Il vous reste %lld lectures gratuites aujourd’hui."
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "Il vous reste %lld lecture gratuite aujourd’hui."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "Il vous reste %lld lectures gratuites aujourd’hui."
+                }
+              }
+            }
+          }
+        },
+        "fr-CA" : {
           "variations" : {
             "plural" : {
               "many" : {
@@ -437,6 +503,30 @@
               }
             }
           }
+        },
+        "fr-CA" : {
+          "variations" : {
+            "plural" : {
+              "many" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "Il vous reste %lld lectures gratuites aujourd’hui. La réécoute reste gratuite pour tout ce qui a déjà été généré."
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "Il vous reste %lld lecture gratuite aujourd’hui. La réécoute reste gratuite pour tout ce qui a déjà été généré."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "Il vous reste %lld lectures gratuites aujourd’hui. La réécoute reste gratuite pour tout ce qui a déjà été généré."
+                }
+              }
+            }
+          }
         }
       }
     },
@@ -520,6 +610,30 @@
               }
             }
           }
+        },
+        "fr-CA" : {
+          "variations" : {
+            "plural" : {
+              "many" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "Essai de %lld jours. Achat unique."
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "Essai de %lld jour. Achat unique."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "Essai de %lld jours. Achat unique."
+                }
+              }
+            }
+          }
         }
       }
     },
@@ -549,6 +663,12 @@
             "state" : "needs_review",
             "value" : "1 heure"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "1 heure"
+          }
         }
       }
     },
@@ -574,6 +694,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "15 minutes"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "15 minutes"
@@ -610,6 +736,12 @@
             "state" : "needs_review",
             "value" : "5 minutes"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "5 minutes"
+          }
         }
       }
     },
@@ -635,6 +767,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Un modèle Parakeet plus récent est disponible pour la dictée sur l’appareil. Téléchargez dès maintenant le modèle Parakeet mis à jour (%@) ou faites-le plus tard depuis les Réglages."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Un modèle Parakeet plus récent est disponible pour la dictée sur l’appareil. Téléchargez dès maintenant le modèle Parakeet mis à jour (%@) ou faites-le plus tard depuis les Réglages."
@@ -672,6 +810,12 @@
             "state" : "needs_review",
             "value" : "Configuration du modèle IA"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Configuration du modèle IA"
+          }
         }
       }
     },
@@ -697,6 +841,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Les voix IA fonctionnent entièrement sur l’appareil. Rien ne quitte votre iPad."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Les voix IA fonctionnent entièrement sur l’appareil. Rien ne quitte votre iPad."
@@ -730,6 +880,12 @@
             "state" : "needs_review",
             "value" : "Les voix IA fonctionnent entièrement sur l’appareil. Rien ne quitte votre iPhone."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Les voix IA fonctionnent entièrement sur l’appareil. Rien ne quitte votre iPhone."
+          }
         }
       }
     },
@@ -755,6 +911,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Précis et léger."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Précis et léger."
@@ -788,6 +950,12 @@
             "state" : "needs_review",
             "value" : "Ajouter"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ajouter"
+          }
         }
       }
     },
@@ -813,6 +981,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ajouter le raccourci"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Ajouter le raccourci"
@@ -846,6 +1020,12 @@
             "state" : "needs_review",
             "value" : "Ajouter un mot"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ajouter un mot"
+          }
         }
       }
     },
@@ -871,6 +1051,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ajoutez un raccourci rapide pour activer ou désactiver la dictée KeyVox partout."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Ajoutez un raccourci rapide pour activer ou désactiver la dictée KeyVox partout."
@@ -904,6 +1090,12 @@
             "state" : "needs_review",
             "value" : "Ajoutez des mots personnalisés, des adresses e-mail et de courtes expressions pour améliorer la précision de la transcription."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ajoutez des mots personnalisés, des adresses courriel et de courtes expressions pour améliorer la précision de la transcription."
+          }
         }
       }
     },
@@ -929,6 +1121,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ajouter au Centre de contrôle"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Ajouter au Centre de contrôle"
@@ -962,6 +1160,12 @@
             "state" : "needs_review",
             "value" : "Après ça, vous risquez de ne plus jamais taper au clavier."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Après ça, vous risquez de ne plus jamais taper au clavier."
+          }
         }
       }
     },
@@ -987,6 +1191,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Tout cela, sans limite quotidienne."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Tout cela, sans limite quotidienne."
@@ -1020,6 +1230,12 @@
             "state" : "needs_review",
             "value" : "Autorisez KeyVox à afficher des Activités en direct. Requis pour l’option Raccourci de dictée."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Autorisez KeyVox à afficher des Événements en direct. Requis pour l’option Raccourci de dictée."
+          }
         }
       }
     },
@@ -1045,6 +1261,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Toujours privé"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Toujours privé"
@@ -1078,6 +1300,12 @@
             "state" : "needs_review",
             "value" : "Une connexion Internet est requise pour télécharger le modèle."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Une connexion Internet est requise pour télécharger le modèle."
+          }
         }
       }
     },
@@ -1107,6 +1335,12 @@
             "state" : "needs_review",
             "value" : "Un autre téléchargement Speak est déjà en cours."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Un autre téléchargement Speak est déjà en cours."
+          }
         }
       }
     },
@@ -1132,6 +1366,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Conteneur du groupe d’apps indisponible."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Conteneur du groupe d’apps indisponible."
@@ -1171,6 +1411,12 @@
             "state" : "needs_review",
             "value" : "L’entrée audio n’est pas encore prête. sampleRate=%lf, channelCount=%lld"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "L’entrée audio n’est pas encore prête. sampleRate=%lf, channelCount=%lld"
+          }
         }
       }
     },
@@ -1196,6 +1442,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Majuscules automatiques"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Majuscules automatiques"
@@ -1229,6 +1481,12 @@
             "state" : "needs_review",
             "value" : "Correction automatique"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Correction automatique"
+          }
         }
       }
     },
@@ -1254,6 +1512,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La correction automatique et la prédiction ne sont actuellement disponibles qu’en anglais."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "La correction automatique et la prédiction ne sont actuellement disponibles qu’en anglais."
@@ -1287,6 +1551,12 @@
             "state" : "needs_review",
             "value" : "Disponible sur Mac"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Disponible sur Mac"
+          }
         }
       }
     },
@@ -1312,6 +1582,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Retour"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Retour"
@@ -1345,6 +1621,12 @@
             "state" : "needs_review",
             "value" : "Impossible de désactiver la session pendant un enregistrement audio."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Impossible de désactiver la session pendant un enregistrement audio."
+          }
         }
       }
     },
@@ -1370,6 +1652,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Annuler"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Annuler"
@@ -1403,6 +1691,12 @@
             "state" : "needs_review",
             "value" : "Captez les Vibes"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Captez les Vibes"
+          }
         }
       }
     },
@@ -1428,6 +1722,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Modifier"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Modifier"
@@ -1461,6 +1761,12 @@
             "state" : "needs_review",
             "value" : "Modifiez la dernière dictée non retouchée dans le champ de texte."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Modifiez la dernière dictée non retouchée dans le champ de texte."
+          }
         }
       }
     },
@@ -1486,6 +1792,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Choisissez Détection automatique pour les conversations multilingues. Vous pouvez modifier ce choix à tout moment dans les Réglages."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Choisissez Détection automatique pour les conversations multilingues. Vous pouvez modifier ce choix à tout moment dans les Réglages."
@@ -1519,6 +1831,12 @@
             "state" : "needs_review",
             "value" : "Choisir avant de dicter"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Choisir avant de dicter"
+          }
         }
       }
     },
@@ -1544,6 +1862,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Choisissez la langue utilisée par KeyVox pour la dictée."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Choisissez la langue utilisée par KeyVox pour la dictée."
@@ -1577,6 +1901,12 @@
             "state" : "needs_review",
             "value" : "Choisissez le modèle installé que KeyVox utilise pour transcrire la parole sur cet appareil."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Choisissez le modèle installé que KeyVox utilise pour transcrire la parole sur cet appareil."
+          }
         }
       }
     },
@@ -1602,6 +1932,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Choisissez la voix installée que KeyVox utilise pour lire le texte copié."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Choisissez la voix installée que KeyVox utilise pour lire le texte copié."
@@ -1635,6 +1971,12 @@
             "state" : "needs_review",
             "value" : "Choisissez votre langue"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Choisissez votre langue"
+          }
         }
       }
     },
@@ -1660,6 +2002,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Thème classique"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Thème classique"
@@ -1693,6 +2041,12 @@
             "state" : "needs_review",
             "value" : "Fermer"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Fermer"
+          }
         }
       }
     },
@@ -1718,6 +2072,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Continuer"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Continuer"
@@ -1751,6 +2111,12 @@
             "state" : "needs_review",
             "value" : "Copier"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Copier"
+          }
         }
       }
     },
@@ -1776,6 +2142,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Copiez d’abord du texte."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Copiez d’abord du texte."
@@ -1809,6 +2181,12 @@
             "state" : "needs_review",
             "value" : "Copiez du texte. Écoutez-le."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Copiez du texte. Écoutez-le."
+          }
         }
       }
     },
@@ -1834,6 +2212,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Corrections, prédictions et disposition du clavier KeyVox."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Corrections, prédictions et disposition du clavier KeyVox."
@@ -1867,6 +2251,12 @@
             "state" : "needs_review",
             "value" : "Impossible de démarrer la capture audio : %@"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Impossible de démarrer la capture audio : %@"
+          }
         }
       }
     },
@@ -1892,6 +2282,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Impossible d’arrêter la capture audio : %@"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Impossible d’arrêter la capture audio : %@"
@@ -1925,6 +2321,12 @@
             "state" : "needs_review",
             "value" : "La correction par dictionnaire personnalisé n’est actuellement disponible que pour la dictée en anglais."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La correction par dictionnaire personnalisé n’est actuellement disponible que pour la dictée en anglais."
+          }
         }
       }
     },
@@ -1950,6 +2352,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Choisissez combien de temps KeyVox Speak reste prêt à charger l’audio."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Choisissez combien de temps KeyVox Speak reste prêt à charger l’audio."
@@ -1983,6 +2391,12 @@
             "state" : "needs_review",
             "value" : "Choisissez quand la session de dictée se désactive."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Choisissez quand la session de dictée se désactive."
+          }
         }
       }
     },
@@ -2008,6 +2422,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Supprimer"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Supprimer"
@@ -2041,6 +2461,12 @@
             "state" : "needs_review",
             "value" : "Supprimer le modèle de dictée ?"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Supprimer le modèle de dictée?"
+          }
         }
       }
     },
@@ -2066,6 +2492,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Supprimer l’entrée"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Supprimer l’entrée"
@@ -2099,6 +2531,12 @@
             "state" : "needs_review",
             "value" : "Supprimer l’entrée ?"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Supprimer l’entrée?"
+          }
         }
       }
     },
@@ -2127,6 +2565,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Supprimer KeyVox Vibes AI de cet appareil ?"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Supprimer KeyVox Vibes AI de cet appareil?"
           }
         }
       }
@@ -2157,6 +2601,12 @@
             "state" : "needs_review",
             "value" : "Supprimer KeyVox Vibes AI ?"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Supprimer KeyVox Vibes AI?"
+          }
         }
       }
     },
@@ -2185,6 +2635,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Supprimer le moteur Speak ?"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Supprimer le moteur Speak?"
           }
         }
       }
@@ -2215,6 +2671,12 @@
             "state" : "needs_review",
             "value" : "Supprimer la voix ?"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Supprimer la voix?"
+          }
         }
       }
     },
@@ -2243,6 +2705,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Supprimer le modèle %@ de cet appareil ?"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Supprimer le modèle %@ de cet appareil?"
           }
         }
       }
@@ -2273,6 +2741,12 @@
             "state" : "needs_review",
             "value" : "Supprimer la voix %@ de cet appareil ?"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Supprimer la voix %@ de cet appareil?"
+          }
         }
       }
     },
@@ -2302,6 +2776,12 @@
             "state" : "needs_review",
             "value" : "Supprimer le moteur KeyVox Speak et toutes les voix téléchargées de cet appareil ?"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Supprimer le moteur KeyVox Speak et toutes les voix téléchargées de cet appareil?"
+          }
         }
       }
     },
@@ -2326,6 +2806,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Diagnostic"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Diagnostic"
@@ -2359,6 +2845,12 @@
             "state" : "needs_review",
             "value" : "Dictez partout"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dictez partout"
+          }
         }
       }
     },
@@ -2384,6 +2876,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dictez dans n’importe quelle app, instantanément"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Dictez dans n’importe quelle app, instantanément"
@@ -2417,6 +2915,12 @@
             "state" : "needs_review",
             "value" : "Dictez avec le bouton Action."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dictez avec le bouton Action."
+          }
         }
       }
     },
@@ -2442,6 +2946,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dictée"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Dictée"
@@ -2475,6 +2985,12 @@
             "state" : "needs_review",
             "value" : "Modèle de dictée"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Modèle de dictée"
+          }
         }
       }
     },
@@ -2500,6 +3016,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Raccourci de dictée"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Raccourci de dictée"
@@ -2533,6 +3055,12 @@
             "state" : "needs_review",
             "value" : "Mise en veille de la dictée"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mise en veille de la dictée"
+          }
         }
       }
     },
@@ -2558,6 +3086,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dictionnaire"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Dictionnaire"
@@ -2591,6 +3125,12 @@
             "state" : "needs_review",
             "value" : "Désactiver la session de dictée"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Désactiver la session de dictée"
+          }
         }
       }
     },
@@ -2616,6 +3156,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Désactiver la lecture rapide"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Désactiver la lecture rapide"
@@ -2649,6 +3195,12 @@
             "state" : "needs_review",
             "value" : "Fermer"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Fermer"
+          }
         }
       }
     },
@@ -2674,6 +3226,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "N’oubliez pas : le Mode rapide commence à parler ~50 % plus vite."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "N’oubliez pas : le Mode rapide commence à parler ~50 % plus vite."
@@ -2707,6 +3265,12 @@
             "state" : "needs_review",
             "value" : "OK"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "OK"
+          }
         }
       }
     },
@@ -2732,6 +3296,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pas d’inquiétude, vous n’aurez à"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Pas d’inquiétude, vous n’aurez à"
@@ -2765,6 +3335,12 @@
             "state" : "needs_review",
             "value" : "Touchez deux fois la barre d’espace pour insérer un point suivi d’une espace."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Touchez deux fois la barre d’espace pour insérer un point suivi d’une espace."
+          }
         }
       }
     },
@@ -2790,6 +3366,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Télécharger"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Télécharger"
@@ -2822,6 +3404,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Télécharger la voix de %@ ?"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Télécharger la voix de %@?"
           }
         }
       }
@@ -2858,6 +3446,12 @@
             "state" : "needs_review",
             "value" : "Télécharger la voix de %@ (%@) pour lire le texte copié sur cet appareil ?"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Télécharger la voix de %@ (%@) pour lire le texte copié sur cet appareil?"
+          }
         }
       }
     },
@@ -2893,6 +3487,12 @@
             "state" : "needs_review",
             "value" : "Téléchargez la voix de %@ (%@) pour lire le texte copié."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Téléchargez la voix de %@ (%@) pour lire le texte copié."
+          }
         }
       }
     },
@@ -2921,6 +3521,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Télécharger KeyVox Speak ?"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Télécharger KeyVox Speak?"
           }
         }
       }
@@ -2951,6 +3557,12 @@
             "state" : "needs_review",
             "value" : "Télécharger KeyVox Vibes AI (%@) pour utiliser KeyVox Vibes sur cet appareil ?"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Télécharger KeyVox Vibes AI (%@) pour utiliser KeyVox Vibes sur cet appareil?"
+          }
         }
       }
     },
@@ -2980,6 +3592,12 @@
             "state" : "needs_review",
             "value" : "Télécharger KeyVox Vibes AI ?"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Télécharger KeyVox Vibes AI?"
+          }
         }
       }
     },
@@ -3005,6 +3623,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Télécharger"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Télécharger"
@@ -3038,6 +3662,12 @@
             "state" : "needs_review",
             "value" : "Télécharger Parakeet v3 ?"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Télécharger Parakeet v3?"
+          }
         }
       }
     },
@@ -3067,6 +3697,12 @@
             "state" : "needs_review",
             "value" : "Télécharger le moteur Speak ?"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Télécharger le moteur Speak?"
+          }
         }
       }
     },
@@ -3092,6 +3728,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Téléchargez Vibes AI pour utiliser Vibes."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Téléchargez Vibes AI pour utiliser Vibes."
@@ -3125,6 +3767,12 @@
             "state" : "needs_review",
             "value" : "Télécharger Whisper Base ?"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Télécharger Whisper Base?"
+          }
         }
       }
     },
@@ -3150,6 +3798,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Téléchargez une voix de lecture pour que KeyVox puisse lire le texte copié à voix haute."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Téléchargez une voix de lecture pour que KeyVox puisse lire le texte copié à voix haute."
@@ -3182,6 +3836,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Télécharger le moteur KeyVox Speak (%@) pour lire le texte copié sur cet appareil ?"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Télécharger le moteur KeyVox Speak (%@) pour lire le texte copié sur cet appareil?"
           }
         }
       }
@@ -3218,6 +3878,12 @@
             "state" : "needs_review",
             "value" : "Télécharger le moteur KeyVox Speak et la voix de %@ (%@ au total) pour lire le texte copié sur cet appareil ?"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Télécharger le moteur KeyVox Speak et la voix de %@ (%@ au total) pour lire le texte copié sur cet appareil?"
+          }
         }
       }
     },
@@ -3243,6 +3909,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Téléchargez le moteur KeyVox Speak et la voix de Theo (%@) pour lire le texte copié."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Téléchargez le moteur KeyVox Speak et la voix de Theo (%@) pour lire le texte copié."
@@ -3276,6 +3948,12 @@
             "state" : "needs_review",
             "value" : "Télécharger le modèle de dictée Parakeet v3 (%@) pour une dictée plus rapide sur cet appareil ?"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Télécharger le modèle de dictée Parakeet v3 (%@) pour une dictée plus rapide sur cet appareil?"
+          }
         }
       }
     },
@@ -3305,6 +3983,12 @@
             "state" : "needs_review",
             "value" : "Télécharger le modèle de dictée Whisper Base (%@) avant d’utiliser la dictée locale sur cet appareil ?"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Télécharger le modèle de dictée Whisper Base (%@) avant d’utiliser la dictée locale sur cet appareil?"
+          }
         }
       }
     },
@@ -3330,6 +4014,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Le modèle Vibes téléchargé ne correspond pas au SHA-256 attendu."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Le modèle Vibes téléchargé ne correspond pas au SHA-256 attendu."
@@ -3363,6 +4053,12 @@
             "state" : "needs_review",
             "value" : "Le fichier du modèle téléchargé ne correspond pas au SHA-256 attendu."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Le fichier du modèle téléchargé ne correspond pas au SHA-256 attendu."
+          }
         }
       }
     },
@@ -3388,6 +4084,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Téléchargement de %@"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Téléchargement de %@"
@@ -3421,6 +4123,12 @@
             "state" : "needs_review",
             "value" : "Téléchargement de la voix de %@..."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Téléchargement de la voix de %@..."
+          }
         }
       }
     },
@@ -3446,6 +4154,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Téléchargement de la voix %@."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Téléchargement de la voix %@."
@@ -3479,6 +4193,12 @@
             "state" : "needs_review",
             "value" : "Téléchargement du moteur KeyVox Speak."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Téléchargement du moteur KeyVox Speak."
+          }
         }
       }
     },
@@ -3504,6 +4224,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Téléchargement du moteur KeyVox Speak..."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Téléchargement du moteur KeyVox Speak..."
@@ -3537,6 +4263,12 @@
             "state" : "needs_review",
             "value" : "Téléchargement de KeyVox Vibes AI."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Téléchargement de KeyVox Vibes AI."
+          }
         }
       }
     },
@@ -3562,6 +4294,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Téléchargement de KeyVox Vibes AI..."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Téléchargement de KeyVox Vibes AI..."
@@ -3595,6 +4333,12 @@
             "state" : "needs_review",
             "value" : "Téléchargement des fichiers du modèle"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Téléchargement des fichiers du modèle"
+          }
         }
       }
     },
@@ -3620,6 +4364,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Téléchargement du moteur Speak avant l’installation de la voix %@."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Téléchargement du moteur Speak avant l’installation de la voix %@."
@@ -3653,6 +4403,12 @@
             "state" : "needs_review",
             "value" : "Téléchargement..."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Téléchargement..."
+          }
         }
       }
     },
@@ -3678,6 +4434,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Modifier"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Modifier"
@@ -3711,6 +4473,12 @@
             "state" : "needs_review",
             "value" : "Modifier le mot"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Modifier le mot"
+          }
         }
       }
     },
@@ -3740,6 +4508,12 @@
             "state" : "needs_review",
             "value" : "Clavier Emoji"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Clavier émoji"
+          }
         }
       }
     },
@@ -3765,6 +4539,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Majuscules verrouillées"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Majuscules verrouillées"
@@ -3798,6 +4578,12 @@
             "state" : "needs_review",
             "value" : "Activez le clavier KeyVox et l’option Autoriser l’accès complet dans Réglages, puis revenez ici."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Activez le clavier KeyVox et l’option Autoriser l’accès complet dans Réglages, puis revenez ici."
+          }
         }
       }
     },
@@ -3823,6 +4609,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Activer le clavier"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Activer le clavier"
@@ -3856,6 +4648,12 @@
             "state" : "needs_review",
             "value" : "Activer la session de dictée"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Activer la session de dictée"
+          }
         }
       }
     },
@@ -3881,6 +4679,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Activer la lecture rapide"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Activer la lecture rapide"
@@ -3914,6 +4718,12 @@
             "state" : "needs_review",
             "value" : "Extraction des fichiers du modèle"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Extraction des fichiers du modèle"
+          }
         }
       }
     },
@@ -3939,6 +4749,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Échec de la lecture."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Échec de la lecture."
@@ -3972,6 +4788,12 @@
             "state" : "needs_review",
             "value" : "Mode rapide disponible"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mode rapide disponible"
+          }
         }
       }
     },
@@ -3997,6 +4819,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mode rapide inclus"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Mode rapide inclus"
@@ -4030,6 +4858,12 @@
             "state" : "needs_review",
             "value" : "Finalisation de l’installation"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Finalisation de l’installation"
+          }
         }
       }
     },
@@ -4055,6 +4889,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Terminer"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Terminer"
@@ -4088,6 +4928,12 @@
             "state" : "needs_review",
             "value" : "Terminer la configuration"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Terminer la configuration"
+          }
         }
       }
     },
@@ -4113,6 +4959,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Terminez le téléchargement du modèle et autorisez l’accès au micro avant de continuer."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Terminez le téléchargement du modèle et autorisez l’accès au micro avant de continuer."
@@ -4146,6 +4998,12 @@
             "state" : "needs_review",
             "value" : "Lecture terminée."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Lecture terminée."
+          }
         }
       }
     },
@@ -4171,6 +5029,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Met en forme automatiquement les listes numérotées dictées lorsqu’elles sont détectées."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Met en forme automatiquement les listes numérotées dictées lorsqu’elles sont détectées."
@@ -4204,6 +5068,12 @@
             "state" : "needs_review",
             "value" : "Libérez votre voix"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Libérez votre voix"
+          }
         }
       }
     },
@@ -4229,6 +5099,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Obtenir Speak Unlimited"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Obtenir Speak Unlimited"
@@ -4262,6 +5138,12 @@
             "state" : "needs_review",
             "value" : "Démarrer"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Démarrer"
+          }
         }
       }
     },
@@ -4287,6 +5169,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Recevez un retour haptique du clavier KeyVox."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Recevez un retour haptique du clavier KeyVox."
@@ -4320,6 +5208,12 @@
             "state" : "needs_review",
             "value" : "Obtenez de l’aide sur KeyVox, téléchargez l’app Mac, consultez la FAQ, trouvez plus d’informations ou contactez-nous."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Obtenez de l’aide sur KeyVox, téléchargez l’app Mac, consultez la FAQ, trouvez plus d’informations ou contactez-nous."
+          }
         }
       }
     },
@@ -4345,6 +5239,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Préparation..."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Préparation..."
@@ -4378,6 +5278,12 @@
             "state" : "needs_review",
             "value" : "Masquer les exemples de Vibes"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Masquer les exemples de Vibes"
+          }
         }
       }
     },
@@ -4403,6 +5309,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Accueil"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Accueil"
@@ -4436,6 +5348,12 @@
             "state" : "needs_review",
             "value" : "Onglet Accueil"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Onglet Accueil"
+          }
         }
       }
     },
@@ -4461,6 +5379,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Immédiatement"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Immédiatement"
@@ -4494,6 +5418,12 @@
             "state" : "needs_review",
             "value" : "Dans la liste des claviers, choisissez KeyVox."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dans la liste des claviers, choisissez KeyVox."
+          }
         }
       }
     },
@@ -4519,6 +5449,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dans Claviers, activez KeyVox, puis Autoriser l’accès complet."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Dans Claviers, activez KeyVox, puis Autoriser l’accès complet."
@@ -4558,6 +5494,12 @@
             "state" : "needs_review",
             "value" : "Installez la voix %@ : KeyVox téléchargera d’abord le moteur Speak, puis la voix de %@"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Installez la voix %@ : KeyVox téléchargera d’abord le moteur Speak, puis la voix de %@"
+          }
         }
       }
     },
@@ -4583,6 +5525,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Installez la voix %@ et KeyVox s’occupe de tout en arrière-plan."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Installez la voix %@ et KeyVox s’occupe de tout en arrière-plan."
@@ -4616,6 +5564,12 @@
             "state" : "needs_review",
             "value" : "Installez la voix %@ et lancez la lecture sans attendre."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Installez la voix %@ et lancez la lecture sans attendre."
+          }
         }
       }
     },
@@ -4641,6 +5595,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Installez la voix de %@ et KeyVox s’occupe du moteur Speak pour vous."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Installez la voix de %@ et KeyVox s’occupe du moteur Speak pour vous."
@@ -4674,6 +5634,12 @@
             "state" : "needs_review",
             "value" : "Installer Vibes AI"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Installer Vibes AI"
+          }
         }
       }
     },
@@ -4699,6 +5665,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Installez d’abord Vibes AI (%@), puis vous pourrez utiliser KeyVox Vibes"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Installez d’abord Vibes AI (%@), puis vous pourrez utiliser KeyVox Vibes"
@@ -4732,6 +5704,12 @@
             "state" : "needs_review",
             "value" : "Installez d’abord Vibes AI (%@), puis vous pourrez utiliser KeyVox Vibes."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Installez d’abord Vibes AI (%@), puis vous pourrez utiliser KeyVox Vibes."
+          }
         }
       }
     },
@@ -4757,6 +5735,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Installez un modèle de dictée pour que KeyVox puisse transcrire la parole sur cet appareil."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Installez un modèle de dictée pour que KeyVox puisse transcrire la parole sur cet appareil."
@@ -4790,6 +5774,12 @@
             "state" : "needs_review",
             "value" : "Échec de l’installation"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Échec de l’installation"
+          }
         }
       }
     },
@@ -4815,6 +5805,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Échec de l’installation."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Échec de l’installation."
@@ -4848,6 +5844,12 @@
             "state" : "needs_review",
             "value" : "Installer un modèle"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Installer un modèle"
+          }
         }
       }
     },
@@ -4873,6 +5875,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Installez le moteur KeyVox Speak avant de télécharger des voix."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Installez le moteur KeyVox Speak avant de télécharger des voix."
@@ -4906,6 +5914,12 @@
             "state" : "needs_review",
             "value" : "Installez d’abord le moteur KeyVox Speak, puis vous pourrez télécharger des voix."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Installez d’abord le moteur KeyVox Speak, puis vous pourrez télécharger des voix."
+          }
         }
       }
     },
@@ -4931,6 +5945,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Installez l’app Raccourcis depuis l’App Store, puis réessayez d’ajouter le raccourci de dictée KeyVox."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Installez l’app Raccourcis depuis l’App Store, puis réessayez d’ajouter le raccourci de dictée KeyVox."
@@ -4964,6 +5984,12 @@
             "state" : "needs_review",
             "value" : "Installer une voix"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Installer une voix"
+          }
         }
       }
     },
@@ -4989,6 +6015,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Installée"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Installée"
@@ -5022,6 +6054,12 @@
             "state" : "needs_review",
             "value" : "Installation"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Installation"
+          }
         }
       }
     },
@@ -5047,6 +6085,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Installation de %@"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Installation de %@"
@@ -5080,6 +6124,12 @@
             "state" : "needs_review",
             "value" : "Installation de la voix de %@..."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Installation de la voix de %@..."
+          }
         }
       }
     },
@@ -5105,6 +6155,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Installation de la voix %@."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Installation de la voix %@."
@@ -5138,6 +6194,12 @@
             "state" : "needs_review",
             "value" : "Installation du moteur KeyVox Speak."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Installation du moteur KeyVox Speak."
+          }
         }
       }
     },
@@ -5163,6 +6225,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Installation du moteur KeyVox Speak..."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Installation du moteur KeyVox Speak..."
@@ -5196,6 +6264,12 @@
             "state" : "needs_review",
             "value" : "Installation de KeyVox Vibes AI."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Installation de KeyVox Vibes AI."
+          }
         }
       }
     },
@@ -5221,6 +6295,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Installation du moteur Speak avant la voix %@."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Installation du moteur Speak avant la voix %@."
@@ -5254,6 +6334,12 @@
             "state" : "needs_review",
             "value" : "Installation..."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Installation..."
+          }
         }
       }
     },
@@ -5279,6 +6365,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La récupération de l’enregistrement interrompu n’a produit aucune transcription."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "La récupération de l’enregistrement interrompu n’a produit aucune transcription."
@@ -5312,6 +6404,12 @@
             "state" : "needs_review",
             "value" : "Partout où vous êtes."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Partout où vous êtes."
+          }
         }
       }
     },
@@ -5337,6 +6435,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Encore quelques étapes..."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Encore quelques étapes..."
@@ -5370,6 +6474,12 @@
             "state" : "needs_review",
             "value" : "Gardez le rythme avec les Vibes."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Gardez le rythme avec les Vibes."
+          }
         }
       }
     },
@@ -5399,6 +6509,12 @@
             "state" : "needs_review",
             "value" : "KeyVox %@ est disponible sur l’App Store."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox %@ est disponible sur l’App Store."
+          }
         }
       }
     },
@@ -5424,6 +6540,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox %@ est requis pour continuer à utiliser l’app."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "KeyVox %@ est requis pour continuer à utiliser l’app."
@@ -5460,6 +6582,12 @@
             "state" : "needs_review",
             "value" : "Moteur KeyVox Speak"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Moteur KeyVox Speak"
+          }
         }
       }
     },
@@ -5485,6 +6613,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox Speak Unlimited"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "KeyVox Speak Unlimited"
@@ -5518,6 +6652,12 @@
             "state" : "needs_review",
             "value" : "Échec de l’installation du moteur KeyVox Speak."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Échec de l’installation du moteur KeyVox Speak."
+          }
         }
       }
     },
@@ -5543,6 +6683,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Le moteur KeyVox Speak n’est pas installé."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Le moteur KeyVox Speak n’est pas installé."
@@ -5576,6 +6722,12 @@
             "state" : "needs_review",
             "value" : "Le moteur KeyVox Speak est prêt. Il ne reste plus qu’à installer la voix de %@."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Le moteur KeyVox Speak est prêt. Il ne reste plus qu’à installer la voix de %@."
+          }
         }
       }
     },
@@ -5601,6 +6753,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La voix KeyVox Speak %@ n’est pas prise en charge."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "La voix KeyVox Speak %@ n’est pas prise en charge."
@@ -5634,6 +6792,12 @@
             "state" : "needs_review",
             "value" : "KeyVox Vibes AI est installé et prêt."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox Vibes AI est installé et prêt."
+          }
         }
       }
     },
@@ -5659,6 +6823,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox Vibes est également disponible sur Mac."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "KeyVox Vibes est également disponible sur Mac."
@@ -5692,6 +6862,12 @@
             "state" : "needs_review",
             "value" : "KeyVox traite déjà une dictée. Réessayez une fois celle-ci terminée."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox traite déjà une dictée. Réessayez une fois celle-ci terminée."
+          }
         }
       }
     },
@@ -5717,6 +6893,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox est prêt, partout où vous tapez."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "KeyVox est prêt, partout où vous tapez."
@@ -5750,6 +6932,12 @@
             "state" : "needs_review",
             "value" : "KeyVox se prépare à parler..."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox se prépare à parler..."
+          }
         }
       }
     },
@@ -5775,6 +6963,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox est prêt..."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "KeyVox est prêt..."
@@ -5808,6 +7002,12 @@
             "state" : "needs_review",
             "value" : "KeyVox a besoin de vous entendre pour transcrire."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox a besoin de vous entendre pour transcrire."
+          }
         }
       }
     },
@@ -5833,6 +7033,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox oubliera les mots appris à partir de votre saisie et les corrections que vous avez annulées. Votre dictionnaire KeyVox n’est pas affecté."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "KeyVox oubliera les mots appris à partir de votre saisie et les corrections que vous avez annulées. Votre dictionnaire KeyVox n’est pas affecté."
@@ -5866,6 +7072,12 @@
             "state" : "needs_review",
             "value" : "KeyVox privilégiera le micro intégré dès qu’il est disponible."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox privilégiera le micro intégré dès qu’il est disponible."
+          }
         }
       }
     },
@@ -5891,6 +7103,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox utilisera l’appareil d’entrée actuellement connecté."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "KeyVox utilisera l’appareil d’entrée actuellement connecté."
@@ -5924,6 +7142,12 @@
             "state" : "needs_review",
             "value" : "Clavier"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Clavier"
+          }
         }
       }
     },
@@ -5949,6 +7173,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Clavier et raccourci"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Clavier et raccourci"
@@ -5982,6 +7212,12 @@
             "state" : "needs_review",
             "value" : "Retour haptique du clavier"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Retour haptique du clavier"
+          }
         }
       }
     },
@@ -6007,6 +7243,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Raccourci clavier"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Raccourci clavier"
@@ -6040,6 +7282,12 @@
             "state" : "needs_review",
             "value" : "Langue"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Langue"
+          }
         }
       }
     },
@@ -6065,6 +7313,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Plus tard"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Plus tard"
@@ -6098,6 +7352,12 @@
             "state" : "needs_review",
             "value" : "Dernière transcription"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dernière transcription"
+          }
         }
       }
     },
@@ -6123,6 +7383,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "En savoir plus sur KeyVox Speak"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "En savoir plus sur KeyVox Speak"
@@ -6156,6 +7422,12 @@
             "state" : "needs_review",
             "value" : "En savoir plus sur KeyVox Vibes"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "En savoir plus sur KeyVox Vibes"
+          }
         }
       }
     },
@@ -6181,6 +7453,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Disposition pour gaucher"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Disposition pour gaucher"
@@ -6214,6 +7492,12 @@
             "state" : "needs_review",
             "value" : "C’est parti"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "C’est parti"
+          }
         }
       }
     },
@@ -6239,6 +7523,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ultrarapide, mais plus volumineux."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Ultrarapide, mais plus volumineux."
@@ -6272,6 +7562,12 @@
             "state" : "needs_review",
             "value" : "Écoutez d’abord ceci"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Écoutez d’abord ceci"
+          }
         }
       }
     },
@@ -6297,6 +7593,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Listes"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Listes"
@@ -6330,6 +7632,12 @@
             "state" : "needs_review",
             "value" : "Activités en direct"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Événements en direct"
+          }
         }
       }
     },
@@ -6359,6 +7667,12 @@
             "state" : "needs_review",
             "value" : "Les Activités en direct doivent être activées dans KeyVox pour lancer la dictée en arrière-plan."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Les Événements en direct doivent être activés dans KeyVox pour lancer la dictée en arrière-plan."
+          }
         }
       }
     },
@@ -6384,6 +7698,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Local avant tout"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Local avant tout"
@@ -6417,6 +7737,12 @@
             "state" : "needs_review",
             "value" : "Appui long inclus"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Contact prolongé inclus"
+          }
         }
       }
     },
@@ -6445,6 +7771,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Appui long pour une Vibe"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Contact prolongé pour une Vibe"
           }
         }
       }
@@ -6475,6 +7807,12 @@
             "state" : "needs_review",
             "value" : "Appui long pour une Vibe, recommencez pour annuler."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Contact prolongé pour une Vibe, recommencez pour annuler."
+          }
         }
       }
     },
@@ -6503,6 +7841,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Appuyez de nouveau longuement pour revenir à la Vibe précédente."
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Appuyez de nouveau de façon prolongée pour revenir à la Vibe précédente."
           }
         }
       }
@@ -6533,6 +7877,12 @@
             "state" : "needs_review",
             "value" : "Appuyez longuement sur #+= pour utiliser un clavier plus compact."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Appuyez de façon prolongée sur #+= pour utiliser un clavier plus compact."
+          }
         }
       }
     },
@@ -6558,6 +7908,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Attribuer au bouton Action"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Attribuer au bouton Action"
@@ -6591,6 +7947,12 @@
             "state" : "needs_review",
             "value" : "Attribuez-le au bouton Action ou au Centre de contrôle."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Attribuez-le au bouton Action ou au Centre de contrôle."
+          }
         }
       }
     },
@@ -6616,6 +7978,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Attribuez-le au Centre de contrôle."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Attribuez-le au Centre de contrôle."
@@ -6649,6 +8017,12 @@
             "state" : "needs_review",
             "value" : "Accès au micro"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Accès au micro"
+          }
         }
       }
     },
@@ -6674,6 +8048,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "L’accès au micro est requis pour lancer l’enregistrement."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "L’accès au micro est requis pour lancer l’enregistrement."
@@ -6707,6 +8087,12 @@
             "state" : "needs_review",
             "value" : "Inverse les commandes KeyVox pour faciliter l’utilisation de la main gauche."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Inverse les commandes KeyVox pour faciliter l’utilisation de la main gauche."
+          }
         }
       }
     },
@@ -6732,6 +8118,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Le bundle Core ML extrait nécessaire à la vérification d’intégrité est manquant."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Le bundle Core ML extrait nécessaire à la vérification d’intégrité est manquant."
@@ -6765,6 +8157,12 @@
             "state" : "needs_review",
             "value" : "Modèle + voix"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Modèle + voix"
+          }
         }
       }
     },
@@ -6790,6 +8188,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Échec du téléchargement du modèle : espace disque insuffisant. Libérez de l’espace et réessayez."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Échec du téléchargement du modèle : espace disque insuffisant. Libérez de l’espace et réessayez."
@@ -6823,6 +8227,12 @@
             "state" : "needs_review",
             "value" : "Échec du téléchargement du modèle. Vérifiez votre réseau et votre stockage, puis réessayez."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Échec du téléchargement du modèle. Vérifiez votre réseau et votre stockage, puis réessayez."
+          }
         }
       }
     },
@@ -6848,6 +8258,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "L’installation du modèle est incomplète."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "L’installation du modèle est incomplète."
@@ -6881,6 +8297,12 @@
             "state" : "needs_review",
             "value" : "L’installation du modèle est incomplète. ggml-base-encoder.mlmodelc est manquant."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "L’installation du modèle est incomplète. ggml-base-encoder.mlmodelc est manquant."
+          }
         }
       }
     },
@@ -6906,6 +8328,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Le manifeste d’installation du modèle ne correspond pas aux fichiers attendus."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Le manifeste d’installation du modèle ne correspond pas aux fichiers attendus."
@@ -6939,6 +8367,12 @@
             "state" : "needs_review",
             "value" : "Le manifeste d’installation du modèle est manquant ou illisible."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Le manifeste d’installation du modèle est manquant ou illisible."
+          }
         }
       }
     },
@@ -6964,6 +8398,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La version du manifeste d’installation du modèle n’est pas prise en charge."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "La version du manifeste d’installation du modèle n’est pas prise en charge."
@@ -6997,6 +8437,12 @@
             "state" : "needs_review",
             "value" : "Modèle prêt"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Modèle prêt"
+          }
         }
       }
     },
@@ -7022,6 +8468,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Réparation du modèle requise"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Réparation du modèle requise"
@@ -7055,6 +8507,12 @@
             "state" : "needs_review",
             "value" : "Déplacement des fichiers téléchargés"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Déplacement des fichiers téléchargés"
+          }
         }
       }
     },
@@ -7084,6 +8542,12 @@
             "state" : "needs_review",
             "value" : "Besoin d’aide ?"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Besoin d’aide?"
+          }
         }
       }
     },
@@ -7109,6 +8573,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Jamais"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Jamais"
@@ -7142,6 +8612,12 @@
             "state" : "needs_review",
             "value" : "Suivant"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Suivant"
+          }
         }
       }
     },
@@ -7167,6 +8643,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sans abonnement"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Sans abonnement"
@@ -7200,6 +8682,12 @@
             "state" : "needs_review",
             "value" : "Aucun mot personnalisé pour l’instant."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aucun mot personnalisé pour l’instant."
+          }
         }
       }
     },
@@ -7225,6 +8713,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aucune limite quotidienne. Utilisez-le autant que nécessaire."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Aucune limite quotidienne. Utilisez-le autant que nécessaire."
@@ -7258,6 +8752,12 @@
             "state" : "needs_review",
             "value" : "Aucune langue trouvée"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aucune langue trouvée"
+          }
         }
       }
     },
@@ -7283,6 +8783,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aucune voix installée"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Aucune voix installée"
@@ -7322,6 +8828,12 @@
             "state" : "needs_review",
             "value" : "Espace disque insuffisant pour installer le modèle (%@ disponibles, %@ nécessaires)."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Espace disque insuffisant pour installer le modèle (%@ disponibles, %@ nécessaires)."
+          }
         }
       }
     },
@@ -7347,6 +8859,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Non installé"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Non installé"
@@ -7380,6 +8898,12 @@
             "state" : "needs_review",
             "value" : "Non installé (%@)"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Non installé (%@)"
+          }
         }
       }
     },
@@ -7405,6 +8929,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Non installée (~%@)"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Non installée (~%@)"
@@ -7438,6 +8968,12 @@
             "state" : "needs_review",
             "value" : "OK"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "OK"
+          }
         }
       }
     },
@@ -7463,6 +8999,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Styles d’écriture réversibles, sur l’appareil."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Styles d’écriture réversibles, sur l’appareil."
@@ -7496,6 +9038,12 @@
             "state" : "needs_review",
             "value" : "Une dernière chose"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Une dernière chose"
+          }
         }
       }
     },
@@ -7521,6 +9069,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "À portée de doigt"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "À portée de doigt"
@@ -7554,6 +9108,12 @@
             "state" : "needs_review",
             "value" : "Achat unique. Sans abonnement."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Achat unique. Sans abonnement."
+          }
         }
       }
     },
@@ -7579,6 +9139,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ouvrir"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Ouvrir"
@@ -7612,6 +9178,12 @@
             "state" : "needs_review",
             "value" : "Ouvrir Réglages"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ouvrir Réglages"
+          }
         }
       }
     },
@@ -7637,6 +9209,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ouvrez Réglages sur l’iPhone et touchez « Bouton Action »."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Ouvrez Réglages sur l’iPhone et touchez « Bouton Action »."
@@ -7670,6 +9248,12 @@
             "state" : "needs_review",
             "value" : "Ouvrir sur 123"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ouvrir sur 123"
+          }
         }
       }
     },
@@ -7695,6 +9279,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ou commencez en appuyant sur le bouton Action et en parlant. Affichez le clavier KeyVox et touchez le bouton de dictée. Transformez votre voix en texte."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Ou commencez en appuyant sur le bouton Action et en parlant. Affichez le clavier KeyVox et touchez le bouton de dictée. Transformez votre voix en texte."
@@ -7734,6 +9324,12 @@
             "state" : "needs_review",
             "value" : "Page %lld sur %lld"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Page %lld sur %lld"
+          }
         }
       }
     },
@@ -7759,6 +9355,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Paragraphes"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Paragraphes"
@@ -7792,6 +9394,12 @@
             "state" : "needs_review",
             "value" : "Mise à jour de Parakeet disponible"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mise à jour de Parakeet disponible"
+          }
         }
       }
     },
@@ -7821,6 +9429,12 @@
             "state" : "needs_review",
             "value" : "Parakeet détecte automatiquement la langue utilisée pour la dictée. Consultez la FAQ dans la carte « Besoin d’aide ? » pour voir les langues prises en charge."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Parakeet détecte automatiquement la langue utilisée pour la dictée. Consultez la FAQ dans la carte « Besoin d’aide? » pour voir les langues prises en charge."
+          }
         }
       }
     },
@@ -7846,6 +9460,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Modèle Parakeet introuvable."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Modèle Parakeet introuvable."
@@ -7879,6 +9499,12 @@
             "state" : "needs_review",
             "value" : "Mettre en pause l’aperçu de %@"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mettre en pause l’aperçu de %@"
+          }
         }
       }
     },
@@ -7904,6 +9530,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mettre en pause la démo KeyVox Speak"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Mettre en pause la démo KeyVox Speak"
@@ -7937,6 +9569,12 @@
             "state" : "needs_review",
             "value" : "Payez une fois et gardez les Vibes."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Payez une fois et gardez les Vibes."
+          }
         }
       }
     },
@@ -7962,6 +9600,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Lire l’aperçu de %@"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Lire l’aperçu de %@"
@@ -7995,6 +9639,12 @@
             "state" : "needs_review",
             "value" : "Lire la démo KeyVox Speak"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Lire la démo KeyVox Speak"
+          }
         }
       }
     },
@@ -8020,6 +9670,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Lecture en pause."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Lecture en pause."
@@ -8053,6 +9709,12 @@
             "state" : "needs_review",
             "value" : "PocketTTS a produit une trame audio non valide."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "PocketTTS a produit une trame audio non valide."
+          }
         }
       }
     },
@@ -8078,6 +9740,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Échec de la création du tampon de réécoute PocketTTS."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Échec de la création du tampon de réécoute PocketTTS."
@@ -8111,6 +9779,12 @@
             "state" : "needs_review",
             "value" : "Prédiction"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Prédiction"
+          }
         }
       }
     },
@@ -8136,6 +9810,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Privilégier le micro intégré"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Privilégier le micro intégré"
@@ -8169,6 +9849,12 @@
             "state" : "needs_review",
             "value" : "Préparation de l’installation du modèle"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Préparation de l’installation du modèle"
+          }
         }
       }
     },
@@ -8194,6 +9880,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Préparation de Speak..."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Préparation de Speak..."
@@ -8227,6 +9919,12 @@
             "state" : "needs_review",
             "value" : "Appuyez sur le bouton Action pour activer la dictée KeyVox. Appuyez de nouveau pour transcrire vos paroles. Collez votre texte dans n’importe quelle app."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Appuyez sur le bouton Action pour activer la dictée KeyVox. Appuyez de nouveau pour transcrire vos paroles. Collez votre texte dans n’importe quelle app."
+          }
         }
       }
     },
@@ -8252,6 +9950,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Traitement..."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Traitement..."
@@ -8285,6 +9989,12 @@
             "state" : "needs_review",
             "value" : "Noter"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Noter"
+          }
         }
       }
     },
@@ -8310,6 +10020,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Donner une note et un avis"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Donner une note et un avis"
@@ -8343,6 +10059,12 @@
             "state" : "needs_review",
             "value" : "Prêt"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Prêt"
+          }
         }
       }
     },
@@ -8372,6 +10094,12 @@
             "state" : "needs_review",
             "value" : "Ajouts récents"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ajouts récents"
+          }
         }
       }
     },
@@ -8396,6 +10124,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Libérer le micro immédiatement"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Libérer le micro immédiatement"
@@ -8429,6 +10163,12 @@
             "state" : "needs_review",
             "value" : "Réparer"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Réparer"
+          }
         }
       }
     },
@@ -8454,6 +10194,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Réparation requise (%@)"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Réparation requise (%@)"
@@ -8487,6 +10233,12 @@
             "state" : "needs_review",
             "value" : "Modèle de dictée requis introuvable."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Modèle de dictée requis introuvable."
+          }
         }
       }
     },
@@ -8512,6 +10264,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Réinitialiser"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Réinitialiser"
@@ -8545,6 +10303,12 @@
             "state" : "needs_review",
             "value" : "Réinitialiser les mots appris"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Réinitialiser les mots appris"
+          }
         }
       }
     },
@@ -8574,6 +10338,12 @@
             "state" : "needs_review",
             "value" : "Réinitialiser les mots appris ?"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Réinitialiser les mots appris?"
+          }
         }
       }
     },
@@ -8599,6 +10369,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Restaurer"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Restaurer"
@@ -8632,6 +10408,12 @@
             "state" : "needs_review",
             "value" : "Restaurer les achats"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Restaurer les achats"
+          }
         }
       }
     },
@@ -8657,6 +10439,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Restaurez les achats effectués pour KeyVox Speak et KeyVox Vibes sur ce compte Apple."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Restaurez les achats effectués pour KeyVox Speak et KeyVox Vibes sur ce compte Apple."
@@ -8690,6 +10478,12 @@
             "state" : "needs_review",
             "value" : "Changez le style de la dernière dictée non retouchée, ou annulez la modification."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Changez le style de la dernière dictée non retouchée, ou annulez la modification."
+          }
         }
       }
     },
@@ -8715,6 +10509,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Revenez à votre app."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Revenez à votre app."
@@ -8748,6 +10548,12 @@
             "state" : "needs_review",
             "value" : "Enregistrer"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Enregistrer"
+          }
         }
       }
     },
@@ -8773,6 +10579,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Rechercher une langue"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Rechercher une langue"
@@ -8806,6 +10618,12 @@
             "state" : "needs_review",
             "value" : "Sélectionnez KeyVox"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sélectionnez KeyVox"
+          }
         }
       }
     },
@@ -8831,6 +10649,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Configurer"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Configurer"
@@ -8864,6 +10688,12 @@
             "state" : "needs_review",
             "value" : "Configurer %@"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Configurer %@"
+          }
         }
       }
     },
@@ -8889,6 +10719,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Configurer le clavier"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Configurer le clavier"
@@ -8922,6 +10758,12 @@
             "state" : "needs_review",
             "value" : "Choisissez la Vibe"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Choisissez la Vibe"
+          }
         }
       }
     },
@@ -8947,6 +10789,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Configurez le clavier et le raccourci KeyVox pour dicter partout."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Configurez le clavier et le raccourci KeyVox pour dicter partout."
@@ -8980,6 +10828,12 @@
             "state" : "needs_review",
             "value" : "Réglages"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Réglages"
+          }
         }
       }
     },
@@ -9005,6 +10859,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La configuration ne prend que quelques instants."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "La configuration ne prend que quelques instants."
@@ -9038,6 +10898,12 @@
             "state" : "needs_review",
             "value" : "Partager %@"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Partager %@"
+          }
         }
       }
     },
@@ -9063,6 +10929,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Partagez des PDF, des sites web et des images contenant du texte depuis n’importe quelle app."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Partagez des PDF, des sites web et des images contenant du texte depuis n’importe quelle app."
@@ -9096,6 +10968,12 @@
             "state" : "needs_review",
             "value" : "Partager vers Speak"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Partager vers Speak"
+          }
         }
       }
     },
@@ -9121,6 +10999,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Partagez votre avis sur l’App Store."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Partagez votre avis sur l’App Store."
@@ -9154,6 +11038,12 @@
             "state" : "needs_review",
             "value" : "Raccourcis et actions"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Raccourcis et actions"
+          }
         }
       }
     },
@@ -9179,6 +11069,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Affiche les chiffres et les symboles à l’ouverture du clavier. Touchez ABC pour revenir aux lettres."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Affiche les chiffres et les symboles à l’ouverture du clavier. Touchez ABC pour revenir aux lettres."
@@ -9212,6 +11108,12 @@
             "state" : "needs_review",
             "value" : "Afficher les exemples de Vibes"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Afficher les exemples de Vibes"
+          }
         }
       }
     },
@@ -9241,6 +11143,12 @@
             "state" : "needs_review",
             "value" : "Ignorer"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ignorer"
+          }
         }
       }
     },
@@ -9266,6 +11174,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Trier les entrées du dictionnaire"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Trier les entrées du dictionnaire"
@@ -9303,6 +11217,12 @@
             "state" : "needs_review",
             "value" : "Speak partout"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Speak partout"
+          }
         }
       }
     },
@@ -9328,6 +11248,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Lire le texte copié"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Lire le texte copié"
@@ -9361,6 +11287,12 @@
             "state" : "needs_review",
             "value" : "Lancer Speak"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Lancer Speak"
+          }
         }
       }
     },
@@ -9386,6 +11318,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mise en veille de Speak"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Mise en veille de Speak"
@@ -9419,6 +11357,12 @@
             "state" : "needs_review",
             "value" : "Lisez le texte copié avec la voix sélectionnée."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Lisez le texte copié avec la voix sélectionnée."
+          }
         }
       }
     },
@@ -9444,6 +11388,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Speak ne prend actuellement en charge que l’anglais."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Speak ne prend actuellement en charge que l’anglais."
@@ -9483,6 +11433,12 @@
             "state" : "needs_review",
             "value" : "Échec du téléchargement Speak (HTTP %lld) pour %@."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Échec du téléchargement Speak (HTTP %lld) pour %@."
+          }
         }
       }
     },
@@ -9508,6 +11464,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Échec de la vérification d’intégrité du téléchargement Speak."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Échec de la vérification d’intégrité du téléchargement Speak."
@@ -9541,6 +11503,12 @@
             "state" : "needs_review",
             "value" : "Échec de la validation de l’installation du moteur Speak."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Échec de la validation de l’installation du moteur Speak."
+          }
         }
       }
     },
@@ -9566,6 +11534,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Le moteur Speak doit être réparé avant de pouvoir terminer l’installation de la voix %@."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Le moteur Speak doit être réparé avant de pouvoir terminer l’installation de la voix %@."
@@ -9599,6 +11573,12 @@
             "state" : "needs_review",
             "value" : "Speak a démarré. Vous pouvez maintenant écouter dans votre app d’origine."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Speak a démarré. Vous pouvez maintenant écouter dans votre app d’origine."
+          }
         }
       }
     },
@@ -9624,6 +11604,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Speak est"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Speak est"
@@ -9657,6 +11643,12 @@
             "state" : "needs_review",
             "value" : "Speak est presque prêt."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Speak est presque prêt."
+          }
         }
       }
     },
@@ -9682,6 +11674,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Lecture du texte copié."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Lecture du texte copié."
@@ -9715,6 +11713,12 @@
             "state" : "needs_review",
             "value" : "La lecture n’a pas pu continuer après le passage de l’app en arrière-plan."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La lecture n’a pas pu continuer après le passage de l’app en arrière-plan."
+          }
         }
       }
     },
@@ -9739,6 +11743,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Lancer KeyVox Speak"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Lancer KeyVox Speak"
@@ -9772,6 +11782,12 @@
             "state" : "needs_review",
             "value" : "Crée automatiquement de nouveaux paragraphes après de brèves pauses dans les champs multilignes."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Crée automatiquement de nouveaux paragraphes après de brèves pauses dans les champs multilignes."
+          }
         }
       }
     },
@@ -9800,6 +11816,12 @@
             "state" : "needs_review",
             "value" : "Démarrer ou arrêter la dictée en arrière-plan"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Démarrer ou arrêter la dictée en arrière-plan"
+          }
         }
       }
     },
@@ -9824,6 +11846,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Démarre ou arrête la dictée KeyVox sans ouvrir l’app."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Démarre ou arrête la dictée KeyVox sans ouvrir l’app."
@@ -9857,6 +11885,12 @@
             "state" : "needs_review",
             "value" : "Commence à parler ~50 % plus vite d’un simple toucher."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Commence à parler ~50 % plus vite d’un simple toucher."
+          }
         }
       }
     },
@@ -9886,6 +11920,12 @@
             "state" : "needs_review",
             "value" : "Commence à parler ~50 % plus vite. Activez-le dans la barre d’outils."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Commence à parler ~50 % plus vite. Activez-le dans la barre d’outils."
+          }
         }
       }
     },
@@ -9910,6 +11950,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Lance la lecture KeyVox du texte copié."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Lance la lecture KeyVox du texte copié."
@@ -9943,6 +11989,12 @@
             "state" : "needs_review",
             "value" : "Restez ici,"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Restez ici,"
+          }
         }
       }
     },
@@ -9968,6 +12020,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Arrêter"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Arrêter"
@@ -10001,6 +12059,12 @@
             "state" : "needs_review",
             "value" : "Style"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Style"
+          }
         }
       }
     },
@@ -10030,6 +12094,12 @@
             "state" : "needs_review",
             "value" : "Bravo !"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Bravo!"
+          }
         }
       }
     },
@@ -10055,6 +12125,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Soutenir sur GitHub"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Soutenir sur GitHub"
@@ -10088,6 +12164,12 @@
             "state" : "needs_review",
             "value" : "Soutenez le développement open source via GitHub Sponsors."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Soutenez le développement open source via GitHub Sponsors."
+          }
         }
       }
     },
@@ -10113,6 +12195,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Balayez pour revenir,"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Balayez pour revenir,"
@@ -10146,6 +12234,12 @@
             "state" : "needs_review",
             "value" : "Faites défiler les options jusqu’à « Raccourci », puis touchez « Choisir un raccourci… »"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Faites défiler les options jusqu’à « Raccourci », puis touchez « Choisir un raccourci… »"
+          }
         }
       }
     },
@@ -10171,6 +12265,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Maintenez la touche Globe, \n puis sélectionnez KeyVox."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Maintenez la touche Globe, \n puis sélectionnez KeyVox."
@@ -10204,6 +12304,12 @@
             "state" : "needs_review",
             "value" : "Touchez Speak depuis l’écran principal."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Touchez Speak depuis l’écran principal."
+          }
         }
       }
     },
@@ -10229,6 +12335,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Touchez de nouveau pour transcrire."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Touchez de nouveau pour transcrire."
@@ -10262,6 +12374,12 @@
             "state" : "needs_review",
             "value" : "Touchez Lecture pour écouter la voix de %@."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Touchez Lecture pour écouter la voix de %@."
+          }
         }
       }
     },
@@ -10287,6 +12405,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Touchez Lecture pour écouter un aperçu d’une voix."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Touchez Lecture pour écouter un aperçu d’une voix."
@@ -10320,6 +12444,12 @@
             "state" : "needs_review",
             "value" : "Touchez la touche Vibes avant d’arrêter l’enregistrement, et KeyVox applique cette Vibe."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Touchez la touche Vibes avant d’arrêter l’enregistrement, et KeyVox applique cette Vibe."
+          }
         }
       }
     },
@@ -10345,6 +12475,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Touchez le bouton ci-dessous pour ajouter le raccourci KeyVox."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Touchez le bouton ci-dessous pour ajouter le raccourci KeyVox."
@@ -10378,6 +12514,12 @@
             "state" : "needs_review",
             "value" : "Touchez le micro et parlez."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Touchez le micro et parlez."
+          }
         }
       }
     },
@@ -10403,6 +12545,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Touchez le bouton + pour ajouter votre premier mot personnalisé."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Touchez le bouton + pour ajouter votre premier mot personnalisé."
@@ -10436,6 +12584,12 @@
             "state" : "needs_review",
             "value" : "Touchez « Toggle KeyVox Dictation »."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Touchez « Toggle KeyVox Dictation »."
+          }
         }
       }
     },
@@ -10461,6 +12615,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Impossible d’ouvrir le raccourci de dictée KeyVox."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Impossible d’ouvrir le raccourci de dictée KeyVox."
@@ -10494,6 +12654,12 @@
             "state" : "needs_review",
             "value" : "Le raccourci de dictée KeyVox est absent de cette version de l’app."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Le raccourci de dictée KeyVox est absent de cette version de l’app."
+          }
         }
       }
     },
@@ -10519,6 +12685,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Impossible d’ouvrir l’app Réglages."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Impossible d’ouvrir l’app Réglages."
@@ -10552,6 +12724,12 @@
             "state" : "needs_review",
             "value" : "Le moteur Speak est prêt. Installez la voix de %@ pour terminer, et vous pourrez lancer la lecture."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Le moteur Speak est prêt. Installez la voix de %@ pour terminer, et vous pourrez lancer la lecture."
+          }
         }
       }
     },
@@ -10577,6 +12755,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Le bundle Core ML extrait était vide après l’installation."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Le bundle Core ML extrait était vide après l’installation."
@@ -10610,6 +12794,12 @@
             "state" : "needs_review",
             "value" : "Mentions tierces"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mentions tierces"
+          }
         }
       }
     },
@@ -10635,6 +12825,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Les mentions tierces sont actuellement indisponibles."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Les mentions tierces sont actuellement indisponibles."
@@ -10668,6 +12864,12 @@
             "state" : "needs_review",
             "value" : "Cette entrée du dictionnaire sera supprimée de KeyVox."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Cette entrée du dictionnaire sera supprimée de KeyVox."
+          }
         }
       }
     },
@@ -10693,6 +12895,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mise en veille, moteur et voix de KeyVox Speak."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Mise en veille, moteur et voix de KeyVox Speak."
@@ -10726,6 +12934,12 @@
             "state" : "needs_review",
             "value" : "Mise en veille, raccourci, micro et modèles de la dictée KeyVox."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mise en veille, raccourci, micro et modèles de la dictée KeyVox."
+          }
         }
       }
     },
@@ -10755,6 +12969,12 @@
             "state" : "needs_review",
             "value" : "Pour oublier un seul mot, maintenez le doigt dessus dans la barre de suggestions."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pour oublier un seul mot, maintenez le doigt dessus dans la barre de suggestions."
+          }
         }
       }
     },
@@ -10779,6 +12999,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Activer ou désactiver la dictée"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Activer ou désactiver la dictée"
@@ -10815,6 +13041,12 @@
             "state" : "needs_review",
             "value" : "Lancez-le directement depuis le clavier KeyVox."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Lancez-le directement depuis le clavier KeyVox."
+          }
         }
       }
     },
@@ -10844,6 +13076,12 @@
             "state" : "needs_review",
             "value" : "Essayez !"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Essayez!"
+          }
         }
       }
     },
@@ -10869,6 +13107,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Essayez KeyVox Vibes"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Essayez KeyVox Vibes"
@@ -10902,6 +13146,12 @@
             "state" : "needs_review",
             "value" : "Essayez KeyVox Vibes gratuitement."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Essayez KeyVox Vibes gratuitement."
+          }
         }
       }
     },
@@ -10927,6 +13177,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Essayer"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Essayer"
@@ -10960,6 +13216,12 @@
             "state" : "needs_review",
             "value" : "Essayez maintenant"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Essayez maintenant"
+          }
         }
       }
     },
@@ -10985,6 +13247,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Impossible d’effectuer l’action"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Impossible d’effectuer l’action"
@@ -11018,6 +13286,12 @@
             "state" : "needs_review",
             "value" : "Impossible de créer le dossier d’installation temporaire du moteur Speak."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Impossible de créer le dossier d’installation temporaire du moteur Speak."
+          }
         }
       }
     },
@@ -11043,6 +13317,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Impossible de trouver le dossier d’installation de la voix %@."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Impossible de trouver le dossier d’installation de la voix %@."
@@ -11076,6 +13356,12 @@
             "state" : "needs_review",
             "value" : "Impossible de trouver le dossier d’installation du moteur Speak."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Impossible de trouver le dossier d’installation du moteur Speak."
+          }
         }
       }
     },
@@ -11101,6 +13387,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Impossible de trouver le dossier racine du moteur Speak."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Impossible de trouver le dossier racine du moteur Speak."
@@ -11134,6 +13426,12 @@
             "state" : "needs_review",
             "value" : "Annuler la dernière modification"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Annuler la dernière modification"
+          }
         }
       }
     },
@@ -11159,6 +13457,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Lectures illimitées chaque jour"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Lectures illimitées chaque jour"
@@ -11192,6 +13496,12 @@
             "state" : "needs_review",
             "value" : "Débloquer"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Débloquer"
+          }
         }
       }
     },
@@ -11217,6 +13527,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Débloquer pour %@"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Débloquer pour %@"
@@ -11250,6 +13566,12 @@
             "state" : "needs_review",
             "value" : "Débloquez Speak Unlimited pour continuer à lire le texte copié."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Débloquez Speak Unlimited pour continuer à lire le texte copié."
+          }
         }
       }
     },
@@ -11275,6 +13597,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Débloquez et gardez le rythme avec les Vibes."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Débloquez et gardez le rythme avec les Vibes."
@@ -11308,6 +13636,12 @@
             "state" : "needs_review",
             "value" : "Débloquez une fois et profitez de toutes les Vibes intégrées."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Débloquez une fois et profitez de toutes les Vibes intégrées."
+          }
         }
       }
     },
@@ -11333,6 +13667,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Débloquez une fois, écoutez pour toujours."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Débloquez une fois, écoutez pour toujours."
@@ -11366,6 +13706,12 @@
             "state" : "needs_review",
             "value" : "Débloqué"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Débloqué"
+          }
         }
       }
     },
@@ -11391,6 +13737,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Jusqu’à 8 voix IA sur l’appareil"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Jusqu’à 8 voix IA sur l’appareil"
@@ -11424,6 +13776,12 @@
             "state" : "needs_review",
             "value" : "Mettre à jour"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mettre à jour"
+          }
         }
       }
     },
@@ -11449,6 +13807,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mise à jour disponible"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Mise à jour disponible"
@@ -11482,6 +13846,12 @@
             "state" : "needs_review",
             "value" : "Mise à jour requise"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mise à jour requise"
+          }
         }
       }
     },
@@ -11507,6 +13877,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mise à jour disponible"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Mise à jour disponible"
@@ -11539,6 +13915,12 @@
             "state" : "needs_review",
             "value" : "Utilisez-le depuis le Centre de contrôle et plus encore."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Utilisez-le depuis le Centre de contrôle et plus encore."
+          }
         }
       }
     },
@@ -11563,6 +13945,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Utilisez-le depuis le Centre de contrôle,\nle bouton Action et plus encore."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Utilisez-le depuis le Centre de contrôle,\nle bouton Action et plus encore."
@@ -11596,6 +13984,12 @@
             "state" : "needs_review",
             "value" : "Utilise des touches neutres à la place des couleurs KeyVox."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Utilise des touches neutres à la place des couleurs KeyVox."
+          }
         }
       }
     },
@@ -11621,6 +14015,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Validation du modèle installé"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Validation du modèle installé"
@@ -11654,6 +14054,12 @@
             "state" : "needs_review",
             "value" : "Vérification des fichiers du modèle"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vérification des fichiers du modèle"
+          }
         }
       }
     },
@@ -11679,6 +14085,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Place aux Vibes"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Place aux Vibes"
@@ -11712,6 +14124,12 @@
             "state" : "needs_review",
             "value" : "Des Vibes sans limites"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Des Vibes sans limites"
+          }
         }
       }
     },
@@ -11737,6 +14155,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Profitez des Vibes maintenant, débloquez plus tard."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Profitez des Vibes maintenant, débloquez plus tard."
@@ -11770,6 +14194,12 @@
             "state" : "needs_review",
             "value" : "Vibes AI ne dépend pas du cloud. Vos mots restent sur votre appareil."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vibes AI ne dépend pas du cloud. Vos mots restent sur votre appareil."
+          }
         }
       }
     },
@@ -11795,6 +14225,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Échec du téléchargement du modèle Vibes. Vérifiez votre réseau et votre stockage, puis réessayez."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Échec du téléchargement du modèle Vibes. Vérifiez votre réseau et votre stockage, puis réessayez."
@@ -11828,6 +14264,12 @@
             "state" : "needs_review",
             "value" : "Le téléchargement du modèle Vibes a été annulé."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Le téléchargement du modèle Vibes a été annulé."
+          }
         }
       }
     },
@@ -11853,6 +14295,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Attendez la coche bleue/verte avant de quitter l’app."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Attendez la coche bleue/verte avant de quitter l’app."
@@ -11886,6 +14334,12 @@
             "state" : "needs_review",
             "value" : "Patientez ici pendant que KeyVox se prépare à parler sans interruption."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Patientez ici pendant que KeyVox se prépare à parler sans interruption."
+          }
         }
       }
     },
@@ -11915,6 +14369,12 @@
             "state" : "needs_review",
             "value" : "Envie de continuer avec les Vibes ?"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Envie de continuer avec les Vibes?"
+          }
         }
       }
     },
@@ -11940,6 +14400,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Chargement du modèle"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Chargement du modèle"
@@ -11973,6 +14439,12 @@
             "state" : "needs_review",
             "value" : "Nous vous recommandons de choisir la langue que vous utilisez le plus pour une dictée plus fiable."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nous vous recommandons de choisir la langue que vous utilisez le plus pour une dictée plus fiable."
+          }
         }
       }
     },
@@ -11998,6 +14470,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Bienvenue dans KeyVox"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Bienvenue dans KeyVox"
@@ -12031,6 +14509,12 @@
             "state" : "needs_review",
             "value" : "Modèle Whisper introuvable."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Modèle Whisper introuvable."
+          }
         }
       }
     },
@@ -12060,6 +14544,12 @@
             "state" : "needs_review",
             "value" : "Et si vous profitiez des Vibes un moment ? Vous le méritez."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Et si vous profitiez des Vibes un moment? Vous le méritez."
+          }
         }
       }
     },
@@ -12085,6 +14575,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Le Wi-Fi est recommandé pour ce téléchargement."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Le Wi-Fi est recommandé pour ce téléchargement."
@@ -12118,6 +14614,12 @@
             "state" : "needs_review",
             "value" : "Wi-Fi recommandé pour le téléchargement."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wi-Fi recommandé pour le téléchargement."
+          }
         }
       }
     },
@@ -12147,6 +14649,12 @@
             "state" : "needs_review",
             "value" : "Mots cette semaine !"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mots cette semaine!"
+          }
         }
       }
     },
@@ -12172,6 +14680,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vous pouvez télécharger jusqu’à 8 voix au total dans les Réglages."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Vous pouvez télécharger jusqu’à 8 voix au total dans les Réglages."
@@ -12205,6 +14719,12 @@
             "state" : "needs_review",
             "value" : "Tout est prêt"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Tout est prêt"
+          }
         }
       }
     },
@@ -12230,6 +14750,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Votre dernière transcription apparaîtra ici dès que vous aurez dicté sur cet appareil."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Votre dernière transcription apparaîtra ici dès que vous aurez dicté sur cet appareil."
@@ -12263,6 +14789,12 @@
             "state" : "needs_review",
             "value" : "Vous essayez Vibes : il vous reste %@."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vous essayez Vibes : il vous reste %@."
+          }
         }
       }
     },
@@ -12288,6 +14820,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "et parlez."
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "et parlez."
@@ -12321,6 +14859,12 @@
             "state" : "needs_review",
             "value" : "le faire qu’une fois par session."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "le faire qu’une fois par session."
+          }
         }
       }
     },
@@ -12350,6 +14894,12 @@
             "state" : "needs_review",
             "value" : "fin prêt."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "fin prêt."
+          }
         }
       }
     },
@@ -12375,6 +14925,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Raccourci « . »"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Raccourci « . »"

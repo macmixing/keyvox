@@ -53,6 +53,16 @@
               "Utiliser KeyVox Speak dans ${applicationName}"
             ]
           }
+        },
+        "fr-CA" : {
+          "stringSet" : {
+            "state" : "needs_review",
+            "values" : [
+              "Lire le texte copié dans ${applicationName}",
+              "Lancer KeyVox Speak dans ${applicationName}",
+              "Utiliser KeyVox Speak dans ${applicationName}"
+            ]
+          }
         }
       }
     },
@@ -92,6 +102,14 @@
           }
         },
         "fr" : {
+          "stringSet" : {
+            "state" : "needs_review",
+            "values" : [
+              "Activer ou désactiver la dictée dans ${applicationName}"
+            ]
+          }
+        },
+        "fr-CA" : {
           "stringSet" : {
             "state" : "needs_review",
             "values" : [
