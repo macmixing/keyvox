@@ -390,7 +390,7 @@ Maintainers can override the update feed locally without changing tracked defaul
 
 ## Localization Contract
 
-KeyVox for Mac ships in English (the development language), German (`de`), Spain Spanish (`es`), Latin American Spanish (`es-419`), and French (`fr`). The project's `knownRegions` lists all five. As on iOS, every `es` entry also has an `es-419` entry with Apple's Latin American wording where the regions differ, such as `Configuración del Sistema` and `Elementos de inicio`.
+KeyVox for Mac ships in English (the development language), German (`de`), Spain Spanish (`es`), Latin American Spanish (`es-419`), France French (`fr`), and Canadian French (`fr-CA`). The project's `knownRegions` lists all six. As on iOS, every `es` entry also has an `es-419` entry with Apple's Latin American wording where the regions differ, such as `Configuración del Sistema` and `Elementos de inicio`, and every `fr` entry has an `fr-CA` entry with no space before `?` and `!` and Apple's Canadian names, such as `Réglages système` and `courriel`.
 
 - `Resources/Localizable.xcstrings` holds the app text and `Resources/InfoPlist.xcstrings` holds the microphone permission prompt. The Mac project does not use synchronized folders, so both catalogs are registered as app target resources in `KeyVox.xcodeproj`.
 - Shared package text comes from the package catalogs described in the iOS engineering notes (KeyVoxCore, KeyVoxStyleRewrite, KeyVoxWhisper, KeyVoxParakeet).
