@@ -132,9 +132,11 @@ No iOS source is extracted or modified by this host.
 ## Localization
 
 The app and keyboard ship in English with German, Spain Spanish, Latin American
-Spanish, and French in `res/values-de`, `res/values-es`, `res/values-b+es+419`, and
-`res/values-fr`. The Latin American file repeats the Spanish text with Latin
-American wording where the regions differ, such as `Configuración` and `Agregar`.
+Spanish, France French, and Canadian French in `res/values-de`, `res/values-es`,
+`res/values-b+es+419`, `res/values-fr`, and `res/values-b+fr+CA`. The Latin American
+file repeats the Spanish text with Latin American wording where the regions differ,
+such as `Configuración` and `Agregar`. The Canadian file repeats the French text with
+no space before `?` and `!` and Canadian wording such as `courriel`.
 KeyVox, Speak, KeyVox Vibes, and the dictionary placeholder stay in English. Android
 picks the language from the device settings; the app has no in-app language setting.
 
