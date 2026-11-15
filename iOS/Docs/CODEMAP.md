@@ -1570,7 +1570,7 @@ Packages/
 - `KeyVox Keyboard/Core/KeyboardFieldBottomRowKeys.swift`
   - The keys each field bottom row shows in place of the standard row's space bar and return key.
 - `KeyVox Keyboard/Core/KeyboardNumberPadGeometry.swift`
-  - How wide the number pad's keys reach: across the key grid upright, and in landscape the screen's width less `KeyboardStyle.numberPadLandscapeScreenSideInset` at each side, as the system's number pad leaves on iPhone and iPhone Duo folded and open; the pad sits centered in the key grid, which the system centers on the screen.
+  - How wide the number pad's keys reach: across the key grid upright, and in landscape the screen's width less `KeyboardStyle.numberPadLandscapeScreenSideInset` at each side, never wider than the key grid and across it where the screen leaves no width, as the system's number pad leaves on iPhone and iPhone Duo folded and open; the pad sits centered in the key grid, which the system centers on the screen.
 - `KeyVox Keyboard/Core/KeyboardNumberPadLayout.swift`
   - The number pad's rows: digits with a phone keypad's letters, and a bottom row of the globe where the keyboard shows it, the decimal separator in a decimal field, zero, and delete.
 - `KeyVox Keyboard/Core/KeyboardReturnKeyStyle.swift`
@@ -1669,7 +1669,7 @@ Packages/
   - Lightweight rooted-install gate used by the extension toolbar for Whisper, Parakeet, PocketTTS, and local Vibes AI availability.
 - `KeyVox Keyboard/Core/KeyboardLayoutGeometry.swift`
   - Row-geometry helper for keyboard-specific sizing rules that should not live in `KeyboardRootView` or `KeyboardKeyGridView`.
-  - Owns the letter page's inset middle row and shift row, the symbol pages' third row, and the bottom row's live widths, including the landscape side-key span, the paired page and emoji keys, the emoji search's three-key row, the globe row, and each field bottom row's split of the space bar's and return key's places, plus the number pad's bottom row in its three columns, all driven from the measured key grid, with key widths one priority below required so a resize never forces Auto Layout to break key constraints.
+  - Owns the letter page's inset middle row and shift row, the symbol pages' third row, and the bottom row's live widths, including the landscape side-key span, the paired page and emoji keys, the emoji search's three-key row, the globe row, and each field bottom row's split of the space bar's and return key's places, all driven from the measured key grid, plus the number pad's bottom row in its three columns across the pad's width from `KeyboardNumberPadGeometry`, with key widths one priority below required so a resize never forces Auto Layout to break key constraints.
 - `KeyVox Keyboard/Core/KeyboardKeysMode.swift`
   - Resolves full versus compact presentation from availability and persisted active state.
   - Takes the 286-point full or 174-point compact portrait height from `KeyboardStyle`, changes it by however much shorter or taller the keys are in landscape or on iPad, takes the toolbar's row (`KeyboardStyle.toolbarRowHeight`) off on a page without the toolbar, and owns visible row count, per-orientation and per-display key height, row spacing, the top row's toolbar button height, and derived key-grid height.
