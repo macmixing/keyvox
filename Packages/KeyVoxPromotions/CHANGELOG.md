@@ -19,6 +19,7 @@ Campaigns can carry wording for each language, and hosts show the user's languag
 - Named the Compact Keys feature as Compact Keys in the iOS and Android compact keys campaigns, in English and in every translation.
 - Added German, Spanish, and French wording to the iOS, macOS, and Android campaigns.
 - Added Latin American Spanish (`es-419`) wording to every campaign, using Latin American names such as `Configuración` and `Reemplazar texto` where they differ from Spain Spanish.
+- Added Canadian French (`fr-CA`) wording to every campaign, with no space before `?` and `!` and `Appuyez de façon prolongée` where it differs from France French.
 
 ### Notes
 
