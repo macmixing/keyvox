@@ -21,8 +21,14 @@ enum KeyboardLayoutGeometry {
 
             if widthConstraints.count != targetWidths.count {
                 NSLayoutConstraint.deactivate(widthConstraints)
+                // The widths follow the grid's width only once the grid lays out, so after the
+                // grid resizes they can briefly ask for more or less than the row holds. Just
+                // below required, they give way then instead of forcing Auto Layout to break a
+                // key's constraints, which can leave its engine unable to remove the key later.
                 widthConstraints = zip(keyViews, targetWidths).map { keyView, width in
-                    keyView.widthAnchor.constraint(equalToConstant: width)
+                    let constraint = keyView.widthAnchor.constraint(equalToConstant: width)
+                    constraint.priority = .required - 1
+                    return constraint
                 }
                 NSLayoutConstraint.activate(widthConstraints)
                 return

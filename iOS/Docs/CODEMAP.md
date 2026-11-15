@@ -1666,7 +1666,7 @@ Packages/
   - Lightweight rooted-install gate used by the extension toolbar for Whisper, Parakeet, PocketTTS, and local Vibes AI availability.
 - `KeyVox Keyboard/Core/KeyboardLayoutGeometry.swift`
   - Row-geometry helper for keyboard-specific sizing rules that should not live in `KeyboardRootView` or `KeyboardKeyGridView`.
-  - Owns the letter page's inset middle row and shift row, the symbol pages' third row, and the bottom row's live widths, including the landscape side-key span, the paired page and emoji keys, the emoji search's three-key row, the globe row, and each field bottom row's split of the space bar's and return key's places, plus the number pad's bottom row in its three columns, all driven from the measured key grid.
+  - Owns the letter page's inset middle row and shift row, the symbol pages' third row, and the bottom row's live widths, including the landscape side-key span, the paired page and emoji keys, the emoji search's three-key row, the globe row, and each field bottom row's split of the space bar's and return key's places, plus the number pad's bottom row in its three columns, all driven from the measured key grid, with key widths one priority below required so a resize never forces Auto Layout to break key constraints.
 - `KeyVox Keyboard/Core/KeyboardKeysMode.swift`
   - Resolves full versus compact presentation from availability and persisted active state.
   - Takes the 286-point full or 174-point compact portrait height from `KeyboardStyle`, changes it by however much shorter or taller the keys are in landscape or on iPad, and owns visible row count, per-orientation and per-display key height, row spacing, the top row's toolbar button height, and derived key-grid height.
