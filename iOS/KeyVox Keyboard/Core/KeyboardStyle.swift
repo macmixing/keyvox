@@ -21,6 +21,9 @@ enum KeyboardStyle {
     static let buttonSize: CGFloat = 44
     /// The toolbar's row and the space under it, above the keys.
     static let toolbarRowHeight: CGFloat = buttonSize + sectionSpacing
+    /// The space the number pad leaves empty at each side of the screen in landscape, measured from
+    /// the system's number pad on iOS 27 (225 points on iPhone, 227 on iPhone Duo folded and open).
+    static let numberPadLandscapeScreenSideInset: CGFloat = 226
     static let buttonCornerRadius: CGFloat = 14
 
     static let keyHeight: CGFloat = 48

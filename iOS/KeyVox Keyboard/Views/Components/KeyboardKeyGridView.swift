@@ -196,7 +196,15 @@ final class KeyboardKeyGridView: UIView {
     override func layoutSubviews() {
         super.layoutSubviews()
         let isLandscape = KeyboardScreenShape.isWide(self)
-        currentPage?.updateRowLayouts(isLandscape: isLandscape)
+        currentPage?.updateRowLayouts(
+            isLandscape: isLandscape,
+            numberPadWidth: KeyboardNumberPadGeometry.width(
+                gridWidth: bounds.width,
+                screenWidth: window?.windowScene?.coordinateSpace.bounds.width ?? bounds.width,
+                isLandscape: isLandscape
+            ),
+            gridWidth: bounds.width
+        )
         reportCharacterGeometryIfNeeded()
     }
 
