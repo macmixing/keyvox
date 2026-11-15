@@ -28,6 +28,10 @@
           "title": "¡Cambia el tema del teclado!",
           "message": "En los ajustes del teclado de KeyVox, activa el Tema clásico para disfrutar de un aspecto más familiar."
         },
+        "es-419": {
+          "title": "¡Cambia el tema del teclado!",
+          "message": "En la configuración del teclado de KeyVox, activa el Tema clásico para disfrutar de un aspecto más familiar."
+        },
         "fr": {
           "title": "Changez le thème du clavier !",
           "message": "Dans les réglages du clavier KeyVox, activez notre Thème classique pour un rendu plus familier."
@@ -56,6 +60,10 @@
         "es": {
           "title": "Haz tuyo el teclado",
           "message": "Ve a Ajustes > Teclado para probar opciones como Abrir en 123, ajustar la autocorrección y mucho más."
+        },
+        "es-419": {
+          "title": "Haz tuyo el teclado",
+          "message": "Ve a Configuración > Teclado para probar opciones como Abrir en 123, ajustar la autocorrección y mucho más."
         },
         "fr": {
           "title": "Un clavier à votre image",
@@ -86,6 +94,10 @@
           "title": "Tus sustituciones de texto funcionan aquí",
           "message": "Los atajos de la sustitución de texto de iOS funcionan en el teclado de KeyVox. Ajústalos en iOS, en Ajustes > General > Teclado > Sustitución de texto."
         },
+        "es-419": {
+          "title": "Tus reemplazos de texto funcionan aquí",
+          "message": "Los atajos de Reemplazar texto de iOS funcionan en el teclado de KeyVox. Ajústalos en iOS, en Configuración > General > Teclado > Reemplazar texto."
+        },
         "fr": {
           "title": "Vos remplacements de texte fonctionnent ici",
           "message": "Les raccourcis du remplacement de texte d’iOS fonctionnent dans le clavier KeyVox. Ajustez-les dans les Réglages d’iOS : Général > Clavier > Remplacement de texte."
@@ -114,6 +126,10 @@
         "es": {
           "title": "Más espacio mientras escribes",
           "message": "Mantén pulsado #+= para activar Compact Keys. Toca el icono del teclado cuando quieras recuperar el teclado completo."
+        },
+        "es-419": {
+          "title": "Más espacio mientras escribes",
+          "message": "Mantén presionado #+= para activar Compact Keys. Toca el ícono del teclado cuando quieras recuperar el teclado completo."
         },
         "fr": {
           "title": "Plus d’espace pendant la saisie",
@@ -155,6 +171,12 @@
           "buttonTitle": "Más información",
           "sharingTitle": "KeyVox para Mac"
         },
+        "es-419": {
+          "title": "Lleva KeyVox a tu Mac",
+          "message": "Disfruta de la misma experiencia de dictado privada y en el dispositivo también en macOS.",
+          "buttonTitle": "Más información",
+          "sharingTitle": "KeyVox para Mac"
+        },
         "fr": {
           "title": "Profitez de KeyVox sur votre Mac",
           "message": "Retrouvez la même dictée privée, sur l’appareil, partout dans macOS.",
@@ -185,6 +207,10 @@
         "es": {
           "title": "Más espacio mientras escribes",
           "message": "Mantén pulsado #+= para activar Compact Keys. Toca el icono del teclado cuando quieras recuperar el teclado completo."
+        },
+        "es-419": {
+          "title": "Más espacio mientras escribes",
+          "message": "Mantén presionado #+= para activar Compact Keys. Toca el ícono del teclado cuando quieras recuperar el teclado completo."
         },
         "fr": {
           "title": "Plus d’espace pendant la saisie",
@@ -221,6 +247,12 @@
           "sharingTitle": "KeyVox für Mac"
         },
         "es": {
+          "title": "¿Tienes un Mac?",
+          "message": "Lleva a tu Mac la misma experiencia de dictado privada y en el dispositivo con KeyVox.",
+          "buttonTitle": "Más información",
+          "sharingTitle": "KeyVox para Mac"
+        },
+        "es-419": {
           "title": "¿Tienes un Mac?",
           "message": "Lleva a tu Mac la misma experiencia de dictado privada y en el dispositivo con KeyVox.",
           "buttonTitle": "Más información",
@@ -263,6 +295,12 @@
           "sharingTitle": "KeyVox-Tastatur für iPhone"
         },
         "es": {
+          "title": "Consigue el teclado de KeyVox para iPhone",
+          "message": "El fantástico dictado de KeyVox también está disponible en el iPhone, con un teclado diseñado para iOS.",
+          "buttonTitle": "Ver",
+          "sharingTitle": "Teclado de KeyVox para iPhone"
+        },
+        "es-419": {
           "title": "Consigue el teclado de KeyVox para iPhone",
           "message": "El fantástico dictado de KeyVox también está disponible en el iPhone, con un teclado diseñado para iOS.",
           "buttonTitle": "Ver",
