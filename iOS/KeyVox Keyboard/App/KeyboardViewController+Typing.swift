@@ -13,7 +13,7 @@ extension KeyboardViewController {
         isReturnKeyEnabled = fieldAllowsReturn()
         applyOpeningLayout(
             prefersNumberPage: typingTraits.prefersNumberPage,
-            opensNumberPad: typingTraits.fieldKeys.numberPad != nil
+            opensNumberPad: fieldOpensNumberPad
         )
         predictionCoordinator.reset()
         if typingTraits.allowsPredictions {
@@ -25,6 +25,11 @@ extension KeyboardViewController {
         letterCaseController.reset()
         synchronizeLetterCase()
         refreshPredictions()
+    }
+
+    /// Whether the focused field opens the number pad on the current display.
+    var fieldOpensNumberPad: Bool {
+        typingTraits.fieldKeys.numberPad != nil && display.showsNumberPad
     }
 
     /// Opens on the page and key size `KeyboardOpeningLayout` picks.

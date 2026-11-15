@@ -132,6 +132,14 @@ final class KeyboardViewController: UIInputViewController {
     var display = KeyboardDisplay.standard {
         didSet {
             guard display != oldValue else { return }
+            // A numbers-only field moves between the number pad and the numbers page as the
+            // keyboard moves between a display that shows the number pad and one that does not.
+            if typingTraits.fieldKeys.numberPad != nil, display.showsNumberPad != oldValue.showsNumberPad {
+                applyOpeningLayout(
+                    prefersNumberPage: typingTraits.prefersNumberPage,
+                    opensNumberPad: fieldOpensNumberPad
+                )
+            }
             updatePrimaryViewHeight()
             updateUI()
         }

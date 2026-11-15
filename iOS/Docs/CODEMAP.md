@@ -32,7 +32,7 @@ The current default runtime flow is:
 12. When the user triggers copied-text playback, the containing app owns PocketTTS synthesis, explicit model load/unload lifetime, deterministic playback preparation, replay caching, pause/resume/stop transport state, and return-to-host readiness.
 13. If the user keeps the session active, the Live Activity coordinator mirrors session state and weekly-word updates into the widget extension.
 14. When Compact Keys is available, a long press on `#+=` replaces the first two symbol rows with a shorter two-row keyboard; the keyboard-symbol key restores the full layout.
-15. The keyboard waits for the host to hand over the focused field's document state, reads the field's text traits narrowed by the user's keyboard settings, and opens on the letter page, on the number pad in a numbers-only field, or, when the field or the Open on 123 setting prefers numbers, on the number page; the bottom row and return key take the keys the field's keyboard and return key types ask for.
+15. The keyboard waits for the host to hand over the focused field's document state, reads the field's text traits narrowed by the user's keyboard settings, and opens on the letter page, on the number pad in a numbers-only field except on the full-width iPad keyboard, or, when the field or the Open on 123 setting prefers numbers, on the number page; the bottom row and return key take the keys the field's keyboard and return key types ask for.
 16. On the full keyboard's letter page, taps, text changes, word boundaries, and suggestion taps run through the shared `PredictiveTypingSession`; the suggestion bar takes the toolbar accessories' place while the field allows predictions and holds letters, and the dictation accessories return while dictating, in Compact Keys, on the symbol pages, and until the user changes the latest untouched dictation.
 17. The emoji key opens the emoji page in the key grid's place; its search field starts an emoji search over the letter keys that makes the keyboard taller until done is tapped or the keyboard goes away.
 
@@ -1564,7 +1564,7 @@ Packages/
 - `KeyVox Keyboard/Core/KeyboardInstalledModels.swift`
   - Caches the dictation availability the toolbar depends on and the Speak voice readiness that decides whether a Speak tap plays or opens KeyVox Speak setup; the controller rechecks it when the keyboard appears and when the extension host becomes active instead of inspecting disk on every UI update.
 - `KeyVox Keyboard/Core/KeyboardOpeningLayout.swift`
-  - Resolves the page and keys mode a field opens on: the full-size number pad in a numbers-only field, otherwise full letter keys, or the number page in the user's Compact Keys mode when the field or Open on 123 prefers numbers.
+  - Resolves the page and keys mode a field opens on: the full-size number pad in a numbers-only field on a display that shows it (`KeyboardDisplay.showsNumberPad`), otherwise full letter keys, or the number page in the user's Compact Keys mode when the field or Open on 123 prefers numbers.
 - `KeyVox Keyboard/Core/KeyboardFieldKeys.swift`
   - Maps the focused field's keyboard type and return key type to its bottom row (standard, web address, web search, email, or post), its `KeyboardReturnKeyStyle`, and its number pad, and decides which pages show the field's bottom row; owns the common web ending's text.
 - `KeyVox Keyboard/Core/KeyboardFieldBottomRowKeys.swift`
@@ -1674,7 +1674,7 @@ Packages/
   - Resolves full versus compact presentation from availability and persisted active state.
   - Takes the 286-point full or 174-point compact portrait height from `KeyboardStyle`, changes it by however much shorter or taller the keys are in landscape or on iPad, takes the toolbar's row (`KeyboardStyle.toolbarRowHeight`) off on a page without the toolbar while the emoji page is closed, and owns visible row count, per-orientation and per-display key height, row spacing, the top row's toolbar button height, and derived key-grid height.
 - `KeyVox Keyboard/Core/KeyboardDisplay.swift`
-  - Resolves the display the keyboard is on: standard (an iPhone display or an iPad's floating keyboard), an open foldable's inner display, or a full-width iPad keyboard.
+  - Resolves the display the keyboard is on: standard (an iPhone display or an iPad's floating keyboard), an open foldable's inner display, or a full-width iPad keyboard, and whether a numbers-only field shows the number pad there: everywhere but the full-width iPad keyboard.
 - `KeyVox Keyboard/Core/KeyboardFoldableDisplay.swift`
   - Treats a display regular in both width and height as an open foldable's inner display, partially or fully open, because keyboard extensions do not receive hinge updates.
 - `KeyVox Keyboard/Core/KeyboardScreenShape.swift`
