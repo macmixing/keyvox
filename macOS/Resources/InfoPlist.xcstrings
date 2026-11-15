@@ -34,6 +34,12 @@
             "state" : "needs_review",
             "value" : "La transcription KeyVox nécessite l’accès au micro."
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La transcription KeyVox nécessite l’accès au micro."
+          }
         }
       }
     }

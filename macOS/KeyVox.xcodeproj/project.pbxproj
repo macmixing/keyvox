@@ -1190,6 +1190,7 @@
 				es,
 				"es-419",
 				fr,
+				"fr-CA",
 			);
 			mainGroup = 8EE004512F3BA59900BBAB30;
 			packageReferences = (
