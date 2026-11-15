@@ -19,6 +19,12 @@
             "value" : "%@ (recomendado)"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%@ (recomendado)"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -37,6 +43,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%@ Tu modelo Parakeet actual sigue instalado."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "%@ Tu modelo Parakeet actual sigue instalado."
@@ -71,6 +83,12 @@
             "value" : "%1$@ de %2$@"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%1$@ de %2$@"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -89,6 +107,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%@ seleccionado."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "%@ seleccionado."
@@ -117,6 +141,12 @@
             "value" : "%@ seleccionado. Los dispositivos Bluetooth pueden tardar más en iniciarse y reducir la precisión del dictado."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%@ seleccionado. Los dispositivos Bluetooth pueden tardar más en iniciarse y reducir la precisión del dictado."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -135,6 +165,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%@ seleccionado. Para obtener la máxima velocidad, se sigue recomendando el micrófono integrado."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "%@ seleccionado. Para obtener la máxima velocidad, se sigue recomendando el micrófono integrado."
@@ -163,6 +199,12 @@
             "value" : "%@ seleccionado. Recomendado para un inicio más rápido y la máxima fiabilidad."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%@ seleccionado. Recomendado para un inicio más rápido y la máxima fiabilidad."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -186,6 +228,12 @@
             "value" : "%@ seleccionado. Este micrófono puede tardar más en iniciarse y reducir la precisión del dictado."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%@ seleccionado. Este micrófono puede tardar más en iniciarse y reducir la precisión del dictado."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -204,6 +252,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%@ se eliminará de este Mac."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "%@ se eliminará de este Mac."
@@ -235,6 +289,12 @@
             "value" : "Hay una nueva versión de KeyVox disponible."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Hay una nueva versión de KeyVox disponible."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -253,6 +313,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Hay una nueva versión de KeyVox disponible. Actualiza para disfrutar de la mejor experiencia."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Hay una nueva versión de KeyVox disponible. Actualiza para disfrutar de la mejor experiencia."
@@ -279,6 +345,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Hay un modelo Parakeet más reciente para el dictado en el dispositivo. Descarga ahora el modelo Parakeet actualizado (%@) o hazlo más tarde desde Ajustes."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Hay un modelo Parakeet más reciente para el dictado en el dispositivo. Descarga ahora el modelo Parakeet actualizado (%@) o hazlo más tarde desde Configuración."
           }
         },
         "fr" : {
@@ -308,6 +380,12 @@
             "value" : "Configuración del modelo de IA"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Configuración del modelo de IA"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -326,6 +404,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "AUDIO"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "AUDIO"
@@ -354,6 +438,12 @@
             "value" : "Permiso de Accesibilidad"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Permiso de Accesibilidad"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -372,6 +462,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Se requiere Accesibilidad"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Se requiere Accesibilidad"
@@ -400,6 +496,12 @@
             "value" : "Se requiere permiso de Accesibilidad"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Se requiere permiso de Accesibilidad"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -418,6 +520,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Preciso y ligero."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Preciso y ligero."
@@ -446,6 +554,12 @@
             "value" : "Añadir palabra al diccionario"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Agregar palabra al diccionario"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -467,6 +581,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Añadir palabra"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Agregar palabra"
           }
         },
         "fr" : {
@@ -492,6 +612,12 @@
             "value" : "Añade palabras personalizadas, direcciones de correo electrónico y frases cortas para mejorar la precisión de la transcripción."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Agrega palabras personalizadas, direcciones de correo electrónico y frases cortas para mejorar la precisión de la transcripción."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -510,6 +636,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ajustar volumen"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Ajustar volumen"
@@ -538,6 +670,12 @@
             "value" : "Después de esto, puede que nunca vuelvas a escribir."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Después de esto, puede que nunca vuelvas a escribir."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -556,6 +694,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ya se está descargando otro modelo. Vuelve a intentarlo cuando termine."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Ya se está descargando otro modelo. Vuelve a intentarlo cuando termine."
@@ -584,6 +728,12 @@
             "value" : "Autorizado"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Autorizado"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -602,6 +752,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Atrás"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Atrás"
@@ -630,6 +786,12 @@
             "value" : "Se recomienda el micrófono integrado para un dictado más rápido y fiable."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Se recomienda el micrófono integrado para un dictado más rápido y fiable."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -648,6 +810,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Índice de avisos incluidos"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Índice de avisos incluidos"
@@ -676,6 +844,12 @@
             "value" : "Cancelar"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Cancelar"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -699,6 +873,12 @@
             "value" : "Volver a comprobar"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Volver a verificar"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -717,6 +897,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Buscar actualizaciones"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Buscar actualizaciones"
@@ -745,6 +931,12 @@
             "value" : "Busca actualizaciones para empezar."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Busca actualizaciones para empezar."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -763,6 +955,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Descubre los estilos de escritura reversibles que ofrece KeyVox Vibes."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Descubre los estilos de escritura reversibles que ofrece KeyVox Vibes."
@@ -791,6 +989,12 @@
             "value" : "Buscando actualizaciones..."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Buscando actualizaciones..."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -812,6 +1016,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Comprobando..."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Verificando..."
           }
         },
         "fr" : {
@@ -837,6 +1047,12 @@
             "value" : "Elige Detección automática para conversaciones en varios idiomas. Puedes cambiarlo cuando quieras en Ajustes."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Elige Detección automática para conversaciones en varios idiomas. Puedes cambiarlo cuando quieras en Configuración."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -855,6 +1071,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Elige Casual, Polished o Chill antes de dictar."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Elige Casual, Polished o Chill antes de dictar."
@@ -883,6 +1105,12 @@
             "value" : "Elegir micrófono"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Elegir micrófono"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -901,6 +1129,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Elige tu micrófono"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Elige tu micrófono"
@@ -929,6 +1163,12 @@
             "value" : "Elige el idioma que KeyVox usa para el dictado."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Elige el idioma que KeyVox usa para el dictado."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -947,6 +1187,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Elige qué modelo instalado usa KeyVox para transcribir la voz en este Mac."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Elige qué modelo instalado usa KeyVox para transcribir la voz en este Mac."
@@ -975,6 +1221,12 @@
             "value" : "Elige tu idioma"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Elige tu idioma"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -993,6 +1245,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Haz clic en Descargar para instalar Vibes AI antes de seleccionar un estilo."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Haz clic en Descargar para instalar Vibes AI antes de seleccionar un estilo."
@@ -1021,6 +1279,12 @@
             "value" : "Haz clic en un cuadro de texto y pulsa ⌘ Cmd + V para pegar"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Haz clic en un cuadro de texto y presiona ⌘ Cmd + V para pegar"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -1039,6 +1303,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Haz clic para resolverlo"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Haz clic para resolverlo"
@@ -1067,6 +1337,12 @@
             "value" : "Cerrar"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Cerrar"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -1085,6 +1361,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Completa todos los pasos para continuar"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Completa todos los pasos para continuar"
@@ -1113,6 +1395,12 @@
             "value" : "Continuar"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Continuar"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -1131,6 +1419,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Copiado"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Copiado"
@@ -1159,6 +1453,12 @@
             "value" : "Copiar"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Copiar"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -1177,6 +1477,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Actual: v%@"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Actual: v%@"
@@ -1205,6 +1511,12 @@
             "value" : "Por ahora, la corrección con el diccionario personalizado solo está disponible en inglés."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Por ahora, la corrección con el diccionario personalizado solo está disponible en inglés."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -1223,6 +1535,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Eliminar"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Eliminar"
@@ -1251,6 +1569,12 @@
             "value" : "¿Eliminar %@?"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "¿Eliminar %@?"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -1269,6 +1593,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "¿Eliminar entrada?"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "¿Eliminar entrada?"
@@ -1297,6 +1627,12 @@
             "value" : "¿Eliminar KeyVox Vibes AI?"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "¿Eliminar KeyVox Vibes AI?"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -1315,6 +1651,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Idioma de dictado"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Idioma de dictado"
@@ -1343,6 +1685,12 @@
             "value" : "Modelo de dictado"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Modelo de dictado"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -1361,6 +1709,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "El dictado volverá a estar disponible en cuanto termine la actualización del modelo."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "El dictado volverá a estar disponible en cuanto termine la actualización del modelo."
@@ -1389,6 +1743,12 @@
             "value" : "Diccionario"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Diccionario"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -1407,6 +1767,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "¡No te he oído!"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "¡No te he oído!"
@@ -1435,6 +1801,12 @@
             "value" : "Aceptar"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aceptar"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -1458,6 +1830,12 @@
             "value" : "Pulsa dos veces la tecla de activación para pasar de una Vibe a otra o elige una en Ajustes."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Presiona dos veces la tecla de activación para pasar de una Vibe a otra o elige una en Configuración."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -1476,6 +1854,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Descargar"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Descargar"
@@ -1504,6 +1888,12 @@
             "value" : "Progreso de la descarga"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Progreso de la descarga"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -1522,6 +1912,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Descargar Vibes AI"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Descargar Vibes AI"
@@ -1550,6 +1946,12 @@
             "value" : "Descarga Vibes AI una vez y prueba los estilos de escritura de forma local."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Descarga Vibes AI una vez y prueba los estilos de escritura de forma local."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -1568,6 +1970,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "El modelo de Vibes descargado no coincide con el SHA-256 esperado."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "El modelo de Vibes descargado no coincide con el SHA-256 esperado."
@@ -1596,6 +2004,12 @@
             "value" : "Descargando"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Descargando"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -1614,6 +2028,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Descargando el modelo de IA."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Descargando el modelo de IA."
@@ -1642,6 +2062,12 @@
             "value" : "Descargando KeyVox Vibes AI."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Descargando KeyVox Vibes AI."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -1660,6 +2086,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Descargando actualización..."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Descargando actualización..."
@@ -1688,6 +2120,12 @@
             "value" : "Descargando..."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Descargando..."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -1706,6 +2144,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Editar palabra del diccionario"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Editar palabra del diccionario"
@@ -1734,6 +2178,12 @@
             "value" : "Activado, pero macOS aún necesita tu aprobación en Ítems de inicio."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Activado, pero macOS aún necesita tu aprobación en Elementos de inicio."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -1752,6 +2202,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Error: %@"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Error: %@"
@@ -1780,6 +2236,12 @@
             "value" : "Salir de la práctica de dictado"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Salir de la práctica de dictado"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -1798,6 +2260,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Extrayendo..."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Extrayendo..."
@@ -1826,6 +2294,12 @@
             "value" : "Finalizar"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Finalizar"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -1844,6 +2318,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Fn (Función)"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Fn (Función)"
@@ -1872,6 +2352,12 @@
             "value" : "Da formato automáticamente a las listas numeradas dictadas cuando se detectan."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Da formato automáticamente a las listas numeradas dictadas cuando se detectan."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -1890,6 +2376,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Libera tu voz"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Libera tu voz"
@@ -1918,6 +2410,12 @@
             "value" : "Función"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Función"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -1936,6 +2434,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Prepara Vibes"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Prepara Vibes"
@@ -1964,6 +2468,12 @@
             "value" : "Obtén ayuda con KeyVox, descarga la app para iPhone, lee las preguntas frecuentes, encuentra más información o ponte en contacto con nosotros."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Obtén ayuda con KeyVox, descarga la app para iPhone, lee las preguntas frecuentes, encuentra más información o ponte en contacto con nosotros."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -1982,6 +2492,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Conceder acceso"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Conceder acceso"
@@ -2010,6 +2526,12 @@
             "value" : "Ocultar icono del Dock"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ocultar ícono del Dock"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -2033,6 +2555,12 @@
             "value" : "Oculta el icono del Dock cuando todas las ventanas estén cerradas."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Oculta el ícono del Dock cuando todas las ventanas estén cerradas."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -2051,6 +2579,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ocultar ejemplos de Vibes"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Ocultar ejemplos de Vibes"
@@ -2079,6 +2613,12 @@
             "value" : "Mantén pulsada la tecla %@ y habla."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mantén presionada la tecla %@ y habla."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -2100,6 +2640,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Mantén pulsada la tecla de activación y pulsa L para Listas o P para Párrafos. Repite para deshacer."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mantén presionada la tecla de activación y presiona L para Listas o P para Párrafos. Repite para deshacer."
           }
         },
         "fr" : {
@@ -2125,6 +2671,12 @@
             "value" : "Mantén pulsada esta tecla para empezar a grabar. Suéltala para transcribir."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mantén presionada esta tecla para empezar a grabar. Suéltala para transcribir."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -2143,6 +2695,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Inicio"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Inicio"
@@ -2171,6 +2729,12 @@
             "value" : "Instalar actualización"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Instalar actualización"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -2189,6 +2753,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Instalar Vibes AI"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Instalar Vibes AI"
@@ -2217,6 +2787,12 @@
             "value" : "Instala primero Vibes AI (%@) y después podrás usar KeyVox Vibes."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Instala primero Vibes AI (%@) y después podrás usar KeyVox Vibes."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -2235,6 +2811,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Instala un modelo de dictado para que KeyVox pueda transcribir la voz en este Mac."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Instala un modelo de dictado para que KeyVox pueda transcribir la voz en este Mac."
@@ -2263,6 +2845,12 @@
             "value" : "Error de instalación"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Error de instalación"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -2281,6 +2869,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Error de instalación."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Error de instalación."
@@ -2309,6 +2903,12 @@
             "value" : "Instalar modelo"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Instalar modelo"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -2327,6 +2927,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Instala el modelo local que hace funcionar KeyVox Vibes."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Instala el modelo local que hace funcionar KeyVox Vibes."
@@ -2355,6 +2961,12 @@
             "value" : "Instalando"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Instalando"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -2373,6 +2985,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Instalando KeyVox Vibes AI."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Instalando KeyVox Vibes AI."
@@ -2401,6 +3019,12 @@
             "value" : "Instalando KeyVox..."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Instalando KeyVox..."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -2419,6 +3043,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Instalando..."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Instalando..."
@@ -2447,6 +3077,12 @@
             "value" : "¡Problema!"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "¡Problema!"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -2465,6 +3101,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Solo unos pasos..."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Solo unos pasos..."
@@ -2493,6 +3135,12 @@
             "value" : "TECLADO"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "TECLADO"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -2511,6 +3159,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Tipo de letra Kanit"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Tipo de letra Kanit"
@@ -2545,6 +3199,12 @@
             "value" : "KeyVox %1$@ (%2$@) es la versión más reciente."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox %1$@ (%2$@) es la versión más reciente."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -2563,6 +3223,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox %@ es la versión más reciente."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "KeyVox %@ es la versión más reciente."
@@ -2591,6 +3257,12 @@
             "value" : "Ajustes de KeyVox"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Configuración de KeyVox"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -2609,6 +3281,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Estado de KeyVox"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Estado de KeyVox"
@@ -2637,6 +3315,12 @@
             "value" : "Actualización de KeyVox disponible"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Actualización de KeyVox disponible"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -2655,6 +3339,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox Vibes AI está instalado y listo."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "KeyVox Vibes AI está instalado y listo."
@@ -2683,6 +3373,12 @@
             "value" : "KeyVox Vibes AI se eliminará de este Mac."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox Vibes AI se eliminará de este Mac."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -2704,6 +3400,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "KeyVox no se ha podido mover a Aplicaciones."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox no se pudo mover a Aplicaciones."
           }
         },
         "fr" : {
@@ -2729,6 +3431,12 @@
             "value" : "KeyVox no ha podido trasladarse a la carpeta Aplicaciones."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox no pudo moverse a la carpeta Aplicaciones."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -2750,6 +3458,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "KeyVox no se ha podido volver a abrir desde Aplicaciones."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox no se pudo volver a abrir desde Aplicaciones."
           }
         },
         "fr" : {
@@ -2775,6 +3489,12 @@
             "value" : "KeyVox no ha podido iniciar el instalador."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox no pudo iniciar el instalador."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -2798,6 +3518,12 @@
             "value" : "KeyVox no ha podido descomprimir el archivo de actualización."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox no pudo descomprimir el archivo de actualización."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -2816,6 +3542,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox no ha captado ninguna voz desde el micrófono %@."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "KeyVox no ha captado ninguna voz desde el micrófono %@."
@@ -2844,6 +3576,12 @@
             "value" : "KeyVox está listo y con las últimas mejoras."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox está listo y con las últimas mejoras."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -2862,6 +3600,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox está listo cuando tú lo estés."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "KeyVox está listo cuando tú lo estés."
@@ -2890,6 +3634,12 @@
             "value" : "KeyVox necesita permiso de Accesibilidad para pegar el dictado en otras apps. Actívalo en Ajustes del Sistema y vuelve a intentarlo."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox necesita permiso de Accesibilidad para pegar el dictado en otras apps. Actívalo en Configuración del Sistema y vuelve a intentarlo."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -2913,6 +3663,12 @@
             "value" : "KeyVox necesita un modelo Whisper local para poder dictar. Abre los ajustes de KeyVox para descargarlo."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox necesita un modelo Whisper local para poder dictar. Abre la configuración de KeyVox para descargarlo."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -2931,6 +3687,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox necesita oírte para transcribir."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "KeyVox necesita oírte para transcribir."
@@ -2959,6 +3721,12 @@
             "value" : "KeyVox se ha movido a Aplicaciones, pero macOS no ha podido volver a abrirlo. Abre KeyVox desde Aplicaciones y vuelve a intentar la actualización."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox se movió a Aplicaciones, pero macOS no pudo volver a abrirlo. Abre KeyVox desde Aplicaciones y vuelve a intentar la actualización."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -2977,6 +3745,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox se copiará en Aplicaciones, se volverá a abrir desde allí y reanudará la actualización automáticamente."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "KeyVox se copiará en Aplicaciones, se volverá a abrir desde allí y reanudará la actualización automáticamente."
@@ -3005,6 +3779,12 @@
             "value" : "KeyVox te avisará en cuanto el modelo Parakeet actualizado esté listo."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox te avisará en cuanto el modelo Parakeet actualizado esté listo."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -3023,6 +3803,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Idioma"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Idioma"
@@ -3051,6 +3837,12 @@
             "value" : "Última transcripción"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Última transcripción"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -3069,6 +3861,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Más tarde"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Más tarde"
@@ -3097,6 +3895,12 @@
             "value" : "Abrir al iniciar sesión"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Abrir al iniciar sesión"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -3115,6 +3919,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Más información sobre KeyVox Vibes"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Más información sobre KeyVox Vibes"
@@ -3143,6 +3953,12 @@
             "value" : "Comando izquierda"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Comando izquierda"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -3161,6 +3977,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Comando izquierda (⌘)"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Comando izquierda (⌘)"
@@ -3189,6 +4011,12 @@
             "value" : "Control izquierda"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Control izquierda"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -3207,6 +4035,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Control izquierda (⌃)"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Control izquierda (⌃)"
@@ -3235,6 +4069,12 @@
             "value" : "Opción izquierda"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Opción izquierda"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -3253,6 +4093,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Opción izquierda (⌥)"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Opción izquierda (⌥)"
@@ -3281,6 +4127,12 @@
             "value" : "Información legal y licencias"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Información legal y licencias"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -3299,6 +4151,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vamos"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Vamos"
@@ -3327,6 +4185,12 @@
             "value" : "Ultrarrápido, pero más pesado."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ultrarrápido, pero más pesado."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -3345,6 +4209,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Lista"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Lista"
@@ -3373,6 +4243,12 @@
             "value" : "Listas"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Listas"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -3391,6 +4267,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Prioridad local"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Prioridad local"
@@ -3419,6 +4301,12 @@
             "value" : "El ítem de inicio no está disponible en esta configuración de compilación."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "El elemento de inicio no está disponible en esta configuración de compilación."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -3437,6 +4325,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "MÁS"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "MÁS"
@@ -3465,6 +4359,12 @@
             "value" : "Descubre KeyVox Vibes"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Descubre KeyVox Vibes"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -3483,6 +4383,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Entrada de micrófono"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Entrada de micrófono"
@@ -3511,6 +4417,12 @@
             "value" : "Micrófono"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Micrófono"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -3529,6 +4441,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Acceso al micrófono"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Acceso al micrófono"
@@ -3557,6 +4475,12 @@
             "value" : "No se ha podido descargar el modelo por falta de espacio. Libera espacio y vuelve a intentarlo."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No se pudo descargar el modelo por falta de espacio. Libera espacio y vuelve a intentarlo."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -3580,6 +4504,12 @@
             "value" : "No se ha podido descargar el modelo. Comprueba la red y el almacenamiento, y vuelve a intentarlo."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No se pudo descargar el modelo. Revisa la red y el almacenamiento, y vuelve a intentarlo."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -3598,6 +4528,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "El modelo no está instalado"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "El modelo no está instalado"
@@ -3626,6 +4562,12 @@
             "value" : "El modelo se está actualizando"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "El modelo se está actualizando"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -3644,6 +4586,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Falta el modelo"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Falta el modelo"
@@ -3672,6 +4620,12 @@
             "value" : "Mover KeyVox a Aplicaciones"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mover KeyVox a Aplicaciones"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -3690,6 +4644,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mueve KeyVox a Aplicaciones para usar las actualizaciones integradas."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Mueve KeyVox a Aplicaciones para usar las actualizaciones integradas."
@@ -3718,6 +4678,12 @@
             "value" : "Mover a Aplicaciones"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mover a Aplicaciones"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -3736,6 +4702,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Moviendo KeyVox a Aplicaciones..."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Moviendo KeyVox a Aplicaciones..."
@@ -3764,6 +4736,12 @@
             "value" : "Modelo NVIDIA Parakeet"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Modelo NVIDIA Parakeet"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -3782,6 +4760,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "¿Necesitas ayuda?"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "¿Necesitas ayuda?"
@@ -3810,6 +4794,12 @@
             "value" : "Siguiente"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Siguiente"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -3828,6 +4818,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sin permiso de micrófono"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Sin permiso de micrófono"
@@ -3856,6 +4852,12 @@
             "value" : "No se ha encontrado ningún micrófono integrado. Selecciona un micrófono predeterminado para continuar."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No se encontró ningún micrófono integrado. Selecciona un micrófono predeterminado para continuar."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -3877,6 +4879,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Aún no has añadido palabras personalizadas."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aún no agregaste palabras personalizadas."
           }
         },
         "fr" : {
@@ -3902,6 +4910,12 @@
             "value" : "No se han encontrado idiomas"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No se encontraron idiomas"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -3923,6 +4937,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "No se ha detectado audio del micrófono"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No se detectó audio del micrófono"
           }
         },
         "fr" : {
@@ -3948,6 +4968,12 @@
             "value" : "No se ha detectado ningún micrófono. Conecta uno para continuar con la configuración."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No se detectó ningún micrófono. Conecta uno para continuar con la configuración."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -3966,6 +4992,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No hay ninguna actualización disponible ahora mismo."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "No hay ninguna actualización disponible ahora mismo."
@@ -4000,6 +5032,12 @@
             "value" : "No hay espacio suficiente para instalar el modelo (%1$@ disponibles, %2$@ necesarios). Libera al menos %3$@ y vuelve a intentarlo."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No hay espacio suficiente para instalar el modelo (%1$@ disponibles, %2$@ necesarios). Libera al menos %3$@ y vuelve a intentarlo."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -4018,6 +5056,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No instalado (%@)"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "No instalado (%@)"
@@ -4046,6 +5090,12 @@
             "value" : "Aceptar"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aceptar"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -4064,6 +5114,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aceptar"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Aceptar"
@@ -4092,6 +5148,12 @@
             "value" : "Estilos de escritura reversibles en el dispositivo para Mac e iOS."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Estilos de escritura reversibles en el dispositivo para Mac e iOS."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -4110,6 +5172,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Estilos de escritura reversibles en el dispositivo."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Estilos de escritura reversibles en el dispositivo."
@@ -4138,6 +5206,12 @@
             "value" : "Abrir"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Abrir"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -4161,6 +5235,12 @@
             "value" : "Abrir Ítems de inicio"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Abrir Elementos de inicio"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -4179,6 +5259,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Abrir página de la versión"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Abrir página de la versión"
@@ -4207,6 +5293,12 @@
             "value" : "Abrir Ajustes del Sistema"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Abrir Configuración del Sistema"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -4225,6 +5317,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Abrir actualizador"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Abrir actualizador"
@@ -4253,6 +5351,12 @@
             "value" : "Modelo OpenAI Whisper"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Modelo OpenAI Whisper"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -4271,6 +5375,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Párrafo"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Párrafo"
@@ -4299,6 +5409,12 @@
             "value" : "Párrafos"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Párrafos"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -4317,6 +5433,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Actualización de Parakeet disponible"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Actualización de Parakeet disponible"
@@ -4345,6 +5467,12 @@
             "value" : "Error al actualizar Parakeet"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Error al actualizar Parakeet"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -4363,6 +5491,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Parakeet actualizado"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Parakeet actualizado"
@@ -4391,6 +5525,12 @@
             "value" : "Parakeet detecta automáticamente el idioma del dictado. Consulta las preguntas frecuentes en la tarjeta ¿Necesitas ayuda? para ver los idiomas compatibles."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Parakeet detecta automáticamente el idioma del dictado. Consulta las preguntas frecuentes en la tarjeta ¿Necesitas ayuda? para ver los idiomas compatibles."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -4414,6 +5554,12 @@
             "value" : "¡No se ha podido pegar!"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "¡No se pudo pegar!"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -4432,6 +5578,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Elige un estilo"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Elige un estilo"
@@ -4460,6 +5612,12 @@
             "value" : "Reproduce un sonido cuando la grabación empieza y termina."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Reproduce un sonido cuando la grabación empieza y termina."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -4478,6 +5636,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Haz una prueba u omítela y empieza con KeyVox."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Haz una prueba u omítela y empieza con KeyVox."
@@ -4506,6 +5670,12 @@
             "value" : "Preparando actualización..."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Preparando actualización..."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -4524,6 +5694,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Micrófono seleccionado anteriormente (no disponible)"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Micrófono seleccionado anteriormente (no disponible)"
@@ -4552,6 +5728,12 @@
             "value" : "Procesando..."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Procesando..."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -4570,6 +5752,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Datos de pronunciación (CMUdict + SCOWL)"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Datos de pronunciación (CMUdict + SCOWL)"
@@ -4598,6 +5786,12 @@
             "value" : "Las atribuciones de terceros de los datos de pronunciación se incluyen en los recursos del paquete KeyVoxCore."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Las atribuciones de terceros de los datos de pronunciación se incluyen en los recursos del paquete KeyVoxCore."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -4616,6 +5810,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Salir de KeyVox"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Salir de KeyVox"
@@ -4644,6 +5844,12 @@
             "value" : "Listo"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Listo"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -4667,6 +5873,12 @@
             "value" : "Añadido recientemente"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Agregado recientemente"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -4685,6 +5897,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Grabando..."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Grabando..."
@@ -4713,6 +5931,12 @@
             "value" : "Notas de la versión"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Notas de la versión"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -4731,6 +5955,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Suelta la tecla cuando termines."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Suelta la tecla cuando termines."
@@ -4759,6 +5989,12 @@
             "value" : "Reparar"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Reparar"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -4777,6 +6013,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Necesario para pegar texto en otras apps."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Necesario para pegar texto en otras apps."
@@ -4805,6 +6047,12 @@
             "value" : "Reanudando actualización..."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Reanudando actualización..."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -4823,6 +6071,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Comando derecha"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Comando derecha"
@@ -4851,6 +6105,12 @@
             "value" : "Comando derecha (⌘)"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Comando derecha (⌘)"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -4869,6 +6129,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Control derecha"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Control derecha"
@@ -4897,6 +6163,12 @@
             "value" : "Control derecha (⌃)"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Control derecha (⌃)"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -4915,6 +6187,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Opción derecha"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Opción derecha"
@@ -4943,6 +6221,12 @@
             "value" : "Opción derecha (⌥)"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Opción derecha (⌥)"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -4961,6 +6245,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "SISTEMA"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "SISTEMA"
@@ -4989,6 +6279,12 @@
             "value" : "Guardar palabra"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Guardar palabra"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -5007,6 +6303,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Buscar idiomas"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Buscar idiomas"
@@ -5035,6 +6337,12 @@
             "value" : "El micrófono seleccionado no está disponible. Se usará el micrófono integrado hasta que se vuelva a conectar."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "El micrófono seleccionado no está disponible. Se usará el micrófono integrado hasta que se vuelva a conectar."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -5053,6 +6361,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Elige la Vibe"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Elige la Vibe"
@@ -5081,6 +6395,12 @@
             "value" : "Ajustes"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Configuración"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -5099,6 +6419,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Compartir %@"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Compartir %@"
@@ -5127,6 +6453,12 @@
             "value" : "Mostrar ejemplos de Vibes"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mostrar ejemplos de Vibes"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -5145,6 +6477,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Omitir"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Omitir"
@@ -5173,6 +6511,12 @@
             "value" : "Patrocinar"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Patrocinar"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -5191,6 +6535,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Patrocinar en GitHub"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Patrocinar en GitHub"
@@ -5219,6 +6569,12 @@
             "value" : "Abre KeyVox automáticamente al iniciar sesión."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Abre KeyVox automáticamente al iniciar sesión."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -5237,6 +6593,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Empezar a usar KeyVox"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Empezar a usar KeyVox"
@@ -5265,6 +6627,12 @@
             "value" : "Empieza nuevos párrafos automáticamente tras pausas breves en campos de varias líneas."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Empieza nuevos párrafos automáticamente tras pausas breves en campos de varias líneas."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -5283,6 +6651,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Estilo"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Estilo"
@@ -5311,6 +6685,12 @@
             "value" : "¡Perfecto!"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "¡Perfecto!"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -5329,6 +6709,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Apoya el desarrollo de código abierto de KeyVox a través de GitHub Sponsors."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Apoya el desarrollo de código abierto de KeyVox a través de GitHub Sponsors."
@@ -5357,6 +6743,12 @@
             "value" : "Ajustes del Sistema"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Configuración del Sistema"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -5375,6 +6767,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sonidos del sistema"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Sonidos del sistema"
@@ -5403,6 +6801,12 @@
             "value" : "Pulsa de nuevo para volver a la Vibe anterior."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Presiona de nuevo para volver a la Vibe anterior."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -5424,6 +6828,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Pulsa la tecla de activación para aplicar / deshacer la Vibe actual. Pulsa dos veces para pasar de una Vibe a otra."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Presiona la tecla de activación para aplicar / deshacer la Vibe actual. Presiona dos veces para pasar de una Vibe a otra."
           }
         },
         "fr" : {
@@ -5449,6 +6859,12 @@
             "value" : "Pulsa la tecla de activación para cambiar la Vibe del último dictado sin editar del cuadro de texto."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Presiona la tecla de activación para cambiar la Vibe del último dictado sin editar del cuadro de texto."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -5470,6 +6886,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Pulsa para aplicar una Vibe"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Presiona para aplicar una Vibe"
           }
         },
         "fr" : {
@@ -5495,6 +6917,12 @@
             "value" : "Pulsa para aplicar una Vibe; repite para deshacer."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Presiona para aplicar una Vibe; repite para deshacer."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -5518,6 +6946,12 @@
             "value" : "Pulsa para aplicar / deshacer Vibes. Pulsa dos veces para pasar de una Vibe a otra."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Presiona para aplicar / deshacer Vibes. Presiona dos veces para pasar de una Vibe a otra."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -5536,6 +6970,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "El paquete de actualización descargado no es válido."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "El paquete de actualización descargado no es válido."
@@ -5564,6 +7004,12 @@
             "value" : "macOS no ha podido verificar la actualización descargada."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "macOS no pudo verificar la actualización descargada."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -5587,6 +7033,12 @@
             "value" : "La actualización descargada no coincide con la suma de comprobación esperada."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La actualización descargada no coincide con la suma de verificación esperada."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -5605,6 +7057,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La actualización descargada no corresponde a esta app."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "La actualización descargada no corresponde a esta app."
@@ -5633,6 +7091,12 @@
             "value" : "La versión de la actualización descargada no coincide con los metadatos de la versión."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La versión de la actualización descargada no coincide con los metadatos de la versión."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -5656,6 +7120,12 @@
             "value" : "No se ha podido instalar la actualización."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No se pudo instalar la actualización."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -5674,6 +7144,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "El modelo Parakeet actualizado está instalado y listo para dictar."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "El modelo Parakeet actualizado está instalado y listo para dictar."
@@ -5702,6 +7178,12 @@
             "value" : "No se ha encontrado el script del actualizador en el paquete de la app."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No se encontró el script del actualizador en el paquete de la app."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -5720,6 +7202,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Avisos de terceros (versión oficial)"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Avisos de terceros (versión oficial)"
@@ -5748,6 +7236,12 @@
             "value" : "Atribuciones de datos de terceros"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Atribuciones de datos de terceros"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -5766,6 +7260,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Esta entrada del diccionario se eliminará de KeyVox."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Esta entrada del diccionario se eliminará de KeyVox."
@@ -5794,6 +7294,12 @@
             "value" : "Esta versión solo está disponible como descarga manual."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Esta versión solo está disponible como descarga manual."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -5812,6 +7318,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Esta versión debe instalarse manualmente."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Esta versión debe instalarse manualmente."
@@ -5840,6 +7352,12 @@
             "value" : "Tecla de activación"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Tecla de activación"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -5858,6 +7376,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Interacciones con la tecla de activación"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Interacciones con la tecla de activación"
@@ -5886,6 +7410,12 @@
             "value" : "Tecla de activación + Mayúsculas = Modo manos libres"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Tecla de activación + Mayúsculas = Modo manos libres"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -5904,6 +7434,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Probar"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Probar"
@@ -5932,6 +7468,12 @@
             "value" : "Probar"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Probar"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -5950,6 +7492,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Haz tu primer dictado"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Haz tu primer dictado"
@@ -5978,6 +7526,12 @@
             "value" : "Escribe la palabra o frase exacta que quieres que KeyVox conserve."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Escribe la palabra o frase exacta que quieres que KeyVox conserve."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -5999,6 +7553,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "No se ha podido cargar el texto OFL incluido."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No se pudo cargar el texto OFL incluido."
           }
         },
         "fr" : {
@@ -6024,6 +7584,12 @@
             "value" : "No se ha podido cargar la licencia del proyecto incluida."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No se pudo cargar la licencia del proyecto incluida."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -6045,6 +7611,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "No se han podido cargar los avisos de terceros incluidos."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No se pudieron cargar los avisos de terceros incluidos."
           }
         },
         "fr" : {
@@ -6070,6 +7642,12 @@
             "value" : "No se ha podido actualizar “Abrir al iniciar sesión”. Puedes cambiarlo en Ítems de inicio."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No se pudo actualizar “Abrir al iniciar sesión”. Puedes cambiarlo en Elementos de inicio."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -6088,6 +7666,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Deshacer el último cambio"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Deshacer el último cambio"
@@ -6116,6 +7700,12 @@
             "value" : "Actualizar"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Actualizar"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -6134,6 +7724,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Error en la actualización"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Error en la actualización"
@@ -6162,6 +7758,12 @@
             "value" : "Actualización disponible"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Actualización disponible"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -6180,6 +7782,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Actualización lista para instalar."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Actualización lista para instalar."
@@ -6208,6 +7816,12 @@
             "value" : "Actualización: v%@"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Actualización: v%@"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -6226,6 +7840,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Actualizado"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Actualizado"
@@ -6254,6 +7874,12 @@
             "value" : "Actualizador"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Actualizador"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -6272,6 +7898,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Actualizaciones no disponibles temporalmente"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Actualizaciones no disponibles temporalmente"
@@ -6300,6 +7932,12 @@
             "value" : "Las actualizaciones no están disponibles temporalmente."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Las actualizaciones no están disponibles temporalmente."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -6318,6 +7956,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Actualizando Parakeet"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Actualizando Parakeet"
@@ -6346,6 +7990,12 @@
             "value" : "Usar micrófono"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Usar micrófono"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -6364,6 +8014,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Validando la app firmada..."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Validando la app firmada..."
@@ -6392,6 +8048,12 @@
             "value" : "Validando..."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Validando..."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -6410,6 +8072,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Verificando"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Verificando"
@@ -6438,6 +8106,12 @@
             "value" : "Verificando descarga..."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Verificando descarga..."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -6456,6 +8130,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Verificando..."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Verificando..."
@@ -6484,6 +8164,12 @@
             "value" : "Versión %@"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Versión %@"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -6502,6 +8188,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vibes AI no depende de la nube. Tus palabras se quedan en tu Mac."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Vibes AI no depende de la nube. Tus palabras se quedan en tu Mac."
@@ -6530,6 +8222,12 @@
             "value" : "Vibes AI está listo"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vibes AI está listo"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -6551,6 +8249,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Error al descargar el modelo de Vibes. Comprueba la red y el almacenamiento, y vuelve a intentarlo."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Error al descargar el modelo de Vibes. Revisa la red y el almacenamiento, y vuelve a intentarlo."
           }
         },
         "fr" : {
@@ -6576,6 +8280,12 @@
             "value" : "Se ha cancelado la descarga del modelo de Vibes."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Se canceló la descarga del modelo de Vibes."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -6594,6 +8304,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Interacciones de Vibes con la tecla de activación"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Interacciones de Vibes con la tecla de activación"
@@ -6622,6 +8338,12 @@
             "value" : "Esperando"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Esperando"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -6640,6 +8362,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Preparando"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Preparando"
@@ -6668,6 +8396,12 @@
             "value" : "Te recomendamos elegir el idioma que más usas para que el dictado sea más fiable."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Te recomendamos elegir el idioma que más usas para que el dictado sea más fiable."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -6686,6 +8420,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ahora mismo estamos algo ocupados. Vuelve a intentarlo más tarde."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Ahora mismo estamos algo ocupados. Vuelve a intentarlo más tarde."
@@ -6714,6 +8454,12 @@
             "value" : "Te damos la bienvenida a KeyVox"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Te damos la bienvenida a KeyVox"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -6732,6 +8478,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "¿Cuál es tu Vibe?"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "¿Cuál es tu Vibe?"
@@ -6760,6 +8512,12 @@
             "value" : "¡Palabras esta semana!"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "¡Palabras esta semana!"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -6783,6 +8541,12 @@
             "value" : "Puedes cambiar esta tecla más tarde en Ajustes."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Puedes cambiar esta tecla más tarde en Configuración."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -6801,6 +8565,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Tienes la última versión"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Tienes la última versión"
@@ -6829,6 +8599,12 @@
             "value" : "Ya está todo listo para vivir una experiencia nueva."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ya está todo listo para vivir una experiencia nueva."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -6847,6 +8623,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Tienes la última versión."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Tienes la última versión."
@@ -6875,6 +8657,12 @@
             "value" : "Ya tienes la v%@"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ya tienes la v%@"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -6898,6 +8686,12 @@
             "value" : "Puede que tu micrófono %@ esté silenciado. Revisa Ajustes del Sistema o cambia el dispositivo de entrada en los ajustes de KeyVox."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Puede que tu micrófono %@ esté silenciado. Revisa Configuración del Sistema o cambia el dispositivo de entrada en la configuración de KeyVox."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -6916,6 +8710,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Tu última transcripción aparecerá aquí cuando dictes en este Mac."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Tu última transcripción aparecerá aquí cuando dictes en este Mac."

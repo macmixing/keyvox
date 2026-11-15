@@ -23,6 +23,12 @@
             "value" : "KeyVox necesita acceso al micrófono para la transcripción."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox necesita acceso al micrófono para la transcripción."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",

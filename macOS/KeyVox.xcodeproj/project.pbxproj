@@ -1188,6 +1188,7 @@
 				Base,
 				de,
 				es,
+				"es-419",
 				fr,
 			);
 			mainGroup = 8EE004512F3BA59900BBAB30;
