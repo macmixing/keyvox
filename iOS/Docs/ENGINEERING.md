@@ -1878,7 +1878,7 @@ Compact Keys rules:
 - normal `#+=` behavior remains unchanged when the hold does not activate or the feature is unavailable
 - the hold does not activate while the emoji search is open
 - Compact Keys applies only to the number and symbol pages: ABC from Compact Keys shows the full letter keys without clearing the persisted compact-active flag, and 123 from the letter page returns to Compact Keys when that flag is set
-- both modes must use explicit required controller-view heights taken from portrait heights of 286 points for full and 174 points for compact, changed by however much shorter or taller the key grid is in landscape, on an open foldable, or on iPad
+- both modes must use explicit controller-view heights, one priority below required so the system's placeholder size while a new keyboard sizes up does not force Auto Layout to break a constraint, taken from portrait heights of 286 points for full and 174 points for compact, changed by however much shorter or taller the key grid is in landscape, on an open foldable, or on iPad
 - while the emoji page or emoji search is open the keyboard lays out in full mode, Compact Keys staying the user's mode underneath, and the emoji search adds `KeyboardEmojiSearchGeometry.addedKeyboardHeight` to the controller-view height
 - `KeyboardStyle` owns those height constants; do not infer either height from transient host bounds
 - `KeyboardKeysMode` owns visible row count, per-orientation and per-display key height, row spacing, and derived key-grid height, while `KeyboardSymbolLayout` owns which rows and restore key appear
