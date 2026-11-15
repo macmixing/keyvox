@@ -18,6 +18,7 @@ Campaigns can carry wording for each language, and hosts show the user's languag
 - Kept the manifest schema at version `1`; hosts that predate the field ignore it.
 - Named the Compact Keys feature as Compact Keys in the iOS and Android compact keys campaigns, in English and in every translation.
 - Added German, Spanish, and French wording to the iOS, macOS, and Android campaigns.
+- Added Latin American Spanish (`es-419`) wording to every campaign, using Latin American names such as `Configuración` and `Reemplazar texto` where they differ from Spain Spanish.
 
 ### Notes
 
