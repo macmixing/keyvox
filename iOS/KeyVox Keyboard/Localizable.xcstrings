@@ -16,6 +16,12 @@
             "value" : "Categoría “%@”"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Categoría “%@”"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -34,6 +40,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Activo"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Activo"
@@ -62,6 +74,12 @@
             "value" : "Actividades"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Actividad"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -85,6 +103,12 @@
             "value" : "Permite el acceso total para dictar"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Permite el acceso completo para dictar"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -103,6 +127,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Permite el acceso al micrófono para dictar"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Permite el acceso al micrófono para dictar"
@@ -131,6 +161,12 @@
             "value" : "Símbolos alternativos"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Símbolos alternativos"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -149,6 +185,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Animales y naturaleza"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Animales y naturaleza"
@@ -177,6 +219,12 @@
             "value" : "Volver al teclado"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Volver al teclado"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -195,6 +243,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Cancelar grabación"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Cancelar grabación"
@@ -223,6 +277,12 @@
             "value" : "Cancela la grabación actual sin transcribirla"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Cancela la grabación actual sin transcribirla"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -241,6 +301,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Bloqueo de mayúsculas"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Bloqueo de mayúsculas"
@@ -269,6 +335,12 @@
             "value" : "Borrar texto"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Borrar texto"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -287,6 +359,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Continuar"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Continuar"
@@ -315,6 +393,12 @@
             "value" : "Eliminar"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Eliminar"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -338,6 +422,12 @@
             "value" : "No se ha podido iniciar el dictado"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No se pudo iniciar el dictado"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -356,6 +446,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Diccionario"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Diccionario"
@@ -384,6 +480,12 @@
             "value" : "OK"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "OK"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -402,6 +504,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Llamada SOS"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Llamada SOS"
@@ -430,6 +538,12 @@
             "value" : "Emoji"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Emojis"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -448,6 +562,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Banderas"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Banderas"
@@ -476,6 +596,12 @@
             "value" : "Comida y bebida"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Alimentos y bebidas"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -497,6 +623,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Más usados"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Más frecuentes"
           }
         },
         "fr" : {
@@ -522,6 +654,12 @@
             "value" : "Instrucciones para el acceso total"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Instrucciones para el acceso completo"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -540,6 +678,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Teclado completo"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Teclado completo"
@@ -568,6 +712,12 @@
             "value" : "Ir"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ir"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -591,6 +741,12 @@
             "value" : "Cómo permitir el acceso total"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Cómo permitir el acceso completo"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -609,6 +765,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Inactivo"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Inactivo"
@@ -637,6 +799,12 @@
             "value" : "Instala un modelo de dictado"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Instala un modelo de dictado"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -655,6 +823,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Acceder"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Acceder"
@@ -683,6 +857,12 @@
             "value" : "Listas"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Listas"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -701,6 +881,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Siguiente"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Siguiente"
@@ -729,6 +915,12 @@
             "value" : "Teclado siguiente"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Teclado siguiente"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -747,6 +939,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Números y símbolos"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Números y símbolos"
@@ -775,6 +973,12 @@
             "value" : "Objetos"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Objetos"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -793,6 +997,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "No"
@@ -821,6 +1031,12 @@
             "value" : "Sí"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sí"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -842,6 +1058,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Abre los ajustes de KeyVox y repara %@"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Abre la configuración de KeyVox y repara %@"
           }
         },
         "fr" : {
@@ -867,6 +1089,12 @@
             "value" : "Abrir Ajustes"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Abrir Configuración"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -885,6 +1113,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Abriendo la app"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Abriendo la app"
@@ -913,6 +1147,12 @@
             "value" : "Párrafos"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Párrafos"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -931,6 +1171,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pausar reproducción"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Pausar reproducción"
@@ -959,6 +1205,12 @@
             "value" : "En pausa"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "En pausa"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -977,6 +1229,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Listo"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Listo"
@@ -1005,6 +1263,12 @@
             "value" : "Grabando"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Grabando"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -1023,6 +1287,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Reanudar reproducción"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Reanudar reproducción"
@@ -1051,6 +1321,12 @@
             "value" : "Retorno"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Retorno"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -1069,6 +1345,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ruta"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Ruta"
@@ -1097,6 +1379,12 @@
             "value" : "Buscar"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Buscar"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -1115,6 +1403,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Buscar emoji"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Buscar emoji"
@@ -1143,6 +1437,12 @@
             "value" : "Enviar"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Enviar"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -1166,6 +1466,12 @@
             "value" : "Ajustes"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Configuración"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -1184,6 +1490,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mayúsculas"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Mayúsculas"
@@ -1212,6 +1524,12 @@
             "value" : "Emoticonos y personas"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Caras y personas"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -1230,6 +1548,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Espacio"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Espacio"
@@ -1258,6 +1582,12 @@
             "value" : "Leer en voz alta el texto copiado"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Leer en voz alta el texto copiado"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -1276,6 +1606,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Leyendo"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Leyendo"
@@ -1304,6 +1640,12 @@
             "value" : "Empezar a grabar"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Empezar a grabar"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -1322,6 +1664,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Detener grabación y transcribir"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Detener grabación y transcribir"
@@ -1350,6 +1698,12 @@
             "value" : "Símbolos"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Símbolos"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -1368,6 +1722,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Toca Apps"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Toca Apps"
@@ -1396,6 +1756,12 @@
             "value" : "Toca KeyVox"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Toca KeyVox"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -1414,6 +1780,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Toca Teclados"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Toca Teclados"
@@ -1442,6 +1814,12 @@
             "value" : "Transcribiendo"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Transcribiendo"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -1463,6 +1841,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Viajes y destinos"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Viajes y lugares"
           }
         },
         "fr" : {
@@ -1488,6 +1872,12 @@
             "value" : "Activa “Permitir acceso total”"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Activa “Permitir acceso completo”"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -1511,6 +1901,12 @@
             "value" : "Esperando"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Esperando"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -1529,6 +1925,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "OK"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "OK"
