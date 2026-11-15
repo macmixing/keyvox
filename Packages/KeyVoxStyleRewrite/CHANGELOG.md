@@ -16,6 +16,7 @@ The `None` style name, the style descriptions, and the English-only note are now
 - Added `StyleRewriteStyle.languageSupportNote` as the single source for the note that rewrite styles support English dictation only.
 - Kept the example sentences and the model instructions in English.
 - Added Latin American Spanish (`es-419`) beside Spain Spanish (`es`); the style wording reads the same in both.
+- Added Canadian French (`fr-CA`) beside France French (`fr`); the wording reads the same in both.
 
 ### Notes
 

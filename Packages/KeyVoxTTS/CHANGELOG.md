@@ -14,6 +14,7 @@ Speech engine error messages are now translatable on Apple platforms.
 
 - Made every PocketTTS error message translatable through a package string catalog, with technical names, file names, and counts passed in as values.
 - Added Latin American Spanish (`es-419`) beside Spain Spanish (`es`), using Latin American wording where it differs.
+- Added Canadian French (`fr-CA`) beside France French (`fr`); the wording reads the same in both.
 
 ### Notes
 
