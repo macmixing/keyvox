@@ -19,6 +19,8 @@ enum KeyboardStyle {
     static let keyboardRowSpacing: CGFloat = 8
     static let keySpacing: CGFloat = 6
     static let buttonSize: CGFloat = 44
+    /// The toolbar's row and the space under it, above the keys.
+    static let toolbarRowHeight: CGFloat = buttonSize + sectionSpacing
     static let buttonCornerRadius: CGFloat = 14
 
     static let keyHeight: CGFloat = 48

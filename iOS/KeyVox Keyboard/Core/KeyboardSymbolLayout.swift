@@ -8,6 +8,12 @@ enum KeyboardSymbolPage {
     case alternate
     /// The number pad a numbers-only field shows in place of every other page.
     case numberPad
+
+    /// Whether the toolbar's row shows above the keys: on every page but the number pad, which
+    /// shows nothing above its keys, as the system's number pad shows no bar.
+    var showsToolbar: Bool {
+        self != .numberPad
+    }
 }
 
 enum KeyboardKeyKind: Equatable {

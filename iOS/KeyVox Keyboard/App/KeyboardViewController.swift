@@ -105,6 +105,9 @@ final class KeyboardViewController: UIInputViewController {
     }
     var symbolPage: KeyboardSymbolPage = .letters {
         didSet {
+            if symbolPage.showsToolbar != oldValue.showsToolbar {
+                updatePrimaryViewHeight()
+            }
             updateUI()
         }
     }
@@ -334,9 +337,14 @@ final class KeyboardViewController: UIInputViewController {
         emojiPanel == .closed ? keysMode : .full
     }
 
-    /// The keyboard's height, taller by the search results while searching emoji.
+    /// The keyboard's height, taller by the search results while searching emoji, and shorter by
+    /// the toolbar's row on the number pad.
     private var keyboardHeight: CGFloat {
-        layoutKeysMode.keyboardHeight(isLandscape: isLandscape, display: display)
+        layoutKeysMode.keyboardHeight(
+            isLandscape: isLandscape,
+            display: display,
+            showsToolbar: symbolPage.showsToolbar
+        )
             + (emojiPanel == .searching ? KeyboardEmojiSearchGeometry.addedKeyboardHeight : 0)
     }
 

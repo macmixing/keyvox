@@ -180,10 +180,18 @@ final class KeyboardRootView: UIView {
         emojiSearchFieldView.isHidden = panel == .closed
         emojiSearchFieldView.isSearching = isSearching
         emojiSearchResultsView.isHidden = isSearching == false
-        mainStackTopConstraint?.constant = KeyboardStyle.topPadding
-            + (isSearching ? KeyboardEmojiSearchGeometry.addedKeyboardHeight : 0)
         emojiSearchFieldAtTopConstraint?.isActive = isSearching == false
         emojiSearchFieldOverResultsConstraint?.isActive = isSearching
+    }
+
+    /// How far below the keyboard's top the toolbar's row sits: lower by the search results while
+    /// searching emoji, or above the keyboard's top, out of sight, on a page without the toolbar,
+    /// so the keys sit where the row would. The row stays in the stack, as hiding it would ask its
+    /// fixed-height controls to fit a row of no height.
+    private func mainStackTopInset(emojiPanel: KeyboardEmojiPanel, showsToolbarRow: Bool) -> CGFloat {
+        KeyboardStyle.topPadding
+            + (emojiPanel == .searching ? KeyboardEmojiSearchGeometry.addedKeyboardHeight : 0)
+            - (showsToolbarRow ? 0 : KeyboardStyle.toolbarRowHeight)
     }
 
     func apply(
@@ -212,8 +220,8 @@ final class KeyboardRootView: UIView {
         hasCompletedOnboarding: Bool,
         isTrackpadModeActive: Bool
     ) {
-        // The emoji search field takes the toolbar's place.
-        let showsToolbar = emojiPanel == .closed
+        // The emoji search field takes the toolbar's place, and the number pad shows none.
+        let showsToolbar = emojiPanel == .closed && symbolPage.showsToolbar
         let showsBrandedToolbar = showsToolbar && toolbarMode == .branded
         let warningText = showsToolbar ? toolbarMode.warningText : nil
         let showsToolbarWarning = warningText != nil
@@ -301,6 +309,10 @@ final class KeyboardRootView: UIView {
         logoBarView.isEnabled = showsBrandedToolbar && state.isIndicatorEnabled
 
         applyEmojiPanel(emojiPanel)
+        mainStackTopConstraint?.constant = mainStackTopInset(
+            emojiPanel: emojiPanel,
+            showsToolbarRow: symbolPage.showsToolbar
+        )
         keyGridView.setLayout(
             symbolPage: symbolPage,
             keysMode: keysMode,
