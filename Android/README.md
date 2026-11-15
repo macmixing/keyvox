@@ -131,10 +131,12 @@ No iOS source is extracted or modified by this host.
 
 ## Localization
 
-The app and keyboard ship in English with German, Spanish, and French in
-`res/values-de`, `res/values-es`, and `res/values-fr`. KeyVox, Speak, KeyVox Vibes,
-and the dictionary placeholder stay in English. Android picks the language from the
-device settings; the app has no in-app language setting.
+The app and keyboard ship in English with German, Spain Spanish, Latin American
+Spanish, and French in `res/values-de`, `res/values-es`, `res/values-b+es+419`, and
+`res/values-fr`. The Latin American file repeats the Spanish text with Latin
+American wording where the regions differ, such as `Configuración` and `Agregar`.
+KeyVox, Speak, KeyVox Vibes, and the dictionary placeholder stay in English. Android
+picks the language from the device settings; the app has no in-app language setting.
 
 Each strings file carries `app_language_code`, the language of that folder. The
 activity passes it to the engine, which shows promotion cards with
