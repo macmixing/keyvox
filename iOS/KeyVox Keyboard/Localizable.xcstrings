@@ -27,6 +27,12 @@
             "state" : "needs_review",
             "value" : "Catégorie %@"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Catégorie %@"
+          }
         }
       }
     },
@@ -52,6 +58,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Actif"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Actif"
@@ -85,6 +97,12 @@
             "state" : "needs_review",
             "value" : "Activités"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Activités"
+          }
         }
       }
     },
@@ -110,6 +128,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Autorisez l’accès complet pour la dictée"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Autorisez l’accès complet pour la dictée"
@@ -143,6 +167,12 @@
             "state" : "needs_review",
             "value" : "Autorisez l’accès au micro pour la dictée"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Autorisez l’accès au micro pour la dictée"
+          }
         }
       }
     },
@@ -168,6 +198,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Autres symboles"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Autres symboles"
@@ -201,6 +237,12 @@
             "state" : "needs_review",
             "value" : "Animaux et nature"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Animaux et nature"
+          }
         }
       }
     },
@@ -226,6 +268,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Retour au clavier"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Retour au clavier"
@@ -259,6 +307,12 @@
             "state" : "needs_review",
             "value" : "Annuler l’enregistrement"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Annuler l’enregistrement"
+          }
         }
       }
     },
@@ -284,6 +338,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Annule l’enregistrement en cours sans le transcrire"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Annule l’enregistrement en cours sans le transcrire"
@@ -317,6 +377,12 @@
             "state" : "needs_review",
             "value" : "Verrouillage des majuscules"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Verrouillage des majuscules"
+          }
         }
       }
     },
@@ -342,6 +408,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Effacer le texte"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Effacer le texte"
@@ -375,6 +447,12 @@
             "state" : "needs_review",
             "value" : "Continuer"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Continuer"
+          }
         }
       }
     },
@@ -400,6 +478,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Supprimer"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Supprimer"
@@ -433,6 +517,12 @@
             "state" : "needs_review",
             "value" : "Impossible de démarrer la dictée"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Impossible de démarrer la dictée"
+          }
         }
       }
     },
@@ -458,6 +548,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dictionnaire"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Dictionnaire"
@@ -491,6 +587,12 @@
             "state" : "needs_review",
             "value" : "OK"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "OK"
+          }
         }
       }
     },
@@ -516,6 +618,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Appel d’urgence"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Appel d’urgence"
@@ -549,6 +657,12 @@
             "state" : "needs_review",
             "value" : "Emoji"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Émojis"
+          }
         }
       }
     },
@@ -574,6 +688,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Drapeaux"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Drapeaux"
@@ -607,6 +727,12 @@
             "state" : "needs_review",
             "value" : "Nourriture et boissons"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aliment et boisson"
+          }
         }
       }
     },
@@ -636,6 +762,12 @@
             "state" : "needs_review",
             "value" : "Souvent utilisés"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Utilisés fréquemment"
+          }
         }
       }
     },
@@ -661,6 +793,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Instructions pour l’accès complet"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Instructions pour l’accès complet"
@@ -694,6 +832,12 @@
             "state" : "needs_review",
             "value" : "Clavier complet"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Clavier complet"
+          }
         }
       }
     },
@@ -719,6 +863,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aller"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Aller"
@@ -752,6 +902,12 @@
             "state" : "needs_review",
             "value" : "Comment autoriser l’accès complet"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Comment autoriser l’accès complet"
+          }
         }
       }
     },
@@ -777,6 +933,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Inactif"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Inactif"
@@ -810,6 +972,12 @@
             "state" : "needs_review",
             "value" : "Installez un modèle de dictée"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Installez un modèle de dictée"
+          }
         }
       }
     },
@@ -835,6 +1003,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Rejoindre"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Rejoindre"
@@ -868,6 +1042,12 @@
             "state" : "needs_review",
             "value" : "Listes"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Listes"
+          }
         }
       }
     },
@@ -893,6 +1073,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Suivant"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Suivant"
@@ -926,6 +1112,12 @@
             "state" : "needs_review",
             "value" : "Clavier suivant"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Clavier suivant"
+          }
         }
       }
     },
@@ -951,6 +1143,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Chiffres et symboles"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Chiffres et symboles"
@@ -984,6 +1182,12 @@
             "state" : "needs_review",
             "value" : "Objets"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Objets"
+          }
         }
       }
     },
@@ -1009,6 +1213,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Non"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Non"
@@ -1042,6 +1252,12 @@
             "state" : "needs_review",
             "value" : "Oui"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Oui"
+          }
         }
       }
     },
@@ -1067,6 +1283,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ouvrez Réglages dans KeyVox et réparez %@"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Ouvrez Réglages dans KeyVox et réparez %@"
@@ -1100,6 +1322,12 @@
             "state" : "needs_review",
             "value" : "Ouvrir Réglages"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ouvrir Réglages"
+          }
         }
       }
     },
@@ -1125,6 +1353,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ouverture de l’app"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Ouverture de l’app"
@@ -1158,6 +1392,12 @@
             "state" : "needs_review",
             "value" : "Paragraphes"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Paragraphes"
+          }
         }
       }
     },
@@ -1183,6 +1423,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mettre la lecture en pause"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Mettre la lecture en pause"
@@ -1216,6 +1462,12 @@
             "state" : "needs_review",
             "value" : "En pause"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "En pause"
+          }
         }
       }
     },
@@ -1241,6 +1493,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Prêt"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Prêt"
@@ -1274,6 +1532,12 @@
             "state" : "needs_review",
             "value" : "Enregistrement"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Enregistrement"
+          }
         }
       }
     },
@@ -1299,6 +1563,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Reprendre la lecture"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Reprendre la lecture"
@@ -1332,6 +1602,12 @@
             "state" : "needs_review",
             "value" : "Retour"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Retour"
+          }
         }
       }
     },
@@ -1357,6 +1633,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Itinéraire"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Itinéraire"
@@ -1390,6 +1672,12 @@
             "state" : "needs_review",
             "value" : "Rechercher"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Rechercher"
+          }
         }
       }
     },
@@ -1419,6 +1707,12 @@
             "state" : "needs_review",
             "value" : "Rechercher un Emoji"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Rechercher un émoji"
+          }
         }
       }
     },
@@ -1444,6 +1738,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Envoyer"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Envoyer"
@@ -1477,6 +1777,12 @@
             "state" : "needs_review",
             "value" : "Réglages"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Réglages"
+          }
         }
       }
     },
@@ -1502,6 +1808,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Majuscules"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Majuscules"
@@ -1535,6 +1847,12 @@
             "state" : "needs_review",
             "value" : "Émoticônes et personnages"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Émoticônes et personnes"
+          }
         }
       }
     },
@@ -1560,6 +1878,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Espace"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Espace"
@@ -1593,6 +1917,12 @@
             "state" : "needs_review",
             "value" : "Lire le texte copié"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Lire le texte copié"
+          }
         }
       }
     },
@@ -1618,6 +1948,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Lecture en cours"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Lecture en cours"
@@ -1651,6 +1987,12 @@
             "state" : "needs_review",
             "value" : "Démarrer l’enregistrement"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Démarrer l’enregistrement"
+          }
         }
       }
     },
@@ -1676,6 +2018,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Arrêter l’enregistrement et transcrire"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Arrêter l’enregistrement et transcrire"
@@ -1709,6 +2057,12 @@
             "state" : "needs_review",
             "value" : "Symboles"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Symboles"
+          }
         }
       }
     },
@@ -1734,6 +2088,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Touchez Apps"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Touchez Apps"
@@ -1767,6 +2127,12 @@
             "state" : "needs_review",
             "value" : "Touchez KeyVox"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Touchez KeyVox"
+          }
         }
       }
     },
@@ -1792,6 +2158,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Touchez Claviers"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Touchez Claviers"
@@ -1825,6 +2197,12 @@
             "state" : "needs_review",
             "value" : "Transcription"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Transcription"
+          }
         }
       }
     },
@@ -1850,6 +2228,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Voyages et lieux"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Voyages et lieux"
@@ -1883,6 +2267,12 @@
             "state" : "needs_review",
             "value" : "Activez Autoriser l’accès complet"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Activez Autoriser l’accès complet"
+          }
         }
       }
     },
@@ -1912,6 +2302,12 @@
             "state" : "needs_review",
             "value" : "En attente"
           }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "En attente"
+          }
         }
       }
     },
@@ -1937,6 +2333,12 @@
           }
         },
         "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "OK"
+          }
+        },
+        "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "OK"
