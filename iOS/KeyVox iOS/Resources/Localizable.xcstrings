@@ -3222,7 +3222,7 @@
         "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "No lo olvides: el modo rápido empieza a hablar ~50 % más rápido."
+            "value" : "No lo olvides: el modo rápido empieza a hablar ~50% más rápido."
           }
         },
         "fr" : {
@@ -11877,7 +11877,7 @@
         "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Empieza a hablar un ~50 % más rápido con un solo toque."
+            "value" : "Empieza a hablar un ~50% más rápido con un solo toque."
           }
         },
         "fr" : {
@@ -11912,7 +11912,7 @@
         "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Empieza a hablar un ~50 % más rápido. Actívalo en la barra de herramientas."
+            "value" : "Empieza a hablar un ~50% más rápido. Actívalo en la barra de herramientas."
           }
         },
         "fr" : {
