@@ -43,17 +43,40 @@
       "comment" : "Approximate voice download size shown right after the install status sentence on the KeyVox Speak setup card; keep the leading space.",
       "shouldTranslate" : false
     },
-    "%@ %@" : {
-      "comment" : "Dictation model install status. The first placeholder is the current install step and the second is the percent complete.",
+    "“.” Shortcut" : {
+      "comment" : "Keyboard settings toggle for typing a period by double-tapping the space bar. Use the term the system keyboard settings use in this language.",
       "localizations" : {
-        "en" : {
+        "de" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@ %2$@"
+            "state" : "needs_review",
+            "value" : "„.“-Kurzbefehl"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Atajo de “.”"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Atajo de “.”"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Raccourci « . »"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Raccourci « . »"
           }
         }
-      },
-      "shouldTranslate" : false
+      }
     },
     "%@ (%@)" : {
       "comment" : "Status on a dictation model row that is not installed. The first placeholder is the install status and the second is the approximate download size.",
@@ -62,6 +85,18 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$@ (%2$@)"
+          }
+        }
+      },
+      "shouldTranslate" : false
+    },
+    "%@ %@" : {
+      "comment" : "Dictation model install status. The first placeholder is the current install step and the second is the percent complete.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ %2$@"
           }
         }
       },
@@ -637,6 +672,9 @@
         }
       }
     },
+    "•" : {
+      "shouldTranslate" : false
+    },
     "1 Hour" : {
       "comment" : "Dictation settings picker for when the dictation session turns off after idle; timing option.\nKeyVox Speak settings picker for when the Speak engine unloads after idle; timing option.",
       "localizations" : {
@@ -672,44 +710,6 @@
         }
       }
     },
-    "15 Minutes" : {
-      "comment" : "Dictation settings picker for when the dictation session turns off after idle; timing option.\nKeyVox Speak settings picker for when the Speak engine unloads after idle; timing option.",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "15 Minuten"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "15 minutos"
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "15 minutos"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "15 minutes"
-          }
-        },
-        "fr-CA" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "15 minutes"
-          }
-        }
-      }
-    },
-    "45%" : {
-      "shouldTranslate" : false
-    },
     "5 Minutes" : {
       "comment" : "Dictation settings picker for when the dictation session turns off after idle; timing option.\nKeyVox Speak settings picker for when the Speak engine unloads after idle; timing option.",
       "localizations" : {
@@ -741,6 +741,41 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "5 minutes"
+          }
+        }
+      }
+    },
+    "15 Minutes" : {
+      "comment" : "Dictation settings picker for when the dictation session turns off after idle; timing option.\nKeyVox Speak settings picker for when the Speak engine unloads after idle; timing option.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "15 Minuten"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "15 minutos"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "15 minutos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "15 minutes"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "15 minutes"
           }
         }
       }
@@ -783,6 +818,286 @@
     "A-Z" : {
       "comment" : "Dictionary sort option that orders entries alphabetically.",
       "shouldTranslate" : false
+    },
+    "Accurate and lightweight." : {
+      "comment" : "Short description of the Whisper Base dictation model on its row in dictation settings.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Genau und schlank."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Preciso y ligero."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Preciso y ligero."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Précis et léger."
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Précis et léger."
+          }
+        }
+      }
+    },
+    "Add" : {
+      "comment" : "Button in the Dictionary word sheet that adds the typed word.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Hinzufügen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Añadir"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Agregar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ajouter"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ajouter"
+          }
+        }
+      }
+    },
+    "Add a quick shortcut to toggle KeyVox dictation anywhere." : {
+      "comment" : "Description under the Dictation Shortcut row. KeyVox is a brand name and stays in English.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Füge einen Kurzbefehl hinzu, um das KeyVox-Diktat überall ein- und auszuschalten."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Añade un atajo rápido para activar o desactivar el dictado de KeyVox desde cualquier lugar."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Agrega un atajo rápido para activar o desactivar el dictado de KeyVox desde cualquier lugar."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ajoutez un raccourci rapide pour activer ou désactiver la dictée KeyVox partout."
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ajoutez un raccourci rapide pour activer ou désactiver la dictée KeyVox partout."
+          }
+        }
+      }
+    },
+    "Add custom words, email addresses, and short phrases to improve transcription accuracy." : {
+      "comment" : "Description in the sheet for adding a word to the Dictionary.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Füge eigene Wörter, E-Mail-Adressen und kurze Phrasen hinzu, um die Transkription genauer zu machen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Añade palabras personalizadas, direcciones de correo electrónico y frases cortas para mejorar la precisión de la transcripción."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Agrega palabras personalizadas, direcciones de correo electrónico y frases cortas para mejorar la precisión de la transcripción."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ajoutez des mots personnalisés, des adresses e-mail et de courtes expressions pour améliorer la précision de la transcription."
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ajoutez des mots personnalisés, des adresses courriel et de courtes expressions pour améliorer la précision de la transcription."
+          }
+        }
+      }
+    },
+    "Add Shortcut" : {
+      "comment" : "Button in the dictation shortcut setup that adds the KeyVox shortcut to the Shortcuts app.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Kurzbefehl hinzufügen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Añadir atajo"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Agregar atajo"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ajouter le raccourci"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ajouter le raccourci"
+          }
+        }
+      }
+    },
+    "Add to Control Center" : {
+      "comment" : "Feature list item on the dictation shortcut intro page. Use Apple's official name for Control Center in this language.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zum Kontrollzentrum hinzufügen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Añadir al Centro de control"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Agregar al Centro de control"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ajouter au Centre de contrôle"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ajouter au Centre de contrôle"
+          }
+        }
+      }
+    },
+    "Add Word" : {
+      "comment" : "Title of the sheet for adding a word to the Dictionary.\nVoiceOver label for the floating plus button that adds a word to the Dictionary.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Neues Wort"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Añadir palabra"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Agregar palabra"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ajouter un mot"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ajouter un mot"
+          }
+        }
+      }
+    },
+    "After this, you may never type again." : {
+      "comment" : "Subtitle on the onboarding setup checklist screen.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Danach tippst du vielleicht nie wieder."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Después de esto, puede que nunca vuelvas a escribir."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Después de esto, puede que nunca vuelvas a escribir."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Après ça, vous risquez de ne plus jamais taper au clavier."
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Après ça, vous risquez de ne plus jamais taper au clavier."
+          }
+        }
+      }
     },
     "AI Model Setup" : {
       "comment" : "Title of the onboarding setup step that downloads the dictation model.",
@@ -885,286 +1200,6 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Les voix IA fonctionnent entièrement sur l’appareil. Rien ne quitte votre iPhone."
-          }
-        }
-      }
-    },
-    "Accurate and lightweight." : {
-      "comment" : "Short description of the Whisper Base dictation model on its row in dictation settings.",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Genau und schlank."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Preciso y ligero."
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Preciso y ligero."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Précis et léger."
-          }
-        },
-        "fr-CA" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Précis et léger."
-          }
-        }
-      }
-    },
-    "Add" : {
-      "comment" : "Button in the Dictionary word sheet that adds the typed word.",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Hinzufügen"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Añadir"
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Agregar"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Ajouter"
-          }
-        },
-        "fr-CA" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Ajouter"
-          }
-        }
-      }
-    },
-    "Add Shortcut" : {
-      "comment" : "Button in the dictation shortcut setup that adds the KeyVox shortcut to the Shortcuts app.",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Kurzbefehl hinzufügen"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Añadir atajo"
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Agregar atajo"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Ajouter le raccourci"
-          }
-        },
-        "fr-CA" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Ajouter le raccourci"
-          }
-        }
-      }
-    },
-    "Add Word" : {
-      "comment" : "Title of the sheet for adding a word to the Dictionary.\nVoiceOver label for the floating plus button that adds a word to the Dictionary.",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Neues Wort"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Añadir palabra"
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Agregar palabra"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Ajouter un mot"
-          }
-        },
-        "fr-CA" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Ajouter un mot"
-          }
-        }
-      }
-    },
-    "Add a quick shortcut to toggle KeyVox dictation anywhere." : {
-      "comment" : "Description under the Dictation Shortcut row. KeyVox is a brand name and stays in English.",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Füge einen Kurzbefehl hinzu, um das KeyVox-Diktat überall ein- und auszuschalten."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Añade un atajo rápido para activar o desactivar el dictado de KeyVox desde cualquier lugar."
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Agrega un atajo rápido para activar o desactivar el dictado de KeyVox desde cualquier lugar."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Ajoutez un raccourci rapide pour activer ou désactiver la dictée KeyVox partout."
-          }
-        },
-        "fr-CA" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Ajoutez un raccourci rapide pour activer ou désactiver la dictée KeyVox partout."
-          }
-        }
-      }
-    },
-    "Add custom words, email addresses, and short phrases to improve transcription accuracy." : {
-      "comment" : "Description in the sheet for adding a word to the Dictionary.",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Füge eigene Wörter, E-Mail-Adressen und kurze Phrasen hinzu, um die Transkription genauer zu machen."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Añade palabras personalizadas, direcciones de correo electrónico y frases cortas para mejorar la precisión de la transcripción."
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Agrega palabras personalizadas, direcciones de correo electrónico y frases cortas para mejorar la precisión de la transcripción."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Ajoutez des mots personnalisés, des adresses e-mail et de courtes expressions pour améliorer la précision de la transcription."
-          }
-        },
-        "fr-CA" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Ajoutez des mots personnalisés, des adresses courriel et de courtes expressions pour améliorer la précision de la transcription."
-          }
-        }
-      }
-    },
-    "Add to Control Center" : {
-      "comment" : "Feature list item on the dictation shortcut intro page. Use Apple's official name for Control Center in this language.",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Zum Kontrollzentrum hinzufügen"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Añadir al Centro de control"
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Agregar al Centro de control"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Ajouter au Centre de contrôle"
-          }
-        },
-        "fr-CA" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Ajouter au Centre de contrôle"
-          }
-        }
-      }
-    },
-    "After this, you may never type again." : {
-      "comment" : "Subtitle on the onboarding setup checklist screen.",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Danach tippst du vielleicht nie wieder."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Después de esto, puede que nunca vuelvas a escribir."
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Después de esto, puede que nunca vuelvas a escribir."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Après ça, vous risquez de ne plus jamais taper au clavier."
-          }
-        },
-        "fr-CA" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Après ça, vous risquez de ne plus jamais taper au clavier."
           }
         }
       }
@@ -1305,6 +1340,41 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Une connexion Internet est requise pour télécharger le modèle."
+          }
+        }
+      }
+    },
+    "and speak." : {
+      "comment" : "Second line of the two-line headline; the first line is \"Swipe Back,\". Speak is a verb here, meaning start talking to dictate.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "und sprich los."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "y habla."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "y habla."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "et parlez."
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "et parlez."
           }
         }
       }
@@ -2645,41 +2715,6 @@
         }
       }
     },
-    "Delete Voice?" : {
-      "comment" : "Title of the confirmation shown before deleting a downloaded KeyVox Speak voice.",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Stimme löschen?"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "¿Eliminar voz?"
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "¿Eliminar voz?"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Supprimer la voix ?"
-          }
-        },
-        "fr-CA" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Supprimer la voix?"
-          }
-        }
-      }
-    },
     "Delete the %@ model from this device?" : {
       "comment" : "Message in the confirmation shown before deleting a dictation model. The placeholder is the model name, a brand name that stays in English.",
       "localizations" : {
@@ -2785,7 +2820,43 @@
         }
       }
     },
+    "Delete Voice?" : {
+      "comment" : "Title of the confirmation shown before deleting a downloaded KeyVox Speak voice.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Stimme löschen?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "¿Eliminar voz?"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "¿Eliminar voz?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Supprimer la voix ?"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Supprimer la voix?"
+          }
+        }
+      }
+    },
     "Diagnostics" : {
+      "extractionState" : "manual",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3204,72 +3275,72 @@
         }
       }
     },
+    "do this once per session." : {
+      "comment" : "Second line of a two-line message on the swipe back screen; the first line is \"Don’t worry, you’ll only have to\". A session is the period while dictation stays turned on.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "einmal pro Sitzung machen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "hacerlo una vez por sesión."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "hacerlo una vez por sesión."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "le faire qu’une fois par session."
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "le faire qu’une fois par session."
+          }
+        }
+      }
+    },
     "Don't forget: Fast Mode starts speaking ~50% faster." : {
       "comment" : "Hint on the KeyVox Speak setup page about the Fast Mode option.",
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Denk dran: Im Schnellmodus beginnt das Vorlesen ~50 % schneller."
           }
         },
         "es" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "No lo olvides: el modo rápido empieza a hablar ~50 % más rápido."
           }
         },
         "es-419" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "No lo olvides: el modo rápido empieza a hablar ~50% más rápido."
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "N’oubliez pas : le Mode rapide commence à parler ~50 % plus vite."
           }
         },
         "fr-CA" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "N’oubliez pas : le Mode rapide commence à parler ~50 % plus vite."
-          }
-        }
-      }
-    },
-    "Done" : {
-      "comment" : "Button on the dictation language picker screen opened from Settings that confirms the choice.",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Fertig"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "OK"
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "OK"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "OK"
-          }
-        },
-        "fr-CA" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "OK"
           }
         }
       }
@@ -3305,6 +3376,41 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Pas d’inquiétude, vous n’aurez à"
+          }
+        }
+      }
+    },
+    "Done" : {
+      "comment" : "Button on the dictation language picker screen opened from Settings that confirms the choice.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Fertig"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "OK"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "OK"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "OK"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "OK"
           }
         }
       }
@@ -3375,41 +3481,6 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Télécharger"
-          }
-        }
-      }
-    },
-    "Download %@'s Voice?" : {
-      "comment" : "Title of the confirmation shown before downloading a KeyVox Speak voice. The placeholder is the voice name, which stays in English.",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Stimme von %@ laden?"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "¿Descargar la voz de %@?"
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "¿Descargar la voz de %@?"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Télécharger la voix de %@ ?"
-          }
-        },
-        "fr-CA" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Télécharger la voix de %@?"
           }
         }
       }
@@ -3492,6 +3563,76 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Téléchargez la voix de %@ (%@) pour lire le texte copié."
+          }
+        }
+      }
+    },
+    "Download %@'s Voice?" : {
+      "comment" : "Title of the confirmation shown before downloading a KeyVox Speak voice. The placeholder is the voice name, which stays in English.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Stimme von %@ laden?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "¿Descargar la voz de %@?"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "¿Descargar la voz de %@?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Télécharger la voix de %@ ?"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Télécharger la voix de %@?"
+          }
+        }
+      }
+    },
+    "Download a playback voice to let KeyVox read copied text aloud." : {
+      "comment" : "Description on the KeyVox Speak card when no voice is installed. KeyVox is a brand name and stays in English.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Lade eine Wiedergabestimme, damit KeyVox kopierten Text vorlesen kann."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Descarga una voz de reproducción para que KeyVox lea en voz alta el texto copiado."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Descarga una voz de reproducción para que KeyVox lea en voz alta el texto copiado."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Téléchargez une voix de lecture pour que KeyVox puisse lire le texte copié à voix haute."
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Téléchargez une voix de lecture pour que KeyVox puisse lire le texte copié à voix haute."
           }
         }
       }
@@ -3706,111 +3847,6 @@
         }
       }
     },
-    "Download Vibes AI to use Vibes." : {
-      "comment" : "Status on the KeyVox Vibes card when the model is not installed. Vibes AI and Vibes are brand names and stay in English.",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Lade Vibes AI, um Vibes zu nutzen."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Descarga Vibes AI para usar Vibes."
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Descarga Vibes AI para usar Vibes."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Téléchargez Vibes AI pour utiliser Vibes."
-          }
-        },
-        "fr-CA" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Téléchargez Vibes AI pour utiliser Vibes."
-          }
-        }
-      }
-    },
-    "Download Whisper Base?" : {
-      "comment" : "Title of the confirmation shown before downloading a dictation model. Whisper Base is a brand name and stays in English.",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Whisper Base laden?"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "¿Descargar Whisper Base?"
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "¿Descargar Whisper Base?"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Télécharger Whisper Base ?"
-          }
-        },
-        "fr-CA" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Télécharger Whisper Base?"
-          }
-        }
-      }
-    },
-    "Download a playback voice to let KeyVox read copied text aloud." : {
-      "comment" : "Description on the KeyVox Speak card when no voice is installed. KeyVox is a brand name and stays in English.",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Lade eine Wiedergabestimme, damit KeyVox kopierten Text vorlesen kann."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Descarga una voz de reproducción para que KeyVox lea en voz alta el texto copiado."
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Descarga una voz de reproducción para que KeyVox lea en voz alta el texto copiado."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Téléchargez une voix de lecture pour que KeyVox puisse lire le texte copié à voix haute."
-          }
-        },
-        "fr-CA" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Téléchargez une voix de lecture pour que KeyVox puisse lire le texte copié à voix haute."
-          }
-        }
-      }
-    },
     "Download the KeyVox Speak engine (%@) to speak copied text on this device?" : {
       "comment" : "Message in the confirmation shown before downloading the text-to-speech engine. KeyVox Speak is a brand name and stays in English. The value in parentheses is the approximate download size.",
       "localizations" : {
@@ -3992,37 +4028,72 @@
         }
       }
     },
-    "Downloaded Vibes model did not match the expected SHA-256." : {
-      "comment" : "Error shown when the downloaded Vibes AI model fails its integrity check. Vibes is a brand name and stays in English; SHA-256 is a technical term and stays as written.",
+    "Download Vibes AI to use Vibes." : {
+      "comment" : "Status on the KeyVox Vibes card when the model is not installed. Vibes AI and Vibes are brand names and stay in English.",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Das geladene Vibes-Modell entspricht nicht dem erwarteten SHA-256."
+            "value" : "Lade Vibes AI, um Vibes zu nutzen."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "El modelo de Vibes descargado no coincide con el SHA-256 esperado."
+            "value" : "Descarga Vibes AI para usar Vibes."
           }
         },
         "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "El modelo de Vibes descargado no coincide con el SHA-256 esperado."
+            "value" : "Descarga Vibes AI para usar Vibes."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Le modèle Vibes téléchargé ne correspond pas au SHA-256 attendu."
+            "value" : "Téléchargez Vibes AI pour utiliser Vibes."
           }
         },
         "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Le modèle Vibes téléchargé ne correspond pas au SHA-256 attendu."
+            "value" : "Téléchargez Vibes AI pour utiliser Vibes."
+          }
+        }
+      }
+    },
+    "Download Whisper Base?" : {
+      "comment" : "Title of the confirmation shown before downloading a dictation model. Whisper Base is a brand name and stays in English.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Whisper Base laden?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "¿Descargar Whisper Base?"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "¿Descargar Whisper Base?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Télécharger Whisper Base ?"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Télécharger Whisper Base?"
           }
         }
       }
@@ -4062,6 +4133,41 @@
         }
       }
     },
+    "Downloaded Vibes model did not match the expected SHA-256." : {
+      "comment" : "Error shown when the downloaded Vibes AI model fails its integrity check. Vibes is a brand name and stays in English; SHA-256 is a technical term and stays as written.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Das geladene Vibes-Modell entspricht nicht dem erwarteten SHA-256."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "El modelo de Vibes descargado no coincide con el SHA-256 esperado."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "El modelo de Vibes descargado no coincide con el SHA-256 esperado."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Le modèle Vibes téléchargé ne correspond pas au SHA-256 attendu."
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Le modèle Vibes téléchargé ne correspond pas au SHA-256 attendu."
+          }
+        }
+      }
+    },
     "Downloading %@" : {
       "comment" : "Status on a KeyVox Speak voice row while the voice downloads. The placeholder is the voice name, which stays in English.",
       "localizations" : {
@@ -4097,41 +4203,6 @@
         }
       }
     },
-    "Downloading %@'s voice..." : {
-      "comment" : "Status on the Home tab Speak Copied Text card while a voice downloads. The placeholder is the voice name, which stays in English.",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Stimme von %@ wird geladen..."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Descargando la voz de %@..."
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Descargando la voz de %@..."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Téléchargement de la voix de %@..."
-          }
-        },
-        "fr-CA" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Téléchargement de la voix de %@..."
-          }
-        }
-      }
-    },
     "Downloading %@." : {
       "comment" : "Install status on the KeyVox Speak setup card while the voice downloads. The placeholder is the voice name, which stays in English.",
       "localizations" : {
@@ -4163,6 +4234,41 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Téléchargement de la voix %@."
+          }
+        }
+      }
+    },
+    "Downloading %@'s voice..." : {
+      "comment" : "Status on the Home tab Speak Copied Text card while a voice downloads. The placeholder is the voice name, which stays in English.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Stimme von %@ wird geladen..."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Descargando la voz de %@..."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Descargando la voz de %@..."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Téléchargement de la voix de %@..."
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Téléchargement de la voix de %@..."
           }
         }
       }
@@ -4552,76 +4658,6 @@
         }
       }
     },
-    "Enable KeyVox’s keyboard and turn on Allow Full Access in Settings, then come back here." : {
-      "comment" : "Instructions on the onboarding Enable Keyboard screen. KeyVox is a brand name and stays in English; use Apple's official names for Allow Full Access and Settings in this language.",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Aktiviere die KeyVox-Tastatur und schalte in den Einstellungen „Vollen Zugriff erlauben“ ein. Komm dann hierher zurück."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Activa el teclado de KeyVox y “Permitir acceso total” en Ajustes, y luego vuelve aquí."
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Activa el teclado de KeyVox y “Permitir acceso completo” en Configuración, y luego vuelve aquí."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Activez le clavier KeyVox et l’option Autoriser l’accès complet dans Réglages, puis revenez ici."
-          }
-        },
-        "fr-CA" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Activez le clavier KeyVox et l’option Autoriser l’accès complet dans Réglages, puis revenez ici."
-          }
-        }
-      }
-    },
-    "Enable Keyboard" : {
-      "comment" : "Title of the onboarding screen that asks the user to turn on the KeyVox keyboard.",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Tastatur aktivieren"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Activar teclado"
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Activar teclado"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Activer le clavier"
-          }
-        },
-        "fr-CA" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Activer le clavier"
-          }
-        }
-      }
-    },
     "Enable dictation session" : {
       "comment" : "VoiceOver label for the toolbar button that turns on the dictation session.",
       "localizations" : {
@@ -4688,6 +4724,76 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Activer la lecture rapide"
+          }
+        }
+      }
+    },
+    "Enable Keyboard" : {
+      "comment" : "Title of the onboarding screen that asks the user to turn on the KeyVox keyboard.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Tastatur aktivieren"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Activar teclado"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Activar teclado"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Activer le clavier"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Activer le clavier"
+          }
+        }
+      }
+    },
+    "Enable KeyVox’s keyboard and turn on Allow Full Access in Settings, then come back here." : {
+      "comment" : "Instructions on the onboarding Enable Keyboard screen. KeyVox is a brand name and stays in English; use Apple's official names for Allow Full Access and Settings in this language.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aktiviere die KeyVox-Tastatur und schalte in den Einstellungen „Vollen Zugriff erlauben“ ein. Komm dann hierher zurück."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Activa el teclado de KeyVox y “Permitir acceso total” en Ajustes, y luego vuelve aquí."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Activa el teclado de KeyVox y “Permitir acceso completo” en Configuración, y luego vuelve aquí."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Activez le clavier KeyVox et l’option Autoriser l’accès complet dans Réglages, puis revenez ici."
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Activez le clavier KeyVox et l’option Autoriser l’accès complet dans Réglages, puis revenez ici."
           }
         }
       }
@@ -4902,41 +5008,6 @@
         }
       }
     },
-    "Finish Setup" : {
-      "comment" : "Title of the KeyVox Speak setup page shown after unlocking.",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Einrichtung abschließen"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Finalizar configuración"
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Finalizar configuración"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Terminer la configuration"
-          }
-        },
-        "fr-CA" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Terminer la configuration"
-          }
-        }
-      }
-    },
     "Finish downloading the model and allow microphone access before continuing." : {
       "comment" : "Description of the onboarding keyboard step while earlier steps are unfinished.",
       "localizations" : {
@@ -4968,6 +5039,41 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Terminez le téléchargement du modèle et autorisez l’accès au micro avant de continuer."
+          }
+        }
+      }
+    },
+    "Finish Setup" : {
+      "comment" : "Title of the KeyVox Speak setup page shown after unlocking.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Einrichtung abschließen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Finalizar configuración"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Finalizar configuración"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Terminer la configuration"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Terminer la configuration"
           }
         }
       }
@@ -5077,76 +5183,6 @@
         }
       }
     },
-    "Get Speak Unlimited" : {
-      "comment" : "Title of the KeyVox Speak unlock page. Speak Unlimited is the product name; Speak is a brand name and stays in English.",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Hol dir Speak Unlimited"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Consigue Speak Unlimited"
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Consigue Speak Unlimited"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Obtenir Speak Unlimited"
-          }
-        },
-        "fr-CA" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Obtenir Speak Unlimited"
-          }
-        }
-      }
-    },
-    "Get Started" : {
-      "comment" : "Button on the first page of the KeyVox Speak intro.\nButton on the first page of the KeyVox Vibes intro.",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Los geht’s"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Empezar"
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Empezar"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Démarrer"
-          }
-        },
-        "fr-CA" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Démarrer"
-          }
-        }
-      }
-    },
     "Get haptic feedback from KeyVox keyboard." : {
       "comment" : "Description under the Keyboard Haptics toggle.",
       "localizations" : {
@@ -5213,6 +5249,76 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Obtenez de l’aide sur KeyVox, téléchargez l’app Mac, consultez la FAQ, trouvez plus d’informations ou contactez-nous."
+          }
+        }
+      }
+    },
+    "Get Speak Unlimited" : {
+      "comment" : "Title of the KeyVox Speak unlock page. Speak Unlimited is the product name; Speak is a brand name and stays in English.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Hol dir Speak Unlimited"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Consigue Speak Unlimited"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Consigue Speak Unlimited"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Obtenir Speak Unlimited"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Obtenir Speak Unlimited"
+          }
+        }
+      }
+    },
+    "Get Started" : {
+      "comment" : "Button on the first page of the KeyVox Speak intro.\nButton on the first page of the KeyVox Vibes intro.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Los geht’s"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Empezar"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Empezar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Démarrer"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Démarrer"
           }
         }
       }
@@ -5392,6 +5498,41 @@
         }
       }
     },
+    "In “Keyboards,” turn on KeyVox, then turn on “Allow Full Access.”" : {
+      "comment" : "Caption under the onboarding video that shows the keyboard settings, shown in place of the video's English words. Use Apple's official names for Keyboards and Allow Full Access in this language, matching the Enable Keyboard instructions. KeyVox is a brand name and stays in English.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Schalte unter „Tastaturen“ KeyVox ein und dann „Vollen Zugriff erlauben“."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "En “Teclados”, activa KeyVox y luego “Permitir acceso total”."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "En “Teclados”, activa KeyVox y luego “Permitir acceso completo”."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dans Claviers, activez KeyVox, puis Autoriser l’accès complet."
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dans Claviers, activez KeyVox, puis Autoriser l’accès complet."
+          }
+        }
+      }
+    },
     "In the list of keyboards, choose KeyVox." : {
       "comment" : "Caption under the onboarding keyboard tour video that shows the keyboard list, shown in place of the video's English words. KeyVox is a brand name and stays in English.",
       "localizations" : {
@@ -5427,37 +5568,37 @@
         }
       }
     },
-    "In “Keyboards,” turn on KeyVox, then turn on “Allow Full Access.”" : {
-      "comment" : "Caption under the onboarding video that shows the keyboard settings, shown in place of the video's English words. Use Apple's official names for Keyboards and Allow Full Access in this language, matching the Enable Keyboard instructions. KeyVox is a brand name and stays in English.",
+    "Install %@ and be ready to speak right away." : {
+      "comment" : "Subtitle on the KeyVox Speak setup page. The placeholder is the voice name, which stays in English.",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Schalte unter „Tastaturen“ KeyVox ein und dann „Vollen Zugriff erlauben“."
+            "value" : "Installiere %@ und leg sofort los."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "En “Teclados”, activa KeyVox y luego “Permitir acceso total”."
+            "value" : "Instala la voz %@ y tenlo todo listo al instante."
           }
         },
         "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "En “Teclados”, activa KeyVox y luego “Permitir acceso completo”."
+            "value" : "Instala la voz %@ y tenlo todo listo al instante."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Dans Claviers, activez KeyVox, puis Autoriser l’accès complet."
+            "value" : "Installez la voix %@ et lancez la lecture sans attendre."
           }
         },
         "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Dans Claviers, activez KeyVox, puis Autoriser l’accès complet."
+            "value" : "Installez la voix %@ et lancez la lecture sans attendre."
           }
         }
       }
@@ -5538,41 +5679,6 @@
         }
       }
     },
-    "Install %@ and be ready to speak right away." : {
-      "comment" : "Subtitle on the KeyVox Speak setup page. The placeholder is the voice name, which stays in English.",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Installiere %@ und leg sofort los."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Instala la voz %@ y tenlo todo listo al instante."
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Instala la voz %@ y tenlo todo listo al instante."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Installez la voix %@ et lancez la lecture sans attendre."
-          }
-        },
-        "fr-CA" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Installez la voix %@ et lancez la lecture sans attendre."
-          }
-        }
-      }
-    },
     "Install %@'s voice and KeyVox will handle the Speak engine for you." : {
       "comment" : "Description on the KeyVox Speak setup card. KeyVox and Speak are brand names and stay in English. The placeholder is the voice name, which stays in English.",
       "localizations" : {
@@ -5604,111 +5710,6 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Installez la voix de %@ et KeyVox s’occupe du moteur Speak pour vous."
-          }
-        }
-      }
-    },
-    "Install Vibes AI" : {
-      "comment" : "Title of the Vibes AI install card. Vibes AI is a brand name and stays in English.",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Vibes AI installieren"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Instalar Vibes AI"
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Instalar Vibes AI"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Installer Vibes AI"
-          }
-        },
-        "fr-CA" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Installer Vibes AI"
-          }
-        }
-      }
-    },
-    "Install Vibes AI first (%@), then you can use KeyVox Vibes" : {
-      "comment" : "Description on the KeyVox Vibes AI card in Settings when the model is not installed. Vibes AI and KeyVox Vibes are brand names and stay in English. The value in parentheses is the approximate download size.",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Installiere zuerst Vibes AI (%@), dann kannst du KeyVox Vibes nutzen"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Instala primero Vibes AI (%@) y después podrás usar KeyVox Vibes"
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Instala primero Vibes AI (%@) y después podrás usar KeyVox Vibes"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Installez d’abord Vibes AI (%@), puis vous pourrez utiliser KeyVox Vibes"
-          }
-        },
-        "fr-CA" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Installez d’abord Vibes AI (%@), puis vous pourrez utiliser KeyVox Vibes"
-          }
-        }
-      }
-    },
-    "Install Vibes AI first (%@), then you can use KeyVox Vibes." : {
-      "comment" : "Status on the Vibes AI install card before download, with the approximate download size. Vibes AI and KeyVox Vibes are brand names and stay in English.",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Installiere zuerst Vibes AI (%@), dann kannst du KeyVox Vibes nutzen."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Instala primero Vibes AI (%@) y después podrás usar KeyVox Vibes."
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Instala primero Vibes AI (%@) y después podrás usar KeyVox Vibes."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Installez d’abord Vibes AI (%@), puis vous pourrez utiliser KeyVox Vibes."
-          }
-        },
-        "fr-CA" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Installez d’abord Vibes AI (%@), puis vous pourrez utiliser KeyVox Vibes."
           }
         }
       }
@@ -5958,6 +5959,111 @@
         }
       }
     },
+    "Install Vibes AI" : {
+      "comment" : "Title of the Vibes AI install card. Vibes AI is a brand name and stays in English.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vibes AI installieren"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Instalar Vibes AI"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Instalar Vibes AI"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Installer Vibes AI"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Installer Vibes AI"
+          }
+        }
+      }
+    },
+    "Install Vibes AI first (%@), then you can use KeyVox Vibes" : {
+      "comment" : "Description on the KeyVox Vibes AI card in Settings when the model is not installed. Vibes AI and KeyVox Vibes are brand names and stay in English. The value in parentheses is the approximate download size.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Installiere zuerst Vibes AI (%@), dann kannst du KeyVox Vibes nutzen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Instala primero Vibes AI (%@) y después podrás usar KeyVox Vibes"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Instala primero Vibes AI (%@) y después podrás usar KeyVox Vibes"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Installez d’abord Vibes AI (%@), puis vous pourrez utiliser KeyVox Vibes"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Installez d’abord Vibes AI (%@), puis vous pourrez utiliser KeyVox Vibes"
+          }
+        }
+      }
+    },
+    "Install Vibes AI first (%@), then you can use KeyVox Vibes." : {
+      "comment" : "Status on the Vibes AI install card before download, with the approximate download size. Vibes AI and KeyVox Vibes are brand names and stay in English.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Installiere zuerst Vibes AI (%@), dann kannst du KeyVox Vibes nutzen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Instala primero Vibes AI (%@) y después podrás usar KeyVox Vibes."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Instala primero Vibes AI (%@) y después podrás usar KeyVox Vibes."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Installez d’abord Vibes AI (%@), puis vous pourrez utiliser KeyVox Vibes."
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Installez d’abord Vibes AI (%@), puis vous pourrez utiliser KeyVox Vibes."
+          }
+        }
+      }
+    },
     "Install voice" : {
       "comment" : "Shown in place of the Change button on the KeyVox Speak card when no voice is installed yet.",
       "localizations" : {
@@ -6098,41 +6204,6 @@
         }
       }
     },
-    "Installing %@'s voice..." : {
-      "comment" : "Status on the Home tab Speak Copied Text card while a voice installs. The placeholder is the voice name, which stays in English.",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Stimme von %@ wird installiert..."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Instalando la voz de %@..."
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Instalando la voz de %@..."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Installation de la voix de %@..."
-          }
-        },
-        "fr-CA" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Installation de la voix de %@..."
-          }
-        }
-      }
-    },
     "Installing %@." : {
       "comment" : "Install status on the KeyVox Speak setup card while the voice installs. The placeholder is the voice name, which stays in English.",
       "localizations" : {
@@ -6164,6 +6235,41 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Installation de la voix %@."
+          }
+        }
+      }
+    },
+    "Installing %@'s voice..." : {
+      "comment" : "Status on the Home tab Speak Copied Text card while a voice installs. The placeholder is the voice name, which stays in English.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Stimme von %@ wird installiert..."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Instalando la voz de %@..."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Instalando la voz de %@..."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Installation de la voix de %@..."
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Installation de la voix de %@..."
           }
         }
       }
@@ -6483,6 +6589,146 @@
         }
       }
     },
+    "Keyboard" : {
+      "comment" : "Title of the KeyVox keyboard settings screen and of the Settings row that opens it.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Tastatur"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Teclado"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Teclado"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Clavier"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Clavier"
+          }
+        }
+      }
+    },
+    "Keyboard & Shortcut" : {
+      "comment" : "Title of the onboarding setup step that sets up the KeyVox keyboard and dictation shortcut.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Tastatur & Kurzbefehl"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Teclado y atajo"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Teclado y atajo"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Clavier et raccourci"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Clavier et raccourci"
+          }
+        }
+      }
+    },
+    "Keyboard Haptics" : {
+      "comment" : "Keyboard settings toggle for vibration feedback on key taps.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Tastaturhaptik"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Respuesta háptica del teclado"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vibración del teclado"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Retour haptique du clavier"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Retour haptique du clavier"
+          }
+        }
+      }
+    },
+    "Keyboard Shortcut" : {
+      "comment" : "Row title on the KeyVox Speak page listing the ways to start Speak: a button on the KeyVox keyboard.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Taste auf der Tastatur"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Atajo en el teclado"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Atajo en el teclado"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Raccourci clavier"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Raccourci clavier"
+          }
+        }
+      }
+    },
     "KeyVox %@ is available on the App Store." : {
       "comment" : "Message in the optional app update prompt. KeyVox is a brand name and stays in English; use Apple's official name for the App Store. The placeholder is the new version number.",
       "localizations" : {
@@ -6549,289 +6795,6 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "KeyVox %@ est requis pour continuer à utiliser l’app."
-          }
-        }
-      }
-    },
-    "KeyVox Speak" : {
-      "shouldTranslate" : false
-    },
-    "KeyVox Speak Engine" : {
-      "comment" : "Title of the row for the downloadable text-to-speech engine. KeyVox Speak is a brand name and stays in English.",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "KeyVox Speak-Engine"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Motor de KeyVox Speak"
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Motor de KeyVox Speak"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Moteur KeyVox Speak"
-          }
-        },
-        "fr-CA" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Moteur KeyVox Speak"
-          }
-        }
-      }
-    },
-    "KeyVox Speak Unlimited" : {
-      "comment" : "Title of the row for the purchase that removes the daily KeyVox Speak limit. KeyVox Speak is a brand name and stays in English.",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "KeyVox Speak Unlimited"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "KeyVox Speak Unlimited"
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "KeyVox Speak Unlimited"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "KeyVox Speak Unlimited"
-          }
-        },
-        "fr-CA" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "KeyVox Speak Unlimited"
-          }
-        }
-      }
-    },
-    "KeyVox Speak engine install failed." : {
-      "comment" : "Status on the Home tab Speak Copied Text card when the text-to-speech engine failed to install. KeyVox Speak is a brand name and stays in English.",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Installation der KeyVox Speak-Engine fehlgeschlagen."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Error al instalar el motor de KeyVox Speak."
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Error al instalar el motor de KeyVox Speak."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Échec de l’installation du moteur KeyVox Speak."
-          }
-        },
-        "fr-CA" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Échec de l’installation du moteur KeyVox Speak."
-          }
-        }
-      }
-    },
-    "KeyVox Speak engine is not installed." : {
-      "comment" : "Error shown when KeyVox Speak is used before its engine is installed. KeyVox Speak is a brand name and stays in English.",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Die KeyVox Speak-Engine ist nicht installiert."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "El motor de KeyVox Speak no está instalado."
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "El motor de KeyVox Speak no está instalado."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Le moteur KeyVox Speak n’est pas installé."
-          }
-        },
-        "fr-CA" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Le moteur KeyVox Speak n’est pas installé."
-          }
-        }
-      }
-    },
-    "KeyVox Speak engine is ready. Now we'll finish by installing %@'s voice." : {
-      "comment" : "Install status on the KeyVox Speak setup card when the engine is ready but the voice is not; a download size follows it. KeyVox Speak is a brand name and stays in English. The placeholder is the voice name, which stays in English.",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Die KeyVox Speak-Engine ist bereit. Zum Abschluss installieren wir jetzt die Stimme von %@."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "El motor de KeyVox Speak está listo. Para terminar, instalaremos la voz de %@."
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "El motor de KeyVox Speak está listo. Para terminar, instalaremos la voz de %@."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Le moteur KeyVox Speak est prêt. Il ne reste plus qu’à installer la voix de %@."
-          }
-        },
-        "fr-CA" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Le moteur KeyVox Speak est prêt. Il ne reste plus qu’à installer la voix de %@."
-          }
-        }
-      }
-    },
-    "KeyVox Speak voice %@ is not supported." : {
-      "comment" : "Error shown when a KeyVox Speak voice cannot be used. KeyVox Speak is a brand name and stays in English. The placeholder is the voice identifier.",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Die KeyVox Speak-Stimme %@ wird nicht unterstützt."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "La voz %@ de KeyVox Speak no es compatible."
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "La voz %@ de KeyVox Speak no es compatible."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "La voix KeyVox Speak %@ n’est pas prise en charge."
-          }
-        },
-        "fr-CA" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "La voix KeyVox Speak %@ n’est pas prise en charge."
-          }
-        }
-      }
-    },
-    "KeyVox Vibes AI is installed and ready." : {
-      "comment" : "Description on the KeyVox Vibes AI card in Settings once the model is installed. KeyVox Vibes AI is a brand name and stays in English.\nStatus on the Vibes AI install card when installed. KeyVox Vibes AI is a brand name and stays in English.",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "KeyVox Vibes AI ist installiert und bereit."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "KeyVox Vibes AI está instalado y listo."
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "KeyVox Vibes AI está instalado y listo."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "KeyVox Vibes AI est installé et prêt."
-          }
-        },
-        "fr-CA" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "KeyVox Vibes AI est installé et prêt."
-          }
-        }
-      }
-    },
-    "KeyVox Vibes is also available on Mac." : {
-      "comment" : "Benefit description on the KeyVox Vibes unlock page. KeyVox Vibes is a brand name and stays in English.",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "KeyVox Vibes ist auch auf dem Mac verfügbar."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "KeyVox Vibes también está disponible en Mac."
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "KeyVox Vibes también está disponible en Mac."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "KeyVox Vibes est également disponible sur Mac."
-          }
-        },
-        "fr-CA" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "KeyVox Vibes est également disponible sur Mac."
           }
         }
       }
@@ -7011,6 +6974,289 @@
         }
       }
     },
+    "KeyVox Speak" : {
+      "shouldTranslate" : false
+    },
+    "KeyVox Speak Engine" : {
+      "comment" : "Title of the row for the downloadable text-to-speech engine. KeyVox Speak is a brand name and stays in English.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox Speak-Engine"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Motor de KeyVox Speak"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Motor de KeyVox Speak"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Moteur KeyVox Speak"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Moteur KeyVox Speak"
+          }
+        }
+      }
+    },
+    "KeyVox Speak engine install failed." : {
+      "comment" : "Status on the Home tab Speak Copied Text card when the text-to-speech engine failed to install. KeyVox Speak is a brand name and stays in English.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Installation der KeyVox Speak-Engine fehlgeschlagen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Error al instalar el motor de KeyVox Speak."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Error al instalar el motor de KeyVox Speak."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Échec de l’installation du moteur KeyVox Speak."
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Échec de l’installation du moteur KeyVox Speak."
+          }
+        }
+      }
+    },
+    "KeyVox Speak engine is not installed." : {
+      "comment" : "Error shown when KeyVox Speak is used before its engine is installed. KeyVox Speak is a brand name and stays in English.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Die KeyVox Speak-Engine ist nicht installiert."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "El motor de KeyVox Speak no está instalado."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "El motor de KeyVox Speak no está instalado."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Le moteur KeyVox Speak n’est pas installé."
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Le moteur KeyVox Speak n’est pas installé."
+          }
+        }
+      }
+    },
+    "KeyVox Speak engine is ready. Now we'll finish by installing %@'s voice." : {
+      "comment" : "Install status on the KeyVox Speak setup card when the engine is ready but the voice is not; a download size follows it. KeyVox Speak is a brand name and stays in English. The placeholder is the voice name, which stays in English.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Die KeyVox Speak-Engine ist bereit. Zum Abschluss installieren wir jetzt die Stimme von %@."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "El motor de KeyVox Speak está listo. Para terminar, instalaremos la voz de %@."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "El motor de KeyVox Speak está listo. Para terminar, instalaremos la voz de %@."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Le moteur KeyVox Speak est prêt. Il ne reste plus qu’à installer la voix de %@."
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Le moteur KeyVox Speak est prêt. Il ne reste plus qu’à installer la voix de %@."
+          }
+        }
+      }
+    },
+    "KeyVox Speak Unlimited" : {
+      "comment" : "Title of the row for the purchase that removes the daily KeyVox Speak limit. KeyVox Speak is a brand name and stays in English.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox Speak Unlimited"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox Speak Unlimited"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox Speak Unlimited"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox Speak Unlimited"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox Speak Unlimited"
+          }
+        }
+      }
+    },
+    "KeyVox Speak voice %@ is not supported." : {
+      "comment" : "Error shown when a KeyVox Speak voice cannot be used. KeyVox Speak is a brand name and stays in English. The placeholder is the voice identifier.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Die KeyVox Speak-Stimme %@ wird nicht unterstützt."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La voz %@ de KeyVox Speak no es compatible."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La voz %@ de KeyVox Speak no es compatible."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La voix KeyVox Speak %@ n’est pas prise en charge."
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La voix KeyVox Speak %@ n’est pas prise en charge."
+          }
+        }
+      }
+    },
+    "KeyVox Vibes AI is installed and ready." : {
+      "comment" : "Description on the KeyVox Vibes AI card in Settings once the model is installed. KeyVox Vibes AI is a brand name and stays in English.\nStatus on the Vibes AI install card when installed. KeyVox Vibes AI is a brand name and stays in English.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox Vibes AI ist installiert und bereit."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox Vibes AI está instalado y listo."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox Vibes AI está instalado y listo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox Vibes AI est installé et prêt."
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox Vibes AI est installé et prêt."
+          }
+        }
+      }
+    },
+    "KeyVox Vibes is also available on Mac." : {
+      "comment" : "Benefit description on the KeyVox Vibes unlock page. KeyVox Vibes is a brand name and stays in English.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox Vibes ist auch auf dem Mac verfügbar."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox Vibes también está disponible en Mac."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox Vibes también está disponible en Mac."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox Vibes est également disponible sur Mac."
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox Vibes est également disponible sur Mac."
+          }
+        }
+      }
+    },
     "KeyVox will forget the words it learned from your typing and the corrections you undid. Your KeyVox Dictionary isn't affected." : {
       "comment" : "Message in the confirmation shown before resetting the keyboard's learned words. KeyVox is a brand name and stays in English; Dictionary refers to the app's Dictionary tab.",
       "localizations" : {
@@ -7112,146 +7358,6 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "KeyVox utilisera l’appareil d’entrée actuellement connecté."
-          }
-        }
-      }
-    },
-    "Keyboard" : {
-      "comment" : "Title of the KeyVox keyboard settings screen and of the Settings row that opens it.",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Tastatur"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Teclado"
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Teclado"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Clavier"
-          }
-        },
-        "fr-CA" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Clavier"
-          }
-        }
-      }
-    },
-    "Keyboard & Shortcut" : {
-      "comment" : "Title of the onboarding setup step that sets up the KeyVox keyboard and dictation shortcut.",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Tastatur & Kurzbefehl"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Teclado y atajo"
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Teclado y atajo"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Clavier et raccourci"
-          }
-        },
-        "fr-CA" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Clavier et raccourci"
-          }
-        }
-      }
-    },
-    "Keyboard Haptics" : {
-      "comment" : "Keyboard settings toggle for vibration feedback on key taps.",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Tastaturhaptik"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Respuesta háptica del teclado"
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Vibración del teclado"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Retour haptique du clavier"
-          }
-        },
-        "fr-CA" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Retour haptique du clavier"
-          }
-        }
-      }
-    },
-    "Keyboard Shortcut" : {
-      "comment" : "Row title on the KeyVox Speak page listing the ways to start Speak: a button on the KeyVox keyboard.",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Taste auf der Tastatur"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Atajo en el teclado"
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Atajo en el teclado"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Raccourci clavier"
-          }
-        },
-        "fr-CA" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Raccourci clavier"
           }
         }
       }
@@ -7711,6 +7817,41 @@
         }
       }
     },
+    "Long press again to return to the previous Vibe." : {
+      "comment" : "Row description on the KeyVox Vibes intro page explaining how to use Vibes. Vibe is a brand name for one writing style and stays in English.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Drücke erneut lange, um zum vorherigen Vibe zurückzukehren."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mantén pulsado de nuevo para volver a la Vibe anterior."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mantén presionado de nuevo para volver a la Vibe anterior."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Appuyez de nouveau longuement pour revenir à la Vibe précédente."
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Appuyez de nouveau de façon prolongée pour revenir à la Vibe précédente."
+          }
+        }
+      }
+    },
     "Long Press Included" : {
       "comment" : "Benefit title on the KeyVox Vibes unlock page about the long-press restyle feature.",
       "localizations" : {
@@ -7812,41 +7953,6 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Contact prolongé pour une Vibe, recommencez pour annuler."
-          }
-        }
-      }
-    },
-    "Long press again to return to the previous Vibe." : {
-      "comment" : "Row description on the KeyVox Vibes intro page explaining how to use Vibes. Vibe is a brand name for one writing style and stays in English.",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Drücke erneut lange, um zum vorherigen Vibe zurückzukehren."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Mantén pulsado de nuevo para volver a la Vibe anterior."
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Mantén presionado de nuevo para volver a la Vibe anterior."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Appuyez de nouveau longuement pour revenir à la Vibe précédente."
-          }
-        },
-        "fr-CA" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Appuyez de nouveau de façon prolongée pour revenir à la Vibe précédente."
           }
         }
       }
@@ -8621,41 +8727,6 @@
         }
       }
     },
-    "No Subscription" : {
-      "comment" : "Detail title on the KeyVox Vibes trial page.",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Kein Abo"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Sin suscripción"
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Sin suscripción"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Sans abonnement"
-          }
-        },
-        "fr-CA" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Sans abonnement"
-          }
-        }
-      }
-    },
     "No custom words added yet." : {
       "comment" : "Title of the empty state on the Dictionary tab.",
       "localizations" : {
@@ -8757,6 +8828,41 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Aucune langue trouvée"
+          }
+        }
+      }
+    },
+    "No Subscription" : {
+      "comment" : "Detail title on the KeyVox Vibes trial page.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Kein Abo"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sin suscripción"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sin suscripción"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sans abonnement"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sans abonnement"
           }
         }
       }
@@ -9152,41 +9258,6 @@
         }
       }
     },
-    "Open Settings" : {
-      "comment" : "Button in the dictation shortcut setup that opens the Settings app. Use Apple's official name for Settings in this language.\nButton on the onboarding Enable Keyboard screen that opens the Settings app. Use Apple's official name for Settings in this language.\nButton on the onboarding microphone step that opens the app's page in Settings after permission was denied. Use Apple's official name for Settings in this language.",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Einstellungen öffnen"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Abrir Ajustes"
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Abrir Configuración"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Ouvrir Réglages"
-          }
-        },
-        "fr-CA" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Ouvrir Réglages"
-          }
-        }
-      }
-    },
     "Open iPhone Settings and tap “Action Button.”" : {
       "comment" : "VoiceOver label for the dictation shortcut setup video showing the Action Button page in Settings. Use Apple's official names for Settings and Action Button in this language.",
       "localizations" : {
@@ -9253,6 +9324,41 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Ouvrir sur 123"
+          }
+        }
+      }
+    },
+    "Open Settings" : {
+      "comment" : "Button in the dictation shortcut setup that opens the Settings app. Use Apple's official name for Settings in this language.\nButton on the onboarding Enable Keyboard screen that opens the Settings app. Use Apple's official name for Settings in this language.\nButton on the onboarding microphone step that opens the app's page in Settings after permission was denied. Use Apple's official name for Settings in this language.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Einstellungen öffnen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Abrir Ajustes"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Abrir Configuración"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ouvrir Réglages"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ouvrir Réglages"
           }
         }
       }
@@ -9368,41 +9474,6 @@
         }
       }
     },
-    "Parakeet Update Available" : {
-      "comment" : "Title of the prompt shown when a newer Parakeet dictation model can be downloaded. Parakeet is a brand name and stays in English.",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Parakeet-Update verfügbar"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Actualización de Parakeet disponible"
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Actualización de Parakeet disponible"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Mise à jour de Parakeet disponible"
-          }
-        },
-        "fr-CA" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Mise à jour de Parakeet disponible"
-          }
-        }
-      }
-    },
     "Parakeet automatically detects the language used for dictation. Visit the FAQ in the Need Help? card to see its supported languages." : {
       "comment" : "Description under the dictation Language setting when Parakeet is the active model. Parakeet is a brand name and stays in English. Need Help? is the title of a card in Settings; translate it the same way as that card's title.",
       "localizations" : {
@@ -9469,6 +9540,41 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Modèle Parakeet introuvable."
+          }
+        }
+      }
+    },
+    "Parakeet Update Available" : {
+      "comment" : "Title of the prompt shown when a newer Parakeet dictation model can be downloaded. Parakeet is a brand name and stays in English.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Parakeet-Update verfügbar"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Actualización de Parakeet disponible"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Actualización de Parakeet disponible"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mise à jour de Parakeet disponible"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mise à jour de Parakeet disponible"
           }
         }
       }
@@ -10068,6 +10174,41 @@
         }
       }
     },
+    "ready to go." : {
+      "comment" : "Second line of the two-line headline on the KeyVox Speak preparation screen when playback has started; the first line is \"Speak is\".",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "startklar."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "está listo."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "está listo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "fin prêt."
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "fin prêt."
+          }
+        }
+      }
+    },
     "Recently Added" : {
       "comment" : "Dictionary sort option that shows the newest entries first.",
       "localizations" : {
@@ -10382,41 +10523,6 @@
         }
       }
     },
-    "Restore Purchases" : {
-      "comment" : "Button on the KeyVox Speak unlock sheet that restores previous App Store purchases.\nButton on the KeyVox Vibes unlock sheet that restores previous App Store purchases.\nTitle of the Settings card for restoring earlier in-app purchases. Use the term Apple uses for restoring purchases in this language.",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Käufe wiederherstellen"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Restaurar compras"
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Restaurar compras"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Restaurer les achats"
-          }
-        },
-        "fr-CA" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Restaurer les achats"
-          }
-        }
-      }
-    },
     "Restore past purchases for KeyVox Speak and KeyVox Vibes access on this Apple account." : {
       "comment" : "Description on the Restore Purchases card. KeyVox Speak and KeyVox Vibes are brand names and stay in English; use Apple's official term for Apple Account in this language.",
       "localizations" : {
@@ -10448,6 +10554,41 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Restaurez les achats effectués pour KeyVox Speak et KeyVox Vibes sur ce compte Apple."
+          }
+        }
+      }
+    },
+    "Restore Purchases" : {
+      "comment" : "Button on the KeyVox Speak unlock sheet that restores previous App Store purchases.\nButton on the KeyVox Vibes unlock sheet that restores previous App Store purchases.\nTitle of the Settings card for restoring earlier in-app purchases. Use the term Apple uses for restoring purchases in this language.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Käufe wiederherstellen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Restaurar compras"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Restaurar compras"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Restaurer les achats"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Restaurer les achats"
           }
         }
       }
@@ -10627,6 +10768,41 @@
         }
       }
     },
+    "Set the Vibe" : {
+      "comment" : "Title of the KeyVox Vibes intro page explaining how to use Vibes. Vibe is a brand name and stays in English.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wähle deinen Vibe"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Elige la Vibe"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Elige la Vibe"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Choisissez la Vibe"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Choisissez la Vibe"
+          }
+        }
+      }
+    },
     "Set Up" : {
       "comment" : "Button on the Dictation Shortcut row that opens the shortcut setup guide.",
       "localizations" : {
@@ -10728,41 +10904,6 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Configurer le clavier"
-          }
-        }
-      }
-    },
-    "Set the Vibe" : {
-      "comment" : "Title of the KeyVox Vibes intro page explaining how to use Vibes. Vibe is a brand name and stays in English.",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Wähle deinen Vibe"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Elige la Vibe"
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Elige la Vibe"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Choisissez la Vibe"
-          }
-        },
-        "fr-CA" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Choisissez la Vibe"
           }
         }
       }
@@ -11261,76 +11402,6 @@
         }
       }
     },
-    "Speak Now" : {
-      "comment" : "Button on the last KeyVox Speak intro page that closes the intro and starts Speak.",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Jetzt vorlesen"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Iniciar Speak"
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Iniciar Speak"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Lancer Speak"
-          }
-        },
-        "fr-CA" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Lancer Speak"
-          }
-        }
-      }
-    },
-    "Speak Timeout" : {
-      "comment" : "Title of the KeyVox Speak setting that chooses how long the engine stays ready. Speak is a brand name and stays in English.",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Speak-Zeitlimit"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Tiempo de espera de Speak"
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Tiempo de espera de Speak"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Mise en veille de Speak"
-          }
-        },
-        "fr-CA" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Mise en veille de Speak"
-          }
-        }
-      }
-    },
     "Speak copied text using your selected voice." : {
       "comment" : "Status on the Home tab Speak Copied Text card when it is ready to read aloud.",
       "localizations" : {
@@ -11652,6 +11723,76 @@
         }
       }
     },
+    "Speak Now" : {
+      "comment" : "Button on the last KeyVox Speak intro page that closes the intro and starts Speak.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Jetzt vorlesen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Iniciar Speak"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Iniciar Speak"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Lancer Speak"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Lancer Speak"
+          }
+        }
+      }
+    },
+    "Speak Timeout" : {
+      "comment" : "Title of the KeyVox Speak setting that chooses how long the engine stays ready. Speak is a brand name and stays in English.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Speak-Zeitlimit"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Tiempo de espera de Speak"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Tiempo de espera de Speak"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mise en veille de Speak"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mise en veille de Speak"
+          }
+        }
+      }
+    },
     "Speaking copied text." : {
       "comment" : "Status on the Home tab Speak Copied Text card while copied text is being read aloud.",
       "localizations" : {
@@ -11864,31 +12005,31 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Mit einem Tippen beginnt das Vorlesen ~50 % schneller."
           }
         },
         "es" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Empieza a hablar un ~50 % más rápido con un solo toque."
           }
         },
         "es-419" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Empieza a hablar un ~50% más rápido con un solo toque."
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Commence à parler ~50 % plus vite d’un simple toucher."
           }
         },
         "fr-CA" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Commence à parler ~50 % plus vite d’un simple toucher."
           }
         }
@@ -11899,31 +12040,31 @@
       "localizations" : {
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Das Vorlesen beginnt ~50 % schneller. In der Symbolleiste umschalten."
           }
         },
         "es" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Empieza a hablar un ~50 % más rápido. Actívalo en la barra de herramientas."
           }
         },
         "es-419" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Empieza a hablar un ~50% más rápido. Actívalo en la barra de herramientas."
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Commence à parler ~50 % plus vite. Activez-le dans la barre d’outils."
           }
         },
         "fr-CA" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Commence à parler ~50 % plus vite. Activez-le dans la barre d’outils."
           }
         }
@@ -12243,6 +12384,41 @@
         }
       }
     },
+    "Tap “Toggle KeyVox Dictation.”" : {
+      "comment" : "VoiceOver label for the dictation shortcut setup video showing the shortcut list. “Toggle KeyVox Dictation” is the name of the bundled KeyVox shortcut and stays as written.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Tippe auf „Toggle KeyVox Dictation“."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Toca “Toggle KeyVox Dictation”."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Toca “Toggle KeyVox Dictation”."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Touchez « Toggle KeyVox Dictation »."
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Touchez « Toggle KeyVox Dictation »."
+          }
+        }
+      }
+    },
     "Tap & hold the Globe, \n then select KeyVox." : {
       "comment" : "Instruction in the onboarding keyboard tour for switching to the KeyVox keyboard; keep the line break. Globe is the keyboard switch key, use Apple's official name for it in this language. KeyVox is a brand name and stays in English.",
       "localizations" : {
@@ -12274,41 +12450,6 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Maintenez la touche Globe, \n puis sélectionnez KeyVox."
-          }
-        }
-      }
-    },
-    "Tap Speak from the main screen." : {
-      "comment" : "Row description on the KeyVox Speak page listing the ways to start Speak. Speak is the name of the button and a brand name; it stays in English.",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Tippe im Hauptbildschirm auf „Speak“."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Toca Speak en la pantalla principal."
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Toca Speak en la pantalla principal."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Touchez Speak depuis l’écran principal."
-          }
-        },
-        "fr-CA" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Touchez Speak depuis l’écran principal."
           }
         }
       }
@@ -12418,37 +12559,37 @@
         }
       }
     },
-    "Tap the Vibes key before you stop recording and KeyVox applies that Vibe." : {
-      "comment" : "Row description on the KeyVox Vibes intro page explaining how to use Vibes. KeyVox and Vibes are brand names and stay in English; a Vibe is one writing style.",
+    "Tap Speak from the main screen." : {
+      "comment" : "Row description on the KeyVox Speak page listing the ways to start Speak. Speak is the name of the button and a brand name; it stays in English.",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Tippe vor dem Beenden der Aufnahme auf die Vibes-Taste und KeyVox wendet diesen Vibe an."
+            "value" : "Tippe im Hauptbildschirm auf „Speak“."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Toca la tecla Vibes antes de detener la grabación y KeyVox aplicará esa Vibe."
+            "value" : "Toca Speak en la pantalla principal."
           }
         },
         "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Toca la tecla Vibes antes de detener la grabación y KeyVox aplicará esa Vibe."
+            "value" : "Toca Speak en la pantalla principal."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Touchez la touche Vibes avant d’arrêter l’enregistrement, et KeyVox applique cette Vibe."
+            "value" : "Touchez Speak depuis l’écran principal."
           }
         },
         "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Touchez la touche Vibes avant d’arrêter l’enregistrement, et KeyVox applique cette Vibe."
+            "value" : "Touchez Speak depuis l’écran principal."
           }
         }
       }
@@ -12558,37 +12699,72 @@
         }
       }
     },
-    "Tap “Toggle KeyVox Dictation.”" : {
-      "comment" : "VoiceOver label for the dictation shortcut setup video showing the shortcut list. “Toggle KeyVox Dictation” is the name of the bundled KeyVox shortcut and stays as written.",
+    "Tap the Vibes key before you stop recording and KeyVox applies that Vibe." : {
+      "comment" : "Row description on the KeyVox Vibes intro page explaining how to use Vibes. KeyVox and Vibes are brand names and stay in English; a Vibe is one writing style.",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Tippe auf „Toggle KeyVox Dictation“."
+            "value" : "Tippe vor dem Beenden der Aufnahme auf die Vibes-Taste und KeyVox wendet diesen Vibe an."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Toca “Toggle KeyVox Dictation”."
+            "value" : "Toca la tecla Vibes antes de detener la grabación y KeyVox aplicará esa Vibe."
           }
         },
         "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Toca “Toggle KeyVox Dictation”."
+            "value" : "Toca la tecla Vibes antes de detener la grabación y KeyVox aplicará esa Vibe."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Touchez « Toggle KeyVox Dictation »."
+            "value" : "Touchez la touche Vibes avant d’arrêter l’enregistrement, et KeyVox applique cette Vibe."
           }
         },
         "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Touchez « Toggle KeyVox Dictation »."
+            "value" : "Touchez la touche Vibes avant d’arrêter l’enregistrement, et KeyVox applique cette Vibe."
+          }
+        }
+      }
+    },
+    "The extracted Core ML bundle was empty after installation." : {
+      "comment" : "Error shown when a dictation model install produced an empty folder. Core ML is an Apple technology name and stays as written.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Das extrahierte Core ML-Bundle war nach der Installation leer."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "El paquete Core ML extraído estaba vacío tras la instalación."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "El paquete Core ML extraído estaba vacío tras la instalación."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Le bundle Core ML extrait était vide après l’installation."
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Le bundle Core ML extrait était vide après l’installation."
           }
         }
       }
@@ -12729,41 +12905,6 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Le moteur Speak est prêt. Installez la voix de %@ pour terminer, et vous pourrez lancer la lecture."
-          }
-        }
-      }
-    },
-    "The extracted Core ML bundle was empty after installation." : {
-      "comment" : "Error shown when a dictation model install produced an empty folder. Core ML is an Apple technology name and stays as written.",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Das extrahierte Core ML-Bundle war nach der Installation leer."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "El paquete Core ML extraído estaba vacío tras la instalación."
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "El paquete Core ML extraído estaba vacío tras la instalación."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Le bundle Core ML extrait était vide après l’installation."
-          }
-        },
-        "fr-CA" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Le bundle Core ML extrait était vide après l’installation."
           }
         }
       }
@@ -13050,6 +13191,41 @@
         }
       }
     },
+    "Try it now" : {
+      "comment" : "Detail title on the KeyVox Vibes trial page.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Jetzt ausprobieren"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pruébalo ahora"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pruébalo ahora"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Essayez maintenant"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Essayez maintenant"
+          }
+        }
+      }
+    },
     "Try It Out!" : {
       "comment" : "Top bar title on the onboarding keyboard tour page where the user tries dictation.",
       "localizations" : {
@@ -13186,41 +13362,6 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Essayer"
-          }
-        }
-      }
-    },
-    "Try it now" : {
-      "comment" : "Detail title on the KeyVox Vibes trial page.",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Jetzt ausprobieren"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Pruébalo ahora"
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Pruébalo ahora"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Essayez maintenant"
-          }
-        },
-        "fr-CA" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Essayez maintenant"
           }
         }
       }
@@ -13540,41 +13681,6 @@
         }
       }
     },
-    "Unlock Speak Unlimited to keep speaking copied text." : {
-      "comment" : "Status on the Home tab Speak Copied Text card when the free daily limit is used up. Speak Unlimited is the purchase name; Speak is a brand name and stays in English.",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Schalte Speak Unlimited frei, um weiter kopierten Text vorlesen zu lassen."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Desbloquea Speak Unlimited para seguir escuchando el texto copiado."
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Desbloquea Speak Unlimited para seguir escuchando el texto copiado."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Débloquez Speak Unlimited pour continuer à lire le texte copié."
-          }
-        },
-        "fr-CA" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Débloquez Speak Unlimited pour continuer à lire le texte copié."
-          }
-        }
-      }
-    },
     "Unlock and keep the Vibes flowing." : {
       "comment" : "Status on the KeyVox Vibes card after the free trial, inviting the user to buy. Vibes is a brand name and stays in English; a playful tone is fine.",
       "localizations" : {
@@ -13676,6 +13782,41 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Débloquez une fois, écoutez pour toujours."
+          }
+        }
+      }
+    },
+    "Unlock Speak Unlimited to keep speaking copied text." : {
+      "comment" : "Status on the Home tab Speak Copied Text card when the free daily limit is used up. Speak Unlimited is the purchase name; Speak is a brand name and stays in English.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Schalte Speak Unlimited frei, um weiter kopierten Text vorlesen zu lassen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Desbloquea Speak Unlimited para seguir escuchando el texto copiado."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Desbloquea Speak Unlimited para seguir escuchando el texto copiado."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Débloquez Speak Unlimited pour continuer à lire le texte copié."
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Débloquez Speak Unlimited pour continuer à lire le texte copié."
           }
         }
       }
@@ -13785,6 +13926,41 @@
         }
       }
     },
+    "Update available" : {
+      "comment" : "Status on a dictation model row when a newer version of the installed model can be downloaded.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Update verfügbar"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Actualización disponible"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Actualización disponible"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mise à jour disponible"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mise à jour disponible"
+          }
+        }
+      }
+    },
     "Update Available" : {
       "comment" : "Title of the prompt shown when a newer KeyVox version is available.",
       "localizations" : {
@@ -13851,41 +14027,6 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Mise à jour requise"
-          }
-        }
-      }
-    },
-    "Update available" : {
-      "comment" : "Status on a dictation model row when a newer version of the installed model can be downloaded.",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Update verfügbar"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Actualización disponible"
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Actualización disponible"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Mise à jour disponible"
-          }
-        },
-        "fr-CA" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Mise à jour disponible"
           }
         }
       }
@@ -14098,41 +14239,6 @@
         }
       }
     },
-    "Vibe Without Limits" : {
-      "comment" : "Benefit title on the KeyVox Vibes unlock page; to Vibe means to restyle text with Vibes. Vibe is a brand name and stays in English.",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Vibes ohne Limits"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Vibes sin límites"
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Vibes sin límites"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Des Vibes sans limites"
-          }
-        },
-        "fr-CA" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Des Vibes sans limites"
-          }
-        }
-      }
-    },
     "Vibe now. Unlock it later." : {
       "comment" : "Subtitle of the KeyVox Vibes trial page; to Vibe means to restyle text with Vibes. Vibe is a brand name and stays in English.",
       "localizations" : {
@@ -14164,6 +14270,41 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Profitez des Vibes maintenant, débloquez plus tard."
+          }
+        }
+      }
+    },
+    "Vibe Without Limits" : {
+      "comment" : "Benefit title on the KeyVox Vibes unlock page; to Vibe means to restyle text with Vibes. Vibe is a brand name and stays in English.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vibes ohne Limits"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vibes sin límites"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vibes sin límites"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Des Vibes sans limites"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Des Vibes sans limites"
           }
         }
       }
@@ -14728,41 +14869,6 @@
         }
       }
     },
-    "Your last transcription will appear here after you dictate on this device." : {
-      "comment" : "Empty state in the Home tab transcription card before anything has been dictated.",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Deine letzte Transkription erscheint hier, nachdem du auf diesem Gerät diktiert hast."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Tu última transcripción aparecerá aquí cuando dictes en este dispositivo."
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Tu última transcripción aparecerá aquí cuando dictes en este dispositivo."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Votre dernière transcription apparaîtra ici dès que vous aurez dicté sur cet appareil."
-          }
-        },
-        "fr-CA" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Votre dernière transcription apparaîtra ici dès que vous aurez dicté sur cet appareil."
-          }
-        }
-      }
-    },
     "You’re trying Vibes, you have %@ left." : {
       "comment" : "Status on the KeyVox Vibes card during the free trial. Vibes is a brand name and stays in English. The placeholder is the remaining trial time, already formatted with its unit.\nTrial status on the KeyVox Vibes trial page. Vibes is a brand name and stays in English. The placeholder is the remaining trial time, such as days and hours.\nTrial status on the KeyVox Vibes unlock page. Vibes is a brand name and stays in English. The placeholder is the remaining trial time, such as days and hours.",
       "localizations" : {
@@ -14798,148 +14904,40 @@
         }
       }
     },
-    "and speak." : {
-      "comment" : "Second line of the two-line headline; the first line is \"Swipe Back,\". Speak is a verb here, meaning start talking to dictate.",
+    "Your last transcription will appear here after you dictate on this device." : {
+      "comment" : "Empty state in the Home tab transcription card before anything has been dictated.",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "und sprich los."
+            "value" : "Deine letzte Transkription erscheint hier, nachdem du auf diesem Gerät diktiert hast."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "y habla."
+            "value" : "Tu última transcripción aparecerá aquí cuando dictes en este dispositivo."
           }
         },
         "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "y habla."
+            "value" : "Tu última transcripción aparecerá aquí cuando dictes en este dispositivo."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "et parlez."
+            "value" : "Votre dernière transcription apparaîtra ici dès que vous aurez dicté sur cet appareil."
           }
         },
         "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "et parlez."
+            "value" : "Votre dernière transcription apparaîtra ici dès que vous aurez dicté sur cet appareil."
           }
         }
       }
-    },
-    "do this once per session." : {
-      "comment" : "Second line of a two-line message on the swipe back screen; the first line is \"Don’t worry, you’ll only have to\". A session is the period while dictation stays turned on.",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "einmal pro Sitzung machen."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "hacerlo una vez por sesión."
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "hacerlo una vez por sesión."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "le faire qu’une fois par session."
-          }
-        },
-        "fr-CA" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "le faire qu’une fois par session."
-          }
-        }
-      }
-    },
-    "ready to go." : {
-      "comment" : "Second line of the two-line headline on the KeyVox Speak preparation screen when playback has started; the first line is \"Speak is\".",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "startklar."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "está listo."
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "está listo."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "fin prêt."
-          }
-        },
-        "fr-CA" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "fin prêt."
-          }
-        }
-      }
-    },
-    "“.” Shortcut" : {
-      "comment" : "Keyboard settings toggle for typing a period by double-tapping the space bar. Use the term the system keyboard settings use in this language.",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "„.“-Kurzbefehl"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Atajo de “.”"
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Atajo de “.”"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Raccourci « . »"
-          }
-        },
-        "fr-CA" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Raccourci « . »"
-          }
-        }
-      }
-    },
-    "•" : {
-      "shouldTranslate" : false
     }
   },
   "version" : "1.0"
