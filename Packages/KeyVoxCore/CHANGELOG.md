@@ -6,6 +6,22 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.3.14] - 2026-11-16
+
+Dictionary entries with more than one word no longer replace ordinary words or counted numbers that only share part of the entry.
+
+### Includes
+
+- Stopped a multi-word entry from replacing a different word next to a shared exact word, such as `basic dictation` becoming `Big Dictation`. A different known word now stands in for an entry word only when both have the same consonant sounds and close spellings, so `Levin Time` still becomes `Leven Time`.
+- Kept numbers from becoming a different number, such as `seventy labs` or `eight pilots`. A cardinal number can still stand in for an entry word, such as `11 time` or `eleven time` becoming `Leven Time`, while an ordinal such as `11th time` and a count such as `eleven times` or `eleven time zones` stay as spoken.
+- Added regression coverage for unrelated head words, close name spellings, numbers that count or order a word, and lowercase possessive names.
+
+### Notes
+
+- `1.3.14` tracks the multi-word dictionary matching fix for unrelated words and numbers.
+
+---
+
 ## [1.3.13] - 2026-11-11
 
 A spoken colon after a phrase that introduces examples, such as `like` or `such as`, now becomes punctuation.

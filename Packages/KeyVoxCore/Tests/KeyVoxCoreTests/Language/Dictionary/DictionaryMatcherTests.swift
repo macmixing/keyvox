@@ -77,6 +77,56 @@ final class DictionaryMatcherTests: LinguisticAnalyzerTestCase {
         XCTAssertEqual(matcher.apply(to: input).text, input)
     }
 
+    func testDoesNotReplaceKnownHeadWordPronouncedDifferentlyInMultiwordEntry() async {
+        let matcher = makeRuntimeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Big Dictation")])
+        let input = "I'm talking about basic dictation."
+
+        XCTAssertEqual(matcher.apply(to: input).text, input)
+    }
+
+    func testKnownPronunciationsDoNotRescueHeadWordRejectedByPhoneticSignature() async {
+        let matcher = makeRuntimeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Big Dictation")])
+        let input = "Try a bit dictation."
+
+        XCTAssertEqual(matcher.apply(to: input).text, input)
+    }
+
+    func testInfersPossessiveForLowercaseMultiwordNameBeforePossessedNoun() async {
+        let matcher = makeRuntimeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Dom Esposito")])
+
+        XCTAssertEqual(
+            matcher.apply(to: "That's dom especitos house.").text,
+            "That's Dom Esposito's house."
+        )
+    }
+
+    func testCorrectsKnownWordWithRColoredVowelAndSwappedLettersInMultiwordEntry() async {
+        let matcher = makeRuntimeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Kristin Lee")])
+
+        XCTAssertEqual(
+            matcher.apply(to: "Ask kirsten lee about it.").text,
+            "Ask Kristin Lee about it."
+        )
+    }
+
+    func testCorrectsKnownWordSpelledLikeEntryWordWithSameConsonantSounds() async {
+        let matcher = makeRuntimeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Leven Time")])
+
+        XCTAssertEqual(
+            matcher.apply(to: "Have you ever played the game Levin Time?").text,
+            "Have you ever played the game Leven Time?"
+        )
+        XCTAssertEqual(
+            matcher.apply(to: "I love levin time.").text,
+            "I love Leven Time."
+        )
+    }
+
     func testDoesNotReplaceObjectPronounWithDictionaryName() async {
         let matcher = makeRuntimeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Dom")])
@@ -119,7 +169,7 @@ final class DictionaryMatcherTests: LinguisticAnalyzerTestCase {
         XCTAssertEqual(result.text, "The storefront is next to 7-Eleven.")
     }
 
-    func testMatchesCardinalAndOrdinalNumericShapesForSpokenDictionaryPhrase() async {
+    func testMatchesCardinalNumericShapesForSpokenDictionaryPhrase() async {
         let matcher = makeRuntimeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Leven Time")])
 
@@ -128,9 +178,44 @@ final class DictionaryMatcherTests: LinguisticAnalyzerTestCase {
             "I think Leven Time will be great."
         )
         XCTAssertEqual(
-            matcher.apply(to: "We built 11th time for the demo.").text,
-            "We built Leven Time for the demo."
+            matcher.apply(to: "I think eleven time will be great.").text,
+            "I think Leven Time will be great."
         )
+        XCTAssertEqual(
+            matcher.apply(to: "We built 11th time for the demo.").text,
+            "We built 11th time for the demo."
+        )
+    }
+
+    func testMatchesOrdinalDigitsOnlyToEntryWordNamingSameOrdinal() async {
+        let matcher = makeRuntimeMatcher()
+        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Seventh Heaven")])
+
+        XCTAssertEqual(
+            matcher.apply(to: "We went to 7th heaven today.").text,
+            "We went to Seventh Heaven today."
+        )
+        XCTAssertEqual(
+            matcher.apply(to: "We went to 8th heaven today.").text,
+            "We went to 8th heaven today."
+        )
+    }
+
+    func testKeepsNumbersThatCountOrOrderWordsOrDifferFromEntryNumbers() async {
+        let matcher = makeRuntimeMatcher()
+        matcher.rebuildIndex(entries: [
+            DictionaryEntry(phrase: "Leven Time"),
+            DictionaryEntry(phrase: "Seven Labs")
+        ])
+
+        for input in [
+            "For the 11th time, stop.",
+            "There are eleven time zones.",
+            "It happened eleven times.",
+            "Seventy labs open today."
+        ] {
+            XCTAssertEqual(matcher.apply(to: input).text, input)
+        }
     }
 
     func testDoesNotMatchUnrelatedPronunciationInMultiwordDictionaryEntry() async {

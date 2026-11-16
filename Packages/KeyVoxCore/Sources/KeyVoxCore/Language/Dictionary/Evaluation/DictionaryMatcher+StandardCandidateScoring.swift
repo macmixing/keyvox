@@ -67,6 +67,8 @@ extension DictionaryMatcher {
                     guard hasSufficientNumericAlignment(
                         observedNormalized: form.normalized,
                         observedNumericSourceTokens: form.numericSourceTokens,
+                        observedWindow: window,
+                        nextToken: end < tokens.count ? tokens[end] : nil,
                         candidate: candidate
                     ) else {
                         continue
