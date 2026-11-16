@@ -170,7 +170,8 @@ enum KeyboardStyle {
     static let specialKeyFont = UIFont.systemFont(ofSize: 17)
     static let buttonSymbolConfiguration = UIImage.SymbolConfiguration(pointSize: 18, weight: .semibold)
     static let keySymbolConfiguration = UIImage.SymbolConfiguration(pointSize: 18, weight: .medium)
-    static let cancelButtonSymbolConfiguration = UIImage.SymbolConfiguration(pointSize: 20, weight: .bold)
+    static let cancelButtonSymbolPointSize: CGFloat = 20
+    static let cancelButtonSymbolWeight = UIImage.SymbolWeight.bold
 
     static let keyShadow = Shadow(
         color: UIColor.black,

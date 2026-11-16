@@ -200,14 +200,21 @@ final class KeyboardRootView: UIView {
             + (emojiPanel == .searching ? KeyboardEmojiSearchGeometry.addedKeyboardHeight : 0)
     }
 
-    /// Shrinks the toolbar's row, the space under it, and the keyboard's bottom padding by the
-    /// Display Zoom, as the keys shrink.
+    /// Shrinks the toolbar's row, the space under it, the keyboard's bottom padding, and the
+    /// toolbar buttons' icons by the Display Zoom, as the keys shrink.
     private func applyDisplayZoomToToolbarRow() {
         let heightScale = displayZoom.heightScale
         mainStack.spacing = KeyboardStyle.sectionSpacing * heightScale
         leadingControlsHeightConstraint?.constant = KeyboardStyle.buttonSize * heightScale
         trailingControlsHeightConstraint?.constant = KeyboardStyle.buttonSize * heightScale
         mainStackBottomConstraint?.constant = -KeyboardStyle.bottomPadding * heightScale
+        cancelButton.symbolScale = heightScale
+        settingsButton.symbolScale = heightScale
+        capsLockButton.symbolScale = heightScale
+        speakButton.symbolScale = heightScale
+        paragraphButton.symbolScale = heightScale
+        listsButton.symbolScale = heightScale
+        dictionaryButton.symbolScale = heightScale
     }
 
     func apply(

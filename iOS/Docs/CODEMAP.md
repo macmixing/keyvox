@@ -1678,7 +1678,7 @@ Packages/
 - `KeyVox Keyboard/Core/KeyboardDisplay.swift`
   - Resolves the display the keyboard is on: standard (an iPhone display or an iPad's floating keyboard), an open foldable's inner display, or a full-width iPad keyboard, and whether a numbers-only field shows the number pad there: everywhere but the full-width iPad keyboard.
 - `KeyVox Keyboard/Core/KeyboardDisplayZoom.swift`
-  - Reads how much Display Zoom enlarges the keyboard from the screen's `scale` over its `nativeScale`, capped at 1, as the factor the keyboard's height, key heights, row spacing, the toolbar's row and the padding around it, and the logo bar's diameter are multiplied by so they take the same part of the screen as with Display Zoom off.
+  - Reads how much Display Zoom enlarges the keyboard from the screen's `scale` over its `nativeScale`, capped at 1, as the factor the keyboard's height, key heights, row spacing, the toolbar's row and the padding around it, the logo bar's diameter, and the toolbar buttons' icons are multiplied by so they take the same part of the screen as with Display Zoom off.
 - `KeyVox Keyboard/Core/KeyboardFoldableDisplay.swift`
   - Treats a display regular in both width and height as an open foldable's inner display, partially or fully open, because keyboard extensions do not receive hinge updates.
 - `KeyVox Keyboard/Core/KeyboardScreenShape.swift`
@@ -1702,7 +1702,7 @@ Packages/
   - Sends touches in the keyboard's outer padding to the key grid so they type the nearest key.
   - Invalidates layout whenever branded-toolbar Vibes visibility changes so returning from a warning mode restores measured top-row spacing.
   - Shows Speak with the other toolbar accessories whether or not a Speak voice is installed, and keeps Settings, Dictionary, and Speak disabled until onboarding is complete.
-  - Applies the display's row spacing, key-grid height, and top-row toolbar button height from `KeyboardKeysMode`, scaled by the Display Zoom it is given, and shrinks the toolbar's row, the space under it, and the top and bottom padding by the same zoom.
+  - Applies the display's row spacing, key-grid height, and top-row toolbar button height from `KeyboardKeysMode`, scaled by the Display Zoom it is given, and shrinks the toolbar's row, the space under it, the top and bottom padding, and the toolbar buttons' icons by the same zoom.
 - `KeyVox Keyboard/Views/Components/KeyboardSpeakButton.swift`
   - Keyboard speak control used for copied-text playback transport in the top-row accessory area.
 - `KeyVox Keyboard/Views/Components/KeyboardVibesButton.swift`

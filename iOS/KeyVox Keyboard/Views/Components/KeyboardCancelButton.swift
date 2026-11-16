@@ -19,6 +19,14 @@ final class KeyboardCancelButton: UIControl {
         }
     }
     
+    /// How much the icon shrinks from its usual size, below 1 under Display Zoom.
+    var symbolScale: CGFloat = 1 {
+        didSet {
+            guard symbolScale != oldValue else { return }
+            updateIcon()
+        }
+    }
+
     override var intrinsicContentSize: CGSize {
         CGSize(width: KeyboardStyle.cancelButtonSize, height: KeyboardStyle.cancelButtonSize)
     }
@@ -73,10 +81,7 @@ final class KeyboardCancelButton: UIControl {
         iconImageView.contentMode = .scaleAspectFit
         iconImageView.isUserInteractionEnabled = false
         
-        iconImageView.image = UIImage(
-            systemName: "xmark",
-            withConfiguration: KeyboardStyle.cancelButtonSymbolConfiguration
-        )
+        updateIcon()
         
         addSubview(backgroundView)
         backgroundView.addSubview(tintOverlay)
@@ -92,6 +97,16 @@ final class KeyboardCancelButton: UIControl {
         backgroundView.layer.shadowOffset = shadow.offset
         
         setupConstraints()
+    }
+
+    private func updateIcon() {
+        iconImageView.image = UIImage(
+            systemName: "xmark",
+            withConfiguration: UIImage.SymbolConfiguration(
+                pointSize: KeyboardStyle.cancelButtonSymbolPointSize * symbolScale,
+                weight: KeyboardStyle.cancelButtonSymbolWeight
+            )
+        )
     }
 
     private func observeBorderAppearanceChanges() {

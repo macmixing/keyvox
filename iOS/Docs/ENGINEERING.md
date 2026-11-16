@@ -1782,7 +1782,7 @@ Implementation split:
 - `KeyboardAppSettingsStore.swift` owns keyboard-side App Group settings persistence and notification dispatch for controls that mirror containing-app settings
 - `KeyboardKeysMode.swift` owns full/compact resolution, visible row count, per-orientation, per-display, and Display Zoom key height, row spacing, top-row toolbar button height, and height selection
 - `KeyboardDisplay.swift`, `KeyboardFoldableDisplay.swift`, and `KeyboardScreenShape.swift` resolve the display kind and landscape shape those sizes depend on
-- `KeyboardDisplayZoom.swift` reads how much Display Zoom enlarges the keyboard, the factor the keyboard's height, key heights, row spacing, the toolbar's row and the padding around it, and the logo bar's diameter shrink by so they take the same part of the screen as with Display Zoom off
+- `KeyboardDisplayZoom.swift` reads how much Display Zoom enlarges the keyboard, the factor the keyboard's height, key heights, row spacing, the toolbar's row and the padding around it, the logo bar's diameter, and the toolbar buttons' icons shrink by so they take the same part of the screen as with Display Zoom off
 - `KeyboardOpeningLayout.swift` owns the page and keys mode a field opens on
 - `Input/KeyboardCompactKeysHoldController.swift` owns the cancellable activation timer for the `#+=` long press
 - `DictationChange/` groups the latest untouched insertion long-press feature files
