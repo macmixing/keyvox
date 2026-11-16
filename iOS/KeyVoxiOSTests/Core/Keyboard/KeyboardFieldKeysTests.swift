@@ -173,12 +173,9 @@ struct KeyboardFieldKeysTests {
         let digitsWithGlobe = KeyboardNumberPadLayout.rows(for: .digits, showsNextKeyboardKey: true)
 
         #expect(decimal.last?.map(\.kind) == [.character(separator), .character("0"), .delete])
-        #expect(decimalWithGlobe.last?.map(\.kind) == [.numberPadNextKeyboard, .character(separator), .character("0"), .delete])
-        #expect(digitsWithGlobe.last?.map(\.kind) == [.numberPadNextKeyboard, .character("0"), .delete])
-        let nextKeyboardKey = digitsWithGlobe.last?.first
-        #expect(nextKeyboardKey?.usesSpecialKeyFill == false)
-        #expect(nextKeyboardKey?.systemImageName == nil)
-        #expect(nextKeyboardKey?.allowsPopup == false)
+        #expect(decimalWithGlobe.last?.map(\.kind) == [.nextKeyboard, .character(separator), .character("0"), .delete])
+        #expect(digitsWithGlobe.last?.map(\.kind) == [.nextKeyboard, .character("0"), .delete])
+        #expect(digitsWithGlobe.last?.first == KeyboardSymbolLayout.key(.nextKeyboard))
     }
 
     @Test func numbersOnlyFieldsOpenTheFullNumberPad() {

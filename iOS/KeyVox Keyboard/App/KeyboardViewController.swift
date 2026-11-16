@@ -105,6 +105,10 @@ final class KeyboardViewController: UIInputViewController {
     }
     var symbolPage: KeyboardSymbolPage = .letters {
         didSet {
+            if symbolPage.keepsToolbarRow(emojiPanel: emojiPanel)
+                != oldValue.keepsToolbarRow(emojiPanel: emojiPanel) {
+                updatePrimaryViewHeight()
+            }
             updateUI()
         }
     }
@@ -128,6 +132,14 @@ final class KeyboardViewController: UIInputViewController {
     var display = KeyboardDisplay.standard {
         didSet {
             guard display != oldValue else { return }
+            // A numbers-only field moves between the number pad and the numbers page as the
+            // keyboard moves between a display that shows the number pad and one that does not.
+            if typingTraits.fieldKeys.numberPad != nil, display.showsNumberPad != oldValue.showsNumberPad {
+                applyOpeningLayout(
+                    prefersNumberPage: typingTraits.prefersNumberPage,
+                    opensNumberPad: fieldOpensNumberPad
+                )
+            }
             updatePrimaryViewHeight()
             updateUI()
         }
@@ -334,9 +346,14 @@ final class KeyboardViewController: UIInputViewController {
         emojiPanel == .closed ? keysMode : .full
     }
 
-    /// The keyboard's height, taller by the search results while searching emoji.
+    /// The keyboard's height, taller by the search results while searching emoji, and shorter by
+    /// the toolbar's row on the number pad while the emoji page is closed.
     private var keyboardHeight: CGFloat {
-        layoutKeysMode.keyboardHeight(isLandscape: isLandscape, display: display)
+        layoutKeysMode.keyboardHeight(
+            isLandscape: isLandscape,
+            display: display,
+            showsToolbar: symbolPage.keepsToolbarRow(emojiPanel: emojiPanel)
+        )
             + (emojiPanel == .searching ? KeyboardEmojiSearchGeometry.addedKeyboardHeight : 0)
     }
 
@@ -673,11 +690,6 @@ final class KeyboardViewController: UIInputViewController {
         let kind = activation.kind
         if kind == .emoji {
             openEmojiPage()
-            return true
-        }
-        if kind == .numberPadNextKeyboard {
-            keypressHaptics.emitKeypressIfEnabled()
-            advanceToNextInputMode()
             return true
         }
         if kind == .restoreFullKeyboard {

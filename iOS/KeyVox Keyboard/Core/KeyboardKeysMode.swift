@@ -9,8 +9,12 @@ enum KeyboardKeysMode: Equatable {
     }
 
     /// The keyboard's height: the portrait height, changed by however much shorter or taller the
-    /// keys are in landscape or on iPad.
-    func keyboardHeight(isLandscape: Bool, display: KeyboardDisplay = .standard) -> CGFloat {
+    /// keys are in landscape or on iPad, and shorter by the toolbar's row on a page without it.
+    func keyboardHeight(
+        isLandscape: Bool,
+        display: KeyboardDisplay = .standard,
+        showsToolbar: Bool = true
+    ) -> CGFloat {
         let portraitHeight: CGFloat
         switch self {
         case .full:
@@ -20,6 +24,7 @@ enum KeyboardKeysMode: Equatable {
         }
         return portraitHeight - keyGridHeight(isLandscape: false)
             + keyGridHeight(isLandscape: isLandscape, display: display)
+            - (showsToolbar ? 0 : KeyboardStyle.toolbarRowHeight)
     }
 
     /// Keys are shorter in landscape, in both full and Compact Keys, though less so on an open

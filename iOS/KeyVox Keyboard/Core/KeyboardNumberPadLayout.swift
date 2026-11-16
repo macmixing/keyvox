@@ -3,8 +3,7 @@ import Foundation
 /// The number pad a numbers-only field shows, as the system keyboard lays it out on iPhone: three
 /// columns of digits, each with the letters a phone keypad gives it, over a bottom row of the
 /// decimal separator in a decimal field, zero, and delete. Where the keyboard shows the globe, the
-/// 123 key that moves on to the next keyboard takes the bottom row's first place, sharing it with
-/// the decimal separator, as the system number pad shows it there.
+/// globe takes the bottom row's first place, sharing it with the decimal separator.
 /// `KeyboardLayoutGeometry.NumberPadBottomRowLayout` sizes the bottom row.
 enum KeyboardNumberPadLayout {
     /// A phone keypad's letters, by digit.
@@ -29,9 +28,7 @@ enum KeyboardNumberPadLayout {
         }
         var bottomRow: [KeyboardKeyModel] = []
         if showsNextKeyboardKey {
-            var nextKeyboardKey = KeyboardSymbolLayout.key(.numberPadNextKeyboard)
-            nextKeyboardKey.isNumberPadKey = true
-            bottomRow.append(nextKeyboardKey)
+            bottomRow.append(KeyboardSymbolLayout.key(.nextKeyboard))
         }
         if numberPad == .decimal {
             bottomRow.append(padKey(decimalSeparator))
