@@ -26,7 +26,7 @@ enum KeyboardKeysMode: Equatable {
         }
         let heightAroundKeys = portraitHeight - keyGridHeight(isLandscape: false)
             - (showsToolbar ? 0 : KeyboardStyle.toolbarRowHeight)
-        return heightAroundKeys * zoom.heightScale
+        return heightAroundKeys * zoom.sizeScale
             + keyGridHeight(isLandscape: isLandscape, display: display, zoom: zoom)
     }
 
@@ -47,7 +47,7 @@ enum KeyboardKeysMode: Equatable {
         case .standard:
             height = isLandscape ? KeyboardStyle.landscapeKeyHeight : KeyboardStyle.keyHeight
         }
-        return height * zoom.heightScale
+        return height * zoom.sizeScale
     }
 
     /// The height of the toolbar buttons sized from the top key row in landscape: the keys'
@@ -60,7 +60,7 @@ enum KeyboardKeysMode: Equatable {
         guard isLandscape, display == .pad else {
             return keyHeight(isLandscape: isLandscape, display: display, zoom: zoom)
         }
-        return KeyboardStyle.padLandscapeToolbarHeight * zoom.heightScale
+        return KeyboardStyle.padLandscapeToolbarHeight * zoom.sizeScale
     }
 
     /// Key rows keep the same spacing everywhere except landscape on an open foldable's inner
@@ -73,7 +73,7 @@ enum KeyboardKeysMode: Equatable {
         let spacing = isLandscape && display == .openFoldable
             ? KeyboardStyle.openFoldableLandscapeRowSpacing
             : KeyboardStyle.keyboardRowSpacing
-        return spacing * zoom.heightScale
+        return spacing * zoom.sizeScale
     }
 
     var visibleRowCount: Int {

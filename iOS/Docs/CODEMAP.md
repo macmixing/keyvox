@@ -1674,11 +1674,11 @@ Packages/
   - Owns the letter page's inset middle row and shift row, the symbol pages' third row, and the bottom row's live widths, including the landscape side-key span, the paired page and emoji keys, the emoji search's three-key row, the globe row, and each field bottom row's split of the space bar's and return key's places, all driven from the measured key grid, plus the number pad's bottom row in its three columns across the pad's width from `KeyboardNumberPadGeometry`, with key widths one priority below required so a resize never forces Auto Layout to break key constraints.
 - `KeyVox Keyboard/Core/KeyboardKeysMode.swift`
   - Resolves full versus compact presentation from availability and persisted active state.
-  - Takes the 286-point full or 174-point compact portrait height from `KeyboardStyle`, changes it by however much shorter or taller the keys are in landscape or on iPad, takes the toolbar's row (`KeyboardStyle.toolbarRowHeight`) off when told the row is not kept, and owns visible row count, per-orientation and per-display key height, row spacing, the top row's toolbar button height, and derived key-grid height, each scaled by `KeyboardDisplayZoom`'s height scale; under Display Zoom the height around the keys shrinks by the same scale.
+  - Takes the 286-point full or 174-point compact portrait height from `KeyboardStyle`, changes it by however much shorter or taller the keys are in landscape or on iPad, takes the toolbar's row (`KeyboardStyle.toolbarRowHeight`) off when told the row is not kept, and owns visible row count, per-orientation and per-display key height, row spacing, the top row's toolbar button height, and derived key-grid height, each scaled by `KeyboardDisplayZoom`'s size scale; under Display Zoom the height around the keys shrinks by the same scale.
 - `KeyVox Keyboard/Core/KeyboardDisplay.swift`
   - Resolves the display the keyboard is on: standard (an iPhone display or an iPad's floating keyboard), an open foldable's inner display, or a full-width iPad keyboard, and whether a numbers-only field shows the number pad there: everywhere but the full-width iPad keyboard.
 - `KeyVox Keyboard/Core/KeyboardDisplayZoom.swift`
-  - Reads how much Display Zoom enlarges the keyboard from the screen's `scale` over its `nativeScale`, capped at 1, as the factor the keyboard's height, key heights, row spacing, the toolbar's row and the padding around it, the logo bar's diameter, and the toolbar buttons' icons are multiplied by so they take the same part of the screen as with Display Zoom off.
+  - Reads how much Display Zoom enlarges the keyboard as the screen's own pixels per point without Display Zoom over its `nativeScale`: without Display Zoom that is its drawing `scale`, except on the iPhone 12 mini's and 13 mini's 1080-by-2340-pixel screen, which draws 375 points across at 3x and shrinks that to fit. The result is the factor the keyboard's height, key heights, row spacing, the toolbar's row and the padding around it, the logo bar's diameter, the toolbar buttons' icons, and the emoji page, search, and pickers are multiplied by so they take the same part of the screen as with Display Zoom off.
 - `KeyVox Keyboard/Core/KeyboardFoldableDisplay.swift`
   - Treats a display regular in both width and height as an open foldable's inner display, partially or fully open, because keyboard extensions do not receive hinge updates.
 - `KeyVox Keyboard/Core/KeyboardScreenShape.swift`
@@ -1692,7 +1692,7 @@ Packages/
   - Without the Vibes feature available, removes the Vibes key and compacts the remaining top-row accessories against the logo area so hidden feature keys do not leave gaps. Missing local Vibes AI readiness gates cycling but does not hide the key.
   - Mirrors the control strip for the left-handed layout setting without changing typed symbol order.
   - Gives portrait single-key accessories a height that resolves in Auto Layout to the smaller of the reference key's width and the standard button size, so the height never depends on a width read before the key grid lays out.
-  - Sizes the logo bar to its portrait or landscape diameter shrunk by the Display Zoom height scale, as the keys shrink.
+  - Sizes the logo bar to its portrait or landscape diameter shrunk by the Display Zoom size scale, as the keys shrink.
 - `KeyVox Keyboard/Views/KeyboardRootView.swift`
   - Stable keyboard chrome and key grid.
   - Hosts the branded toolbar row and the shared warning overlay for dictation model, Full Access, and microphone permission warnings.
@@ -1702,7 +1702,7 @@ Packages/
   - Sends touches in the keyboard's outer padding to the key grid so they type the nearest key.
   - Invalidates layout whenever branded-toolbar Vibes visibility changes so returning from a warning mode restores measured top-row spacing.
   - Shows Speak with the other toolbar accessories whether or not a Speak voice is installed, and keeps Settings, Dictionary, and Speak disabled until onboarding is complete.
-  - Applies the display's row spacing, key-grid height, and top-row toolbar button height from `KeyboardKeysMode`, scaled by the Display Zoom it is given, and shrinks the toolbar's row, the space under it, the top and bottom padding, and the toolbar buttons' icons by the same zoom.
+  - Applies the display's row spacing, key-grid height, and top-row toolbar button height from `KeyboardKeysMode`, scaled by the Display Zoom it is given, and shrinks the toolbar's row, the space under it, the top and bottom padding, the emoji search's field and results and the gaps around them, and the toolbar buttons' icons by the same zoom, handing the zoom's size scale to the emoji page, search field, search results, and key grid.
 - `KeyVox Keyboard/Views/Components/KeyboardSpeakButton.swift`
   - Keyboard speak control used for copied-text playback transport in the top-row accessory area.
 - `KeyVox Keyboard/Views/Components/KeyboardVibesButton.swift`
@@ -1718,7 +1718,7 @@ Packages/
 - `KeyVox Keyboard/Core/Transport/KeyboardTransportDisplayState.swift`
   - Non-visual keyboard logo transport state, accessibility labels, and playback/dictation presentation inputs kept separate from the proprietary logo-bar rendering file.
 - `KeyVox Keyboard/Views/Components/KeyboardKeyGridView.swift`
-  - Shows the page for the current layout through cached `KeyboardKeyGridPage` instances, applies the letter case and the current row spacing to the page showing and every page shown after it, reports letter-key frames for predictions, resolves a touch to the containing key or the nearest key within its hit slop, greys out a return key the field has not turned on yet, and exposes the key, held-key, delete, globe, and touch-down callbacks.
+  - Shows the page for the current layout through cached `KeyboardKeyGridPage` instances, applies the letter case, the current row spacing, and the Display Zoom's size scale to the page showing and every page shown after it, reports letter-key frames for predictions, resolves a touch to the containing key or the nearest key within its hit slop, greys out a return key the field has not turned on yet, and exposes the key, held-key, delete, globe, and touch-down callbacks.
 - `KeyVox Keyboard/Views/Components/KeyboardKeyGridView+Touches.swift`
   - Multi-finger key handling: each finger is followed separately, characters type on lift or as soon as another finger lands, delete repeats while held, a held space bar becomes the cursor trackpad, holding `#+=` requests Compact Keys, holding a key with held-key characters opens its popup, and the globe's touches go to the system input-mode list.
 - `KeyVox Keyboard/Views/Components/KeyboardKeyGridPage.swift`
@@ -1726,7 +1726,7 @@ Packages/
 - `KeyVox Keyboard/Views/Components/KeyboardKeyTouchSession.swift`
   - One finger's key, typed location, current location, timestamp, and rollover state.
 - `KeyVox Keyboard/Views/Components/KeyboardKeyView.swift`
-  - Renders one key with two alternating labels so case switches only show and hide labels, a number pad digit's letters under it on keys tall enough, and the blue action look; draws no per-key blur and gives its shadow an explicit rounded path.
+  - Renders one key with two alternating labels so case switches only show and hide labels, a number pad digit's letters under it on keys tall enough as shown on screen, judging a key under Display Zoom by its size before the zoom shrinks it, and the blue action look; draws no per-key blur and gives its shadow an explicit rounded path.
 - `KeyVox Keyboard/Views/Components/KeyboardHeldKeyPopupView.swift`
   - Renders a held key's popup cells from the package's `HeldKeyPopupLayout`, highlighting the cell under the finger.
 - `KeyVox Keyboard/Views/Components/KeyboardSuggestionBarView.swift`
@@ -1787,19 +1787,19 @@ Packages/
 - `KeyVox Keyboard/Core/Emoji/KeyboardEmojiPanel.swift` and `KeyboardEmojiCategoryMemory.swift`
   - Closed, browsing, and searching panel state, and where a category tap scrolls the grid.
 - `KeyVox Keyboard/Core/Emoji/KeyboardEmojiGridGeometry.swift`, `KeyboardEmojiSearchGeometry.swift`, `KeyboardEmojiSkinTonePickerLayout.swift`, `KeyboardEmojiSearchSkinTonePickerLayout.swift`, and `KeyboardEmojiTwoPersonPickerLayout.swift`
-  - Measured layout math for the emoji grid, the search field and results (including the extra keyboard height while searching), and the skin-tone and two-person pickers, which stay inside the space they show in.
+  - Measured layout math for the emoji grid, the search field and results (including the extra keyboard height while searching), and the skin-tone and two-person pickers, which stay inside the space they show in, every measured size shrunk by the Display Zoom size scale they are given.
 - `KeyVox Keyboard/Core/Emoji/KeyboardEmojiContrastCheck.swift`
   - Draws an emoji once and reports whether most of it is too close in color, lightness and hue together, to the key it sits on to stand apart, which only a dark key can cause, against the key's fill laid over the appearance's background, remembering each answer per emoji and key color.
 - `KeyVox Keyboard/Core/Emoji/KeyboardEmojiSilhouetteRenderer.swift`
   - Draws a two-person emoji with each unchosen person as a solid gray silhouette, attributing outline and clothing pixels to the nearest person and keeping a joining heart in color.
 - `KeyVox Keyboard/Views/Emoji/KeyboardEmojiPageView.swift` and `KeyboardEmojiPageView+SkinTones.swift`
-  - Sideways-scrolling emoji grid over the category bar, showing and typing each emoji in its chosen tone, with held-emoji skin-tone and two-person pickers.
+  - Sideways-scrolling emoji grid over the category bar, showing and typing each emoji in its chosen tone, with held-emoji skin-tone and two-person pickers; shrinks the grid, the gap above the bar, the bar, and the pickers by the size scale `KeyboardRootView` gives it under Display Zoom.
 - `KeyVox Keyboard/Views/Emoji/KeyboardEmojiCategoryBar.swift` and `KeyboardEmojiCategoryBar+Scrub.swift`
-  - The bar with the key back to the typing keys, a button per category, and delete, plus finger scrubbing along the categories.
+  - The bar with the key back to the typing keys, a button per category, and delete, plus finger scrubbing along the categories, its keys, pictures, label, and circle shrunk by the size scale the emoji page gives it under Display Zoom.
 - `KeyVox Keyboard/Views/Emoji/KeyboardEmojiSearchFieldView.swift`, `KeyboardEmojiSearchResultsView.swift`, and `KeyboardEmojiSearchResultsView+SkinTones.swift`
-  - The search field in the toolbar's place, the single scrolling row of results, and the picker a held result opens.
+  - The search field in the toolbar's place, the single scrolling row of results, and the picker a held result opens, their sizes shrunk by the size scale `KeyboardRootView` gives them under Display Zoom.
 - `KeyVox Keyboard/Views/Emoji/KeyboardEmojiSkinTonePickerView.swift`, `KeyboardEmojiTwoPersonPickerView.swift`, `KeyboardEmojiChoiceHighlightView.swift`, and `KeyboardEmojiPickerPanelShape.swift`
-  - Picker rendering with one shared choice highlight for both pickers in light and dark appearance and one panel-and-stem outline.
+  - Picker rendering with one shared choice highlight for both pickers in light and dark appearance and one panel-and-stem outline, the corners, shadow, and highlight shrunk by the size scale their owner gives them under Display Zoom.
 - `KeyVox Keyboard/Views/Emoji/KeyboardEmojiCell.swift`, `KeyboardEmojiGridLayout.swift`, and `KeyboardEmojiCategoryStyle.swift`
   - Grid cells labeled by their emoji for VoiceOver, the collection layout that places each emoji from `KeyboardEmojiGridGeometry`, and each category's bar symbol and VoiceOver wording.
 

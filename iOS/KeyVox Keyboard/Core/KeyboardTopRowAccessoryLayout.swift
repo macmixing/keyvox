@@ -376,7 +376,7 @@ extension KeyboardLayoutGeometry {
             (logoBarView as? KeyboardLogoBarView)?.applyToolbarDiameter(
                 (isLandscape
                     ? KeyboardLogoBarView.landscapeToolbarDiameter
-                    : KeyboardLogoBarView.toolbarDiameter) * displayZoom.heightScale
+                    : KeyboardLogoBarView.toolbarDiameter) * displayZoom.sizeScale
             )
             let usesCapsLockVerticalPosition = !isLandscape && capsLockButton != nil
             let shouldRefreshLogoConstraints =

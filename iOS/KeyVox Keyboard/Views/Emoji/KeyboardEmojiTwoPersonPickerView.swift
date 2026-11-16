@@ -32,6 +32,8 @@ final class KeyboardEmojiTwoPersonPickerView: UIView {
     private let plainLabel = UILabel()
     private let chosenView = UIImageView()
     private var layout: KeyboardEmojiTwoPersonPickerLayout?
+    /// How much the panel's corners and the highlights shrink, below 1 under Display Zoom.
+    var sizeScale: CGFloat = 1
     private var tones: EmojiTwoPersonTones?
     private var plain = ""
     private var bottomFont = UIFont.systemFont(ofSize: 1)
@@ -86,11 +88,12 @@ final class KeyboardEmojiTwoPersonPickerView: UIView {
         let chosen = chosenVersion.flatMap(tones.tones(of:))
         firstTone = chosen?.first
         secondTone = chosen?.second
+        // The panel's corners shrink by the Display Zoom, as its parts do.
         shapeLayer.path = KeyboardEmojiPickerPanelShape.path(
             panel: layout.panelFrame,
             stem: layout.stemFrame,
-            panelCornerRadius: style.panelCornerRadius,
-            stemCornerRadius: style.stemCornerRadius
+            panelCornerRadius: style.panelCornerRadius * sizeScale,
+            stemCornerRadius: style.stemCornerRadius * sizeScale
         ).cgPath
         shapeLayer.fillColor = style.fillColor.resolvedColor(with: traitCollection).cgColor
         panelFill = style.fillColor
@@ -168,7 +171,7 @@ final class KeyboardEmojiTwoPersonPickerView: UIView {
         guard let layout, let tones else { return }
         for (highlight, tone, centers) in [(firstHighlight, firstTone, layout.firstToneCenters), (secondHighlight, secondTone, layout.secondToneCenters)] {
             if let tone {
-                highlight.show(centeredAt: centers[tone])
+                highlight.show(centeredAt: centers[tone], sizeScale: sizeScale)
             } else {
                 highlight.isHidden = true
             }

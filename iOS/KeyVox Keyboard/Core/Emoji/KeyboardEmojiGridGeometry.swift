@@ -3,7 +3,8 @@ import CoreGraphics
 /// Where the emoji page puts its emoji: columns of emoji filled top to bottom, sections side by side,
 /// spaced as on the system emoji keyboard, which titles no section; as many rows as fit the grid's
 /// height at the system's size, up to its four, with the height left over shared equally above each
-/// row; a grid too short for one row draws it smaller.
+/// row; a grid too short for one row draws it smaller. Under Display Zoom every size shrinks by the
+/// zoom.
 struct KeyboardEmojiGridGeometry: Equatable {
     /// The system emoji keyboard on a 390-point-wide iPhone 13 Pro, in points, measured from its
     /// screenshots (Tools/AppleKeyboardBaseline, `EmojiFrequentlyUsedProbeTests`).
@@ -43,6 +44,8 @@ struct KeyboardEmojiGridGeometry: Equatable {
     }
 
     let rowCount: Int
+    /// How much smaller than measured the grid draws: by the Display Zoom, and further in a grid too
+    /// short for one row.
     let scale: CGFloat
     /// Above each row's emoji: its share of the height the rows leave.
     let rowGap: CGFloat
@@ -51,11 +54,12 @@ struct KeyboardEmojiGridGeometry: Equatable {
     /// The grid's height, which its content never exceeds, so the grid never scrolls up and down.
     let gridHeight: CGFloat
 
-    init(gridHeight: CGFloat) {
+    init(gridHeight: CGFloat, sizeScale: CGFloat = 1) {
         self.gridHeight = gridHeight
-        let fittingRowCount = Int((gridHeight / Measured.emojiSize).rounded(.down))
+        let zoomedEmojiSize = Measured.emojiSize * sizeScale
+        let fittingRowCount = Int((gridHeight / zoomedEmojiSize).rounded(.down))
         rowCount = min(Measured.maximumRowCount, max(1, fittingRowCount))
-        scale = min(1, gridHeight / (CGFloat(rowCount) * Measured.emojiSize))
+        scale = sizeScale * min(1, gridHeight / (CGFloat(rowCount) * zoomedEmojiSize))
         rowGap = max(0, gridHeight - (CGFloat(rowCount) * Measured.emojiSize * scale)) / CGFloat(rowCount)
         rowPitch = (Measured.emojiSize * scale) + rowGap
     }

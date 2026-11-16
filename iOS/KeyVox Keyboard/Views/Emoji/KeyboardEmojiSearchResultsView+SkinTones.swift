@@ -37,7 +37,8 @@ extension KeyboardEmojiSearchResultsView {
         let layout = KeyboardEmojiSearchSkinTonePickerLayout(
             heldResult: collectionView.convert(cell.frame, to: container),
             toneCount: emoji.skinToneVariants.count,
-            keyboard: container.bounds
+            keyboard: container.bounds,
+            sizeScale: sizeScale
         )
         let choices = [emoji.text] + emoji.skinToneVariants
         if skinTonePicker.superview !== container {

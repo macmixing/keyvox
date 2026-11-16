@@ -32,9 +32,8 @@ final class KeyboardRootView: UIView {
     private let contentStack = UIStackView()
     private let mainStack = UIStackView()
     private var mainStackTopConstraint: NSLayoutConstraint?
-    private var mainStackBottomConstraint: NSLayoutConstraint?
-    private var leadingControlsHeightConstraint: NSLayoutConstraint?
-    private var trailingControlsHeightConstraint: NSLayoutConstraint?
+    /// Constraints whose constants shrink by the Display Zoom, with their constants without it.
+    private var zoomScaledConstraints: [(constraint: NSLayoutConstraint, constant: CGFloat)] = []
     /// The search field sits at the top of the keyboard on the emoji page, and over the results
     /// while searching.
     private var emojiSearchFieldAtTopConstraint: NSLayoutConstraint?
@@ -196,25 +195,36 @@ final class KeyboardRootView: UIView {
     /// shrink by the zoom.
     private func mainStackTopInset(emojiPanel: KeyboardEmojiPanel, showsToolbarRow: Bool) -> CGFloat {
         (KeyboardStyle.topPadding - (showsToolbarRow ? 0 : KeyboardStyle.toolbarRowHeight))
-            * displayZoom.heightScale
-            + (emojiPanel == .searching ? KeyboardEmojiSearchGeometry.addedKeyboardHeight : 0)
+            * displayZoom.sizeScale
+            + (emojiPanel == .searching ? KeyboardEmojiSearchGeometry.addedKeyboardHeight(sizeScale: displayZoom.sizeScale) : 0)
     }
 
-    /// Shrinks the toolbar's row, the space under it, the keyboard's bottom padding, and the
-    /// toolbar buttons' icons by the Display Zoom, as the keys shrink.
-    private func applyDisplayZoomToToolbarRow() {
-        let heightScale = displayZoom.heightScale
-        mainStack.spacing = KeyboardStyle.sectionSpacing * heightScale
-        leadingControlsHeightConstraint?.constant = KeyboardStyle.buttonSize * heightScale
-        trailingControlsHeightConstraint?.constant = KeyboardStyle.buttonSize * heightScale
-        mainStackBottomConstraint?.constant = -KeyboardStyle.bottomPadding * heightScale
-        cancelButton.symbolScale = heightScale
-        settingsButton.symbolScale = heightScale
-        capsLockButton.symbolScale = heightScale
-        speakButton.symbolScale = heightScale
-        paragraphButton.symbolScale = heightScale
-        listsButton.symbolScale = heightScale
-        dictionaryButton.symbolScale = heightScale
+    /// Keeps `constraint` shrinking its constant by the Display Zoom.
+    private func scalesWithZoom(_ constraint: NSLayoutConstraint) -> NSLayoutConstraint {
+        zoomScaledConstraints.append((constraint, constraint.constant))
+        return constraint
+    }
+
+    /// Shrinks the toolbar's row, the space under it, the keyboard's bottom padding, the emoji
+    /// page, the emoji search's field and results and the gaps around them, the toolbar buttons'
+    /// icons, and the number pad's letters rule by the Display Zoom, as the keys shrink.
+    private func applyDisplayZoom() {
+        let sizeScale = displayZoom.sizeScale
+        mainStack.spacing = KeyboardStyle.sectionSpacing * sizeScale
+        for (constraint, constant) in zoomScaledConstraints {
+            constraint.constant = constant * sizeScale
+        }
+        keyGridView.setDisplayZoomScale(sizeScale)
+        emojiPageView.sizeScale = sizeScale
+        emojiSearchFieldView.sizeScale = sizeScale
+        emojiSearchResultsView.sizeScale = sizeScale
+        cancelButton.symbolScale = sizeScale
+        settingsButton.symbolScale = sizeScale
+        capsLockButton.symbolScale = sizeScale
+        speakButton.symbolScale = sizeScale
+        paragraphButton.symbolScale = sizeScale
+        listsButton.symbolScale = sizeScale
+        dictionaryButton.symbolScale = sizeScale
     }
 
     func apply(
@@ -274,7 +284,7 @@ final class KeyboardRootView: UIView {
         }
         if self.displayZoom != displayZoom {
             self.displayZoom = displayZoom
-            applyDisplayZoomToToolbarRow()
+            applyDisplayZoom()
             setNeedsLayout()
         }
 
@@ -492,8 +502,6 @@ final class KeyboardRootView: UIView {
     private func configureLayout() {
         leadingControlsWidthConstraint = leadingControlsStack.widthAnchor.constraint(equalToConstant: KeyboardStyle.buttonSize)
         trailingControlsWidthConstraint = trailingControlsStack.widthAnchor.constraint(equalToConstant: KeyboardStyle.buttonSize)
-        leadingControlsHeightConstraint = leadingControlsStack.heightAnchor.constraint(equalToConstant: KeyboardStyle.buttonSize)
-        trailingControlsHeightConstraint = trailingControlsStack.heightAnchor.constraint(equalToConstant: KeyboardStyle.buttonSize)
         let cancelButtonLeadingConstraint = cancelButton.leadingAnchor.constraint(equalTo: leadingControlsStack.leadingAnchor)
         let cancelButtonCenterYConstraint = cancelButton.centerYAnchor.constraint(
             equalTo: leadingControlsStack.centerYAnchor
@@ -526,8 +534,8 @@ final class KeyboardRootView: UIView {
             // regardless of button visibility or individual button sizes.
             leadingControlsWidthConstraint!,
             trailingControlsWidthConstraint!,
-            leadingControlsHeightConstraint!,
-            trailingControlsHeightConstraint!,
+            scalesWithZoom(leadingControlsStack.heightAnchor.constraint(equalToConstant: KeyboardStyle.buttonSize)),
+            scalesWithZoom(trailingControlsStack.heightAnchor.constraint(equalToConstant: KeyboardStyle.buttonSize)),
 
             // Leading action buttons are flush with the left edge of their container.
             settingsButtonWidthConstraint!,
@@ -566,54 +574,54 @@ final class KeyboardRootView: UIView {
 
             keyGridHeightConstraint!,
 
-            emojiSearchFieldView.leadingAnchor.constraint(
+            scalesWithZoom(emojiSearchFieldView.leadingAnchor.constraint(
                 equalTo: leadingAnchor,
                 constant: KeyboardEmojiSearchGeometry.Measured.fieldInset
-            ),
-            emojiSearchFieldView.trailingAnchor.constraint(
+            )),
+            scalesWithZoom(emojiSearchFieldView.trailingAnchor.constraint(
                 equalTo: trailingAnchor,
                 constant: -KeyboardEmojiSearchGeometry.Measured.fieldInset
-            ),
-            emojiSearchFieldView.heightAnchor.constraint(equalToConstant: KeyboardEmojiSearchGeometry.Measured.fieldHeight),
+            )),
+            scalesWithZoom(emojiSearchFieldView.heightAnchor.constraint(equalToConstant: KeyboardEmojiSearchGeometry.Measured.fieldHeight)),
 
             emojiSearchResultsView.leadingAnchor.constraint(equalTo: leadingAnchor),
             emojiSearchResultsView.trailingAnchor.constraint(equalTo: trailingAnchor),
-            emojiSearchResultsView.bottomAnchor.constraint(
+            scalesWithZoom(emojiSearchResultsView.bottomAnchor.constraint(
                 equalTo: keyGridView.topAnchor,
                 constant: -KeyboardEmojiSearchGeometry.Measured.resultsGapAboveKeys
-            ),
-            emojiSearchResultsView.heightAnchor.constraint(equalToConstant: KeyboardEmojiSearchGeometry.Measured.resultsHeight),
+            )),
+            scalesWithZoom(emojiSearchResultsView.heightAnchor.constraint(equalToConstant: KeyboardEmojiSearchGeometry.Measured.resultsHeight)),
 
             emojiPageView.leadingAnchor.constraint(equalTo: leadingAnchor),
             emojiPageView.trailingAnchor.constraint(equalTo: trailingAnchor),
-            emojiPageView.topAnchor.constraint(
+            scalesWithZoom(emojiPageView.topAnchor.constraint(
                 equalTo: emojiSearchFieldView.bottomAnchor,
                 constant: KeyboardEmojiSearchGeometry.Measured.pageGapBelowField
-            ),
+            )),
             emojiPageView.bottomAnchor.constraint(equalTo: keyGridView.bottomAnchor),
 
             mainStack.leadingAnchor.constraint(equalTo: leadingAnchor, constant: KeyboardStyle.horizontalPadding),
             mainStack.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -KeyboardStyle.horizontalPadding),
         ])
 
-        let mainStackBottomConstraint = mainStack.bottomAnchor.constraint(
+        scalesWithZoom(mainStack.bottomAnchor.constraint(
             equalTo: bottomAnchor,
             constant: -KeyboardStyle.bottomPadding
-        )
-        mainStackBottomConstraint.isActive = true
-        self.mainStackBottomConstraint = mainStackBottomConstraint
+        )).isActive = true
 
         let mainStackTopConstraint = mainStack.topAnchor.constraint(equalTo: topAnchor, constant: KeyboardStyle.topPadding)
         mainStackTopConstraint.isActive = true
         self.mainStackTopConstraint = mainStackTopConstraint
         // As far from the keyboard's top as the toolbar's row sits.
-        let fieldAtTop = emojiSearchFieldView.topAnchor.constraint(equalTo: topAnchor, constant: KeyboardStyle.topPadding)
+        let fieldAtTop = scalesWithZoom(
+            emojiSearchFieldView.topAnchor.constraint(equalTo: topAnchor, constant: KeyboardStyle.topPadding)
+        )
         fieldAtTop.isActive = true
         emojiSearchFieldAtTopConstraint = fieldAtTop
-        emojiSearchFieldOverResultsConstraint = emojiSearchFieldView.bottomAnchor.constraint(
+        emojiSearchFieldOverResultsConstraint = scalesWithZoom(emojiSearchFieldView.bottomAnchor.constraint(
             equalTo: emojiSearchResultsView.topAnchor,
             constant: -KeyboardEmojiSearchGeometry.Measured.resultsGapBelowField
-        )
+        ))
 
         if let cancelButtonWidthConstraint,
            let cancelButtonHeightConstraint,

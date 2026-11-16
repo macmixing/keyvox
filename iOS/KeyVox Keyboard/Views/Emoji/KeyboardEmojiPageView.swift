@@ -73,6 +73,15 @@ final class KeyboardEmojiPageView: UIView {
     /// The emoji held with its skin-tone picker open, the picker's layout, and the choice under the finger.
     var heldEmoji: (emoji: Emoji, layout: KeyboardEmojiSkinTonePickerLayout, choices: [String], choice: Int?)?
     private var categoryMemory = KeyboardEmojiCategoryMemory()
+    private var barGapConstraint: NSLayoutConstraint?
+    /// How much the page's sizes shrink, below 1 under Display Zoom.
+    var sizeScale: CGFloat = 1 {
+        didSet {
+            guard sizeScale != oldValue else { return }
+            applyDisplayZoom()
+        }
+    }
+    private var categoryBarHeightConstraint: NSLayoutConstraint?
     private var shownCategory: EmojiKeyboardCategory?
 
     override init(frame: CGRect) {
@@ -106,17 +115,33 @@ final class KeyboardEmojiPageView: UIView {
         addSubview(collectionView)
         addSubview(categoryBar)
         configureSkinTonePicker()
+        let barGapConstraint = collectionView.bottomAnchor.constraint(equalTo: categoryBar.topAnchor, constant: -Measured.barGap)
+        let categoryBarHeightConstraint = categoryBar.heightAnchor.constraint(equalToConstant: KeyboardEmojiCategoryBar.Measured.height)
+        self.barGapConstraint = barGapConstraint
+        self.categoryBarHeightConstraint = categoryBarHeightConstraint
         NSLayoutConstraint.activate([
             collectionView.leadingAnchor.constraint(equalTo: leadingAnchor),
             collectionView.trailingAnchor.constraint(equalTo: trailingAnchor),
             collectionView.topAnchor.constraint(equalTo: topAnchor),
-            collectionView.bottomAnchor.constraint(equalTo: categoryBar.topAnchor, constant: -Measured.barGap),
+            barGapConstraint,
             // The bar keeps the keys' margins; the grid runs to the keyboard's edges.
             categoryBar.leadingAnchor.constraint(equalTo: leadingAnchor, constant: KeyboardStyle.horizontalPadding),
             categoryBar.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -KeyboardStyle.horizontalPadding),
             categoryBar.bottomAnchor.constraint(equalTo: bottomAnchor),
-            categoryBar.heightAnchor.constraint(equalToConstant: KeyboardEmojiCategoryBar.Measured.height),
+            categoryBarHeightConstraint,
         ])
+    }
+
+    /// Shrinks the grid, the gap above the bar, the bar, and the pickers by the Display Zoom.
+    private func applyDisplayZoom() {
+        gridLayout.sizeScale = sizeScale
+        categoryBar.sizeScale = sizeScale
+        skinTonePicker.sizeScale = sizeScale
+        twoPersonPicker.sizeScale = sizeScale
+        barGapConstraint?.constant = -Measured.barGap * sizeScale
+        categoryBarHeightConstraint?.constant = KeyboardEmojiCategoryBar.Measured.height * sizeScale
+        collectionView.reloadData()
+        setNeedsLayout()
     }
 
     @available(*, unavailable)
@@ -148,7 +173,8 @@ final class KeyboardEmojiPageView: UIView {
 
     /// The section's measured size, rounded up to whole columns of the grid as it is laid out.
     private var filledFrequentlyUsedCount: Int {
-        KeyboardEmojiGridGeometry(gridHeight: collectionView.bounds.height).wholeColumnsCount(EmojiFrequentlyUsed.capacity)
+        KeyboardEmojiGridGeometry(gridHeight: collectionView.bounds.height, sizeScale: gridLayout.sizeScale)
+            .wholeColumnsCount(EmojiFrequentlyUsed.capacity)
     }
 
     private func showFilledSections() {

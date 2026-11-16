@@ -71,36 +71,27 @@ final class KeyboardEmojiSearchFieldView: UIView {
     private let placeholderLabel = UILabel()
     private let caretView = UIView()
     private let clearButton = KeyboardHitTargetButton(type: .custom)
+    /// How much the field's sizes shrink, below 1 under Display Zoom.
+    var sizeScale: CGFloat = 1 {
+        didSet {
+            guard sizeScale != oldValue else { return }
+            applySizes()
+        }
+    }
 
     override init(frame: CGRect) {
         super.init(frame: frame)
-        layer.cornerRadius = Geometry.fieldCornerRadius
         layer.cornerCurve = .circular
-        magnifierView.image = UIImage(
-            systemName: "magnifyingglass",
-            withConfiguration: UIImage.SymbolConfiguration(pointSize: Drawn.magnifierPointSize, weight: .medium)
-        )
         // Named as the system keyboard names its magnifying glass, the element that starts a search.
         magnifierView.isAccessibilityElement = true
         magnifierView.accessibilityLabel = "Search"
         magnifierView.accessibilityTraits = .button
-        let font = UIFont.systemFont(ofSize: Measured.fontSize)
-        textLabel.font = font
         textLabel.textColor = .label
         // A long search keeps its end, where typing goes, in view.
         textLabel.lineBreakMode = .byTruncatingHead
-        placeholderLabel.font = font
         placeholderLabel.text = Self.placeholder
         caretView.backgroundColor = Measured.caretColor
         caretView.isUserInteractionEnabled = false
-        clearButton.setImage(
-            UIImage(
-                systemName: "xmark.circle.fill",
-                withConfiguration: UIImage.SymbolConfiguration(pointSize: Drawn.clearPointSize, weight: .regular)
-            ),
-            for: .normal
-        )
-        clearButton.minimumHitTargetSize = CGSize(width: Geometry.fieldHeight, height: Geometry.fieldHeight)
         clearButton.accessibilityLabel = "Clear text"
         clearButton.addTarget(self, action: #selector(handleClear), for: .touchUpInside)
         for view in [magnifierView, placeholderLabel, textLabel, caretView, clearButton] as [UIView] {
@@ -111,7 +102,30 @@ final class KeyboardEmojiSearchFieldView: UIView {
             self.applyColors()
         }
         applyColors()
+        applySizes()
         update()
+    }
+
+    /// Sizes the field's corners, pictures, text, and clear button's reach by the Display Zoom.
+    private func applySizes() {
+        layer.cornerRadius = Geometry.fieldCornerRadius * sizeScale
+        magnifierView.image = UIImage(
+            systemName: "magnifyingglass",
+            withConfiguration: UIImage.SymbolConfiguration(pointSize: Drawn.magnifierPointSize * sizeScale, weight: .medium)
+        )
+        let font = UIFont.systemFont(ofSize: Measured.fontSize * sizeScale)
+        textLabel.font = font
+        placeholderLabel.font = font
+        clearButton.setImage(
+            UIImage(
+                systemName: "xmark.circle.fill",
+                withConfiguration: UIImage.SymbolConfiguration(pointSize: Drawn.clearPointSize * sizeScale, weight: .regular)
+            ),
+            for: .normal
+        )
+        let hitTargetSide = Geometry.fieldHeight * sizeScale
+        clearButton.minimumHitTargetSize = CGSize(width: hitTargetSide, height: hitTargetSide)
+        setNeedsLayout()
     }
 
     @available(*, unavailable)
@@ -123,18 +137,20 @@ final class KeyboardEmojiSearchFieldView: UIView {
         super.layoutSubviews()
         let midY = bounds.midY
         magnifierView.sizeToFit()
-        magnifierView.center = CGPoint(x: Geometry.magnifierCenter, y: midY)
+        let textStart = Geometry.textStart * sizeScale
+        let caretHeight = Geometry.caretHeight * sizeScale
+        magnifierView.center = CGPoint(x: Geometry.magnifierCenter * sizeScale, y: midY)
         clearButton.sizeToFit()
-        clearButton.center = CGPoint(x: bounds.width - Geometry.clearCenterInset, y: midY)
-        let textWidth = max(0, clearButton.frame.minX - Geometry.textStart)
-        placeholderLabel.frame = CGRect(x: Geometry.textStart, y: 0, width: textWidth, height: bounds.height)
+        clearButton.center = CGPoint(x: bounds.width - (Geometry.clearCenterInset * sizeScale), y: midY)
+        let textWidth = max(0, clearButton.frame.minX - textStart)
+        placeholderLabel.frame = CGRect(x: textStart, y: 0, width: textWidth, height: bounds.height)
         let fittedWidth = min(textLabel.sizeThatFits(bounds.size).width, textWidth)
-        textLabel.frame = CGRect(x: Geometry.textStart, y: 0, width: fittedWidth, height: bounds.height)
+        textLabel.frame = CGRect(x: textStart, y: 0, width: fittedWidth, height: bounds.height)
         caretView.frame = CGRect(
-            x: Geometry.textStart + (text.isEmpty ? 0 : fittedWidth),
-            y: midY - (Geometry.caretHeight / 2),
-            width: Geometry.caretWidth,
-            height: Geometry.caretHeight
+            x: textStart + (text.isEmpty ? 0 : fittedWidth),
+            y: midY - (caretHeight / 2),
+            width: Geometry.caretWidth * sizeScale,
+            height: caretHeight
         )
     }
 

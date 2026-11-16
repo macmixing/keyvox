@@ -56,6 +56,8 @@ final class KeyboardEmojiSkinTonePickerView: UIView {
     private var labels: [UILabel] = []
     private var choiceCenters: [CGPoint] = []
     private var style = Style.page
+    /// How much the picker's corners, shadow, and highlight shrink, below 1 under Display Zoom.
+    var sizeScale: CGFloat = 1
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -88,18 +90,20 @@ final class KeyboardEmojiSkinTonePickerView: UIView {
     ) {
         self.choiceCenters = choiceCenters
         self.style = style
+        // The panel's corners and shadow shrink by the Display Zoom, as its parts do.
         let path = KeyboardEmojiPickerPanelShape.path(
             panel: panel,
             stem: stem,
-            panelCornerRadius: style.panelCornerRadius,
-            stemCornerRadius: style.stemCornerRadius
+            panelCornerRadius: style.panelCornerRadius * sizeScale,
+            stemCornerRadius: style.stemCornerRadius * sizeScale
         )
         shapeLayer.path = path.cgPath
         shapeLayer.shadowPath = path.cgPath
         shapeLayer.shadowColor = style.shadow?.color.cgColor
         shapeLayer.shadowOpacity = style.shadow?.opacity ?? 0
-        shapeLayer.shadowRadius = style.shadow?.radius ?? 0
-        shapeLayer.shadowOffset = style.shadow?.offset ?? .zero
+        shapeLayer.shadowRadius = (style.shadow?.radius ?? 0) * sizeScale
+        let shadowOffset = style.shadow?.offset ?? .zero
+        shapeLayer.shadowOffset = CGSize(width: shadowOffset.width * sizeScale, height: shadowOffset.height * sizeScale)
         dividerView.frame = divider
         while labels.count < choices.count {
             let label = UILabel()
@@ -126,7 +130,7 @@ final class KeyboardEmojiSkinTonePickerView: UIView {
             highlightView.isHidden = true
             return
         }
-        highlightView.show(centeredAt: choiceCenters[index])
+        highlightView.show(centeredAt: choiceCenters[index], sizeScale: sizeScale)
         // The highlight goes under the choices.
         insertSubview(highlightView, belowSubview: labels[0])
     }

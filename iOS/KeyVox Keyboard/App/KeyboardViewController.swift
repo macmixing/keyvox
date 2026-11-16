@@ -365,7 +365,7 @@ final class KeyboardViewController: UIInputViewController {
             zoom: displayZoom,
             showsToolbar: symbolPage.keepsToolbarRow(emojiPanel: emojiPanel)
         )
-            + (emojiPanel == .searching ? KeyboardEmojiSearchGeometry.addedKeyboardHeight : 0)
+            + (emojiPanel == .searching ? KeyboardEmojiSearchGeometry.addedKeyboardHeight(sizeScale: displayZoom.sizeScale) : 0)
     }
 
     private func configureTraitChangeObservation() {
