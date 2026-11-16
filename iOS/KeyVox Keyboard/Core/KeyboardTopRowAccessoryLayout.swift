@@ -143,6 +143,7 @@ extension KeyboardLayoutGeometry {
 
         func update(
             isLandscape: Bool,
+            displayZoom: KeyboardDisplayZoom,
             showsVibesButton: Bool,
             isLeftHandedLayoutEnabled: Bool
         ) {
@@ -154,7 +155,7 @@ extension KeyboardLayoutGeometry {
 
             updateSingleKeyAccessories(isLandscape: isLandscape, slotPlan: slotPlan, keyGridView: keyGridView)
             updateVibesButton(isLandscape: isLandscape, showsVibesButton: showsVibesButton, slotPlan: slotPlan, keyGridView: keyGridView)
-            updateLogoBar(isLandscape: isLandscape, slotPlan: slotPlan, keyGridView: keyGridView)
+            updateLogoBar(isLandscape: isLandscape, displayZoom: displayZoom, slotPlan: slotPlan, keyGridView: keyGridView)
             updateCancelButton(isLandscape: isLandscape, slotPlan: slotPlan, keyGridView: keyGridView)
         }
 
@@ -362,6 +363,7 @@ extension KeyboardLayoutGeometry {
 
         private func updateLogoBar(
             isLandscape: Bool,
+            displayZoom: KeyboardDisplayZoom,
             slotPlan: TopRowAccessorySlotPlan,
             keyGridView: KeyboardKeyGridView
         ) {
@@ -370,10 +372,11 @@ extension KeyboardLayoutGeometry {
                 return
             }
 
+            // Shrinks under Display Zoom by the same amount as the keys.
             (logoBarView as? KeyboardLogoBarView)?.applyToolbarDiameter(
-                isLandscape
+                (isLandscape
                     ? KeyboardLogoBarView.landscapeToolbarDiameter
-                    : KeyboardLogoBarView.toolbarDiameter
+                    : KeyboardLogoBarView.toolbarDiameter) * displayZoom.heightScale
             )
             let usesCapsLockVerticalPosition = !isLandscape && capsLockButton != nil
             let shouldRefreshLogoConstraints =

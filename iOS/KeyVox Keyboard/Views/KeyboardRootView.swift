@@ -32,6 +32,9 @@ final class KeyboardRootView: UIView {
     private let contentStack = UIStackView()
     private let mainStack = UIStackView()
     private var mainStackTopConstraint: NSLayoutConstraint?
+    private var mainStackBottomConstraint: NSLayoutConstraint?
+    private var leadingControlsHeightConstraint: NSLayoutConstraint?
+    private var trailingControlsHeightConstraint: NSLayoutConstraint?
     /// The search field sits at the top of the keyboard on the emoji page, and over the results
     /// while searching.
     private var emojiSearchFieldAtTopConstraint: NSLayoutConstraint?
@@ -51,6 +54,7 @@ final class KeyboardRootView: UIView {
     private var suggestionBarLeadingConstraint: NSLayoutConstraint?
     private var suggestionBarTrailingConstraint: NSLayoutConstraint?
     private var isLeftHandedLayoutEnabled = false
+    private var displayZoom = KeyboardDisplayZoom.none
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -138,6 +142,7 @@ final class KeyboardRootView: UIView {
         let isLandscape = KeyboardScreenShape.isWide(self)
         topRowAccessoryLayoutGeometry?.update(
             isLandscape: isLandscape,
+            displayZoom: displayZoom,
             showsVibesButton: showsVibesButton,
             isLeftHandedLayoutEnabled: isLeftHandedLayoutEnabled
         )
@@ -187,11 +192,22 @@ final class KeyboardRootView: UIView {
     /// How far below the keyboard's top the toolbar's row sits: lower by the search results while
     /// searching emoji, or above the keyboard's top, out of sight, on a page without the toolbar,
     /// so the keys sit where the row would. The row stays in the stack, as hiding it would ask its
-    /// fixed-height controls to fit a row of no height.
+    /// fixed-height controls to fit a row of no height. Under Display Zoom the padding and the row
+    /// shrink by the zoom.
     private func mainStackTopInset(emojiPanel: KeyboardEmojiPanel, showsToolbarRow: Bool) -> CGFloat {
-        KeyboardStyle.topPadding
+        (KeyboardStyle.topPadding - (showsToolbarRow ? 0 : KeyboardStyle.toolbarRowHeight))
+            * displayZoom.heightScale
             + (emojiPanel == .searching ? KeyboardEmojiSearchGeometry.addedKeyboardHeight : 0)
-            - (showsToolbarRow ? 0 : KeyboardStyle.toolbarRowHeight)
+    }
+
+    /// Shrinks the toolbar's row, the space under it, and the keyboard's bottom padding by the
+    /// Display Zoom, as the keys shrink.
+    private func applyDisplayZoomToToolbarRow() {
+        let heightScale = displayZoom.heightScale
+        mainStack.spacing = KeyboardStyle.sectionSpacing * heightScale
+        leadingControlsHeightConstraint?.constant = KeyboardStyle.buttonSize * heightScale
+        trailingControlsHeightConstraint?.constant = KeyboardStyle.buttonSize * heightScale
+        mainStackBottomConstraint?.constant = -KeyboardStyle.bottomPadding * heightScale
     }
 
     func apply(
@@ -200,6 +216,7 @@ final class KeyboardRootView: UIView {
         keysMode: KeyboardKeysMode,
         isLandscape: Bool,
         display: KeyboardDisplay,
+        displayZoom: KeyboardDisplayZoom,
         offersPredictions: Bool,
         isCapsLockEnabled: Bool,
         isDictationCapsApplied: Bool,
@@ -246,6 +263,11 @@ final class KeyboardRootView: UIView {
             && state != .transcribing
         if self.isLeftHandedLayoutEnabled != isLeftHandedLayoutEnabled {
             self.isLeftHandedLayoutEnabled = isLeftHandedLayoutEnabled
+            setNeedsLayout()
+        }
+        if self.displayZoom != displayZoom {
+            self.displayZoom = displayZoom
+            applyDisplayZoomToToolbarRow()
             setNeedsLayout()
         }
 
@@ -323,14 +345,15 @@ final class KeyboardRootView: UIView {
         )
         keyGridView.setReturnKeyEnabled(isReturnKeyEnabled)
         keyGridView.setRowSpacing(
-            keysMode.rowSpacing(isLandscape: isLandscape, display: display)
+            keysMode.rowSpacing(isLandscape: isLandscape, display: display, zoom: displayZoom)
         )
         keyGridHeightConstraint?.constant = keysMode.keyGridHeight(
             isLandscape: isLandscape,
-            display: display
+            display: display,
+            zoom: displayZoom
         )
         keyGridView.setTopRowKeyHeight(
-            keysMode.toolbarButtonHeight(isLandscape: isLandscape, display: display)
+            keysMode.toolbarButtonHeight(isLandscape: isLandscape, display: display, zoom: displayZoom)
         )
         keyGridView.setKeyboardEnabled(true)
         keyGridView.refreshAppearance()
@@ -462,6 +485,8 @@ final class KeyboardRootView: UIView {
     private func configureLayout() {
         leadingControlsWidthConstraint = leadingControlsStack.widthAnchor.constraint(equalToConstant: KeyboardStyle.buttonSize)
         trailingControlsWidthConstraint = trailingControlsStack.widthAnchor.constraint(equalToConstant: KeyboardStyle.buttonSize)
+        leadingControlsHeightConstraint = leadingControlsStack.heightAnchor.constraint(equalToConstant: KeyboardStyle.buttonSize)
+        trailingControlsHeightConstraint = trailingControlsStack.heightAnchor.constraint(equalToConstant: KeyboardStyle.buttonSize)
         let cancelButtonLeadingConstraint = cancelButton.leadingAnchor.constraint(equalTo: leadingControlsStack.leadingAnchor)
         let cancelButtonCenterYConstraint = cancelButton.centerYAnchor.constraint(
             equalTo: leadingControlsStack.centerYAnchor
@@ -494,8 +519,8 @@ final class KeyboardRootView: UIView {
             // regardless of button visibility or individual button sizes.
             leadingControlsWidthConstraint!,
             trailingControlsWidthConstraint!,
-            leadingControlsStack.heightAnchor.constraint(equalToConstant: KeyboardStyle.buttonSize),
-            trailingControlsStack.heightAnchor.constraint(equalToConstant: KeyboardStyle.buttonSize),
+            leadingControlsHeightConstraint!,
+            trailingControlsHeightConstraint!,
 
             // Leading action buttons are flush with the left edge of their container.
             settingsButtonWidthConstraint!,
@@ -562,8 +587,14 @@ final class KeyboardRootView: UIView {
 
             mainStack.leadingAnchor.constraint(equalTo: leadingAnchor, constant: KeyboardStyle.horizontalPadding),
             mainStack.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -KeyboardStyle.horizontalPadding),
-            mainStack.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -KeyboardStyle.bottomPadding),
         ])
+
+        let mainStackBottomConstraint = mainStack.bottomAnchor.constraint(
+            equalTo: bottomAnchor,
+            constant: -KeyboardStyle.bottomPadding
+        )
+        mainStackBottomConstraint.isActive = true
+        self.mainStackBottomConstraint = mainStackBottomConstraint
 
         let mainStackTopConstraint = mainStack.topAnchor.constraint(equalTo: topAnchor, constant: KeyboardStyle.topPadding)
         mainStackTopConstraint.isActive = true

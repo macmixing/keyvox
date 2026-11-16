@@ -1780,8 +1780,9 @@ Implementation split:
 - `KeyboardViewController+Emoji.swift` and `KeyboardViewController+EmojiSearch.swift` own emoji page and emoji search coordination
 - `KeyboardTTSController.swift` owns keyboard-side copied-text speak transport state and the App Group request/start-stop coordination surface
 - `KeyboardAppSettingsStore.swift` owns keyboard-side App Group settings persistence and notification dispatch for controls that mirror containing-app settings
-- `KeyboardKeysMode.swift` owns full/compact resolution, visible row count, per-orientation and per-display key height, row spacing, top-row toolbar button height, and height selection
+- `KeyboardKeysMode.swift` owns full/compact resolution, visible row count, per-orientation, per-display, and Display Zoom key height, row spacing, top-row toolbar button height, and height selection
 - `KeyboardDisplay.swift`, `KeyboardFoldableDisplay.swift`, and `KeyboardScreenShape.swift` resolve the display kind and landscape shape those sizes depend on
+- `KeyboardDisplayZoom.swift` reads how much Display Zoom enlarges the keyboard, the factor the keyboard's height, key heights, row spacing, the toolbar's row and the padding around it, and the logo bar's diameter shrink by so they take the same part of the screen as with Display Zoom off
 - `KeyboardOpeningLayout.swift` owns the page and keys mode a field opens on
 - `Input/KeyboardCompactKeysHoldController.swift` owns the cancellable activation timer for the `#+=` long press
 - `DictationChange/` groups the latest untouched insertion long-press feature files
@@ -1881,7 +1882,7 @@ Compact Keys rules:
 - both modes must use explicit controller-view heights, one priority below required so the system's placeholder size while a new keyboard sizes up does not force Auto Layout to break a constraint, taken from portrait heights of 286 points for full and 174 points for compact, changed by however much shorter or taller the key grid is in landscape, on an open foldable, or on iPad, and shorter by `KeyboardStyle.toolbarRowHeight` on the number pad, which shows no toolbar, unless the emoji page or search is open there
 - while the emoji page or emoji search is open the keyboard lays out in full mode, Compact Keys staying the user's mode underneath, and the emoji search adds `KeyboardEmojiSearchGeometry.addedKeyboardHeight` to the controller-view height
 - `KeyboardStyle` owns those height constants; do not infer either height from transient host bounds
-- `KeyboardKeysMode` owns visible row count, per-orientation and per-display key height, row spacing, and derived key-grid height, while `KeyboardSymbolLayout` owns which rows and restore key appear
+- `KeyboardKeysMode` owns visible row count, per-orientation, per-display, and Display Zoom key height, row spacing, and derived key-grid height, while `KeyboardSymbolLayout` owns which rows and restore key appear
 - active mode is persisted separately from availability and survives keyboard-extension recreation
 - disabling availability forces full mode and clears the persisted compact-active flag
 

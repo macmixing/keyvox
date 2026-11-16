@@ -476,6 +476,7 @@ iOS/
 │   │   ├── KeyboardLayoutGeometry.swift
 │   │   ├── KeyboardKeysMode.swift
 │   │   ├── KeyboardDisplay.swift
+│   │   ├── KeyboardDisplayZoom.swift
 │   │   ├── KeyboardFieldBottomRowKeys.swift
 │   │   ├── KeyboardFieldKeys.swift
 │   │   ├── KeyboardFoldableDisplay.swift
@@ -1549,7 +1550,7 @@ Packages/
 - `KeyVox Keyboard/App/KeyboardViewController.swift`
   - Extension controller and top-level keyboard surface owner.
   - Owns toolbar mode switching, full-access instructions presentation, warm/cold app launch behavior, onboarding presentation reporting, Caps Lock, Vibes key cycling, missing-model Vibes recovery launch, dictionary/settings tab launch, the KeyVox Speak setup launch when no Speak voice is ready, the letter/number/symbol page, keys mode and controller-view height, emoji panel state, trackpad mode, and insertion.
-  - On each layout pass reads the display kind through `KeyboardDisplay`, decides landscape from `KeyboardScreenShape`, and shows its own globe key whenever the system asks for one; on each UI update applies the saved keyboard theme as a `KeyboardThemeTrait` override.
+  - On each layout pass reads the display kind through `KeyboardDisplay` and the Display Zoom through `KeyboardDisplayZoom`, decides landscape from `KeyboardScreenShape`, and shows its own globe key whenever the system asks for one; on each UI update applies the saved keyboard theme as a `KeyboardThemeTrait` override.
   - Waits for the host's first `textDidChange(_:)` after appearing before reading the focused field, then prepares typing for that field; a later change of the field's typing traits starts the new field fresh.
   - Tracks whether the latest dictation is still untouched and whether the field holds letters, which together decide whether the toolbar offers suggestions or the dictation accessories.
   - Missing-model taps open `keyvoxios://vibes/model-recovery`; access-aware recovery scene selection remains app-owned by `KeyVoxVibesPurchaseController`.
@@ -1673,9 +1674,11 @@ Packages/
   - Owns the letter page's inset middle row and shift row, the symbol pages' third row, and the bottom row's live widths, including the landscape side-key span, the paired page and emoji keys, the emoji search's three-key row, the globe row, and each field bottom row's split of the space bar's and return key's places, all driven from the measured key grid, plus the number pad's bottom row in its three columns across the pad's width from `KeyboardNumberPadGeometry`, with key widths one priority below required so a resize never forces Auto Layout to break key constraints.
 - `KeyVox Keyboard/Core/KeyboardKeysMode.swift`
   - Resolves full versus compact presentation from availability and persisted active state.
-  - Takes the 286-point full or 174-point compact portrait height from `KeyboardStyle`, changes it by however much shorter or taller the keys are in landscape or on iPad, takes the toolbar's row (`KeyboardStyle.toolbarRowHeight`) off when told the row is not kept, and owns visible row count, per-orientation and per-display key height, row spacing, the top row's toolbar button height, and derived key-grid height.
+  - Takes the 286-point full or 174-point compact portrait height from `KeyboardStyle`, changes it by however much shorter or taller the keys are in landscape or on iPad, takes the toolbar's row (`KeyboardStyle.toolbarRowHeight`) off when told the row is not kept, and owns visible row count, per-orientation and per-display key height, row spacing, the top row's toolbar button height, and derived key-grid height, each scaled by `KeyboardDisplayZoom`'s height scale; under Display Zoom the height around the keys shrinks by the same scale.
 - `KeyVox Keyboard/Core/KeyboardDisplay.swift`
   - Resolves the display the keyboard is on: standard (an iPhone display or an iPad's floating keyboard), an open foldable's inner display, or a full-width iPad keyboard, and whether a numbers-only field shows the number pad there: everywhere but the full-width iPad keyboard.
+- `KeyVox Keyboard/Core/KeyboardDisplayZoom.swift`
+  - Reads how much Display Zoom enlarges the keyboard from the screen's `scale` over its `nativeScale`, capped at 1, as the factor the keyboard's height, key heights, row spacing, the toolbar's row and the padding around it, and the logo bar's diameter are multiplied by so they take the same part of the screen as with Display Zoom off.
 - `KeyVox Keyboard/Core/KeyboardFoldableDisplay.swift`
   - Treats a display regular in both width and height as an open foldable's inner display, partially or fully open, because keyboard extensions do not receive hinge updates.
 - `KeyVox Keyboard/Core/KeyboardScreenShape.swift`
@@ -1689,6 +1692,7 @@ Packages/
   - Without the Vibes feature available, removes the Vibes key and compacts the remaining top-row accessories against the logo area so hidden feature keys do not leave gaps. Missing local Vibes AI readiness gates cycling but does not hide the key.
   - Mirrors the control strip for the left-handed layout setting without changing typed symbol order.
   - Gives portrait single-key accessories a height that resolves in Auto Layout to the smaller of the reference key's width and the standard button size, so the height never depends on a width read before the key grid lays out.
+  - Sizes the logo bar to its portrait or landscape diameter shrunk by the Display Zoom height scale, as the keys shrink.
 - `KeyVox Keyboard/Views/KeyboardRootView.swift`
   - Stable keyboard chrome and key grid.
   - Hosts the branded toolbar row and the shared warning overlay for dictation model, Full Access, and microphone permission warnings.
@@ -1698,7 +1702,7 @@ Packages/
   - Sends touches in the keyboard's outer padding to the key grid so they type the nearest key.
   - Invalidates layout whenever branded-toolbar Vibes visibility changes so returning from a warning mode restores measured top-row spacing.
   - Shows Speak with the other toolbar accessories whether or not a Speak voice is installed, and keeps Settings, Dictionary, and Speak disabled until onboarding is complete.
-  - Applies the display's row spacing, key-grid height, and top-row toolbar button height from `KeyboardKeysMode`.
+  - Applies the display's row spacing, key-grid height, and top-row toolbar button height from `KeyboardKeysMode`, scaled by the Display Zoom it is given, and shrinks the toolbar's row, the space under it, and the top and bottom padding by the same zoom.
 - `KeyVox Keyboard/Views/Components/KeyboardSpeakButton.swift`
   - Keyboard speak control used for copied-text playback transport in the top-row accessory area.
 - `KeyVox Keyboard/Views/Components/KeyboardVibesButton.swift`
