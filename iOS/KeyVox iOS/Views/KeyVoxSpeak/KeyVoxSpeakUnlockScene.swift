@@ -28,7 +28,7 @@ struct KeyVoxSpeakUnlockScene: View {
             id: 2,
             icon: "bolt.fill",
             title: String(localized: "Fast Mode Included", comment: "Benefit title on the KeyVox Speak unlock page."),
-            subtitle: String(localized: "Starts speaking ~50% faster with one tap.", comment: "Benefit description on the KeyVox Speak unlock page for Fast Mode.")
+            subtitle: String(localized: "Starts speaking ~\(KeyVoxSpeakFastModeSpeedup.formattedPercent) faster with one tap.", comment: "Benefit description on the KeyVox Speak unlock page for Fast Mode. The placeholder is the approximate speedup, already formatted as a percentage.")
         )
     ]
 

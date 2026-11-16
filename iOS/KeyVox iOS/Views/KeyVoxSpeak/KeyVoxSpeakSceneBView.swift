@@ -113,7 +113,7 @@ struct KeyVoxSpeakSceneBView: View {
                     .font(.appFont(16, variant: .medium))
                     .foregroundStyle(.white)
 
-                Text("Starts speaking ~50% faster. Toggle in the toolbar.", comment: "Description of the Fast Mode card on the KeyVox Speak page.")
+                Text("Starts speaking ~\(KeyVoxSpeakFastModeSpeedup.formattedPercent) faster. Toggle in the toolbar.", comment: "Description of the Fast Mode card on the KeyVox Speak page. The placeholder is the approximate speedup, already formatted as a percentage.")
                     .font(.appFont(14, variant: .light))
                     .foregroundStyle(.white.opacity(0.6))
                     .fixedSize(horizontal: false, vertical: true)
