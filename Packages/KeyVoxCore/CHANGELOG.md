@@ -14,13 +14,11 @@ Dictionary entries with more than one word no longer replace ordinary words or c
 
 - Stopped a multi-word entry from replacing a different word next to a shared exact word, such as `basic dictation` becoming `Big Dictation`. A different known word now stands in for an entry word only when both have the same consonant sounds and close spellings, so `Levin Time` still becomes `Leven Time`.
 - Kept numbers from becoming a different number, such as `seventy labs` or `eight pilots`. A cardinal number can still stand in for an entry word, such as `11 time` or `eleven time` becoming `Leven Time`, while an ordinal such as `11th time` and a count such as `eleven times` or `eleven time zones` stay as spoken.
-- Read a trailing `s` on a two-word entry as a plural unless a possessed noun follows, so `Blue harbors are calm` becomes `Blue Harbors are calm` while `dom especitos house` still becomes `Dom Esposito's house`.
-- Kept a plural ending when an exact stem ties with the unchanged word on score, so `Dom Espositos are here` keeps its `s`.
-- Added regression coverage for unrelated head words, close name spellings, numbers that count or order a word, plural and possessive endings, and plural ties.
+- Added regression coverage for unrelated head words, close name spellings, numbers that count or order a word, and lowercase possessive names.
 
 ### Notes
 
-- `1.3.14` tracks the multi-word dictionary matching fix for unrelated words, numbers, and plural endings.
+- `1.3.14` tracks the multi-word dictionary matching fix for unrelated words and numbers.
 
 ---
 
