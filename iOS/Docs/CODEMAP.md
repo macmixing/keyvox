@@ -418,6 +418,7 @@ iOS/
 │   │   │   └── KeyboardDictationController.swift
 │   │   ├── Emoji/
 │   │   │   ├── KeyboardEmojiCategoryMemory.swift
+│   │   │   ├── KeyboardEmojiContrastCheck.swift
 │   │   │   ├── KeyboardEmojiFrequentlyUsedStore.swift
 │   │   │   ├── KeyboardEmojiGridGeometry.swift
 │   │   │   ├── KeyboardEmojiPanel.swift
@@ -1724,7 +1725,7 @@ Packages/
 - `KeyVox Keyboard/Views/Components/KeyboardHeldKeyPopupView.swift`
   - Renders a held key's popup cells from the package's `HeldKeyPopupLayout`, highlighting the cell under the finger.
 - `KeyVox Keyboard/Views/Components/KeyboardSuggestionBarView.swift`
-  - Leading, primary, and trailing suggestion slots, the autocorrection in a heavier weight, up to three emoji splitting the trailing slot, taps that select an item, and long presses that report it instead.
+  - Leading, primary, and trailing suggestion slots, the autocorrection in a heavier weight, up to three emoji splitting the trailing slot, a soft glow in the keys' label color on an emoji that would blend into its key, taps that select an item, and long presses that report it instead.
 - `KeyVox Keyboard/Views/FullAccessView.swift`
   - Full-screen keyboard-only instructional view shown when the user needs to enable Full Access.
 
@@ -1782,6 +1783,8 @@ Packages/
   - Closed, browsing, and searching panel state, and where a category tap scrolls the grid.
 - `KeyVox Keyboard/Core/Emoji/KeyboardEmojiGridGeometry.swift`, `KeyboardEmojiSearchGeometry.swift`, `KeyboardEmojiSkinTonePickerLayout.swift`, `KeyboardEmojiSearchSkinTonePickerLayout.swift`, and `KeyboardEmojiTwoPersonPickerLayout.swift`
   - Measured layout math for the emoji grid, the search field and results (including the extra keyboard height while searching), and the skin-tone and two-person pickers, which stay inside the space they show in.
+- `KeyVox Keyboard/Core/Emoji/KeyboardEmojiContrastCheck.swift`
+  - Draws an emoji once and reports whether most of it is too close in color, lightness and hue together, to the key it sits on to stand apart, which only a dark key can cause, against the key's fill laid over the appearance's background, remembering each answer per emoji and key color.
 - `KeyVox Keyboard/Core/Emoji/KeyboardEmojiSilhouetteRenderer.swift`
   - Draws a two-person emoji with each unchosen person as a solid gray silhouette, attributing outline and clothing pixels to the nearest person and keeping a joining heart in color.
 - `KeyVox Keyboard/Views/Emoji/KeyboardEmojiPageView.swift` and `KeyboardEmojiPageView+SkinTones.swift`

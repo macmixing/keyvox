@@ -2024,6 +2024,7 @@ Keys and characters:
 - each emoji shows and types in the skin tone last chosen for it; holding an emoji with skin tones opens its picker, and a two-person emoji opens a picker that stays open for taps and draws unchosen people as solid gray silhouettes
 - tapping the search field starts the emoji search over the letter keys, lowercase, with a results row that makes the keyboard taller; keys type into the search instead of the document, results show the Frequently Used emoji until a non-space character is typed, a tapped result types into the document while the search stays, and done or the keyboard disappearing ends the search on the letter keys
 - the suggestion bar offers emoji for the word before the cursor in the user's chosen tones, most used first, once the user has typed an emoji, and keeps offering them after the keyboard starts again
+- a suggestion-bar emoji that would blend into a dark key, with most of it too close in color to the key's color in the current theme and appearance, gets a soft glow in the keys' label color; every other emoji shows unchanged
 - turning the Emoji Keyboard setting off removes the emoji key, closes an open emoji panel, and stops suggestion-bar emoji
 
 ### Keyboard Theme Rules
