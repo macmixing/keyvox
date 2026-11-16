@@ -21,8 +21,14 @@ enum KeyboardLayoutGeometry {
 
             if widthConstraints.count != targetWidths.count {
                 NSLayoutConstraint.deactivate(widthConstraints)
+                // The widths follow the grid's width only once the grid lays out, so after the
+                // grid resizes they can briefly ask for more or less than the row holds. Just
+                // below required, they give way then instead of forcing Auto Layout to break a
+                // key's constraints, which can leave its engine unable to remove the key later.
                 widthConstraints = zip(keyViews, targetWidths).map { keyView, width in
-                    keyView.widthAnchor.constraint(equalToConstant: width)
+                    let constraint = keyView.widthAnchor.constraint(equalToConstant: width)
+                    constraint.priority = .required - 1
+                    return constraint
                 }
                 NSLayoutConstraint.activate(widthConstraints)
                 return
@@ -203,15 +209,19 @@ enum KeyboardLayoutGeometry {
     /// The number pad's bottom row in its three columns: zero and delete under the last two, the
     /// first left empty, or holding the decimal separator, or the globe, or both side by side.
     final class NumberPadBottomRowLayout: RowLayout {
-        func update(isLandscape _: Bool) {
-            guard let keyGridView, let rowStack else { return }
+        /// Sizes the row to the pad's columns across `padWidth`.
+        func update(padWidth: CGFloat) {
+            guard let rowStack else { return }
 
             let spacing = KeyboardStyle.keySpacing
-            let columnWidth = (keyGridView.bounds.width - (spacing * 2)) / 3
+            let columnWidth = (padWidth - (spacing * 2)) / 3
             guard columnWidth > 0 else { return }
 
             let keyCount = rowStack.arrangedSubviews.count
             let leadingInset = keyCount == 2 ? columnWidth + spacing : 0
+            // The row sits at the keyboard's bottom edge, over the home indicator in landscape;
+            // margins that took in the safe area there would shorten its keys.
+            rowStack.insetsLayoutMarginsFromSafeArea = false
             rowStack.isLayoutMarginsRelativeArrangement = true
             rowStack.directionalLayoutMargins = NSDirectionalEdgeInsets(
                 top: 0,

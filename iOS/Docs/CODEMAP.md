@@ -32,7 +32,7 @@ The current default runtime flow is:
 12. When the user triggers copied-text playback, the containing app owns PocketTTS synthesis, explicit model load/unload lifetime, deterministic playback preparation, replay caching, pause/resume/stop transport state, and return-to-host readiness.
 13. If the user keeps the session active, the Live Activity coordinator mirrors session state and weekly-word updates into the widget extension.
 14. When Compact Keys is available, a long press on `#+=` replaces the first two symbol rows with a shorter two-row keyboard; the keyboard-symbol key restores the full layout.
-15. The keyboard waits for the host to hand over the focused field's document state, reads the field's text traits narrowed by the user's keyboard settings, and opens on the letter page, on the number pad in a numbers-only field, or, when the field or the Open on 123 setting prefers numbers, on the number page; the bottom row and return key take the keys the field's keyboard and return key types ask for.
+15. The keyboard waits for the host to hand over the focused field's document state, reads the field's text traits narrowed by the user's keyboard settings, and opens on the letter page, on the number pad in a numbers-only field except on the full-width iPad keyboard, or, when the field or the Open on 123 setting prefers numbers, on the number page; the bottom row and return key take the keys the field's keyboard and return key types ask for.
 16. On the full keyboard's letter page, taps, text changes, word boundaries, and suggestion taps run through the shared `PredictiveTypingSession`; the suggestion bar takes the toolbar accessories' place while the field allows predictions and holds letters, and the dictation accessories return while dictating, in Compact Keys, on the symbol pages, and until the user changes the latest untouched dictation.
 17. The emoji key opens the emoji page in the key grid's place; its search field starts an emoji search over the letter keys that makes the keyboard taller until done is tapped or the keyboard goes away.
 
@@ -488,6 +488,7 @@ iOS/
 │   │   ├── KeyboardDictationModelStatus.swift
 │   │   ├── KeyboardInstalledModels.swift
 │   │   ├── KeyboardModelAvailability.swift
+│   │   ├── KeyboardNumberPadGeometry.swift
 │   │   ├── KeyboardNumberPadLayout.swift
 │   │   ├── KeyboardOpeningLayout.swift
 │   │   ├── KeyboardReturnKeyStyle.swift
@@ -1588,13 +1589,15 @@ Packages/
 - `KeyVox Keyboard/Core/KeyboardInstalledModels.swift`
   - Caches the dictation availability the toolbar depends on and the Speak voice readiness that decides whether a Speak tap plays or opens KeyVox Speak setup; the controller rechecks it when the keyboard appears and when the extension host becomes active instead of inspecting disk on every UI update.
 - `KeyVox Keyboard/Core/KeyboardOpeningLayout.swift`
-  - Resolves the page and keys mode a field opens on: the full-size number pad in a numbers-only field, otherwise full letter keys, or the number page in the user's Compact Keys mode when the field or Open on 123 prefers numbers.
+  - Resolves the page and keys mode a field opens on: the full-size number pad in a numbers-only field on a display that shows it (`KeyboardDisplay.showsNumberPad`), otherwise full letter keys, or the number page in the user's Compact Keys mode when the field or Open on 123 prefers numbers.
 - `KeyVox Keyboard/Core/KeyboardFieldKeys.swift`
   - Maps the focused field's keyboard type and return key type to its bottom row (standard, web address, web search, email, or post), its `KeyboardReturnKeyStyle`, and its number pad, and decides which pages show the field's bottom row; owns the common web ending's text.
 - `KeyVox Keyboard/Core/KeyboardFieldBottomRowKeys.swift`
   - The keys each field bottom row shows in place of the standard row's space bar and return key.
+- `KeyVox Keyboard/Core/KeyboardNumberPadGeometry.swift`
+  - How wide the number pad's keys reach: across the key grid upright, and in landscape the screen's width less `KeyboardStyle.numberPadLandscapeScreenSideInset` at each side, never wider than the key grid and across it where the screen leaves no width, as the system's number pad leaves on iPhone and iPhone Duo folded and open; the pad sits centered in the key grid, which the system centers on the screen.
 - `KeyVox Keyboard/Core/KeyboardNumberPadLayout.swift`
-  - The number pad's rows: digits with a phone keypad's letters, and a bottom row of the 123 key that moves on to the next keyboard where the keyboard shows the globe, the decimal separator in a decimal field, zero, and delete.
+  - The number pad's rows: digits with a phone keypad's letters, and a bottom row of the globe where the keyboard shows it, the decimal separator in a decimal field, zero, and delete.
 - `KeyVox Keyboard/Core/KeyboardReturnKeyStyle.swift`
   - The return key's symbol, blue action look, and accessibility label for each return key type.
 - `KeyVox Keyboard/App/KeyboardContainingAppLauncher.swift`
@@ -1691,18 +1694,18 @@ Packages/
   - Lightweight rooted-install gate used by the extension toolbar for Whisper, Parakeet, PocketTTS, and local Vibes AI availability.
 - `KeyVox Keyboard/Core/KeyboardLayoutGeometry.swift`
   - Row-geometry helper for keyboard-specific sizing rules that should not live in `KeyboardRootView` or `KeyboardKeyGridView`.
-  - Owns the letter page's inset middle row and shift row, the symbol pages' third row, and the bottom row's live widths, including the landscape side-key span, the paired page and emoji keys, the emoji search's three-key row, the globe row, and each field bottom row's split of the space bar's and return key's places, plus the number pad's bottom row in its three columns, all driven from the measured key grid.
+  - Owns the letter page's inset middle row and shift row, the symbol pages' third row, and the bottom row's live widths, including the landscape side-key span, the paired page and emoji keys, the emoji search's three-key row, the globe row, and each field bottom row's split of the space bar's and return key's places, all driven from the measured key grid, plus the number pad's bottom row in its three columns across the pad's width from `KeyboardNumberPadGeometry`, with key widths one priority below required so a resize never forces Auto Layout to break key constraints.
 - `KeyVox Keyboard/Core/KeyboardKeysMode.swift`
   - Resolves full versus compact presentation from availability and persisted active state.
-  - Takes the 286-point full or 174-point compact portrait height from `KeyboardStyle`, changes it by however much shorter or taller the keys are in landscape or on iPad, and owns visible row count, per-orientation and per-display key height, row spacing, the top row's toolbar button height, and derived key-grid height.
+  - Takes the 286-point full or 174-point compact portrait height from `KeyboardStyle`, changes it by however much shorter or taller the keys are in landscape or on iPad, takes the toolbar's row (`KeyboardStyle.toolbarRowHeight`) off when told the row is not kept, and owns visible row count, per-orientation and per-display key height, row spacing, the top row's toolbar button height, and derived key-grid height.
 - `KeyVox Keyboard/Core/KeyboardDisplay.swift`
-  - Resolves the display the keyboard is on: standard (an iPhone display or an iPad's floating keyboard), an open foldable's inner display, or a full-width iPad keyboard.
+  - Resolves the display the keyboard is on: standard (an iPhone display or an iPad's floating keyboard), an open foldable's inner display, or a full-width iPad keyboard, and whether a numbers-only field shows the number pad there: everywhere but the full-width iPad keyboard.
 - `KeyVox Keyboard/Core/KeyboardFoldableDisplay.swift`
   - Treats a display regular in both width and height as an open foldable's inner display, partially or fully open, because keyboard extensions do not receive hinge updates.
 - `KeyVox Keyboard/Core/KeyboardScreenShape.swift`
   - Decides landscape from whether the keyboard's scene is wider than it is tall rather than from the interface orientation.
 - `KeyVox Keyboard/Core/KeyboardSymbolLayout.swift`
-  - Defines the letter, number, and alternate symbol pages and the number pad page, the key kinds and their titles, symbols, and accessibility labels, the Compact Keys rows, the emoji search's bottom row, the field's bottom row and return key look, and the bottom-row variants without the emoji key or with the globe key.
+  - Defines the letter, number, and alternate symbol pages and the number pad page, whether a page shows the toolbar (`showsToolbar`, every page but the number pad) and keeps the toolbar's row (`keepsToolbarRow`, also while the emoji page or search is open), the key kinds and their titles, symbols, and accessibility labels, the Compact Keys rows, the emoji search's bottom row, the field's bottom row and return key look, and the bottom-row variants without the emoji key or with the globe key.
 - `KeyVox Keyboard/Core/KeyboardTopRowAccessoryLayout.swift`
   - Owns top-row accessory alignment driven from the measured key grid.
   - Keeps the left accessory slot stable by showing Settings while idle and the existing Cancel control while recording, transcribing, or playing speech.
@@ -1713,6 +1716,7 @@ Packages/
 - `KeyVox Keyboard/Views/KeyboardRootView.swift`
   - Stable keyboard chrome and key grid.
   - Hosts the branded toolbar row and the shared warning overlay for dictation model, Full Access, and microphone permission warnings.
+  - On the number pad, hides the toolbar and moves its row above the keyboard's top, out of sight, so the keys take its place, unless the emoji page or search is open, whose field keeps the row's place.
   - Shows the suggestion bar in place of the toolbar accessories on the full keyboard's letter page while predictions are offered and no cancel control is showing, spanning from the keyboard edge to the logo control.
   - Hosts the emoji page over the key grid's place, the emoji search field in the toolbar's place, and the search results above the keys while searching.
   - Sends touches in the keyboard's outer padding to the key grid so they type the nearest key.

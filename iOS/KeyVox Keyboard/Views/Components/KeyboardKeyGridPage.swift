@@ -18,6 +18,7 @@ final class KeyboardKeyGridPage {
     private(set) var keyViews: [KeyboardKeyView] = []
     private var baseModels: [ObjectIdentifier: KeyboardKeyModel] = [:]
     private var letterCase: KeyboardLetterCase
+    private let isNumberPad: Bool
     private var letterSecondRowLayoutGeometry: KeyboardLayoutGeometry.LetterSecondRowLayout?
     private var letterThirdRowLayoutGeometry: KeyboardLayoutGeometry.LetterThirdRowLayout?
     private var thirdRowLayoutGeometry: KeyboardLayoutGeometry.ThirdRowLayout?
@@ -26,6 +27,7 @@ final class KeyboardKeyGridPage {
 
     init(layout: Layout, letterCase: KeyboardLetterCase, keyGridView: KeyboardKeyGridView) {
         self.letterCase = letterCase
+        isNumberPad = layout.symbolPage == .numberPad
         view.translatesAutoresizingMaskIntoConstraints = false
         view.axis = .vertical
         view.alignment = .fill
@@ -116,12 +118,26 @@ final class KeyboardKeyGridPage {
         }
     }
 
-    /// Sizes the rows whose keys are not all the same width to the grid's current width.
-    func updateRowLayouts(isLandscape: Bool) {
+    /// Sizes the rows whose keys are not all the same width to the grid's current width, and
+    /// centers the number pad's rows in `numberPadWidth`.
+    func updateRowLayouts(isLandscape: Bool, numberPadWidth: CGFloat, gridWidth: CGFloat) {
+        if isNumberPad {
+            let sideInset = (gridWidth - numberPadWidth) / 2
+            // The pad reaches the keyboard's bottom edge, over the home indicator in landscape;
+            // margins that took in the safe area there would shorten its bottom row.
+            view.insetsLayoutMarginsFromSafeArea = false
+            view.isLayoutMarginsRelativeArrangement = true
+            view.directionalLayoutMargins = NSDirectionalEdgeInsets(
+                top: 0,
+                leading: sideInset,
+                bottom: 0,
+                trailing: sideInset
+            )
+        }
         letterSecondRowLayoutGeometry?.update(isLandscape: isLandscape)
         letterThirdRowLayoutGeometry?.update(isLandscape: isLandscape)
         thirdRowLayoutGeometry?.update(isLandscape: isLandscape)
         bottomRowLayoutGeometry?.update(isLandscape: isLandscape)
-        numberPadBottomRowLayoutGeometry?.update(isLandscape: isLandscape)
+        numberPadBottomRowLayoutGeometry?.update(padWidth: numberPadWidth)
     }
 }

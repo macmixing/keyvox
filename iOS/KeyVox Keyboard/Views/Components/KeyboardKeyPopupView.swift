@@ -17,14 +17,20 @@ final class KeyboardKeyPopupView: UIView {
         titleLabel.textAlignment = .center
         addSubview(titleLabel)
 
-        NSLayoutConstraint.activate([
-            titleLabel.centerXAnchor.constraint(equalTo: centerXAnchor),
-            titleLabel.centerYAnchor.constraint(equalTo: centerYAnchor),
+        // The bubble lays out before it is first sized, with no room for the insets. Just below
+        // required, they give way then instead of forcing Auto Layout to break the title's
+        // constraints; every shown bubble is sized to fit them.
+        let insetConstraints = [
             titleLabel.leadingAnchor.constraint(greaterThanOrEqualTo: leadingAnchor, constant: contentInsets.left),
             titleLabel.trailingAnchor.constraint(lessThanOrEqualTo: trailingAnchor, constant: -contentInsets.right),
             titleLabel.topAnchor.constraint(greaterThanOrEqualTo: topAnchor, constant: contentInsets.top),
             titleLabel.bottomAnchor.constraint(lessThanOrEqualTo: bottomAnchor, constant: -contentInsets.bottom),
-        ])
+        ]
+        insetConstraints.forEach { $0.priority = .required - 1 }
+        NSLayoutConstraint.activate([
+            titleLabel.centerXAnchor.constraint(equalTo: centerXAnchor),
+            titleLabel.centerYAnchor.constraint(equalTo: centerYAnchor),
+        ] + insetConstraints)
     }
 
     private func observeBorderAppearanceChanges() {

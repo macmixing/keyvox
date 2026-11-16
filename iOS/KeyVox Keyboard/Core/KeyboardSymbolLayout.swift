@@ -8,6 +8,18 @@ enum KeyboardSymbolPage {
     case alternate
     /// The number pad a numbers-only field shows in place of every other page.
     case numberPad
+
+    /// Whether the toolbar's row shows above the keys: on every page but the number pad, which
+    /// shows nothing above its keys, as the system's number pad shows no bar.
+    var showsToolbar: Bool {
+        self != .numberPad
+    }
+
+    /// Whether the toolbar's row keeps its place above the keys: where the page shows the toolbar,
+    /// and while the emoji page or search is open, whose field takes the row's place on any page.
+    func keepsToolbarRow(emojiPanel: KeyboardEmojiPanel) -> Bool {
+        showsToolbar || emojiPanel != .closed
+    }
 }
 
 enum KeyboardKeyKind: Equatable {
@@ -26,10 +38,6 @@ enum KeyboardKeyKind: Equatable {
     /// Moves on to the next keyboard, or lists them while held, on an iPhone that shows no globe
     /// under the keyboard.
     case nextKeyboard
-    /// The number pad's 123 key where the globe would be: a tap moves on to the next keyboard and
-    /// holding it lists none, as the system number pad's does on a display that shows no globe
-    /// under the keyboard.
-    case numberPadNextKeyboard
 }
 
 struct KeyboardKeyModel: Equatable {
@@ -71,7 +79,7 @@ struct KeyboardKeyModel: Equatable {
             return "ABC"
         case .alternateSymbols:
             return "#+="
-        case .numberSymbols, .numberPadNextKeyboard:
+        case .numberSymbols:
             return "123"
         case .emoji, .emojiSearchDone, .restoreFullKeyboard, .shift, .nextKeyboard:
             return ""
@@ -131,7 +139,7 @@ struct KeyboardKeyModel: Equatable {
             return String(localized: "Full Keyboard", comment: "VoiceOver label for the key that switches from compact keys back to the full keyboard.")
         case .shift:
             return String(localized: "Shift", comment: "VoiceOver label for the keyboard's shift key. Use the name the system keyboard uses in this language.")
-        case .nextKeyboard, .numberPadNextKeyboard:
+        case .nextKeyboard:
             // Named as the system keyboard names its key.
             return String(localized: "Next keyboard", comment: "VoiceOver label for the key that switches to the next keyboard. Use the name the system keyboard uses in this language.")
         }
@@ -142,7 +150,7 @@ struct KeyboardKeyModel: Equatable {
         case .character:
             return isNumberPadKey == false
         case .delete, .space, .returnKey, .abc, .alternateSymbols, .numberSymbols, .emoji, .emojiSearchDone,
-             .restoreFullKeyboard, .shift, .nextKeyboard, .numberPadNextKeyboard:
+             .restoreFullKeyboard, .shift, .nextKeyboard:
             return false
         }
     }
@@ -152,15 +160,9 @@ struct KeyboardKeyModel: Equatable {
         case .character:
             return false
         case .delete, .space, .returnKey, .abc, .alternateSymbols, .numberSymbols, .emoji, .emojiSearchDone,
-             .restoreFullKeyboard, .shift, .nextKeyboard, .numberPadNextKeyboard:
+             .restoreFullKeyboard, .shift, .nextKeyboard:
             return true
         }
-    }
-
-    /// Whether the key takes the special keys' fill; the number pad's 123 key looks like its digits,
-    /// as the system number pad's does.
-    var usesSpecialKeyFill: Bool {
-        isSpecialKey && kind != .numberPadNextKeyboard
     }
 
     /// The same key showing `letterCase`: letters switch case and the shift key its symbol.
