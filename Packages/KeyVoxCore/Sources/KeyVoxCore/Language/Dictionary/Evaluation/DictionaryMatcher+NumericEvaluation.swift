@@ -128,18 +128,8 @@ extension DictionaryMatcher {
               let candidatePronunciation = lexicon.pronunciation(for: candidate) else {
             return false
         }
-        return pronunciationNamesOrdinal(
-            cardinalPronunciation: cardinalPronunciation,
-            candidatePronunciation: candidatePronunciation
-        )
-    }
-
-    // An entry word names an ordinal when its pronunciation adds only the ordinal ending to the cardinal's.
-    func pronunciationNamesOrdinal(cardinalPronunciation: String, candidatePronunciation: String) -> Bool {
-        let cardinalPhonemes = cardinalPronunciation.components(separatedBy: PronunciationLexicon.phonemeSeparator)
-        let candidatePhonemes = candidatePronunciation.components(separatedBy: PronunciationLexicon.phonemeSeparator)
-        return candidatePhonemes.count == cardinalPhonemes.count + StandardEvaluationPolicy.inflectionSuffixPhonemeCount
-            && candidatePhonemes.starts(with: cardinalPhonemes)
+        // An entry word names an ordinal when its pronunciation adds only the ordinal ending to the cardinal's.
+        return pronunciation(candidatePronunciation, addsOneEndingSoundTo: cardinalPronunciation)
     }
 
     private func isPluralNoun(_ token: Token?) -> Bool {

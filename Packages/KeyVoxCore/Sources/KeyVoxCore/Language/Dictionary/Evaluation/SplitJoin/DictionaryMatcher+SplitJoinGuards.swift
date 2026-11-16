@@ -30,8 +30,13 @@ extension DictionaryMatcher {
         nextToken: Token?,
         followingToken: Token?
     ) -> Bool {
+        guard let nextToken else { return false }
         guard !candidate.hasSuffix("s") else { return false }
-        guard hasPossessedNounContext(nextToken: nextToken, followingToken: followingToken) else { return false }
+        let hasNounContext = nextToken.lexicalClass == .noun
+        let hasAdjectiveNounContext =
+            nextToken.lexicalClass == .adjective
+            && followingToken?.lexicalClass == .noun
+        guard hasNounContext || hasAdjectiveNounContext else { return false }
         let hasPossessiveSoundEnding =
             hasPossessiveLikeEnding(observedCombined)
             || hasPossessiveLikeEnding(observedTail)

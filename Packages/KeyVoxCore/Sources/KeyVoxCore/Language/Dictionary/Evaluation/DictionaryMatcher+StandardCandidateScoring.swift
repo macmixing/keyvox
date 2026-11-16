@@ -23,9 +23,7 @@ extension DictionaryMatcher {
             tokenCount: tokenCount,
             window: window,
             observedNormalized: observedNormalized,
-            observedPhonetic: observedPhonetic,
-            nextToken: end < tokens.count ? tokens[end] : nil,
-            followingToken: end + 1 < tokens.count ? tokens[end + 1] : nil
+            observedPhonetic: observedPhonetic
         )
         let hasDirectExactCandidate = candidates.contains { candidate in
             candidate.matchingNormalizedPhrases.contains(observedNormalized)
@@ -163,10 +161,7 @@ extension DictionaryMatcher {
                         replacementSuffix: form.replacementSuffix
                     )
                     if let currentBestForCandidate = bestForCandidate {
-                        // Capped final scores can tie; the observed form whose spelling matches better wins.
-                        let winsTie = candidateScore.score.final == currentBestForCandidate.score.final
-                            && candidateScore.score.text > currentBestForCandidate.score.text
-                        if candidateScore.score.final > currentBestForCandidate.score.final || winsTie {
+                        if candidateScore.score.final > currentBestForCandidate.score.final {
                             bestForCandidate = candidateScore
                             bestObservedNormalizedForCandidate = form.normalized
                             bestForCandidateUsesCandidateRelativeTrailingForm = form.isCandidateRelativeTrailingForm

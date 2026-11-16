@@ -93,16 +93,6 @@ final class DictionaryMatcherTests: LinguisticAnalyzerTestCase {
         XCTAssertEqual(matcher.apply(to: input).text, input)
     }
 
-    func testKeepsPluralTailOnMultiwordEntryWithoutPossessedNoun() async {
-        let matcher = makeRuntimeMatcher()
-        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Blue Harbor")])
-
-        XCTAssertEqual(
-            matcher.apply(to: "Blue harbors are calm.").text,
-            "Blue Harbors are calm."
-        )
-    }
-
     func testInfersPossessiveForLowercaseMultiwordNameBeforePossessedNoun() async {
         let matcher = makeRuntimeMatcher()
         matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Dom Esposito")])
@@ -111,14 +101,6 @@ final class DictionaryMatcherTests: LinguisticAnalyzerTestCase {
             matcher.apply(to: "That's dom especitos house.").text,
             "That's Dom Esposito's house."
         )
-    }
-
-    func testKeepsPluralTailWhenExactStemTiesWithObservedForm() async {
-        let matcher = makeRuntimeMatcher()
-        matcher.rebuildIndex(entries: [DictionaryEntry(phrase: "Dom Esposito")])
-        let input = "Dom Espositos are here."
-
-        XCTAssertEqual(matcher.apply(to: input).text, input)
     }
 
     func testCorrectsKnownWordWithRColoredVowelAndSwappedLettersInMultiwordEntry() async {
