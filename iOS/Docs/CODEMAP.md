@@ -1672,7 +1672,7 @@ Packages/
   - Owns the letter page's inset middle row and shift row, the symbol pages' third row, and the bottom row's live widths, including the landscape side-key span, the paired page and emoji keys, the emoji search's three-key row, the globe row, and each field bottom row's split of the space bar's and return key's places, all driven from the measured key grid, plus the number pad's bottom row in its three columns across the pad's width from `KeyboardNumberPadGeometry`, with key widths one priority below required so a resize never forces Auto Layout to break key constraints.
 - `KeyVox Keyboard/Core/KeyboardKeysMode.swift`
   - Resolves full versus compact presentation from availability and persisted active state.
-  - Takes the 286-point full or 174-point compact portrait height from `KeyboardStyle`, changes it by however much shorter or taller the keys are in landscape or on iPad, takes the toolbar's row (`KeyboardStyle.toolbarRowHeight`) off on a page without the toolbar while the emoji page is closed, and owns visible row count, per-orientation and per-display key height, row spacing, the top row's toolbar button height, and derived key-grid height.
+  - Takes the 286-point full or 174-point compact portrait height from `KeyboardStyle`, changes it by however much shorter or taller the keys are in landscape or on iPad, takes the toolbar's row (`KeyboardStyle.toolbarRowHeight`) off when told the row is not kept, and owns visible row count, per-orientation and per-display key height, row spacing, the top row's toolbar button height, and derived key-grid height.
 - `KeyVox Keyboard/Core/KeyboardDisplay.swift`
   - Resolves the display the keyboard is on: standard (an iPhone display or an iPad's floating keyboard), an open foldable's inner display, or a full-width iPad keyboard, and whether a numbers-only field shows the number pad there: everywhere but the full-width iPad keyboard.
 - `KeyVox Keyboard/Core/KeyboardFoldableDisplay.swift`
@@ -1680,7 +1680,7 @@ Packages/
 - `KeyVox Keyboard/Core/KeyboardScreenShape.swift`
   - Decides landscape from whether the keyboard's scene is wider than it is tall rather than from the interface orientation.
 - `KeyVox Keyboard/Core/KeyboardSymbolLayout.swift`
-  - Defines the letter, number, and alternate symbol pages and the number pad page, the key kinds and their titles, symbols, and accessibility labels, the Compact Keys rows, the emoji search's bottom row, the field's bottom row and return key look, and the bottom-row variants without the emoji key or with the globe key.
+  - Defines the letter, number, and alternate symbol pages and the number pad page, whether a page shows the toolbar (`showsToolbar`, every page but the number pad) and keeps the toolbar's row (`keepsToolbarRow`, also while the emoji page or search is open), the key kinds and their titles, symbols, and accessibility labels, the Compact Keys rows, the emoji search's bottom row, the field's bottom row and return key look, and the bottom-row variants without the emoji key or with the globe key.
 - `KeyVox Keyboard/Core/KeyboardTopRowAccessoryLayout.swift`
   - Owns top-row accessory alignment driven from the measured key grid.
   - Keeps the left accessory slot stable by showing Settings while idle and the existing Cancel control while recording, transcribing, or playing speech.
