@@ -1704,6 +1704,7 @@ Packages/
 - `KeyVox Keyboard/Views/Components/KeyboardVibesButton.swift`
   - Keyboard Vibes selector key used in the top-row accessory area.
   - Displays the selected/current Vibe label and the active/editable status tint for the latest insertion while following the normal key palette/pressed outline behavior.
+  - When the key is too narrow for the label at its smallest allowed size (for example under Display Zoom), hides the None icon first and then narrows the side insets.
 - `KeyVox Keyboard/Views/Components/KeyboardSettingsToggleButton.swift`
   - Reusable top-row settings icon key for keyboard controls backed by containing-app settings or containing-app shortcuts.
   - Uses normal key styling and indicates enabled state through icon tint instead of a permanently pressed visual state.
