@@ -36,9 +36,11 @@ enum KeyboardEmojiSearchGeometry {
     }
 
     /// How much taller the keyboard is while searching: the field keeps the place it has in the
-    /// toolbar's row, centered there, and the results come between it and the keys.
-    static var addedKeyboardHeight: CGFloat {
+    /// toolbar's row, centered there, and the results come between it and the keys. Under Display
+    /// Zoom it shrinks by `sizeScale` along with the toolbar's row and the field.
+    static func addedKeyboardHeight(sizeScale: CGFloat) -> CGFloat {
         let fieldToKeys = ((KeyboardStyle.buttonSize - Measured.fieldHeight) / 2) + KeyboardStyle.sectionSpacing
-        return Measured.resultsGapBelowField + Measured.resultsHeight + Measured.resultsGapAboveKeys - fieldToKeys
+        return (Measured.resultsGapBelowField + Measured.resultsHeight + Measured.resultsGapAboveKeys - fieldToKeys)
+            * sizeScale
     }
 }

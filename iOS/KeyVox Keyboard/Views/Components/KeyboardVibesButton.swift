@@ -2,6 +2,15 @@ import KeyVoxStyleRewrite
 import UIKit
 
 final class KeyboardVibesButton: UIControl {
+    private enum ContentMetrics {
+        static let noneIconSize: CGFloat = 14
+        static let noneIconSpacing: CGFloat = 4
+        static let regularSideInset: CGFloat = 8
+        /// Side inset used only when the title cannot fit at its smallest allowed size inside the
+        /// regular inset, as on narrow screens such as Display Zoom.
+        static let compactSideInset: CGFloat = 4
+    }
+
     private let backgroundView = UIView()
     private let tintOverlay = UIView()
     private let contentStackView = UIStackView()
@@ -11,6 +20,9 @@ final class KeyboardVibesButton: UIControl {
     private lazy var borderRenderer = KeyboardRoundedBorderRenderer(containerView: backgroundView)
     private var lastRasterizedNoneIconPixelSize = CGSize.zero
     private var lastRasterizedNoneIconColor: UIColor?
+    private var contentLeadingConstraint: NSLayoutConstraint!
+    private var contentTrailingConstraint: NSLayoutConstraint!
+    private var isNoneIconHiddenForWidth = false
 
     var title = "" {
         didSet {
@@ -18,6 +30,7 @@ final class KeyboardVibesButton: UIControl {
             titleLabel.text = title
             updateNoneIconVisibility()
             updateAccessibility()
+            setNeedsLayout()
         }
     }
 
@@ -26,6 +39,7 @@ final class KeyboardVibesButton: UIControl {
             guard displayedVibeStyle != oldValue else { return }
             updateNoneIconVisibility()
             updateVisualState(animated: false)
+            setNeedsLayout()
         }
     }
 
@@ -61,6 +75,7 @@ final class KeyboardVibesButton: UIControl {
     }
 
     override func layoutSubviews() {
+        updateContentFitForWidth()
         super.layoutSubviews()
         updateBorderPath()
         updateShadowPath()
@@ -99,7 +114,7 @@ final class KeyboardVibesButton: UIControl {
         contentStackView.translatesAutoresizingMaskIntoConstraints = false
         contentStackView.axis = .horizontal
         contentStackView.alignment = .center
-        contentStackView.spacing = 4
+        contentStackView.spacing = ContentMetrics.noneIconSpacing
         contentStackView.isUserInteractionEnabled = false
 
         noneIconImageView.translatesAutoresizingMaskIntoConstraints = false
@@ -124,6 +139,15 @@ final class KeyboardVibesButton: UIControl {
         addSubview(contentStackView)
         _ = borderRenderer
 
+        contentLeadingConstraint = contentStackView.leadingAnchor.constraint(
+            greaterThanOrEqualTo: leadingAnchor,
+            constant: ContentMetrics.regularSideInset
+        )
+        contentTrailingConstraint = contentStackView.trailingAnchor.constraint(
+            lessThanOrEqualTo: trailingAnchor,
+            constant: -ContentMetrics.regularSideInset
+        )
+
         NSLayoutConstraint.activate([
             backgroundView.leadingAnchor.constraint(equalTo: leadingAnchor),
             backgroundView.trailingAnchor.constraint(equalTo: trailingAnchor),
@@ -135,13 +159,13 @@ final class KeyboardVibesButton: UIControl {
             tintOverlay.topAnchor.constraint(equalTo: backgroundView.topAnchor),
             tintOverlay.bottomAnchor.constraint(equalTo: backgroundView.bottomAnchor),
 
-            noneIconImageView.widthAnchor.constraint(equalToConstant: 14),
-            noneIconImageView.heightAnchor.constraint(equalToConstant: 14),
+            noneIconImageView.widthAnchor.constraint(equalToConstant: ContentMetrics.noneIconSize),
+            noneIconImageView.heightAnchor.constraint(equalToConstant: ContentMetrics.noneIconSize),
 
             contentStackView.centerXAnchor.constraint(equalTo: centerXAnchor),
             contentStackView.centerYAnchor.constraint(equalTo: centerYAnchor),
-            contentStackView.leadingAnchor.constraint(greaterThanOrEqualTo: leadingAnchor, constant: 8),
-            contentStackView.trailingAnchor.constraint(lessThanOrEqualTo: trailingAnchor, constant: -8),
+            contentLeadingConstraint,
+            contentTrailingConstraint,
         ])
 
         updateNoneIconVisibility()
@@ -202,7 +226,36 @@ final class KeyboardVibesButton: UIControl {
     }
 
     private func updateNoneIconVisibility() {
-        noneIconImageView.isHidden = displayedVibeStyle != .none
+        noneIconImageView.isHidden = displayedVibeStyle != .none || isNoneIconHiddenForWidth
+    }
+
+    /// Keeps the title readable when the key is too narrow for it at its smallest allowed size:
+    /// first drops the None icon, then narrows the side insets. Keys with enough room keep the
+    /// regular layout.
+    private func updateContentFitForWidth() {
+        let font = titleLabel.font ?? KeyboardStyle.specialKeyFont
+        // Measured at the smallest allowed size itself: small text is spaced wider than a straight
+        // scale of the full-size width.
+        let smallestFont = font.withSize(font.pointSize * titleLabel.minimumScaleFactor)
+        let smallestTitleWidth = ceil((title as NSString).size(withAttributes: [.font: smallestFont]).width)
+        let regularContentWidth = bounds.width - ContentMetrics.regularSideInset * 2
+        let noneIconWidth = ContentMetrics.noneIconSize + ContentMetrics.noneIconSpacing
+
+        let wantsNoneIcon = displayedVibeStyle == .none
+        let hidesNoneIcon = wantsNoneIcon && smallestTitleWidth + noneIconWidth > regularContentWidth
+        let titleRoom = regularContentWidth - (wantsNoneIcon && !hidesNoneIcon ? noneIconWidth : 0)
+        let sideInset = smallestTitleWidth > titleRoom
+            ? ContentMetrics.compactSideInset
+            : ContentMetrics.regularSideInset
+
+        if isNoneIconHiddenForWidth != hidesNoneIcon {
+            isNoneIconHiddenForWidth = hidesNoneIcon
+            updateNoneIconVisibility()
+        }
+        if contentLeadingConstraint.constant != sideInset {
+            contentLeadingConstraint.constant = sideInset
+            contentTrailingConstraint.constant = -sideInset
+        }
     }
 
     private func currentForegroundColor() -> UIColor {

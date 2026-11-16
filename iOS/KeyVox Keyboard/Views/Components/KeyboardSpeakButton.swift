@@ -1,7 +1,19 @@
 import UIKit
 
 final class KeyboardSpeakButton: UIControl {
-    private static let symbolConfiguration = UIImage.SymbolConfiguration(pointSize: 18, weight: .regular)
+    private static let symbolPointSize: CGFloat = 18
+
+    /// How much the icon shrinks from its usual size, below 1 under Display Zoom.
+    var symbolScale: CGFloat = 1 {
+        didSet {
+            guard symbolScale != oldValue else { return }
+            updateVisualState(animated: false)
+        }
+    }
+
+    private var symbolConfiguration: UIImage.SymbolConfiguration {
+        UIImage.SymbolConfiguration(pointSize: Self.symbolPointSize * symbolScale, weight: .regular)
+    }
 
     private let backgroundView = UIView()
     private let tintOverlay = UIView()
@@ -121,7 +133,7 @@ final class KeyboardSpeakButton: UIControl {
             self.imageView.alpha = self.isTrackpadModeActive ? 0 : 1
             self.imageView.image = UIImage(
                 systemName: "speaker.wave.2.fill",
-                withConfiguration: Self.symbolConfiguration
+                withConfiguration: self.symbolConfiguration
             )
         }
 

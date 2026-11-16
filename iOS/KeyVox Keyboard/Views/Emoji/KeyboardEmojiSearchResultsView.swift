@@ -37,15 +37,23 @@ final class KeyboardEmojiSearchResultsView: UIView {
     let pickerTapCatcher = UIView()
     /// The result whose skin-tone picker is open, the picker's layout, and its choices.
     var heldResult: (emoji: Emoji, layout: KeyboardEmojiSearchSkinTonePickerLayout, choices: [String])?
-    private let emojiFont = UIFont.systemFont(ofSize: Drawn.emojiFontSize)
-    let pickerFont = UIFont.systemFont(ofSize: Drawn.pickerEmojiFontSize)
+    /// How much the results' sizes shrink, below 1 under Display Zoom.
+    var sizeScale: CGFloat = 1 {
+        didSet {
+            guard sizeScale != oldValue else { return }
+            applySizes()
+        }
+    }
+    private var emojiFont: UIFont {
+        .systemFont(ofSize: Drawn.emojiFontSize * sizeScale)
+    }
+    var pickerFont: UIFont {
+        .systemFont(ofSize: Drawn.pickerEmojiFontSize * sizeScale)
+    }
 
     override init(frame: CGRect) {
         super.init(frame: frame)
         flowLayout.scrollDirection = .horizontal
-        flowLayout.itemSize = CGSize(width: Geometry.resultWidth, height: Geometry.resultsHeight)
-        flowLayout.minimumLineSpacing = Geometry.resultPitch - Geometry.resultWidth
-        flowLayout.sectionInset = UIEdgeInsets(top: 0, left: Geometry.resultsInset, bottom: 0, right: Geometry.resultsInset)
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         collectionView.backgroundColor = .clear
         collectionView.showsHorizontalScrollIndicator = false
@@ -71,6 +79,17 @@ final class KeyboardEmojiSearchResultsView: UIView {
             collectionView.topAnchor.constraint(equalTo: topAnchor),
             collectionView.bottomAnchor.constraint(equalTo: bottomAnchor),
         ])
+        applySizes()
+    }
+
+    /// Sizes and spaces the results and their picker by the Display Zoom.
+    private func applySizes() {
+        skinTonePicker.sizeScale = sizeScale
+        flowLayout.itemSize = CGSize(width: Geometry.resultWidth * sizeScale, height: Geometry.resultsHeight * sizeScale)
+        flowLayout.minimumLineSpacing = (Geometry.resultPitch - Geometry.resultWidth) * sizeScale
+        let inset = Geometry.resultsInset * sizeScale
+        flowLayout.sectionInset = UIEdgeInsets(top: 0, left: inset, bottom: 0, right: inset)
+        collectionView.reloadData()
     }
 
     @available(*, unavailable)

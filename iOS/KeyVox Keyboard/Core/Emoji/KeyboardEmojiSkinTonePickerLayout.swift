@@ -20,6 +20,8 @@ struct KeyboardEmojiSkinTonePickerLayout: Equatable {
     }
 
     private let emojiCenter: CGPoint
+    /// How much the picker's sizes shrink, below 1 under Display Zoom.
+    let sizeScale: CGFloat
     let panelFrame: CGRect
     let dividerFrame: CGRect
     /// The center of each choice: the emoji as it comes, then each skin tone.
@@ -30,27 +32,29 @@ struct KeyboardEmojiSkinTonePickerLayout: Equatable {
     ///   - toneCount: How many skin tones the emoji comes in.
     ///   - width: How wide the space the picker shows in is; the panel stays inside it.
     ///   - rowPitch: From one row of emoji to the next.
-    init(emojiCenter: CGPoint, toneCount: Int, width: CGFloat, rowPitch: CGFloat) {
+    ///   - sizeScale: How much the picker's sizes shrink, below 1 under Display Zoom.
+    init(emojiCenter: CGPoint, toneCount: Int, width: CGFloat, rowPitch: CGFloat, sizeScale: CGFloat = 1) {
+        self.sizeScale = sizeScale
         self.emojiCenter = emojiCenter
-        let left = min(max(0, emojiCenter.x - (Measured.panelWidth / 2)), max(0, width - Measured.panelWidth))
+        let left = min(max(0, emojiCenter.x - (Measured.panelWidth * sizeScale / 2)), max(0, width - Measured.panelWidth * sizeScale))
         // Nothing shows above the space the picker shows in, so a panel that would rise past its
         // top comes down to it.
-        let top = max(0, emojiCenter.y - rowPitch - (Measured.panelHeight / 2))
+        let top = max(0, emojiCenter.y - rowPitch - (Measured.panelHeight * sizeScale / 2))
         panelFrame = CGRect(
             x: left,
             y: top,
-            width: Measured.panelWidth,
-            height: Measured.panelHeight
+            width: Measured.panelWidth * sizeScale,
+            height: Measured.panelHeight * sizeScale
         )
-        let choiceY = top + Measured.choiceDrop
+        let choiceY = top + Measured.choiceDrop * sizeScale
         dividerFrame = CGRect(
-            x: left + Measured.dividerCenter - 0.5,
-            y: choiceY - (Measured.dividerHeight / 2),
+            x: left + Measured.dividerCenter * sizeScale - 0.5,
+            y: choiceY - (Measured.dividerHeight * sizeScale / 2),
             width: 1,
-            height: Measured.dividerHeight
+            height: Measured.dividerHeight * sizeScale
         )
-        choiceCenters = [CGPoint(x: left + Measured.firstChoiceCenter, y: choiceY)]
-            + (0..<toneCount).map { CGPoint(x: left + Measured.firstToneCenter + (CGFloat($0) * Measured.tonePitch), y: choiceY) }
+        choiceCenters = [CGPoint(x: left + Measured.firstChoiceCenter * sizeScale, y: choiceY)]
+            + (0..<toneCount).map { CGPoint(x: left + Measured.firstToneCenter * sizeScale + (CGFloat($0) * Measured.tonePitch * sizeScale), y: choiceY) }
     }
 
     /// The choice the finger at `point` is on: the nearest across the panel once the finger is
@@ -59,8 +63,8 @@ struct KeyboardEmojiSkinTonePickerLayout: Equatable {
     /// finger in the panel; how far around the panel a finger still chooses was not measured.
     func choice(at point: CGPoint) -> Int? {
         guard point.x >= panelFrame.minX, point.x <= panelFrame.maxX,
-              point.y < emojiCenter.y - (Measured.highlightSize / 2),
-              point.y >= panelFrame.minY - Measured.panelHeight else {
+              point.y < emojiCenter.y - (Measured.highlightSize * sizeScale / 2),
+              point.y >= panelFrame.minY - Measured.panelHeight * sizeScale else {
             return nil
         }
         return choiceCenters.indices.min { abs(choiceCenters[$0].x - point.x) < abs(choiceCenters[$1].x - point.x) }
