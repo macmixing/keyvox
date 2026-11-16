@@ -3,7 +3,8 @@ import UIKit
 
 /// The three suggestion slots shown above the letter keys: leading, primary (center),
 /// and trailing. The autocorrection space will apply is shown in a heavier weight. The trailing
-/// slot splits evenly among the bar's first emoji when it has any, as on the system keyboard.
+/// slot splits evenly among the bar's first emoji when it has any, as on the system keyboard. An
+/// emoji that would blend into its key gets a soft glow so it stays easy to see.
 final class KeyboardSuggestionBarView: UIView {
     var onItemSelected: ((SuggestionBar.Item) -> Void)?
     /// Called when a suggestion is pressed and held, instead of selecting it.
@@ -12,6 +13,9 @@ final class KeyboardSuggestionBarView: UIView {
     /// The most emoji the trailing slot holds, as on the system keyboard; with the bar running to the
     /// keyboard's edge, they fit drawn without side insets.
     private static let emojiSlots = 3
+    /// How far an emoji's glow spreads around it, in points, and how strongly it shows.
+    private static let emojiGlowRadius: CGFloat = 3
+    private static let emojiGlowOpacity: CGFloat = 0.9
 
     private let stackView = UIStackView()
     private let trailingSlot = UIStackView()
@@ -94,19 +98,7 @@ final class KeyboardSuggestionBarView: UIView {
         // restyled; the others already show their suggestion in its colors.
         for (index, button) in buttons.enumerated() where newItems[index] != oldItems[index] {
             let item = newItems[index]
-            var configuration = button.configuration
-            configuration?.attributedTitle = item.map { item in
-                AttributedString(
-                    item.text,
-                    attributes: AttributeContainer([
-                        .font: UIFont.systemFont(
-                            ofSize: 16,
-                            weight: item.kind == .autocorrection ? .bold : .medium
-                        ),
-                    ])
-                )
-            }
-            button.configuration = configuration
+            applyTitle(to: button)
             button.isEnabled = item != nil
             button.accessibilityLabel = item?.text
             applyAppearance(to: button)
@@ -114,7 +106,43 @@ final class KeyboardSuggestionBarView: UIView {
     }
 
     private func refreshAppearance() {
+        // Whether an emoji needs its glow depends on the keys' colors, so the emoji are titled
+        // again for the new colors.
+        buttons.dropFirst(3).forEach(applyTitle)
         buttons.forEach(applyAppearance)
+    }
+
+    /// Titles a suggestion with its text, and gives an emoji that would blend into its key a soft
+    /// glow in the keys' label color so it stands apart from the key.
+    private func applyTitle(to button: UIButton) {
+        let item = items.indices.contains(button.tag) ? items[button.tag] : nil
+        var configuration = button.configuration
+        configuration?.attributedTitle = item.map { item in
+            var attributes: [NSAttributedString.Key: Any] = [
+                .font: UIFont.systemFont(
+                    ofSize: 16,
+                    weight: item.kind == .autocorrection ? .bold : .medium
+                ),
+            ]
+            if button.tag >= 3, KeyboardEmojiContrastCheck.blendsIn(
+                item.text,
+                keyTint: KeyboardStyle.keyTintColor(KeyboardStyle.keyFillColor).resolvedColor(with: traitCollection),
+                backdrop: KeyboardStyle.keyBackdropStandInColor.resolvedColor(with: traitCollection)
+            ) {
+                attributes[.shadow] = emojiGlow
+            }
+            return AttributedString(item.text, attributes: AttributeContainer(attributes))
+        }
+        button.configuration = configuration
+    }
+
+    /// A soft halo around an emoji, in the keys' label color, which stands apart from the keys.
+    private var emojiGlow: NSShadow {
+        let glow = NSShadow()
+        glow.shadowColor = KeyboardStyle.keyLabelColor.resolvedColor(with: traitCollection).withAlphaComponent(Self.emojiGlowOpacity)
+        glow.shadowBlurRadius = Self.emojiGlowRadius
+        glow.shadowOffset = .zero
+        return glow
     }
 
     /// Gives a suggestion the keys' colors, and the keys' pressed colors while it is touched.
