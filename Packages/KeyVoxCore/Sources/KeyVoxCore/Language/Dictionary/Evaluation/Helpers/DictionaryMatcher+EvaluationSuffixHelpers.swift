@@ -10,7 +10,9 @@ extension DictionaryMatcher {
         tokenCount: Int,
         window: [Token],
         observedNormalized: String,
-        observedPhonetic: String
+        observedPhonetic: String,
+        nextToken: Token? = nil,
+        followingToken: Token? = nil
     ) -> [(normalized: String, phonetic: String, replacementSuffix: String, numericSourceTokens: [String?])] {
         func numericSourceTokens(for normalized: String) -> [String?] {
             let tokens = normalized.split(separator: " ").map(String.init)
@@ -125,14 +127,15 @@ extension DictionaryMatcher {
                   !second.hasSuffix("ss"),
                   !second.hasSuffix("s'"),
                   second.count > minimumSplitTokenLength {
-            // Whisper often emits possessive names without apostrophes: "Especitos".
             let stem = String(second.dropLast())
             if stem.count >= minimumSplitTokenLength {
                 let normalized = "\(first) \(stem)"
+                // Whisper often emits possessives without apostrophes; a following possessed noun marks one.
+                let isPossessive = hasPossessedNounContext(nextToken: nextToken, followingToken: followingToken)
                 appendForm(
                     normalized: normalized,
                     phonetic: encoder.scoringPhraseSignature(for: [first, stem], lexicon: lexicon),
-                    replacementSuffix: "'s",
+                    replacementSuffix: isPossessive ? "'s" : "s",
                     numericSourceTokens: numericSourceTokens(for: normalized)
                 )
             }
@@ -191,6 +194,15 @@ extension DictionaryMatcher {
         )
 
         return possessiveSimilarity >= baseSimilarity + EvaluationSuffixConstants.possessiveSimilarityImprovementMinimum
+    }
+
+    func hasPossessedNounContext(nextToken: Token?, followingToken: Token?) -> Bool {
+        guard let nextToken else { return false }
+        let hasNounContext = nextToken.lexicalClass == .noun
+        let hasAdjectiveNounContext =
+            nextToken.lexicalClass == .adjective
+            && followingToken?.lexicalClass == .noun
+        return hasNounContext || hasAdjectiveNounContext
     }
 
     func possessiveBonus(for replacementSuffix: String) -> Double {

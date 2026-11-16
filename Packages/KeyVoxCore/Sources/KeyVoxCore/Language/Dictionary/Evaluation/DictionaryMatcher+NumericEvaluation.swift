@@ -8,10 +8,17 @@ extension DictionaryMatcher {
     func hasSufficientNumericAlignment(
         observedNormalized: String,
         observedNumericSourceTokens: [String?],
+        observedWindow: [Token],
+        nextToken: Token?,
         candidate: CompiledEntry
     ) -> Bool {
         guard candidate.numericSourceTokens.contains(where: { $0 != nil }) else {
-            return true
+            return hasMatchingObservedNumberTokens(
+                observedNormalized: observedNormalized,
+                observedWindow: observedWindow,
+                nextToken: nextToken,
+                candidateTokens: candidate.tokens
+            )
         }
 
         let observedTokens = observedNormalized.split(separator: " ").map(String.init)
@@ -81,19 +88,82 @@ extension DictionaryMatcher {
         return true
     }
 
-    private func hasSingularPluralMismatch(observedToken: String, candidateToken: String) -> Bool {
-        func singularStem(of token: String) -> String? {
-            guard token.count > 3,
-                  token.hasSuffix("s"),
-                  !token.hasSuffix("ss"),
-                  !token.hasSuffix("s'") else {
-                return nil
-            }
-            return String(token.dropLast())
-        }
+    // A number never becomes a different number. It stands in for an entry word only as a cardinal that does
+    // not count what follows: an ordinal, or a plural in or right after the window, keeps the number as spoken.
+    private func hasMatchingObservedNumberTokens(
+        observedNormalized: String,
+        observedWindow: [Token],
+        nextToken: Token?,
+        candidateTokens: [String]
+    ) -> Bool {
+        let observedTokens = observedNormalized.split(separator: " ").map(String.init)
+        guard observedTokens.count == candidateTokens.count else { return true }
+        let sourceTokens = observedWindow.count == observedTokens.count
+            ? observedWindow.map(\.normalized)
+            : observedTokens
 
-        return singularStem(of: observedToken) == candidateToken
+        var replacesNumberWithWord = false
+        for (index, (observed, candidate)) in zip(observedTokens, candidateTokens).enumerated()
+        where DictionaryNumericMatching.isNumberToken(observed) {
+            guard !numericTokenVariantsOverlap(observed, candidate) else { continue }
+            guard !DictionaryNumericMatching.isNumberToken(candidate) else { return false }
+            if DictionaryNumericMatching.isOrdinalNumericToken(sourceTokens[index]) {
+                guard namesSameOrdinal(ordinalToken: sourceTokens[index], candidate: candidate) else { return false }
+                continue
+            }
+            replacesNumberWithWord = true
+        }
+        guard replacesNumberWithWord else { return true }
+
+        let countsWindowWord = zip(sourceTokens, candidateTokens).contains { observed, candidate in
+            hasSingularPluralMismatch(observedToken: observed, candidateToken: candidate)
+        }
+        return !countsWindowWord && !isPluralNoun(nextToken)
+    }
+
+    private func namesSameOrdinal(ordinalToken: String, candidate: String) -> Bool {
+        guard let cardinal = DictionaryNumericMatching.tokenVariants(for: ordinalToken).last,
+              cardinal != ordinalToken,
+              let cardinalPronunciation = lexicon.pronunciation(for: cardinal),
+              let candidatePronunciation = lexicon.pronunciation(for: candidate) else {
+            return false
+        }
+        return pronunciationNamesOrdinal(
+            cardinalPronunciation: cardinalPronunciation,
+            candidatePronunciation: candidatePronunciation
+        )
+    }
+
+    // An entry word names an ordinal when its pronunciation adds only the ordinal ending to the cardinal's.
+    func pronunciationNamesOrdinal(cardinalPronunciation: String, candidatePronunciation: String) -> Bool {
+        let cardinalPhonemes = cardinalPronunciation.components(separatedBy: PronunciationLexicon.phonemeSeparator)
+        let candidatePhonemes = candidatePronunciation.components(separatedBy: PronunciationLexicon.phonemeSeparator)
+        return candidatePhonemes.count == cardinalPhonemes.count + StandardEvaluationPolicy.inflectionSuffixPhonemeCount
+            && candidatePhonemes.starts(with: cardinalPhonemes)
+    }
+
+    private func isPluralNoun(_ token: Token?) -> Bool {
+        guard let token,
+              token.lexicalClass == .noun,
+              let stem = singularStem(of: token.normalized) else {
+            return false
+        }
+        return lexicon.pronunciation(for: stem) != nil
+    }
+
+    private func hasSingularPluralMismatch(observedToken: String, candidateToken: String) -> Bool {
+        singularStem(of: observedToken) == candidateToken
             || singularStem(of: candidateToken) == observedToken
+    }
+
+    private func singularStem(of token: String) -> String? {
+        guard token.count > 3,
+              token.hasSuffix("s"),
+              !token.hasSuffix("ss"),
+              !token.hasSuffix("s'") else {
+            return nil
+        }
+        return String(token.dropLast())
     }
 
     private func numericTokenVariantsOverlap(_ lhs: String, _ rhs: String) -> Bool {

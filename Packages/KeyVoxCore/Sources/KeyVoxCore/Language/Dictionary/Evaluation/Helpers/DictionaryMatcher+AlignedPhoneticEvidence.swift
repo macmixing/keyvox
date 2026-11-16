@@ -23,7 +23,27 @@ extension DictionaryMatcher {
                 scorer.similarity(lhs: observedFallback, rhs: candidateFallback)
             )
 
-            return similarity >= scorer.minimumPhoneticSimilarity
+            guard similarity >= scorer.minimumPhoneticSimilarity else { return false }
+
+            // A known word pronounced differently from the entry word was said as itself. A misspelled name keeps
+            // the entry word's consonant sounds and stays close in spelling, so only that vowel drift may stand in.
+            // Missing pronunciation data is intentionally permissive.
+            guard let observedPronunciation = lexicon.pronunciation(for: observed),
+                  let candidatePronunciation = lexicon.pronunciation(for: candidate),
+                  observedPronunciation != candidatePronunciation else {
+                return true
+            }
+            if DictionaryNumericMatching.isNumberToken(observed),
+               pronunciationNamesOrdinal(
+                   cardinalPronunciation: observedPronunciation,
+                   candidatePronunciation: candidatePronunciation
+               ) {
+                return true
+            }
+            return encoder.consonantPhonemes(inPronunciation: observedPronunciation)
+                == encoder.consonantPhonemes(inPronunciation: candidatePronunciation)
+                && scorer.transpositionAwareSimilarity(lhs: observed, rhs: candidate)
+                    >= StandardEvaluationPolicy.vowelDriftSpellingSimilarityMinimum
         }
     }
 }
