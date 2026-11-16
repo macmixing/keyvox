@@ -372,6 +372,7 @@ iOS/
 │   │   │       ├── HomeTabView+TTSTransport.swift
 │   │   │       └── TTSReplayScrubber.swift
 │   │   ├── KeyVoxSpeak/
+│   │   │   ├── KeyVoxSpeakFastModeSpeedup.swift
 │   │   │   ├── KeyVoxSpeakIntroSheetView.swift
 │   │   │   ├── KeyVoxSpeakInstallCardView.swift
 │   │   │   ├── KeyVoxSpeakSceneAView.swift
@@ -1483,6 +1484,7 @@ Packages/
   - `KeyVoxSpeakSheetView.swift` owns the shared shell, pager state, pinned bottom CTA area, unlock action, restore action, mode-specific chrome, and sheet-level download confirmation overlay so pinned controls are covered while confirmation is active.
   - `KeyVoxSpeakSceneAView.swift`, `KeyVoxSpeakSceneBView.swift`, and `KeyVoxSpeakSceneCView.swift` own the three swipeable pages, matching the onboarding-scene split pattern. Scene C requests setup downloads through the sheet-owned confirmation path instead of starting downloads directly.
   - `KeyVoxSpeakUnlockScene.swift` owns the shared unlock-mode scene model so unlock copy and CTA rules stay centralized across wrappers.
+  - `KeyVoxSpeakFastModeSpeedup.swift` owns the Fast Mode speedup the Speak pages quote, formatted as a percentage for the current language.
   - `KeyVoxSpeakInstallCardView.swift` owns the shared PocketTTS setup card used by scene C, including shared-model install, featured-voice install, progress, and repair actions. It requests a combined engine-plus-voice confirmation only when the shared Speak engine is missing, otherwise it requests the voice-only confirmation.
   - `KeyVoxSpeakIntroSheetView.swift` is the thin post-onboarding intro wrapper around the shared sheet.
   - `TTSUnlockSheetView.swift` is the thin unlock-mode wrapper around the same shared sheet for Home and Settings purchase entry points.
