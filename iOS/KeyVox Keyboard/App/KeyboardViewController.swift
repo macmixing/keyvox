@@ -127,6 +127,15 @@ final class KeyboardViewController: UIInputViewController {
             updateUI()
         }
     }
+    /// How much Display Zoom enlarges the keyboard, read on each layout pass; the keys' heights
+    /// shrink by it so the keyboard takes the same part of the screen as with Display Zoom off.
+    var displayZoom = KeyboardDisplayZoom.none {
+        didSet {
+            guard displayZoom != oldValue else { return }
+            updatePrimaryViewHeight()
+            updateUI()
+        }
+    }
     /// The kind of display the keyboard is on, read on each layout pass; keys are taller on an
     /// open foldable's inner display in landscape, and on iPad.
     var display = KeyboardDisplay.standard {
@@ -245,6 +254,7 @@ final class KeyboardViewController: UIInputViewController {
         super.viewWillLayoutSubviews()
         isLandscape = KeyboardScreenShape.isWide(view)
         display = KeyboardDisplay.resolve(in: traitCollection)
+        displayZoom = KeyboardDisplayZoom.resolve(for: view.window?.windowScene?.screen)
         showsNextKeyboardKey = needsInputModeSwitchKey
     }
 
@@ -352,9 +362,10 @@ final class KeyboardViewController: UIInputViewController {
         layoutKeysMode.keyboardHeight(
             isLandscape: isLandscape,
             display: display,
+            zoom: displayZoom,
             showsToolbar: symbolPage.keepsToolbarRow(emojiPanel: emojiPanel)
         )
-            + (emojiPanel == .searching ? KeyboardEmojiSearchGeometry.addedKeyboardHeight : 0)
+            + (emojiPanel == .searching ? KeyboardEmojiSearchGeometry.addedKeyboardHeight(sizeScale: displayZoom.sizeScale) : 0)
     }
 
     private func configureTraitChangeObservation() {
@@ -412,6 +423,7 @@ final class KeyboardViewController: UIInputViewController {
             keysMode: layoutKeysMode,
             isLandscape: isLandscape,
             display: display,
+            displayZoom: displayZoom,
             offersPredictions: typingTraits.showsSuggestions && fieldHasLetters && isLastDictationUntouched == false
                 && emojiPanel == .closed,
             isCapsLockEnabled: isCapsLockEnabled,

@@ -53,6 +53,15 @@ final class KeyboardKeyView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
+    /// How much the Display Zoom shrinks the keyboard's sizes, below 1 under Display Zoom; a number
+    /// pad key shows its letters by the size it shows at, which the zoom changes.
+    var displayZoomScale: CGFloat = 1 {
+        didSet {
+            guard displayZoomScale != oldValue else { return }
+            setNeedsLayout()
+        }
+    }
+
     override func layoutSubviews() {
         layoutSubtitle()
         super.layoutSubviews()
@@ -248,10 +257,12 @@ final class KeyboardKeyView: UIView {
     }
 
     /// Raises a number pad digit's title and puts its letters under it, on keys tall enough for
-    /// both; shorter keys, such as in landscape on iPhone, show the digit alone.
+    /// both; shorter keys, such as in landscape on iPhone, show the digit alone. Under Display Zoom a
+    /// key is judged by the size it shows at, as the zoom enlarges it.
     private func layoutSubtitle() {
         let showsSubtitle = model.subtitle != nil
             && bounds.height >= KeyboardStyle.numberPadSubtitleMinimumKeyHeight
+                * displayZoomScale
         let titleOffset = showsSubtitle ? -bounds.height * KeyboardStyle.numberPadTitleRaise : 0
         for constraint in titleCenterYConstraints where constraint.constant != titleOffset {
             constraint.constant = titleOffset

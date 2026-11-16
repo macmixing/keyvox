@@ -108,6 +108,40 @@ public struct ReplacementScorer {
         return max(0, 1 - (Double(distance) / Double(maxLength)))
     }
 
+    // Spelling similarity that counts two swapped neighboring letters as a single edit.
+    func transpositionAwareSimilarity(lhs: String, rhs: String) -> Double {
+        guard !lhs.isEmpty && !rhs.isEmpty else { return 0 }
+        if lhs == rhs { return 1 }
+
+        let lhsChars = Array(lhs)
+        let rhsChars = Array(rhs)
+        var distances = Array(
+            repeating: Array(repeating: 0, count: rhsChars.count + 1),
+            count: lhsChars.count + 1
+        )
+        for i in 0...lhsChars.count { distances[i][0] = i }
+        for j in 0...rhsChars.count { distances[0][j] = j }
+
+        for i in 1...lhsChars.count {
+            for j in 1...rhsChars.count {
+                let substitutionCost = lhsChars[i - 1] == rhsChars[j - 1] ? 0 : 1
+                distances[i][j] = min(
+                    distances[i - 1][j] + 1,
+                    distances[i][j - 1] + 1,
+                    distances[i - 1][j - 1] + substitutionCost
+                )
+                if i > 1, j > 1,
+                   lhsChars[i - 1] == rhsChars[j - 2],
+                   lhsChars[i - 2] == rhsChars[j - 1] {
+                    distances[i][j] = min(distances[i][j], distances[i - 2][j - 2] + 1)
+                }
+            }
+        }
+
+        let maxLength = max(lhsChars.count, rhsChars.count)
+        return max(0, 1 - (Double(distances[lhsChars.count][rhsChars.count]) / Double(maxLength)))
+    }
+
     private func levenshtein(_ lhs: String, _ rhs: String) -> Int {
         let lhsChars = Array(lhs)
         let rhsChars = Array(rhs)

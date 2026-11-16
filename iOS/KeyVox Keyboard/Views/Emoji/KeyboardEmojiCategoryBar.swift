@@ -41,15 +41,26 @@ final class KeyboardEmojiCategoryBar: UIView {
     var isScrubbing = false
     /// The category circled, or to circle once a slide ends.
     private(set) var selectedCategory: EmojiKeyboardCategory?
+    private var lettersKeyWidthConstraint: NSLayoutConstraint?
+    private var deleteKeyWidthConstraint: NSLayoutConstraint?
+    /// How much the bar's sizes shrink, below 1 under Display Zoom.
+    var sizeScale: CGFloat = 1 {
+        didSet {
+            guard sizeScale != oldValue else { return }
+            applyDisplayZoom()
+        }
+    }
+    /// The circle around the category showing, across, as drawn under the Display Zoom.
+    var selectionDiameter: CGFloat {
+        Drawn.selectionDiameter * sizeScale
+    }
 
     override init(frame: CGRect) {
         super.init(frame: frame)
         showReturnKey(.abc)
-        lettersButton.titleLabel?.font = .systemFont(ofSize: Drawn.lettersKeyFontSize)
         lettersButton.setTitleColor(.label, for: .normal)
         lettersButton.addTarget(self, action: #selector(handleLetters), for: .touchUpInside)
 
-        deleteButton.setImage(Self.symbol("delete.left"), for: .normal)
         deleteButton.tintColor = .label
         deleteButton.accessibilityLabel = KeyboardKeyModel(kind: .delete, widthUnits: 1).accessibilityLabel
         deleteButton.addTarget(self, action: #selector(handleDeleteBegan), for: .touchDown)
@@ -60,11 +71,9 @@ final class KeyboardEmojiCategoryBar: UIView {
         categoryStack.alignment = .fill
 
         selectionView.backgroundColor = .tertiarySystemFill
-        selectionView.layer.cornerRadius = Drawn.selectionDiameter / 2
         selectionView.isUserInteractionEnabled = false
         selectionView.isHidden = true
         scrubView.backgroundColor = .tertiarySystemFill
-        scrubView.layer.cornerRadius = Drawn.selectionDiameter / 2
         scrubView.isUserInteractionEnabled = false
         scrubView.isHidden = true
 
@@ -75,20 +84,39 @@ final class KeyboardEmojiCategoryBar: UIView {
         insertSubview(selectionView, belowSubview: categoryStack)
         insertSubview(scrubView, belowSubview: categoryStack)
         configureScrub()
+        let lettersKeyWidthConstraint = lettersButton.widthAnchor.constraint(equalToConstant: Measured.lettersKeyWidth)
+        let deleteKeyWidthConstraint = deleteButton.widthAnchor.constraint(equalToConstant: Measured.deleteKeyWidth)
+        self.lettersKeyWidthConstraint = lettersKeyWidthConstraint
+        self.deleteKeyWidthConstraint = deleteKeyWidthConstraint
         NSLayoutConstraint.activate([
             lettersButton.leadingAnchor.constraint(equalTo: leadingAnchor),
             lettersButton.topAnchor.constraint(equalTo: topAnchor),
             lettersButton.bottomAnchor.constraint(equalTo: bottomAnchor),
-            lettersButton.widthAnchor.constraint(equalToConstant: Measured.lettersKeyWidth),
+            lettersKeyWidthConstraint,
             deleteButton.trailingAnchor.constraint(equalTo: trailingAnchor),
             deleteButton.topAnchor.constraint(equalTo: topAnchor),
             deleteButton.bottomAnchor.constraint(equalTo: bottomAnchor),
-            deleteButton.widthAnchor.constraint(equalToConstant: Measured.deleteKeyWidth),
+            deleteKeyWidthConstraint,
             categoryStack.leadingAnchor.constraint(equalTo: lettersButton.trailingAnchor),
             categoryStack.trailingAnchor.constraint(equalTo: deleteButton.leadingAnchor),
             categoryStack.topAnchor.constraint(equalTo: topAnchor),
             categoryStack.bottomAnchor.constraint(equalTo: bottomAnchor),
         ])
+        applyDisplayZoom()
+    }
+
+    /// Sizes the bar's keys, pictures, label, and circle by the Display Zoom.
+    private func applyDisplayZoom() {
+        lettersKeyWidthConstraint?.constant = Measured.lettersKeyWidth * sizeScale
+        deleteKeyWidthConstraint?.constant = Measured.deleteKeyWidth * sizeScale
+        lettersButton.titleLabel?.font = .systemFont(ofSize: Drawn.lettersKeyFontSize * sizeScale)
+        deleteButton.setImage(symbol("delete.left"), for: .normal)
+        for (category, button) in categoryButtons {
+            button.setImage(symbol(category.symbolName), for: .normal)
+        }
+        selectionView.layer.cornerRadius = selectionDiameter / 2
+        scrubView.layer.cornerRadius = selectionDiameter / 2
+        select(selectedCategory)
     }
 
     /// Shows the key that leaves the emoji page as the keyboard's own key of `kind`.
@@ -108,7 +136,7 @@ final class KeyboardEmojiCategoryBar: UIView {
         categoryButtons.forEach { $0.button.removeFromSuperview() }
         categoryButtons = categories.map { category in
             let button = UIButton(type: .system)
-            button.setImage(Self.symbol(category.symbolName), for: .normal)
+            button.setImage(symbol(category.symbolName), for: .normal)
             button.tintColor = .secondaryLabel
             button.accessibilityLabel = category.accessibilityLabel
             button.addAction(UIAction { [weak self] _ in self?.onCategory?(category) }, for: .touchUpInside)
@@ -139,10 +167,10 @@ final class KeyboardEmojiCategoryBar: UIView {
         layoutIfNeeded()
         let center = categoryStack.convert(button.center, to: self)
         return CGRect(
-            x: center.x - (Drawn.selectionDiameter / 2),
-            y: center.y - (Drawn.selectionDiameter / 2),
-            width: Drawn.selectionDiameter,
-            height: Drawn.selectionDiameter
+            x: center.x - (selectionDiameter / 2),
+            y: center.y - (selectionDiameter / 2),
+            width: selectionDiameter,
+            height: selectionDiameter
         )
     }
 
@@ -158,7 +186,7 @@ final class KeyboardEmojiCategoryBar: UIView {
         onDeleteEnded?()
     }
 
-    private static func symbol(_ name: String) -> UIImage? {
-        UIImage(systemName: name, withConfiguration: UIImage.SymbolConfiguration(pointSize: Drawn.symbolPointSize))
+    private func symbol(_ name: String) -> UIImage? {
+        UIImage(systemName: name, withConfiguration: UIImage.SymbolConfiguration(pointSize: Drawn.symbolPointSize * sizeScale))
     }
 }

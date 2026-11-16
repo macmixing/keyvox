@@ -1,25 +1,35 @@
 import UIKit
 
 /// Lays the emoji page's grid out where `KeyboardEmojiGridGeometry` puts each emoji, for the grid's
-/// height.
+/// height and the Display Zoom.
 final class KeyboardEmojiGridLayout: UICollectionViewLayout {
     /// How many emoji each section shows, in order.
     var emojiCounts: [Int] = [] {
         didSet { invalidateLayout() }
     }
 
+    /// How much the grid's sizes shrink, below 1 under Display Zoom.
+    var sizeScale: CGFloat = 1 {
+        didSet {
+            guard sizeScale != oldValue else { return }
+            invalidateLayout()
+        }
+    }
+
     private(set) var geometry = KeyboardEmojiGridGeometry(gridHeight: 0)
     private var layout = KeyboardEmojiGridGeometry(gridHeight: 0).layout(emojiCounts: [])
     private var preparedHeight: CGFloat?
     private var preparedCounts: [Int]?
+    private var preparedSizeScale: CGFloat?
 
     override func prepare() {
         super.prepare()
         let height = collectionView?.bounds.height ?? 0
-        guard height != preparedHeight || emojiCounts != preparedCounts else { return }
+        guard height != preparedHeight || emojiCounts != preparedCounts || sizeScale != preparedSizeScale else { return }
         preparedHeight = height
         preparedCounts = emojiCounts
-        geometry = KeyboardEmojiGridGeometry(gridHeight: height)
+        preparedSizeScale = sizeScale
+        geometry = KeyboardEmojiGridGeometry(gridHeight: height, sizeScale: sizeScale)
         layout = geometry.layout(emojiCounts: emojiCounts)
     }
 

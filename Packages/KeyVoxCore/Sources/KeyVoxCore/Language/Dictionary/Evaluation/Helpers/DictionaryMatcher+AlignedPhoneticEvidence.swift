@@ -23,7 +23,35 @@ extension DictionaryMatcher {
                 scorer.similarity(lhs: observedFallback, rhs: candidateFallback)
             )
 
-            return similarity >= scorer.minimumPhoneticSimilarity
+            guard similarity >= scorer.minimumPhoneticSimilarity else { return false }
+
+            // A known word pronounced differently from the entry word was said as itself. A misspelled name keeps
+            // the entry word's consonant sounds and stays close in spelling, so only that vowel drift may stand in.
+            // Missing pronunciation data is intentionally permissive.
+            guard let observedPronunciation = lexicon.pronunciation(for: observed),
+                  let candidatePronunciation = lexicon.pronunciation(for: candidate),
+                  observedPronunciation != candidatePronunciation else {
+                return true
+            }
+            // An inflected entry word is the entry word, and a number word may name the entry word's ordinal.
+            if pronunciation(observedPronunciation, addsOneEndingSoundTo: candidatePronunciation) {
+                return true
+            }
+            if DictionaryNumericMatching.isNumberToken(observed),
+               pronunciation(candidatePronunciation, addsOneEndingSoundTo: observedPronunciation) {
+                return true
+            }
+            return encoder.consonantPhonemes(inPronunciation: observedPronunciation)
+                == encoder.consonantPhonemes(inPronunciation: candidatePronunciation)
+                && scorer.transpositionAwareSimilarity(lhs: observed, rhs: candidate)
+                    >= StandardEvaluationPolicy.vowelDriftSpellingSimilarityMinimum
         }
+    }
+
+    func pronunciation(_ extendedPronunciation: String, addsOneEndingSoundTo basePronunciation: String) -> Bool {
+        let basePhonemes = basePronunciation.components(separatedBy: PronunciationLexicon.phonemeSeparator)
+        let extendedPhonemes = extendedPronunciation.components(separatedBy: PronunciationLexicon.phonemeSeparator)
+        return extendedPhonemes.count == basePhonemes.count + StandardEvaluationPolicy.inflectionSuffixPhonemeCount
+            && extendedPhonemes.starts(with: basePhonemes)
     }
 }

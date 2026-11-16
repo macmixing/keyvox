@@ -15,7 +15,6 @@ final class KeyboardEmojiChoiceHighlightView: UIView {
         super.init(frame: frame)
         isUserInteractionEnabled = false
         isHidden = true
-        layer.cornerRadius = Measured.cornerRadius
         backgroundColor = UIColor { trait in
             UIColor.white.withAlphaComponent(trait.userInterfaceStyle == .dark ? Measured.darkWhite : Measured.lightWhite)
         }
@@ -25,10 +24,12 @@ final class KeyboardEmojiChoiceHighlightView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
-    /// Shows the box centered on `center`.
-    func show(centeredAt center: CGPoint) {
-        let half = Measured.size / 2
-        frame = CGRect(x: center.x - half, y: center.y - half, width: Measured.size, height: Measured.size)
+    /// Shows the box centered on `center`, shrunk by `sizeScale`, below 1 under Display Zoom, as
+    /// the pickers are.
+    func show(centeredAt center: CGPoint, sizeScale: CGFloat) {
+        let size = Measured.size * sizeScale
+        layer.cornerRadius = Measured.cornerRadius * sizeScale
+        frame = CGRect(x: center.x - (size / 2), y: center.y - (size / 2), width: size, height: size)
         isHidden = false
     }
 }

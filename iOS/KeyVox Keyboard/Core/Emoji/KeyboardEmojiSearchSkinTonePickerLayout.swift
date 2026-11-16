@@ -37,39 +37,43 @@ struct KeyboardEmojiSearchSkinTonePickerLayout: Equatable {
     let dividerFrame: CGRect
     /// The center of each choice: the emoji as it comes, then each skin tone.
     let choiceCenters: [CGPoint]
+    /// How much the picker's sizes shrink, below 1 under Display Zoom.
+    let sizeScale: CGFloat
 
     /// - Parameters:
     ///   - heldResult: The held result's frame.
     ///   - toneCount: How many skin tones the emoji comes in.
     ///   - keyboard: The keyboard's bounds.
-    init(heldResult: CGRect, toneCount: Int, keyboard: CGRect) {
+    ///   - sizeScale: How much the picker's sizes shrink, below 1 under Display Zoom.
+    init(heldResult: CGRect, toneCount: Int, keyboard: CGRect, sizeScale: CGFloat = 1) {
+        self.sizeScale = sizeScale
         let width = keyboard.width
-        let top = max(keyboard.minY, heldResult.minY - Measured.panelRise)
+        let top = max(keyboard.minY, heldResult.minY - Measured.panelRise * sizeScale)
         stemFrame = CGRect(
-            x: heldResult.minX + Measured.stemInset,
-            y: top + Measured.panelHeight,
-            width: heldResult.width - (Measured.stemInset * 2),
-            height: heldResult.maxY - Measured.stemInset - (top + Measured.panelHeight)
+            x: heldResult.minX + Measured.stemInset * sizeScale,
+            y: top + Measured.panelHeight * sizeScale,
+            width: heldResult.width - (Measured.stemInset * sizeScale * 2),
+            height: heldResult.maxY - Measured.stemInset * sizeScale - (top + Measured.panelHeight * sizeScale)
         )
         var left = min(
-            max(Measured.sideInset, heldResult.midX - (Measured.panelWidth / 2)),
-            width - Measured.sideInset - Measured.panelWidth
+            max(Measured.sideInset * sizeScale, heldResult.midX - (Measured.panelWidth * sizeScale / 2)),
+            width - Measured.sideInset * sizeScale - Measured.panelWidth * sizeScale
         )
-        if stemFrame.minX - left < Measured.panelCornerRadius {
+        if stemFrame.minX - left < Measured.panelCornerRadius * sizeScale {
             left = stemFrame.minX
-        } else if left + Measured.panelWidth - stemFrame.maxX < Measured.panelCornerRadius {
-            left = stemFrame.maxX - Measured.panelWidth
+        } else if left + Measured.panelWidth * sizeScale - stemFrame.maxX < Measured.panelCornerRadius * sizeScale {
+            left = stemFrame.maxX - Measured.panelWidth * sizeScale
         }
-        panelFrame = CGRect(x: left, y: top, width: Measured.panelWidth, height: Measured.panelHeight)
-        let choiceY = top + Measured.choiceDrop
+        panelFrame = CGRect(x: left, y: top, width: Measured.panelWidth * sizeScale, height: Measured.panelHeight * sizeScale)
+        let choiceY = top + Measured.choiceDrop * sizeScale
         dividerFrame = CGRect(
-            x: left + Measured.dividerCenter - (Measured.dividerWidth / 2),
-            y: choiceY - (Measured.dividerHeight / 2),
-            width: Measured.dividerWidth,
-            height: Measured.dividerHeight
+            x: left + Measured.dividerCenter * sizeScale - (Measured.dividerWidth * sizeScale / 2),
+            y: choiceY - (Measured.dividerHeight * sizeScale / 2),
+            width: Measured.dividerWidth * sizeScale,
+            height: Measured.dividerHeight * sizeScale
         )
-        choiceCenters = [CGPoint(x: left + Measured.firstChoiceCenter, y: choiceY)]
-            + (0..<toneCount).map { CGPoint(x: left + Measured.firstToneCenter + (CGFloat($0) * Measured.tonePitch), y: choiceY) }
+        choiceCenters = [CGPoint(x: left + Measured.firstChoiceCenter * sizeScale, y: choiceY)]
+            + (0..<toneCount).map { CGPoint(x: left + Measured.firstToneCenter * sizeScale + (CGFloat($0) * Measured.tonePitch * sizeScale), y: choiceY) }
     }
 
     /// The choice a tap at `point` picks: the nearest, for a tap in the panel. The system keyboard

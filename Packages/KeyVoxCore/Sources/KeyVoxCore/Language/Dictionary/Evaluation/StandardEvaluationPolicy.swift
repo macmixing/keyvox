@@ -26,6 +26,7 @@ enum StandardEvaluationPolicy {
     static let twoTokenStrongEvidenceThreshold = 0.72
     static let twoTokenExactTailStylizedThreshold = stylizedModerateFallbackThreshold
     static let twoTokenModerateEvidenceThreshold = 0.55
+    static let vowelDriftSpellingSimilarityMinimum = 0.60
 
     static let commonWordStylizedBypassMinimum = 0.82
     static let commonWordFallbackBypassMinimum = 0.58

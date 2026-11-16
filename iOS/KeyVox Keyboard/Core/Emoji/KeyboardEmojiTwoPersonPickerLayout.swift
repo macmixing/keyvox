@@ -53,45 +53,49 @@ struct KeyboardEmojiTwoPersonPickerLayout: Equatable {
     let secondToneCenters: [CGPoint]
     let plainCenter: CGPoint
     let chosenCenter: CGPoint
+    /// How much the picker's sizes shrink, below 1 under Display Zoom.
+    let sizeScale: CGFloat
 
     /// - Parameters:
     ///   - emojiCenter: The held emoji's center.
     ///   - bounds: The space the picker shows in; the panel stays inside it.
-    init(emojiCenter: CGPoint, bounds: CGRect) {
+    ///   - sizeScale: How much the picker's sizes shrink, below 1 under Display Zoom.
+    init(emojiCenter: CGPoint, bounds: CGRect, sizeScale: CGFloat = 1) {
+        self.sizeScale = sizeScale
         let left = min(
-            max(bounds.minX + Measured.sideInset, emojiCenter.x - (Measured.panelWidth / 2)),
-            bounds.maxX - Measured.sideInset - Measured.panelWidth
+            max(bounds.minX + Measured.sideInset * sizeScale, emojiCenter.x - (Measured.panelWidth * sizeScale / 2)),
+            bounds.maxX - Measured.sideInset * sizeScale - Measured.panelWidth * sizeScale
         )
-        let top = max(bounds.minY, emojiCenter.y - Measured.panelRise)
-        panelFrame = CGRect(x: left, y: top, width: Measured.panelWidth, height: Measured.panelHeight)
-        let stemBottom = emojiCenter.y + Measured.stemDrop
-        stemFrame = top == emojiCenter.y - Measured.panelRise
+        let top = max(bounds.minY, emojiCenter.y - Measured.panelRise * sizeScale)
+        panelFrame = CGRect(x: left, y: top, width: Measured.panelWidth * sizeScale, height: Measured.panelHeight * sizeScale)
+        let stemBottom = emojiCenter.y + Measured.stemDrop * sizeScale
+        stemFrame = top == emojiCenter.y - Measured.panelRise * sizeScale
             ? CGRect(
-                x: emojiCenter.x - (Measured.stemWidth / 2),
+                x: emojiCenter.x - (Measured.stemWidth * sizeScale / 2),
                 y: panelFrame.maxY,
-                width: Measured.stemWidth,
+                width: Measured.stemWidth * sizeScale,
                 height: stemBottom - panelFrame.maxY
             )
             : nil
         dividerFrame = CGRect(
-            x: left + Measured.dividerInset,
-            y: top + Measured.dividerDrop - (Measured.dividerHeight / 2),
-            width: Measured.panelWidth - (Measured.dividerInset * 2),
-            height: Measured.dividerHeight
+            x: left + Measured.dividerInset * sizeScale,
+            y: top + Measured.dividerDrop * sizeScale - (Measured.dividerHeight * sizeScale / 2),
+            width: Measured.panelWidth * sizeScale - (Measured.dividerInset * sizeScale * 2),
+            height: Measured.dividerHeight * sizeScale
         )
         let centerX = panelFrame.midX
-        let toneXs = (0..<5).map { centerX + (CGFloat($0 - 2) * Measured.tonePitch) }
-        firstToneCenters = toneXs.map { CGPoint(x: $0, y: top + Measured.firstRowDrop) }
-        secondToneCenters = toneXs.map { CGPoint(x: $0, y: top + Measured.secondRowDrop) }
-        plainCenter = CGPoint(x: centerX - Measured.bottomOffset, y: top + Measured.bottomRowDrop)
-        chosenCenter = CGPoint(x: centerX + Measured.bottomOffset, y: top + Measured.bottomRowDrop)
+        let toneXs = (0..<5).map { centerX + (CGFloat($0 - 2) * Measured.tonePitch * sizeScale) }
+        firstToneCenters = toneXs.map { CGPoint(x: $0, y: top + Measured.firstRowDrop * sizeScale) }
+        secondToneCenters = toneXs.map { CGPoint(x: $0, y: top + Measured.secondRowDrop * sizeScale) }
+        plainCenter = CGPoint(x: centerX - Measured.bottomOffset * sizeScale, y: top + Measured.bottomRowDrop * sizeScale)
+        chosenCenter = CGPoint(x: centerX + Measured.bottomOffset * sizeScale, y: top + Measured.bottomRowDrop * sizeScale)
     }
 
     /// What a tap at `point` lands on: the nearest tone in the row it is in, or the bottom row's
     /// half it is in; the panel itself between them, and nothing outside the panel.
     func target(at point: CGPoint) -> Target? {
         guard panelFrame.contains(point) || stemFrame?.contains(point) == true else { return nil }
-        let half = Measured.highlightSize / 2
+        let half = Measured.highlightSize * sizeScale / 2
         func nearestTone(in centers: [CGPoint]) -> Int? {
             guard abs(point.y - centers[0].y) <= half else { return nil }
             return centers.indices.min { abs(centers[$0].x - point.x) < abs(centers[$1].x - point.x) }

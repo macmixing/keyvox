@@ -2,7 +2,19 @@ import Foundation
 import UIKit
 
 final class KeyboardSettingsToggleButton: UIControl {
-    private static let symbolConfiguration = UIImage.SymbolConfiguration(pointSize: 18, weight: .regular)
+    private static let symbolPointSize: CGFloat = 18
+
+    /// How much the icon shrinks from its usual size, below 1 under Display Zoom.
+    var symbolScale: CGFloat = 1 {
+        didSet {
+            guard symbolScale != oldValue else { return }
+            updateVisualState(animated: false)
+        }
+    }
+
+    private var symbolConfiguration: UIImage.SymbolConfiguration {
+        UIImage.SymbolConfiguration(pointSize: Self.symbolPointSize * symbolScale, weight: .regular)
+    }
 
     private let backgroundView = UIView()
     private let tintOverlay = UIView()
@@ -143,7 +155,7 @@ final class KeyboardSettingsToggleButton: UIControl {
             self.imageView.alpha = self.isTrackpadModeActive ? 0 : 1
             self.imageView.image = UIImage(
                 systemName: self.symbolName,
-                withConfiguration: Self.symbolConfiguration
+                withConfiguration: self.symbolConfiguration
             )
         }
 

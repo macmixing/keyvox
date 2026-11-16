@@ -40,6 +40,16 @@ enum DictionaryNumericMatching {
         return numericTokenRegex.firstMatch(in: normalizedToken, options: [], range: range) != nil
     }
 
+    static func isOrdinalNumericToken(_ normalizedToken: String) -> Bool {
+        isNumericToken(normalizedToken) && normalizedToken.last?.isLetter == true
+    }
+
+    static func isNumberToken(_ normalizedToken: String) -> Bool {
+        isNumericToken(normalizedToken)
+            || cardinalNumericLookup[normalizedToken] != nil
+            || compactCardinalSpellingLookup[normalizedToken] != nil
+    }
+
     static func tokenVariants(for normalizedToken: String) -> [String] {
         if let spelledOut = cardinalSpelling(for: normalizedToken) {
             return normalizedToken == spelledOut

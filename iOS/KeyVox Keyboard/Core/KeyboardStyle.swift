@@ -125,6 +125,11 @@ enum KeyboardStyle {
     static let keyLabelColor = UIColor.label
     static let keyDisabledLabelColor = UIColor.secondaryLabel.withAlphaComponent(0.7)
 
+    /// What stands in for the keyboard backdrop when a key's visible color is worked out: the
+    /// system draws the backdrop itself and the keyboard cannot read it, so the appearance's own
+    /// background is used.
+    static let keyBackdropStandInColor = UIColor.systemBackground
+
     /// A key's fill as it tints the keyboard backdrop behind it, as strongly as the theme sets for
     /// the appearance.
     static func keyTintColor(_ fill: UIColor) -> UIColor {
@@ -165,7 +170,8 @@ enum KeyboardStyle {
     static let specialKeyFont = UIFont.systemFont(ofSize: 17)
     static let buttonSymbolConfiguration = UIImage.SymbolConfiguration(pointSize: 18, weight: .semibold)
     static let keySymbolConfiguration = UIImage.SymbolConfiguration(pointSize: 18, weight: .medium)
-    static let cancelButtonSymbolConfiguration = UIImage.SymbolConfiguration(pointSize: 20, weight: .bold)
+    static let cancelButtonSymbolPointSize: CGFloat = 20
+    static let cancelButtonSymbolWeight = UIImage.SymbolWeight.bold
 
     static let keyShadow = Shadow(
         color: UIColor.black,

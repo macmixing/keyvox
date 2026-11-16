@@ -75,11 +75,12 @@ extension KeyboardEmojiCategoryBar {
     /// The band behind every category button, in the bar's coordinates.
     private var bandFrame: CGRect {
         let row = categoryStack.frame
-        let diameter = Drawn.selectionDiameter
+        let diameter = selectionDiameter
+        let inset = ScrubMeasured.bandInset * sizeScale
         return CGRect(
-            x: row.minX + ScrubMeasured.bandInset,
+            x: row.minX + inset,
             y: row.midY - (diameter / 2),
-            width: row.width - (ScrubMeasured.bandInset * 2),
+            width: row.width - (inset * 2),
             height: diameter
         )
     }

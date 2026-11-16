@@ -50,7 +50,8 @@ extension KeyboardEmojiPageView {
             emojiCenter: collectionView.convert(cell.center, to: container),
             toneCount: emoji.skinToneVariants.count,
             width: container.bounds.width,
-            rowPitch: gridLayout.geometry.rowPitch
+            rowPitch: gridLayout.geometry.rowPitch,
+            sizeScale: gridLayout.sizeScale
         )
         let choices = [emoji.text] + emoji.skinToneVariants
         if skinTonePicker.superview !== container {
@@ -89,7 +90,11 @@ extension KeyboardEmojiPageView {
             emoji,
             tones: tones,
             chosenVersion: chosenTones[emoji.text],
-            layout: KeyboardEmojiTwoPersonPickerLayout(emojiCenter: center, bounds: container.bounds),
+            layout: KeyboardEmojiTwoPersonPickerLayout(
+                emojiCenter: center,
+                bounds: container.bounds,
+                sizeScale: gridLayout.sizeScale
+            ),
             font: emojiFont,
             style: .page
         )

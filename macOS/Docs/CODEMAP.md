@@ -816,6 +816,11 @@ KeyVox/
   - Rejects a candidate that fails single-token pronunciation evidence.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/Evaluation/DictionaryMatcher+StandardThresholdEvaluation.swift`
   - Calculates baseline and evidence-adjusted thresholds for standard single- and two-token candidates.
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/Evaluation/DictionaryMatcher+NumericEvaluation.swift`
+  - Checks numeric alignment between observed forms and standard candidates.
+  - For entries without numeric tokens, rejects an observed number aligned to a different entry number, and lets a number stand in for an entry word only as a cardinal that does not count what follows (no ordinal, no plurality-only difference in the window, no plural noun right after it); an ordinal matches only an entry word naming the same ordinal.
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/DictionaryNumericMatching.swift`
+  - Owns digit, ordinal-digit, spelled-out cardinal, and compact spelled-cardinal recognition plus the numeric token and phrase variants used for dictionary matching.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/Evaluation/StandardEvaluationPolicy.swift`
   - Owns the shared constants used across standard candidate scoring and safety evaluation.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/Evaluation/DictionaryMatcher+MergedTokenEvaluation.swift`
@@ -836,6 +841,10 @@ KeyVox/
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/Evaluation/Helpers/DictionaryMatcher+SingleTokenPronunciationEvidence.swift`
   - Owns the pronunciation check for single-token replacements: a known observed form must share the entry's lexicon pronunciation, and when only the full inflected word has a pronunciation, it may only append `StandardEvaluationPolicy.inflectionSuffixPhonemeCount` phonemes to the entry's pronunciation.
   - Missing pronunciation data for the entry or the observed word is permissive.
+- `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/Evaluation/Helpers/DictionaryMatcher+AlignedPhoneticEvidence.swift`
+  - Owns the per-token sound check for multi-token standard candidates: every observed token that differs from its aligned entry token must meet `ReplacementScorer.minimumPhoneticSimilarity` on its own, so a shared phrase tail cannot carry an unrelated head.
+  - When both tokens are lexicon words with different pronunciations, accepts the pair only when the pronunciations share the same consonant phonemes and the spellings meet `StandardEvaluationPolicy.vowelDriftSpellingSimilarityMinimum` under transposition-aware spelling similarity. An observed word whose pronunciation is the entry word's plus one ending sound counts as the entry word, and a number word may name the entry word's ordinal the same way.
+  - Owns `pronunciation(_:addsOneEndingSoundTo:)`, the shared one-ending-sound check also used for ordinals in numeric evaluation.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/Dictionary/Evaluation/SplitJoin/DictionaryMatcher+ExactMultiTokenJoin.swift`
   - Owns exact three- and four-token joins into a canonical entry with fewer tokens, requiring every entry token to be spelled exactly by consecutive observed tokens that cover the whole window.
   - Defers dotted-domain protection to the shared split-join domain guard before proposing a replacement.
@@ -866,8 +875,9 @@ KeyVox/
   - Owns `phonemeSeparator`, the separator used inside each lexicon pronunciation.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/PhoneticEncoder.swift`
   - Uses lexicon lookups first, then deterministic fallback encoding for unknown words.
+  - Extracts the consonant phonemes of a lexicon pronunciation with the same vowel classification its signatures use, keeping a consonant carried inside a vowel symbol such as an r-colored vowel.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/ReplacementScorer.swift`
-  - Centralizes score weights, thresholds, ambiguity margin, and similarity math.
+  - Centralizes score weights, thresholds, ambiguity margin, and similarity math, including a transposition-aware spelling similarity.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Lists/ListFormattingEngine.swift`
   - Applies conservative numeric list formatting only when reliable list patterns are detected.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Lists/ListPatternDetector.swift`

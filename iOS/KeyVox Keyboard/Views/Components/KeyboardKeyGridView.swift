@@ -38,6 +38,7 @@ final class KeyboardKeyGridView: UIView {
     private var pages: [KeyboardKeyGridPage.Layout: KeyboardKeyGridPage] = [:]
     private var currentPage: KeyboardKeyGridPage?
     private var rowSpacing = KeyboardStyle.keyboardRowSpacing
+    private var displayZoomScale: CGFloat = 1
     private let topRowAccessoryReferenceStack = UIStackView()
     private var topRowAccessoryReferenceViews: [UIView] = []
     private var topRowAccessoryReferenceHeightConstraint: NSLayoutConstraint?
@@ -184,6 +185,12 @@ final class KeyboardKeyGridView: UIView {
     func setRowSpacing(_ spacing: CGFloat) {
         rowSpacing = spacing
         currentPage?.view.spacing = spacing
+    }
+
+    /// Gives the keys of the page showing, and of every page shown after it, the Display Zoom.
+    func setDisplayZoomScale(_ scale: CGFloat) {
+        displayZoomScale = scale
+        currentPage?.keyViews.forEach { $0.displayZoomScale = scale }
     }
 
     func topRowKeyView(for slot: KeyboardTopRowAccessorySlot) -> UIView? {
@@ -333,6 +340,7 @@ final class KeyboardKeyGridView: UIView {
             currentPage = page
         }
         page.view.spacing = rowSpacing
+        page.keyViews.forEach { $0.displayZoomScale = displayZoomScale }
         page.apply(letterCase: letterCase, isTrackpadModeActive: spaceTrackpadController.isActive)
         updateAllKeyStates()
         setNeedsLayout()

@@ -45,6 +45,20 @@ public struct PhoneticEncoder {
         fallbackSignature(for: signature(for: normalizedToken, lexicon: lexicon), maximumLength: nil)
     }
 
+    // Consonant phonemes of a lexicon pronunciation, using the same vowel classification as the signatures.
+    // A vowel symbol that carries a consonant sound, such as an r-colored vowel, contributes that consonant.
+    func consonantPhonemes(inPronunciation pronunciation: String) -> [String] {
+        pronunciation.components(separatedBy: PronunciationLexicon.phonemeSeparator).flatMap { phoneme -> [String] in
+            let characters = Array(phoneme.lowercased())
+            guard let firstCharacter = characters.first else { return [] }
+            guard phoneticCode(for: firstCharacter) == "A" else { return [phoneme] }
+            return characters.dropFirst().compactMap { character in
+                guard let code = phoneticCode(for: character), code != "A" else { return nil }
+                return String(character).uppercased()
+            }
+        }
+    }
+
     public func fallbackSignature(for token: String) -> String {
         fallbackSignature(for: token, maximumLength: Self.fallbackSignatureMaximumLength)
     }
