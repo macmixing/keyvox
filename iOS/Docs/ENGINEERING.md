@@ -1715,6 +1715,8 @@ The coordinator reports a Live Activity as showing only while its activity state
 
 Background dictation intents require the coordinator to prepare or update the Live Activity before recorder startup. The coordinator keeps that preparation pending until startup resolves, then reconciles against the actual session state so a failed start cannot leave an orphaned activity.
 
+When the app is terminated, `AppDelegate.applicationWillTerminate` asks the coordinator to end every showing Live Activity. The controller waits up to two seconds for the end requests because the process exits when termination handling returns. A process killed without that callback leaves the activity showing until the next launch, when reconciliation ends it because no session is active.
+
 ### Widget-Side Rules
 
 `KeyVox_WidgetLiveActivity` owns:

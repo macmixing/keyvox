@@ -969,6 +969,7 @@ Packages/
   - Registers the Toggle Dictation and KeyVox Speak App Shortcut phrases surfaced in the Shortcuts system.
 - `KeyVox iOS/App/Lifecycle/AppDelegate.swift`
   - Receives background `URLSession` callbacks and routes each configured session identifier to its owning Dictation, Speak, or Vibes model manager.
+  - Ends the session Live Activity through the Live Activity coordinator when the app is terminated.
 - `KeyVox iOS/App/Lifecycle/AppSceneDelegate.swift`
   - Captures cold-launch scene connection URLs before the first root render and forwards them into the launch-route store.
 - `KeyVox iOS/App/Routing/AppLaunchRouteStore.swift`
@@ -1151,6 +1152,7 @@ Packages/
   - Prepares the required Live Activity before background audio-recording intents start and reconciles the pending activity against the actual session outcome.
   - Keeps an activity started for a successful audio-recording intent showing until the session ends, even if the Live Activities setting is turned off mid-session.
   - Exposes whether a Live Activity is actually showing; dismissed or ended activities do not count, and a removed cached activity is replaced by another showing one or a new request.
+  - Ends every showing Live Activity during app termination, waiting briefly because the process exits when termination handling returns.
 - `KeyVox iOS/App/LiveActivity/KeyVoxSessionLiveActivityAttributes.swift`
   - Shared ActivityKit attributes and content state.
 - `KeyVox Widget/AppIntent.swift`

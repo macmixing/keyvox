@@ -2,6 +2,10 @@ import UIKit
 
 @MainActor
 final class AppDelegate: NSObject, UIApplicationDelegate {
+    func applicationWillTerminate(_ application: UIApplication) {
+        AppServiceRegistry.shared.sessionLiveActivityCoordinator.handleAppWillTerminate()
+    }
+
     func application(
         _ application: UIApplication,
         handleEventsForBackgroundURLSession identifier: String,

@@ -7,6 +7,7 @@ protocol KeyVoxSessionLiveActivityControlling {
     var isActivityActive: Bool { get }
     func startOrUpdate(weeklyWordCount: Int) async throws
     func end() async
+    func endForAppTermination()
 }
 
 @MainActor
@@ -55,6 +56,24 @@ final class KeyVoxSessionLiveActivityController: KeyVoxSessionLiveActivityContro
         self.activity = nil
         lastWeeklyWordCount = nil
     }
+
+    func endForAppTermination() {
+        guard !Activity<KeyVoxSessionLiveActivityAttributes>.activities.isEmpty else { return }
+
+        // The process exits when termination handling returns, so wait here for the end request to finish.
+        let endCompleted = DispatchSemaphore(value: 0)
+        Task.detached {
+            for activity in Activity<KeyVoxSessionLiveActivityAttributes>.activities {
+                await activity.end(nil, dismissalPolicy: .immediate)
+            }
+            endCompleted.signal()
+        }
+        _ = endCompleted.wait(timeout: .now() + Self.terminationEndTimeout)
+        activity = nil
+        lastWeeklyWordCount = nil
+    }
+
+    private static let terminationEndTimeout: TimeInterval = 2
 
     private var currentActivity: Activity<KeyVoxSessionLiveActivityAttributes>? {
         if let activity, Self.isShowing(activity) {
@@ -130,6 +149,10 @@ final class KeyVoxSessionLiveActivityCoordinator {
 
     var isLiveActivityActive: Bool {
         liveActivityController.isActivityActive
+    }
+
+    func handleAppWillTerminate() {
+        liveActivityController.endForAppTermination()
     }
 
     func prepareForAudioRecordingIntent() async throws {
