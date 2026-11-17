@@ -107,7 +107,8 @@ iOS/
 │   │   │   ├── KeyVoxTTSRequest.swift
 │   │   │   ├── KeyVoxKeyboardBridge.swift
 │   │   │   ├── KeyboardTypingMemoryLocation.swift
-│   │   │   └── KeyboardTypingMemoryReset.swift
+│   │   │   ├── KeyboardTypingMemoryReset.swift
+│   │   │   └── KeyboardWarmStartPolicy.swift
 │   │   ├── KeyVoxSpeak/
 │   │   │   ├── KeyVoxSpeakIntroController.swift
 │   │   │   └── TTSPurchaseController.swift
@@ -984,6 +985,7 @@ Packages/
   - Registers the Toggle Dictation and KeyVox Speak App Shortcut phrases surfaced in the Shortcuts system.
 - `KeyVox iOS/App/Lifecycle/AppDelegate.swift`
   - Receives background `URLSession` callbacks and routes each configured session identifier to its owning Dictation, Speak, or Vibes model manager.
+  - Ends the session Live Activity through the Live Activity coordinator when the app is terminated.
 - `KeyVox iOS/App/Lifecycle/AppSceneDelegate.swift`
   - Captures cold-launch scene connection URLs before the first root render and forwards them into the launch-route store.
 - `KeyVox iOS/App/Routing/AppLaunchRouteStore.swift`
@@ -1164,8 +1166,11 @@ Packages/
 - `KeyVox iOS/App/Integration/KeyVoxKeyboardBridge.swift`
   - App-side IPC endpoint for start/stop/cancel/disable-session/style-rewrite commands and extension-facing state publishing.
   - Publishes each ready transcription with its utterance ID and selected style identifier.
+  - Refreshes the shared heartbeat only while `KeyboardWarmStartPolicy` allows a warm start, and withdraws it otherwise; recorder-tap heartbeats stay ungated.
 - `KeyVox iOS/App/Integration/KeyboardTypingMemoryLocation.swift`
   - Single source of truth for the App Group `Keyboard/typing-memory.json` location, compiled into the containing app, keyboard extension, and tests.
+- `KeyVox iOS/App/Integration/KeyboardWarmStartPolicy.swift`
+  - Decides whether the keyboard may start dictation without opening the app: the app is active, a dictation session, in-progress dictation, or TTS is active, or Live Activities are off.
 - `KeyVox iOS/App/Integration/KeyboardTypingMemoryReset.swift`
   - App-side reset of what the keyboard learned from typing: increments the shared reset generation before removing the memory file so a keyboard still holding the old memory never saves it again.
 - `KeyVox iOS/App/LiveActivity/KeyVoxSessionLiveActivityCoordinator.swift`
@@ -1173,6 +1178,7 @@ Packages/
   - Prepares the required Live Activity before background audio-recording intents start and reconciles the pending activity against the actual session outcome.
   - Keeps an activity started for a successful audio-recording intent showing until the session ends, even if the Live Activities setting is turned off mid-session.
   - Exposes whether a Live Activity is actually showing; dismissed or ended activities do not count, and a removed cached activity is replaced by another showing one or a new request.
+  - Ends every showing Live Activity during app termination, waiting briefly because the process exits when termination handling returns.
 - `KeyVox iOS/App/LiveActivity/KeyVoxSessionLiveActivityAttributes.swift`
   - Shared ActivityKit attributes and content state.
 - `KeyVox Widget/AppIntent.swift`

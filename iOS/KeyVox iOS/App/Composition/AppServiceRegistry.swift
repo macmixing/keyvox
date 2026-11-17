@@ -377,6 +377,15 @@ final class AppServiceRegistry {
             usesBundledManifest: runtimeFlags.useLocalPromotionManifest,
             previewCampaignID: runtimeFlags.promotionPreviewCampaignID
         )
+        keyboardBridge.isWarmStartAvailable = { [weak transcriptionManager, weak settingsStore, weak ttsManager] in
+            KeyboardWarmStartPolicy.isWarmStartAvailable(
+                isAppActive: UIApplication.shared.applicationState == .active,
+                isDictationSessionActive: transcriptionManager?.isSessionActive ?? false,
+                isDictationInProgress: transcriptionManager.map { $0.state != .idle } ?? false,
+                isTTSActive: ttsManager?.isActive ?? false,
+                liveActivitiesEnabled: settingsStore?.liveActivitiesEnabled ?? true
+            )
+        }
         keyboardBridge.onStartRecordingCommand = {
             audioModeCoordinator.handleStartRecordingCommand()
         }
