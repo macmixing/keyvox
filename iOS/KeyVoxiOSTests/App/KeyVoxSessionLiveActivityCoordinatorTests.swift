@@ -325,6 +325,11 @@ private final class MockKeyVoxSessionLiveActivityController: KeyVoxSessionLiveAc
         isActivityActive = false
         endCallCount += 1
     }
+
+    func endForAppTermination() {
+        isActivityActive = false
+        endCallCount += 1
+    }
 }
 
 private enum TestLiveActivityError: Error {
