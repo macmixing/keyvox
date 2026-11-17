@@ -787,6 +787,9 @@ Rules:
 - `KeyVoxIPCBridge.heartbeatFreshnessWindow` is `5` seconds
 - `KeyVoxIPCBridge.recentTTSWarmStartWindow` is `8` seconds
 - the recorder or keyboard bridge refreshes the heartbeat while the app is active enough to be considered warm
+- `KeyboardWarmStartPolicy` decides when the keyboard bridge may advertise warmth: the app is active, a dictation session is active, a dictation is still recording, processing, or transcribing, TTS is active, or Live Activities are turned off
+- a backgrounded, idle app with no active session and Live Activities on withdraws the heartbeat, because iOS refuses to start a Live Activity from the background; the keyboard then takes the cold path so the app is foreground when the session's Live Activity starts
+- recorder-tap heartbeats are not gated, because they only run while monitoring is active
 - the extension treats the app as warm only when the heartbeat is newer than that window
 - the keyboard may use a longer warm grace period when the shared state reports a Bluetooth route or recent TTS playback
 

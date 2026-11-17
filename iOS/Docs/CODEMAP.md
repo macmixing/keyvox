@@ -107,7 +107,8 @@ iOS/
 │   │   │   ├── KeyVoxTTSRequest.swift
 │   │   │   ├── KeyVoxKeyboardBridge.swift
 │   │   │   ├── KeyboardTypingMemoryLocation.swift
-│   │   │   └── KeyboardTypingMemoryReset.swift
+│   │   │   ├── KeyboardTypingMemoryReset.swift
+│   │   │   └── KeyboardWarmStartPolicy.swift
 │   │   ├── KeyVoxSpeak/
 │   │   │   ├── KeyVoxSpeakIntroController.swift
 │   │   │   └── TTSPurchaseController.swift
@@ -1138,8 +1139,11 @@ Packages/
 - `KeyVox iOS/App/Integration/KeyVoxKeyboardBridge.swift`
   - App-side IPC endpoint for start/stop/cancel/disable-session/style-rewrite commands and extension-facing state publishing.
   - Publishes each ready transcription with its utterance ID and selected style identifier.
+  - Refreshes the shared heartbeat only while `KeyboardWarmStartPolicy` allows a warm start, and withdraws it otherwise; recorder-tap heartbeats stay ungated.
 - `KeyVox iOS/App/Integration/KeyboardTypingMemoryLocation.swift`
   - Single source of truth for the App Group `Keyboard/typing-memory.json` location, compiled into the containing app, keyboard extension, and tests.
+- `KeyVox iOS/App/Integration/KeyboardWarmStartPolicy.swift`
+  - Decides whether the keyboard may start dictation without opening the app: the app is active, a dictation session, in-progress dictation, or TTS is active, or Live Activities are off.
 - `KeyVox iOS/App/Integration/KeyboardTypingMemoryReset.swift`
   - App-side reset of what the keyboard learned from typing: increments the shared reset generation before removing the memory file so a keyboard still holding the old memory never saves it again.
 - `KeyVox iOS/App/LiveActivity/KeyVoxSessionLiveActivityCoordinator.swift`

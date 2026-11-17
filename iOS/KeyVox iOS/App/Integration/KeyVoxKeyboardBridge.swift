@@ -13,6 +13,7 @@ final class KeyVoxKeyboardBridge {
     var onStopTTSCommand: (() -> Void)?
     var onPauseTTSCommand: (() -> Void)?
     var onResumeTTSCommand: (() -> Void)?
+    var isWarmStartAvailable: () -> Bool = { true }
 
     private var isRegistered = false
     private var heartbeatTimer: Timer?
@@ -32,7 +33,7 @@ final class KeyVoxKeyboardBridge {
         registerDarwinObserver(named: KeyVoxIPCBridge.Notification.pauseTTS)
         registerDarwinObserver(named: KeyVoxIPCBridge.Notification.resumeTTS)
         
-        touchHeartbeat()
+        publishHeartbeatIfWarmStartAvailable()
         startHeartbeatTimer()
     }
 
@@ -50,21 +51,21 @@ final class KeyVoxKeyboardBridge {
         KeyVoxIPCBridge.setRecordingState("recording")
         KeyVoxIPCBridge.writeLiveMeter(level: 0, signalState: .dead)
         postDarwinNotification(named: KeyVoxIPCBridge.Notification.recordingStarted)
-        KeyVoxIPCBridge.touchHeartbeat()
+        publishHeartbeatIfWarmStartAvailable()
     }
 
     func publishRecordingStartFailed() {
         KeyVoxIPCBridge.setRecordingState("startFailed")
         KeyVoxIPCBridge.clearLiveMeter()
         postDarwinNotification(named: KeyVoxIPCBridge.Notification.recordingStartFailed)
-        KeyVoxIPCBridge.touchHeartbeat()
+        publishHeartbeatIfWarmStartAvailable()
     }
 
     func publishTranscribing() {
         KeyVoxIPCBridge.setRecordingState("transcribing")
         KeyVoxIPCBridge.writeLiveMeter(level: 0, signalState: .dead)
         postDarwinNotification(named: KeyVoxIPCBridge.Notification.transcribingStarted)
-        KeyVoxIPCBridge.touchHeartbeat()
+        publishHeartbeatIfWarmStartAvailable()
     }
 
     func publishTranscriptionReady(
@@ -85,7 +86,7 @@ final class KeyVoxKeyboardBridge {
         KeyVoxIPCBridge.setRecordingState("idle")
         KeyVoxIPCBridge.clearLiveMeter()
         postDarwinNotification(named: KeyVoxIPCBridge.Notification.transcriptionReady)
-        KeyVoxIPCBridge.touchHeartbeat()
+        publishHeartbeatIfWarmStartAvailable()
     }
 
     func publishNoSpeech() {
@@ -93,7 +94,7 @@ final class KeyVoxKeyboardBridge {
         KeyVoxIPCBridge.setRecordingState("idle")
         KeyVoxIPCBridge.clearLiveMeter()
         postDarwinNotification(named: KeyVoxIPCBridge.Notification.noSpeech)
-        KeyVoxIPCBridge.touchHeartbeat()
+        publishHeartbeatIfWarmStartAvailable()
     }
 
     func publishCancelled() {
@@ -101,7 +102,7 @@ final class KeyVoxKeyboardBridge {
         KeyVoxIPCBridge.setRecordingState("idle")
         KeyVoxIPCBridge.clearLiveMeter()
         postDarwinNotification(named: KeyVoxIPCBridge.Notification.noSpeech)
-        KeyVoxIPCBridge.touchHeartbeat()
+        publishHeartbeatIfWarmStartAvailable()
     }
 
     func publishTTSPreparing() {
@@ -111,7 +112,7 @@ final class KeyVoxKeyboardBridge {
         KeyVoxIPCBridge.setTTSIsPaused(false)
         KeyVoxIPCBridge.setTTSPlaybackProgress(0)
         postDarwinNotification(named: KeyVoxIPCBridge.Notification.ttsPreparing)
-        KeyVoxIPCBridge.touchHeartbeat()
+        publishHeartbeatIfWarmStartAvailable()
     }
 
     func publishTTSPlaying() {
@@ -120,7 +121,7 @@ final class KeyVoxKeyboardBridge {
         KeyVoxIPCBridge.setTTSState(.playing)
         KeyVoxIPCBridge.setTTSIsPaused(false)
         postDarwinNotification(named: KeyVoxIPCBridge.Notification.ttsPlaying)
-        KeyVoxIPCBridge.touchHeartbeat()
+        publishHeartbeatIfWarmStartAvailable()
     }
 
     func publishTTSPlaybackProgress(_ progress: Double) {
@@ -133,7 +134,7 @@ final class KeyVoxKeyboardBridge {
         KeyVoxIPCBridge.setTTSState(.playing)
         KeyVoxIPCBridge.setTTSIsPaused(true)
         postDarwinNotification(named: KeyVoxIPCBridge.Notification.ttsPaused)
-        KeyVoxIPCBridge.touchHeartbeat()
+        publishHeartbeatIfWarmStartAvailable()
     }
 
     func publishTTSResumed() {
@@ -142,7 +143,7 @@ final class KeyVoxKeyboardBridge {
         KeyVoxIPCBridge.setTTSState(.playing)
         KeyVoxIPCBridge.setTTSIsPaused(false)
         postDarwinNotification(named: KeyVoxIPCBridge.Notification.ttsResumed)
-        KeyVoxIPCBridge.touchHeartbeat()
+        publishHeartbeatIfWarmStartAvailable()
     }
 
     func publishTTSFinished() {
@@ -151,7 +152,7 @@ final class KeyVoxKeyboardBridge {
         KeyVoxIPCBridge.setTTSPlaybackProgress(1)
         KeyVoxIPCBridge.writeLiveMeter(level: 0, signalState: .dead)
         postDarwinNotification(named: KeyVoxIPCBridge.Notification.ttsFinished)
-        KeyVoxIPCBridge.touchHeartbeat()
+        publishHeartbeatIfWarmStartAvailable()
 
         pendingClearWorkItem?.cancel()
         let workItem = DispatchWorkItem { [weak self] in
@@ -168,14 +169,14 @@ final class KeyVoxKeyboardBridge {
         KeyVoxIPCBridge.setTTSPlaybackProgress(0)
         KeyVoxIPCBridge.writeLiveMeter(level: 0, signalState: .dead)
         postDarwinNotification(named: KeyVoxIPCBridge.Notification.ttsFailed)
-        KeyVoxIPCBridge.touchHeartbeat()
+        publishHeartbeatIfWarmStartAvailable()
     }
 
     func publishTTSStopped() {
         KeyVoxIPCBridge.clearTTSState()
         KeyVoxIPCBridge.writeLiveMeter(level: 0, signalState: .dead)
         postDarwinNotification(named: KeyVoxIPCBridge.Notification.ttsStopped)
-        KeyVoxIPCBridge.touchHeartbeat()
+        publishHeartbeatIfWarmStartAvailable()
     }
 
     func publishLiveMeter(level: Float, signalState: LiveInputSignalState) {
@@ -187,6 +188,14 @@ final class KeyVoxKeyboardBridge {
             KeyVoxIPCBridge.setSessionHasBluetoothAudioRoute(sessionHasBluetoothAudioRoute)
         }
         KeyVoxIPCBridge.touchHeartbeat()
+    }
+
+    private func publishHeartbeatIfWarmStartAvailable() {
+        if isWarmStartAvailable() {
+            KeyVoxIPCBridge.touchHeartbeat()
+        } else if KeyVoxIPCBridge.isSessionWarm() {
+            KeyVoxIPCBridge.clearSessionActive()
+        }
     }
 
     private func setRecordingState(_ value: String) {
@@ -237,7 +246,7 @@ final class KeyVoxKeyboardBridge {
     private func startHeartbeatTimer() {
         heartbeatTimer?.invalidate()
         heartbeatTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
-            self?.touchHeartbeat()
+            self?.publishHeartbeatIfWarmStartAvailable()
         }
     }
 
