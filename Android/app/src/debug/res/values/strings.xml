@@ -1,1 +1,1 @@
-<resources><string name="editor_hint">Keyboard test field</string></resources>
+<resources><string name="editor_hint" translatable="false">Keyboard test field</string></resources>
