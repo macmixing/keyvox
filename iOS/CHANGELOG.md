@@ -6,6 +6,54 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.7.0] - 2026-11-17
+
+Translates KeyVox into German, Spanish, and French, matches the keyboard to the text field you're typing in, and brings back the Live Activity on quick restarts.
+
+### Added
+
+- Added German, Spanish (Spain and Latin America), and French (France and Canada) to the app, keyboard, Share sheet, Live Activity, and Shortcuts, following the device language.
+- Added a note wherever Vibes is offered that it rewrites English dictation only.
+- Added keyboard layouts that match the focused text field: web address, web search, email, and post fields get their own bottom rows, and the return key shows the field's action.
+- Added a number pad with phone keypad letters for numbers-only fields, sized like the system's with the globe key and no toolbar above it. The full-width iPad keyboard opens the numbers page instead.
+- Added common web endings when holding the `.com` key, or the dot in an email or search field.
+
+### Changed
+
+- Changed suggestion-bar emoji that blend into dark keys to show a soft glow so they're easy to see.
+
+### Fixed
+
+- Fixed the Live Activity not coming back when dictation restarted right after ending a session from it, and staying on screen after closing KeyVox from the app switcher.
+- Fixed dictations cut off by a phone call, alarm, or other audio interruption waiting until the app opened again instead of being inserted into the text field.
+- Fixed multi-word dictionary entries replacing ordinary words that only share part of the entry, and numbers that count or order something.
+- Fixed the keyboard growing larger with Display Zoom on, and the Vibes key's name getting cut off on narrow keys.
+- Fixed a keyboard crash caused by broken layout constraints while a new keyboard replaced an earlier one.
+- Fixed the Vibes examples overshooting and snapping back on the first tap after launch.
+- Fixed the tab bar stretching across the screen with a black band at the top after unfolding iPhone Duo.
+
+### Package versions
+
+KeyVox iOS 1.7.0
+  KeyVoxCore               1.3.15
+  KeyVoxEmoji              1.0.1
+  KeyVoxKeyboardThemes     1.0.0
+  KeyVoxLinguistics        1.0.2
+  KeyVoxLocalInference     1.0.5
+  KeyVoxModels             1.0.0
+  KeyVoxParakeet           1.1.1
+  KeyVoxPredictiveKeyboard 1.1.0
+  KeyVoxPromotions         1.2.0
+  KeyVoxState              1.0.0
+  KeyVoxStyleRewrite       1.2.0
+  KeyVoxTTS                1.1.1
+  KeyVoxTextComposition    1.1.0
+  KeyVoxVibesAdapters      1.0.5
+  KeyVoxVoiceActivity      1.1.1
+  KeyVoxWhisper            1.2.1
+
+---
+
 ## [1.6.4] - 2026-11-11
 
 Makes spoken colons work after example phrases, improves suggestions typed before another word, and frees memory from closed keyboards.
