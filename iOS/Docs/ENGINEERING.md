@@ -2099,7 +2099,7 @@ Every catalog entry with an `fr` translation also carries a full `fr-CA` transla
 Each target owns its String Catalog:
 
 - `KeyVox iOS/Resources/Localizable.xcstrings`: containing app text
-- `KeyVox iOS/Resources/InfoPlist.xcstrings`: the microphone permission prompt
+- `KeyVox iOS/Resources/InfoPlist.xcstrings`: the microphone permission prompt, plus the app names Xcode extracts from the Info.plist, marked not to translate
 - `KeyVox iOS/Resources/AppShortcuts.xcstrings`: App Shortcuts phrases
 - `KeyVox Keyboard/Localizable.xcstrings`, `KeyVox Share/Localizable.xcstrings`, `KeyVox Widget/Localizable.xcstrings`: extension text
 - shared packages that show text own `Sources/<Package>/Resources/Localizable.xcstrings` (KeyVoxCore, KeyVoxStyleRewrite, KeyVoxWhisper, KeyVoxParakeet, KeyVoxTTS)
