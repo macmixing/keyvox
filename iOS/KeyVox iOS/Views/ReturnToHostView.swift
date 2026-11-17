@@ -85,7 +85,8 @@ struct ReturnToHostView: View {
         .foregroundColor(.white)
         .multilineTextAlignment(.center)
         .lineLimit(1)
-        .minimumScaleFactor(0.6)
+        .minimumScaleFactor(0.5)
+        .fixedSize(horizontal: false, vertical: true)
     }
 
     private func video(metrics: ReturnToHostLayoutMetrics) -> some View {
@@ -120,6 +121,10 @@ struct ReturnToHostView: View {
             .foregroundColor(Color(UIColor.systemGray))
             .multilineTextAlignment(.center)
         }
+        .lineLimit(1)
+        .minimumScaleFactor(0.5)
+        .fixedSize(horizontal: false, vertical: true)
+        .padding(.horizontal, metrics.isSideBySide ? 0 : 24)
     }
 }
 
