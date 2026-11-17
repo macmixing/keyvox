@@ -6,6 +6,39 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.4.0] - 2026-11-17
+
+Translates the app's screens and menus into German, Spanish, and French, and improves spoken colons and custom-dictionary accuracy.
+
+### Added
+
+- Added German, Spanish (Spain and Latin America), and French (France and Canada) translations of the app's screens and menus, following your Mac's language.
+- Added a note wherever Vibes is offered that it rewrites English dictation only.
+
+### Fixed
+
+- Fixed a spoken `colon` staying as a word after phrases that introduce examples, such as `like`, `such as`, or `for instance`.
+- Fixed multi-word dictionary entries replacing ordinary words that only share part of the entry, and numbers that count or order something.
+- Fixed the update prompt's logo ring and glow getting clipped at the top.
+
+### Package versions
+
+KeyVox macOS 1.4.0:
+- KeyVoxCore            1.3.15
+- KeyVoxLinguistics     1.0.2
+- KeyVoxLocalInference  1.0.5
+- KeyVoxModels          1.0.0
+- KeyVoxParakeet        1.1.1
+- KeyVoxPromotions      1.2.0
+- KeyVoxState           1.0.0
+- KeyVoxStyleRewrite    1.2.0
+- KeyVoxTextComposition 1.1.0
+- KeyVoxVibesAdapters   1.0.5
+- KeyVoxVoiceActivity   1.1.1
+- KeyVoxWhisper         1.2.1
+
+---
+
 ## [1.3.18] - 2026-11-07
 
 Updates Parakeet to the current model, turns spoken periods, commas, and colons into punctuation, and writes out casual words in Polished.
