@@ -153,7 +153,7 @@ struct KeyVoxSpeakSceneBView: View {
                 Text(method.subtitle)
                     .font(.appFont(15, variant: .light))
                     .foregroundStyle(.white.opacity(0.6))
-                    .lineLimit(2)
+                    .lineLimit(3)
                     .fixedSize(horizontal: false, vertical: true)
             }
 
