@@ -6,7 +6,7 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
-## [1.4.0] - 2026-11-15
+## [1.3.15] - 2026-11-17
 
 Dictionary messages, the `Auto Detect` language option, and the fallback microphone name are now translatable, including Latin American Spanish and Canadian French versions.
 
@@ -19,7 +19,7 @@ Dictionary messages, the `Auto Detect` language option, and the fallback microph
 
 ### Notes
 
-- `1.4.0` tracks translatable dictionary messages and the new public `microphoneNameFallback`.
+- `1.3.15` tracks translatable dictionary messages, the `Auto Detect` option, and the fallback microphone name.
 
 ---
 
