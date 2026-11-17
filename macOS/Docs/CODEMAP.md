@@ -18,7 +18,7 @@ KeyVox is a macOS menu bar dictation app that records speech while a trigger key
 - **Packages/KeyVoxTextComposition**: platform-neutral policy for joining finalized dictation to existing editor text, including leading capitalization, leading spacing, quotation-mark context, sentence boundaries, adjacent terminal punctuation, and trailing separators
 - **Core/Services**: reusable host integration services (paste/injection, update checking)
 - **Views**: SwiftUI UI layer (menu, onboarding, settings, overlays, warnings, branded visuals)
-- **Resources**: assets, entitlements, bundled fonts/icons, pronunciation resources
+- **Resources**: assets, entitlements, bundled fonts/icons, pronunciation resources, and the app's string catalogs (`Localizable.xcstrings`, `InfoPlist.xcstrings`)
 - **Tools**: maintainer-only scripts (resource generation, dev helpers)
 - **KeyVoxTests**: app unit tests for deterministic/runtime-safe logic
 - **Packages**: local Swift packages for the shared engine, state publication, model metadata, promotions, linguistic analysis, voice activity, the `whisper.cpp` wrapper, Parakeet Core ML runtime, local rewrite inference, shared style rewrite contracts, text composition, and bundled Vibes LoRA adapters
