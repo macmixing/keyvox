@@ -476,7 +476,7 @@ enum AudioRecorderError: LocalizedError {
         case .monitoringShutdownWhileRecording:
             return String(localized: "Can't disable the session while audio is actively recording.", comment: "Dictation error message when turning off the dictation session during a recording.")
         case let .invalidInputFormat(sampleRate, channelCount):
-            return String(localized: "Audio input is not ready yet. sampleRate=\(sampleRate), channelCount=\(Int(channelCount))", comment: "Dictation error message when the microphone input is not ready. sampleRate and channelCount are technical labels and stay as written; the first placeholder is the audio sample rate and the second is the number of audio channels.")
+            return String(localized: "Audio input is not ready yet. sampleRate=\(String(sampleRate)), channelCount=\(Int(channelCount))", comment: "Dictation error message when the microphone input is not ready. sampleRate and channelCount are technical labels and stay as written; the first placeholder is the audio sample rate and the second is the number of audio channels.")
         }
     }
 }

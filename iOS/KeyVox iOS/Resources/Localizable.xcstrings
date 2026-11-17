@@ -1449,43 +1449,43 @@
         }
       }
     },
-    "Audio input is not ready yet. sampleRate=%lf, channelCount=%lld" : {
+    "Audio input is not ready yet. sampleRate=%@, channelCount=%lld" : {
       "comment" : "Dictation error message when the microphone input is not ready. sampleRate and channelCount are technical labels and stay as written; the first placeholder is the audio sample rate and the second is the number of audio channels.",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Die Audioeingabe ist noch nicht bereit. sampleRate=%1$lf, channelCount=%2$lld"
+            "value" : "Die Audioeingabe ist noch nicht bereit. sampleRate=%1$@, channelCount=%2$lld"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Audio input is not ready yet. sampleRate=%1$lf, channelCount=%2$lld"
+            "value" : "Audio input is not ready yet. sampleRate=%1$@, channelCount=%2$lld"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "La entrada de audio aún no está lista. sampleRate=%1$lf, channelCount=%2$lld"
+            "value" : "La entrada de audio aún no está lista. sampleRate=%1$@, channelCount=%2$lld"
           }
         },
         "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "La entrada de audio aún no está lista. sampleRate=%1$lf, channelCount=%2$lld"
+            "value" : "La entrada de audio aún no está lista. sampleRate=%1$@, channelCount=%2$lld"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "L’entrée audio n’est pas encore prête. sampleRate=%lf, channelCount=%lld"
+            "value" : "L’entrée audio n’est pas encore prête. sampleRate=%@, channelCount=%lld"
           }
         },
         "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "L’entrée audio n’est pas encore prête. sampleRate=%lf, channelCount=%lld"
+            "value" : "L’entrée audio n’est pas encore prête. sampleRate=%@, channelCount=%lld"
           }
         }
       }
