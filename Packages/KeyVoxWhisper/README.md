@@ -23,7 +23,9 @@
 - `Sources/KeyVoxWhisper/WhisperParams.swift`: decode params bridge + compatibility aliases.
 - `Sources/KeyVoxWhisper/Segment.swift`: segment output model.
 - `Sources/KeyVoxWhisper/WhisperLanguage.swift`: language enum.
-- `Sources/KeyVoxWhisper/WhisperError.swift`: wrapper errors.
+- `Sources/KeyVoxWhisper/WhisperError.swift`: wrapper errors with translatable descriptions.
+- `Sources/KeyVoxWhisper/KeyVoxWhisperLocalization.swift`: bundle used for translations; the package bundle on Apple platforms and the English text written in code elsewhere, so portable hosts never need the resource bundle at runtime.
+- `Sources/KeyVoxWhisper/Resources/Localizable.xcstrings`: translations of the error descriptions.
 
 ## Updating whisper.cpp
 

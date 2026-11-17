@@ -9,7 +9,7 @@ enum PocketTTSMimiInference {
         let manifestData = try Data(contentsOf: manifestURL)
         guard let manifest = try JSONSerialization.jsonObject(with: manifestData) as? [String: Any],
               let stateManifest = manifest["mimi_init_state"] as? [String: Any] else {
-            throw KeyVoxTTSError.invalidAssetData("PocketTTS Mimi manifest is invalid.")
+            throw KeyVoxTTSError.invalidAssetData(NSLocalizedString("PocketTTS Mimi manifest is invalid.", bundle: .module, comment: "Error shown when reading copied text aloud fails: a speech engine file is damaged. PocketTTS and Mimi are technical engine names and stay in English."))
         }
 
         var tensors: [String: MLMultiArray] = [:]
@@ -26,7 +26,7 @@ enum PocketTTSMimiInference {
                 
                 let expectedBytes = shape.reduce(1, *) * MemoryLayout<Float>.size
                 guard data.count >= expectedBytes else {
-                    throw KeyVoxTTSError.invalidAssetData("PocketTTS Mimi state tensor \(name) has insufficient data: expected \(expectedBytes) bytes, got \(data.count)")
+                    throw KeyVoxTTSError.invalidAssetData(String(format: NSLocalizedString("PocketTTS Mimi state tensor %@ has insufficient data: expected %ld bytes, got %ld", bundle: .module, comment: "Error shown when reading copied text aloud fails: a speech engine file is incomplete. %@ is an internal tensor name and stays as written; the first %ld is the expected byte count and the second the actual byte count. PocketTTS and Mimi are technical engine names and stay in English."), name, expectedBytes, data.count))
                 }
                 
                 let copyCount = expectedBytes / MemoryLayout<Float>.size
@@ -55,7 +55,7 @@ enum PocketTTSMimiInference {
         model: MLModel
     ) async throws -> [Float] {
         guard latent.count >= PocketTTSConstants.latentDimension else {
-            throw KeyVoxTTSError.invalidAssetData("Latent vector has insufficient values: expected \(PocketTTSConstants.latentDimension), got \(latent.count)")
+            throw KeyVoxTTSError.invalidAssetData(String(format: NSLocalizedString("Latent vector has insufficient values: expected %ld, got %ld", bundle: .module, comment: "Error shown when reading copied text aloud fails: internal speech data is incomplete. The first %ld is the expected value count and the second the actual count. PocketTTS and Mimi are technical engine names and stay in English."), PocketTTSConstants.latentDimension, latent.count))
         }
         
         let latentArray = try MLMultiArray(shape: [1, NSNumber(value: PocketTTSConstants.latentDimension)], dataType: .float32)
@@ -73,12 +73,12 @@ enum PocketTTSMimiInference {
         let provider = try MLDictionaryFeatureProvider(dictionary: input)
         let output = try await model.keyVoxPrediction(from: provider)
         guard let audioArray = output.featureValue(for: PocketTTSInferenceTypes.MimiOutput.audio)?.multiArrayValue else {
-            throw KeyVoxTTSError.inferenceFailure("PocketTTS Mimi audio output is missing.")
+            throw KeyVoxTTSError.inferenceFailure(NSLocalizedString("PocketTTS Mimi audio output is missing.", bundle: .module, comment: "Error shown when reading copied text aloud fails: a speech engine step produced no audio. PocketTTS and Mimi are technical engine names and stay in English."))
         }
 
         for (inputName, outputName) in PocketTTSInferenceTypes.MimiOutput.stateMappings {
             guard let updatedTensor = output.featureValue(for: outputName)?.multiArrayValue else {
-                throw KeyVoxTTSError.inferenceFailure("PocketTTS Mimi state output is incomplete.")
+                throw KeyVoxTTSError.inferenceFailure(NSLocalizedString("PocketTTS Mimi state output is incomplete.", bundle: .module, comment: "Error shown when reading copied text aloud fails: a speech engine step produced incomplete output. PocketTTS and Mimi are technical engine names and stay in English."))
             }
             state.tensors[inputName] = updatedTensor
         }

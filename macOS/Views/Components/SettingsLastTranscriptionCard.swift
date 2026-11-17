@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 import AppKit
 
@@ -16,7 +17,7 @@ struct SettingsLastTranscriptionCard: View {
         SettingsCard {
             VStack(alignment: .leading, spacing: 14) {
                 HStack(alignment: .center, spacing: 12) {
-                    Text("Last Transcription")
+                    Text("Last Transcription", comment: "Heading of the Settings card that shows the most recent dictated text.")
                         .font(.appFont(17))
 
                     Spacer(minLength: 0)
@@ -40,7 +41,7 @@ struct SettingsLastTranscriptionCard: View {
                             .font(.system(size: 20, weight: .semibold))
                             .foregroundColor(.yellow)
 
-                        Text("Your last transcription will appear here after you dictate on this Mac.")
+                        Text("Your last transcription will appear here after you dictate on this Mac.", comment: "Empty state text in the Last Transcription card in Settings.")
                             .font(.appFont(14, variant: .light))
                             .foregroundColor(.secondary)
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -59,7 +60,7 @@ struct SettingsLastTranscriptionCard: View {
 
     private func copyButton(for text: String) -> some View {
         AppActionButton(
-            title: didCopy ? "Copied" : "Copy",
+            title: didCopy ? String(localized: "Copied", comment: "Button title in the Last Transcription card after the text was copied.") : String(localized: "Copy", comment: "Button in the Last Transcription card that copies the text."),
             style: .primary,
             minWidth: 84
         ) {

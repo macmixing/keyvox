@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 
 extension HomeTabView {
@@ -136,20 +137,20 @@ extension HomeTabView {
     }
 
     var fastModeBackgroundSafetyWarningText: String {
-        "Wait for the blue/green check mark before leaving."
+        String(localized: "Wait for the blue/green check mark before leaving.", comment: "Warning on the Home tab Speak Copied Text card during fast playback, telling the user not to leave the app until the check mark appears.")
     }
 
     var ttsStatusText: String {
         if pocketTTSModelManager.isSharedModelReady() == false {
             switch pocketTTSModelManager.sharedModelInstallState {
             case .notInstalled:
-                return "Download the KeyVox Speak engine and Theo's voice (~661 MB) to speak copied text."
+                return String(localized: "Download the KeyVox Speak engine and Theo's voice (\(ApproximateDownloadSize.speakEngineAndVoice)) to speak copied text.", comment: "Status on the Home tab Speak Copied Text card before anything is installed. KeyVox Speak is a brand name and stays in English. Theo is a voice name and stays in English. The value in parentheses is the approximate download size.")
             case .downloading:
-                return "Downloading KeyVox Speak engine..."
+                return String(localized: "Downloading KeyVox Speak engine...", comment: "Status on the Home tab Speak Copied Text card while the text-to-speech engine downloads. KeyVox Speak is a brand name and stays in English.")
             case .installing:
-                return "Installing KeyVox Speak engine..."
+                return String(localized: "Installing KeyVox Speak engine...", comment: "Status on the Home tab Speak Copied Text card while the text-to-speech engine installs. KeyVox Speak is a brand name and stays in English.")
             case .failed:
-                return "KeyVox Speak engine install failed."
+                return String(localized: "KeyVox Speak engine install failed.", comment: "Status on the Home tab Speak Copied Text card when the text-to-speech engine failed to install. KeyVox Speak is a brand name and stays in English.")
             case .ready:
                 break
             }
@@ -157,13 +158,13 @@ extension HomeTabView {
 
         switch pocketTTSModelManager.installState(for: effectiveTTSVoice) {
         case .notInstalled:
-            return "Download \(effectiveTTSVoice.displayName)'s voice (~19 MB) to speak copied text."
+            return String(localized: "Download \(effectiveTTSVoice.displayName)'s voice (\(ApproximateDownloadSize.speakVoice)) to speak copied text.", comment: "Status on the Home tab Speak Copied Text card when the selected voice is not installed. The first placeholder is the voice name, which stays in English; the second, in parentheses, is the approximate download size.")
         case .downloading:
-            return "Downloading \(effectiveTTSVoice.displayName)'s voice..."
+            return String(localized: "Downloading \(effectiveTTSVoice.displayName)'s voice...", comment: "Status on the Home tab Speak Copied Text card while a voice downloads. The placeholder is the voice name, which stays in English.")
         case .installing:
-            return "Installing \(effectiveTTSVoice.displayName)'s voice..."
+            return String(localized: "Installing \(effectiveTTSVoice.displayName)'s voice...", comment: "Status on the Home tab Speak Copied Text card while a voice installs. The placeholder is the voice name, which stays in English.")
         case .failed:
-            return "\(effectiveTTSVoice.displayName) voice install failed."
+            return String(localized: "\(effectiveTTSVoice.displayName) voice install failed.", comment: "Status on the Home tab Speak Copied Text card when a voice failed to install. The placeholder is the voice name, which stays in English.")
         case .ready:
             break
         }
@@ -172,26 +173,27 @@ extension HomeTabView {
         case .idle:
             if ttsPurchaseController.canStartNewTTSSpeak == false {
                 if ttsPurchaseController.remainingFreeTTSSpeaksToday == 0 {
-                    return "Unlock Speak Unlimited to keep speaking copied text."
+                    return String(localized: "Unlock Speak Unlimited to keep speaking copied text.", comment: "Status on the Home tab Speak Copied Text card when the free daily limit is used up. Speak Unlimited is the purchase name; Speak is a brand name and stays in English.")
                 }
             }
 
             if ttsPurchaseController.isTTSUnlocked == false {
                 let remainingFreeSpeaks = ttsPurchaseController.remainingFreeTTSSpeaksToday
-                let noun = remainingFreeSpeaks == 1 ? "speak" : "speaks"
-                return "\(remainingFreeSpeaks) free \(noun) left today."
+                return String(localized: "\(remainingFreeSpeaks) free speaks left today.", comment: "Status on the Home tab Speak Copied Text card showing how many free uses are left today. %lld is the number left; use plural forms.")
             }
-            return "Speak copied text using your selected voice."
+            return String(localized: "Speak copied text using your selected voice.", comment: "Status on the Home tab Speak Copied Text card when it is ready to read aloud.")
         case .preparing:
-            return "Getting ready..."
+            return String(localized: "Getting ready...", comment: "Status on the Home tab Speak Copied Text card while playback is being prepared.")
         case .generating:
-            return "KeyVox is preparing to speak..."
+            return String(localized: "KeyVox is preparing to speak...", comment: "Status on the Home tab Speak Copied Text card while audio is being generated. KeyVox is a brand name and stays in English.")
         case .playing:
-            return ttsManager.isPlaybackPaused ? "Playback paused." : "Speaking copied text."
+            return ttsManager.isPlaybackPaused
+                ? String(localized: "Playback paused.", comment: "Status on the Home tab Speak Copied Text card while reading aloud is paused.")
+                : String(localized: "Speaking copied text.", comment: "Status on the Home tab Speak Copied Text card while copied text is being read aloud.")
         case .finished:
-            return "Finished speaking."
+            return String(localized: "Finished speaking.", comment: "Status on the Home tab Speak Copied Text card after reading aloud finished.")
         case .error:
-            return "Failed to speak."
+            return String(localized: "Failed to speak.", comment: "Status on the Home tab Speak Copied Text card when reading aloud failed.")
         }
     }
 
@@ -201,7 +203,7 @@ extension HomeTabView {
         if lastErrorMessage.localizedCaseInsensitiveContains("unable to compute the prediction using a neural network model")
             || lastErrorMessage.localizedCaseInsensitiveContains("broken/unsupported model")
             || lastErrorMessage.localizedCaseInsensitiveContains("error code -1") {
-            return "Speaking could not continue after the app moved to the background."
+            return String(localized: "Speaking could not continue after the app moved to the background.", comment: "Error on the Home tab Speak Copied Text card when reading aloud stopped because the user left the app.")
         }
 
         return lastErrorMessage

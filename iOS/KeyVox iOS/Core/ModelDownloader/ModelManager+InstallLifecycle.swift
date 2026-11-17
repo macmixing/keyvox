@@ -78,7 +78,7 @@ extension ModelManager {
         defer { currentDownloadTask = nil }
 
         guard modelLocator.modelsDirectoryURL != nil else {
-            setState(.failed(message: "App Group container unavailable."), for: modelID)
+            setState(.failed(message: String(localized: "App Group container unavailable.", comment: "Error shown when the app's shared storage cannot be reached during a model install.")), for: modelID)
             return
         }
 
@@ -131,7 +131,7 @@ extension ModelManager {
         defer { currentDownloadTask = nil }
 
         guard modelLocator.modelsDirectoryURL != nil else {
-            setState(.failed(message: "App Group container unavailable."), for: modelID)
+            setState(.failed(message: String(localized: "App Group container unavailable.", comment: "Error shown when the app's shared storage cannot be reached during a model install.")), for: modelID)
             return
         }
 
@@ -252,7 +252,7 @@ extension ModelManager {
 
             let hash = try Self.sha256Hex(forFileAt: installedArtifactURL)
             guard hash.lowercased() == artifact.expectedSHA256.lowercased() else {
-                throw ModelInstallError.integrityCheckFailed("Downloaded model asset did not match the expected SHA-256.")
+                throw ModelInstallError.integrityCheckFailed(String(localized: "Downloaded model asset did not match the expected SHA-256.", comment: "Error shown when a downloaded dictation model file fails its integrity check. SHA-256 is a technical term and stays as written."))
             }
             artifactHashes[artifact.relativePath] = hash
             await applyPhaseProgress(
@@ -307,7 +307,7 @@ extension ModelManager {
 
     func performDeleteModel(withID modelID: DictationModelID) async {
         guard modelLocator.modelsDirectoryURL != nil else {
-            setState(.failed(message: "App Group container unavailable."), for: modelID)
+            setState(.failed(message: String(localized: "App Group container unavailable.", comment: "Error shown when the app's shared storage cannot be reached during a model install.")), for: modelID)
             return
         }
 
@@ -321,7 +321,7 @@ extension ModelManager {
 
     func performDeleteModelSynchronously(withID modelID: DictationModelID) {
         guard modelLocator.modelsDirectoryURL != nil else {
-            setState(.failed(message: "App Group container unavailable."), for: modelID)
+            setState(.failed(message: String(localized: "App Group container unavailable.", comment: "Error shown when the app's shared storage cannot be reached during a model install.")), for: modelID)
             return
         }
 

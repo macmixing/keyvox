@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 
 struct DictationShortcutSetupOnboardingView: View {
@@ -61,11 +62,11 @@ struct DictationShortcutSetupOnboardingView: View {
                 ToolbarItem(placement: .topBarLeading) {
                     if selectedPage == .shortcutIntro {
                         Button(action: returnToSetup) {
-                            Label("Back", systemImage: "chevron.left")
+                            Label(String(localized: "Back", comment: "Toolbar button that goes back to the previous onboarding screen."), systemImage: "chevron.left")
                         }
                     } else {
                         Button(action: goBack) {
-                            Label("Back", systemImage: "chevron.left")
+                            Label(String(localized: "Back", comment: "Toolbar button that goes back to the previous onboarding screen."), systemImage: "chevron.left")
                         }
                     }
                 }
@@ -93,7 +94,7 @@ struct DictationShortcutSetupOnboardingView: View {
             .containerBackground(AppTheme.screenBackground, for: .navigation)
         }
         .alert(
-            "Unable to Complete Action",
+            String(localized: "Unable to Complete Action", comment: "Title of the alert shown when a dictation shortcut setup action fails."),
             isPresented: Binding(
                 get: { errorMessage != nil },
                 set: { isPresented in
@@ -103,7 +104,7 @@ struct DictationShortcutSetupOnboardingView: View {
                 }
             )
         ) {
-            Button("OK", role: .cancel) {
+            Button(String(localized: "OK", comment: "Button that dismisses the dictation shortcut setup error alert."), role: .cancel) {
                 errorMessage = nil
             }
         } message: {
@@ -162,7 +163,7 @@ struct DictationShortcutSetupOnboardingView: View {
 
     private var skipButton: some View {
         AppActionButton(
-            title: "Skip",
+            title: String(localized: "Skip", comment: "Button that skips the dictation shortcut setup during onboarding."),
             style: .secondary,
             minWidth: 72,
             size: .compact,
@@ -182,20 +183,20 @@ struct DictationShortcutSetupOnboardingView: View {
     private var actionTitle: String {
         switch selectedPage {
         case .shortcutIntro, .actionButtonIntro:
-            return "Continue"
+            return String(localized: "Continue", comment: "Button that moves to the next page of the dictation shortcut setup.")
         case .addShortcut:
             if finishesSetup {
-                return "Set Up Keyboard"
+                return String(localized: "Set Up Keyboard", comment: "Button on the last page of the dictation shortcut setup during onboarding that moves on to keyboard setup.")
             }
-            return hasRequestedShortcutInstallation ? "Next" : "Add Shortcut"
+            return hasRequestedShortcutInstallation ? String(localized: "Next", comment: "Button that moves to the next page of the dictation shortcut setup.") : String(localized: "Add Shortcut", comment: "Button in the dictation shortcut setup that adds the KeyVox shortcut to the Shortcuts app.")
         case .actionButtonSettings, .actionButtonShortcutOption:
-            return "Next"
+            return String(localized: "Next", comment: "Button that moves to the next page of the dictation shortcut setup.")
         case .actionButtonShortcutSelection:
-            return hasRequestedSettings ? "Next" : "Open Settings"
+            return hasRequestedSettings ? String(localized: "Next", comment: "Button that moves to the next page of the dictation shortcut setup.") : String(localized: "Open Settings", comment: "Button in the dictation shortcut setup that opens the Settings app. Use Apple's official name for Settings in this language.")
         case .actionButtonDemoPaste:
-            return "Next"
+            return String(localized: "Next", comment: "Button that moves to the next page of the dictation shortcut setup.")
         case .actionButtonDemoHandoff:
-            return "Set Up Keyboard"
+            return String(localized: "Set Up Keyboard", comment: "Button on the last page of the dictation shortcut setup during onboarding that moves on to keyboard setup.")
         }
     }
 
@@ -268,7 +269,7 @@ struct DictationShortcutSetupOnboardingView: View {
         appHaptics.light()
         Task {
             guard await DictationShortcutSettingsOpener.open() else {
-                errorMessage = "The Settings app could not be opened."
+                errorMessage = String(localized: "The Settings app could not be opened.", comment: "Error message in the dictation shortcut setup when the Settings app could not be opened. Use Apple's official name for Settings in this language.")
                 return
             }
         }

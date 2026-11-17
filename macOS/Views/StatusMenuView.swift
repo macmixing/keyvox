@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 import AVFoundation
 import ApplicationServices
@@ -19,7 +20,7 @@ struct StatusMenuView: View {
                 // Header / Status
                 HStack {
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("KeyVox Status")
+                        Text("KeyVox Status", comment: "Heading in the KeyVox menu bar menu. KeyVox is a brand name and stays in English.")
                             .font(.appFont(12, variant: .medium))
                             .foregroundColor(.secondary)
                         HStack(alignment: .center, spacing: 6) {
@@ -41,13 +42,13 @@ struct StatusMenuView: View {
                 if appSettings.hasCompletedOnboarding && (!micAuthorized || !activeProviderModelReady || !AXIsProcessTrusted()) {
                     VStack(alignment: .leading, spacing: 4) {
                         if !micAuthorized {
-                            WarningRow(icon: "mic.slash", title: "No Mic Permissions") {
+                            WarningRow(icon: "mic.slash", title: String(localized: "No Mic Permissions", comment: "Warning row in the KeyVox menu bar menu shown when microphone access is missing.")) {
                                 resolveMicrophonePermission()
                             }
                         }
                         
                         if !activeProviderModelReady {
-                            WarningRow(icon: "cpu", title: "Model missing") {
+                            WarningRow(icon: "cpu", title: String(localized: "Model missing", comment: "Warning row in the KeyVox menu bar menu shown when no dictation model is installed.")) {
                                 dismiss()
                                 openSettings(.settings)
                                 DispatchQueue.main.async {
@@ -57,7 +58,7 @@ struct StatusMenuView: View {
                         }
                         
                         if !AXIsProcessTrusted() {
-                            WarningRow(icon: "accessibility", title: "Accessibility Required") {
+                            WarningRow(icon: "accessibility", title: String(localized: "Accessibility Required", comment: "Warning row in the KeyVox menu bar menu shown when macOS Accessibility access is missing. Use the name macOS uses for Accessibility in this language.")) {
                                 let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true]
                                 AXIsProcessTrustedWithOptions(options as CFDictionary)
                             }
@@ -71,19 +72,19 @@ struct StatusMenuView: View {
                 VStack(spacing: 2) {
                     MenuActionRow(
                         icon: "gearshape.fill",
-                        title: "Settings",
+                        title: String(localized: "Settings", comment: "Menu item in the KeyVox menu bar menu that opens the KeyVox settings window."),
                         disabled: !appSettings.hasCompletedOnboarding
                     ) {
                         dismiss()
                         openSettings(.home)
                     }
 
-                    MenuActionRow(icon: "arrow.triangle.2.circlepath", title: "Check for Updates") {
+                    MenuActionRow(icon: "arrow.triangle.2.circlepath", title: String(localized: "Check for Updates", comment: "Menu item in the KeyVox menu bar menu that checks for app updates.")) {
                         dismiss()
                         checkForUpdates()
                     }
                     
-                    MenuActionRow(icon: "power", title: "Quit KeyVox") {
+                    MenuActionRow(icon: "power", title: String(localized: "Quit KeyVox", comment: "Menu item in the KeyVox menu bar menu that quits the app. KeyVox is a brand name and stays in English.")) {
                         dismiss()
                         quitApp()
                     }
@@ -113,12 +114,12 @@ struct StatusMenuView: View {
         
         var text: String {
             switch self {
-            case .onboarding: return "Waiting"
-            case .issue: return "Issue!"
-            case .idle: return "Ready"
-            case .recording: return "Recording..."
-            case .transcribing: return "Processing..."
-            case .error(let msg): return "Error: \(msg)"
+            case .onboarding: return String(localized: "Waiting", comment: "Status text in the KeyVox menu bar menu while onboarding is not finished.")
+            case .issue: return String(localized: "Issue!", comment: "Status text in the KeyVox menu bar menu when something needs attention.")
+            case .idle: return String(localized: "Ready", comment: "Status text in the KeyVox menu bar menu when KeyVox is ready to dictate.")
+            case .recording: return String(localized: "Recording...", comment: "Status text in the KeyVox menu bar menu while recording dictation.")
+            case .transcribing: return String(localized: "Processing...", comment: "Status text in the KeyVox menu bar menu while transcribing dictation.")
+            case .error(let msg): return String(localized: "Error: \(msg)", comment: "Status text in the KeyVox menu bar menu when an error occurs. %@ is the error message.")
             }
         }
         
@@ -218,7 +219,7 @@ struct WarningRow: View {
                         .frame(width: 16)
                     
                     VStack(alignment: .leading, spacing: 0) {
-                        Text(isHovering ? "Click to resolve" : title)
+                        Text(isHovering ? String(localized: "Click to resolve", comment: "Text shown on a warning row in the KeyVox menu bar menu while the pointer hovers over it.") : title)
                             .font(.appFont(12, variant: .medium))
                             .foregroundColor(.white)
                         

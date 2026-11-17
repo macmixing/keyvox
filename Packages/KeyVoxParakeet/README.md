@@ -56,7 +56,11 @@ Those concerns belong in other package or app boundaries. `KeyVoxParakeet` stays
 - `Sources/KeyVoxParakeet/ParakeetVocabulary.swift`
   Vocabulary loading and token classification.
 - `Sources/KeyVoxParakeet/ParakeetError.swift`
-  Package-owned runtime and initialization errors.
+  Package-owned runtime and initialization errors with translatable descriptions.
+- `Sources/KeyVoxParakeet/KeyVoxParakeetLocalization.swift`
+  Bundle used for translations: the package bundle on Apple platforms and the English text written in code elsewhere, so portable hosts never need the resource bundle at runtime.
+- `Sources/KeyVoxParakeet/Resources/Localizable.xcstrings`
+  Translations of the error descriptions.
 - `Sources/KeyVoxParakeet/Segment.swift`
   Public transcription result models.
 - `Sources/KeyVoxParakeet/ParakeetCoreML/`

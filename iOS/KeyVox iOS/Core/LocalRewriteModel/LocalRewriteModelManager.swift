@@ -168,7 +168,7 @@ final class LocalRewriteModelManager: ObservableObject {
         if let installError = error as? LocalRewriteModelInstallError {
             return installError.localizedDescription
         }
-        return "Vibes model download failed. Check your network/storage and retry."
+        return String(localized: "Vibes model download failed. Check your network/storage and retry.", comment: "Error shown when the Vibes AI model download fails. Vibes is a brand name and stays in English.")
     }
 
 }
@@ -180,9 +180,9 @@ enum LocalRewriteModelInstallError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .appGroupUnavailable:
-            return "App Group container unavailable."
+            return String(localized: "App Group container unavailable.", comment: "Error shown when the app's shared storage cannot be reached during a model install.")
         case .integrityCheckFailed:
-            return "Downloaded Vibes model did not match the expected SHA-256."
+            return String(localized: "Downloaded Vibes model did not match the expected SHA-256.", comment: "Error shown when the downloaded Vibes AI model fails its integrity check. Vibes is a brand name and stays in English; SHA-256 is a technical term and stays as written.")
         }
     }
 }

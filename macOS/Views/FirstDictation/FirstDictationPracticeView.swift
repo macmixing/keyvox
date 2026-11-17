@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 
 struct FirstDictationPracticeView: View {
@@ -68,7 +69,7 @@ struct FirstDictationPracticeView: View {
     private var action: some View {
         if hasSucceeded {
             AppActionButton(
-                title: "Finish",
+                title: String(localized: "Finish", comment: "Button that closes the dictation practice after it succeeds."),
                 style: .primary,
                 minWidth: Layout.actionWidth,
                 action: onFinish
@@ -80,7 +81,7 @@ struct FirstDictationPracticeView: View {
                     .foregroundColor(.white.opacity(0.5))
             }
             .buttonStyle(.plain)
-            .accessibilityLabel("Exit dictation practice")
+            .accessibilityLabel(String(localized: "Exit dictation practice", comment: "VoiceOver label for the close button on the dictation practice screen."))
             .transition(.opacity)
         }
     }
@@ -103,20 +104,20 @@ struct FirstDictationPracticeView: View {
             FirstDictationSuccessCelebrationView()
         } else {
             VStack(spacing: 12) {
-                Text("Hold the \(keyboardMonitor.triggerBinding.practiceInstructionKeyName) key and talk.")
+                Text("Hold the \(keyboardMonitor.triggerBinding.practiceInstructionKeyName) key and talk.", comment: "Instruction on the dictation practice screen. %@ is the name of the dictation trigger key chosen in Settings.")
                     .font(.appFont(20, variant: .medium))
                     .foregroundColor(.white)
                     .multilineTextAlignment(.center)
 
                 FirstDictationOptionKeyPromptView()
 
-                Text("Release when you're done.")
+                Text("Release when you're done.", comment: "Instruction on the dictation practice screen telling the user to release the trigger key when finished speaking.")
                     .font(.appFont(18, variant: .medium))
                     .foregroundColor(.white.opacity(0.82))
                     .multilineTextAlignment(.center)
                     .padding(.top, 10)
                     
-                Text("You can change this key later in Settings.")
+                Text("You can change this key later in Settings.", comment: "Hint on the dictation practice screen. Settings is the KeyVox settings window.")
                     .font(.appFont(12, variant: .light))
                     .foregroundColor(.yellow.opacity(0.5))
                     .multilineTextAlignment(.center)
@@ -149,19 +150,19 @@ private extension AppSettingsStore.TriggerBinding {
     var practiceInstructionKeyName: String {
         switch self {
         case .leftOption:
-            return "Left Option"
+            return String(localized: "Left Option", comment: "Name of the dictation trigger key used inside the dictation practice instruction. Use the name macOS uses for this keyboard key in this language.")
         case .rightOption:
-            return "Right Option"
+            return String(localized: "Right Option", comment: "Name of the dictation trigger key used inside the dictation practice instruction. Use the name macOS uses for this keyboard key in this language.")
         case .leftCommand:
-            return "Left Command"
+            return String(localized: "Left Command", comment: "Name of the dictation trigger key used inside the dictation practice instruction. Use the name macOS uses for this keyboard key in this language.")
         case .rightCommand:
-            return "Right Command"
+            return String(localized: "Right Command", comment: "Name of the dictation trigger key used inside the dictation practice instruction. Use the name macOS uses for this keyboard key in this language.")
         case .leftControl:
-            return "Left Control"
+            return String(localized: "Left Control", comment: "Name of the dictation trigger key used inside the dictation practice instruction. Use the name macOS uses for this keyboard key in this language.")
         case .rightControl:
-            return "Right Control"
+            return String(localized: "Right Control", comment: "Name of the dictation trigger key used inside the dictation practice instruction. Use the name macOS uses for this keyboard key in this language.")
         case .function:
-            return "Function"
+            return String(localized: "Function", comment: "Name of the dictation trigger key used inside the dictation practice instruction. Use the name macOS uses for this keyboard key in this language. This is the Fn key.")
         }
     }
 }

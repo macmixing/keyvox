@@ -140,7 +140,7 @@ extension LocalRewriteModelManager {
             try await backgroundDownloadCoordinator.startOrResumeJob(job)
             refreshStatus()
         } catch is CancellationError {
-            setFailure("Vibes model download was cancelled.")
+            setFailure(String(localized: "Vibes model download was cancelled.", comment: "Error shown when the Vibes AI model download was cancelled. Vibes is a brand name and stays in English."))
         } catch {
             setFailure(Self.userFacingErrorMessage(for: error))
         }

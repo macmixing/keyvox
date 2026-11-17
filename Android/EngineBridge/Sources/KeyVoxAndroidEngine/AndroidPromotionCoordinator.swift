@@ -5,8 +5,16 @@ import KeyVoxPromotions
 @MainActor
 final class AndroidPromotionCoordinator {
     static var shared: AndroidPromotionCoordinator?
+    /// The language of the translation Android loaded for the app; the campaign wording follows it.
+    private static var languageCode: String?
 
     private let center: PromotionCenter
+
+    static func setLanguage(_ code: String) {
+        guard languageCode != code else { return }
+        languageCode = code
+        shared?.publishCurrentCampaign()
+    }
 
     static func install(resources: URL, appVersion: String) throws {
         try PromotionResources.configure(
@@ -52,6 +60,11 @@ final class AndroidPromotionCoordinator {
     }
 
     private func publishCurrentCampaign() {
-        EngineEvent(kind: .promotionConfigured, campaign: center.currentCampaign).send()
+        let campaign = center.currentCampaign
+        EngineEvent(
+            kind: .promotionConfigured,
+            campaign: campaign,
+            campaignCopy: campaign.map { AndroidPromotionCopy($0.copy(forLanguage: Self.languageCode)) }
+        ).send()
     }
 }

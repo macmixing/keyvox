@@ -22,7 +22,7 @@ struct PasteFailureRecoveryOverlayView: View {
                     .font(.system(size: 13, weight: .semibold))
                     .foregroundColor(.yellow)
 
-                Text("Paste Failed!")
+                Text("Paste Failed!", comment: "Title of the panel shown when KeyVox could not paste the dictated text.")
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(.primary)
 
@@ -37,7 +37,7 @@ struct PasteFailureRecoveryOverlayView: View {
                 .buttonStyle(.plain)
             }
 
-            Text("Click a textbox and use ⌘ Cmd + V to paste")
+            Text("Click a textbox and use ⌘ Cmd + V to paste", comment: "Instruction on the panel shown when KeyVox could not paste the dictated text. ⌘ Cmd + V is the macOS paste keyboard shortcut and stays as written.")
                 .font(.system(size: 15, weight: .semibold))
                 .foregroundColor(.secondary)
                 .fixedSize(horizontal: false, vertical: true)

@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 
 enum PendingDownloadConfirmation: Identifiable, Equatable {
@@ -27,18 +28,18 @@ enum PendingDownloadConfirmation: Identifiable, Equatable {
         case .dictationModel(let modelID):
             switch modelID {
             case .whisperBase:
-                return "Download Whisper Base?"
+                return String(localized: "Download Whisper Base?", comment: "Title of the confirmation shown before downloading a dictation model. Whisper Base is a brand name and stays in English.")
             case .parakeetTdtV3:
-                return "Download Parakeet v3?"
+                return String(localized: "Download Parakeet v3?", comment: "Title of the confirmation shown before downloading a dictation model. Parakeet v3 is a brand name and stays in English.")
             }
         case .keyVoxVibesAI:
-            return "Download KeyVox Vibes AI?"
+            return String(localized: "Download KeyVox Vibes AI?", comment: "Title of the confirmation shown before downloading the Vibes AI model. KeyVox Vibes AI is a brand name and stays in English.")
         case .sharedTTSModel:
-            return "Download Speak Engine?"
+            return String(localized: "Download Speak Engine?", comment: "Title of the confirmation shown before downloading the KeyVox Speak text-to-speech engine. Speak is a brand name and stays in English.")
         case .ttsVoice(let voice):
-            return "Download \(voice.displayName)'s Voice?"
+            return String(localized: "Download \(voice.displayName)'s Voice?", comment: "Title of the confirmation shown before downloading a KeyVox Speak voice. The placeholder is the voice name, which stays in English.")
         case .ttsVoiceWithSharedModel:
-            return "Download KeyVox Speak?"
+            return String(localized: "Download KeyVox Speak?", comment: "Title of the confirmation shown before downloading the text-to-speech engine together with a voice. KeyVox Speak is a brand name and stays in English.")
         }
     }
 
@@ -47,18 +48,18 @@ enum PendingDownloadConfirmation: Identifiable, Equatable {
         case .dictationModel(let modelID):
             switch modelID {
             case .whisperBase:
-                return "Download the Whisper Base dictation model (~190 MB) before using local dictation on this device?"
+                return String(localized: "Download the Whisper Base dictation model (\(ApproximateDownloadSize.whisperBase)) before using local dictation on this device?", comment: "Message in the confirmation shown before downloading a dictation model. Whisper Base is a brand name and stays in English. The value in parentheses is the approximate download size.")
             case .parakeetTdtV3:
-                return "Download the Parakeet v3 dictation model (~335 MB) for faster on-device dictation on this device?"
+                return String(localized: "Download the Parakeet v3 dictation model (\(ApproximateDownloadSize.parakeet)) for faster on-device dictation on this device?", comment: "Message in the confirmation shown before downloading a dictation model. Parakeet v3 is a brand name and stays in English. The value in parentheses is the approximate download size.")
             }
         case .keyVoxVibesAI:
-            return "Download KeyVox Vibes AI (~491 MB) to use KeyVox Vibes on this device?"
+            return String(localized: "Download KeyVox Vibes AI (\(ApproximateDownloadSize.vibesAI)) to use KeyVox Vibes on this device?", comment: "Message in the confirmation shown before downloading the Vibes AI model. KeyVox Vibes AI and KeyVox Vibes are brand names and stay in English. The value in parentheses is the approximate download size.")
         case .sharedTTSModel:
-            return "Download the KeyVox Speak engine (~642 MB) to speak copied text on this device?"
+            return String(localized: "Download the KeyVox Speak engine (\(ApproximateDownloadSize.speakEngine)) to speak copied text on this device?", comment: "Message in the confirmation shown before downloading the text-to-speech engine. KeyVox Speak is a brand name and stays in English. The value in parentheses is the approximate download size.")
         case .ttsVoice(let voice):
-            return "Download \(voice.displayName)'s voice (~19 MB) to speak copied text on this device?"
+            return String(localized: "Download \(voice.displayName)'s voice (\(ApproximateDownloadSize.speakVoice)) to speak copied text on this device?", comment: "Message in the confirmation shown before downloading a KeyVox Speak voice. The first placeholder is the voice name, which stays in English; the second, in parentheses, is the approximate download size.")
         case .ttsVoiceWithSharedModel(let voice):
-            return "Download the KeyVox Speak engine and \(voice.displayName)'s voice (~661 MB total) to speak copied text on this device?"
+            return String(localized: "Download the KeyVox Speak engine and \(voice.displayName)'s voice (\(ApproximateDownloadSize.speakEngineAndVoice) total) to speak copied text on this device?", comment: "Message in the confirmation shown before downloading the text-to-speech engine and a voice together. KeyVox Speak is a brand name and stays in English. The first placeholder is the voice name, which stays in English; the second, in parentheses, is the approximate total download size.")
         }
     }
 }
@@ -103,7 +104,7 @@ private struct DownloadConfirmationModifier: ViewModifier {
 
                             VStack(spacing: 12) {
                                 AppActionButton(
-                                    title: "Download",
+                                    title: String(localized: "Download", comment: "Button in the download confirmation that starts the download."),
                                     style: .primary,
                                     fillsWidth: true,
                                     size: .regular,
@@ -116,7 +117,7 @@ private struct DownloadConfirmationModifier: ViewModifier {
                                 )
 
                                 AppActionButton(
-                                    title: "Cancel",
+                                    title: String(localized: "Cancel", comment: "Button that closes the download confirmation without downloading."),
                                     style: .secondary,
                                     fillsWidth: true,
                                     size: .regular,

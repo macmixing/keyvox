@@ -72,7 +72,7 @@ enum KeyVoxSpeakFlowRules {
             return .init(
                 displayedScenes: [.b, .c],
                 initialScene: .b,
-                sceneCTitleOverride: "One Tap Away",
+                sceneCTitleOverride: String(localized: "One Tap Away", comment: "Title of the KeyVox Speak intro setup page shown to people who have used Speak before but have not installed it."),
                 hidesSetupSceneWhenReady: true
             )
         }

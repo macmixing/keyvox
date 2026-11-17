@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 
 struct PlaybackPreparationView: View {
@@ -37,13 +38,13 @@ struct PlaybackPreparationView: View {
                             isDismissing = false
                         }
                     } label: {
-                        Text("Dismiss")
+                        Text("Dismiss", comment: "Button that closes the KeyVox Speak preparation screen.")
                             .font(.appFont(14, variant: .light))
                             .foregroundStyle(Color.white.opacity(0.8))
                             .frame(minWidth: 44, minHeight: 44, alignment: .center)
                             .contentShape(Rectangle())
                     }
-                    .accessibilityLabel("Dismiss")
+                    .accessibilityLabel(String(localized: "Dismiss", comment: "VoiceOver label for the button that closes the KeyVox Speak preparation screen."))
                     .padding(.top, 12)
                     .padding(.trailing, 20)
                 }
@@ -197,41 +198,41 @@ struct PlaybackPreparationView: View {
     private func primaryHeadlineLineOne(for phase: TTSManager.PlaybackPreparationPhase) -> String {
         switch phase {
         case .preparing:
-            return "Stay here,"
+            return String(localized: "Stay here,", comment: "First line of the two-line headline on the KeyVox Speak preparation screen while audio is being prepared; the second line is \"Speak is almost ready.\"")
         case .readyToReturn:
-            return "Speak is"
+            return String(localized: "Speak is", comment: "First line of the two-line headline on the KeyVox Speak preparation screen when playback has started; the second line is \"ready to go.\" Speak is the KeyVox Speak brand name and stays in English.")
         }
     }
 
     private func primaryHeadlineLineTwo(for phase: TTSManager.PlaybackPreparationPhase) -> String {
         switch phase {
         case .preparing:
-            return "Speak is almost ready."
+            return String(localized: "Speak is almost ready.", comment: "Second line of the two-line headline on the KeyVox Speak preparation screen while audio is being prepared; the first line is \"Stay here,\" Speak is the KeyVox Speak brand name and stays in English.")
         case .readyToReturn:
-            return "ready to go."
+            return String(localized: "ready to go.", comment: "Second line of the two-line headline on the KeyVox Speak preparation screen when playback has started; the first line is \"Speak is\".")
         }
     }
 
     private func statusTitle(for phase: TTSManager.PlaybackPreparationPhase) -> String {
         switch phase {
         case .preparing:
-            return "Preparing to Speak..."
+            return String(localized: "Preparing to Speak...", comment: "Status title on the KeyVox Speak preparation screen while audio is being prepared. Speak is the KeyVox Speak brand name and stays in English.")
         case .readyToReturn:
-            return "Return to your app."
+            return String(localized: "Return to your app.", comment: "Status title on the KeyVox Speak preparation screen telling the user to go back to the app they came from.")
         }
     }
 
     private func statusBody(for phase: TTSManager.PlaybackPreparationPhase) -> String {
         switch phase {
         case .preparing:
-            return "Wait here while KeyVox prepares to speak without interruptions."
+            return String(localized: "Wait here while KeyVox prepares to speak without interruptions.", comment: "Status message on the KeyVox Speak preparation screen while audio is being prepared. KeyVox is a brand name and stays in English.")
         case .readyToReturn:
-            return "Speak has started. You can listen in your original app now."
+            return String(localized: "Speak has started. You can listen in your original app now.", comment: "Status message on the KeyVox Speak preparation screen once playback has started. Speak is the KeyVox Speak brand name and stays in English.")
         }
     }
 
     private var progressLabel: String {
-        "\(Int(ttsManager.playbackPreparationProgress * 100))%"
+        ttsManager.playbackPreparationProgress.formatted(.percent.precision(.fractionLength(0)).rounded(rule: .down))
     }
 
     private var shouldPlayVideo: Bool {

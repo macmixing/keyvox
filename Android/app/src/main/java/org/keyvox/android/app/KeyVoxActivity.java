@@ -34,6 +34,7 @@ public final class KeyVoxActivity extends Activity {
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
         promotions = KeyVoxApplication.promotions(this);
+        promotions.setLanguage(getString(R.string.app_language_code));
         homeView = new HomeTabView(this);
         setupView = new KeyVoxSetupView(
             this,

@@ -1,7 +1,9 @@
 import Foundation
 
 public struct AudioSilenceGatePolicy {
-    public static let microphoneNameFallback = "current device"
+    public static var microphoneNameFallback: String {
+        NSLocalizedString("current device", bundle: KeyVoxCoreResources.bundle, comment: "Stands in for the microphone name inside microphone warnings when the name is unknown, as in \"Your current device mic may be muted.\" Keep it lowercase so it fits mid-sentence.")
+    }
 
     public static let longCaptureMinimumDuration: TimeInterval = 2.0
     public static let lowConfidenceRMSCutoff: Float = 0.0032

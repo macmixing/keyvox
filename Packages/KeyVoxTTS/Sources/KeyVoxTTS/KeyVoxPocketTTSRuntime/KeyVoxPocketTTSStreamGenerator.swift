@@ -41,7 +41,7 @@ actor KeyVoxPocketTTSStreamGenerator {
         seed: UInt64
     ) throws {
         guard !chunks.isEmpty else {
-            throw KeyVoxTTSError.inferenceFailure("PocketTTS could not derive any synthesis chunks.")
+            throw KeyVoxTTSError.inferenceFailure(NSLocalizedString("PocketTTS could not derive any synthesis chunks.", bundle: .module, comment: "Error shown when reading copied text aloud fails: the text could not be split into speakable parts. PocketTTS and Mimi are technical engine names and stay in English."))
         }
 
         let chunkPlans = chunks.map { chunk in

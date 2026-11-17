@@ -129,6 +129,23 @@ The minimal controls are integration surfaces, not the product design. Activity
 visibility and IME view visibility must not become owners of microphone lifetime.
 No iOS source is extracted or modified by this host.
 
+## Localization
+
+The app and keyboard ship in English with German, Spain Spanish, Latin American
+Spanish, France French, and Canadian French in `res/values-de`, `res/values-es`,
+`res/values-b+es+419`, `res/values-fr`, and `res/values-b+fr+CA`. The Latin American
+file repeats the Spanish text with Latin American wording where the regions differ,
+such as `Configuración` and `Agregar`. The Canadian file repeats the French text with
+no space before `?` and `!` and Canadian wording such as `courriel`.
+KeyVox, Speak, KeyVox Vibes, and the dictionary placeholder stay in English. Android
+picks the language from the device settings; the app has no in-app language setting.
+
+Each strings file carries `app_language_code`, the language of that folder. The
+activity passes it to the engine, which shows promotion cards with
+`PromotionCampaign.copy(forLanguage:)` so a card always matches the language of the
+rest of the screen and falls back to the base wording. A new language folder needs
+its own `app_language_code`.
+
 ## Validation
 
 ```sh

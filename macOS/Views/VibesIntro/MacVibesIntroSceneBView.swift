@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 
 struct MacVibesIntroSceneBView: View {
@@ -9,10 +10,10 @@ struct MacVibesIntroSceneBView: View {
     }
 
     private static let flows: [Flow] = [
-        Flow(id: 0, icon: "keyboard.fill", title: "What's Your Vibe?", subtitle: "Double tap the trigger key to cycle through Vibes or select one in Settings."),
-        Flow(id: 1, icon: "hand.tap.fill", title: "Tap to Vibe", subtitle: "Tap the trigger key to change the Vibe for the latest untouched dictation in the text box."),
-        Flow(id: 2, icon: "arrow.uturn.backward.circle.fill", title: "Undo the Last Change", subtitle: "Tap again to return to the previous Vibe."),
-        Flow(id: 3, icon: "lock.fill", title: "Local First", subtitle: "Vibes AI doesn't rely on the cloud. Your words stay on your Mac.")
+        Flow(id: 0, icon: "keyboard.fill", title: String(localized: "What's Your Vibe?", comment: "Feature title in the KeyVox Vibes introduction window. Vibe, Vibes and Vibes AI are brand names and stay in English."), subtitle: String(localized: "Double tap the trigger key to cycle through Vibes or select one in Settings.", comment: "Feature description in the KeyVox Vibes introduction window. Settings is the KeyVox settings window. Vibe, Vibes and Vibes AI are brand names and stay in English.")),
+        Flow(id: 1, icon: "hand.tap.fill", title: String(localized: "Tap to Vibe", comment: "Feature title in the KeyVox Vibes introduction window about tapping the trigger key to apply a Vibe. Vibe, Vibes and Vibes AI are brand names and stay in English."), subtitle: String(localized: "Tap the trigger key to change the Vibe for the latest untouched dictation in the text box.", comment: "Feature description in the KeyVox Vibes introduction window. Vibe, Vibes and Vibes AI are brand names and stay in English.")),
+        Flow(id: 2, icon: "arrow.uturn.backward.circle.fill", title: String(localized: "Undo the Last Change", comment: "Feature title in the KeyVox Vibes introduction window."), subtitle: String(localized: "Tap again to return to the previous Vibe.", comment: "Feature description in the KeyVox Vibes introduction window. Vibe, Vibes and Vibes AI are brand names and stay in English.")),
+        Flow(id: 3, icon: "lock.fill", title: String(localized: "Local First", comment: "Feature title in the KeyVox Vibes introduction window about Vibes running on the Mac without the cloud."), subtitle: String(localized: "Vibes AI doesn't rely on the cloud. Your words stay on your Mac.", comment: "Feature description in the KeyVox Vibes introduction window. Vibe, Vibes and Vibes AI are brand names and stay in English."))
     ]
 
     let isVisible: Bool
@@ -35,11 +36,11 @@ struct MacVibesIntroSceneBView: View {
                     .scaleEffect(logoScale)
 
                 VStack(alignment: .leading, spacing: -4) {
-                    Text("Set the Vibe")
+                    Text("Set the Vibe", comment: "Title of the how-to page in the KeyVox Vibes introduction window. Vibe, Vibes and Vibes AI are brand names and stay in English.")
                         .font(.appFont(33, variant: .medium))
                         .foregroundStyle(.white)
 
-                    Text("Tap to Vibe, repeat to undo.")
+                    Text("Tap to Vibe, repeat to undo.", comment: "Subtitle of the how-to page in the KeyVox Vibes introduction window. Vibe, Vibes and Vibes AI are brand names and stay in English.")
                         .font(.appFont(17, variant: .light))
                         .foregroundStyle(.white.opacity(0.7))
                 }

@@ -94,13 +94,13 @@ struct HomeTabView: View {
     private var weeklyStatsSection: some View {
         AppCard {
             VStack(alignment: .center, spacing: -4) {
-                Text("\(weeklyWordStatsStore.combinedWordCount.formatted())")
+                Text(verbatim: AppTypography.fontSupportedSpacing(weeklyWordStatsStore.combinedWordCount.formatted()))
                     .font(.appFont(65))
                     .fontWeight(.heavy)
                     .foregroundStyle(.yellow)
                     .padding(.top, -20)
                 
-                Text("Words this week!")
+                Text("Words this week!", comment: "Label under the large number on the Home tab that counts words dictated this week.")
                     .font(.appFont(20))
                     .fontWeight(.bold)
                     .foregroundStyle(.white)

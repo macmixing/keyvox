@@ -8,6 +8,19 @@ enum SettingsTab: String, CaseIterable, Identifiable {
     case settings = "Settings"
     
     var id: String { self.rawValue }
+
+    var title: String {
+        switch self {
+        case .home:
+            return String(localized: "Home", comment: "Name of the Home section in the settings window sidebar.")
+        case .dictionary:
+            return String(localized: "Dictionary", comment: "Name of the Dictionary section in the settings window sidebar, where the user manages custom words.")
+        case .style:
+            return String(localized: "Style", comment: "Name of the Style section in the settings window sidebar, where the user picks formatting and Vibes options.")
+        case .settings:
+            return String(localized: "Settings", comment: "Name of the Settings section in the settings window sidebar.")
+        }
+    }
     
     var icon: String {
         switch self {
@@ -37,10 +50,10 @@ struct AnimatedWaveHeader<Trailing: View>: View {
             LogoBarView()
             
             VStack(alignment: .leading, spacing: 2) {
-                Text("KeyVox")
+                Text(verbatim: "KeyVox")
                     .font(.appFont(24))
                     .foregroundColor(.white)
-                Text("Free Your Voice")
+                Text("Free Your Voice", comment: "Tagline under the KeyVox name in the Settings window header.")
                     .font(.appFont(10))
                     .foregroundColor(.secondary)
                     .tracking(0.8)
@@ -251,11 +264,13 @@ struct SidebarItem: View {
                     .font(.system(size: 16))
                     .frame(width: 24)
                 
-                Text(tab.rawValue)
+                Text(tab.title)
                     .font(.appFont(15))
-                
-                Spacer()
-                
+                    .lineLimit(1)
+                    .fixedSize()
+
+                Spacer(minLength: 0)
+
                 if isSelected {
                     Circle()
                         .fill(Color.yellow)

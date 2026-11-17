@@ -10,13 +10,13 @@ public enum DictionaryStoreError: LocalizedError, Equatable {
     public var errorDescription: String? {
         switch self {
         case .emptyPhrase:
-            return "Please enter a word or phrase."
+            return NSLocalizedString("Please enter a word or phrase.", bundle: KeyVoxCoreResources.bundle, comment: "Dictionary error shown when the user tries to save an empty entry.")
         case .duplicatePhrase:
-            return "That word is already in your dictionary."
+            return NSLocalizedString("That word is already in your dictionary.", bundle: KeyVoxCoreResources.bundle, comment: "Dictionary error shown when the user adds a word that already exists.")
         case .invalidSnapshotImport:
-            return "The synced dictionary data was invalid and could not be applied."
+            return NSLocalizedString("The synced dictionary data was invalid and could not be applied.", bundle: KeyVoxCoreResources.bundle, comment: "Dictionary error shown when dictionary data synced from another device cannot be used.")
         case .saveFailed:
-            return "Couldn't save dictionary to disk. Please try again."
+            return NSLocalizedString("Couldn't save dictionary to disk. Please try again.", bundle: KeyVoxCoreResources.bundle, comment: "Dictionary error shown when saving the dictionary fails.")
         }
     }
 }
@@ -149,12 +149,12 @@ public final class DictionaryStore: StatePublishing {
         if hasBackup, let backupPayload = try? readPayload(from: backupFileURL) {
             entries = backupPayload.entries
             persistedSnapshotModifiedAt = fileModificationDate(at: backupFileURL)
-            loadWarningMessage = "Dictionary was recovered from backup after a file issue."
+            loadWarningMessage = NSLocalizedString("Dictionary was recovered from backup after a file issue.", bundle: KeyVoxCoreResources.bundle, comment: "Dictionary warning shown when the dictionary was restored from its backup copy.")
 
             do {
                 try persist(entries: backupPayload.entries, updatePersistedSnapshotModifiedAt: false)
                 // Keep this warning visible until the user performs the next save action.
-                loadWarningMessage = "Dictionary was recovered from backup after a file issue."
+                loadWarningMessage = NSLocalizedString("Dictionary was recovered from backup after a file issue.", bundle: KeyVoxCoreResources.bundle, comment: "Dictionary warning shown when the dictionary was restored from its backup copy.")
             } catch {
                 saveErrorMessage = DictionaryStoreError.saveFailed.localizedDescription
             }
@@ -166,7 +166,7 @@ public final class DictionaryStore: StatePublishing {
 
         entries = []
         persistedSnapshotModifiedAt = nil
-        loadWarningMessage = "Dictionary data was corrupted and reset."
+        loadWarningMessage = NSLocalizedString("Dictionary data was corrupted and reset.", bundle: KeyVoxCoreResources.bundle, comment: "Dictionary warning shown when the dictionary file was unreadable and had to be emptied.")
     }
 
     private func persistAfterMutation(_ candidateEntries: [DictionaryEntry]) throws {

@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 
 struct AppPageIndicator: View {
@@ -63,6 +64,6 @@ struct AppPageIndicator: View {
             }
         }
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Page \(selectedIndex + 1) of \(pageCount)")
+        .accessibilityLabel(String(localized: "Page \(selectedIndex + 1) of \(pageCount)", comment: "VoiceOver label for the page dots. The first number is the current page and the second is the total number of pages."))
     }
 }

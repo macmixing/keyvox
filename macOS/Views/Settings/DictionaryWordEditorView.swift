@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 import KeyVoxCore
 
@@ -17,18 +18,18 @@ enum DictionaryWordEditorMode: Identifiable {
     var title: String {
         switch self {
         case .add:
-            return "Add Dictionary Word"
+            return String(localized: "Add Dictionary Word", comment: "Title of the dictionary word editor sheet when adding a word.")
         case .edit:
-            return "Edit Dictionary Word"
+            return String(localized: "Edit Dictionary Word", comment: "Title of the dictionary word editor sheet when editing a word.")
         }
     }
 
     var actionTitle: String {
         switch self {
         case .add:
-            return "Add Word"
+            return String(localized: "Add Word", comment: "Button in the dictionary word editor sheet that adds the word.")
         case .edit:
-            return "Save Word"
+            return String(localized: "Save Word", comment: "Button in the dictionary word editor sheet that saves the edited word.")
         }
     }
 
@@ -76,7 +77,7 @@ struct DictionaryWordEditorView: View {
                     .font(.appFont(19))
                     .foregroundColor(.white)
 
-                Text("Type the exact word or phrase you want KeyVox to preserve.")
+                Text("Type the exact word or phrase you want KeyVox to preserve.", comment: "Instruction in the dictionary word editor sheet. KeyVox is a brand name and stays in English.")
                     .font(.appFont(12))
                     .foregroundColor(.secondary)
                     .lineSpacing(2)
@@ -88,7 +89,7 @@ struct DictionaryWordEditorView: View {
                     .textFieldStyle(.roundedBorder)
                     .overlay(alignment: .leading) {
                         if phrase.isEmpty {
-                            Text("KeyVox")
+                            Text(verbatim: "KeyVox")
                                 .font(.appFont(14))
                                 .foregroundColor(.secondary.opacity(0.5))
                                 .padding(.leading, 7)
@@ -113,7 +114,7 @@ struct DictionaryWordEditorView: View {
 
             HStack(spacing: 10) {
                 AppActionButton(
-                    title: "Cancel",
+                    title: String(localized: "Cancel", comment: "Button in the dictionary word editor sheet that closes it without saving."),
                     style: .secondary,
                     minWidth: DictionaryWordEditorLayout.actionButtonWidth,
                     action: { dismiss() }

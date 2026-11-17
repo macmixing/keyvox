@@ -193,7 +193,7 @@ final class AppUpdateService: ObservableObject {
             return nil
         }
 
-        let fallbackMessage = "A new version of KeyVox is available. Please update for the best experience."
+        let fallbackMessage = String(localized: "A new version of KeyVox is available. Please update for the best experience.", comment: "Message in the update available prompt when the release has no summary. KeyVox is a brand name and stays in English.")
         let promptMessage: String
         if let body = remoteInfo.message, !body.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             promptMessage = releasePromptMessage(body) ?? fallbackMessage
@@ -202,12 +202,12 @@ final class AppUpdateService: ObservableObject {
         }
 
         return UpdatePrompt(
-            title: "KeyVox Update Available",
+            title: String(localized: "KeyVox Update Available", comment: "Title of the prompt shown when a KeyVox update is available. KeyVox is a brand name and stays in English."),
             message: promptMessage,
             version: remoteInfo.version,
             build: nil,
-            dismissButtonTitle: "Later",
-            primaryButtonTitle: "Open Updater",
+            dismissButtonTitle: String(localized: "Later", comment: "Button in the update available prompt that postpones the update."),
+            primaryButtonTitle: String(localized: "Open Updater", comment: "Button in the update available prompt that opens the KeyVox update window."),
             onPrimaryAction: { [weak self] in
                 AppUpdateCoordinator.shared.openWindow(for: remoteInfo)
                 self?.snoozeAutoPrompt(for: cooldown, updateID: updateID)
@@ -221,11 +221,11 @@ final class AppUpdateService: ObservableObject {
     private func showNoUpdatePrompt() {
         let local = localVersionInfo()
         let prompt = UpdatePrompt(
-            title: "You're Up to Date",
-            message: "KeyVox \(local.version) (\(local.build)) is currently the latest version.",
+            title: String(localized: "You're Up to Date", comment: "Title of the prompt shown when no KeyVox update is available."),
+            message: String(localized: "KeyVox \(local.version) (\(local.build)) is currently the latest version.", comment: "Message in the prompt shown when no update is available. The first %@ is the app version and the second %@ is the build number. KeyVox is a brand name and stays in English."),
             version: local.version,
             build: local.build,
-            dismissButtonTitle: "OK",
+            dismissButtonTitle: String(localized: "OK", comment: "Button that closes the update check prompt."),
             primaryButtonTitle: nil,
             onPrimaryAction: nil,
             onDismiss: {}
@@ -235,11 +235,11 @@ final class AppUpdateService: ObservableObject {
 
     private func showUnavailableUpdatePrompt() {
         let prompt = UpdatePrompt(
-            title: "Updates Temporarily Unavailable",
-            message: "We're a little busy right now. Please check back later.",
+            title: String(localized: "Updates Temporarily Unavailable", comment: "Title of the prompt shown when the update server cannot be reached."),
+            message: String(localized: "We're a little busy right now. Please check back later.", comment: "Message in the prompt shown when the update server cannot be reached."),
             version: nil,
             build: nil,
-            dismissButtonTitle: "OK",
+            dismissButtonTitle: String(localized: "OK", comment: "Button that closes the update check prompt."),
             primaryButtonTitle: nil,
             onPrimaryAction: nil,
             onDismiss: {}
@@ -303,9 +303,9 @@ final class AppUpdateService: ObservableObject {
 
     func summarizedReleaseBodyForDisplay(_ body: String?) -> String {
         guard let body else {
-            return "A new version of KeyVox is available."
+            return String(localized: "A new version of KeyVox is available.", comment: "Release summary shown in the KeyVox update window when the release has no summary. KeyVox is a brand name and stays in English.")
         }
-        return summarizedReleaseBody(body) ?? "A new version of KeyVox is available."
+        return summarizedReleaseBody(body) ?? String(localized: "A new version of KeyVox is available.", comment: "Release summary shown in the KeyVox update window when the release has no summary. KeyVox is a brand name and stays in English.")
     }
 
     private func summarizedReleaseBody(_ body: String) -> String? {

@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 
 extension HomeTabView {
@@ -22,7 +23,7 @@ extension HomeTabView {
                 HStack(alignment: .top, spacing: 12) {
                     VStack(alignment: .leading, spacing: 4) {
                         HStack(alignment: .speakClipboardTitleFirstLineCenter, spacing: 4) {
-                            Text("Speak Copied Text")
+                            Text("Speak Copied Text", comment: "Title of the Home tab card that reads copied text aloud with KeyVox Speak.")
                                 .font(.appFont(17))
                                 .foregroundStyle(.white)
                                 .alignmentGuide(.speakClipboardTitleFirstLineCenter) { dimensions in
@@ -39,7 +40,7 @@ extension HomeTabView {
                             }
                             .buttonStyle(.plain)
                             .frame(width: 32, height: 32)
-                            .accessibilityLabel("Learn about KeyVox Speak")
+                            .accessibilityLabel(String(localized: "Learn about KeyVox Speak", comment: "VoiceOver label for the help button next to the Speak Copied Text title. KeyVox Speak is a brand name and stays in English."))
                             .alignmentGuide(.speakClipboardTitleFirstLineCenter) { dimensions in
                                 dimensions[VerticalAlignment.center]
                             }

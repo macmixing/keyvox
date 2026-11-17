@@ -102,7 +102,7 @@ final class PocketTTSEngine: TTSEngine {
     func prewarmVoiceIfNeeded(voiceID: String) async throws {
         let runtime = try runtimeForInstalledAssets()
         guard let voice = KeyVoxTTSVoice(rawValue: voiceID) else {
-            throw KeyVoxTTSError.invalidVoice("KeyVox Speak voice \(voiceID) is not supported.")
+            throw KeyVoxTTSError.invalidVoice(String(localized: "KeyVox Speak voice \(voiceID) is not supported.", comment: "Error shown when a KeyVox Speak voice cannot be used. KeyVox Speak is a brand name and stays in English. The placeholder is the voice identifier."))
         }
 
         Self.log("Prewarming PocketTTS voice \(voiceID).")
@@ -153,7 +153,7 @@ final class PocketTTSEngine: TTSEngine {
         Self.log("Creating audio stream for voice \(voiceID).")
         let runtime = try runtimeForInstalledAssets()
         guard let voice = KeyVoxTTSVoice(rawValue: voiceID) else {
-            throw KeyVoxTTSError.invalidVoice("KeyVox Speak voice \(voiceID) is not supported.")
+            throw KeyVoxTTSError.invalidVoice(String(localized: "KeyVox Speak voice \(voiceID) is not supported.", comment: "Error shown when a KeyVox Speak voice cannot be used. KeyVox Speak is a brand name and stays in English. The placeholder is the voice identifier."))
         }
 
         return try await runtime.synthesizeStreaming(
@@ -167,7 +167,7 @@ final class PocketTTSEngine: TTSEngine {
         guard sharedModelInstalledProvider(),
               let assetLayout = assetLayoutProvider() else {
             Self.log("Runtime request failed because assets are not installed.")
-            throw KeyVoxTTSError.missingAsset("KeyVox Speak engine is not installed.")
+            throw KeyVoxTTSError.missingAsset(String(localized: "KeyVox Speak engine is not installed.", comment: "Error shown when KeyVox Speak is used before its engine is installed. KeyVox Speak is a brand name and stays in English."))
         }
 
         let currentFingerprint = computeAssetFingerprint(for: assetLayout)

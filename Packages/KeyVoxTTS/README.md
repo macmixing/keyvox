@@ -62,7 +62,9 @@ Those concerns belong in host application targets. `KeyVoxTTS` stays focused on 
 - `Sources/KeyVoxTTS/KeyVoxTTSAudioFrame.swift`
   Public audio frame model used by host playback layers.
 - `Sources/KeyVoxTTS/KeyVoxTTSError.swift`
-  Package-owned runtime and asset-loading errors.
+  Package-owned runtime and asset-loading errors; their messages are translatable.
+- `Sources/KeyVoxTTS/Resources/Localizable.xcstrings`
+  Translations of the error messages, read with `NSLocalizedString` from the package bundle.
 - `Sources/KeyVoxTTS/KeyVoxTTSVoice.swift`
   Voice metadata surface for installed PocketTTS voices.
 - `Sources/KeyVoxTTS/PocketTTSAssetLoader.swift`

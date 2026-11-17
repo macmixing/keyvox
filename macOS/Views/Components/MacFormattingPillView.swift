@@ -1,3 +1,4 @@
+import Foundation
 import KeyVoxCore
 import SwiftUI
 
@@ -27,9 +28,9 @@ struct MacFormattingPillView: View {
     private var title: String {
         switch kind {
         case .paragraphs:
-            return "Paragraph"
+            return String(localized: "Paragraph", comment: "Text in the floating pill shown when the paragraph formatting shortcut is used.")
         case .lists:
-            return "List"
+            return String(localized: "List", comment: "Text in the floating pill shown when the numbered list formatting shortcut is used.")
         }
     }
 

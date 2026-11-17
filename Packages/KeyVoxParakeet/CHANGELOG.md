@@ -6,6 +6,23 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.1.1] - 2026-11-11
+
+Parakeet error messages are now translatable on Apple platforms.
+
+### Includes
+
+- Made the Parakeet error descriptions translatable through a package string catalog.
+- Read translations through `KeyVoxParakeetLocalization.bundle`, which uses the package bundle on Apple platforms and the English text written in code elsewhere, so portable clients never require the resource bundle at runtime.
+- Added Latin American Spanish (`es-419`) beside Spain Spanish (`es`), using Latin American wording where it differs.
+- Added Canadian French (`fr-CA`) beside France French (`fr`); the wording reads the same in both.
+
+### Notes
+
+- `1.1.1` tracks translatable error messages.
+
+---
+
 ## [1.1.0] - 2026-09-12
 
 Portable runtime ownership for Parakeet inference across supported KeyVox clients.

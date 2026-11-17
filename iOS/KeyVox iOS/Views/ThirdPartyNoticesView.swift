@@ -43,7 +43,7 @@ struct ThirdPartyNoticesView: View {
                             }
                             .contentShape(Rectangle())
                     }
-                    .accessibilityLabel("Close")
+                    .accessibilityLabel(String(localized: "Close", comment: "VoiceOver label for the button that closes the Third-Party Notices screen."))
                     .buttonStyle(.plain)
                     .padding(.top, 10)
                     .padding(.trailing, 12)
@@ -127,7 +127,7 @@ struct ThirdPartyNoticesView: View {
     private static func loadDocumentBlocks() -> [MarkdownBlock] {
         guard let markdown = loadMarkdown() else {
             return [
-                .paragraph("Third-party notices are currently unavailable.")
+                .paragraph(String(localized: "Third-party notices are currently unavailable.", comment: "Shown on the Third-Party Notices screen when the notices file cannot be loaded."))
             ]
         }
 

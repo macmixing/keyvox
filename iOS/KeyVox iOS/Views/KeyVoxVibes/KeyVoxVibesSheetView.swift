@@ -1,3 +1,4 @@
+import Foundation
 import KeyVoxStyleRewrite
 import SwiftUI
 
@@ -130,7 +131,7 @@ struct KeyVoxVibesSheetView: View {
                                 .frame(width: 36, height: 36)
                                 .contentShape(Rectangle())
                         }
-                        .accessibilityLabel("Close")
+                        .accessibilityLabel(String(localized: "Close", comment: "VoiceOver label for the button that closes the KeyVox Vibes sheet."))
                         .buttonStyle(.plain)
                         .padding(.top, 7)
                         .padding(.trailing, 7)
@@ -180,7 +181,7 @@ struct KeyVoxVibesSheetView: View {
         case .info:
             VStack(spacing: 8) {
                 AppActionButton(
-                    title: "Vibe Now",
+                    title: String(localized: "Vibe Now", comment: "Button on the KeyVox Vibes sheet that closes it so the user can start using Vibes. Vibe is a brand name and stays in English."),
                     style: .primary,
                     fillsWidth: true,
                     size: .compact,
@@ -203,7 +204,7 @@ struct KeyVoxVibesSheetView: View {
                 )
 
                 Button(action: restorePurchases) {
-                    Text("Restore Purchases")
+                    Text("Restore Purchases", comment: "Button on the KeyVox Vibes unlock sheet that restores previous App Store purchases.")
                         .font(.appFont(14, variant: .light))
                         .foregroundStyle(.white.opacity(0.8))
                         .frame(maxWidth: .infinity)
@@ -218,18 +219,18 @@ struct KeyVoxVibesSheetView: View {
 
     private var purchaseButtonTitle: String {
         if unlockPrimaryAction == .continueWhenVibesAIReady {
-            return "Continue"
+            return String(localized: "Continue", comment: "Button on the KeyVox Vibes unlock sheet that continues once Vibes AI is installed.")
         }
 
         if vibesPurchaseController.isVibesUnlocked {
-            return "Unlocked"
+            return String(localized: "Unlocked", comment: "Purchase button title on the KeyVox Vibes unlock sheet after the purchase.")
         }
 
         if let unlockProduct = vibesPurchaseController.unlockProduct {
-            return "Unlock \(unlockProduct.displayPrice)"
+            return String(localized: "Unlock \(unlockProduct.displayPrice)", comment: "Purchase button title on the KeyVox Vibes unlock sheet. The placeholder is the price.")
         }
 
-        return "Unlock"
+        return String(localized: "Unlock", comment: "Purchase button title on the KeyVox Vibes unlock sheet while the price is loading.")
     }
 
     private var unlockPrimaryAction: UnlockPrimaryAction {
@@ -255,16 +256,16 @@ struct KeyVoxVibesSheetView: View {
 
     private var introActionTitle: String {
         guard isVibesAIReady == false else {
-            return "Try Now"
+            return String(localized: "Try Now", comment: "Button on the KeyVox Vibes intro that closes it so the user can try Vibes.")
         }
 
         switch selectedScene {
         case .a:
-            return "Get Started"
+            return String(localized: "Get Started", comment: "Button on the first page of the KeyVox Vibes intro.")
         case .b:
-            return "Next"
+            return String(localized: "Next", comment: "Button that moves to the next page of the KeyVox Vibes intro.")
         case .c, .unlock:
-            return "Try Now"
+            return String(localized: "Try Now", comment: "Button on the KeyVox Vibes intro that closes it so the user can try Vibes.")
         }
     }
 

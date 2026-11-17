@@ -88,7 +88,7 @@ extension HomeTabView {
                 Button {
                     setTTSTranscriptExpanded(false)
                 } label: {
-                    Text("Close")
+                    Text("Close", comment: "Button that collapses the spoken text panel on the Home tab Speak Copied Text card.")
                         .font(.appFont(13, variant: .medium))
                         .foregroundStyle(.white.opacity(0.72))
                         .frame(maxWidth: .infinity, alignment: .trailing)

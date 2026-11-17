@@ -31,11 +31,11 @@ struct OnboardingKeyboardTourSceneCView: View {
                 .frame(maxHeight: 32)
 
             VStack(spacing: 8) {
-                Text("You're all set")
+                Text("You're all set", comment: "Title on the last page of the onboarding keyboard tour.")
                     .font(.appFont(20, variant: .medium))
                     .foregroundStyle(.white)
 
-                Text("KeyVox is now ready, anywhere you type.")
+                Text("KeyVox is now ready, anywhere you type.", comment: "Message on the last page of the onboarding keyboard tour. KeyVox is a brand name and stays in English.")
                     .font(.appFont(19, variant: .light))
                     .foregroundStyle(.white.opacity(0.8))
                     .multilineTextAlignment(.center)

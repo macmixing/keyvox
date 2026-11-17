@@ -88,7 +88,7 @@ public actor KeyVoxPocketTTSRuntime {
 
         let trimmedText = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedText.isEmpty else {
-            throw KeyVoxTTSError.inferenceFailure("PocketTTS requires non-empty text.")
+            throw KeyVoxTTSError.inferenceFailure(NSLocalizedString("PocketTTS requires non-empty text.", bundle: .module, comment: "Error shown when reading copied text aloud fails: there was no text to read aloud. PocketTTS and Mimi are technical engine names and stay in English."))
         }
         Self.log("Starting synthesis for text length \(trimmedText.count) chars.")
 

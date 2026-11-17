@@ -6,6 +6,23 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.3.15] - 2026-11-17
+
+Dictionary messages, the `Auto Detect` language option, and the fallback microphone name are now translatable, including Latin American Spanish and Canadian French versions.
+
+### Includes
+
+- Made the dictionary error and warning messages, the `Auto Detect` language option, and the fallback microphone name translatable through a package string catalog read from `KeyVoxCoreResources.bundle`, so hosts that supply Core resources keep working.
+- Started dictation language names with a capital letter in every language, since they stand alone in pickers and lists where locale data writes some of them in lowercase.
+- Added Latin American Spanish (`es-419`) beside Spain Spanish (`es`), using Latin American wording where it differs, such as `No se pudo` and `Ingresa`.
+- Added Canadian French (`fr-CA`) beside France French (`fr`); the wording reads the same in both.
+
+### Notes
+
+- `1.3.15` tracks translatable dictionary messages, the `Auto Detect` option, and the fallback microphone name.
+
+---
+
 ## [1.3.14] - 2026-11-16
 
 Dictionary entries with more than one word no longer replace ordinary words or counted numbers that only share part of the entry.

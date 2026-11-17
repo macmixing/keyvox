@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 
 enum TTSPreparationPresentationPolicy {
@@ -129,21 +130,23 @@ extension HomeTabView {
 
     var ttsButtonTitle: String {
         if pocketTTSModelManager.isSharedModelReady() == false {
-            return "Download"
+            return String(localized: "Download", comment: "Main button on the Home tab Speak Copied Text card that downloads the KeyVox Speak engine or voice.")
         }
 
         switch pocketTTSModelManager.installState(for: effectiveTTSVoice) {
         case .notInstalled:
-            return "Download"
+            return String(localized: "Download", comment: "Main button on the Home tab Speak Copied Text card that downloads the KeyVox Speak engine or voice.")
         case .downloading, .installing:
-            return "Installing"
+            return String(localized: "Installing", comment: "Main button on the Home tab Speak Copied Text card while the engine or voice is downloading or installing.")
         case .failed:
-            return "Repair"
+            return String(localized: "Repair", comment: "Main button on the Home tab Speak Copied Text card that retries a failed install.")
         case .ready:
             if ttsManager.isActive == false && ttsPurchaseController.canStartNewTTSSpeak == false {
-                return "Unlock"
+                return String(localized: "Unlock", comment: "Main button on the Home tab Speak Copied Text card that opens the purchase for unlimited speaking.")
             }
-            return ttsManager.isActive ? "Stop" : "Speak"
+            return ttsManager.isActive
+                ? String(localized: "Stop", comment: "Main button on the Home tab Speak Copied Text card that stops reading aloud.")
+                : String(localized: "Speak", comment: "Main button on the Home tab Speak Copied Text card that starts reading the copied text aloud. This is a verb, not the KeyVox Speak brand name.")
         }
     }
 
@@ -166,7 +169,7 @@ extension HomeTabView {
     }
 
     var ttsPreparationProgressLabel: String {
-        "\(Int(ttsManager.playbackPreparationProgress * 100))%"
+        ttsManager.playbackPreparationProgress.formatted(.percent.precision(.fractionLength(0)).rounded(rule: .down))
     }
 
     var ttsPreparationPercentageText: String? {
@@ -184,7 +187,7 @@ extension HomeTabView {
             return nil
         }
 
-        return "\(Int((progress * 100).rounded()))%"
+        return progress.formatted(.percent.precision(.fractionLength(0)).rounded(rule: .toNearestOrAwayFromZero))
     }
 
     var ttsPrimaryStatusPercentageText: String? {

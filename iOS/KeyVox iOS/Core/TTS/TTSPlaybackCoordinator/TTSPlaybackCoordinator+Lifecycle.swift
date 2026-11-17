@@ -249,7 +249,7 @@ extension TTSPlaybackCoordinator {
             let end = min(cursor + bufferSampleCount, replayablePlaybackSamples.count)
             let slice = Array(replayablePlaybackSamples[cursor..<end])
             guard let buffer = makeBuffer(from: slice) else {
-                handleFailure(KeyVoxTTSError.inferenceFailure("PocketTTS replay buffer creation failed."))
+                handleFailure(KeyVoxTTSError.inferenceFailure(String(localized: "PocketTTS replay buffer creation failed.", comment: "Error shown when replaying the last KeyVox Speak audio fails. PocketTTS is a brand name and stays in English.")))
                 return
             }
             scheduleBuffer(

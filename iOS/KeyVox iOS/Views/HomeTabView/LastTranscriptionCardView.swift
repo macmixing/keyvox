@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 
 struct LastTranscriptionCardView: View {
@@ -27,7 +28,11 @@ struct LastTranscriptionCardView: View {
             VStack(alignment: .leading, spacing: 14) {
                 HStack(alignment: .center, spacing: 12) {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(isLoading ? "Processing..." : "Latest Transcription")
+                        Text(
+                            isLoading
+                                ? String(localized: "Processing...", comment: "Title of the Home tab transcription card while a recording is still being processed.")
+                                : String(localized: "Latest Transcription", comment: "Title of the Home tab card that shows the most recent transcription.")
+                        )
                             .font(.appFont(17))
                             .foregroundStyle(.white)
                     }
@@ -91,7 +96,7 @@ struct LastTranscriptionCardView: View {
                                 .font(.system(size: 20, weight: .semibold))
                                 .foregroundStyle(.yellow)
 
-                            Text("Your last transcription will appear here after you dictate on this device.")
+                            Text("Your last transcription will appear here after you dictate on this device.", comment: "Empty state in the Home tab transcription card before anything has been dictated.")
                                 .font(.appFont(14))
                                 .foregroundStyle(.secondary)
                                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -115,7 +120,7 @@ struct LastTranscriptionCardView: View {
     @ViewBuilder
     private func copyButton(for text: String) -> some View {
         AppActionButton(
-            title: "Copy",
+            title: String(localized: "Copy", comment: "Button on the Home tab transcription card that copies the latest transcription."),
             systemImage: copyFeedback.didCopy ? "checkmark" : "doc.on.doc",
             systemImageColor: copyFeedback.didCopy ? .black : nil,
             systemImageWeight: copyFeedback.didCopy ? .black : .regular,

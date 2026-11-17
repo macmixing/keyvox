@@ -75,6 +75,16 @@ public enum PromotionManifestDecoder {
                buttonTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 throw PromotionManifestError.invalidCopy(id)
             }
+            for copy in (campaign.localizations ?? [:]).values {
+                guard copy.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false,
+                      copy.message.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false,
+                      copy.buttonTitle?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty != true,
+                      copy.sharingTitle?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty != true,
+                      copy.buttonTitle == nil || campaign.action != nil,
+                      copy.sharingTitle == nil || campaign.sharing != nil else {
+                    throw PromotionManifestError.invalidCopy(id)
+                }
+            }
             if let action = campaign.action {
                 try validateHTTPSURL(action.url, campaignID: id)
             }

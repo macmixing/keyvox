@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 import KeyVoxStyleRewrite
 
@@ -76,6 +77,11 @@ struct SettingsVibesExamplesSection: View {
                     }
                 }
             }
+
+            Text(StyleRewriteStyle.languageSupportNote)
+                .font(.appFont(13, variant: .light))
+                .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity, alignment: .center)
         }
     }
 
@@ -171,8 +177,8 @@ struct SettingsVibesExamplesSection: View {
 }
 
 enum SettingsVibesExamplesCopy {
-    static let showExamplesAccessibilityLabel = "Show vibe examples"
-    static let hideExamplesAccessibilityLabel = "Hide vibe examples"
-    static let unavailableStylesPrompt = "Check out the reversible writing styles available with KeyVox Vibes."
-    static let downloadRequiredSelectionPrompt = "Click Download to install Vibes AI to before selecting a style."
+    static let showExamplesAccessibilityLabel = String(localized: "Show vibe examples", comment: "VoiceOver label for the button that expands the Vibes examples on the KeyVox Vibes card in Settings. Vibe is a brand name and stays in English.")
+    static let hideExamplesAccessibilityLabel = String(localized: "Hide vibe examples", comment: "VoiceOver label for the button that collapses the Vibes examples on the KeyVox Vibes card in Settings. Vibe is a brand name and stays in English.")
+    static let unavailableStylesPrompt = String(localized: "Check out the reversible writing styles available with KeyVox Vibes.", comment: "Summary on the KeyVox Vibes card in Settings before the Vibes model is installed. KeyVox Vibes is a brand name and stays in English.")
+    static let downloadRequiredSelectionPrompt = String(localized: "Click Download to install Vibes AI to before selecting a style.", comment: "Prompt on the KeyVox Vibes card in Settings when a style is clicked before the Vibes model is installed. Download is the card's Download button; translate it the same way as that button. Vibes AI is a brand name and stays in English.")
 }

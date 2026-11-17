@@ -6,7 +6,7 @@ struct UpdateFailureCard: View {
     var body: some View {
         SettingsCard {
             VStack(alignment: .leading, spacing: 10) {
-                Text("Update Failed")
+                Text("Update Failed", comment: "Title of the error card in the KeyVox update window.")
                     .font(.appFont(15))
                     .foregroundColor(.white)
 

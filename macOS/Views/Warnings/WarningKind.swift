@@ -30,16 +30,16 @@ enum WarningKind {
         case .microphoneSilence(let reason, _):
             switch reason {
             case .muted:
-                return "No microphone audio detected"
+                return String(localized: "No microphone audio detected", comment: "Title of the warning panel shown near the dictation pill when the microphone sends no audio.")
             case .noSpeechDetected:
-                return "Didn't hear that!"
+                return String(localized: "Didn't hear that!", comment: "Title of the warning panel shown near the dictation pill when no speech was detected.")
             }
         case .accessibilityPermission:
-            return "Accessibility access required"
+            return String(localized: "Accessibility access required", comment: "Title of the warning panel shown near the dictation pill when macOS Accessibility access is missing. Use the name macOS uses for Accessibility in this language.")
         case .modelMissing:
-            return "Model is not installed"
+            return String(localized: "Model is not installed", comment: "Title of the warning panel shown near the dictation pill when no dictation model is installed.")
         case .modelUpdating:
-            return "Model is updating"
+            return String(localized: "Model is updating", comment: "Title of the warning panel shown near the dictation pill while the dictation model is updating.")
         }
     }
 
@@ -49,16 +49,16 @@ enum WarningKind {
             let normalizedName = AudioSilenceGatePolicy.normalizedMicrophoneName(microphoneName)
             switch reason {
             case .muted:
-                return "Your \(normalizedName) mic may be muted. Check System Settings or switch the input device in KeyVox Settings."
+                return String(localized: "Your \(normalizedName) mic may be muted. Check System Settings or switch the input device in KeyVox Settings.", comment: "Message of the warning panel shown near the dictation pill when the microphone sends no audio. %@ is the microphone's name. KeyVox Settings is the KeyVox settings window. System Settings is the macOS app; use the name macOS uses in this language. KeyVox is a brand name and stays in English.")
             case .noSpeechDetected:
-                return "KeyVox didn't pick up any speech from your \(normalizedName) microphone."
+                return String(localized: "KeyVox didn't pick up any speech from your \(normalizedName) microphone.", comment: "Message of the warning panel shown near the dictation pill when no speech was detected. %@ is the microphone's name. KeyVox is a brand name and stays in English.")
             }
         case .accessibilityPermission:
-            return "KeyVox needs Accessibility access to paste dictation into other apps. Enable it in System Settings, then try again."
+            return String(localized: "KeyVox needs Accessibility access to paste dictation into other apps. Enable it in System Settings, then try again.", comment: "Message of the warning panel shown near the dictation pill when macOS Accessibility access is missing. Use the name macOS uses for Accessibility in this language. System Settings is the macOS app; use the name macOS uses in this language. KeyVox is a brand name and stays in English.")
         case .modelMissing:
-            return "KeyVox needs a local Whisper model before dictation can start. Open KeyVox Settings to download it."
+            return String(localized: "KeyVox needs a local Whisper model before dictation can start. Open KeyVox Settings to download it.", comment: "Message of the warning panel shown near the dictation pill when no dictation model is installed. KeyVox Settings is the KeyVox settings window. KeyVox and Whisper are brand names and stay in English.")
         case .modelUpdating:
-            return "Dictation will be available again as soon as the model update finishes."
+            return String(localized: "Dictation will be available again as soon as the model update finishes.", comment: "Message of the warning panel shown near the dictation pill while the dictation model is updating.")
         }
     }
 

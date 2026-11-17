@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 
 struct FirstDictationIntroView: View {
@@ -11,15 +12,19 @@ struct FirstDictationIntroView: View {
             LogoBarView(size: 88)
 
             VStack(spacing: 8) {
-                Text("Try your first dictation")
+                Text("Try your first dictation", comment: "Title of the first dictation practice screen shown after onboarding.")
                     .font(.appFont(30))
                     .foregroundColor(.white)
                     .multilineTextAlignment(.center)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.75)
 
-                Text("Practice once now, or skip and start using KeyVox.")
+                Text("Practice once now, or skip and start using KeyVox.", comment: "Subtitle of the first dictation practice screen. KeyVox is a brand name and stays in English.")
                     .font(.appFont(15, variant: .light))
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.85)
                     .frame(maxWidth: 340)
             }
 
@@ -27,14 +32,14 @@ struct FirstDictationIntroView: View {
 
             VStack(spacing: 12) {
                 AppActionButton(
-                    title: "Try It",
+                    title: String(localized: "Try It", comment: "Button on the first dictation screen that starts the dictation practice."),
                     style: .primary,
                     minWidth: 220,
                     action: onTry
                 )
 
                 AppActionButton(
-                    title: "Skip",
+                    title: String(localized: "Skip", comment: "Button on the first dictation screen that skips the dictation practice."),
                     style: .secondary,
                     minWidth: 220,
                     action: onSkip

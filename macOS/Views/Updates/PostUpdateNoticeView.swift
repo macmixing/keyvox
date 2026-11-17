@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 
 struct PostUpdateNoticeView: View {
@@ -9,18 +10,18 @@ struct PostUpdateNoticeView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             AnimatedWaveHeader {
-                StatusBadge(title: "Updated", backgroundColor: MacAppTheme.accent)
+                StatusBadge(title: String(localized: "Updated", comment: "Badge on the notice shown after KeyVox installed an update. Shown in capital letters."), backgroundColor: MacAppTheme.accent)
             }
             .padding(.top, 10)
 
             SettingsCard {
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("You've been updated to v\(version)")
+                    Text("You've been updated to v\(version)", comment: "Title of the notice shown after KeyVox installed an update. %@ is the new app version number after the letter v.")
                         .font(.appFont(20))
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity, alignment: .center)
 
-                    Text("KeyVox is ready to go with the latest improvements.")
+                    Text("KeyVox is ready to go with the latest improvements.", comment: "Message of the notice shown after KeyVox installed an update. KeyVox is a brand name and stays in English.")
                         .font(.appFont(12, variant: .light))
                         .foregroundColor(.secondary)
                         .lineSpacing(2)
@@ -32,7 +33,7 @@ struct PostUpdateNoticeView: View {
 
             HStack {
                 AppActionButton(
-                    title: "Okay",
+                    title: String(localized: "Okay", comment: "Button that closes the notice shown after KeyVox installed an update."),
                     style: .primary,
                     minWidth: 160,
                     action: onDismiss

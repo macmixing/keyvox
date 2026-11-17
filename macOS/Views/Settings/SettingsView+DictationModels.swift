@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 import KeyVoxCore
 
@@ -376,23 +377,22 @@ private struct DictationModelCardRow: View {
             return DictationModelsCardCopy.failedStatus
         }
 
-        return "\(DictationModelsCardCopy.notInstalledStatus) (\(configuration.modelID.approximateDownloadSizeText))"
+        return String(localized: "Not installed (\(configuration.modelID.approximateDownloadSizeText))", comment: "Status of a dictation model on the Dictation Model card in Settings when it is not installed. %@ is the approximate download size.")
     }
 }
 
 private enum DictationModelsCardCopy {
-    static let cardTitle = "Dictation Model"
-    static let installDescription = "Install a dictation model to let KeyVox transcribe speech on this Mac."
-    static let readyDescription = "Choose which installed model KeyVox uses when transcribing speech on this Mac."
-    static let installModelPickerTitle = "Install model"
-    static let whisperDescription = "Accurate and lightweight."
-    static let parakeetDescription = "Lightning fast, heavier footprint."
-    static let notInstalledStatus = "Not installed"
-    static let failedStatus = "Install failed"
-    static let readyStatus = "Ready"
-    static let updateAvailableStatus = "Update available"
-    static let downloadAction = "Download"
-    static let repairAction = "Repair"
-    static let updateAction = "Update"
-    static let deleteAction = "Delete"
+    static let cardTitle = String(localized: "Dictation Model", comment: "Title of the Dictation Model card in Settings.")
+    static let installDescription = String(localized: "Install a dictation model to let KeyVox transcribe speech on this Mac.", comment: "Description on the Dictation Model card in Settings when no model is installed. KeyVox is a brand name and stays in English.")
+    static let readyDescription = String(localized: "Choose which installed model KeyVox uses when transcribing speech on this Mac.", comment: "Description on the Dictation Model card in Settings when a model is installed. KeyVox is a brand name and stays in English.")
+    static let installModelPickerTitle = String(localized: "Install model", comment: "Disabled picker entry on the Dictation Model card in Settings when no model is installed.")
+    static let whisperDescription = String(localized: "Accurate and lightweight.", comment: "Description of the Whisper dictation model on the Dictation Model card in Settings.")
+    static let parakeetDescription = String(localized: "Lightning fast, heavier footprint.", comment: "Description of the Parakeet dictation model on the Dictation Model card in Settings.")
+    static let failedStatus = String(localized: "Install failed", comment: "Status of a dictation model on the Dictation Model card in Settings when its install failed.")
+    static let readyStatus = String(localized: "Ready", comment: "Status of a dictation model on the Dictation Model card in Settings when it is installed and ready.")
+    static let updateAvailableStatus = String(localized: "Update available", comment: "Status of a dictation model on the Dictation Model card in Settings when a newer version of the model is available.")
+    static let downloadAction = String(localized: "Download", comment: "Button on the Dictation Model card in Settings that downloads a dictation model.")
+    static let repairAction = String(localized: "Repair", comment: "Button on the Dictation Model card in Settings that downloads a dictation model again after a failed install.")
+    static let updateAction = String(localized: "Update", comment: "Button on the Dictation Model card in Settings that downloads a newer version of a dictation model.")
+    static let deleteAction = String(localized: "Delete", comment: "Button on the Dictation Model card in Settings that deletes a dictation model.")
 }

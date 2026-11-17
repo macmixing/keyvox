@@ -17,13 +17,13 @@ enum ContainingAppTab: Hashable {
     var title: String {
         switch self {
         case .home:
-            return "Home"
+            return String(localized: "Home", comment: "Name of the app's Home tab, used as its screen title.")
         case .dictionary:
-            return "Dictionary"
+            return String(localized: "Dictionary", comment: "Name of the app's Dictionary tab, where the user manages custom words. Used as its screen title.")
         case .style:
-            return "Style"
+            return String(localized: "Style", comment: "Name of the app's Style tab, where the user picks formatting and Vibes options. Used as its screen title.")
         case .settings:
-            return "Settings"
+            return String(localized: "Settings", comment: "Name of the app's Settings tab, used as its screen title.")
         }
     }
 

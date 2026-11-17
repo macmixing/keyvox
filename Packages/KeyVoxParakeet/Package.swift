@@ -3,6 +3,7 @@ import PackageDescription
 
 let package = Package(
     name: "KeyVoxParakeet",
+    defaultLocalization: "en",
     platforms: [
         // Keep the package deployment target at Ventura so macOS 13 app targets in the workspace
         // can still resolve and archive. Parakeet itself is runtime-gated and is only expected to
@@ -19,7 +20,10 @@ let package = Package(
     targets: [
         .target(
             name: "KeyVoxParakeet",
-            path: "Sources/KeyVoxParakeet"
+            path: "Sources/KeyVoxParakeet",
+            resources: [
+                .process("Resources"),
+            ]
         ),
         .testTarget(
             name: "KeyVoxParakeetTests",

@@ -6,7 +6,7 @@ struct UpdateReleaseNotesCard: View {
     var body: some View {
         SettingsCard {
             VStack(alignment: .leading, spacing: 10) {
-                Text("Release Notes")
+                Text("Release Notes", comment: "Title of the release notes card in the KeyVox update window.")
                     .font(.appFont(15))
                     .foregroundColor(.white)
 

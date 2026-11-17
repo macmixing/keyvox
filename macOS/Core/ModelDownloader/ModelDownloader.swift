@@ -323,9 +323,9 @@ class ModelDownloader: ObservableObject {
 
         switch rawValue {
         case "low_disk":
-            return "Model download failed due to low disk space. Free space and try again."
+            return String(localized: "Model download failed due to low disk space. Free space and try again.", comment: "Error shown in Settings when a dictation model download fails because the disk is full.")
         case "generic":
-            return "Model download failed. Check your network/storage and retry."
+            return String(localized: "Model download failed. Check your network/storage and retry.", comment: "Error shown in Settings when a dictation model download fails.")
         default:
             return nil
         }

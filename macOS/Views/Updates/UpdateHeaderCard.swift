@@ -11,7 +11,7 @@ struct UpdateHeaderCard: View {
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Updater")
+                        Text("Updater", comment: "Title at the top of the KeyVox update window.")
                             .font(.appFont(18))
                             .foregroundColor(.white)
                         Text(statusMessage)
@@ -22,12 +22,12 @@ struct UpdateHeaderCard: View {
                 }
 
                 HStack {
-                    Text("Current: v\(currentVersion)")
+                    Text("Current: v\(currentVersion)", comment: "Installed app version in the KeyVox update window. %@ is the version number after the letter v.")
                         .font(.appFont(11))
                         .foregroundColor(.secondary)
                     Spacer()
                     if let targetVersion, state != .completed {
-                        Text("Update: v\(targetVersion)")
+                        Text("Update: v\(targetVersion)", comment: "Available update version in the KeyVox update window. %@ is the version number after the letter v.")
                             .font(.appFont(11))
                             .foregroundColor(.yellow)
                     }

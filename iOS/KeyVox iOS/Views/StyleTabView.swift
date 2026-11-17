@@ -1,3 +1,4 @@
+import Foundation
 import KeyVoxStyleRewrite
 import SwiftUI
 
@@ -19,8 +20,8 @@ struct StyleTabView: View {
                 AppCard {
                     SettingsRow(
                         icon: "list.number",
-                        title: "Lists",
-                        description: "Format spoken numbered lists automatically when detected.",
+                        title: String(localized: "Lists", comment: "Style tab toggle that formats spoken numbered lists."),
+                        description: String(localized: "Format spoken numbered lists automatically when detected.", comment: "Description under the Lists toggle on the Style tab."),
                         isOn: $settingsStore.listFormattingEnabled
                     )
                 }
@@ -28,8 +29,8 @@ struct StyleTabView: View {
                 AppCard {
                     SettingsRow(
                         icon: "text.alignleft",
-                        title: "Paragraphs",
-                        description: "Start new paragraphs automatically after brief pauses in multiline fields.",
+                        title: String(localized: "Paragraphs", comment: "Style tab toggle that starts new paragraphs after pauses."),
+                        description: String(localized: "Start new paragraphs automatically after brief pauses in multiline fields.", comment: "Description under the Paragraphs toggle on the Style tab."),
                         isOn: $settingsStore.autoParagraphsEnabled
                     )
                 }

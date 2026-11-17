@@ -36,7 +36,8 @@ public final class PromotionCampaign {
         this.sharingTitle = sharingTitle;
     }
 
-    static PromotionCampaign decode(JSONObject value) throws Exception {
+    /** Decodes the campaign with the wording the engine chose for the app's language. */
+    static PromotionCampaign decode(JSONObject value, JSONObject copy) throws Exception {
         JSONObject icon = value.getJSONObject("icon");
         JSONObject action = value.optJSONObject("action");
         JSONObject sharing = value.optJSONObject("sharing");
@@ -44,12 +45,12 @@ public final class PromotionCampaign {
             value.getString("id"),
             icon.getString("kind"),
             icon.optString("name", null),
-            value.getString("title"),
-            value.getString("message"),
-            value.optString("buttonTitle", null),
+            copy.getString("title"),
+            copy.getString("message"),
+            copy.optString("buttonTitle", null),
             action == null ? null : action.getString("url"),
             sharing == null ? null : sharing.getString("url"),
-            sharing == null ? null : sharing.optString("title", null)
+            sharing == null ? null : copy.optString("sharingTitle", null)
         );
     }
 }

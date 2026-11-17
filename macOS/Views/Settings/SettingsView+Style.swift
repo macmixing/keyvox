@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 
 extension SettingsView {
@@ -20,26 +21,26 @@ extension SettingsView {
             SettingsCard {
                 SettingsRow(
                     icon: "list.bullet",
-                    title: "Lists",
-                    subtitle: "Format spoken numbered lists automatically when detected."
+                    title: String(localized: "Lists", comment: "Title of the Settings row and VoiceOver label of its toggle for automatic numbered list formatting."),
+                    subtitle: String(localized: "Format spoken numbered lists automatically when detected.", comment: "Subtitle of the Lists row in Settings.")
                 ) {
                     Toggle("", isOn: $appSettings.listFormattingEnabled)
                         .toggleStyle(.switch)
                         .labelsHidden()
-                        .accessibilityLabel("Lists")
+                        .accessibilityLabel(String(localized: "Lists", comment: "Title of the Settings row and VoiceOver label of its toggle for automatic numbered list formatting."))
                 }
             }
 
             SettingsCard {
                 SettingsRow(
                     icon: "text.alignleft",
-                    title: "Paragraphs",
-                    subtitle: "Start new paragraphs automatically after brief pauses in multiline fields."
+                    title: String(localized: "Paragraphs", comment: "Title of the Settings row and VoiceOver label of its toggle for automatic paragraph breaks."),
+                    subtitle: String(localized: "Start new paragraphs automatically after brief pauses in multiline fields.", comment: "Subtitle of the Paragraphs row in Settings.")
                 ) {
                     Toggle("", isOn: $appSettings.autoParagraphsEnabled)
                         .toggleStyle(.switch)
                         .labelsHidden()
-                        .accessibilityLabel("Paragraphs")
+                        .accessibilityLabel(String(localized: "Paragraphs", comment: "Title of the Settings row and VoiceOver label of its toggle for automatic paragraph breaks."))
                 }
             }
 
@@ -47,7 +48,7 @@ extension SettingsView {
                 Spacer()
                 TipItem(
                     icon: "keyboard",
-                    text: "Hold the trigger key, then press L for Lists or P for Paragraphs. Repeat to undo."
+                    text: String(localized: "Hold the trigger key, then press L for Lists or P for Paragraphs. Repeat to undo.", comment: "Tip on the Style page in Settings. L and P are keyboard keys and stay as written. Lists and Paragraphs are the row titles above; translate them the same way as those titles.")
                 )
                 Spacer()
             }

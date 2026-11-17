@@ -25,11 +25,11 @@ struct FirstDictationSuccessCelebrationView: View {
             .frame(height: Metrics.ringSize)
 
             VStack(spacing: 8) {
-                Text("Success!")
+                Text("Success!", comment: "Title shown when the first dictation practice succeeds.")
                     .font(.appFont(28))
                     .foregroundColor(.white)
 
-                Text("KeyVox is ready whenever you are.")
+                Text("KeyVox is ready whenever you are.", comment: "Message shown when the first dictation practice succeeds. KeyVox is a brand name and stays in English.")
                     .font(.appFont(16, variant: .light))
                     .foregroundColor(.white.opacity(0.82))
                     .multilineTextAlignment(.center)

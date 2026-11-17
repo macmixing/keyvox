@@ -11,15 +11,15 @@ struct OnboardingLanguageScreen: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
             VStack(alignment: .leading, spacing: 7) {
-                Text("Choose your language")
+                Text("Choose your language", comment: "Title of the onboarding screen for choosing the dictation language.")
                     .font(.appFont(34))
                     .foregroundStyle(.white)
 
-                Text("We recommend choosing the language you use most for more reliable dictation.")
+                Text("We recommend choosing the language you use most for more reliable dictation.", comment: "Subtitle of the onboarding dictation language screen.")
                     .font(.appFont(15, variant: .light))
                     .foregroundStyle(.yellow.opacity(0.78))
 
-                Text("Choose Auto Detect for multilingual conversations. You can change this anytime in Settings.")
+                Text("Choose Auto Detect for multilingual conversations. You can change this anytime in Settings.", comment: "Hint on the onboarding dictation language screen. Auto Detect is the name of the automatic language option in the list; translate it the same way as that option. Settings is the KeyVox settings window.")
                     .font(.appFont(13, variant: .light))
                     .foregroundStyle(.white.opacity(0.6))
             }
@@ -28,7 +28,7 @@ struct OnboardingLanguageScreen: View {
                 Image(systemName: "magnifyingglass")
                     .foregroundStyle(.white.opacity(0.5))
 
-                TextField("Search languages", text: $searchText)
+                TextField(String(localized: "Search languages", comment: "Placeholder of the search field on the onboarding dictation language screen."), text: $searchText)
                     .textFieldStyle(.plain)
                     .font(.appFont(15, variant: .light))
                     .foregroundStyle(.white)
@@ -50,7 +50,7 @@ struct OnboardingLanguageScreen: View {
                     }
 
                     if filteredLanguages.isEmpty {
-                        Text("No languages found")
+                        Text("No languages found", comment: "Empty state when a language search on the onboarding screen has no results.")
                             .font(.appFont(14, variant: .light))
                             .foregroundStyle(.white.opacity(0.6))
                             .frame(maxWidth: .infinity)
@@ -68,7 +68,7 @@ struct OnboardingLanguageScreen: View {
             .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
 
             AppActionButton(
-                title: "Continue",
+                title: String(localized: "Continue", comment: "Button on the onboarding dictation language screen."),
                 style: .primary,
                 minWidth: 240,
                 fontSize: 20,

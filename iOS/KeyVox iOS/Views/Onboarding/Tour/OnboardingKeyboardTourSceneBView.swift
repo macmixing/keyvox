@@ -37,7 +37,7 @@ struct OnboardingKeyboardTourSceneBView: View {
 
     private func sceneContent(fontSize: CGFloat) -> some View {
         VStack(spacing: 0) {
-            Text("Tap the microphone & speak.")
+            Text("Tap the microphone & speak.", comment: "Instruction in the onboarding keyboard tour for starting dictation with the keyboard's microphone button.")
                 .font(.appFont(fontSize, variant: .light))
                 .foregroundStyle(.white)
                 .multilineTextAlignment(.center)
@@ -53,7 +53,7 @@ struct OnboardingKeyboardTourSceneBView: View {
             Spacer(minLength: minimumInstructionGap)
                 .frame(maxHeight: Metrics.maximumInstructionGap)
 
-            Text("Tap again to transcribe.")
+            Text("Tap again to transcribe.", comment: "Instruction in the onboarding keyboard tour for stopping dictation so the speech becomes text.")
                 .font(.appFont(fontSize, variant: .light))
                 .foregroundStyle(.white)
                 .multilineTextAlignment(.center)

@@ -6,6 +6,27 @@ The format loosely follows Keep a Changelog, and the package uses semantic versi
 
 ---
 
+## [1.2.0] - 2026-11-11
+
+Campaigns can carry wording for each language, and hosts show the user's language with the base wording as the fallback.
+
+### Includes
+
+- Added optional `localizations` to campaigns, keyed by language code, with title, message, button title, and share title.
+- Added `PromotionCampaign.copy(forLanguage:)`, which matches the exact language code first, then its base language, and otherwise returns the base wording.
+- Validated translated wording with the same rules as the base wording: no empty title or message, and a button or share title only when the campaign has that action or sharing link.
+- Kept the manifest schema at version `1`; hosts that predate the field ignore it.
+- Named the Compact Keys feature as Compact Keys in the iOS and Android compact keys campaigns, in English and in every translation.
+- Added German, Spanish, and French wording to the iOS, macOS, and Android campaigns.
+- Added Latin American Spanish (`es-419`) wording to every campaign, using Latin American names such as `Configuración` and `Reemplazar texto` where they differ from Spain Spanish.
+- Added Canadian French (`fr-CA`) wording to every campaign, with no space before `?` and `!` and `Appuyez de façon prolongée` where it differs from France French.
+
+### Notes
+
+- `1.2.0` tracks translated campaign wording.
+
+---
+
 ## [1.1.0] - 2026-09-12
 
 Shared campaign delivery now supports Android alongside the existing Apple clients.

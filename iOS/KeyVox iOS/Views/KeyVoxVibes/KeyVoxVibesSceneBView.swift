@@ -1,4 +1,6 @@
+import Foundation
 import SwiftUI
+import KeyVoxStyleRewrite
 
 struct KeyVoxVibesSceneBView: View {
     private struct Flow: Identifiable {
@@ -9,10 +11,10 @@ struct KeyVoxVibesSceneBView: View {
     }
 
     private static let flows: [Flow] = [
-        Flow(id: 0, icon: "keyboard.fill", title: "Choose Before Dictation", subtitle: "Tap the Vibes key before you stop recording and KeyVox applies that Vibe."),
-        Flow(id: 1, icon: "hand.tap.fill", title: "Long Press to Vibe", subtitle: "Change the latest untouched dictation in the text box."),
-        Flow(id: 2, icon: "arrow.uturn.backward.circle.fill", title: "Undo the Last Change", subtitle: "Long press again to return to the previous Vibe."),
-        Flow(id: 3, icon: "lock.fill", title: "Local First", subtitle: "Vibes AI doesn't rely on the cloud. Your words stay on your device.")
+        Flow(id: 0, icon: "keyboard.fill", title: String(localized: "Choose Before Dictation", comment: "Row title on the KeyVox Vibes intro page explaining how to use Vibes."), subtitle: String(localized: "Tap the Vibes key before you stop recording and KeyVox applies that Vibe.", comment: "Row description on the KeyVox Vibes intro page explaining how to use Vibes. KeyVox and Vibes are brand names and stay in English; a Vibe is one writing style.")),
+        Flow(id: 1, icon: "hand.tap.fill", title: String(localized: "Long Press to Vibe", comment: "Row title on the KeyVox Vibes intro page explaining how to use Vibes; to Vibe means to restyle text with a Vibe. Vibes is a brand name and stays in English."), subtitle: String(localized: "Change the latest untouched dictation in the text box.", comment: "Row description on the KeyVox Vibes intro page explaining how to use Vibes.")),
+        Flow(id: 2, icon: "arrow.uturn.backward.circle.fill", title: String(localized: "Undo the Last Change", comment: "Row title on the KeyVox Vibes intro page explaining how to use Vibes."), subtitle: String(localized: "Long press again to return to the previous Vibe.", comment: "Row description on the KeyVox Vibes intro page explaining how to use Vibes. Vibe is a brand name for one writing style and stays in English.")),
+        Flow(id: 3, icon: "lock.fill", title: String(localized: "Local First", comment: "Row title on the KeyVox Vibes intro page explaining how to use Vibes about on-device processing."), subtitle: String(localized: "Vibes AI doesn't rely on the cloud. Your words stay on your device.", comment: "Row description on the KeyVox Vibes intro page explaining how to use Vibes. Vibes AI is a brand name and stays in English."))
     ]
 
     let isVisible: Bool
@@ -40,11 +42,11 @@ struct KeyVoxVibesSceneBView: View {
                             .scaleEffect(logoScale)
 
                         VStack(alignment: .leading, spacing: -4) {
-                            Text("Set the Vibe")
+                            Text("Set the Vibe", comment: "Title of the KeyVox Vibes intro page explaining how to use Vibes. Vibe is a brand name and stays in English.")
                                 .font(.appFont(33, variant: .medium))
                                 .foregroundStyle(.white)
 
-                            Text("Long Press to Vibe, repeat to undo.")
+                            Text("Long Press to Vibe, repeat to undo.", comment: "Subtitle of the KeyVox Vibes intro page explaining how to use Vibes; to Vibe means to restyle text with a Vibe. Vibes is a brand name and stays in English.")
                                 .font(.appFont(17, variant: .light))
                                 .foregroundStyle(.white.opacity(0.7))
                         }
@@ -61,7 +63,7 @@ struct KeyVoxVibesSceneBView: View {
                         }
                     }
 
-                    Text("Vibes are currently supported for English only.")
+                    Text(StyleRewriteStyle.languageSupportNote)
                         .font(.appFont(15, variant: .light))
                         .foregroundStyle(.yellow.opacity(0.7))
                         .frame(maxWidth: .infinity, alignment: .center)

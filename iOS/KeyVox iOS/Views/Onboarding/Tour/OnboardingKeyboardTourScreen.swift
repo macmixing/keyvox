@@ -1,4 +1,5 @@
 import Combine
+import Foundation
 import SwiftUI
 import UIKit
 
@@ -72,7 +73,7 @@ struct OnboardingKeyboardTourScreen: View {
                         Spacer()
 
                         AppActionButton(
-                            title: "Finish",
+                            title: String(localized: "Finish", comment: "Button that finishes the onboarding keyboard tour."),
                             style: .primary,
                             size: .compact,
                             fontSize: 16,
@@ -119,11 +120,11 @@ struct OnboardingKeyboardTourScreen: View {
     private var topBarTitle: String? {
         switch tourState.scene {
         case .a:
-            return "Select KeyVox"
+            return String(localized: "Select KeyVox", comment: "Top bar title on the onboarding keyboard tour page about switching to the KeyVox keyboard. KeyVox is a brand name and stays in English.")
         case .b:
-            return "Try It Out!"
+            return String(localized: "Try It Out!", comment: "Top bar title on the onboarding keyboard tour page where the user tries dictation.")
         case .c:
-            return "Success!"
+            return String(localized: "Success!", comment: "Top bar title on the last page of the onboarding keyboard tour.")
         }
     }
 

@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 
 extension SettingsView {
@@ -6,7 +7,7 @@ extension SettingsView {
             Spacer().frame(height: 4)
 
             VStack(alignment: .leading, spacing: 10) {
-                Text("KEYBOARD")
+                Text("KEYBOARD", comment: "Section heading on the Settings page, shown in capital letters.")
                     .font(.appFont(10))
                     .foregroundColor(.secondary.opacity(0.6))
                     .padding(.leading, 4)
@@ -15,8 +16,8 @@ extension SettingsView {
                     SettingsCard {
                         SettingsRow(
                             icon: "keyboard",
-                            title: "Trigger Key",
-                            subtitle: "Hold this key to start recording. Release to transcribe."
+                            title: String(localized: "Trigger Key", comment: "Title of the Settings row for choosing the dictation trigger key."),
+                            subtitle: String(localized: "Hold this key to start recording. Release to transcribe.", comment: "Subtitle of the Trigger Key row in Settings.")
                         ) {
                             Picker("", selection: $appSettings.triggerBinding) {
                                 ForEach(KeyboardMonitor.TriggerBinding.allCases) { binding in
@@ -24,8 +25,8 @@ extension SettingsView {
                                 }
                             }
                             .pickerStyle(.menu)
-                            .frame(width: 160)
                             .labelsHidden()
+                            .menuPickerWidth(fitting: appSettings.triggerBinding.displayName, minimumWidth: 160)
                         }
                     }
 
@@ -33,7 +34,7 @@ extension SettingsView {
                         Spacer()
                         TipItem(
                             icon: "shift.fill",
-                            text: "Trigger key + Shift = Hands-free mode"
+                            text: String(localized: "Trigger key + Shift = Hands-free mode", comment: "Tip under the Trigger Key row in Settings. Shift is the keyboard key; use the name macOS uses for it in this language.")
                         )
                         Spacer()
                     }
@@ -41,7 +42,7 @@ extension SettingsView {
             }
 
             VStack(alignment: .leading, spacing: 15) {
-                Text("AUDIO")
+                Text("AUDIO", comment: "Section heading on the Settings page, shown in capital letters.")
                     .font(.appFont(10))
                     .foregroundColor(.secondary.opacity(0.6))
                     .padding(.leading, 4)
@@ -51,7 +52,7 @@ extension SettingsView {
             }
 
             VStack(alignment: .leading, spacing: 15) {
-                Text("SYSTEM")
+                Text("SYSTEM", comment: "Section heading on the Settings page, shown in capital letters.")
                     .font(.appFont(10))
                     .foregroundColor(.secondary.opacity(0.6))
                     .padding(.leading, 4)
@@ -75,16 +76,16 @@ extension SettingsView {
             
             // More from Developer Section
             VStack(alignment: .leading, spacing: 15) {
-                Text("MORE")
+                Text("MORE", comment: "Section heading on the Settings page, shown in capital letters.")
                     .font(.appFont(10))
                     .foregroundColor(.secondary.opacity(0.6))
                     .padding(.leading, 4)
 
                 DeveloperLinkCard(
                     icon: .assetTemplate("github"),
-                    title: "Sponsor on GitHub",
-                    subtitle: "Support open source development of KeyVox via GitHub Sponsors.",
-                    buttonTitle: "Sponsor",
+                    title: String(localized: "Sponsor on GitHub", comment: "Title of the sponsor card in Settings. GitHub is a brand name and stays in English."),
+                    subtitle: String(localized: "Support open source development of KeyVox via GitHub Sponsors.", comment: "Subtitle of the sponsor card in Settings. KeyVox and GitHub Sponsors are brand names and stay in English."),
+                    buttonTitle: String(localized: "Sponsor", comment: "Button on the sponsor card in Settings that opens the GitHub Sponsors page."),
                     buttonStyle: .primary
                 ) {
                     openDeveloperURL("https://github.com/sponsors/macmixing")
@@ -92,9 +93,9 @@ extension SettingsView {
 
                 DeveloperLinkCard(
                     icon: .systemImage("questionmark.circle.fill"),
-                    title: "Need Help?",
-                    subtitle: "Get help with KeyVox, download the iPhone app, read the FAQ, find more information, or contact us.",
-                    buttonTitle: "Open",
+                    title: String(localized: "Need Help?", comment: "Title of the help card in Settings."),
+                    subtitle: String(localized: "Get help with KeyVox, download the iPhone app, read the FAQ, find more information, or contact us.", comment: "Subtitle of the help card in Settings. KeyVox is a brand name and stays in English. iPhone is an Apple product name; use Apple's official name in this language."),
+                    buttonTitle: String(localized: "Open", comment: "Button on the help card in Settings that opens the KeyVox help website."),
                     buttonStyle: .primary
                 ) {
                     openDeveloperURL("https://keyvox.app/?utm_source=keyvox_mac&utm_medium=settings&utm_campaign=help_card#faq-mac")
@@ -106,7 +107,7 @@ extension SettingsView {
                     HStack(alignment: .firstTextBaseline, spacing: 6) {
                         Image(systemName: "doc.text.fill")
                             .font(.system(size: 12))
-                        Text("Legal & Licenses")
+                        Text("Legal & Licenses", comment: "Button at the bottom of the Settings page that opens the Legal & Licenses window.")
                     }
                     .font(.appFont(13))
                     .foregroundColor(MacAppTheme.accent)
@@ -116,7 +117,7 @@ extension SettingsView {
 
                 Spacer()
 
-                Text("Version \(appVersion)")
+                Text("Version \(appVersion)", comment: "App version shown at the bottom of the Settings page. %@ is the app version.")
                     .font(.appFont(10))
                     .foregroundColor(.secondary.opacity(0.5))
                     .padding(.trailing, 8)
@@ -133,7 +134,7 @@ extension SettingsView {
             VStack(alignment: .leading, spacing: 10) {
                 SettingsRow(
                     icon: "person.crop.circle.badge.checkmark",
-                    title: "Launch at Login",
+                    title: String(localized: "Launch at Login", comment: "Title of the Settings row for starting KeyVox when the user logs in."),
                     subtitle: loginItemController.subtitle
                 ) {
                     Toggle(
@@ -156,7 +157,7 @@ extension SettingsView {
                 }
 
                 if loginItemController.shouldShowOpenSystemSettingsAction {
-                    Button("Open Login Items Settings") {
+                    Button(String(localized: "Open Login Items Settings", comment: "Button in Settings that opens the Login Items page of System Settings. Use the names macOS uses for Login Items and System Settings in this language.")) {
                         loginItemController.openLoginItemsSettings()
                     }
                     .font(.appFont(12))
@@ -170,13 +171,13 @@ extension SettingsView {
 
                     SettingsRow(
                         icon: "dock.rectangle",
-                        title: "Hide Dock Icon",
-                        subtitle: "Hide dock icon when all windows are closed."
+                        title: String(localized: "Hide Dock Icon", comment: "Title of the Settings row and VoiceOver label of its toggle for hiding the KeyVox icon in the Dock. Use the name macOS uses for the Dock in this language."),
+                        subtitle: String(localized: "Hide dock icon when all windows are closed.", comment: "Subtitle of the Hide Dock Icon row in Settings. Use the name macOS uses for the Dock in this language.")
                     ) {
                         Toggle("", isOn: $appSettings.hideDockIconWhenAllWindowsClosed)
                             .toggleStyle(.switch)
                             .labelsHidden()
-                            .accessibilityLabel("Hide Dock Icon")
+                            .accessibilityLabel(String(localized: "Hide Dock Icon", comment: "Title of the Settings row and VoiceOver label of its toggle for hiding the KeyVox icon in the Dock. Use the name macOS uses for the Dock in this language."))
                     }
                 }
             }
@@ -208,7 +209,7 @@ extension SettingsView {
                     }
 
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Mic Input")
+                        Text("Mic Input", comment: "Title of the microphone card in Settings.")
                             .font(.appFont(17))
 
                         Text(microphoneSubtitle)
@@ -256,10 +257,10 @@ extension SettingsView {
                 VStack(alignment: .leading, spacing: 12) {
                     HStack(alignment: .top, spacing: 16) {
                         VStack(alignment: .leading, spacing: 4) {
-                            Text("System Sounds")
+                            Text("System Sounds", comment: "Title of the sound feedback card in Settings and VoiceOver label of its toggle.")
                                 .font(.appFont(17))
 
-                            Text("Play audio feedback when recording starts and ends.")
+                            Text("Play audio feedback when recording starts and ends.", comment: "Subtitle of the System Sounds card in Settings.")
                                 .font(.appFont(12, variant: .light))
                                 .foregroundColor(.secondary)
                                 .lineSpacing(2)
@@ -274,11 +275,11 @@ extension SettingsView {
                         Toggle("", isOn: $appSettings.isSoundEnabled)
                             .toggleStyle(SwitchToggleStyle(tint: MacAppTheme.accent))
                             .labelsHidden()
-                            .accessibilityLabel("System Sounds")
+                            .accessibilityLabel(String(localized: "System Sounds", comment: "Title of the sound feedback card in Settings and VoiceOver label of its toggle."))
                     }
 
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("Adjust volume")
+                        Text("Adjust volume", comment: "Label above the sound volume slider in Settings.")
                             .font(.appFont(13))
                             .foregroundColor(.primary)
 
@@ -294,7 +295,7 @@ extension SettingsView {
                             .tint(MacAppTheme.accent)
                             .disabled(!appSettings.isSoundEnabled)
 
-                            Text("\(Int((appSettings.soundVolume * 100).rounded()))%")
+                            Text(appSettings.soundVolume.formatted(.percent.precision(.fractionLength(0)).rounded(rule: .toNearestOrAwayFromZero)))
                                 .font(.appFont(12))
                                 .foregroundColor(.secondary)
                                 .frame(width: 40, alignment: .trailing)
@@ -310,23 +311,23 @@ extension SettingsView {
     private var microphoneSubtitle: String {
         guard let selected = audioDeviceManager.selectedMicrophone else {
             if !appSettings.selectedMicrophoneUID.isEmpty {
-                return "Selected mic is unavailable. Built-in Microphone will be used until it reconnects."
+                return String(localized: "Selected mic is unavailable. Built-in Microphone will be used until it reconnects.", comment: "Subtitle of the Mic Input card in Settings. Shown when the chosen microphone is disconnected. Built-in Microphone is the macOS name for the Mac's own microphone; use the name macOS uses in this language.")
             }
-            return "Built-in Microphone is recommended for the fastest and most reliable dictation."
+            return String(localized: "Built-in Microphone is recommended for the fastest and most reliable dictation.", comment: "Subtitle of the Mic Input card in Settings. Shown when no microphone is chosen. Built-in Microphone is the macOS name for the Mac's own microphone; use the name macOS uses in this language.")
         }
 
         switch selected.kind {
         case .builtIn:
             if isRecommendedMicrophone(selected) {
-                return "\(selected.name) selected. Recommended for fastest startup and best reliability."
+                return String(localized: "\(selected.name) selected. Recommended for fastest startup and best reliability.", comment: "Subtitle of the Mic Input card in Settings. Shown when the Mac's own microphone is chosen. %@ is the selected microphone's name.")
             }
-            return "\(selected.name) selected."
+            return String(localized: "\(selected.name) selected.", comment: "Subtitle of the Mic Input card in Settings. %@ is the selected microphone's name.")
         case .airPods:
-            return "\(selected.name) selected. This microphone may start slower and reduce dictation accuracy."
+            return String(localized: "\(selected.name) selected. This microphone may start slower and reduce dictation accuracy.", comment: "Subtitle of the Mic Input card in Settings. Shown when AirPods are chosen. %@ is the selected microphone's name.")
         case .bluetooth:
-            return "\(selected.name) selected. Bluetooth devices may start slower and reduce dictation accuracy."
+            return String(localized: "\(selected.name) selected. Bluetooth devices may start slower and reduce dictation accuracy.", comment: "Subtitle of the Mic Input card in Settings. Shown when a Bluetooth microphone is chosen. Bluetooth is a brand name and stays in English. %@ is the selected microphone's name.")
         case .wiredOrOther:
-            return "\(selected.name) selected. Built-in Microphone is still recommended for best speed."
+            return String(localized: "\(selected.name) selected. Built-in Microphone is still recommended for best speed.", comment: "Subtitle of the Mic Input card in Settings. Shown when a wired or other microphone is chosen. Built-in Microphone is the macOS name for the Mac's own microphone; use the name macOS uses in this language. %@ is the selected microphone's name.")
         }
     }
 
@@ -345,11 +346,11 @@ extension SettingsView {
 
     private func microphonePickerLabel(for microphone: MicrophoneOption) -> String {
         if !microphone.isAvailable {
-            return "Previously Selected Microphone (Unavailable)"
+            return String(localized: "Previously Selected Microphone (Unavailable)", comment: "Microphone picker entry for a microphone that was chosen before but is no longer connected.")
         }
 
         if isRecommendedMicrophone(microphone) {
-            return "\(microphone.name) (Recommended)"
+            return String(localized: "\(microphone.name) (Recommended)", comment: "Microphone picker entry for the recommended microphone in Settings. %@ is the microphone's name.")
         }
 
         return microphone.name

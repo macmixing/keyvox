@@ -28,6 +28,7 @@ struct EngineEvent: Encodable {
     var pipelineMilliseconds: Double? = nil
     var postProcessorPreparationWaitMilliseconds: Double? = nil
     var campaign: PromotionCampaign? = nil
+    var campaignCopy: AndroidPromotionCopy? = nil
 
     @MainActor func send() {
         guard let data = try? JSONEncoder().encode(self) else { return }

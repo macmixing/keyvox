@@ -21,12 +21,12 @@ struct MacVibesIntroSceneAView: View {
                 .scaleEffect(logoScale)
                 .padding(.bottom, 10)
 
-            Text("Meet KeyVox Vibes")
+            Text("Meet KeyVox Vibes", comment: "Title of the first page of the KeyVox Vibes introduction window. KeyVox Vibes is a brand name and stays in English.")
                 .font(.appFont(34, variant: .medium))
                 .foregroundStyle(.white)
                 .opacity(titleOpacity)
 
-            Text("On-device, reversible writing styles.")
+            Text("On-device, reversible writing styles.", comment: "Subtitle of the first page of the KeyVox Vibes introduction window.")
                 .font(.appFont(17, variant: .light))
                 .foregroundStyle(.white.opacity(0.78))
                 .multilineTextAlignment(.center)
@@ -42,7 +42,7 @@ struct MacVibesIntroSceneAView: View {
             }
             .padding(.bottom, 10)
 
-            Text("Vibes are currently supported for English only.")
+            Text(StyleRewriteStyle.languageSupportNote)
                 .font(.appFont(15, variant: .light))
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)

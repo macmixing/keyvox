@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 
 enum PendingModelUpdatePrompt: Identifiable, Equatable {
@@ -13,14 +14,14 @@ enum PendingModelUpdatePrompt: Identifiable, Equatable {
     var title: String {
         switch self {
         case .parakeetArtifactUpdate:
-            return "Parakeet Update Available"
+            return String(localized: "Parakeet Update Available", comment: "Title of the prompt shown when a newer Parakeet dictation model can be downloaded. Parakeet is a brand name and stays in English.")
         }
     }
 
     var message: String {
         switch self {
         case .parakeetArtifactUpdate:
-            return "A newer Parakeet model is available for on-device dictation. Download the updated Parakeet model now (~335 MB), or do it later from Settings."
+            return String(localized: "A newer Parakeet model is available for on-device dictation. Download the updated Parakeet model now (\(ApproximateDownloadSize.parakeet)), or do it later from Settings.", comment: "Message in the Parakeet model update prompt. Parakeet is a brand name and stays in English. The value in parentheses is the approximate download size. Settings refers to the app's Settings tab.")
         }
     }
 }
@@ -68,7 +69,7 @@ private struct ModelUpdatePromptModifier: ViewModifier {
 
                             HStack(spacing: 12) {
                                 AppActionButton(
-                                    title: "Later",
+                                    title: String(localized: "Later", comment: "Button in the model update prompt that postpones the download."),
                                     style: .secondary,
                                     fillsWidth: true,
                                     size: .regular,
@@ -82,7 +83,7 @@ private struct ModelUpdatePromptModifier: ViewModifier {
                                 .accessibilityFocused($isLaterFocused)
 
                                 AppActionButton(
-                                    title: "Download",
+                                    title: String(localized: "Download", comment: "Button in the model update prompt that downloads the updated model."),
                                     style: .primary,
                                     fillsWidth: true,
                                     size: .regular,

@@ -37,7 +37,9 @@ public final class PromotionSession {
                 return;
             }
             JSONObject campaign = event.optJSONObject("campaign");
-            currentCampaign = campaign == null ? null : PromotionCampaign.decode(campaign);
+            currentCampaign = campaign == null
+                ? null
+                : PromotionCampaign.decode(campaign, event.getJSONObject("campaignCopy"));
             publish();
         } catch (Exception ignored) {
             currentCampaign = null;
@@ -54,6 +56,9 @@ public final class PromotionSession {
     }
 
     public void refresh() { NativeEngine.refreshPromotions(); }
+
+    /** Shows campaign wording in the language of the translation Android loaded for the app. */
+    public void setLanguage(String languageCode) { NativeEngine.setPromotionLanguage(languageCode); }
 
     private void publish() {
         for (Runnable observer : new ArrayList<>(observers)) observer.run();

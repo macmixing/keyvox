@@ -1,3 +1,4 @@
+import Foundation
 import UIKit
 
 final class FullAccessView: UIView {
@@ -50,14 +51,14 @@ final class FullAccessView: UIView {
             for: .normal
         )
         backButton.addTarget(self, action: #selector(handleBackTap), for: .touchUpInside)
-        backButton.accessibilityLabel = "Back to keyboard"
+        backButton.accessibilityLabel = String(localized: "Back to keyboard", comment: "VoiceOver label for the back button on the keyboard's Full Access instructions screen.")
         backButton.minimumHitTargetSize = CGSize(width: 44, height: 44)
 
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         titleLabel.font = KeyboardTypography.font(20, variant: .medium)
         titleLabel.textColor = .label
         titleLabel.textAlignment = .center
-        titleLabel.text = "How to Allow Full Access"
+        titleLabel.text = String(localized: "How to Allow Full Access", comment: "Title of the keyboard's Full Access instructions screen. Use Apple's official name for Allow Full Access in this language.")
         titleLabel.isUserInteractionEnabled = false
 
         trailingSpacer.translatesAutoresizingMaskIntoConstraints = false
@@ -79,11 +80,11 @@ final class FullAccessView: UIView {
         scrollView.addSubview(contentContainerView)
         contentContainerView.addSubview(contentStack)
 
-        contentStack.addArrangedSubview(makeStepRow(symbolName: "gearshape", text: "Open Settings"))
-        contentStack.addArrangedSubview(makeStepRow(symbolName: "square.grid.2x2", text: "Tap Apps"))
+        contentStack.addArrangedSubview(makeStepRow(symbolName: "gearshape", text: String(localized: "Open Settings", comment: "Step in the keyboard's Full Access instructions. Use Apple's official name for the Settings app in this language.")))
+        contentStack.addArrangedSubview(makeStepRow(symbolName: "square.grid.2x2", text: String(localized: "Tap Apps", comment: "Step in the keyboard's Full Access instructions. Apps is the Apps row in the Settings app; use Apple's official name in this language.")))
         contentStack.addArrangedSubview(makeKeyVoxStepRow())
-        contentStack.addArrangedSubview(makeStepRow(symbolName: "keyboard", text: "Tap Keyboards"))
-        contentStack.addArrangedSubview(makeStepRow(symbolName: "checkmark.circle", text: "Turn on Allow Full Access"))
+        contentStack.addArrangedSubview(makeStepRow(symbolName: "keyboard", text: String(localized: "Tap Keyboards", comment: "Step in the keyboard's Full Access instructions. Use Apple's official name for the Keyboards row in Settings in this language.")))
+        contentStack.addArrangedSubview(makeStepRow(symbolName: "checkmark.circle", text: String(localized: "Turn on Allow Full Access", comment: "Step in the keyboard's Full Access instructions. Use Apple's official name for the Allow Full Access toggle in this language.")))
     }
 
     private func configureLayout() {
@@ -185,7 +186,7 @@ final class FullAccessView: UIView {
     }
 
     private func keyVoxStepText() -> NSAttributedString {
-        let fullText = "Tap KeyVox"
+        let fullText = String(localized: "Tap KeyVox", comment: "Step in the keyboard's Full Access instructions. KeyVox is the app name in Settings and must stay exactly as written in English.")
         let attributedText = NSMutableAttributedString(
             string: fullText,
             attributes: [
@@ -195,10 +196,12 @@ final class FullAccessView: UIView {
         )
 
         let keyVoxRange = (fullText as NSString).range(of: "KeyVox")
-        attributedText.addAttributes(
-            [.font: KeyboardTypography.font(17, variant: .medium)],
-            range: keyVoxRange
-        )
+        if keyVoxRange.location != NSNotFound {
+            attributedText.addAttributes(
+                [.font: KeyboardTypography.font(17, variant: .medium)],
+                range: keyVoxRange
+            )
+        }
 
         return attributedText
     }

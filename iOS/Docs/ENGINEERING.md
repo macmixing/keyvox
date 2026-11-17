@@ -1288,6 +1288,7 @@ Important force-quit nuance:
 - `PromotionCenter.currentCampaign` is the observable value injected into the app environment. `HomeTabView` and `IOSPromotionCard` render that state without duplicating campaign selection rules.
 - App activation requests a manifest refresh. The repository caches a successful remote response for a later center initialization; the current center keeps the campaign selected from its startup manifest.
 - Preview configuration uses a separate defaults namespace so preview selection does not mutate production campaign state.
+- Campaigns may carry `localizations` keyed by language code. `IOSPromotionCard` shows `PromotionCampaign.copy(forLanguage:)` for the app's current language and falls back to the base wording; app versions that predate the field ignore it.
 
 ## Dictionary, Style, and Sync Contract
 
@@ -1485,6 +1486,8 @@ The keyboard consumes this artifact for long-press Vibes revert/restyle, paragra
 
 - remaining time uses adaptive units: days and hours while days remain, hours and minutes below one day, and minutes below one hour
 - zero-value units are omitted
+- units are written by `DateComponentsFormatter` in its abbreviated style, so each language gets its own unit abbreviations
+- the total trial length is returned as a day count (`fullDayCount(for:)`) so the surrounding sentence can use plural forms
 - views own their own surrounding sentence copy and call the formatter only for the formatted time value
 
 `KeyVoxVibesPurchaseController` is the containing-app owner for Vibes access.
@@ -2084,6 +2087,46 @@ The keyboard extension locally owns:
 - typing memory, Frequently Used emoji ranking, and chosen emoji skin tones
 
 These remain extension-facing conveniences, not app-owned business logic.
+
+## Localization Contract
+
+KeyVox ships in English (the development language), German (`de`), Spain Spanish (`es`), Latin American Spanish (`es-419`), France French (`fr`), and Canadian French (`fr-CA`). The project's `knownRegions` lists all six.
+
+Every catalog entry with an `es` translation also carries a full `es-419` translation. It repeats the Spanish text and uses Apple's Latin American wording where the regions differ, such as `Configuración` for Settings, `Permitir acceso completo`, `presiona`, `agrega`, and `No se pudo`, so the names match the user's own iPhone. A new Spanish string gets both entries.
+
+Every catalog entry with an `fr` translation also carries a full `fr-CA` translation the same way. Canadian French drops the space before `?` and `!` (the space before `:` and inside `« »` stays) and uses Apple's Canadian names where they differ, such as `Événements en direct`, `émoji`, `courriel`, `Contact prolongé`, and `Appuyez de façon prolongée`. A new French string gets both entries.
+
+Each target owns its String Catalog:
+
+- `KeyVox iOS/Resources/Localizable.xcstrings`: containing app text
+- `KeyVox iOS/Resources/InfoPlist.xcstrings`: the microphone permission prompt
+- `KeyVox iOS/Resources/AppShortcuts.xcstrings`: App Shortcuts phrases
+- `KeyVox Keyboard/Localizable.xcstrings`, `KeyVox Share/Localizable.xcstrings`, `KeyVox Widget/Localizable.xcstrings`: extension text
+- shared packages that show text own `Sources/<Package>/Resources/Localizable.xcstrings` (KeyVoxCore, KeyVoxStyleRewrite, KeyVoxWhisper, KeyVoxParakeet, KeyVoxTTS)
+
+Writing user-visible text:
+
+- SwiftUI `Text` literals carry a translator `comment:`. Every other user-visible string, including `*Copy` enum values, status text, error descriptions shown to the user, VoiceOver labels, hints, and values, and keyboard UIKit labels, is created with `String(localized:comment:)`. Copy stays beside the view that renders it.
+- Comments say where the text appears, what it is, and what each placeholder holds.
+- Identifiers, raw values, keys, file names, logs, diagnostics, model instructions, and text that code compares are never localized. When a raw value doubles as an identifier, a separate display property carries the translated name (for example `DictionarySortMode.title`).
+- Brand names stay English: KeyVox, KeyVox Speak, KeyVox Vibes, Vibes, Speak, Polished, Casual, Chill, Compact Keys, Whisper, Parakeet, and the installed shortcut name Toggle KeyVox Dictation. Brand-only text uses `Text(verbatim:)`, and catalog entries that are only a brand name, a placeholder, or a symbol are marked `shouldTranslate: false`.
+- Counts use one interpolated `String(localized:)` with an integer argument and plural variations in the catalog, including the English singular, never a `== 1` branch. Percentages use `.formatted(.percent…)` and durations use `DateComponentsFormatter`, so separators, spacing, and units follow the user's language.
+- Approximate download sizes live in `ApproximateDownloadSize` as byte counts and are written with `.formatted(.byteCount(style: .file, allowedUnits: .mb))`, so units follow the user's language (for example `Mo` in French). Sentences take the size as a placeholder instead of typing it.
+- Promotion cards show `PromotionCampaign.copy(forLanguage:)` for the language the app is showing (`Bundle.main.preferredLocalizations.first`).
+- Kanit has no narrow no-break space (U+202F), which French number and file-size formatting uses. Formatted counts and sizes shown in the app font pass through `AppTypography.fontSupportedSpacing(_:)`, which swaps in the regular no-break space.
+- The setup and onboarding videos have English words drawn into them. When `SetupVideoCaption.isShown` (the app shows a language other than English), a translated caption appears under every video with words: the shortcut setup pages show each page's `videoAccessibilityLabel` sentence, and the Enable Keyboard screen and the keyboard tour each have their own caption. The video is hidden from VoiceOver while its caption shows, so the sentence is read once. Videos without words (ShortcutHero, ReturnToHost) have no caption. English shows no captions.
+- Vibes rewrites English dictation only. `StyleRewriteStyle.languageSupportNote` is the single source of the English-only note on the Style tab and the KeyVox Vibes intro. Vibes style names and example sentences stay English, and translated text must not suggest Vibes rewrites another language.
+
+Packages:
+
+- Package text uses `NSLocalizedString(_:bundle:comment:)` because `String(localized:)` is not available in the Android Swift SDK that also builds these packages. KeyVoxTTS, which only Apple apps build, follows the same pattern and reads its catalog from `Bundle.module`.
+- KeyVoxCore reads its catalog through `KeyVoxCoreResources.bundle`. KeyVoxWhisper and KeyVoxParakeet read theirs through `KeyVoxWhisperLocalization.bundle` and `KeyVoxParakeetLocalization.bundle`, which use the package bundle on Apple platforms and the English text written in code elsewhere, because SwiftPM's `Bundle.module` stops the process on hosts that do not ship the resource bundle.
+
+Catalog workflow:
+
+- Building in Xcode fills each catalog from the source. A command-line `xcodebuild` writes the extracted `.stringsdata` files but does not update the catalogs; run `xcrun xcstringstool sync <catalog> --stringsdata <files>` with the target's `Objects-normal` output to update them.
+- After changing a package catalog, clean the build folder before checking an app build; an incremental app build can keep a package resource bundle compiled before the change.
+- Translations that a native speaker has not reviewed are stored with the `needs_review` state. They still ship.
 
 ## App UI Contract
 

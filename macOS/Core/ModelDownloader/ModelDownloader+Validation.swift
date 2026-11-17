@@ -106,17 +106,17 @@ extension ModelDownloader {
 
     nonisolated static func insufficientDiskSpaceMessage(requiredBytes: Int64, availableBytes: Int64) -> String {
         let shortfall = max(requiredBytes - availableBytes, 0)
-        let required = ByteCountFormatter.string(fromByteCount: requiredBytes, countStyle: .file)
-        let available = ByteCountFormatter.string(fromByteCount: availableBytes, countStyle: .file)
-        let needed = ByteCountFormatter.string(fromByteCount: shortfall, countStyle: .file)
-        return "Not enough free disk space to install the model (\(available) available, \(required) required). Free at least \(needed) and retry."
+        let required = AppTypography.fontSupportedSpacing(ByteCountFormatter.string(fromByteCount: requiredBytes, countStyle: .file))
+        let available = AppTypography.fontSupportedSpacing(ByteCountFormatter.string(fromByteCount: availableBytes, countStyle: .file))
+        let needed = AppTypography.fontSupportedSpacing(ByteCountFormatter.string(fromByteCount: shortfall, countStyle: .file))
+        return String(localized: "Not enough free disk space to install the model (\(available) available, \(required) required). Free at least \(needed) and retry.", comment: "Error shown in Settings when there is not enough disk space to download a dictation model. The first %@ is the free space, the second %@ is the space required, and the third %@ is the extra space needed; each is a formatted file size.")
     }
 
     nonisolated static func userFacingErrorMessage(for error: Error) -> String {
         if isOutOfSpaceError(error) {
-            return "Model download failed due to low disk space. Free space and try again."
+            return String(localized: "Model download failed due to low disk space. Free space and try again.", comment: "Error shown in Settings when a dictation model download fails because the disk is full.")
         }
-        return "Model download failed. Check your network/storage and retry."
+        return String(localized: "Model download failed. Check your network/storage and retry.", comment: "Error shown in Settings when a dictation model download fails.")
     }
 
     nonisolated static func isOutOfSpaceError(_ error: Error) -> Bool {

@@ -1,4 +1,5 @@
 import AppIntents
+import Foundation
 
 struct ToggleKeyVoxDictationIntent: AudioRecordingIntent, LiveActivityIntent {
     static var title: LocalizedStringResource { "Toggle KeyVox Dictation" }
@@ -53,7 +54,7 @@ private enum ToggleKeyVoxDictationIntentError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .busy:
-            String(localized: "KeyVox is already processing dictation. Try again when it finishes.")
+            String(localized: "KeyVox is already processing dictation. Try again when it finishes.", comment: "Error shown by the Toggle KeyVox Dictation shortcut while a previous dictation is still being processed. KeyVox is a brand name and stays in English.")
         case .failed(let message):
             message
         }

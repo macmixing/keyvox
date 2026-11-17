@@ -9,7 +9,7 @@ extension SettingsView {
 
             HStack {
                 Spacer()
-                Text("Custom dictionary correction is currently supported for English only.")
+                Text("Custom dictionary correction is currently supported for English only.", comment: "Note on the Dictionary page in Settings explaining that custom dictionary correction only works for English dictation.")
                     .font(.appFont(11))
                     .foregroundColor(.secondary)
                 Spacer()

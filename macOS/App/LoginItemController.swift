@@ -13,12 +13,12 @@ final class LoginItemController: ObservableObject {
 
     var subtitle: String {
         if isUnavailable {
-            return "Login item is unavailable in this build configuration."
+            return String(localized: "Login item is unavailable in this build configuration.", comment: "Subtitle of the Launch at Login row in Settings when this build of the app cannot be added as a login item.")
         }
         if requiresApproval {
-            return "Enabled, but macOS still needs approval in Login Items."
+            return String(localized: "Enabled, but macOS still needs approval in Login Items.", comment: "Subtitle of the Launch at Login row in Settings when macOS still needs the user's approval. Login Items is a page in macOS System Settings; use the name macOS uses in this language.")
         }
-        return "Start KeyVox automatically when you sign in."
+        return String(localized: "Start KeyVox automatically when you sign in.", comment: "Subtitle of the Launch at Login row in Settings. KeyVox is a brand name and stays in English.")
     }
 
     var shouldShowOpenSystemSettingsAction: Bool {
@@ -49,7 +49,7 @@ final class LoginItemController: ObservableObject {
             refreshStatus()
         } catch {
             refreshStatus()
-            errorMessage = "Unable to update Launch at Login. You can change this in Login Items."
+            errorMessage = String(localized: "Unable to update Launch at Login. You can change this in Login Items.", comment: "Error shown under the Launch at Login row in Settings when the setting cannot be changed. Launch at Login is the row's title; translate it the same way as that title. Login Items is a page in macOS System Settings; use the name macOS uses in this language.")
             #if DEBUG
             print("LoginItemController: failed to update login item state: \(error.localizedDescription)")
             #endif

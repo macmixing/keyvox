@@ -38,6 +38,7 @@ public final class NativeEngine {
     public static native void cancel();
     public static native void download();
     public static native void configurePromotions(String appVersion, boolean usesBundledManifest, String previewCampaignID);
+    public static native void setPromotionLanguage(String languageCode);
     public static native void refreshPromotions();
     public static native void dictionaryList(long request);
     private static native void dictionaryAddUTF8(long request, byte[] phrase);

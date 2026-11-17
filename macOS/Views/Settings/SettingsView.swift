@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 import KeyVoxCore
 import KeyVoxPromotions
@@ -99,8 +100,8 @@ struct SettingsView: View {
         .sheet(item: $dictionaryDeleteTarget) { entry in
             ConfirmDeletePromptView(
                 config: ConfirmDeletePromptConfig(
-                    title: "Delete Entry?",
-                    message: "This dictionary entry will be removed from KeyVox."
+                    title: String(localized: "Delete Entry?", comment: "Title of the confirmation prompt for deleting a dictionary word in Settings."),
+                    message: String(localized: "This dictionary entry will be removed from KeyVox.", comment: "Message of the confirmation prompt for deleting a dictionary word in Settings. KeyVox is a brand name and stays in English.")
                 ),
                 onConfirm: {
                     dictionaryStore.delete(id: entry.id)
@@ -116,8 +117,8 @@ struct SettingsView: View {
 
             ConfirmDeletePromptView(
                 config: ConfirmDeletePromptConfig(
-                    title: "Delete \(displayName)?",
-                    message: "\(displayName) will be removed from this Mac."
+                    title: String(localized: "Delete \(displayName)?", comment: "Title of the confirmation prompt for deleting a dictation model in Settings. %@ is the model's name."),
+                    message: String(localized: "\(displayName) will be removed from this Mac.", comment: "Message of the confirmation prompt for deleting a dictation model in Settings. %@ is the model's name.")
                 ),
                 onConfirm: {
                     downloader.deleteModel(withID: modelID)

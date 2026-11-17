@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 
 extension SettingsTabView {
@@ -16,13 +17,13 @@ extension SettingsTabView {
                             .foregroundColor(.yellow)
                     }
 
-                    Text("Rate & Review")
+                    Text("Rate & Review", comment: "Title of the Settings card that asks the user to rate the app.")
                         .font(.appFont(18))
                         .foregroundStyle(.white)
                         .frame(maxWidth: .infinity, alignment: .leading)
 
                     AppActionButton(
-                        title: "Rate",
+                        title: String(localized: "Rate", comment: "Button on the Rate & Review card that opens the App Store review page."),
                         style: .primary,
                         size: .compact,
                         fontSize: 15,
@@ -30,7 +31,7 @@ extension SettingsTabView {
                     )
                 }
 
-                Text("Share your experience on the App Store.")
+                Text("Share your experience on the App Store.", comment: "Description on the Rate & Review card. Use Apple's official name for the App Store in this language.")
                     .font(.appFont(15, variant: .light))
                     .foregroundStyle(.white.opacity(0.7))
             }
@@ -54,13 +55,13 @@ extension SettingsTabView {
                             .frame(width: 32, height: 32)
                     }
 
-                    Text("Support on GitHub")
+                    Text("Support on GitHub", comment: "Title of the Settings card for sponsoring the project. GitHub is a product name and stays in English.")
                         .font(.appFont(18))
                         .foregroundStyle(.white)
                         .frame(maxWidth: .infinity, alignment: .leading)
 
                     AppActionButton(
-                        title: "Open",
+                        title: String(localized: "Open", comment: "Button on the Support on GitHub card that opens the sponsor page."),
                         style: .primary,
                         size: .compact,
                         fontSize: 15,
@@ -68,7 +69,7 @@ extension SettingsTabView {
                     )
                 }
 
-                Text("Support open source development via GitHub Sponsors.")
+                Text("Support open source development via GitHub Sponsors.", comment: "Description on the Support on GitHub card. GitHub Sponsors is a product name and stays in English.")
                     .font(.appFont(15, variant: .light))
                     .foregroundStyle(.white.opacity(0.7))
             }
@@ -91,13 +92,13 @@ extension SettingsTabView {
                             .frame(width: 32, height: 32)
                     }
 
-                    Text("Need Help?")
+                    Text("Need Help?", comment: "Title of the Settings card that opens the KeyVox help and FAQ page.")
                         .font(.appFont(18))
                         .foregroundStyle(.white)
                         .frame(maxWidth: .infinity, alignment: .leading)
 
                     AppActionButton(
-                        title: "Open",
+                        title: String(localized: "Open", comment: "Button on the Need Help? card that opens the help and FAQ page."),
                         style: .primary,
                         size: .compact,
                         fontSize: 15,
@@ -105,7 +106,7 @@ extension SettingsTabView {
                     )
                 }
 
-                Text("Get help with KeyVox, download the Mac app, read the FAQ, find more information, or contact us.")
+                Text("Get help with KeyVox, download the Mac app, read the FAQ, find more information, or contact us.", comment: "Description on the Need Help? card. KeyVox is a brand name and stays in English; use Apple's official name for Mac in this language.")
                     .font(.appFont(15, variant: .light))
                     .foregroundStyle(.white.opacity(0.7))
             }
@@ -128,13 +129,13 @@ extension SettingsTabView {
                                 .foregroundColor(.yellow)
                         }
 
-                        Text("Restore Purchases")
+                        Text("Restore Purchases", comment: "Title of the Settings card for restoring earlier in-app purchases. Use the term Apple uses for restoring purchases in this language.")
                             .font(.appFont(18))
                             .foregroundStyle(.white)
                             .frame(maxWidth: .infinity, alignment: .leading)
 
                         AppActionButton(
-                            title: "Restore",
+                            title: String(localized: "Restore", comment: "Button on the Restore Purchases card that restores earlier in-app purchases."),
                             style: .secondary,
                             size: .compact,
                             fontSize: 15,
@@ -150,7 +151,7 @@ extension SettingsTabView {
                         )
                     }
 
-                    Text("Restore past purchases for KeyVox Speak and KeyVox Vibes access on this Apple account.")
+                    Text("Restore past purchases for KeyVox Speak and KeyVox Vibes access on this Apple account.", comment: "Description on the Restore Purchases card. KeyVox Speak and KeyVox Vibes are brand names and stay in English; use Apple's official term for Apple Account in this language.")
                         .font(.appFont(15, variant: .light))
                         .foregroundStyle(.white.opacity(0.7))
                 }
@@ -163,7 +164,7 @@ extension SettingsTabView {
         if let appVersionBuildText {
             VStack(spacing: 10) {
                 Button(action: presentThirdPartyNotices) {
-                    Text("Third-Party Notices")
+                    Text("Third-Party Notices", comment: "Button at the bottom of Settings that opens the open source license notices.")
                         .font(.appFont(14))
                         .foregroundStyle(AppTheme.accent.opacity(0.95))
                         .frame(maxWidth: .infinity)

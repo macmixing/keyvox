@@ -46,27 +46,27 @@ struct KeyboardReturnKeyStyle: Hashable {
     var accessibilityLabel: String {
         switch returnKeyType {
         case .go:
-            return "Go"
+            return String(localized: "Go", comment: "VoiceOver label for the keyboard's return key when the text field uses the Go return key. Use the name the system keyboard uses in this language.")
         case .join:
-            return "Join"
+            return String(localized: "Join", comment: "VoiceOver label for the keyboard's return key when the text field uses the Join return key, such as when joining a network. Use the name the system keyboard uses in this language.")
         case .route:
-            return "Route"
+            return String(localized: "Route", comment: "VoiceOver label for the keyboard's return key when the text field uses the Route return key in maps and directions. Use the name the system keyboard uses in this language.")
         case .search, .google, .yahoo:
-            return "Search"
+            return String(localized: "Search", comment: "VoiceOver label for the keyboard's return key when the text field uses the Search return key. Use the name the system keyboard uses in this language.")
         case .send:
-            return "Send"
+            return String(localized: "Send", comment: "VoiceOver label for the keyboard's return key when the text field uses the Send return key. Use the name the system keyboard uses in this language.")
         case .done:
-            return "Done"
+            return String(localized: "Done", comment: "VoiceOver label for the keyboard's return key when the text field uses the Done return key. Use the name the system keyboard uses in this language.")
         case .next:
-            return "Next"
+            return String(localized: "Next", comment: "VoiceOver label for the keyboard's return key when the text field uses the Next return key, which moves to the next field. Use the name the system keyboard uses in this language.")
         case .continue:
-            return "Continue"
+            return String(localized: "Continue", comment: "VoiceOver label for the keyboard's return key when the text field uses the Continue return key. Use the name the system keyboard uses in this language.")
         case .emergencyCall:
-            return "Emergency Call"
+            return String(localized: "Emergency Call", comment: "VoiceOver label for the keyboard's return key when the text field uses the Emergency Call return key. Use the name the system uses in this language.")
         case .default:
-            return "Return"
+            return String(localized: "Return", comment: "VoiceOver label for the keyboard's return key. Use the name the system keyboard uses in this language.")
         @unknown default:
-            return "Return"
+            return String(localized: "Return", comment: "VoiceOver label for the keyboard's return key. Use the name the system keyboard uses in this language.")
         }
     }
 }

@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 
 enum SettingsPendingDeletionConfirmation: Identifiable, Equatable {
@@ -26,30 +27,30 @@ enum SettingsPendingDeletionConfirmation: Identifiable, Equatable {
     var title: String {
         switch self {
         case .dictationModel:
-            return "Delete Dictation Model?"
+            return String(localized: "Delete Dictation Model?", comment: "Title of the confirmation shown before deleting a downloaded dictation model.")
         case .keyVoxVibesAI:
-            return "Delete KeyVox Vibes AI?"
+            return String(localized: "Delete KeyVox Vibes AI?", comment: "Title of the confirmation shown before deleting the Vibes AI model. KeyVox Vibes AI is a brand name and stays in English.")
         case .sharedTTSModel:
-            return "Delete Speak Engine?"
+            return String(localized: "Delete Speak Engine?", comment: "Title of the confirmation shown before deleting the KeyVox Speak text-to-speech engine. Speak is a brand name and stays in English.")
         case .ttsVoice:
-            return "Delete Voice?"
+            return String(localized: "Delete Voice?", comment: "Title of the confirmation shown before deleting a downloaded KeyVox Speak voice.")
         case .learnedWords:
-            return "Reset Learned Words?"
+            return String(localized: "Reset Learned Words?", comment: "Title of the confirmation shown before clearing the words the KeyVox keyboard has learned.")
         }
     }
 
     var message: String {
         switch self {
         case .dictationModel(let modelID):
-            return "Delete the \(modelID.provider.displayName) model from this device?"
+            return String(localized: "Delete the \(modelID.provider.displayName) model from this device?", comment: "Message in the confirmation shown before deleting a dictation model. The placeholder is the model name, a brand name that stays in English.")
         case .keyVoxVibesAI:
-            return "Delete KeyVox Vibes AI from this device?"
+            return String(localized: "Delete KeyVox Vibes AI from this device?", comment: "Message in the confirmation shown before deleting the Vibes AI model. KeyVox Vibes AI is a brand name and stays in English.")
         case .sharedTTSModel:
-            return "Delete the KeyVox Speak engine and all downloaded voices from this device?"
+            return String(localized: "Delete the KeyVox Speak engine and all downloaded voices from this device?", comment: "Message in the confirmation shown before deleting the text-to-speech engine. KeyVox Speak is a brand name and stays in English.")
         case .ttsVoice(let voice):
-            return "Delete the \(voice.displayName) voice from this device?"
+            return String(localized: "Delete the \(voice.displayName) voice from this device?", comment: "Message in the confirmation shown before deleting a KeyVox Speak voice. The placeholder is the voice name, which stays in English.")
         case .learnedWords:
-            return "KeyVox will forget the words it learned from your typing and the corrections you undid. Your KeyVox Dictionary isn't affected."
+            return String(localized: "KeyVox will forget the words it learned from your typing and the corrections you undid. Your KeyVox Dictionary isn't affected.", comment: "Message in the confirmation shown before resetting the keyboard's learned words. KeyVox is a brand name and stays in English; Dictionary refers to the app's Dictionary tab.")
         }
     }
 
@@ -57,9 +58,9 @@ enum SettingsPendingDeletionConfirmation: Identifiable, Equatable {
     var confirmTitle: String {
         switch self {
         case .dictationModel, .keyVoxVibesAI, .sharedTTSModel, .ttsVoice:
-            return "Delete"
+            return String(localized: "Delete", comment: "Destructive button in a confirmation that deletes a downloaded model or voice.")
         case .learnedWords:
-            return "Reset"
+            return String(localized: "Reset", comment: "Destructive button in the confirmation that clears the keyboard's learned words.")
         }
     }
 }
@@ -117,7 +118,7 @@ private struct SettingsDeletionConfirmationModifier: ViewModifier {
                                 )
 
                                 AppActionButton(
-                                    title: "Cancel",
+                                    title: String(localized: "Cancel", comment: "Button that closes the delete confirmation without deleting anything."),
                                     style: .secondary,
                                     fillsWidth: true,
                                     size: .regular,

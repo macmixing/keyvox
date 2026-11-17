@@ -137,10 +137,12 @@ iOS/
 │   │   │   ├── AppDevice.swift
 │   │   │   ├── AppForegroundWindow.swift
 │   │   │   ├── AppReviewRequestBlockingPreference.swift
+│   │   │   ├── ApproximateDownloadSize.swift
 │   │   │   ├── AppTypography.swift
 │   │   │   ├── InlineWarningRules.swift
 │   │   │   ├── KeyboardObserver.swift
-│   │   │   └── KeyVoxSpeakFlowRules.swift
+│   │   │   ├── KeyVoxSpeakFlowRules.swift
+│   │   │   └── SetupVideoCaption.swift
 │   │   ├── Purchases/
 │   │   │   └── StoreUnlockStore.swift
 │   │   ├── Routing/
@@ -264,6 +266,7 @@ iOS/
 │   ├── KeyVoxiOS.entitlements
 │   ├── PrivacyInfo.xcprivacy
 │   ├── Resources/
+│   │   ├── AppShortcuts.xcstrings
 │   │   ├── Assets.xcassets/
 │   │   ├── DictationShortcutSetup/
 │   │   │   ├── ActionButtonDemoHandoff.mov
@@ -274,9 +277,11 @@ iOS/
 │   │   │   ├── ActionButtonShortcutSelection.mov
 │   │   │   ├── AddShortcutPage.mov
 │   │   │   └── ShortcutHero.mov
+│   │   ├── InfoPlist.xcstrings
 │   │   ├── Kanit-Light.ttf
 │   │   ├── Kanit-Medium.ttf
 │   │   ├── KeyVoxProducts.storekit
+│   │   ├── Localizable.xcstrings
 │   │   ├── Onboarding/
 │   │   │   ├── EnableKeyboard.mov
 │   │   │   └── KeyVoxKeyboardSelection.mov
@@ -327,7 +332,8 @@ iOS/
 │   │   │   │   ├── AppTheme.swift
 │   │   │   │   ├── AppTintedScrollIndicator.swift
 │   │   │   │   ├── AppTintedScrollView.swift
-│   │   │   │   └── AppToolbarContent.swift
+│   │   │   │   ├── AppToolbarContent.swift
+│   │   │   │   └── SetupVideoCaptionView.swift
 │   │   │   ├── AppUpdatePrompt.swift
 │   │   │   ├── AutoFocusTextField.swift
 │   │   │   ├── DeletionConfirmation.swift
@@ -367,6 +373,7 @@ iOS/
 │   │   │       ├── HomeTabView+TTSTransport.swift
 │   │   │       └── TTSReplayScrubber.swift
 │   │   ├── KeyVoxSpeak/
+│   │   │   ├── KeyVoxSpeakFastModeSpeedup.swift
 │   │   │   ├── KeyVoxSpeakIntroSheetView.swift
 │   │   │   ├── KeyVoxSpeakInstallCardView.swift
 │   │   │   ├── KeyVoxSpeakSceneAView.swift
@@ -497,6 +504,7 @@ iOS/
 │   │   └── KeyboardTypography.swift
 │   ├── Info.plist
 │   ├── KeyVoxKeyboard.entitlements
+│   ├── Localizable.xcstrings
 │   ├── PrivacyInfo.xcprivacy
 │   └── Views/
 │       ├── FullAccessView.swift
@@ -553,6 +561,7 @@ iOS/
 │   ├── KeyVoxShare.entitlements
 │   ├── KeyVoxShareAppLauncher.swift
 │   ├── KeyVoxShareBridge.swift
+│   ├── Localizable.xcstrings
 │   ├── PrivacyInfo.xcprivacy
 │   └── ShareViewController.swift
 ├── KeyVox Widget/
@@ -562,6 +571,7 @@ iOS/
 │   ├── KeyVox Widget.entitlements
 │   ├── KeyVox_WidgetBundle.swift
 │   ├── KeyVox_WidgetLiveActivity.swift
+│   ├── Localizable.xcstrings
 │   └── PrivacyInfo.xcprivacy
 ├── KeyVoxiOSTests/
 │   ├── App/
@@ -787,10 +797,12 @@ Packages/
 │   ├── Package.swift
 │   ├── Sources/KeyVoxPromotions/
 │   │   ├── PromotionCampaign.swift
+│   │   ├── PromotionCampaign+Copy.swift
 │   │   ├── PromotionCenter*.swift
 │   │   ├── PromotionContent.swift
 │   │   ├── PromotionDefaults.swift
 │   │   ├── PromotionEligibility.swift
+│   │   ├── PromotionLocalizedCopy.swift
 │   │   ├── PromotionManifest*.swift
 │   │   ├── PromotionPlatform.swift
 │   │   ├── PromotionResources.swift
@@ -813,6 +825,8 @@ Packages/
 ├── KeyVoxWhisper/
 │   ├── Package.swift
 │   ├── Sources/KeyVoxWhisper/
+│   │   ├── KeyVoxWhisperLocalization.swift
+│   │   ├── Resources/Localizable.xcstrings
 │   │   ├── Segment.swift
 │   │   ├── Whisper.swift
 │   │   ├── WhisperComputePolicy.swift
@@ -845,6 +859,7 @@ Packages/
 │   │   │   ├── OutputRepair.swift
 │   │   │   ├── Repairs/
 │   │   │   └── Support/
+│   │   ├── Resources/Localizable.xcstrings
 │   │   ├── StyleRewriteDictationConfiguration.swift
 │   │   ├── StyleRewriteInputVariantSelection.swift
 │   │   ├── StyleRewritePromptLeakGuard.swift
@@ -891,6 +906,7 @@ Packages/
     │   ├── PocketTTSMimiInference.swift
     │   ├── PocketTTSSpokenNumberNormalizer.swift
     │   ├── PocketTTSTextNormalizer.swift
+    │   ├── Resources/Localizable.xcstrings
     │   ├── SentencePieceModelParser.swift
     │   └── SentencePieceTokenizer.swift
     └── Tests/KeyVoxTTSTests/
@@ -1019,8 +1035,12 @@ Packages/
   - Pure scene-selection and scene-fallback rules shared by the intro sheet, unlock sheet, and the Home help presentation path so branch coverage stays deterministic in tests.
 - `KeyVox iOS/App/Presentation/InlineWarningRules.swift`
   - Pure warning-visibility rules shared by onboarding, KeyVox Speak setup, Home copied-text playback, and Settings install surfaces so Wi-Fi warning coverage stays deterministic in iOS tests.
+- `KeyVox iOS/App/Presentation/ApproximateDownloadSize.swift`
+  - Holds the approximate download sizes shown before model, voice, and engine downloads and writes them with the user's language's byte units.
 - `KeyVox iOS/App/Presentation/AppTypography.swift`
   - App-wide typography helpers for SwiftUI surfaces that should share the same app font treatment.
+- `KeyVox iOS/App/Presentation/SetupVideoCaption.swift`
+  - Decides whether setup videos show a translated caption: only when the app shows a language other than the one the videos' English words were made in.
 - `KeyVox iOS/App/Presentation/KeyboardObserver.swift`
   - App-side keyboard-presentation observer used by text-entry flows such as onboarding and dictionary editing.
   - Reports how much of KeyVox's window the keyboard covers, which is less than its full height, or nothing, when the window ends above the keyboard on iPad.
@@ -1083,6 +1103,7 @@ Packages/
   - Owns the steps shown on the current device, leaving the Action Button steps out on iPad, plus each step's position and next/previous step among them.
 - `KeyVox iOS/Views/DictationShortcutSetup/DictationShortcutSetupPageView.swift`
   - Shared per-step presentation that composes `ShortcutIntroView` with the reusable video viewport; on iPad the video is also kept no taller than the page.
+  - In a translated app, shows each step's video sentence as a caption under the video, fades the video's bottom edge above it, and hides the video from VoiceOver so the sentence is read once.
 - `KeyVox iOS/Views/DictationShortcutSetup/DictationShortcutSetupVideoView.swift`
   - Active-page looping playback wrapper for the transparent Shortcut/Action Button instructional media.
 - `KeyVox iOS/Views/Components/App/AppPageIndicator.swift`
@@ -1092,6 +1113,11 @@ Packages/
   - Pauses and seeks inactive pages to the start, restarts when they become active, and resumes active playback after app activation.
 - `KeyVox iOS/Views/Onboarding/OnboardingEnableKeyboardScreen.swift`
   - Dedicated post-Shortcut screen that demonstrates enabling the KeyVox keyboard and Full Access, opens app keyboard settings, and resumes into the keyboard tour when enablement is detected.
+  - In a translated app, shows a caption under the video that names the Keyboards and Allow Full Access steps in the user's language.
+- `KeyVox iOS/Views/Onboarding/Tour/OnboardingKeyboardTourSceneAView.swift`
+  - Keyboard tour's first scene: the keyboard-list video, plus in a translated app a caption under it; the video gives up height first so the caption stays above the input bar on short screens.
+- `KeyVox iOS/Views/Components/App/SetupVideoCaptionView.swift`
+  - Shared centered caption line used under setup videos in a translated app.
 - `KeyVox iOS/Views/Onboarding/OnboardingStepRow.swift`
   - Shared onboarding setup card row with step state, optional action button, trailing status content, and extra content below the description.
   - Keeps the onboarding setup presentation consistent while the screen owns step-specific button state and copy.
@@ -1404,7 +1430,7 @@ Packages/
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Language/FileTypes/`
   - Loads the packaged `mime-db.json` registry and protects recognized file extensions during sentence capitalization.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Support/KeyVoxCoreResources.swift`
-  - Centralizes access to packaged pronunciation and file-type data through the default SwiftPM bundle, with a one-time host configuration seam.
+  - Centralizes access to packaged pronunciation and file-type data and the package string catalog through the default SwiftPM bundle, with a one-time host configuration seam.
 - `KeyVox iOS/Core/Transcription/DictationService.swift`
   - iOS-local transcription-service abstraction used by the runtime manager.
 - `KeyVox iOS/Core/Transcription/TranscriptionManager.swift`
@@ -1464,6 +1490,7 @@ Packages/
   - `KeyVoxSpeakSheetView.swift` owns the shared shell, pager state, pinned bottom CTA area, unlock action, restore action, mode-specific chrome, and sheet-level download confirmation overlay so pinned controls are covered while confirmation is active.
   - `KeyVoxSpeakSceneAView.swift`, `KeyVoxSpeakSceneBView.swift`, and `KeyVoxSpeakSceneCView.swift` own the three swipeable pages, matching the onboarding-scene split pattern. Scene C requests setup downloads through the sheet-owned confirmation path instead of starting downloads directly.
   - `KeyVoxSpeakUnlockScene.swift` owns the shared unlock-mode scene model so unlock copy and CTA rules stay centralized across wrappers.
+  - `KeyVoxSpeakFastModeSpeedup.swift` owns the Fast Mode speedup the Speak pages quote, formatted as a percentage for the current language.
   - `KeyVoxSpeakInstallCardView.swift` owns the shared PocketTTS setup card used by scene C, including shared-model install, featured-voice install, progress, and repair actions. It requests a combined engine-plus-voice confirmation only when the shared Speak engine is missing, otherwise it requests the voice-only confirmation.
   - `KeyVoxSpeakIntroSheetView.swift` is the thin post-onboarding intro wrapper around the shared sheet.
   - `TTSUnlockSheetView.swift` is the thin unlock-mode wrapper around the same shared sheet for Home and Settings purchase entry points.

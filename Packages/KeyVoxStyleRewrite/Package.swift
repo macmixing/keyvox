@@ -4,6 +4,7 @@ import PackageDescription
 
 let package = Package(
     name: "KeyVoxStyleRewrite",
+    defaultLocalization: "en",
     platforms: [
         .iOS("18.0"),
         .macOS(.v13)
@@ -23,7 +24,10 @@ let package = Package(
             dependencies: [
                 .product(name: "KeyVoxLinguistics", package: "KeyVoxLinguistics"),
             ],
-            path: "Sources/KeyVoxStyleRewrite"
+            path: "Sources/KeyVoxStyleRewrite",
+            resources: [
+                .process("Resources"),
+            ]
         ),
         .testTarget(
             name: "KeyVoxStyleRewriteTests",

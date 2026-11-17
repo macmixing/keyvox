@@ -74,7 +74,7 @@ enum PocketTTSFlowInference {
         let output = try await model.keyVoxPrediction(from: provider)
         guard let outputName = output.featureNames.first,
               let velocityArray = output.featureValue(for: outputName)?.multiArrayValue else {
-            throw KeyVoxTTSError.inferenceFailure("PocketTTS flow decoder output is missing.")
+            throw KeyVoxTTSError.inferenceFailure(NSLocalizedString("PocketTTS flow decoder output is missing.", bundle: .module, comment: "Error shown when reading copied text aloud fails: a speech engine step produced no output. PocketTTS and Mimi are technical engine names and stay in English."))
         }
         return PocketTTSInferenceUtilities.readFloats(from: velocityArray, count: PocketTTSConstants.latentDimension)
     }

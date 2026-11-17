@@ -31,16 +31,16 @@ final class OnboardingMicrophoneStepController: ObservableObject {
 
     var microphoneStepButtonTitle: String {
         if isMicStepCompleted {
-            return "Authorized"
+            return String(localized: "Authorized", comment: "Button on the Microphone Access onboarding step after microphone access was granted.")
         }
         let status = AVCaptureDevice.authorizationStatus(for: .audio)
         if status == .denied || status == .restricted {
-            return "Open Settings"
+            return String(localized: "Open Settings", comment: "Button on the Microphone Access onboarding step that opens System Settings when microphone access was denied. Use the name macOS uses for System Settings in this language.")
         }
         if pendingMicAuthorizationCompletion {
-            return "Choose Mic"
+            return String(localized: "Choose Mic", comment: "Button on the Microphone Access onboarding step that opens the microphone picker.")
         }
-        return "Grant Access"
+        return String(localized: "Grant Access", comment: "Button on the Microphone Access onboarding step that asks for microphone access.")
     }
 
     var isMicStepCompleted: Bool {

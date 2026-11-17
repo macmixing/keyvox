@@ -3,6 +3,7 @@ import PackageDescription
 
 let package = Package(
     name: "KeyVoxCore",
+    defaultLocalization: "en",
     platforms: [
         .macOS("13.3"),
         .iOS("18.0"),

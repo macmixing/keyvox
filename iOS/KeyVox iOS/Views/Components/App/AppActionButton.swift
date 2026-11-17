@@ -61,13 +61,30 @@ struct AppActionButton: View {
                 Text(title)
                     .font(.appFont(fontSize))
                     .foregroundStyle(foregroundColor)
+                    .lineLimit(titleLineLimit)
+                    .minimumScaleFactor(titleMinimumScaleFactor)
             }
         } else {
             Text(title)
                 .font(.appFont(fontSize))
                 .foregroundStyle(foregroundColor)
                 .multilineTextAlignment(.center)
+                .lineLimit(titleLineLimit)
+                .minimumScaleFactor(titleMinimumScaleFactor)
         }
+    }
+
+    /// A one-word title stays on one line and shrinks a little when space is tight, so it never splits mid-word.
+    private var isSingleWordTitle: Bool {
+        title.contains(where: \.isWhitespace) == false
+    }
+
+    private var titleLineLimit: Int? {
+        isSingleWordTitle ? 1 : nil
+    }
+
+    private var titleMinimumScaleFactor: CGFloat {
+        isSingleWordTitle ? 0.75 : 1
     }
 
     private var horizontalPadding: CGFloat {

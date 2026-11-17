@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 
 extension KeyVoxSpeakSettingsView {
@@ -17,7 +18,7 @@ extension KeyVoxSpeakSettingsView {
                     }
 
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("KeyVox Speak")
+                        Text(verbatim: "KeyVox Speak")
                             .font(.appFont(18))
                             .foregroundStyle(.white)
 
@@ -29,7 +30,7 @@ extension KeyVoxSpeakSettingsView {
 
                     VStack(alignment: .trailing, spacing: 10) {
                         if installedPlaybackVoices.isEmpty {
-                            Text("Install voice")
+                            Text("Install voice", comment: "Shown in place of the Change button on the KeyVox Speak card when no voice is installed yet.")
                                 .font(.appFont(14))
                                 .foregroundStyle(.white.opacity(0.5))
                                 .padding(.top, 2)
@@ -38,7 +39,7 @@ extension KeyVoxSpeakSettingsView {
                                 voices: installedPlaybackVoices,
                                 selection: installedVoiceSelection
                             ) {
-                                Text("Change")
+                                Text("Change", comment: "Menu button on the KeyVox Speak card that opens the list of installed voices.")
                                     .font(.appFont(16))
                                     .foregroundColor(.yellow)
                             }
@@ -149,13 +150,13 @@ extension KeyVoxSpeakSettingsView {
     private var ttsUnlockRow: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(alignment: .center, spacing: 12) {
-                Text("KeyVox Speak Unlimited")
+                Text("KeyVox Speak Unlimited", comment: "Title of the row for the purchase that removes the daily KeyVox Speak limit. KeyVox Speak is a brand name and stays in English.")
                     .font(.appFont(17))
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity, alignment: .leading)
 
                 AppActionButton(
-                    title: "Unlock",
+                    title: String(localized: "Unlock", comment: "Button on the KeyVox Speak Unlimited row that opens the purchase."),
                     style: .primary,
                     size: .compact,
                     fontSize: 15,
@@ -171,7 +172,7 @@ extension KeyVoxSpeakSettingsView {
                 .foregroundStyle(.white.opacity(0.7))
                 .frame(maxWidth: .infinity, alignment: .leading)
 
-            Text("Speak currently supports English only.")
+            Text("Speak currently supports English only.", comment: "Note on the KeyVox Speak card explaining that reading aloud only supports English. Speak is a brand name and stays in English.")
                 .font(.appFont(13, variant: .light))
                 .foregroundStyle(.yellow.opacity(0.7))
                 .frame(maxWidth: .infinity, alignment: .center)
@@ -182,7 +183,7 @@ extension KeyVoxSpeakSettingsView {
     private var ttsSharedModelRow: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(alignment: .center, spacing: 12) {
-                Text("KeyVox Speak Engine")
+                Text("KeyVox Speak Engine", comment: "Title of the row for the downloadable text-to-speech engine. KeyVox Speak is a brand name and stays in English.")
                     .font(.appFont(17))
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -297,7 +298,11 @@ extension KeyVoxSpeakSettingsView {
         }
         .buttonStyle(.plain)
         .disabled(!canPlayPreview)
-        .accessibilityLabel(isPlaying ? "Pause \(voice.displayName) preview" : "Play \(voice.displayName) preview")
+        .accessibilityLabel(
+            isPlaying
+                ? String(localized: "Pause \(voice.displayName) preview", comment: "VoiceOver label for the button that pauses a voice sample. The placeholder is the voice name, which stays in English.")
+                : String(localized: "Play \(voice.displayName) preview", comment: "VoiceOver label for the button that plays a voice sample. The placeholder is the voice name, which stays in English.")
+        )
     }
 
     @ViewBuilder
@@ -305,7 +310,7 @@ extension KeyVoxSpeakSettingsView {
         switch pocketTTSModelManager.sharedModelInstallState {
         case .notInstalled:
             AppActionButton(
-                title: "Download",
+                title: String(localized: "Download", comment: "Button on the KeyVox Speak Engine row that downloads the engine."),
                 style: .primary,
                 size: .compact,
                 fontSize: 15,
@@ -314,7 +319,7 @@ extension KeyVoxSpeakSettingsView {
             )
         case .ready:
             AppActionButton(
-                title: "Delete",
+                title: String(localized: "Delete", comment: "Button on the KeyVox Speak Engine row that deletes the engine and its voices."),
                 style: .destructive,
                 size: .compact,
                 fontSize: 15,
@@ -323,7 +328,7 @@ extension KeyVoxSpeakSettingsView {
             )
         case .failed:
             AppActionButton(
-                title: "Repair",
+                title: String(localized: "Repair", comment: "Button on the KeyVox Speak Engine row that retries a failed install."),
                 style: .primary,
                 size: .compact,
                 fontSize: 15,
@@ -342,7 +347,7 @@ extension KeyVoxSpeakSettingsView {
         switch state {
         case .notInstalled:
             AppActionButton(
-                title: "Download",
+                title: String(localized: "Download", comment: "Button on a KeyVox Speak voice row that downloads the voice."),
                 style: .primary,
                 size: .compact,
                 fontSize: 15,
@@ -351,7 +356,7 @@ extension KeyVoxSpeakSettingsView {
             )
         case .ready:
             AppActionButton(
-                title: "Delete",
+                title: String(localized: "Delete", comment: "Button on a KeyVox Speak voice row that deletes the voice."),
                 style: .destructive,
                 size: .compact,
                 fontSize: 15,
@@ -360,7 +365,7 @@ extension KeyVoxSpeakSettingsView {
             )
         case .failed:
             AppActionButton(
-                title: "Repair",
+                title: String(localized: "Repair", comment: "Button on a KeyVox Speak voice row that retries a failed install."),
                 style: .primary,
                 size: .compact,
                 fontSize: 15,
@@ -375,41 +380,41 @@ extension KeyVoxSpeakSettingsView {
     private var ttsSharedModelStatusText: String {
         switch pocketTTSModelManager.sharedModelInstallState {
         case .notInstalled:
-            return "Not installed (~642 MB)"
+            return String(localized: "Not installed (\(ApproximateDownloadSize.speakEngine))", comment: "Status on the KeyVox Speak Engine row when the engine is not installed. The value in parentheses is the approximate download size.")
         case .downloading:
-            return "Downloading KeyVox Speak engine."
+            return String(localized: "Downloading KeyVox Speak engine.", comment: "Status on the KeyVox Speak Engine row while the engine downloads. KeyVox Speak is a brand name and stays in English.")
         case .installing:
-            return "Installing KeyVox Speak engine."
+            return String(localized: "Installing KeyVox Speak engine.", comment: "Status on the KeyVox Speak Engine row while the engine installs. KeyVox Speak is a brand name and stays in English.")
         case .ready:
-            return "Tap play to preview a voice."
+            return String(localized: "Tap play to preview a voice.", comment: "Status on the KeyVox Speak Engine row once the engine is installed, pointing to the play buttons next to each voice.")
         case .failed:
-            return "Install failed"
+            return String(localized: "Install failed", comment: "Status on the KeyVox Speak Engine row when the engine failed to install.")
         }
     }
 
     private func ttsVoiceStatusText(for voice: AppSettingsStore.TTSVoice, state: PocketTTSInstallState) -> String {
         switch state {
         case .downloading:
-            return "Downloading \(voice.displayName)"
+            return String(localized: "Downloading \(voice.displayName)", comment: "Status on a KeyVox Speak voice row while the voice downloads. The placeholder is the voice name, which stays in English.")
         case .installing:
-            return "Installing \(voice.displayName)"
+            return String(localized: "Installing \(voice.displayName)", comment: "Status on a KeyVox Speak voice row while the voice installs. The placeholder is the voice name, which stays in English.")
         case .ready:
-            return "Installed"
+            return String(localized: "Installed", comment: "Status on a KeyVox Speak voice row when the voice is installed.")
         case .failed:
-            return "Install failed"
+            return String(localized: "Install failed", comment: "Status on a KeyVox Speak voice row when the voice failed to install.")
         case .notInstalled:
             break
         }
 
         if pocketTTSModelManager.isSharedModelReady() == false {
-            return "Install the KeyVox Speak engine before downloading voices."
+            return String(localized: "Install the KeyVox Speak engine before downloading voices.", comment: "Status on a KeyVox Speak voice row when the engine is not installed yet. KeyVox Speak is a brand name and stays in English.")
         }
 
-        let formattedSize = ByteCountFormatter.string(
+        let formattedSize = AppTypography.fontSupportedSpacing(ByteCountFormatter.string(
             fromByteCount: PocketTTSModelCatalog.approximateVoiceDownloadBytes(for: voice),
             countStyle: .file
-        )
-        return "Not installed (~\(formattedSize))"
+        ))
+        return String(localized: "Not installed (~\(formattedSize))", comment: "Status on a KeyVox Speak voice row when the voice is not installed. The placeholder is the approximate download size, already formatted with its unit.")
     }
 
     private func ttsProgressPercentageText(for state: PocketTTSInstallState) -> String? {
@@ -421,7 +426,7 @@ extension KeyVoxSpeakSettingsView {
             return nil
         }
 
-        return "\(Int((progress * 100).rounded()))%"
+        return progress.formatted(.percent.precision(.fractionLength(0)).rounded(rule: .toNearestOrAwayFromZero))
     }
 
     var installedPlaybackVoices: [AppSettingsStore.TTSVoice] {
@@ -450,23 +455,22 @@ extension KeyVoxSpeakSettingsView {
         if let firstInstalledVoice = installedPlaybackVoices.first {
             return firstInstalledVoice.displayName
         }
-        return "No voice installed"
+        return String(localized: "No voice installed", comment: "Shown on the KeyVox Speak card in place of the selected voice name when no voice is installed.")
     }
 
     var playbackVoiceDescriptionText: String {
         if pocketTTSModelManager.isSharedModelReady() == false {
-            return "Install the KeyVox Speak engine first, then you can download voices."
+            return String(localized: "Install the KeyVox Speak engine first, then you can download voices.", comment: "Description on the KeyVox Speak card when the engine is not installed. KeyVox Speak is a brand name and stays in English.")
         }
         if installedPlaybackVoices.isEmpty {
-            return "Download a playback voice to let KeyVox read copied text aloud."
+            return String(localized: "Download a playback voice to let KeyVox read copied text aloud.", comment: "Description on the KeyVox Speak card when no voice is installed. KeyVox is a brand name and stays in English.")
         }
-        return "Choose which installed voice KeyVox uses when speaking copied text."
+        return String(localized: "Choose which installed voice KeyVox uses when speaking copied text.", comment: "Description on the KeyVox Speak card when at least one voice is installed. KeyVox is a brand name and stays in English.")
     }
 
     var ttsUnlockStatusText: String {
         let remainingFreeSpeaks = ttsPurchaseController.remainingFreeTTSSpeaksToday
-        let noun = remainingFreeSpeaks == 1 ? "speak" : "speaks"
-        return "\(remainingFreeSpeaks) free \(noun) left today. Replay stays free for anything already generated."
+        return String(localized: "\(remainingFreeSpeaks) free speaks left today. Replay stays free for anything already generated.", comment: "Status on the KeyVox Speak Unlimited row in Speak settings showing how many free uses are left today. %lld is the number left; use plural forms. KeyVox Speak is a brand name and stays in English.")
     }
 
     var supportsTTSExpansion: Bool {

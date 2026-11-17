@@ -85,6 +85,12 @@ public func configurePromotions(
     }
 }
 
+@_cdecl("keyvox_promotions_set_language")
+public func setPromotionLanguage(_ languageCode: UnsafePointer<CChar>) {
+    let languageCode = String(cString: languageCode)
+    Task { @MainActor in AndroidPromotionCoordinator.setLanguage(languageCode) }
+}
+
 @_cdecl("keyvox_promotions_refresh")
 public func refreshPromotions() {
     Task { @MainActor in AndroidPromotionCoordinator.shared?.refresh() }

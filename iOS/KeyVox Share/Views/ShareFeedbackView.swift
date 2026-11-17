@@ -23,11 +23,11 @@ struct ShareFeedbackView: View {
                     .opacity(isVisible ? 1 : 0)
                 
                 VStack(spacing: 8) {
-                    Text("Opening KeyVox")
+                    Text("Opening KeyVox", comment: "Title on the share screen while the KeyVox app opens. KeyVox is a brand name and stays in English.")
                         .font(appFont(22, variant: .medium))
                         .foregroundStyle(.white)
                     
-                    Text("Preparing to speak text")
+                    Text("Preparing to speak text", comment: "Subtitle on the share screen while the shared text is prepared to be read aloud.")
                         .font(appFont(16, variant: .light))
                         .foregroundStyle(.white.opacity(0.7))
                 }
