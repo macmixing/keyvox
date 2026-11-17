@@ -1491,7 +1491,7 @@ Packages/
   - `KeyVoxSpeakSceneAView.swift`, `KeyVoxSpeakSceneBView.swift`, and `KeyVoxSpeakSceneCView.swift` own the three swipeable pages, matching the onboarding-scene split pattern. Scene C requests setup downloads through the sheet-owned confirmation path instead of starting downloads directly.
   - `KeyVoxSpeakUnlockScene.swift` owns the shared unlock-mode scene model so unlock copy and CTA rules stay centralized across wrappers.
   - `KeyVoxSpeakFastModeSpeedup.swift` owns the Fast Mode speedup the Speak pages quote, formatted as a percentage for the current language.
-  - `KeyVoxSpeakInstallCardView.swift` owns the shared PocketTTS setup card used by scene C, including shared-model install, featured-voice install, progress, and repair actions. It requests a combined engine-plus-voice confirmation only when the shared Speak engine is missing, otherwise it requests the voice-only confirmation.
+  - `KeyVoxSpeakInstallCardView.swift` owns the shared PocketTTS setup card used by scene C, including shared-model install, featured-voice install, progress, and repair actions, in one card with a full-width action button at the bottom. It requests a combined engine-plus-voice confirmation only when the shared Speak engine is missing, otherwise it requests the voice-only confirmation.
   - `KeyVoxSpeakIntroSheetView.swift` is the thin post-onboarding intro wrapper around the shared sheet.
   - `TTSUnlockSheetView.swift` is the thin unlock-mode wrapper around the same shared sheet for Home and Settings purchase entry points.
 - `KeyVox iOS/Views/KeyVoxVibes/`
@@ -1557,7 +1557,7 @@ Packages/
 - `KeyVox iOS/Views/Components/DownloadConfirmation.swift`
   - Shared non-destructive download confirmation component used before model and voice downloads. It carries separate copy for Whisper Base, Parakeet TDT v3, KeyVox Vibes AI, the Speak engine, individual Speak voices, and combined first-use Speak engine-plus-voice setup.
 - `KeyVox iOS/Views/Components/ModelDownloaderCardView.swift`
-  - Compact reusable app-styled model downloader card with title/action row, subtitle/status text, right-aligned progress percentage, progress bar, and error text. Scene C uses it for the inline Vibes AI install surface.
+  - Compact reusable app-styled model downloader card with title row, subtitle/status text, right-aligned progress percentage, progress bar, error text, and a full-width action button at the bottom while no download is in progress. Vibes scene C and the Vibes unlock scene use it for the inline Vibes AI install surface.
 - `KeyVox iOS/Views/Components/AppUpdatePrompt.swift`
   - Shared custom update prompt component used by the root app shell instead of the native system alert so optional and forced update prompts match the app's modal overlay styling.
 - `KeyVox iOS/Views/ReturnToHostView.swift`
