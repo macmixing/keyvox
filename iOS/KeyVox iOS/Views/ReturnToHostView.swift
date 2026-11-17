@@ -81,6 +81,7 @@ struct ReturnToHostView: View {
             },
             maxWidth: 330
         )
+        .padding(.horizontal, metrics.isSideBySide ? 0 : 24)
         .foregroundColor(.white)
         .multilineTextAlignment(.center)
         .lineLimit(1)
