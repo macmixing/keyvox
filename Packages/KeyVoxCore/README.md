@@ -65,7 +65,7 @@ That split is intentional. `KeyVoxCore` should stay focused on reusable engine b
 - `Sources/KeyVoxCore/Resources/Pronunciation/`
   Bundled lexicon data, common-word data, and source/license metadata.
 - `Sources/KeyVoxCore/Resources/Localizable.xcstrings`
-  Translations of the dictionary messages and the `Auto Detect` language option, read through `KeyVoxCoreResources.bundle`.
+  Translations of the dictionary messages, the `Auto Detect` language option, and the fallback microphone name, read through `KeyVoxCoreResources.bundle`.
 - `Tests/KeyVoxCoreTests/`
   Package-owned regression coverage for engine behavior.
 
