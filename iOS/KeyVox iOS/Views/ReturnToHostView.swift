@@ -72,14 +72,21 @@ struct ReturnToHostView: View {
     }
 
     private func headline(metrics: ReturnToHostLayoutMetrics) -> some View {
-        VStack(spacing: -10) {
-            Text("Swipe Back,", comment: "First line of the two-line headline asking the user to swipe back to the app they came from; the second line is \"and speak.\"")
-                .font(.appFont(50 * metrics.textScale, variant: .medium))
-            Text("and speak.", comment: "Second line of the two-line headline; the first line is \"Swipe Back,\". Speak is a verb here, meaning start talking to dictate.")
-                .font(.appFont(40 * metrics.textScale, variant: .light))
-        }
+        metrics.textFrame(
+            VStack(spacing: -10) {
+                Text("Swipe Back,", comment: "First line of the two-line headline asking the user to swipe back to the app they came from; the second line is \"and speak.\"")
+                    .font(.appFont(50 * metrics.textScale, variant: .medium))
+                Text("and speak.", comment: "Second line of the two-line headline; the first line is \"Swipe Back,\". Speak is a verb here, meaning start talking to dictate.")
+                    .font(.appFont(40 * metrics.textScale, variant: .light))
+            },
+            maxWidth: 330
+        )
+        .padding(.horizontal, metrics.isSideBySide ? 0 : 24)
         .foregroundColor(.white)
         .multilineTextAlignment(.center)
+        .lineLimit(1)
+        .minimumScaleFactor(0.5)
+        .fixedSize(horizontal: false, vertical: true)
     }
 
     private func video(metrics: ReturnToHostLayoutMetrics) -> some View {
@@ -114,6 +121,10 @@ struct ReturnToHostView: View {
             .foregroundColor(Color(UIColor.systemGray))
             .multilineTextAlignment(.center)
         }
+        .lineLimit(1)
+        .minimumScaleFactor(0.5)
+        .fixedSize(horizontal: false, vertical: true)
+        .padding(.horizontal, metrics.isSideBySide ? 0 : 24)
     }
 }
 

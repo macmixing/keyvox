@@ -149,18 +149,6 @@ struct KeyVoxSpeakInstallCardView: View {
                     Text(percentageText)
                         .font(.appFont(13, variant: .medium))
                         .foregroundStyle(.yellow)
-                } else if let buttonTitle = actionTitle {
-                    AppActionButton(
-                        title: buttonTitle,
-                        style: .primary,
-                        size: .compact,
-                        fontSize: 14,
-                        isEnabled: isActionEnabled,
-                        action: {
-                            appHaptics.light()
-                            performAction()
-                        }
-                    )
                 }
             }
 
@@ -171,17 +159,23 @@ struct KeyVoxSpeakInstallCardView: View {
                     .font(.appFont(12))
                     .foregroundStyle(.red)
             }
-        }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 12)
-        .background(
-            RoundedRectangle(cornerRadius: AppTheme.rowCornerRadius)
-                .fill(AppTheme.rowFill)
-                .overlay(
-                    RoundedRectangle(cornerRadius: AppTheme.rowCornerRadius)
-                        .stroke(AppTheme.rowStroke, lineWidth: 1)
+
+            if activeInstallState.flatMap(progressText(for:)) == nil,
+               let buttonTitle = actionTitle {
+                AppActionButton(
+                    title: buttonTitle,
+                    style: .primary,
+                    fillsWidth: true,
+                    size: .compact,
+                    fontSize: 14,
+                    isEnabled: isActionEnabled,
+                    action: {
+                        appHaptics.light()
+                        performAction()
+                    }
                 )
-        )
+            }
+        }
     }
 
     @ViewBuilder

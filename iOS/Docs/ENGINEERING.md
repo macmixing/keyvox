@@ -2099,7 +2099,7 @@ Every catalog entry with an `fr` translation also carries a full `fr-CA` transla
 Each target owns its String Catalog:
 
 - `KeyVox iOS/Resources/Localizable.xcstrings`: containing app text
-- `KeyVox iOS/Resources/InfoPlist.xcstrings`: the microphone permission prompt
+- `KeyVox iOS/Resources/InfoPlist.xcstrings`: the microphone permission prompt, plus the app names Xcode extracts from the Info.plist, marked not to translate
 - `KeyVox iOS/Resources/AppShortcuts.xcstrings`: App Shortcuts phrases
 - `KeyVox Keyboard/Localizable.xcstrings`, `KeyVox Share/Localizable.xcstrings`, `KeyVox Widget/Localizable.xcstrings`: extension text
 - shared packages that show text own `Sources/<Package>/Resources/Localizable.xcstrings` (KeyVoxCore, KeyVoxStyleRewrite, KeyVoxWhisper, KeyVoxParakeet, KeyVoxTTS)
@@ -2144,7 +2144,7 @@ Current app-owned surfaces:
 - `TTSPreviewPlayer`: shared bundled-preview playback owner used by both Settings voice previews and the KeyVox Speak intro demo clip
 - `KeyVoxSpeak` presentation surface: shared intro-and-unlock sheet content under `Views/KeyVoxSpeak/`, including the shared sheet shell, scene A/B/C files, the extracted `KeyVoxSpeakInstallCardView`, the post-onboarding intro wrapper, and the unlock wrapper; the pure `KeyVoxSpeakFlowRules` resolver now lives under `App/Presentation/` so scene selection and fallback behavior stay separate from component rendering
 - `DownloadConfirmation`: shared non-destructive confirmation overlay for user-started model and voice downloads; app-shell surfaces route through `MainTabView`, while KeyVox Speak and KeyVox Vibes sheets own sheet-level instances so pinned CTA controls are covered
-- `ModelDownloaderCardView`: compact reusable model-download card for portable install surfaces, with title/action alignment, optional subtitle, status row, right-aligned progress percentage, progress bar, and error text
+- `ModelDownloaderCardView`: compact reusable model-download card for portable install surfaces, with a full-width action button at the bottom, optional subtitle, status row, right-aligned progress percentage, progress bar, and error text
 - `AppUpdatePrompt`: shared custom update overlay presented from `AppRootView` so optional and forced update prompts match the app modal style and cover the mounted app shell instead of using the native system alert
 - `ThirdPartyNoticesView`: shared legal-notices sheet that renders the bundled repo-root `THIRD_PARTY_NOTICES.md` markdown with app-owned styling and explicit close-only dismissal
 - `DictionaryTabView`: dictionary browsing/editing
