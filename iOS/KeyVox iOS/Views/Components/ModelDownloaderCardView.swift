@@ -30,17 +30,6 @@ struct ModelDownloaderCardView: View {
                     .font(.appFont(15, variant: .medium))
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity, alignment: .leading)
-
-                if let actionTitle, progressText == nil {
-                    AppActionButton(
-                        title: actionTitle,
-                        style: actionStyle,
-                        size: .compact,
-                        fontSize: 14,
-                        isEnabled: isActionEnabled,
-                        action: action
-                    )
-                }
             }
 
             if let subtitle {
@@ -72,6 +61,18 @@ struct ModelDownloaderCardView: View {
                 Text(errorText)
                     .font(.appFont(12))
                     .foregroundStyle(.red)
+            }
+
+            if let actionTitle, progressText == nil {
+                AppActionButton(
+                    title: actionTitle,
+                    style: actionStyle,
+                    fillsWidth: true,
+                    size: .compact,
+                    fontSize: 14,
+                    isEnabled: isActionEnabled,
+                    action: action
+                )
             }
         }
         .padding(.horizontal, 14)
