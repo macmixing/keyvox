@@ -114,9 +114,8 @@ final class AppServiceRegistry {
             defaults: settingsDefaults,
             forcePresentation: runtimeFlags.forceKeyVoxVibesIntro
         )
-        let linguisticAnalyzer = LinguisticAnalyzerFactory.healthRouted(
-            portableResourceDirectory: { Bundle.main.resourceURL },
-            portableLanguageCode: "en"
+        let linguisticAnalyzer = DictationLinguisticAnalyzer.make(
+            portableResourceDirectory: { Bundle.main.resourceURL }
         )
         let whisperService = WhisperService(
             modelPathResolver: modelLocator.resolvedWhisperModelPath,

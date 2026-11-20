@@ -28,20 +28,15 @@ protocol AudioRecording: AnyObject {
 
 @MainActor
 final class AudioRecorder: ObservableObject, AudioRecording {
-    let outputFormat = AVAudioFormat(
-        commonFormat: .pcmFormatFloat32,
-        sampleRate: 16000,
-        channels: 1,
-        interleaved: false
-    )!
-    let normalizationTargetPeak: Float = 0.9
-    let normalizationMaxGain: Float = 3.0
-    let deadSignalPeakThreshold: Float = 0.00012
-    let baseActiveSignalRMSThreshold: Float = 0.003
-    let baseGapRemovalRMSThreshold: Float = 0.0023
-    let deadStateHoldDuration: TimeInterval = 0.35
-    let visualActiveStateHoldDuration: TimeInterval = 0.16
-    let visualActiveSignalThresholdMultiplier: Float = 1.85
+    let outputFormat = AudioCaptureTuning.outputFormat
+    let normalizationTargetPeak = AudioCaptureTuning.normalizationTargetPeak
+    let normalizationMaxGain = AudioCaptureTuning.normalizationMaxGain
+    let deadSignalPeakThreshold = AudioCaptureTuning.deadSignalPeakThreshold
+    let baseActiveSignalRMSThreshold = AudioCaptureTuning.activeSignalRMSThreshold
+    let baseGapRemovalRMSThreshold = AudioCaptureTuning.gapRemovalRMSThreshold
+    let deadStateHoldDuration = AudioCaptureTuning.deadStateHoldDuration
+    let visualActiveStateHoldDuration = AudioCaptureTuning.visualActiveStateHoldDuration
+    let visualActiveSignalThresholdMultiplier = AudioCaptureTuning.visualActiveSignalThresholdMultiplier
 
     @Published var isRecording = false
     @Published var isMonitoring = false
@@ -57,8 +52,8 @@ final class AudioRecorder: ObservableObject, AudioRecording {
     var lastCaptureHadNonDeadSignal = false
     var maxActiveSignalRunDuration: TimeInterval = 0
 
-    var sessionActiveSignalRMSThreshold: Float = 0.003
-    var sessionGapRemovalRMSThreshold: Float = 0.0023
+    var sessionActiveSignalRMSThreshold = AudioCaptureTuning.activeSignalRMSThreshold
+    var sessionGapRemovalRMSThreshold = AudioCaptureTuning.gapRemovalRMSThreshold
     var sessionLikelySilenceRMSCutoff: Float = AudioSilenceGatePolicy.lowConfidenceRMSCutoff
     var sessionTrueSilenceWindowRMSThreshold: Float = AudioSilenceGatePolicy.trueSilenceWindowRMSThreshold
     var captureStartedAt = Date.distantPast

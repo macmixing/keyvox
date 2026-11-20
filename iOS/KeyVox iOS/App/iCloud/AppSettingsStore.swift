@@ -342,8 +342,8 @@ final class AppSettingsStore: ObservableObject {
             triggerBinding = .rightOption
         }
 
-        autoParagraphsEnabled = defaults.object(forKey: UserDefaultsKeys.autoParagraphsEnabled) as? Bool ?? true
-        listFormattingEnabled = defaults.object(forKey: UserDefaultsKeys.listFormattingEnabled) as? Bool ?? true
+        autoParagraphsEnabled = Self.resolvedAutoParagraphsEnabled(from: defaults)
+        listFormattingEnabled = Self.resolvedListFormattingEnabled(from: defaults)
         capsLockEnabled = defaults.object(forKey: UserDefaultsKeys.capsLockEnabled) as? Bool ?? false
         keyboardHapticsEnabled = defaults.object(forKey: UserDefaultsKeys.keyboardHapticsEnabled) as? Bool ?? true
         leftHandedKeyboardLayoutEnabled = defaults.object(forKey: UserDefaultsKeys.leftHandedKeyboardLayoutEnabled) as? Bool ?? false
@@ -383,22 +383,8 @@ final class AppSettingsStore: ObservableObject {
             ttsVoice = .alba
         }
 
-        if let raw = defaults.string(forKey: UserDefaultsKeys.App.activeDictationProvider),
-           let provider = ActiveDictationProvider(rawValue: raw) {
-            activeDictationProvider = provider
-        } else {
-            activeDictationProvider = .whisper
-        }
-
-        let persistedWhisperLanguage = defaults
-            .string(forKey: UserDefaultsKeys.App.whisperDictationLanguage)
-            .map { DictationLanguage(rawValue: $0) }
-        if let persistedWhisperLanguage,
-           WhisperBaseLanguageCatalog.supports(persistedWhisperLanguage) {
-            whisperDictationLanguage = persistedWhisperLanguage
-        } else {
-            whisperDictationLanguage = .automatic
-        }
+        activeDictationProvider = Self.resolvedActiveDictationProvider(from: defaults)
+        whisperDictationLanguage = Self.resolvedWhisperDictationLanguage(from: defaults)
 
         fastPlaybackModeEnabled = defaults.object(forKey: UserDefaultsKeys.fastPlaybackModeEnabled) as? Bool ?? false
         selectedVibe = Self.resolvedSelectedVibe(
@@ -433,6 +419,35 @@ final class AppSettingsStore: ObservableObject {
         return .none
     }
 
+    nonisolated static func resolvedActiveDictationProvider(from defaults: UserDefaults) -> ActiveDictationProvider {
+        if let raw = defaults.string(forKey: UserDefaultsKeys.App.activeDictationProvider),
+           let provider = ActiveDictationProvider(rawValue: raw) {
+            return provider
+        }
+
+        return .whisper
+    }
+
+    nonisolated static func resolvedWhisperDictationLanguage(from defaults: UserDefaults) -> DictationLanguage {
+        let persistedLanguage = defaults
+            .string(forKey: UserDefaultsKeys.App.whisperDictationLanguage)
+            .map { DictationLanguage(rawValue: $0) }
+        if let persistedLanguage,
+           WhisperBaseLanguageCatalog.supports(persistedLanguage) {
+            return persistedLanguage
+        }
+
+        return .automatic
+    }
+
+    nonisolated static func resolvedAutoParagraphsEnabled(from defaults: UserDefaults) -> Bool {
+        defaults.object(forKey: UserDefaultsKeys.autoParagraphsEnabled) as? Bool ?? true
+    }
+
+    nonisolated static func resolvedListFormattingEnabled(from defaults: UserDefaults) -> Bool {
+        defaults.object(forKey: UserDefaultsKeys.listFormattingEnabled) as? Bool ?? true
+    }
+
     func refreshSelectedVibeFromDefaults() {
         let style = Self.resolvedSelectedVibe(
             from: defaults,
@@ -443,13 +458,13 @@ final class AppSettingsStore: ObservableObject {
     }
 
     func refreshListFormattingFromDefaults() {
-        let isEnabled = defaults.object(forKey: UserDefaultsKeys.listFormattingEnabled) as? Bool ?? true
+        let isEnabled = Self.resolvedListFormattingEnabled(from: defaults)
         guard listFormattingEnabled != isEnabled else { return }
         listFormattingEnabled = isEnabled
     }
 
     func refreshAutoParagraphsFromDefaults() {
-        let isEnabled = defaults.object(forKey: UserDefaultsKeys.autoParagraphsEnabled) as? Bool ?? true
+        let isEnabled = Self.resolvedAutoParagraphsEnabled(from: defaults)
         guard autoParagraphsEnabled != isEnabled else { return }
         autoParagraphsEnabled = isEnabled
     }

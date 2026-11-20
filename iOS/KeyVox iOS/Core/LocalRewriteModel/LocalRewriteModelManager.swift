@@ -43,51 +43,27 @@ final class LocalRewriteModelManager: ObservableObject {
     }
 
     func installedModelURL() -> URL? {
-        guard isModelReady() else { return nil }
-        return finalArtifactURL()
+        installedModelLocator.installedModelURL()
     }
 
     func polishedLoRAURL() -> URL? {
-        if let bundledAdapterURL = KeyVoxVibesAdapterCatalog.url(for: .polished) {
-            return bundledAdapterURL
-        }
-
-        return installedLoRAURL(filename: LocalRewriteModelCatalog.polishedLoRAFilename)
+        installedModelLocator.adapterURL(for: .polished)
     }
 
     func casualLoRAURL() -> URL? {
-        if let bundledAdapterURL = KeyVoxVibesAdapterCatalog.url(for: .casual) {
-            return bundledAdapterURL
-        }
-
-        return installedLoRAURL(filename: LocalRewriteModelCatalog.casualLoRAFilename)
-    }
-
-    private func installedLoRAURL(filename: String) -> URL? {
-        guard isModelReady() else { return nil }
-        guard let adapterURL = finalRootURL()?.appendingPathComponent(
-            filename,
-            isDirectory: false
-        ) else {
-            return nil
-        }
-
-        return fileManager.fileExists(atPath: adapterURL.path) ? adapterURL : nil
+        installedModelLocator.adapterURL(for: .casual)
     }
 
     func isModelReady() -> Bool {
-        guard let manifestURL = manifestURL(),
-              let artifactURL = finalArtifactURL(),
-              fileManager.fileExists(atPath: manifestURL.path),
-              fileManager.fileExists(atPath: artifactURL.path),
-              let manifest = try? readManifest(from: manifestURL) else {
-            return false
-        }
+        installedModelLocator.isModelReady()
+    }
 
-        return manifest.modelID == descriptor.id
-            && manifest.artifactFilename == descriptor.artifact.filename
-            && manifest.expectedSHA256.lowercased() == descriptor.artifact.expectedSHA256.lowercased()
-            && manifest.installedSHA256.lowercased() == descriptor.artifact.expectedSHA256.lowercased()
+    private var installedModelLocator: InstalledLocalRewriteModelLocator {
+        InstalledLocalRewriteModelLocator(
+            fileManager: fileManager,
+            descriptor: descriptor,
+            rootURL: finalRootURL()
+        )
     }
 
     func finalRootURL() -> URL? {
@@ -138,8 +114,7 @@ final class LocalRewriteModelManager: ObservableObject {
     }
 
     func readManifest(from url: URL) throws -> LocalRewriteModelInstallManifest {
-        let data = try Data(contentsOf: url)
-        return try JSONDecoder().decode(LocalRewriteModelInstallManifest.self, from: data)
+        try installedModelLocator.readManifest(from: url)
     }
 
     func sha256Hex(forFileAt url: URL) throws -> String {
