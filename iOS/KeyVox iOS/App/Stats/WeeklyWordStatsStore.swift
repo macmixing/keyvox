@@ -60,6 +60,7 @@ final class WeeklyWordStatsStore: ObservableObject {
 
     func recordSpokenWords(from text: String, at date: Date? = nil) {
         let referenceDate = date ?? now()
+        adoptPersistedSnapshot()
         refreshWeeklyWordStatsIfNeeded(referenceDate: referenceDate)
 
         let count = text.split(whereSeparator: \.isWhitespace).count
@@ -75,6 +76,20 @@ final class WeeklyWordStatsStore: ObservableObject {
                 deviceWordCounts: deviceWordCounts
             )
         )
+    }
+
+    /// Takes in the words another KeyVox process recorded in the shared defaults since this
+    /// store last read them.
+    func adoptPersistedSnapshot() {
+        guard let data = defaults.data(forKey: UserDefaultsKeys.App.weeklyWordStatsPayload),
+              let storedSnapshot = try? JSONDecoder().decode(WeeklyWordStatsPayload.self, from: data),
+              calendar.isDate(storedSnapshot.weekStart, inSameDayAs: snapshot.weekStart) else {
+            return
+        }
+
+        let sanitizedSnapshot = storedSnapshot.sanitized()
+        guard sanitizedSnapshot != snapshot else { return }
+        snapshot = sanitizedSnapshot
     }
 
     func refreshWeeklyWordStatsIfNeeded(referenceDate: Date? = nil) {

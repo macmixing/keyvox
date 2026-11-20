@@ -495,6 +495,15 @@ final class TranscriptionManager: ObservableObject {
         isModelAvailable = modelAvailabilityProvider()
     }
 
+    /// Shows a dictation the keyboard made without the app, which the app did not see happen.
+    func adoptSharedLastTranscription() {
+        guard let sharedText = KeyVoxIPCBridge.latestTranscription(),
+              sharedText != lastTranscriptionText else {
+            return
+        }
+        lastTranscriptionText = sharedText
+    }
+
     private func capturePipelineOutput(_ delivery: DictationPipelineOutputDelivery) {
         guard delivery.id == activeUtteranceID,
               delivery.id == immediatePipelineOutputUtteranceID else {

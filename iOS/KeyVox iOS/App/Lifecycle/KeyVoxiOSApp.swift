@@ -117,6 +117,8 @@ struct KeyVoxApp: App {
                             handle(route: initialRoute, shouldPresentReturnToHost: true)
                         }
                         transcriptionManager.handleAppDidBecomeActive()
+                        transcriptionManager.adoptSharedLastTranscription()
+                        weeklyWordStatsStore.adoptPersistedSnapshot()
                         ttsManager.handleAppDidBecomeActive()
                         pocketTTSModelManager.handleAppDidBecomeActive()
                         localRewriteModelManager.handleAppDidBecomeActive()

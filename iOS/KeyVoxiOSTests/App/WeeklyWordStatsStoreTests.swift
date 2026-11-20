@@ -93,6 +93,41 @@ struct WeeklyWordStatsStoreTests {
         #expect(store.combinedWordCount == 8)
     }
 
+    @Test func recordSpokenWordsKeepsWordsAnotherProcessRecorded() throws {
+        let harness = makeHarness(now: makeDate(year: 2026, month: 3, day: 10))
+        defer { harness.cleanup() }
+        let makeStore = {
+            WeeklyWordStatsStore(
+                defaults: harness.defaults,
+                calendar: harness.calendar,
+                now: harness.now,
+                installationIDGenerator: { "device-a" }
+            )
+        }
+        let store = makeStore()
+        let otherProcessStore = makeStore()
+        let otherProcessWordCount = 4
+        let ownWordCount = 3
+
+        otherProcessStore.recordSpokenWords(
+            from: Array(repeating: "word", count: otherProcessWordCount).joined(separator: " "),
+            at: harness.now()
+        )
+        store.adoptPersistedSnapshot()
+        #expect(store.combinedWordCount == otherProcessWordCount)
+
+        otherProcessStore.recordSpokenWords(
+            from: Array(repeating: "word", count: otherProcessWordCount).joined(separator: " "),
+            at: harness.now()
+        )
+        store.recordSpokenWords(
+            from: Array(repeating: "word", count: ownWordCount).joined(separator: " "),
+            at: harness.now()
+        )
+
+        #expect(store.snapshot.deviceWordCounts["device-a"] == otherProcessWordCount * 2 + ownWordCount)
+    }
+
     @Test func refreshWeeklyWordStatsIfNeededRollsIntoNewWeek() throws {
         let weekOneDate = makeDate(year: 2026, month: 3, day: 10)
         let nextWeekDate = makeDate(year: 2026, month: 3, day: 17)
