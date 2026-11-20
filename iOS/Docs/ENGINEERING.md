@@ -868,9 +868,12 @@ Cold path in the keyboard, taken when the app is not warm and the keyboard has F
 4. on stop the extension runs stop-time processing and the dictation pipeline and publishes the transcript record; the keyboard inserts it through the same path as an app transcript
 5. no app switch and no Live Activity happen on this path, and the shared recording state stays untouched; `KeyboardDictationController` ignores shared-state sync while such a dictation is active
 6. cancel abandons the dictation in the extension; the extension host leaving the front cancels a dictation that is still recording and lets one already being transcribed finish
-7. dismissing the keyboard cancels any dictation and has the extension unload its dictation models
+7. a call or another app's audio cutting the recording off ends it there, and what was said before then is transcribed and inserted, as the app does for a recording it has cut off; the next dictation starts a new capture
+8. dismissing the keyboard cancels any dictation and has the extension unload its dictation models
 
-Any failure on that path falls back to the cold path through the app, never silently: the dictation not starting within the waiting timeout, the microphone capture failing or its web content process ending, the extension not being found, not instantiating, or its process ending, `begin` refused because the selected model is missing, or the pipeline failing. Without Full Access, and when the mic is tapped while copied text is being spoken, the keyboard takes the cold path through the app directly.
+A recording that cannot start shows the start-failure state, the same as one the containing app could not start, with no app switch: the microphone capture failing to start, the microphone being handed over muted because a call holds it, or the dictation not starting within the waiting timeout.
+
+Any other failure on that path falls back to the cold path through the app, never silently: the microphone capture failing or its web content process ending after recording began, the extension not being found, not instantiating, or its process ending, `begin` refused because the selected model is missing, or the pipeline failing. Without Full Access, and when the mic is tapped while copied text is being spoken, the keyboard takes the cold path through the app directly.
 
 Cold path through the app:
 
@@ -1039,6 +1042,8 @@ A keyboard extension cannot open the microphone itself, but a web view in its vi
 - the page sends mono Float32 audio at the microphone's sample rate, and the dictation extension converts it to the recorder's output format with the same accumulator the recorder uses
 - the page requests `echoCancellation: true`. With it off, the web view's audio measured about 30 dB below `AudioRecorder`'s for the same sound on an iPhone 13 Pro, under the silence thresholds, so speech was rejected as silence; with it on, levels match the recorder's
 - a failed page load, a failed capture, an ended microphone track, or the web content process ending reports a failure, and the next dictation loads the page again
+- a call in progress either rejects the capture or hands the microphone over muted; both were measured on an iPhone 13 Pro, and the page reports both as a failure to start
+- a call or another app's audio arriving during a capture mutes the microphone track and interrupts the audio context; the page ends the capture and reports it as interrupted instead of waiting, because the muted capture measured silent and did not recover within the recording
 
 ### Shared Voice-Activity Contract
 
