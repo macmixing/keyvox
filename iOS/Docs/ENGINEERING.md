@@ -862,14 +862,15 @@ Warm path:
 
 Cold path in the keyboard, taken when the app is not warm and the keyboard has Full Access:
 
-1. keyboard shows `waitingForApp` and starts `KeyboardStandaloneDictation`: the microphone capture starts and the dictation Audio Unit extension is instantiated out of process and sent `begin`
-2. once both are ready the keyboard shows recording; on an iPhone 13 Pro that is about half a second after the tap
-3. captured audio goes to the extension as it arrives, and each answer carries the live meter for the indicator
-4. on stop the extension runs stop-time processing and the dictation pipeline and publishes the transcript record; the keyboard inserts it through the same path as an app transcript
-5. no app switch and no Live Activity happen on this path, and the shared recording state stays untouched; `KeyboardDictationController` ignores shared-state sync while such a dictation is active
-6. cancel abandons the dictation in the extension; the extension host leaving the front cancels a dictation that is still recording and lets one already being transcribed finish
-7. a call or another app's audio cutting the recording off ends it there, and what was said before then is transcribed and inserted, as the app does for a recording it has cut off; the next dictation starts a new capture
-8. dismissing the keyboard cancels any dictation and has the extension unload its dictation models
+1. keyboard shows `startingDictation` and starts `KeyboardStandaloneDictation`: the microphone capture starts and the dictation Audio Unit extension is instantiated out of process and sent `begin`
+2. while `startingDictation` shows, the mic button shows a spinner in place of the microphone and is disabled, further mic taps are ignored, Speak is disabled, and no cancel button shows
+3. once both are ready the spinner fades into the recording indicator; on an iPhone 13 Pro that is about half a second after the tap
+4. captured audio goes to the extension as it arrives, and each answer carries the live meter for the indicator
+5. on stop the extension runs stop-time processing and the dictation pipeline and publishes the transcript record; the keyboard inserts it through the same path as an app transcript
+6. no app switch and no Live Activity happen on this path, and the shared recording state stays untouched; `KeyboardDictationController` ignores shared-state sync while such a dictation is active
+7. cancel abandons the dictation in the extension; the extension host leaving the front cancels a dictation that is still starting or recording and lets one already being transcribed finish
+8. a call or another app's audio cutting the recording off ends it there, and what was said before then is transcribed and inserted, as the app does for a recording it has cut off; the next dictation starts a new capture
+9. dismissing the keyboard cancels any dictation and has the extension unload its dictation models
 
 A recording that cannot start shows the start-failure state, the same as one the containing app could not start, with no app switch: the microphone capture failing to start, the microphone being handed over muted because a call holds it, or the dictation not starting within the waiting timeout.
 
