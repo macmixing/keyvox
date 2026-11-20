@@ -129,7 +129,8 @@ extension KeyboardViewController {
         rootContainerView.keyGridView.setPopupContainerView(popupOverlayView)
 
         indicatorDriver.sampleProvider = { [weak self] in
-            self?.ipcManager.currentAudioIndicatorSample()
+            self?.standaloneDictation.currentAudioIndicatorSample
+                ?? self?.ipcManager.currentAudioIndicatorSample()
         }
         indicatorDriver.onUpdate = { [weak self] timelineState in
             guard let self else { return }
@@ -217,6 +218,7 @@ extension KeyboardViewController {
         ) { [weak self] _ in
             self?.extensionHostIsActive = false
             self?.rootContainerView?.keyGridView.resetInteractionState()
+            self?.dictationController.cancelStandaloneRecording()
         }
 
         hostDidBecomeActiveObserver = NotificationCenter.default.addObserver(

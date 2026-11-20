@@ -3,6 +3,7 @@ import KeyVoxCore
 import KeyVoxEmoji
 import KeyVoxKeyboardThemes
 import KeyVoxPredictiveKeyboard
+import KeyVoxStyleRewrite
 import UIKit
 
 final class KeyboardViewController: UIInputViewController {
@@ -44,8 +45,22 @@ final class KeyboardViewController: UIInputViewController {
         textInputController: textInputController,
         appSettingsStore: appSettingsStore
     )
+    lazy var standaloneDictation = KeyboardStandaloneDictation(
+        capture: KeyboardMicrophoneCapture(mount: { [weak self] captureView in
+            guard let self else { return }
+            self.view.addSubview(captureView)
+            KeyboardPresentationViewRegistry.register(captureView, mountedBy: self)
+        }),
+        isAvailableProvider: { [weak self] in
+            self?.hasFullAccess ?? false
+        },
+        selectedVibeIdentifierProvider: { [appSettingsStore] in
+            appSettingsStore.selectedVibeStyle.styleIdentifier
+        }
+    )
     lazy var dictationController = KeyboardDictationController(
         ipcManager: ipcManager,
+        standaloneDictation: standaloneDictation,
         scheduleAction: keyboardMainQueueScheduler,
         openContainingApp: { [weak self] url in
             self?.containingAppLauncher.open(url)

@@ -1,0 +1,63 @@
+<!doctype html>
+<meta charset="utf-8">
+<script>
+const post = (message) => webkit.messageHandlers.capture.postMessage(message);
+
+let context = null;
+let stream = null;
+let source = null;
+let processor = null;
+
+function base64(bytes) {
+  let binary = '';
+  for (let offset = 0; offset < bytes.length; offset += 0x8000) {
+    binary += String.fromCharCode.apply(null, bytes.subarray(offset, offset + 0x8000));
+  }
+  return btoa(binary);
+}
+
+function release() {
+  if (processor) { processor.onaudioprocess = null; processor.disconnect(); }
+  if (source) { source.disconnect(); }
+  if (stream) { stream.getTracks().forEach((track) => track.stop()); }
+  const closing = context;
+  context = null; stream = null; source = null; processor = null;
+  return closing ? closing.close() : Promise.resolve();
+}
+
+async function startCapture() {
+  try {
+    await release();
+    stream = await navigator.mediaDevices.getUserMedia({
+      audio: { channelCount: 1, echoCancellation: true }
+    });
+    context = new AudioContext();
+    await context.resume();
+    const sampleRate = context.sampleRate;
+    source = context.createMediaStreamSource(stream);
+    processor = context.createScriptProcessor(2048, 1, 1);
+    processor.onaudioprocess = (event) => {
+      const samples = event.inputBuffer.getChannelData(0);
+      post({
+        type: 'audio',
+        sampleRate,
+        samples: base64(new Uint8Array(samples.buffer, samples.byteOffset, samples.byteLength))
+      });
+    };
+    stream.getAudioTracks()[0].onended = () => post({ type: 'failed' });
+    source.connect(processor);
+    processor.connect(context.destination);
+    post({ type: 'started' });
+  } catch (error) {
+    await release();
+    post({ type: 'failed' });
+  }
+}
+
+async function stopCapture() {
+  await release();
+  post({ type: 'stopped' });
+}
+
+post({ type: 'ready' });
+</script>
