@@ -862,15 +862,16 @@ Warm path:
 
 Cold path in the keyboard, taken when the app is not warm and the keyboard has Full Access:
 
-1. keyboard shows `startingDictation` and starts `KeyboardStandaloneDictation`: the microphone capture starts and the dictation Audio Unit extension is instantiated out of process and sent `begin`
-2. while `startingDictation` shows, the mic button shows a spinner in place of the microphone and is disabled, further mic taps are ignored, Speak is disabled, and no cancel button shows
-3. once both are ready the spinner fades into the recording indicator; on an iPhone 13 Pro that is about half a second after the tap
-4. captured audio goes to the extension as it arrives, and each answer carries the live meter for the indicator
-5. on stop the extension runs stop-time processing and the dictation pipeline and publishes the transcript record; the keyboard inserts it through the same path as an app transcript
-6. no app switch and no Live Activity happen on this path, and the shared recording state stays untouched; `KeyboardDictationController` ignores shared-state sync while such a dictation is active
-7. cancel abandons the dictation in the extension; the extension host leaving the front cancels a dictation that is still starting or recording and lets one already being transcribed finish
-8. a call or another app's audio cutting the recording off ends it there, and what was said before then is transcribed and inserted, as the app does for a recording it has cut off; the next dictation starts a new capture
-9. dismissing the keyboard cancels any dictation and has the extension unload its dictation models
+1. when the keyboard appears with Full Access, `KeyboardDictationController` has `KeyboardStandaloneDictation` prepare: the capture page loads and the dictation Audio Unit extension is instantiated, so the first tap waits only for the microphone; the page asks for the microphone only when a capture starts
+2. on a tap, keyboard shows `startingDictation` and starts `KeyboardStandaloneDictation`: the microphone capture starts and the dictation Audio Unit extension, instantiated out of process if preparing has not already done so, is sent `begin`
+3. while `startingDictation` shows, the mic button shows a spinner in place of the microphone and is disabled, further mic taps are ignored, Speak is disabled, and no cancel button shows
+4. once both are ready the spinner fades into the recording indicator; on an iPhone 13 Pro that is about 0.3 seconds after the tap, nearly all of it the page's request for the microphone
+5. captured audio goes to the extension as it arrives, and each answer carries the live meter for the indicator
+6. on stop the extension runs stop-time processing and the dictation pipeline and publishes the transcript record; the keyboard inserts it through the same path as an app transcript
+7. no app switch and no Live Activity happen on this path, and the shared recording state stays untouched; `KeyboardDictationController` ignores shared-state sync while such a dictation is active
+8. cancel abandons the dictation in the extension; the extension host leaving the front cancels a dictation that is still starting or recording and lets one already being transcribed finish
+9. a call or another app's audio cutting the recording off ends it there, and what was said before then is transcribed and inserted, as the app does for a recording it has cut off; the next dictation starts a new capture
+10. dismissing the keyboard cancels any dictation and has the extension unload its dictation models
 
 A recording that cannot start shows the start-failure state, the same as one the containing app could not start, with no app switch: the microphone capture failing to start, the microphone being handed over muted because a call holds it, or the dictation not starting within the waiting timeout.
 
@@ -1038,7 +1039,7 @@ Interrupted captures follow the same post-stop processing rules before they are 
 A keyboard extension cannot open the microphone itself, but a web view in its view tree can. `KeyboardMicrophoneCapture` owns that web view and `MicrophoneCapture.html`, the page that records.
 
 - the page is served from the keyboard's bundle through `KeyboardMicrophoneCaptureSchemeHandler`'s custom scheme
-- the web view is one point square, nearly transparent, and takes no touches; it is created on the first dictation made in the keyboard and stays mounted, registered with `KeyboardPresentationViewRegistry`
+- the web view is one point square, nearly transparent, and takes no touches; it is created and its page loaded when the keyboard appears with Full Access, and it stays mounted for the keyboard's view controller, registered with `KeyboardPresentationViewRegistry`; the system can build a new keyboard view controller each time the keyboard comes up, and each builds its own
 - capture needs Full Access, the keyboard's `NSMicrophoneUsageDescription`, and the containing app's microphone permission; the web view's permission request is granted for the microphone only
 - the page sends mono Float32 audio at the microphone's sample rate, and the dictation extension converts it to the recorder's output format with the same accumulator the recorder uses
 - the page requests `echoCancellation: true`. With it off, the web view's audio measured about 30 dB below `AudioRecorder`'s for the same sound on an iPhone 13 Pro, under the silence thresholds, so speech was rejected as silence; with it on, levels match the recorder's
