@@ -311,8 +311,9 @@ struct KeyboardDictationControllerTests {
         }
 
         controller.handleMicTap()
+        controller.handleMicTap()
 
-        #expect(controller.state == .waitingForApp)
+        #expect(controller.state == .startingDictation)
         #expect(standaloneDictation.startCallCount == 1)
 
         standaloneDictation.onRecordingStarted?()

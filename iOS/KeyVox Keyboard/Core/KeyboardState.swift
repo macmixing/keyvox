@@ -3,6 +3,8 @@ import UIKit
 enum KeyboardState: Equatable {
     case idle
     case waitingForApp
+    /// The keyboard is switching the microphone on for a dictation it records itself.
+    case startingDictation
     case dictationStartFailed
     case preparingPlayback
     case recording
@@ -16,6 +18,8 @@ enum KeyboardState: Equatable {
             return .idle
         case .waitingForApp:
             return .waiting
+        case .startingDictation:
+            return .starting
         case .preparingPlayback:
             return .waiting
         case .recording:
@@ -31,7 +35,7 @@ enum KeyboardState: Equatable {
         switch self {
         case .idle, .recording, .transcribing, .speaking, .pausedSpeaking:
             return true
-        case .waitingForApp, .dictationStartFailed, .preparingPlayback:
+        case .waitingForApp, .startingDictation, .dictationStartFailed, .preparingPlayback:
             return false
         }
     }
@@ -40,14 +44,14 @@ enum KeyboardState: Equatable {
         switch self {
         case .speaking, .pausedSpeaking:
             return true
-        case .idle, .waitingForApp, .dictationStartFailed, .preparingPlayback, .recording, .transcribing:
+        case .idle, .waitingForApp, .startingDictation, .dictationStartFailed, .preparingPlayback, .recording, .transcribing:
             return false
         }
     }
 
     var showsCancelButton: Bool {
         switch self {
-        case .idle, .dictationStartFailed:
+        case .idle, .startingDictation, .dictationStartFailed:
             return false
         case .waitingForApp, .recording, .transcribing:
             return true

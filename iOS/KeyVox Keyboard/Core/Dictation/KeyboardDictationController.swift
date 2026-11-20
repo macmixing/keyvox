@@ -154,7 +154,7 @@ final class KeyboardDictationController {
     /// Ends a dictation the keyboard is still recording, which it cannot keep doing once its
     /// host app is no longer in front. A recording already being transcribed carries on.
     func cancelStandaloneRecording() {
-        guard isStandaloneDictationActive, state == .waitingForApp || state == .recording else { return }
+        guard isStandaloneDictationActive, state == .startingDictation || state == .recording else { return }
         handleCancelTap()
     }
 
@@ -193,17 +193,20 @@ final class KeyboardDictationController {
 
         switch state {
         case .idle:
-            state = .waitingForApp
-            scheduleWaitingTimeout()
-
             if ipcManager.isSessionWarm() {
+                state = .waitingForApp
+                scheduleWaitingTimeout()
                 ipcManager.sendStartCommand()
                 handleRecordingStarted()
                 scheduleWarmSessionGracePeriod(after: effectiveWarmSessionGracePeriod())
             } else if let standaloneDictation, standaloneDictation.isAvailable {
                 isStandaloneDictationActive = true
+                state = .startingDictation
+                scheduleStandaloneStartTimeout()
                 standaloneDictation.start()
             } else {
+                state = .waitingForApp
+                scheduleWaitingTimeout()
                 openContainingApp(startRecordingURL)
             }
         case .recording:
@@ -225,7 +228,7 @@ final class KeyboardDictationController {
             } else {
                 openContainingApp(startRecordingURL)
             }
-        case .waitingForApp, .dictationStartFailed, .preparingPlayback, .transcribing:
+        case .waitingForApp, .startingDictation, .dictationStartFailed, .preparingPlayback, .transcribing:
             break
         }
     }
@@ -337,12 +340,18 @@ final class KeyboardDictationController {
         cancelWaitingTimeout()
         waitingForAppTimeoutAction = scheduleAction(waitingTimeoutDuration) { [weak self] in
             guard let self, self.state == .waitingForApp else { return }
-            if self.isStandaloneDictationActive {
-                // A recording that never starts, as when a call holds the microphone, has
-                // failed to start, the same as one the containing app could not start.
-                self.isStandaloneDictationActive = false
-                self.standaloneDictation?.cancel()
-            }
+            self.presentRecordingStartFailure()
+        }
+    }
+
+    /// A recording that never starts, as when a call holds the microphone, has failed to start,
+    /// the same as one the containing app could not start.
+    private func scheduleStandaloneStartTimeout() {
+        cancelWaitingTimeout()
+        waitingForAppTimeoutAction = scheduleAction(waitingTimeoutDuration) { [weak self] in
+            guard let self, self.isStandaloneDictationActive, self.state == .startingDictation else { return }
+            self.isStandaloneDictationActive = false
+            self.standaloneDictation?.cancel()
             self.presentRecordingStartFailure()
         }
     }
@@ -408,7 +417,7 @@ final class KeyboardDictationController {
                     self.ipcManager.sendStopCommand()
                 }
                 self.scheduleTranscriptionReconciliation()
-            case .waitingForApp, .dictationStartFailed, .preparingPlayback, .speaking, .pausedSpeaking:
+            case .waitingForApp, .startingDictation, .dictationStartFailed, .preparingPlayback, .speaking, .pausedSpeaking:
                 self.scheduleTranscriptionReconciliation()
             }
         }

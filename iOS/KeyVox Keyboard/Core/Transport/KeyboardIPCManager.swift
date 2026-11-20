@@ -100,7 +100,7 @@ final class KeyboardIPCManager {
         switch currentKeyboardState() {
         case .recording, .transcribing:
             snapshot = KeyVoxIPCBridge.currentLiveMeterSnapshot()
-        case .idle, .waitingForApp, .dictationStartFailed, .preparingPlayback, .speaking, .pausedSpeaking:
+        case .idle, .waitingForApp, .startingDictation, .dictationStartFailed, .preparingPlayback, .speaking, .pausedSpeaking:
             snapshot = nil
         }
 

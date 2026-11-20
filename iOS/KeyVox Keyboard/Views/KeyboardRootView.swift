@@ -277,6 +277,7 @@ final class KeyboardRootView: UIView {
         let shouldEnableSpeak = showsToolbarAccessories
             && hasCompletedOnboarding
             && state != .waitingForApp
+            && state != .startingDictation
             && state != .recording
             && state != .transcribing
         if self.isLeftHandedLayoutEnabled != isLeftHandedLayoutEnabled {

@@ -3,6 +3,8 @@ import UIKit
 enum AudioIndicatorPhase: Equatable {
     case idle
     case waiting
+    /// The microphone is being switched on; nothing is being recorded yet.
+    case starting
     case listening
     case processing
     case speaking

@@ -95,7 +95,7 @@ final class KeyboardTTSController {
             openContainingApp(startTTSURL)
         case .recording:
             break
-        case .waitingForApp:
+        case .waitingForApp, .startingDictation:
             break
         }
     }
@@ -111,7 +111,7 @@ final class KeyboardTTSController {
             cancelPendingWork()
             ipcManager.sendStopTTSCommand()
             state = .idle
-        case .idle, .waitingForApp, .dictationStartFailed, .preparingPlayback, .recording, .transcribing:
+        case .idle, .waitingForApp, .startingDictation, .dictationStartFailed, .preparingPlayback, .recording, .transcribing:
             break
         }
     }
@@ -126,7 +126,7 @@ final class KeyboardTTSController {
         case .pausedSpeaking:
             ipcManager.sendResumeTTSCommand()
             state = .speaking
-        case .idle, .waitingForApp, .dictationStartFailed, .preparingPlayback, .recording, .transcribing:
+        case .idle, .waitingForApp, .startingDictation, .dictationStartFailed, .preparingPlayback, .recording, .transcribing:
             break
         }
     }
