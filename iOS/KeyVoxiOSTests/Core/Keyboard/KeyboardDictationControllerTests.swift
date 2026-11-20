@@ -398,7 +398,7 @@ struct KeyboardDictationControllerTests {
         #expect(appLauncher.openedURLs == [Self.startRecordingURL])
     }
 
-    @Test func keyboardDictationThatNeverStartsFallsBackToContainingApp() {
+    @Test func keyboardDictationThatNeverStartsShowsFailureWithoutOpeningContainingApp() {
         let ipcManager = KeyboardDictationIPCManagerSpy()
         ipcManager.isSessionWarmValue = false
         let standaloneDictation = KeyboardStandaloneDictationSpy()
@@ -415,9 +415,13 @@ struct KeyboardDictationControllerTests {
         controller.handleMicTap()
         scheduler.runScheduledAction(after: 5.0)
 
-        #expect(controller.state == .waitingForApp)
+        #expect(controller.state == .dictationStartFailed)
         #expect(standaloneDictation.cancelCallCount == 1)
-        #expect(appLauncher.openedURLs == [Self.startRecordingURL])
+        #expect(appLauncher.openedURLs.isEmpty)
+
+        scheduler.runScheduledAction(after: 2.0)
+
+        #expect(controller.state == .idle)
     }
 
     @Test func keyboardDictationStaysInControlWhileSharedStateIsIdle() {
@@ -485,6 +489,67 @@ struct KeyboardDictationControllerTests {
         #expect(standaloneDictation.cancelCallCount == (isTranscribing ? 0 : 1))
     }
 
+    @Test func keyboardRecordingThatCannotStartShowsFailureWithoutOpeningContainingApp() {
+        let ipcManager = KeyboardDictationIPCManagerSpy()
+        ipcManager.isSessionWarmValue = false
+        let standaloneDictation = KeyboardStandaloneDictationSpy()
+        let scheduler = KeyboardActionSchedulerSpy()
+        let appLauncher = KeyboardContainingAppLauncherSpy()
+        let controller = KeyboardDictationController(
+            ipcManager: ipcManager,
+            standaloneDictation: standaloneDictation,
+            scheduleAction: scheduler.schedule,
+            openContainingApp: appLauncher.open,
+            startRecordingURL: Self.startRecordingURL
+        )
+
+        controller.handleMicTap()
+        standaloneDictation.onRecordingStartFailed?()
+
+        #expect(controller.state == .dictationStartFailed)
+        #expect(appLauncher.openedURLs.isEmpty)
+
+        scheduler.runScheduledAction(after: 2.0)
+
+        #expect(controller.state == .idle)
+
+        controller.handleMicTap()
+
+        #expect(standaloneDictation.startCallCount == 2)
+    }
+
+    @Test func keyboardRecordingCutOffIsTranscribedAndInserted() {
+        let ipcManager = KeyboardDictationIPCManagerSpy()
+        ipcManager.isSessionWarmValue = false
+        let standaloneDictation = KeyboardStandaloneDictationSpy()
+        let appLauncher = KeyboardContainingAppLauncherSpy()
+        let controller = KeyboardDictationController(
+            ipcManager: ipcManager,
+            standaloneDictation: standaloneDictation,
+            scheduleAction: KeyboardActionSchedulerSpy().schedule,
+            openContainingApp: appLauncher.open,
+            startRecordingURL: Self.startRecordingURL
+        )
+        let transcript = UUID().uuidString
+        var receivedTexts: [String] = []
+        controller.onTranscriptionReady = { text in
+            receivedTexts.append(text)
+        }
+
+        controller.handleMicTap()
+        standaloneDictation.onRecordingStarted?()
+        standaloneDictation.onTranscribingStarted?()
+
+        #expect(controller.state == .transcribing)
+        #expect(standaloneDictation.stopCallCount == 0)
+
+        standaloneDictation.onTranscriptionReady?(transcript)
+
+        #expect(controller.state == .idle)
+        #expect(receivedTexts == [transcript])
+        #expect(appLauncher.openedURLs.isEmpty)
+    }
+
     @Test func keyboardDictationWithoutSpeechReturnsToIdle() {
         let ipcManager = KeyboardDictationIPCManagerSpy()
         ipcManager.isSessionWarmValue = false
@@ -533,6 +598,8 @@ struct KeyboardDictationControllerTests {
 
 private final class KeyboardStandaloneDictationSpy: KeyboardStandaloneDictating {
     var onRecordingStarted: (() -> Void)?
+    var onRecordingStartFailed: (() -> Void)?
+    var onTranscribingStarted: (() -> Void)?
     var onTranscriptionReady: ((String) -> Void)?
     var onNoSpeech: (() -> Void)?
     var onFailure: (() -> Void)?

@@ -11,6 +11,7 @@ final class KeyboardMicrophoneCapture: NSObject {
         case started
         case audio
         case stopped
+        case interrupted
         case failed
     }
 
@@ -19,6 +20,9 @@ final class KeyboardMicrophoneCapture: NSObject {
     var onStarted: (() -> Void)?
     var onAudio: ((_ samples: Data, _ sampleRate: Double) -> Void)?
     var onStopped: (() -> Void)?
+    /// Called when a call or another app's audio cut the capture off; the audio handed over
+    /// before then is all there is.
+    var onInterrupted: (() -> Void)?
     var onFailure: (() -> Void)?
 
     private let mount: (UIView) -> Void
@@ -126,6 +130,8 @@ final class KeyboardMicrophoneCapture: NSObject {
             onAudio?(samples, sampleRate)
         case .stopped:
             onStopped?()
+        case .interrupted:
+            onInterrupted?()
         case .failed:
             fail()
         }

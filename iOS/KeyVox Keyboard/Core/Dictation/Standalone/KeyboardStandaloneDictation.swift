@@ -13,6 +13,8 @@ final class KeyboardStandaloneDictation: KeyboardStandaloneDictating {
     }
 
     var onRecordingStarted: (() -> Void)?
+    var onRecordingStartFailed: (() -> Void)?
+    var onTranscribingStarted: (() -> Void)?
     var onTranscriptionReady: ((String) -> Void)?
     var onNoSpeech: (() -> Void)?
     var onFailure: (() -> Void)?
@@ -98,9 +100,34 @@ final class KeyboardStandaloneDictation: KeyboardStandaloneDictating {
             guard let self, self.phase == .finishing else { return }
             self.awaitOutcome()
         }
+        capture.onInterrupted = { [weak self] in
+            self?.handleCaptureInterrupted()
+        }
         capture.onFailure = { [weak self] in
-            guard let self, self.phase != .idle else { return }
-            self.fail()
+            guard let self else { return }
+            switch self.phase {
+            case .starting:
+                self.failToStartRecording()
+            case .recording, .finishing:
+                self.fail()
+            case .idle:
+                break
+            }
+        }
+    }
+
+    /// A call or another app's audio cut the recording off. What was said before then is
+    /// transcribed, as the app does for a recording it has cut off.
+    private func handleCaptureInterrupted() {
+        switch phase {
+        case .starting:
+            failToStartRecording()
+        case .recording:
+            phase = .finishing
+            onTranscribingStarted?()
+            awaitOutcome()
+        case .idle, .finishing:
+            break
         }
     }
 
@@ -143,6 +170,13 @@ final class KeyboardStandaloneDictation: KeyboardStandaloneDictating {
                 self.fail()
             }
         }
+    }
+
+    /// The microphone could not be had, so there is nothing the containing app could do better.
+    private func failToStartRecording() {
+        endDictation()
+        audioUnitClient.cancel()
+        onRecordingStartFailed?()
     }
 
     private func fail() {

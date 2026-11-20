@@ -144,6 +144,8 @@ final class KeyboardDictationController {
         isStandaloneDictationActive = false
         standaloneDictation?.deactivate()
         standaloneDictation?.onRecordingStarted = nil
+        standaloneDictation?.onRecordingStartFailed = nil
+        standaloneDictation?.onTranscribingStarted = nil
         standaloneDictation?.onTranscriptionReady = nil
         standaloneDictation?.onNoSpeech = nil
         standaloneDictation?.onFailure = nil
@@ -259,6 +261,16 @@ final class KeyboardDictationController {
             guard let self, self.isStandaloneDictationActive else { return }
             self.handleRecordingStarted()
         }
+        standaloneDictation?.onRecordingStartFailed = { [weak self] in
+            guard let self, self.isStandaloneDictationActive else { return }
+            self.isStandaloneDictationActive = false
+            self.presentRecordingStartFailure()
+        }
+        standaloneDictation?.onTranscribingStarted = { [weak self] in
+            guard let self, self.isStandaloneDictationActive else { return }
+            self.cancelWaitingTimeout()
+            self.state = .transcribing
+        }
         standaloneDictation?.onTranscriptionReady = { [weak self] text in
             guard let self, self.isStandaloneDictationActive else { return }
             self.isStandaloneDictationActive = false
@@ -326,10 +338,12 @@ final class KeyboardDictationController {
         waitingForAppTimeoutAction = scheduleAction(waitingTimeoutDuration) { [weak self] in
             guard let self, self.state == .waitingForApp else { return }
             if self.isStandaloneDictationActive {
-                self.fallBackToContainingApp()
-            } else {
-                self.presentRecordingStartFailure()
+                // A recording that never starts, as when a call holds the microphone, has
+                // failed to start, the same as one the containing app could not start.
+                self.isStandaloneDictationActive = false
+                self.standaloneDictation?.cancel()
             }
+            self.presentRecordingStartFailure()
         }
     }
 

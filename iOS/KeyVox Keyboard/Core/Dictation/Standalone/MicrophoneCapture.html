@@ -25,12 +25,23 @@ function release() {
   return closing ? closing.close() : Promise.resolve();
 }
 
+// A call or another app taking the phone's audio mutes the microphone track and interrupts
+// the audio context. The capture ends there; what was recorded up to then is kept.
+async function endInterruptedCapture() {
+  if (!stream) { return; }
+  await release();
+  post({ type: 'interrupted' });
+}
+
 async function startCapture() {
   try {
     await release();
     stream = await navigator.mediaDevices.getUserMedia({
       audio: { channelCount: 1, echoCancellation: true }
     });
+    const track = stream.getAudioTracks()[0];
+    // A call in progress hands the microphone over muted, and nothing can be recorded.
+    if (track.muted) { throw new Error('microphone muted'); }
     context = new AudioContext();
     await context.resume();
     const sampleRate = context.sampleRate;
@@ -44,7 +55,12 @@ async function startCapture() {
         samples: base64(new Uint8Array(samples.buffer, samples.byteOffset, samples.byteLength))
       });
     };
-    stream.getAudioTracks()[0].onended = () => post({ type: 'failed' });
+    const startedContext = context;
+    track.onended = () => post({ type: 'failed' });
+    track.onmute = endInterruptedCapture;
+    startedContext.onstatechange = () => {
+      if (startedContext.state === 'interrupted') { endInterruptedCapture(); }
+    };
     source.connect(processor);
     processor.connect(context.destination);
     post({ type: 'started' });
