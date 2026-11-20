@@ -46,9 +46,6 @@
 		D10000032FF4000100AA0001 /* KeyVoxVoiceActivity in Frameworks */ = {isa = PBXBuildFile; productRef = D10000092FF4000100AA0001 /* KeyVoxVoiceActivity */; };
 		D20000012FF5000100AA0001 /* averaged-perceptron-tagger-eng in Resources */ = {isa = PBXBuildFile; fileRef = D20000032FF5000100AA0001 /* averaged-perceptron-tagger-eng */; };
 		D20000022FF5000100AA0001 /* wordnet-3.0 in Resources */ = {isa = PBXBuildFile; fileRef = D20000042FF5000100AA0001 /* wordnet-3.0 */; };
-		E3A100032FF6000100AA0001 /* KeyVoxEmoji in Frameworks */ = {isa = PBXBuildFile; productRef = E3A100022FF6000100AA0001 /* KeyVoxEmoji */; };
-		E3A100042FF6000100AA0001 /* KeyVoxEmoji in Frameworks */ = {isa = PBXBuildFile; productRef = E3A100022FF6000100AA0001 /* KeyVoxEmoji */; };
-		F41000012FF3000100AA0001 /* KeyVoxPromotions in Frameworks */ = {isa = PBXBuildFile; productRef = F41000032FF3000100AA0001 /* KeyVoxPromotions */; };
 		DA0000022FFA000100AA0001 /* KeyVox Dictation.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = DA0000012FFA000100AA0001 /* KeyVox Dictation.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		DA00000F2FFA000100AA0001 /* KeyVoxCore in Frameworks */ = {isa = PBXBuildFile; productRef = 8E9E38952F5BF56600EAFA72 /* KeyVoxCore */; };
 		DA0000102FFA000100AA0001 /* KeyVoxLinguistics in Frameworks */ = {isa = PBXBuildFile; productRef = D10000082FF4000100AA0001 /* KeyVoxLinguistics */; };
@@ -59,6 +56,9 @@
 		DA0000152FFA000100AA0001 /* KeyVoxKeyboardThemes in Frameworks */ = {isa = PBXBuildFile; productRef = AB7E00022FF7000100AA0001 /* KeyVoxKeyboardThemes */; };
 		DA0000162FFA000100AA0001 /* KeyVoxWhisper in Frameworks */ = {isa = PBXBuildFile; productRef = D10000072FF4000100AA0001 /* KeyVoxWhisper */; };
 		DA0000172FFA000100AA0001 /* KeyVoxVoiceActivity in Frameworks */ = {isa = PBXBuildFile; productRef = D10000092FF4000100AA0001 /* KeyVoxVoiceActivity */; };
+		E3A100032FF6000100AA0001 /* KeyVoxEmoji in Frameworks */ = {isa = PBXBuildFile; productRef = E3A100022FF6000100AA0001 /* KeyVoxEmoji */; };
+		E3A100042FF6000100AA0001 /* KeyVoxEmoji in Frameworks */ = {isa = PBXBuildFile; productRef = E3A100022FF6000100AA0001 /* KeyVoxEmoji */; };
+		F41000012FF3000100AA0001 /* KeyVoxPromotions in Frameworks */ = {isa = PBXBuildFile; productRef = F41000032FF3000100AA0001 /* KeyVoxPromotions */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -672,9 +672,6 @@
 					8E7DB1972F809A1C009E3576 = {
 						CreatedOnToolsVersion = 26.4;
 					};
-					DA00000B2FFA000100AA0001 = {
-						CreatedOnToolsVersion = 27.2;
-					};
 					8E7EC04E2F5C28B00080C762 = {
 						CreatedOnToolsVersion = 26.3;
 					};
@@ -687,6 +684,9 @@
 					8E9E385E2F5BF1F200EAFA72 = {
 						CreatedOnToolsVersion = 26.3;
 						TestTargetID = 8E9E38512F5BF1F000EAFA72;
+					};
+					DA00000B2FFA000100AA0001 = {
+						CreatedOnToolsVersion = 27.2;
 					};
 				};
 			};
