@@ -131,6 +131,9 @@ final class KeyboardDictationController {
         configureIPC()
         configureStandaloneDictation()
         ipcManager.registerObservers()
+        if let standaloneDictation, standaloneDictation.isAvailable {
+            standaloneDictation.prepare()
+        }
     }
 
     func unregisterObservers() {

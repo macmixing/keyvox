@@ -37,6 +37,13 @@ final class KeyboardMicrophoneCapture: NSObject {
         self.mount = mount
     }
 
+    /// Loads the capture page ahead of a tap. The page asks for the microphone only when a
+    /// capture starts.
+    func prepare() {
+        guard !isPageReady else { return }
+        loadPageIfNeeded()
+    }
+
     func start() {
         guard isPageReady else {
             startsWhenPageIsReady = true

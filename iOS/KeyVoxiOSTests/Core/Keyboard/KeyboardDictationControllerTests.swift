@@ -594,6 +594,26 @@ struct KeyboardDictationControllerTests {
         #expect(standaloneDictation.deactivateCallCount == 1)
     }
 
+    @Test func showingTheKeyboardPreparesKeyboardDictationOnlyWhenAvailable() {
+        let standaloneDictation = KeyboardStandaloneDictationSpy()
+        let controller = KeyboardDictationController(
+            ipcManager: KeyboardDictationIPCManagerSpy(),
+            standaloneDictation: standaloneDictation,
+            scheduleAction: KeyboardActionSchedulerSpy().schedule,
+            openContainingApp: { _ in },
+            startRecordingURL: Self.startRecordingURL
+        )
+
+        controller.registerObservers()
+        #expect(standaloneDictation.prepareCallCount == 1)
+        #expect(standaloneDictation.startCallCount == 0)
+
+        controller.unregisterObservers()
+        standaloneDictation.isAvailable = false
+        controller.registerObservers()
+        #expect(standaloneDictation.prepareCallCount == 1)
+    }
+
     private static let startRecordingURL = URL(string: "keyvoxios://record/start")!
 }
 
@@ -607,10 +627,15 @@ private final class KeyboardStandaloneDictationSpy: KeyboardStandaloneDictating 
 
     var isAvailable = true
 
+    var prepareCallCount = 0
     var startCallCount = 0
     var stopCallCount = 0
     var cancelCallCount = 0
     var deactivateCallCount = 0
+
+    func prepare() {
+        prepareCallCount += 1
+    }
 
     func start() {
         startCallCount += 1

@@ -53,6 +53,11 @@ final class KeyboardStandaloneDictation: KeyboardStandaloneDictating {
         phase == .recording ? latestMeterSample : nil
     }
 
+    func prepare() {
+        capture.prepare()
+        audioUnitClient.prepare()
+    }
+
     func start() {
         guard phase == .idle else { return }
         let dictationID = beginNewDictation()

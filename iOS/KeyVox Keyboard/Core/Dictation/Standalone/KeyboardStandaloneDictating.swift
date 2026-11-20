@@ -15,6 +15,8 @@ protocol KeyboardStandaloneDictating: AnyObject {
 
     var isAvailable: Bool { get }
 
+    /// Gets everything but the microphone ready ahead of a tap; the microphone stays off.
+    func prepare()
     func start()
     func stop()
     func cancel()

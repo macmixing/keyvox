@@ -25,6 +25,13 @@ final class KeyboardDictationAudioUnitClient: @unchecked Sendable {
     private var audioUnit: AVAudioUnit?
     private var messageChannel: (any AUMessageChannel)?
 
+    /// Starts the extension if it is not running, without beginning a dictation.
+    func prepare() {
+        queue.async { [self] in
+            _ = connect()
+        }
+    }
+
     /// Starts the extension if it is not running and begins a dictation in it. Reports whether
     /// the extension took the dictation.
     func begin(styleIdentifier: String, completion: @escaping @MainActor (Bool) -> Void) {
