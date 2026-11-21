@@ -267,12 +267,11 @@ final class KeyboardRootView: UIView {
         // landed); the dictation buttons show on the number and symbol pages, in a field without
         // letters or predictions, in Compact Keys, while dictating, and until the user changes
         // the text after a dictation. A rescued dictation shows the bar in their place on any
-        // page of the full keyboard that shows the toolbar, whatever the field holds; off the
-        // letter page the bar shows only the rescued dictation, never predictions.
-        let showsPredictions = symbolPage == .letters && offersPredictions
+        // page that shows the toolbar, Compact Keys included, whatever the field holds; off the
+        // full keyboard's letter page the bar shows only the rescued dictation, never predictions.
+        let showsPredictions = keysMode == .full && symbolPage == .letters && offersPredictions
         let showsSuggestionBar = showsBrandedToolbar
             && !shouldShowCancel
-            && keysMode == .full
             && (showsPredictions || showsRescuedDictation)
         let showsToolbarAccessories = showsBrandedToolbar && !showsSuggestionBar
         let shouldShowVibes = showsToolbarAccessories && isVibesAvailable
