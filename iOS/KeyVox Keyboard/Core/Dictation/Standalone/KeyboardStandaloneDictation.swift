@@ -108,16 +108,13 @@ final class KeyboardStandaloneDictation: KeyboardStandaloneDictating {
         capture.onInterrupted = { [weak self] in
             self?.handleCaptureInterrupted()
         }
+        capture.onBusy = { [weak self] in
+            guard let self, self.phase == .starting else { return }
+            self.failToStartRecording()
+        }
         capture.onFailure = { [weak self] in
-            guard let self else { return }
-            switch self.phase {
-            case .starting:
-                self.failToStartRecording()
-            case .recording, .finishing:
-                self.fail()
-            case .idle:
-                break
-            }
+            guard let self, self.phase != .idle else { return }
+            self.fail()
         }
     }
 
@@ -177,7 +174,7 @@ final class KeyboardStandaloneDictation: KeyboardStandaloneDictating {
         }
     }
 
-    /// The microphone could not be had, so there is nothing the containing app could do better.
+    /// A call holds the microphone, so the containing app could not record either.
     private func failToStartRecording() {
         endDictation()
         audioUnitClient.cancel()

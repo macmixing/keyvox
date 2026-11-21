@@ -4,7 +4,8 @@ import Foundation
 /// and has the dictation Audio Unit extension turn the recording into text.
 protocol KeyboardStandaloneDictating: AnyObject {
     var onRecordingStarted: (() -> Void)? { get set }
-    /// Called when the microphone could not start recording; the dictation is over.
+    /// Called when recording could not start because a call holds the microphone; the
+    /// dictation is over.
     var onRecordingStartFailed: (() -> Void)? { get set }
     /// Called when the recording ended without the user stopping it and is being transcribed.
     var onTranscribingStarted: (() -> Void)? { get set }

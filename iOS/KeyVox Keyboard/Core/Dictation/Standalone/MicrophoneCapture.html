@@ -7,6 +7,8 @@ let context = null;
 let stream = null;
 let source = null;
 let processor = null;
+// A call ringing or in progress hands the microphone over muted, and nothing can be recorded.
+const microphoneBusy = new Error('microphone busy');
 
 function base64(bytes) {
   let binary = '';
@@ -52,8 +54,7 @@ async function startCapture(preferredMicrophoneID) {
     if (preferredMicrophoneID) { audio.deviceId = { ideal: preferredMicrophoneID }; }
     stream = await navigator.mediaDevices.getUserMedia({ audio });
     const track = stream.getAudioTracks()[0];
-    // A call in progress hands the microphone over muted, and nothing can be recorded.
-    if (track.muted) { throw new Error('microphone muted'); }
+    if (track.muted) { throw microphoneBusy; }
     context = new AudioContext();
     await context.resume();
     const sampleRate = context.sampleRate;
@@ -79,7 +80,7 @@ async function startCapture(preferredMicrophoneID) {
     reportMicrophones();
   } catch (error) {
     await release();
-    post({ type: 'failed' });
+    post({ type: error === microphoneBusy ? 'busy' : 'failed' });
   }
 }
 
