@@ -1819,7 +1819,7 @@ Packages/
   - Stable keyboard chrome and key grid.
   - Hosts the branded toolbar row and the shared warning overlay for dictation model, Full Access, and microphone permission warnings.
   - On the number pad, hides the toolbar and moves its row above the keyboard's top, out of sight, so the keys take its place, unless the emoji page or search is open, whose field keeps the row's place.
-  - Shows the suggestion bar in place of the toolbar accessories on the full keyboard's letter page while predictions are offered, and on any page of the full keyboard with the toolbar while a rescued dictation is offered, when no cancel control is showing, spanning from the keyboard edge to the logo control.
+  - Shows the suggestion bar in place of the toolbar accessories on the full keyboard's letter page while predictions are offered, and on any page with the toolbar, Compact Keys included, while a rescued dictation is offered, when no cancel control is showing, spanning from the keyboard edge to the logo control.
   - Hosts the emoji page over the key grid's place, the emoji search field in the toolbar's place, and the search results above the keys while searching.
   - Sends touches in the keyboard's outer padding to the key grid so they type the nearest key.
   - Invalidates layout whenever branded-toolbar Vibes visibility changes so returning from a warning mode restores measured top-row spacing.
