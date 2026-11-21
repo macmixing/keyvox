@@ -24,6 +24,10 @@ final class KeyboardDictationAudioUnitClient: @unchecked Sendable {
     // Both are used only on `queue`.
     private var audioUnit: AVAudioUnit?
     private var messageChannel: (any AUMessageChannel)?
+    /// Set as soon as a cancel or disconnect is asked for, so a wait for an outcome already on
+    /// `queue` stops and lets it through instead of holding it until the transcript is done.
+    private let abandonLock = NSLock()
+    private var isAbandonRequested = false
 
     /// Starts the extension if it is not running, without beginning a dictation.
     func prepare() {
@@ -67,18 +71,34 @@ final class KeyboardDictationAudioUnitClient: @unchecked Sendable {
 
     /// Abandons the dictation in the extension.
     func cancel() {
+        setAbandonRequested(true)
         queue.async { [self] in
             _ = send(.cancel)
+            setAbandonRequested(false)
         }
     }
 
     /// Abandons the dictation, has the extension free its models, and lets go of it.
     func disconnect() {
+        setAbandonRequested(true)
         queue.async { [self] in
             _ = send(.releaseModels)
             messageChannel = nil
             audioUnit = nil
+            setAbandonRequested(false)
         }
+    }
+
+    private func setAbandonRequested(_ isRequested: Bool) {
+        abandonLock.lock()
+        isAbandonRequested = isRequested
+        abandonLock.unlock()
+    }
+
+    private var abandonRequested: Bool {
+        abandonLock.lock()
+        defer { abandonLock.unlock() }
+        return isAbandonRequested
     }
 
     private func connect() -> Bool {
@@ -104,6 +124,7 @@ final class KeyboardDictationAudioUnitClient: @unchecked Sendable {
 
     private func awaitOutcome() -> Outcome {
         while true {
+            guard !abandonRequested else { return .failed }
             guard let reply = send(.poll),
                   let rawOutcome = reply[Key.outcome] as? String,
                   let outcome = DictationAudioUnitContract.Outcome(rawValue: rawOutcome) else {
