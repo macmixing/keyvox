@@ -1650,7 +1650,7 @@ Packages/
   - Tracks whether the latest dictation is still untouched and whether the field holds letters, which together decide whether the toolbar offers suggestions or the dictation accessories.
   - Missing-model taps open `keyvoxios://vibes/model-recovery`; access-aware recovery scene selection remains app-owned by `KeyVoxVibesPurchaseController`.
 - `KeyVox Keyboard/App/KeyboardViewController+RescuedDictation.swift`
-  - Offers a dictation finished in the background after its keyboard went away: shows it across the suggestion bar when the keyboard appears or when it arrives, inserts it on tap, and stops offering it when the user types, deletes, or picks an emoji, or when the keyboard is dismissed after offering it.
+  - Offers a dictation finished in the background after its keyboard went away: shows it across the suggestion bar when the keyboard appears or when it arrives, inserts it on tap, and, once it has been on screen, stops offering it when the user types, deletes, or picks an emoji, or when the keyboard is dismissed.
 - `KeyVox Keyboard/App/KeyboardViewController+Typing.swift`
   - Letter-page typing: field preparation, opening layout, shift and caps-lock handling, word-boundary autocorrection, picked-word spacing, suggestion taps and long-press forgetting, contested taps near letter keys, held-delete word deletion, return to letters after symbols, and personal, learned, and emoji vocabulary hand-off to the prediction coordinator.
 - `KeyVox Keyboard/App/KeyboardViewController+Emoji.swift`
@@ -1819,7 +1819,7 @@ Packages/
   - Stable keyboard chrome and key grid.
   - Hosts the branded toolbar row and the shared warning overlay for dictation model, Full Access, and microphone permission warnings.
   - On the number pad, hides the toolbar and moves its row above the keyboard's top, out of sight, so the keys take its place, unless the emoji page or search is open, whose field keeps the row's place.
-  - Shows the suggestion bar in place of the toolbar accessories on the full keyboard's letter page while predictions or a rescued dictation are offered and no cancel control is showing, spanning from the keyboard edge to the logo control.
+  - Shows the suggestion bar in place of the toolbar accessories on the full keyboard's letter page while predictions are offered, and on any page of the full keyboard with the toolbar while a rescued dictation is offered, when no cancel control is showing, spanning from the keyboard edge to the logo control.
   - Hosts the emoji page over the key grid's place, the emoji search field in the toolbar's place, and the search results above the keys while searching.
   - Sends touches in the keyboard's outer padding to the key grid so they type the nearest key.
   - Invalidates layout whenever branded-toolbar Vibes visibility changes so returning from a warning mode restores measured top-row spacing.
