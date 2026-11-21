@@ -90,7 +90,10 @@ extension TranscriptionManager {
             return
         }
 
-        guard isSessionActive else { return }
+        guard isSessionActive else {
+            unloadDictationModelIfSessionEnded()
+            return
+        }
 
         if shouldDisableSessionImmediatelyWhenIdle() {
             await completeSessionShutdown()
@@ -134,9 +137,17 @@ extension TranscriptionManager {
             if publishCancellation {
                 keyboardBridge.publishCancelled()
             }
+            unloadDictationModelIfSessionEnded()
         } catch {
             lastErrorMessage = error.localizedDescription
         }
+    }
+
+    /// The dictation model is kept only for a session: once no session is active and nothing is
+    /// being transcribed, it is unloaded, and the next dictation loads it again while the user speaks.
+    private func unloadDictationModelIfSessionEnded() {
+        guard state == .idle, !isSessionActive else { return }
+        transcriptionService.unloadModel()
     }
 
     func performCancelCurrentUtterance() async {

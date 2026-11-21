@@ -514,9 +514,10 @@ final class AppServiceRegistry {
             parakeetService
         }
 
+        // The model loads when a dictation starts and unloads when the session ends.
         activeProviderRouter.replaceActiveProvider(
             with: activeProvider,
-            warmNewProviderIfReady: true
+            warmNewProviderIfReady: false
         )
     }
 

@@ -254,6 +254,10 @@ final class TranscriptionManager: ObservableObject {
         activeUtteranceID = UUID()
         captureMonitoring = .ownedBy(activeUtteranceID)
         refreshModelAvailability()
+        if isModelAvailable {
+            // Loads while the user speaks; the session's end unloads it.
+            transcriptionService.warmup()
+        }
         cancelIdleTimeout()
 
         if isFromURL {
