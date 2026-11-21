@@ -70,7 +70,7 @@ The keyboard extension owns:
 - keyboard-owned copied-text speak control and transport state
 - text insertion into host apps
 - Vibes selection/status UI
-- latest-insertion Vibes revert/restyle transport through the containing app
+- latest-insertion Vibes revert/restyle transport through the containing app while its session is running, and through the Transcription AU extension otherwise
 - keyboard-only interaction helpers like trackpad mode, delete repeat, and haptics
 
 The keyboard extension does **not** own:
@@ -93,6 +93,7 @@ The keyboard extension does **not** own:
 The Transcription AU extension owns:
 
 - running the shared dictation pipeline for a keyboard dictation made without the containing app: the selected provider, post-processing, the dictionary, and the KeyVox Vibes rewrite in the style the keyboard resolved
+- the keyboard's long-press Vibes restyle of an inserted dictation while the containing app's session is not running
 - loading the installed dictation and Vibes models in place from the App Group container
 - publishing that dictation's transcript record, latest-dictation artifact, weekly word count, and successful-dictation time through the shared stores
 
@@ -257,7 +258,7 @@ Rules:
 - Provider selection emits one concise `[KVXLinguistics]` diagnostic for the resolved route and reason. Fallback resource-load failures remain explicit and leave the primary result in place.
 - The containing app bundles `averaged-perceptron-tagger-eng` and `wordnet-3.0` and supplies `Bundle.main.resourceURL` to the factory. The Transcription AU extension supplies the containing app's bundle, two levels above its own, so the resources ship once. The keyboard extension neither bundles nor loads those resources.
 - `DictationPipeline` carries the provider-reported language code into text-processing context and the final result. KeyVox Vibes requests and latest-utterance artifacts preserve that code for initial and later rewrites.
-- Keyboard-originated Vibes rewrites send the saved dictation language through `KeyVoxStyleRewriteIPCRequest`; the containing app performs the analysis and model-backed rewrite.
+- Keyboard-originated Vibes rewrites send the saved dictation language through `KeyVoxStyleRewriteIPCRequest`; the containing app performs the analysis and model-backed rewrite while its session is running, and the Transcription AU extension performs it otherwise.
 - PocketTTS uses the language capability declared by its installed model metadata. The current Speak model declares English independently of the user's dictation-language preference.
 
 ### Containing App Source Layout
@@ -738,7 +739,8 @@ Keyboard onboarding detection is deliberately split across three signals:
 - `begin` starts a dictation with the keyboard's resolved Vibe, which warms up the Vibes model, and answers whether the selected dictation model is installed
 - `appendAudio` adds mono Float32 audio at its capture sample rate and answers with the live meter for it
 - `finish` ends the audio with the keyboard's resolved Vibe at that moment, which the rewrite uses; `poll` answers `pending`, `transcript` with the text, `noSpeech`, or `failed`
-- `cancel` abandons the dictation; `releaseModels` also unloads the dictation models
+- `cancel` abandons the dictation; `releaseModels` also unloads the dictation models and drops a running restyle
+- `restyle` takes an encoded `KeyVoxStyleRewriteIPCRequest` and starts the rewrite; `pollRestyle` answers not accepted until it is done, then with the encoded `KeyVoxStyleRewriteIPCResponse`
 - an empty answer means the extension's process is gone, which the keyboard treats as a failure
 
 The extension publishes a finished dictation with `KeyVoxIPCBridge.setTranscription`, with its utterance ID and style identifier, so the keyboard inserts it and records its latest-insertion session exactly as it does for an app transcript. The extension does not write the shared recording state or the heartbeat and posts no Darwin notifications; those describe the containing app's session.
@@ -1543,7 +1545,7 @@ It owns:
 - invoking the app-owned local style rewrite transformer
 - translating `TextTransformResult` into `DictationPipelineTextProcessingResult`
 - writing latest-utterance artifacts through `StyleRewriteLatestArtifactStore`
-- handling keyboard style rewrite IPC requests through the same transformer path
+- answering keyboard restyle requests through the same transformer path, from the app's IPC request or from the Transcription AU extension's restyle message
 - forwarding prewarm and release calls through the transformer contract
 
 `LocalRewriteModelManager` is the containing-app owner for the local Vibes rewrite base model.
@@ -1691,7 +1693,7 @@ The restore card remains visible until both unlocks are owned.
 - stores the current insertion text, current Vibe, deterministic paragraph/list state, Caps Lock display-transform state, and cached rendered variants
 - delegates deterministic paragraph/list state transitions and source selection to `KeyVoxCore.DictationDeterministicVariantResolver`
 - delegates paragraph collapse, ordered-list line preservation, and post-rewrite layout adjustment to `KeyVoxCore.DictationDeterministicTextFormatter`
-- regenerates Vibe variants from the current deterministic base text by sending style rewrite IPC to the containing app rather than morphing from the currently displayed style
+- regenerates Vibe variants from the current deterministic base text through `KeyboardLocalStyleRewriteTextTransformer` rather than morphing from the currently displayed style
 - applies paragraph/list long-press changes from deterministic artifact variants outside the KeyVox Vibes entitlement boundary, including persisted paragraph variants captured even when Paragraphs was disabled during recording
 - applies Caps Lock long-press changes locally from the current untouched insertion and the artifact's selected pre-Caps text, preserving Caps display state across Vibes and deterministic paragraph/list changes
 - accepts a transformer result as usable replacement text even when `applied == false`, because `applied` only means “different from the base request,” not “different from the currently displayed style”
@@ -1706,15 +1708,16 @@ Long-press rules:
 - cached variants replace instantly
 - generated variants may temporarily drive the logo indicator into processing state
 - if the user edits, deletes, moves away from, or otherwise invalidates the active insertion, long press no-ops
+- the mic ignores taps while a change is being applied, so a new dictation waits until the changed text lands
 
 `KeyboardModelAvailability` remains a lightweight file-presence gate for extension UI decisions.
 For Vibes AI it only checks the App Group rooted install manifest and GGUF artifact; it does not load, validate, or run the local rewrite model.
 
 `KeyboardLocalStyleRewriteTextTransformer` is the keyboard-side transport for long-press model-backed Vibes rewrites.
 
-- it writes `KeyVoxStyleRewriteIPCRequest` through `KeyVoxIPCBridge`
-- it waits for the matching `KeyVoxStyleRewriteIPCResponse`
-- it reports processing mode `app-ipc`
+- while the containing app's session is running (`KeyVoxIPCBridge.isSessionWarm()`), it writes `KeyVoxStyleRewriteIPCRequest` through `KeyVoxIPCBridge`, waits for the matching `KeyVoxStyleRewriteIPCResponse`, and reports processing mode `app-ipc`
+- otherwise it sends the same request to the Transcription AU extension through the keyboard's one `KeyboardTranscriptionAUClient`, starting the extension if it is not running, and reports processing mode `transcription-au`
+- both paths give up 30 seconds after the request, and the extension answers with the same `StyleRewritePipelineCoordinator.keyboardStyleRewriteResponse(for:)` the app uses
 - it falls back to the request base text on timeout, cancellation, empty response, or error
 - it does not load the local rewrite model or adapters inside the keyboard extension
 

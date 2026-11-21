@@ -29,7 +29,7 @@ The current default runtime flow is:
 8. On the warm and cold-launch paths the containing app records and processes audio, runs the shared dictation pipeline with the provider-reported language code, and publishes `recordingStartFailed`, `transcribing`, `transcriptionReady`, or `noSpeech` back through the App Group bridge. `recordingStartFailed` reports an actual recorder startup error. Published results carry the utterance ID and selected style identifier so later keyboard changes bind only to the matching latest-utterance artifact. A visible KeyVox keyboard inserts successful results, while the bundled shortcut workflow copies returned text and posts the completion notification. For a dictation recorded in the keyboard, the Transcription AU extension runs the same pipeline and publishes the same transcript record, latest-dictation artifact, and weekly word count.
 9. The app optionally rewrites the post-processed base text through the local Vibes model and LoRA adapter selected by the current Vibe, preserving the dictation language for linguistic output repair and later artifact-scoped rewrites.
 10. The extension resolves preceding and following host-text context, delegates leading spacing, capitalization, adjacent terminal-punctuation, and trailing-separator policy to `KeyVoxTextComposition`, and performs the resulting insertion or punctuation replacement through the iOS document proxy.
-11. Later keyboard long presses may restyle or revert only the latest untouched KeyVox insertion: Vibes changes use an app-IPC rewrite request, paragraph/list changes use persisted deterministic artifact variants, and Caps Lock swaps between the inserted text and the preserved pre-Caps selected output. If the local Vibes model is missing, keyboard Vibes taps do not cycle styles and instead route the user into the app-owned Vibes install/trial flow.
+11. Later keyboard long presses may restyle or revert only the latest untouched KeyVox insertion: Vibes changes use a rewrite request answered by the containing app while its session is running and by the Transcription AU extension otherwise, paragraph/list changes use persisted deterministic artifact variants, and Caps Lock swaps between the inserted text and the preserved pre-Caps selected output. If the local Vibes model is missing, keyboard Vibes taps do not cycle styles and instead route the user into the app-owned Vibes install/trial flow.
 12. When the user triggers copied-text playback, the containing app owns PocketTTS synthesis, explicit model load/unload lifetime, deterministic playback preparation, replay caching, pause/resume/stop transport state, and return-to-host readiness.
 13. If the user keeps the session active, the Live Activity coordinator mirrors session state and weekly-word updates into the widget extension.
 14. When Compact Keys is available, a long press on `#+=` replaces the first two symbol rows with a shorter two-row keyboard; the keyboard-symbol key restores the full layout.
@@ -418,6 +418,7 @@ iOS/
 │   │   └── TranscriptionAUViewController.swift
 │   ├── Core/
 │   │   ├── TranscriptionAUMessageChannel.swift
+│   │   ├── TranscriptionAURestyle.swift
 │   │   ├── TranscriptionAUSelectedVibe.swift
 │   │   └── TranscriptionAUSession.swift
 │   ├── Info.plist
@@ -1419,7 +1420,7 @@ Packages/
   - Receives the app's shared linguistic analyzer, maps Polished to `polished-alpha-028`, maps Casual and Chill to `casual-alpha-9`, prewarms the selected model/adapter without generating text, cancels pending prewarm work when resources are released, sends short LoRA prompts, unloads the local rewrite inference cache on release, and logs local inference load/prefill/decode/total timing in debug builds.
 - `KeyVox iOS/Core/StyleRewrite/StyleRewritePipelineCoordinator.swift`
   - iOS app-side adapter between `TranscriptionManager` / `DictationPipeline` and `KeyVoxStyleRewrite`.
-  - Resolves the current `AppSettingsStore` style, carries the pipeline or IPC language into transform requests, forwards utterance-scoped prewarm/release calls to the app-owned local transformer, converts package results into `DictationPipelineTextProcessingResult`, records latest-utterance artifacts, and handles keyboard style rewrite IPC requests.
+  - Resolves the current `AppSettingsStore` style, carries the pipeline or IPC language into transform requests, forwards utterance-scoped prewarm/release calls to the app-owned local transformer, converts package results into `DictationPipelineTextProcessingResult`, records latest-utterance artifacts, and answers keyboard restyle requests, which both the app's IPC handler and the Transcription AU extension use.
 - `KeyVox iOS/Core/StyleRewrite/StyleRewriteLatestArtifactStore.swift`
   - App Group latest-artifact persistence for the most recent dictation.
   - Stores the utterance ID and provider-reported language with raw provider text, post-processed base text, selected inserted text, selected pre-Caps text, selected style identifier, deterministic paragraph/list variants, variant timing/error metadata, inference duration, transform duration, and creation date.
@@ -1465,7 +1466,9 @@ Packages/
 - `KeyVox Transcription AU/App/TranscriptionAUServiceRegistry.swift`
   - Composition root for the extension's process: builds the app's dictation services on the shared container, applies the saved dictation settings, rereads the dictionary per dictation, builds the post-processor off the main thread, and unloads the dictation models on request.
 - `KeyVox Transcription AU/Core/TranscriptionAUMessageChannel.swift`
-  - Turns the keyboard's messages into session calls on the main thread and answers with their results.
+  - Turns the keyboard's messages into session and restyle calls on the main thread and answers with their results.
+- `KeyVox Transcription AU/Core/TranscriptionAURestyle.swift`
+  - Runs the keyboard's restyle of an inserted dictation with the extension's Vibes model while the containing app's session is not running; a new restyle replaces one still running.
 - `KeyVox Transcription AU/Core/TranscriptionAUSession.swift`
   - Runs one keyboard dictation: accumulates the audio with the recorder's accumulator, runs stop-time processing and the shared dictation pipeline in `TranscriptionManager`'s order, records the latest artifact, and publishes the transcript record.
 - `KeyVox Transcription AU/Core/TranscriptionAUSelectedVibe.swift`
@@ -1708,7 +1711,7 @@ Packages/
 - `KeyVox Keyboard/Core/Dictation/AudioIndicatorDriver.swift`
   - Drives the logo indicator from the shared live meter through an update link attached to the logo bar view, so frames come from the screen the keyboard is on and only while it shows; disables the link whenever neither a listening, processing, or speaking phase nor speech-playback progress needs new frames.
 - `KeyVox Keyboard/Core/Dictation/KeyboardLocalStyleRewriteTextTransformer.swift`
-  - Keyboard-side style rewrite transport that writes the base text, style, and saved dictation language into a `KeyVoxStyleRewriteIPCRequest`, polls for the matching response, and returns package-shaped transform results with processing mode `app-ipc`.
+  - Keyboard-side style rewrite transport that writes the base text, style, and saved dictation language into a `KeyVoxStyleRewriteIPCRequest` and returns package-shaped transform results: through the containing app (`app-ipc`) while its session is running, otherwise through the Transcription AU extension (`transcription-au`).
   - Keeps local rewrite model execution out of the extension.
 - `KeyVox Keyboard/Core/Dictation/KeyboardDictationController.swift`
   - Owns the keyboard-side recording request lifecycle, including warm Darwin signaling, a dictation made in the keyboard when the app is not warm, cold URL handoff, a generic two-second start-failure state, and the no-response fallback.
@@ -1744,7 +1747,7 @@ Packages/
 - `KeyVox Keyboard/Core/Dictation/Standalone/MicrophoneCapture.html`
   - The page that captures the microphone and posts its audio to the keyboard.
 - `KeyVox Keyboard/Core/Dictation/Standalone/KeyboardTranscriptionAUClient.swift`
-  - Hosts the Transcription AU extension out of process, can start it ahead of a dictation, and exchanges `TranscriptionAUContract` messages with it on its own queue, reporting back on the main queue; a cancel or disconnect stops a wait for a transcript instead of queueing behind it.
+  - Hosts the Transcription AU extension out of process, can start it ahead of a dictation, and exchanges `TranscriptionAUContract` messages with it on its own queue, reporting back on the main queue; a cancel or disconnect stops a wait for a transcript instead of queueing behind it. The keyboard's dictation and its restyles share one client, and a cancel or disconnect also stops a wait for a restyle.
 - `KeyVox Keyboard/Core/Transport/KeyVoxIPCLiveMeterSignalState+AudioIndicator.swift`
   - Maps the shared live-meter signal state to the indicator's signal state.
 - `KeyVox Keyboard/InfoPlist.xcstrings`
