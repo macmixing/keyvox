@@ -870,9 +870,18 @@ Cold path in the keyboard, taken when the app is not warm and the keyboard has F
 5. captured audio goes to the extension as it arrives, and each answer carries the live meter for the indicator
 6. on stop the extension runs stop-time processing and the dictation pipeline and publishes the transcript record; the keyboard inserts it through the same path as an app transcript
 7. no app switch and no Live Activity happen on this path, and the shared recording state stays untouched; `KeyboardDictationController` ignores shared-state sync while such a dictation is active
-8. cancel abandons the dictation in the extension; the extension host leaving the front cancels a dictation that is still starting or recording and lets one already being transcribed finish
+8. cancel abandons the dictation in the extension; the extension host leaving the front cancels a dictation that is still starting, lets one already being transcribed finish, and finishes one that is recording in the background (see Rescued Dictation below)
 9. a call or another app's audio cutting the recording off ends it there, and what was said before then is transcribed and inserted, as the app does for a recording it has cut off; the next dictation starts a new capture
-10. dismissing the keyboard cancels any dictation and has the extension unload its dictation models
+10. dismissing the keyboard cancels a dictation that is still starting, finishes one that is recording or being transcribed in the background (see Rescued Dictation below), and has the extension unload its dictation models, once that transcript arrives
+
+Rescued dictation, for a keyboard dictation cut off while recording or being transcribed: by its host app leaving the front, such as a swipe to the app switcher or the host app being closed, or by the keyboard being dismissed:
+
+- the recording stops there and `KeyboardStandaloneDictation` has the extension transcribe what was captured instead of cancelling it, without waiting for the capture page to report that it stopped; the dictation keeps itself alive past its keyboard view controller until the transcript arrives
+- the extension publishes the transcript as the latest transcription, as for any dictation, and the keyboard keeps it in `KeyboardRescuedDictationStore`, in its own defaults, with the published dictation's artifact ID and style, so a later dictation replacing the latest transcription does not change what the rescued one inserts or what the dictation controls act on
+- measured on an iPhone 13 Pro running nothing but the phone itself: with a 64-second recording, the transcript was published 3.7 seconds after the host app had quit
+- the next time the keyboard appears, or as soon as the transcript arrives while it is up, the suggestion bar shows it as one suggestion across the whole bar, truncated at the end, in place of the dictation toolbar on the letter page of the full keyboard, whether or not the field holds text
+- tapping it inserts it through the same path as a dictation transcript, recorded with its own artifact ID and style; typing, deleting, or choosing an emoji stops offering it; the mic and the other controls leave it offered; dismissing the keyboard after it was offered stops offering it
+- nothing is inserted without the tap, and no notification is posted
 
 A recording that cannot start because the audio is busy shows the start-failure state, the same as one the containing app could not start, with no app switch: the microphone being handed over muted because a call holds it, a call or another app's audio cutting the capture off before it started, or the dictation not starting within the waiting timeout.
 
@@ -1893,6 +1902,7 @@ Implementation split:
 - `KeyboardViewController.swift` owns the controller-facing event and state surface
 - `KeyboardViewController+PresentationLifecycle.swift` owns presentation-tree creation, binding, teardown, and host-lifecycle observation
 - `KeyboardViewController+Debug.swift` owns debug-only lifecycle counters and testing hooks
+- `KeyboardViewController+RescuedDictation.swift` owns offering a rescued dictation in the suggestion bar
 - `KeyboardViewController+Typing.swift` owns letter-page typing: field preparation, shift handling, word boundaries, picked-word spacing, suggestion taps, contested taps, held-delete word deletion, and the return to letters after symbols
 - `KeyboardViewController+Emoji.swift` and `KeyboardViewController+EmojiSearch.swift` own emoji page and emoji search coordination
 - `KeyboardTTSController.swift` owns keyboard-side copied-text speak transport state and the App Group request/start-stop coordination surface

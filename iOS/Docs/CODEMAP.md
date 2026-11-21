@@ -430,6 +430,7 @@ iOS/
 │   │   ├── KeyboardViewController+Emoji.swift
 │   │   ├── KeyboardViewController+EmojiSearch.swift
 │   │   ├── KeyboardViewController+PresentationLifecycle.swift
+│   │   ├── KeyboardViewController+RescuedDictation.swift
 │   │   ├── KeyboardViewController+Typing.swift
 │   │   └── KeyboardViewController.swift
 │   ├── Core/
@@ -444,6 +445,7 @@ iOS/
 │   │   │   │   └── KeyboardDictationChangeSession.swift
 │   │   │   ├── KeyboardLocalStyleRewriteTextTransformer.swift
 │   │   │   ├── KeyboardDictationController.swift
+│   │   │   ├── KeyboardRescuedDictationStore.swift
 │   │   │   └── Standalone/
 │   │   │       ├── KeyboardDictationAudioUnitClient.swift
 │   │   │       ├── KeyboardMicrophoneCapture.swift
@@ -652,6 +654,7 @@ iOS/
 │   │   │   ├── KeyboardLetterCaseControllerTests.swift
 │   │   │   ├── KeyboardMicrophoneSelectionTests.swift
 │   │   │   ├── KeyboardPredictionCoordinatorTests.swift
+│   │   │   ├── KeyboardRescuedDictationStoreTests.swift
 │   │   │   ├── KeyboardToolbarModeTests.swift
 │   │   │   ├── KeyboardTextInputControllerTests.swift
 │   │   │   ├── KeyboardTypingMemoryResetTests.swift
@@ -1646,6 +1649,8 @@ Packages/
   - Waits for the host's first `textDidChange(_:)` after appearing before reading the focused field, then prepares typing for that field; a later change of the field's typing traits starts the new field fresh.
   - Tracks whether the latest dictation is still untouched and whether the field holds letters, which together decide whether the toolbar offers suggestions or the dictation accessories.
   - Missing-model taps open `keyvoxios://vibes/model-recovery`; access-aware recovery scene selection remains app-owned by `KeyVoxVibesPurchaseController`.
+- `KeyVox Keyboard/App/KeyboardViewController+RescuedDictation.swift`
+  - Offers a dictation finished in the background after its keyboard went away: shows it across the suggestion bar when the keyboard appears or when it arrives, inserts it on tap, and stops offering it when the user types, deletes, or picks an emoji, or when the keyboard is dismissed after offering it.
 - `KeyVox Keyboard/App/KeyboardViewController+Typing.swift`
   - Letter-page typing: field preparation, opening layout, shift and caps-lock handling, word-boundary autocorrection, picked-word spacing, suggestion taps and long-press forgetting, contested taps near letter keys, held-delete word deletion, return to letters after symbols, and personal, learned, and emoji vocabulary hand-off to the prediction coordinator.
 - `KeyVox Keyboard/App/KeyboardViewController+Emoji.swift`
@@ -1675,7 +1680,7 @@ Packages/
   - Presentation-tree creation, per-presentation binding, teardown, and extension-host lifecycle observation.
   - Pauses the active presentation during host backgrounding, refreshes it on host foregrounding, and tears the tree down only for real dismissal and globe-key presentation swaps.
   - Keeps the keyboard view hierarchy disposable across globe-key presentation swaps.
-  - Binds and unbinds key-grid callbacks, letter-key geometry for predictions, suggestion-bar taps and long presses, the emoji page, the emoji search, and the audio indicator's attachment to the logo bar with the presentation tree; on host foregrounding it also adopts any typing-memory reset and rechecks installed models.
+  - Binds and unbinds key-grid callbacks, letter-key geometry for predictions, suggestion-bar taps and long presses, the rescued dictation offer, the emoji page, the emoji search, and the audio indicator's attachment to the logo bar with the presentation tree; on host foregrounding it also adopts any typing-memory reset and rechecks installed models.
 - `KeyVox Keyboard/App/KeyboardViewController+Debug.swift`
   - Debug-only presentation lifecycle counters and controller test hooks.
 - `KeyVox Keyboard/Core/Dictation/DictationChange/KeyboardDictationChangeController.swift`
@@ -1700,6 +1705,7 @@ Packages/
 - `KeyVox Keyboard/Core/Dictation/KeyboardDictationController.swift`
   - Owns the keyboard-side recording request lifecycle, including warm Darwin signaling, a dictation made in the keyboard when the app is not warm, cold URL handoff, a generic two-second start-failure state, and the no-response fallback.
   - Prepares a dictation made in the keyboard when the keyboard appears with Full Access.
+  - When the host app leaves the front, finishes a dictation made in the keyboard that is recording in the background, cancels one still starting, and leaves one being transcribed; when the keyboard is dismissed, finishes one that is recording or being transcribed in the background.
   - Shows the start-failure state when a dictation made in the keyboard cannot start recording because a call holds the microphone or does not start in time, falls back to the cold URL handoff when it fails any other way, and ignores shared-state sync while one is active.
   - Consumes containing-app startup results from shared state so app-reported recorder failures remain observable across the temporary app handoff.
   - Keyboard-local state machine for shared recording state and app launch handoff.
@@ -1714,9 +1720,12 @@ Packages/
 - `KeyVox Keyboard/Core/Feedback/KeyboardInteractionHaptics.swift`
   - Keyboard-owned interaction haptic coordinator that respects the extension’s local haptics preference.
 - `KeyVox Keyboard/Core/Dictation/Standalone/KeyboardStandaloneDictating.swift`
-  - The seam through which `KeyboardDictationController` prepares, starts, stops, cancels, and deactivates a dictation made without the containing app.
+  - The seam through which `KeyboardDictationController` prepares, starts, stops, finishes in the background, cancels, and deactivates a dictation made without the containing app.
 - `KeyVox Keyboard/Core/Dictation/Standalone/KeyboardStandaloneDictation.swift`
   - Coordinates one such dictation: prepares the capture page and the extension when the keyboard appears, starts the microphone capture and the extension together, forwards audio, keeps the latest live meter for the indicator, has a recording that a call or other audio cut off transcribed, and reports the transcript, no speech, a failure to start recording, or a failure.
+  - Finishes a recording, or one being transcribed, in the background when its keyboard goes away, keeping itself alive until the extension's transcript arrives, saving the transcript to `KeyboardRescuedDictationStore`, and letting the extension go afterward if the keyboard was dismissed meanwhile.
+- `KeyVox Keyboard/Core/Dictation/KeyboardRescuedDictationStore.swift`
+  - Keeps a rescued dictation's transcript, with its published artifact ID and style, in the keyboard's own defaults and announces each change, so whichever keyboard view controller is up can offer it.
 - `KeyVox Keyboard/Core/Dictation/Standalone/KeyboardMicrophoneCapture.swift`
   - Records the microphone through a web view with nothing to see and hands over mono Float32 audio; can load its page ahead of a capture without asking for the microphone; reports a call holding the microphone at start, interruptions, and page, capture, and web content process failures.
 - `KeyVox Keyboard/Core/Dictation/Standalone/KeyboardMicrophoneSelection.swift`
@@ -1797,7 +1806,7 @@ Packages/
 - `KeyVox Keyboard/Core/KeyboardScreenShape.swift`
   - Decides landscape from whether the keyboard's scene is wider than it is tall rather than from the interface orientation.
 - `KeyVox Keyboard/Core/KeyboardSymbolLayout.swift`
-  - Defines the letter, number, and alternate symbol pages and the number pad page, whether a page shows the toolbar (`showsToolbar`, every page but the number pad) and keeps the toolbar's row (`keepsToolbarRow`, also while the emoji page or search is open), the key kinds and their titles, symbols, and accessibility labels, the Compact Keys rows, the emoji search's bottom row, the field's bottom row and return key look, and the bottom-row variants without the emoji key or with the globe key.
+  - Defines the letter, number, and alternate symbol pages and the number pad page, whether a page shows the toolbar (`showsToolbar`, every page but the number pad) and keeps the toolbar's row (`keepsToolbarRow`, also while the emoji page or search is open), the key kinds, whether a key edits the text, and their titles, symbols, and accessibility labels, the Compact Keys rows, the emoji search's bottom row, the field's bottom row and return key look, and the bottom-row variants without the emoji key or with the globe key.
 - `KeyVox Keyboard/Core/KeyboardTopRowAccessoryLayout.swift`
   - Owns top-row accessory alignment driven from the measured key grid.
   - Keeps the left accessory slot stable by showing Settings while idle and the existing Cancel control while recording, transcribing, or playing speech.
@@ -1810,7 +1819,7 @@ Packages/
   - Stable keyboard chrome and key grid.
   - Hosts the branded toolbar row and the shared warning overlay for dictation model, Full Access, and microphone permission warnings.
   - On the number pad, hides the toolbar and moves its row above the keyboard's top, out of sight, so the keys take its place, unless the emoji page or search is open, whose field keeps the row's place.
-  - Shows the suggestion bar in place of the toolbar accessories on the full keyboard's letter page while predictions are offered and no cancel control is showing, spanning from the keyboard edge to the logo control.
+  - Shows the suggestion bar in place of the toolbar accessories on the full keyboard's letter page while predictions or a rescued dictation are offered and no cancel control is showing, spanning from the keyboard edge to the logo control.
   - Hosts the emoji page over the key grid's place, the emoji search field in the toolbar's place, and the search results above the keys while searching.
   - Sends touches in the keyboard's outer padding to the key grid so they type the nearest key.
   - Invalidates layout whenever branded-toolbar Vibes visibility changes so returning from a warning mode restores measured top-row spacing.
@@ -1843,7 +1852,7 @@ Packages/
 - `KeyVox Keyboard/Views/Components/KeyboardHeldKeyPopupView.swift`
   - Renders a held key's popup cells from the package's `HeldKeyPopupLayout`, highlighting the cell under the finger.
 - `KeyVox Keyboard/Views/Components/KeyboardSuggestionBarView.swift`
-  - Leading, primary, and trailing suggestion slots, the autocorrection in a heavier weight, up to three emoji splitting the trailing slot, a soft glow in the keys' label color on an emoji that would blend into its key, taps that select an item, and long presses that report it instead.
+  - Leading, primary, and trailing suggestion slots, the autocorrection in a heavier weight, up to three emoji splitting the trailing slot, a soft glow in the keys' label color on an emoji that would blend into its key, taps that select an item, and long presses that report it instead; a rescued dictation as one suggestion across the whole bar, truncated at the end, in place of the slots.
 - `KeyVox Keyboard/Views/FullAccessView.swift`
   - Full-screen keyboard-only instructional view shown when the user needs to enable Full Access.
 
