@@ -374,6 +374,30 @@ struct KeyboardDictationControllerTests {
         #expect(standaloneDictation.startCallCount == 0)
     }
 
+    @Test func warmSessionThatDoesNotStartRecordingFallsBackToKeyboardDictation() {
+        let ipcManager = KeyboardDictationIPCManagerSpy()
+        ipcManager.isSessionWarmValue = true
+        let standaloneDictation = KeyboardStandaloneDictationSpy()
+        let scheduler = KeyboardActionSchedulerSpy()
+        let appLauncher = KeyboardContainingAppLauncherSpy()
+        let controller = KeyboardDictationController(
+            ipcManager: ipcManager,
+            standaloneDictation: standaloneDictation,
+            scheduleAction: scheduler.schedule,
+            openContainingApp: appLauncher.open,
+            startRecordingURL: Self.startRecordingURL
+        )
+
+        controller.handleMicTap()
+        scheduler.runScheduledAction(after: 0.5)
+
+        #expect(ipcManager.sendStartCommandCallCount == 1)
+        #expect(ipcManager.sendCancelCommandCallCount == 1)
+        #expect(standaloneDictation.startCallCount == 1)
+        #expect(controller.state == .startingDictation)
+        #expect(appLauncher.openedURLs.isEmpty)
+    }
+
     @Test(arguments: [false, true])
     func keyboardDictationFailureFallsBackToContainingApp(failsAfterRecordingStarted: Bool) {
         let ipcManager = KeyboardDictationIPCManagerSpy()

@@ -220,10 +220,7 @@ final class KeyboardDictationController {
                 handleRecordingStarted()
                 scheduleWarmSessionGracePeriod(after: effectiveWarmSessionGracePeriod())
             } else if let standaloneDictation, standaloneDictation.isAvailable {
-                isStandaloneDictationActive = true
-                state = .startingDictation
-                scheduleStandaloneStartTimeout()
-                standaloneDictation.start()
+                startStandaloneDictation(standaloneDictation)
             } else {
                 state = .waitingForApp
                 scheduleWaitingTimeout()
@@ -308,6 +305,13 @@ final class KeyboardDictationController {
             guard let self, self.isStandaloneDictationActive else { return }
             self.fallBackToContainingApp()
         }
+    }
+
+    private func startStandaloneDictation(_ standaloneDictation: any KeyboardStandaloneDictating) {
+        isStandaloneDictationActive = true
+        state = .startingDictation
+        scheduleStandaloneStartTimeout()
+        standaloneDictation.start()
     }
 
     /// Hands a dictation the keyboard could not run itself to the containing app.
@@ -406,6 +410,13 @@ final class KeyboardDictationController {
             guard let self, self.state == .waitingForApp || self.state == .recording else { return }
             guard self.ipcManager.currentRecordingState() != .recording else {
                 self.handleRecordingStarted()
+                return
+            }
+            // The app the warm signal came from did not take the dictation, as when it was closed
+            // moments before, so the keyboard records it itself when it can.
+            if let standaloneDictation = self.standaloneDictation, standaloneDictation.isAvailable {
+                self.ipcManager.sendCancelCommand()
+                self.startStandaloneDictation(standaloneDictation)
                 return
             }
             self.state = .waitingForApp
