@@ -1705,7 +1705,7 @@ Packages/
 - `KeyVox Keyboard/Core/Dictation/KeyboardDictationController.swift`
   - Owns the keyboard-side recording request lifecycle, including warm Darwin signaling, a dictation made in the keyboard when the app is not warm, cold URL handoff, a generic two-second start-failure state, and the no-response fallback.
   - Prepares a dictation made in the keyboard when the keyboard appears with Full Access.
-  - When the host app leaves the front, finishes a dictation made in the keyboard that is recording in the background, cancels one still starting, and leaves one being transcribed; when the keyboard is dismissed, finishes one that is recording or being transcribed in the background.
+  - When the host app leaves the front or the keyboard is dismissed, finishes a dictation made in the keyboard that is recording or being transcribed in the background, and cancels one still starting.
   - Shows the start-failure state when a dictation made in the keyboard cannot start recording because a call holds the microphone or does not start in time, falls back to the cold URL handoff when it fails any other way, and ignores shared-state sync while one is active.
   - Consumes containing-app startup results from shared state so app-reported recorder failures remain observable across the temporary app handoff.
   - Keyboard-local state machine for shared recording state and app launch handoff.
