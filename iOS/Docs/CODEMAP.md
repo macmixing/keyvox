@@ -1723,7 +1723,7 @@ Packages/
   - The seam through which `KeyboardDictationController` prepares, starts, stops, finishes in the background, cancels, and deactivates a dictation made without the containing app.
 - `KeyVox Keyboard/Core/Dictation/Standalone/KeyboardStandaloneDictation.swift`
   - Coordinates one such dictation: prepares the capture page and the extension when the keyboard appears, starts the microphone capture and the extension together, forwards audio, keeps the latest live meter for the indicator, has a recording that a call or other audio cut off transcribed, and reports the transcript, no speech, a failure to start recording, or a failure.
-  - Finishes a recording, or one being transcribed, in the background when its keyboard goes away, keeping itself alive until the extension's transcript arrives, saving the transcript to `KeyboardRescuedDictationStore`, and letting the extension go afterward if the keyboard was dismissed meanwhile.
+  - Finishes a recording, or one being transcribed, in the background when its keyboard goes away, keeping itself alive until the extension's transcript arrives, saving the transcript to `KeyboardRescuedDictationStore`, and letting the extension go afterward if the keyboard was dismissed meanwhile, freeing its shared models only when no other keyboard has its dictation prepared.
 - `KeyVox Keyboard/Core/Dictation/KeyboardRescuedDictationStore.swift`
   - Keeps a rescued dictation's transcript, with its published artifact ID and style, in the keyboard's own defaults and announces each change, so whichever keyboard view controller is up can offer it.
 - `KeyVox Keyboard/Core/Dictation/Standalone/KeyboardMicrophoneCapture.swift`
