@@ -1,6 +1,6 @@
 # KeyVoxWhisper
 
-`KeyVoxWhisper` is KeyVox's local Swift wrapper around official [`whisper.cpp`](https://github.com/ggml-org/whisper.cpp) XCFramework binaries.
+`KeyVoxWhisper` is KeyVox's local Swift wrapper around a [`whisper.cpp`](https://github.com/ggml-org/whisper.cpp) XCFramework built from an official release's source.
 
 ## Why This Package Exists
 
@@ -13,12 +13,12 @@
 
 - Thin wrapper: minimal logic on top of `whisper.cpp`.
 - Stable app interface: isolate native API drift inside this package.
-- Explicit pinning: binary URL + checksum in `Package.swift`.
+- Explicit pinning: the release tag and source commit in `../KeyVoxVoiceActivity/Artifacts/build-whisper-xcframework.sh`.
 - Local-first: no cloud transcription dependency at runtime.
 
 ## Package Layout
 
-- `Package.swift`: binary target pin + wrapper target config.
+- `Package.swift`: wrapper target config; the `whisper.cpp` binary target lives in `KeyVoxVoiceActivity`.
 - `Sources/KeyVoxWhisper/Whisper.swift`: context lifecycle + transcription calls.
 - `Sources/KeyVoxWhisper/WhisperParams.swift`: decode params bridge + compatibility aliases.
 - `Sources/KeyVoxWhisper/Segment.swift`: segment output model.
@@ -29,11 +29,10 @@
 
 ## Updating whisper.cpp
 
-1. Pick a new `whisper.cpp` release artifact URL.
-2. Download the zip and compute its checksum.
-3. Update `Package.swift` URL + checksum.
-4. Build KeyVox and run transcription regressions (including silence tests).
-5. If upstream C field/function names changed, add compatibility mapping in this package rather than app code.
+1. Update the release tag and source commit in `../KeyVoxVoiceActivity/Artifacts/build-whisper-xcframework.sh`, and the provenance in `../KeyVoxVoiceActivity/Artifacts/README.md`.
+2. Run the script to rebuild `../KeyVoxVoiceActivity/Artifacts/whisper.xcframework`.
+3. Build KeyVox and run transcription regressions (including silence tests).
+4. If upstream C field/function names changed, add compatibility mapping in this package rather than app code.
 
 ## Compatibility Policy
 

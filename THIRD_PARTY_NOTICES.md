@@ -55,7 +55,8 @@ all times remain with Princeton University and LICENSEE agrees to preserve same.
 ### whisper.cpp / GGML (Apple XCFramework and portable CPU libraries)
 - Upstream: <https://github.com/ggml-org/whisper.cpp>
 - License: MIT
-- Note: bundled through `Packages/KeyVoxWhisper`
+- Note: bundled through `Packages/KeyVoxVoiceActivity` and used by `Packages/KeyVoxWhisper`
+- Apple XCFramework: built from release `b5130` source, commit `927cfce34f31707e17f2bff35c349632fb9e2c3a`, by `Packages/KeyVoxVoiceActivity/Artifacts/build-whisper-xcframework.sh`.
 - Portable source version: v1.7.6, archive SHA-256 `166140e9a6d8a36f787a2bd77f8f44dd64874f12dd8359ff7c1f4f9acb86202e`.
 - Bundled CPU code also includes Mozilla Foundation's MIT-licensed llamafile matrix multiplication, MIT-licensed attention code by Jeffrey Quesnelle and Bowen Peng, and adapted Arm optimized routines (MIT OR Apache-2.0 WITH LLVM-exception). Full notices are in `Tools/Licenses/Whisper-CPU-NOTICES.txt` and installed alongside the portable libraries.
 - Arm provenance: the exponential routine's constants and reduction sequence match [this pinned upstream source](https://android.googlesource.com/platform/external/arm-optimized-routines/+/0a6ab6d1f600a2fba6509440f455300a606024e6/math/aarch64/advsimd/v_expf_inline.h). This identifies the routine family, not the exact historical import commit. The full upstream Arm license is retained.

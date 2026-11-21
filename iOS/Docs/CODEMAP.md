@@ -847,6 +847,10 @@ Packages/
 │   │   └── Resources/campaigns.json
 │   └── Tests/KeyVoxPromotionsTests/
 ├── KeyVoxVoiceActivity/
+│   ├── Artifacts/
+│   │   ├── README.md
+│   │   ├── build-whisper-xcframework.sh
+│   │   └── whisper.xcframework/
 │   ├── Package.swift
 │   ├── Sources/
 │   │   ├── CWhisper/
@@ -983,6 +987,8 @@ Packages/
   - Owns the shared VAD protocol, standard configuration, Silero resource, actor-isolated detector, and speech-segment results used by Whisper and Parakeet.
 - `Packages/KeyVoxVoiceActivity/Sources/KeyVoxSpeechRuntime/SpeechRuntime.swift`
   - Exposes the shared `whisper.cpp` runtime bridge consumed by both the VAD detector and `KeyVoxWhisper`.
+- `Packages/KeyVoxVoiceActivity/Artifacts/`
+  - Holds the vendored `whisper.xcframework`, built from release source with prebuilt Metal kernels by `build-whisper-xcframework.sh`, and its provenance README.
 
 ### App Lifecycle and Composition
 

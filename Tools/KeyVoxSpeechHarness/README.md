@@ -43,7 +43,8 @@ swift build \
 ```
 
 The script verifies the v1.7.6 source archive SHA-256 and builds static Whisper
-and GGML CPU libraries. Apple retains the existing v1.7.6 XCFramework. The C
+and GGML CPU libraries. Apple builds use the b5130 XCFramework vendored in
+`Packages/KeyVoxVoiceActivity/Artifacts`. The C
 module is selected by destination platform, not the build host. Its regular C
 target also lets Xcode resolve the dependency graph when building Apple apps.
 

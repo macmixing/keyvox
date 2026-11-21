@@ -2,7 +2,7 @@
 set -euo pipefail
 script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 
-# Build the exact runtime version used by the Apple XCFramework. The install
+# Build the portable runtime from pinned whisper.cpp v1.7.6 source. The install
 # prefix is explicit so Android headers/libraries cannot replace host libraries.
 if [[ $# -lt 2 || $# -gt 3 ]]; then
     echo "Usage: $0 <android|native> <install-prefix> [cpu|vulkan]" >&2
