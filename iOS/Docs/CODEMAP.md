@@ -1469,7 +1469,7 @@ Packages/
 - `KeyVox Transcription AU/Core/TranscriptionAUSession.swift`
   - Runs one keyboard dictation: accumulates the audio with the recorder's accumulator, runs stop-time processing and the shared dictation pipeline in `TranscriptionManager`'s order, records the latest artifact, and publishes the transcript record.
 - `KeyVox Transcription AU/Core/TranscriptionAUSelectedVibe.swift`
-  - Holds the Vibe the keyboard sent with the current dictation.
+  - Holds the Vibe the keyboard sent with the current dictation's `begin`, replaced by the one it sends with `finish`.
 - `Packages/KeyVoxCore/Sources/KeyVoxCore/Services/Whisper/WhisperService+TranscriptionCore.swift`
   - Runs shared voice-activity analysis before Whisper decoding, rejects captures with no detected speech, skips chunks without speech overlap, and compacts selected speech ranges with bounded internal silence.
   - Falls back to full source chunks and the existing decoder no-speech safeguards when VAD analysis is unavailable.

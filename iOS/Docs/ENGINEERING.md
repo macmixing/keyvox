@@ -241,7 +241,7 @@ Rules:
 - The app and the extension run one implementation. The extension target compiles the app's own source files for capture accumulation, stop-time processing, model lookup, settings resolution, style rewrite, latest-artifact storage, weekly word stats, and review-request state; nothing is copied.
 - Capture tuning is `AudioCaptureTuning`, shared by `AudioRecorder` and the extension.
 - Saved dictation settings are read through `AppSettingsStore`'s static resolvers. The extension never creates an `AppSettingsStore`, whose initializer normalizes and writes settings.
-- The Vibe for a dictation is the style the keyboard sends with it, which `KeyboardAppSettingsStore` already resolved against the purchase, the trial, and the installed model. The extension holds no copy of that gate.
+- The Vibe for a dictation is the style the keyboard sends with it, which `KeyboardAppSettingsStore` already resolved against the purchase, the trial, and the installed model. The extension holds no copy of that gate. The keyboard sends it at `begin`, where it warms up the Vibes model, and again at `finish`, where it replaces the first one for the rewrite, so a Vibe changed during the dictation applies as it does in the containing app, which reads the Vibe when it processes the text.
 - Building `TranscriptionPostProcessor` loads its language data, which took about two and a half seconds in a debug build on an iPhone 13 Pro, so the registry builds it off the main thread while the user speaks and the pipeline waits for it.
 - `TranscriptionAUSession` mirrors `TranscriptionManager`'s stop sequence: empty capture, model availability, provider warmup, dictionary hint gate, `DictationPipeline.run`, latest-artifact recording, Vibes release, transcript publishing.
 - The active provider is replaced only when the saved selection changes; replacing it unloads the loaded model.
@@ -735,9 +735,9 @@ Keyboard onboarding detection is deliberately split across three signals:
 
 `TranscriptionAUContract` is the only source of truth for the messages between the keyboard and the Transcription AU extension: the message channel name, the component description the keyboard instantiates, the commands, the outcomes, and the dictionary keys.
 
-- `begin` starts a dictation with the keyboard's resolved Vibe and answers whether the selected dictation model is installed
+- `begin` starts a dictation with the keyboard's resolved Vibe, which warms up the Vibes model, and answers whether the selected dictation model is installed
 - `appendAudio` adds mono Float32 audio at its capture sample rate and answers with the live meter for it
-- `finish` ends the audio; `poll` answers `pending`, `transcript` with the text, `noSpeech`, or `failed`
+- `finish` ends the audio with the keyboard's resolved Vibe at that moment, which the rewrite uses; `poll` answers `pending`, `transcript` with the text, `noSpeech`, or `failed`
 - `cancel` abandons the dictation; `releaseModels` also unloads the dictation models
 - an empty answer means the extension's process is gone, which the keyboard treats as a failure
 
