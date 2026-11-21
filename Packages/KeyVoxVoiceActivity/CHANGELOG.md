@@ -6,6 +6,23 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.1.2] - 2026-11-21
+
+The Apple speech runtime now loads its Metal kernels prebuilt instead of compiling them in each new process.
+
+### Includes
+
+- Replaced the downloaded upstream b5130 Apple XCFramework with one built from the same release source by `Artifacts/build-whisper-xcframework.sh`, vendored in `Artifacts/whisper.xcframework`.
+- Compiled the Metal kernels ahead of time into `default.metallib` and `ggml-tensor.metallib` inside each framework slice, so a new process with empty caches no longer compiles the kernel source on its first whisper.cpp use, including the CPU-only voice activity detector.
+- Left out the bfloat16 kernels, as ggml's own precompiled build does; whisper.cpp at this release creates no bfloat16 tensors.
+- Kept every other upstream build option and the `ios-arm64`, `ios-arm64_x86_64-simulator`, and `macos-arm64_x86_64` slices.
+
+### Notes
+
+- `1.1.2` is a patch-level runtime packaging change and does not change the public `KeyVoxVoiceActivity` API.
+
+---
+
 ## [1.1.1] - 2026-09-18
 
 The Apple speech runtime now uses the upstream Whisper.cpp v1.9.4 engine.
