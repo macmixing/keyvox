@@ -44,7 +44,7 @@ extension DictationSettingsView {
                         .padding(.top, 2)
                     }
 
-                    Text("Decide when the dictation session turns off.", comment: "Description under the Dictation Timeout setting.")
+                    Text("Decide when dictation turns off after you start it with the Dictation Shortcut or from the Home tab.", comment: "Description under the Dictation Timeout setting. Dictation Shortcut is the name of the KeyVox setting on the same screen; Home is the name of the app's Home tab.")
                         .font(.appFont(15, variant: .light))
                         .foregroundStyle(.white.opacity(0.7))
                 }
