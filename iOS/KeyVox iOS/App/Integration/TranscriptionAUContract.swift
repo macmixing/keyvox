@@ -29,6 +29,12 @@ nonisolated enum TranscriptionAUContract {
         /// Abandons the dictation.
         case cancel
         case releaseModels
+        /// Rewrites an inserted dictation in another Vibe, for a keyboard restyle while the
+        /// containing app's session is not running; answers whether the rewrite started.
+        case restyle
+        /// Answers with the restyle's response once it is done; until then it answers not
+        /// accepted.
+        case pollRestyle
     }
 
     enum Outcome: String {
@@ -48,6 +54,10 @@ nonisolated enum TranscriptionAUContract {
         static let meterSignalState = "meterSignalState"
         static let outcome = "outcome"
         static let text = "text"
+        /// An encoded `KeyVoxStyleRewriteIPCRequest`.
+        static let restyleRequest = "restyleRequest"
+        /// An encoded `KeyVoxStyleRewriteIPCResponse`.
+        static let restyleResponse = "restyleResponse"
     }
 
     private static func fourCharacterCode(_ code: String) -> FourCharCode {

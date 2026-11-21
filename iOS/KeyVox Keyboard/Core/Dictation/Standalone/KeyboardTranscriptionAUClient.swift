@@ -80,6 +80,23 @@ final class KeyboardTranscriptionAUClient: @unchecked Sendable {
         }
     }
 
+    /// Starts the extension if it is not running and has it restyle an inserted dictation.
+    /// Reports its response, or nil when the extension did not answer within `timeout` of this
+    /// call or was let go of.
+    func restyle(
+        _ request: KeyVoxStyleRewriteIPCRequest,
+        timeout: TimeInterval,
+        completion: @escaping @MainActor (KeyVoxStyleRewriteIPCResponse?) -> Void
+    ) {
+        let deadline = Date().addingTimeInterval(timeout)
+        queue.async { [self] in
+            let response = performRestyle(request, deadline: deadline)
+            DispatchQueue.main.async {
+                completion(response)
+            }
+        }
+    }
+
     /// Abandons the dictation, has the extension free its models, and lets go of it.
     func disconnect() {
         setAbandonRequested(true)
@@ -154,6 +171,28 @@ final class KeyboardTranscriptionAUClient: @unchecked Sendable {
                 return .failed
             }
         }
+    }
+
+    private func performRestyle(
+        _ request: KeyVoxStyleRewriteIPCRequest,
+        deadline: Date
+    ) -> KeyVoxStyleRewriteIPCResponse? {
+        guard connect(),
+              let data = try? JSONEncoder().encode(request),
+              send(.restyle, [Key.restyleRequest: data])?[Key.accepted] as? Bool == true else {
+            return nil
+        }
+
+        while Date() < deadline {
+            guard !abandonRequested, let reply = send(.pollRestyle) else { return nil }
+            if let responseData = reply[Key.restyleResponse] as? Data,
+               let response = try? JSONDecoder().decode(KeyVoxStyleRewriteIPCResponse.self, from: responseData),
+               response.id == request.id {
+                return response
+            }
+            Thread.sleep(forTimeInterval: Self.outcomePollInterval)
+        }
+        return nil
     }
 
     /// Returns nil when the extension is not connected or its process is gone.

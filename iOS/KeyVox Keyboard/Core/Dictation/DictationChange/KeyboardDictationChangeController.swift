@@ -120,9 +120,10 @@ final class KeyboardDictationChangeController {
     init(
         textInputController: KeyboardTextInputController,
         appSettingsStore: KeyboardAppSettingsStore,
-        artifactStore: KeyboardDictationChangeArtifactStore = KeyboardDictationChangeArtifactStore()
+        artifactStore: KeyboardDictationChangeArtifactStore = KeyboardDictationChangeArtifactStore(),
+        audioUnitClient: KeyboardTranscriptionAUClient = KeyboardTranscriptionAUClient()
     ) {
-        let textTransformer = KeyboardLocalStyleRewriteTextTransformer()
+        let textTransformer = KeyboardLocalStyleRewriteTextTransformer(audioUnitClient: audioUnitClient)
         self.textInputController = textInputController
         self.appSettingsStore = appSettingsStore
         self.artifactStore = artifactStore

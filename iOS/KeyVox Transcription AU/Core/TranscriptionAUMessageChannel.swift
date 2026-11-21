@@ -1,7 +1,8 @@
 import AudioToolbox
 import Foundation
 
-/// Turns the keyboard's messages into dictation session calls and answers with their results.
+/// Turns the keyboard's messages into dictation session and restyle calls and answers with their
+/// results.
 final class TranscriptionAUMessageChannel: NSObject, AUMessageChannel {
     private typealias Key = TranscriptionAUContract.Key
 
@@ -12,18 +13,23 @@ final class TranscriptionAUMessageChannel: NSObject, AUMessageChannel {
         case poll
         case cancel
         case releaseModels
+        case restyle(KeyVoxStyleRewriteIPCRequest)
+        case pollRestyle
     }
 
     private enum Reply: Sendable {
         case accepted(Bool)
         case meter(level: Float, signalState: KeyVoxIPCLiveMeterSignalState)
         case outcome(TranscriptionAUContract.Outcome, text: String?)
+        case restyleResponse(Data)
     }
 
     var callHostBlock: CallHostBlock?
 
-    @MainActor private lazy var session = TranscriptionAUSession(
-        services: TranscriptionAUServiceRegistry()
+    @MainActor private lazy var services = TranscriptionAUServiceRegistry()
+    @MainActor private lazy var session = TranscriptionAUSession(services: services)
+    @MainActor private lazy var restyle = TranscriptionAURestyle(
+        coordinator: services.styleRewritePipelineCoordinator
     )
 
     func callAudioUnit(_ message: [AnyHashable: Any]) -> [AnyHashable: Any] {
@@ -54,6 +60,14 @@ final class TranscriptionAUMessageChannel: NSObject, AUMessageChannel {
             return .cancel
         case .releaseModels:
             return .releaseModels
+        case .restyle:
+            guard let data = message[Key.restyleRequest] as? Data,
+                  let request = try? JSONDecoder().decode(KeyVoxStyleRewriteIPCRequest.self, from: data) else {
+                return nil
+            }
+            return .restyle(request)
+        case .pollRestyle:
+            return .pollRestyle
         }
     }
 
@@ -95,8 +109,18 @@ final class TranscriptionAUMessageChannel: NSObject, AUMessageChannel {
             session.cancel()
             return .accepted(true)
         case .releaseModels:
+            restyle.cancel()
             session.releaseModels()
             return .accepted(true)
+        case .restyle(let request):
+            restyle.begin(request)
+            return .accepted(true)
+        case .pollRestyle:
+            guard let response = restyle.response,
+                  let data = try? JSONEncoder().encode(response) else {
+                return .accepted(false)
+            }
+            return .restyleResponse(data)
         }
     }
 
@@ -116,6 +140,8 @@ final class TranscriptionAUMessageChannel: NSObject, AUMessageChannel {
                 dictionary[Key.text] = text
             }
             return dictionary
+        case .restyleResponse(let data):
+            return [Key.restyleResponse: data]
         }
     }
 }

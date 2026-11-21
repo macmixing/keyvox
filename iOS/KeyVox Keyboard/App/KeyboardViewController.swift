@@ -42,9 +42,13 @@ final class KeyboardViewController: UIInputViewController {
             self?.typingTraits.allowsPeriodShortcut ?? true
         }
     )
+    /// The one connection to the Transcription AU extension, shared by dictation and by restyles
+    /// made while the containing app's session is not running.
+    lazy var transcriptionAUClient = KeyboardTranscriptionAUClient()
     lazy var dictationChangeController = KeyboardDictationChangeController(
         textInputController: textInputController,
-        appSettingsStore: appSettingsStore
+        appSettingsStore: appSettingsStore,
+        audioUnitClient: transcriptionAUClient
     )
     lazy var standaloneDictation = KeyboardStandaloneDictation(
         capture: KeyboardMicrophoneCapture(mount: { [weak self] captureView in
@@ -56,6 +60,7 @@ final class KeyboardViewController: UIInputViewController {
                 appSettingsStore.prefersBuiltInMicrophone
             }
         )),
+        audioUnitClient: transcriptionAUClient,
         rescuedDictationStore: rescuedDictationStore,
         isAvailableProvider: { [weak self] in
             self?.hasFullAccess ?? false

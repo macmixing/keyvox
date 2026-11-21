@@ -91,18 +91,23 @@ final class StyleRewritePipelineCoordinator {
             return
         }
 
+        KeyVoxIPCBridge.writeStyleRewriteResponse(await keyboardStyleRewriteResponse(for: request))
+    }
+
+    /// Rewrites a keyboard's restyle request in its Vibe; the containing app and the
+    /// Transcription AU extension both answer keyboard restyles with it.
+    func keyboardStyleRewriteResponse(
+        for request: KeyVoxStyleRewriteIPCRequest
+    ) async -> KeyVoxStyleRewriteIPCResponse {
         guard let style = StyleRewriteStyle(rawValue: request.styleIdentifier) else {
-            KeyVoxIPCBridge.writeStyleRewriteResponse(
-                KeyVoxStyleRewriteIPCResponse(
-                    id: request.id,
-                    text: nil,
-                    duration: 0,
-                    applied: false,
-                    chunkCount: 0,
-                    errorMessage: "invalidStyle"
-                )
+            return KeyVoxStyleRewriteIPCResponse(
+                id: request.id,
+                text: nil,
+                duration: 0,
+                applied: false,
+                chunkCount: 0,
+                errorMessage: "invalidStyle"
             )
-            return
         }
 
         guard let transformRequest = StyleRewriteDictationConfiguration.request(
@@ -111,17 +116,14 @@ final class StyleRewritePipelineCoordinator {
             languageCode: request.languageCode,
             deterministicVariants: []
         ) else {
-            KeyVoxIPCBridge.writeStyleRewriteResponse(
-                KeyVoxStyleRewriteIPCResponse(
-                    id: request.id,
-                    text: request.baseText,
-                    duration: 0,
-                    applied: false,
-                    chunkCount: request.baseText.isEmpty ? 0 : 1,
-                    errorMessage: nil
-                )
+            return KeyVoxStyleRewriteIPCResponse(
+                id: request.id,
+                text: request.baseText,
+                duration: 0,
+                applied: false,
+                chunkCount: request.baseText.isEmpty ? 0 : 1,
+                errorMessage: nil
             )
-            return
         }
 
         let result = await textTransformer.transform(transformRequest)
@@ -129,15 +131,13 @@ final class StyleRewritePipelineCoordinator {
             "keyboardResult id=\(request.id.uuidString) style=\(request.styleIdentifier) applied=\(result.applied) mode=\(result.processingMode ?? "nil") final=\(debugText(result.finalText))"
         )
         let errorMessage = result.errors.map(\.message).joined(separator: "; ").nilIfEmpty
-        KeyVoxIPCBridge.writeStyleRewriteResponse(
-            KeyVoxStyleRewriteIPCResponse(
-                id: request.id,
-                text: result.finalText,
-                duration: result.duration,
-                applied: result.applied,
-                chunkCount: result.chunkCount,
-                errorMessage: errorMessage
-            )
+        return KeyVoxStyleRewriteIPCResponse(
+            id: request.id,
+            text: result.finalText,
+            duration: result.duration,
+            applied: result.applied,
+            chunkCount: result.chunkCount,
+            errorMessage: errorMessage
         )
     }
 
