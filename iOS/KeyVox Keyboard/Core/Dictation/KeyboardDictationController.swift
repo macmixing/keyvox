@@ -160,13 +160,13 @@ final class KeyboardDictationController {
     }
 
     /// Ends a dictation the keyboard is still recording, which it cannot keep doing once its
-    /// host app is no longer in front. A recording is finished in the background so the next
-    /// keyboard can offer its transcript; one still starting is cancelled; one already being
-    /// transcribed carries on.
+    /// host app is no longer in front. A recording, or one already being transcribed, is finished
+    /// in the background so the next keyboard can offer its transcript instead of inserting it
+    /// into a host that is not in front; one still starting is cancelled.
     func endStandaloneRecordingForHostLeaving() {
         guard isStandaloneDictationActive else { return }
         switch state {
-        case .recording:
+        case .recording, .transcribing:
             cancelWaitingTimeout()
             isStandaloneDictationActive = false
             standaloneDictation?.finishInBackground()

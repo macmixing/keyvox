@@ -466,7 +466,8 @@ struct KeyboardDictationControllerTests {
         #expect(ipcManager.sendCancelCommandCallCount == 0)
     }
 
-    @Test func hostLeavingTheFrontFinishesAKeyboardRecordingInTheBackground() {
+    @Test(arguments: [false, true])
+    func hostLeavingTheFrontFinishesAKeyboardDictationInTheBackground(isTranscribing: Bool) {
         let ipcManager = KeyboardDictationIPCManagerSpy()
         ipcManager.isSessionWarmValue = false
         let standaloneDictation = KeyboardStandaloneDictationSpy()
@@ -481,6 +482,9 @@ struct KeyboardDictationControllerTests {
 
         controller.handleMicTap()
         standaloneDictation.onRecordingStarted?()
+        if isTranscribing {
+            controller.handleMicTap()
+        }
         controller.endStandaloneRecordingForHostLeaving()
 
         #expect(controller.state == .idle)
@@ -489,8 +493,7 @@ struct KeyboardDictationControllerTests {
         #expect(appLauncher.openedURLs.isEmpty)
     }
 
-    @Test(arguments: [false, true])
-    func hostLeavingTheFrontCancelsAStartingKeyboardDictationAndLeavesATranscribingOne(isTranscribing: Bool) {
+    @Test func hostLeavingTheFrontCancelsAStartingKeyboardDictation() {
         let ipcManager = KeyboardDictationIPCManagerSpy()
         ipcManager.isSessionWarmValue = false
         let standaloneDictation = KeyboardStandaloneDictationSpy()
@@ -503,14 +506,10 @@ struct KeyboardDictationControllerTests {
         )
 
         controller.handleMicTap()
-        if isTranscribing {
-            standaloneDictation.onRecordingStarted?()
-            controller.handleMicTap()
-        }
         controller.endStandaloneRecordingForHostLeaving()
 
-        #expect(controller.state == (isTranscribing ? .transcribing : .idle))
-        #expect(standaloneDictation.cancelCallCount == (isTranscribing ? 0 : 1))
+        #expect(controller.state == .idle)
+        #expect(standaloneDictation.cancelCallCount == 1)
         #expect(standaloneDictation.finishInBackgroundCallCount == 0)
     }
 
