@@ -874,9 +874,9 @@ Cold path in the keyboard, taken when the app is not warm and the keyboard has F
 9. a call or another app's audio cutting the recording off ends it there, and what was said before then is transcribed and inserted, as the app does for a recording it has cut off; the next dictation starts a new capture
 10. dismissing the keyboard cancels any dictation and has the extension unload its dictation models
 
-A recording that cannot start shows the start-failure state, the same as one the containing app could not start, with no app switch: the microphone capture failing to start, the microphone being handed over muted because a call holds it, or the dictation not starting within the waiting timeout.
+A recording that cannot start because the audio is busy shows the start-failure state, the same as one the containing app could not start, with no app switch: the microphone being handed over muted because a call holds it, a call or another app's audio cutting the capture off before it started, or the dictation not starting within the waiting timeout.
 
-Any other failure on that path falls back to the cold path through the app, never silently: the microphone capture failing or its web content process ending after recording began, the extension not being found, not instantiating, or its process ending, `begin` refused because the selected model is missing, or the pipeline failing. Without Full Access, and when the mic is tapped while copied text is being spoken, the keyboard takes the cold path through the app directly.
+Any other failure on that path falls back to the cold path through the app, never silently, so the app's own recording start decides the outcome and shows the start-failure state itself when it cannot record: the microphone capture being refused or failing to start, the capture page failing to load, the microphone capture failing or its web content process ending, the extension not being found, not instantiating, or its process ending, `begin` refused because the selected model is missing, or the pipeline failing. Without Full Access, and when the mic is tapped while copied text is being spoken, the keyboard takes the cold path through the app directly.
 
 Cold path through the app:
 
@@ -1048,7 +1048,8 @@ A keyboard extension cannot open the microphone itself, but a web view in its vi
 - an ID that is not listed when the capture starts is passed over for the microphone WebKit picks
 - the page requests `echoCancellation: true`. With it off, the web view's audio measured about 30 dB below `AudioRecorder`'s for the same sound on an iPhone 13 Pro, under the silence thresholds, so speech was rejected as silence; with it on, levels match the recorder's
 - a failed page load, a failed capture, an ended microphone track, or the web content process ending reports a failure, and the next dictation loads the page again
-- a call in progress either rejects the capture or hands the microphone over muted; both were measured on an iPhone 13 Pro, and the page reports both as a failure to start
+- a call ringing or in progress hands the microphone over muted, measured on an iPhone 13 Pro, and the page reports that as busy; any other capture that cannot start is reported as a failure
+- another app holding the audio does not stop a capture from starting; recording takes the audio over, measured on an iPhone 13 Pro
 - a call or another app's audio arriving during a capture mutes the microphone track and interrupts the audio context; the page ends the capture and reports it as interrupted instead of waiting, because the muted capture measured silent and did not recover within the recording
 
 ### Shared Voice-Activity Contract
@@ -2037,8 +2038,9 @@ When the model is installed and Full Access is granted but microphone permission
 When a microphone tap cannot start dictation:
 
 - keep the branded toolbar and key grid visible
-- the keyboard does not inspect its own audio session or other apps' audio before a tap; every microphone tap hands off to the containing app through the warm or cold path, so audio another app holds never blocks the request on the keyboard side
+- the keyboard does not inspect its own audio session or other apps' audio before a tap; a tap either hands off to the containing app through the warm or cold path or starts a dictation made in the keyboard, so audio another app holds never blocks the request on the keyboard side
 - when `AudioRecorder.startRecording()` throws, have the containing app publish the separate `recordingStartFailed` state through the existing App Group bridge
+- a dictation made in the keyboard shows the same failure when a call holds the microphone or it does not start in time; any other way it fails to start hands it to the containing app, which shows the failure if its own start throws
 - do not use CallKit or represent the failure as phone-call detection
 - replace the microphone with a red X for two seconds
 - use the same generic failure feedback for that explicit startup failure or a keyboard-side no-response timeout

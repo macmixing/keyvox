@@ -1700,7 +1700,7 @@ Packages/
 - `KeyVox Keyboard/Core/Dictation/KeyboardDictationController.swift`
   - Owns the keyboard-side recording request lifecycle, including warm Darwin signaling, a dictation made in the keyboard when the app is not warm, cold URL handoff, a generic two-second start-failure state, and the no-response fallback.
   - Prepares a dictation made in the keyboard when the keyboard appears with Full Access.
-  - Shows the start-failure state when a dictation made in the keyboard cannot start recording or does not start in time, falls back to the cold URL handoff when it fails any other way, and ignores shared-state sync while one is active.
+  - Shows the start-failure state when a dictation made in the keyboard cannot start recording because a call holds the microphone or does not start in time, falls back to the cold URL handoff when it fails any other way, and ignores shared-state sync while one is active.
   - Consumes containing-app startup results from shared state so app-reported recorder failures remain observable across the temporary app handoff.
   - Keyboard-local state machine for shared recording state and app launch handoff.
 - `../Packages/KeyVoxCore/Sources/KeyVoxCore/Transcription/DictationDeterministicState.swift`
@@ -1718,7 +1718,7 @@ Packages/
 - `KeyVox Keyboard/Core/Dictation/Standalone/KeyboardStandaloneDictation.swift`
   - Coordinates one such dictation: prepares the capture page and the extension when the keyboard appears, starts the microphone capture and the extension together, forwards audio, keeps the latest live meter for the indicator, has a recording that a call or other audio cut off transcribed, and reports the transcript, no speech, a failure to start recording, or a failure.
 - `KeyVox Keyboard/Core/Dictation/Standalone/KeyboardMicrophoneCapture.swift`
-  - Records the microphone through a web view with nothing to see and hands over mono Float32 audio; can load its page ahead of a capture without asking for the microphone; reports interruptions and page, capture, and web content process failures.
+  - Records the microphone through a web view with nothing to see and hands over mono Float32 audio; can load its page ahead of a capture without asking for the microphone; reports a call holding the microphone at start, interruptions, and page, capture, and web content process failures.
 - `KeyVox Keyboard/Core/Dictation/Standalone/KeyboardMicrophoneSelection.swift`
   - Picks the microphone each capture asks for from the containing app's Prefer Built-In Microphone setting, and keeps the built-in microphone's WebKit ID from the microphones a page lists after it has recorded.
 - `KeyVox Keyboard/Core/Dictation/Standalone/KeyboardMicrophoneCaptureSchemeHandler.swift`
