@@ -20,6 +20,10 @@ protocol KeyboardStandaloneDictating: AnyObject {
     func prepare()
     func start()
     func stop()
+    /// Ends a recording, or one already being transcribed, because the keyboard is going away,
+    /// and lets the extension finish transcribing it; the transcript is kept for the next
+    /// keyboard to offer.
+    func finishInBackground()
     func cancel()
     /// Cancels any dictation and lets go of the Audio Unit extension and its models.
     func deactivate()

@@ -19,8 +19,12 @@ final class KeyboardStandaloneDictation: KeyboardStandaloneDictating {
     var onNoSpeech: (() -> Void)?
     var onFailure: (() -> Void)?
 
+    /// Dictations finishing after their keyboard went away, kept until their transcript arrives.
+    private static var dictationsFinishingInBackground: [KeyboardStandaloneDictation] = []
+
     private let capture: KeyboardMicrophoneCapture
     private let audioUnitClient: KeyboardDictationAudioUnitClient
+    private let rescuedDictationStore: KeyboardRescuedDictationStore
     private let isAvailableProvider: () -> Bool
     private let selectedVibeIdentifierProvider: () -> String
 
@@ -30,15 +34,22 @@ final class KeyboardStandaloneDictation: KeyboardStandaloneDictating {
     private var isCapturing = false
     private var isAudioUnitReady = false
     private var latestMeterSample: AudioIndicatorSample?
+    private var isFinishingInBackground = false
+    private var isAwaitingOutcome = false
+    /// The keyboard went away while the dictation was finishing; the extension is let go of once
+    /// it is done.
+    private var isDeactivationPending = false
 
     init(
         capture: KeyboardMicrophoneCapture,
         audioUnitClient: KeyboardDictationAudioUnitClient = KeyboardDictationAudioUnitClient(),
+        rescuedDictationStore: KeyboardRescuedDictationStore,
         isAvailableProvider: @escaping () -> Bool,
         selectedVibeIdentifierProvider: @escaping () -> String
     ) {
         self.capture = capture
         self.audioUnitClient = audioUnitClient
+        self.rescuedDictationStore = rescuedDictationStore
         self.isAvailableProvider = isAvailableProvider
         self.selectedVibeIdentifierProvider = selectedVibeIdentifierProvider
         bindCapture()
@@ -81,13 +92,29 @@ final class KeyboardStandaloneDictation: KeyboardStandaloneDictating {
         capture.stop()
     }
 
+    func finishInBackground() {
+        guard phase == .recording || phase == .finishing, !isFinishingInBackground else { return }
+        isFinishingInBackground = true
+        Self.dictationsFinishingInBackground.append(self)
+        // A page the keyboard no longer shows may never report its capture stopped, so the
+        // extension is asked for the transcript of what it has without waiting for it.
+        guard !isAwaitingOutcome else { return }
+        capture.cancel()
+        phase = .finishing
+        awaitOutcome()
+    }
+
     func cancel() {
-        guard phase != .idle else { return }
+        guard phase != .idle, !isFinishingInBackground else { return }
         endDictation()
         audioUnitClient.cancel()
     }
 
     func deactivate() {
+        guard !isFinishingInBackground else {
+            isDeactivationPending = true
+            return
+        }
         endDictation()
         audioUnitClient.disconnect()
     }
@@ -102,7 +129,7 @@ final class KeyboardStandaloneDictation: KeyboardStandaloneDictating {
             self?.forward(samples, sampleRate: sampleRate)
         }
         capture.onStopped = { [weak self] in
-            guard let self, self.phase == .finishing else { return }
+            guard let self, self.phase == .finishing, !self.isFinishingInBackground else { return }
             self.awaitOutcome()
         }
         capture.onInterrupted = { [weak self] in
@@ -158,9 +185,19 @@ final class KeyboardStandaloneDictation: KeyboardStandaloneDictating {
     }
 
     private func awaitOutcome() {
+        guard !isAwaitingOutcome else { return }
+        isAwaitingOutcome = true
         let dictationID = dictationID
         audioUnitClient.finish { [weak self] outcome in
             guard let self, self.dictationID == dictationID else { return }
+            self.isAwaitingOutcome = false
+            if self.isFinishingInBackground {
+                if case .transcript(let text) = outcome {
+                    self.rescuedDictationStore.save(Self.rescuedDictation(text))
+                }
+                self.endFinishingInBackground()
+                return
+            }
             switch outcome {
             case .transcript(let text):
                 self.endDictation()
@@ -187,9 +224,32 @@ final class KeyboardStandaloneDictation: KeyboardStandaloneDictating {
         onFailure?()
     }
 
+    /// The extension publishes the transcript before answering, so the published dictation's
+    /// identity is kept with it when it is this transcript.
+    private static func rescuedDictation(_ text: String) -> KeyboardRescuedDictationStore.Dictation {
+        let isPublished = KeyVoxIPCBridge.latestTranscription() == text
+        return KeyboardRescuedDictationStore.Dictation(
+            text: text,
+            artifactID: isPublished ? KeyVoxIPCBridge.latestTranscriptionID() : nil,
+            styleIdentifier: isPublished ? KeyVoxIPCBridge.latestTranscriptionStyleIdentifier() : nil
+        )
+    }
+
+    private func endFinishingInBackground() {
+        isFinishingInBackground = false
+        Self.dictationsFinishingInBackground.removeAll { $0 === self }
+        phase = .idle
+        beginNewDictation()
+        if isDeactivationPending {
+            isDeactivationPending = false
+            audioUnitClient.disconnect()
+        }
+    }
+
     @discardableResult
     private func beginNewDictation() -> UUID {
         dictationID = UUID()
+        isAwaitingOutcome = false
         isCapturing = false
         isAudioUnitReady = false
         latestMeterSample = nil

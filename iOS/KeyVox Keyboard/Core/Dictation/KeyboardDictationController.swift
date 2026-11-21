@@ -144,6 +144,11 @@ final class KeyboardDictationController {
         ipcManager.onTranscribingStarted = nil
         ipcManager.onTranscriptionReady = nil
         ipcManager.onNoSpeech = nil
+        // The keyboard is going away: a dictation still recording or being transcribed is
+        // finished in the background so the next keyboard can offer it.
+        if isStandaloneDictationActive, state == .recording || state == .transcribing {
+            standaloneDictation?.finishInBackground()
+        }
         isStandaloneDictationActive = false
         standaloneDictation?.deactivate()
         standaloneDictation?.onRecordingStarted = nil
@@ -155,10 +160,22 @@ final class KeyboardDictationController {
     }
 
     /// Ends a dictation the keyboard is still recording, which it cannot keep doing once its
-    /// host app is no longer in front. A recording already being transcribed carries on.
-    func cancelStandaloneRecording() {
-        guard isStandaloneDictationActive, state == .startingDictation || state == .recording else { return }
-        handleCancelTap()
+    /// host app is no longer in front. A recording is finished in the background so the next
+    /// keyboard can offer its transcript; one still starting is cancelled; one already being
+    /// transcribed carries on.
+    func endStandaloneRecordingForHostLeaving() {
+        guard isStandaloneDictationActive else { return }
+        switch state {
+        case .recording:
+            cancelWaitingTimeout()
+            isStandaloneDictationActive = false
+            standaloneDictation?.finishInBackground()
+            state = .idle
+        case .startingDictation:
+            handleCancelTap()
+        default:
+            break
+        }
     }
 
     func syncStateFromSharedState() {

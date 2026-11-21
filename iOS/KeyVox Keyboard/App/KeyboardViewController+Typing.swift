@@ -115,6 +115,7 @@ extension KeyboardViewController {
         if emojiPanel == .searching {
             return deleteEmojiSearchWords(count)
         }
+        dismissRescuedDictation()
         return textInputController.deleteWordsBackward(count) { [weak self] in
             self?.handleTypingContextChange()
         }

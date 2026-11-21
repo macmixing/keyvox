@@ -117,6 +117,9 @@ extension KeyboardViewController {
         rootContainerView.suggestionBarView.onItemLongPressed = { [weak self] item in
             self?.handleSuggestionLongPressed(item)
         }
+        rootContainerView.suggestionBarView.onRescuedDictationSelected = { [weak self] in
+            self?.handleRescuedDictationSelected()
+        }
         predictionCoordinator.onBarChange = { [weak self] bar in
             self?.rootContainerView?.suggestionBarView.apply(bar)
         }
@@ -141,11 +144,13 @@ extension KeyboardViewController {
 
         dictationController.registerObservers()
         isPresentationBound = true
+        startOfferingRescuedDictation()
         setFullAccessInstructionsPresented(false)
     }
 
     func deactivatePresentationBindings() {
         guard isPresentationBound else { return }
+        stopOfferingRescuedDictation()
 
         stopPresentationUpdates()
         indicatorDriver.sampleProvider = nil
@@ -189,6 +194,7 @@ extension KeyboardViewController {
             rootContainerView.keyGridView.onCharacterGeometryChange = nil
             rootContainerView.suggestionBarView.onItemSelected = nil
             rootContainerView.suggestionBarView.onItemLongPressed = nil
+            rootContainerView.suggestionBarView.onRescuedDictationSelected = nil
             rootContainerView.keyGridView.onCompactKeysRequested = nil
             rootContainerView.keyGridView.onSpaceTrackpadEvent = nil
             rootContainerView.keyGridView.setPopupContainerView(nil)
@@ -218,7 +224,7 @@ extension KeyboardViewController {
         ) { [weak self] _ in
             self?.extensionHostIsActive = false
             self?.rootContainerView?.keyGridView.resetInteractionState()
-            self?.dictationController.cancelStandaloneRecording()
+            self?.dictationController.endStandaloneRecordingForHostLeaving()
         }
 
         hostDidBecomeActiveObserver = NotificationCenter.default.addObserver(
