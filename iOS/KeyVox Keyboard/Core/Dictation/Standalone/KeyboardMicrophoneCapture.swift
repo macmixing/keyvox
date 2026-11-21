@@ -13,6 +13,7 @@ final class KeyboardMicrophoneCapture: NSObject {
         case stopped
         case interrupted
         case failed
+        case microphones
     }
 
     private static let messageHandlerName = "capture"
@@ -26,15 +27,18 @@ final class KeyboardMicrophoneCapture: NSObject {
     var onFailure: (() -> Void)?
 
     private let mount: (UIView) -> Void
+    private let microphoneSelection: KeyboardMicrophoneSelection
     private var webView: WKWebView?
     private var isPageReady = false
     private var isLoadingPage = false
     private var startsWhenPageIsReady = false
 
-    /// - Parameter mount: Adds the web view to the keyboard's view tree, where it must live to
-    ///   capture.
-    init(mount: @escaping (UIView) -> Void) {
+    /// - Parameters:
+    ///   - mount: Adds the web view to the keyboard's view tree, where it must live to capture.
+    ///   - microphoneSelection: Picks the microphone each capture asks for.
+    init(mount: @escaping (UIView) -> Void, microphoneSelection: KeyboardMicrophoneSelection) {
         self.mount = mount
+        self.microphoneSelection = microphoneSelection
     }
 
     /// Loads the capture page ahead of a tap. The page asks for the microphone only when a
@@ -50,7 +54,7 @@ final class KeyboardMicrophoneCapture: NSObject {
             loadPageIfNeeded()
             return
         }
-        evaluate("startCapture()")
+        evaluate(startCaptureCall())
     }
 
     func stop() {
@@ -98,6 +102,15 @@ final class KeyboardMicrophoneCapture: NSObject {
         return webView
     }
 
+    private func startCaptureCall() -> String {
+        guard let id = microphoneSelection.preferredMicrophoneID,
+              let encoded = try? JSONEncoder().encode(id),
+              let argument = String(data: encoded, encoding: .utf8) else {
+            return "startCapture(null)"
+        }
+        return "startCapture(\(argument))"
+    }
+
     private func evaluate(_ call: String) {
         webView?.evaluateJavaScript("\(call); 0") { [weak self] _, error in
             guard error != nil else { return }
@@ -124,7 +137,7 @@ final class KeyboardMicrophoneCapture: NSObject {
             isLoadingPage = false
             if startsWhenPageIsReady {
                 startsWhenPageIsReady = false
-                evaluate("startCapture()")
+                evaluate(startCaptureCall())
             }
         case .started:
             onStarted?()
@@ -135,6 +148,14 @@ final class KeyboardMicrophoneCapture: NSObject {
                 return
             }
             onAudio?(samples, sampleRate)
+        case .microphones:
+            guard let microphones = message["microphones"] as? [[String: Any]] else { return }
+            microphoneSelection.remember(microphones.compactMap { microphone in
+                guard let label = microphone["label"] as? String, let id = microphone["id"] as? String else {
+                    return nil
+                }
+                return KeyboardMicrophoneSelection.Microphone(label: label, id: id)
+            })
         case .stopped:
             onStopped?()
         case .interrupted:

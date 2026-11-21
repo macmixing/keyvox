@@ -33,12 +33,24 @@ async function endInterruptedCapture() {
   post({ type: 'interrupted' });
 }
 
-async function startCapture() {
+// Lists the microphones once the page has recorded, the first time it can see their names and IDs.
+async function reportMicrophones() {
+  try {
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    const microphones = devices
+      .filter((device) => device.kind === 'audioinput')
+      .map((device) => ({ label: device.label, id: device.deviceId }));
+    post({ type: 'microphones', microphones });
+  } catch (error) {}
+}
+
+async function startCapture(preferredMicrophoneID) {
   try {
     await release();
-    stream = await navigator.mediaDevices.getUserMedia({
-      audio: { channelCount: 1, echoCancellation: true }
-    });
+    const audio = { channelCount: 1, echoCancellation: true };
+    // A microphone that is not there is passed over for the one WebKit picks.
+    if (preferredMicrophoneID) { audio.deviceId = { ideal: preferredMicrophoneID }; }
+    stream = await navigator.mediaDevices.getUserMedia({ audio });
     const track = stream.getAudioTracks()[0];
     // A call in progress hands the microphone over muted, and nothing can be recorded.
     if (track.muted) { throw new Error('microphone muted'); }
@@ -64,6 +76,7 @@ async function startCapture() {
     source.connect(processor);
     processor.connect(context.destination);
     post({ type: 'started' });
+    reportMicrophones();
   } catch (error) {
     await release();
     post({ type: 'failed' });

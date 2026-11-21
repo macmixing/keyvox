@@ -50,7 +50,11 @@ final class KeyboardViewController: UIInputViewController {
             guard let self else { return }
             self.view.addSubview(captureView)
             KeyboardPresentationViewRegistry.register(captureView, mountedBy: self)
-        }),
+        }, microphoneSelection: KeyboardMicrophoneSelection(
+            prefersBuiltInMicrophone: { [appSettingsStore] in
+                appSettingsStore.prefersBuiltInMicrophone
+            }
+        )),
         isAvailableProvider: { [weak self] in
             self?.hasFullAccess ?? false
         },
