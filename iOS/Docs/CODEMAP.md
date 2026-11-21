@@ -1499,12 +1499,14 @@ Packages/
   - Exposes typed start/stop command results used by keyboard, URL, and App Shortcut entry points; a new recording clears the previously published IPC transcript before capture begins.
   - Passes each utterance ID into `DictationPipeline`, receives output through the pipeline's delivery handler, publishes it only when the delivery matches the active utterance, and publishes the utterance ID and selected style identifier with the transcript; interrupted-capture recovery reuses the recovery ID as its utterance ID.
   - When immediate microphone release is requested, preserves transcription after an initial shutdown failure, retries shutdown after output completes, and restores the configured idle timeout if that retry also fails.
+  - Starts loading the dictation model when a recording starts, so it loads while the user speaks.
   - Starts KeyVox Vibes prewarm after audio recording successfully begins, never before recorder startup finishes.
   - Adopts the shared latest transcription when the app becomes active, so a dictation recorded in the keyboard shows as the latest one.
   - Releases the utterance-scoped KeyVox Vibes local rewrite cache after dictation output is published, and on stale, empty, cancelled, or unavailable-model stop paths.
   - Prints speed-profile transformation duration, style, processing mode, chunk count, errors, and raw final text when raw debug logging is enabled.
 - `KeyVox iOS/Core/Transcription/TranscriptionManager+SessionLifecycle.swift`
   - Idle shutdown, user-configured session timeout scheduling including Never, deferred disable-session handling, and watchdog cleanup.
+  - Unloads the dictation model once the session has ended and nothing is being transcribed.
   - Releases any retained style rewrite prewarm session when an active utterance is cancelled.
 - `KeyVox iOS/Core/Transcription/TranscriptionCommandResult.swift`
   - Typed start and stop outcomes shared by non-UI transcription command callers.
