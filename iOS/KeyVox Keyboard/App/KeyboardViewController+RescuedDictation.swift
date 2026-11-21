@@ -1,8 +1,9 @@
 import Foundation
+import UIKit
 
 /// Offers a dictation that was finished in the background after its keyboard went away: the
-/// suggestion bar shows it as one suggestion until it is tapped, the user types, or the keyboard
-/// is dismissed.
+/// suggestion bar shows it as one suggestion until it is tapped, or, once it has been on screen,
+/// until the user types or the keyboard is dismissed.
 extension KeyboardViewController {
     /// Shows the kept dictation, if any, and shows one that finishes while the keyboard is up.
     func startOfferingRescuedDictation() {
@@ -21,10 +22,11 @@ extension KeyboardViewController {
     /// The keyboard is being dismissed: a dictation it offered is not offered again.
     func stopOfferingRescuedDictation() {
         removeRescuedDictationObserver()
-        if isShowingRescuedDictation {
+        if hasShownRescuedDictation {
             rescuedDictationStore.clear()
         }
         isShowingRescuedDictation = false
+        hasShownRescuedDictation = false
         rootContainerView?.suggestionBarView.showRescuedDictation(nil)
     }
 
@@ -37,8 +39,14 @@ extension KeyboardViewController {
 
     /// The user typed, so the kept dictation is no longer offered.
     func dismissRescuedDictation() {
-        guard isShowingRescuedDictation else { return }
+        guard hasShownRescuedDictation else { return }
         rescuedDictationStore.clear()
+    }
+
+    /// Records that the offered dictation is on screen, which only some pages and modes allow.
+    func noteRescuedDictationVisibility() {
+        guard isShowingRescuedDictation, rootContainerView?.suggestionBarView.isHidden == false else { return }
+        hasShownRescuedDictation = true
     }
 
     func handleRescuedDictationSelected() {
@@ -51,6 +59,9 @@ extension KeyboardViewController {
     private func refreshRescuedDictation() {
         let text = rescuedDictationStore.dictation?.text
         isShowingRescuedDictation = text != nil
+        if text == nil {
+            hasShownRescuedDictation = false
+        }
         rootContainerView?.suggestionBarView.showRescuedDictation(text)
         updateUI()
     }

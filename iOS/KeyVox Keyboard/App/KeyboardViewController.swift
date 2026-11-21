@@ -243,6 +243,9 @@ final class KeyboardViewController: UIInputViewController {
     var isPresentationBound = false
     /// Whether the suggestion bar is offering a rescued dictation in this presentation.
     var isShowingRescuedDictation = false
+    /// Whether the offered rescued dictation has been on screen, which it must have been before
+    /// typing or dismissing the keyboard stops offering it.
+    var hasShownRescuedDictation = false
     var rescuedDictationObserver: NSObjectProtocol?
     var transcriptionLandingStartedAt: Date?
 
@@ -472,6 +475,7 @@ final class KeyboardViewController: UIInputViewController {
             isTrackpadModeActive: isTrackpadModeActive
         )
         applyLetterCase()
+        noteRescuedDictationVisibility()
         if toolbarMode != .fullAccessWarning {
             setFullAccessInstructionsPresented(false)
         }
