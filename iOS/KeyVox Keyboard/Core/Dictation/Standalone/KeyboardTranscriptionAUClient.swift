@@ -1,10 +1,10 @@
 import AVFoundation
 import AudioToolbox
 
-/// Hosts the dictation Audio Unit extension out of process and exchanges messages with it.
+/// Hosts the Transcription AU extension out of process and exchanges messages with it.
 /// Every exchange waits for the extension's answer, so the client works on its own queue and
 /// reports back on the main queue.
-final class KeyboardDictationAudioUnitClient: @unchecked Sendable {
+final class KeyboardTranscriptionAUClient: @unchecked Sendable {
     enum Outcome: Sendable {
         case transcript(String)
         case noSpeech
@@ -13,7 +13,7 @@ final class KeyboardDictationAudioUnitClient: @unchecked Sendable {
 
     typealias LiveMeter = (level: Float, signalState: KeyVoxIPCLiveMeterSignalState)
 
-    private typealias Key = DictationAudioUnitContract.Key
+    private typealias Key = TranscriptionAUContract.Key
 
     private static let componentDiscoveryTimeout: TimeInterval = 2
     private static let componentDiscoveryPollInterval: TimeInterval = 0.02
@@ -116,7 +116,7 @@ final class KeyboardDictationAudioUnitClient: @unchecked Sendable {
 
         self.audioUnit = audioUnit
         messageChannel = audioUnit.auAudioUnit.messageChannel(
-            for: DictationAudioUnitContract.messageChannelName
+            for: TranscriptionAUContract.messageChannelName
         )
         return true
     }
@@ -136,7 +136,7 @@ final class KeyboardDictationAudioUnitClient: @unchecked Sendable {
             guard !abandonRequested else { return .failed }
             guard let reply = send(.poll),
                   let rawOutcome = reply[Key.outcome] as? String,
-                  let outcome = DictationAudioUnitContract.Outcome(rawValue: rawOutcome) else {
+                  let outcome = TranscriptionAUContract.Outcome(rawValue: rawOutcome) else {
                 return .failed
             }
 
@@ -156,7 +156,7 @@ final class KeyboardDictationAudioUnitClient: @unchecked Sendable {
 
     /// Returns nil when the extension is not connected or its process is gone.
     private func send(
-        _ command: DictationAudioUnitContract.Command,
+        _ command: TranscriptionAUContract.Command,
         _ payload: [AnyHashable: Any] = [:]
     ) -> [AnyHashable: Any]? {
         var message = payload
@@ -168,7 +168,7 @@ final class KeyboardDictationAudioUnitClient: @unchecked Sendable {
     }
 
     private func instantiateAudioUnit() -> AVAudioUnit? {
-        let description = DictationAudioUnitContract.componentDescription
+        let description = TranscriptionAUContract.componentDescription
         // Extension components are reported shortly after the first lookup.
         let discoveryDeadline = Date().addingTimeInterval(Self.componentDiscoveryTimeout)
         while AVAudioUnitComponentManager.shared().components(matching: description).isEmpty {

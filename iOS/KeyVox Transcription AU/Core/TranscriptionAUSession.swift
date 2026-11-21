@@ -6,7 +6,7 @@ import KeyVoxStyleRewrite
 /// One dictation at a time for the keyboard: collects the audio it sends, then runs the shared
 /// dictation pipeline and publishes the transcript the way the containing app does.
 @MainActor
-final class DictationAudioUnitSession {
+final class TranscriptionAUSession {
     enum Outcome {
         case pending
         case transcript(String)
@@ -16,13 +16,13 @@ final class DictationAudioUnitSession {
 
     private(set) var outcome: Outcome = .pending
 
-    private let services: DictationAudioUnitServiceRegistry
+    private let services: TranscriptionAUServiceRegistry
     private let captureAccumulator = AudioCaptureAccumulator()
     private var activeUtteranceID = UUID()
 
     private var dictationPipeline: DictationPipeline?
 
-    init(services: DictationAudioUnitServiceRegistry) {
+    init(services: TranscriptionAUServiceRegistry) {
         self.services = services
     }
 

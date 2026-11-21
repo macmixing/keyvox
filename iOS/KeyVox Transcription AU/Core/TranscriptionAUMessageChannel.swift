@@ -2,8 +2,8 @@ import AudioToolbox
 import Foundation
 
 /// Turns the keyboard's messages into dictation session calls and answers with their results.
-final class DictationAudioUnitMessageChannel: NSObject, AUMessageChannel {
-    private typealias Key = DictationAudioUnitContract.Key
+final class TranscriptionAUMessageChannel: NSObject, AUMessageChannel {
+    private typealias Key = TranscriptionAUContract.Key
 
     private enum Request: Sendable {
         case begin(styleIdentifier: String?)
@@ -17,13 +17,13 @@ final class DictationAudioUnitMessageChannel: NSObject, AUMessageChannel {
     private enum Reply: Sendable {
         case accepted(Bool)
         case meter(level: Float, signalState: KeyVoxIPCLiveMeterSignalState)
-        case outcome(DictationAudioUnitContract.Outcome, text: String?)
+        case outcome(TranscriptionAUContract.Outcome, text: String?)
     }
 
     var callHostBlock: CallHostBlock?
 
-    @MainActor private lazy var session = DictationAudioUnitSession(
-        services: DictationAudioUnitServiceRegistry()
+    @MainActor private lazy var session = TranscriptionAUSession(
+        services: TranscriptionAUServiceRegistry()
     )
 
     func callAudioUnit(_ message: [AnyHashable: Any]) -> [AnyHashable: Any] {
@@ -33,7 +33,7 @@ final class DictationAudioUnitMessageChannel: NSObject, AUMessageChannel {
 
     private func request(from message: [AnyHashable: Any]) -> Request? {
         guard let rawCommand = message[Key.command] as? String,
-              let command = DictationAudioUnitContract.Command(rawValue: rawCommand) else {
+              let command = TranscriptionAUContract.Command(rawValue: rawCommand) else {
             return nil
         }
 

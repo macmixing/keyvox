@@ -26,7 +26,7 @@ final class KeyboardStandaloneDictation: KeyboardStandaloneDictating {
     private static var preparedDictationCount = 0
 
     private let capture: KeyboardMicrophoneCapture
-    private let audioUnitClient: KeyboardDictationAudioUnitClient
+    private let audioUnitClient: KeyboardTranscriptionAUClient
     private let rescuedDictationStore: KeyboardRescuedDictationStore
     private let isAvailableProvider: () -> Bool
     private let selectedVibeIdentifierProvider: () -> String
@@ -46,7 +46,7 @@ final class KeyboardStandaloneDictation: KeyboardStandaloneDictating {
 
     init(
         capture: KeyboardMicrophoneCapture,
-        audioUnitClient: KeyboardDictationAudioUnitClient = KeyboardDictationAudioUnitClient(),
+        audioUnitClient: KeyboardTranscriptionAUClient = KeyboardTranscriptionAUClient(),
         rescuedDictationStore: KeyboardRescuedDictationStore,
         isAvailableProvider: @escaping () -> Bool,
         selectedVibeIdentifierProvider: @escaping () -> String

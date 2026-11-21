@@ -46,7 +46,7 @@
 		D10000032FF4000100AA0001 /* KeyVoxVoiceActivity in Frameworks */ = {isa = PBXBuildFile; productRef = D10000092FF4000100AA0001 /* KeyVoxVoiceActivity */; };
 		D20000012FF5000100AA0001 /* averaged-perceptron-tagger-eng in Resources */ = {isa = PBXBuildFile; fileRef = D20000032FF5000100AA0001 /* averaged-perceptron-tagger-eng */; };
 		D20000022FF5000100AA0001 /* wordnet-3.0 in Resources */ = {isa = PBXBuildFile; fileRef = D20000042FF5000100AA0001 /* wordnet-3.0 */; };
-		DA0000022FFA000100AA0001 /* KeyVox Dictation.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = DA0000012FFA000100AA0001 /* KeyVox Dictation.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		DA0000022FFA000100AA0001 /* KeyVox Transcription AU.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = DA0000012FFA000100AA0001 /* KeyVox Transcription AU.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		DA00000F2FFA000100AA0001 /* KeyVoxCore in Frameworks */ = {isa = PBXBuildFile; productRef = 8E9E38952F5BF56600EAFA72 /* KeyVoxCore */; };
 		DA0000102FFA000100AA0001 /* KeyVoxLinguistics in Frameworks */ = {isa = PBXBuildFile; productRef = D10000082FF4000100AA0001 /* KeyVoxLinguistics */; };
 		DA0000112FFA000100AA0001 /* KeyVoxLocalInference in Frameworks */ = {isa = PBXBuildFile; productRef = 9B5100032FB1000100AA0001 /* KeyVoxLocalInference */; };
@@ -95,7 +95,7 @@
 			containerPortal = 8E9E384A2F5BF1F000EAFA72 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = DA00000B2FFA000100AA0001;
-			remoteInfo = "KeyVox Dictation";
+			remoteInfo = "KeyVox Transcription AU";
 		};
 /* End PBXContainerItemProxy section */
 
@@ -119,7 +119,7 @@
 				8E7EC0562F5C28B00080C762 /* KeyVox Keyboard.appex in Embed Foundation Extensions */,
 				8E97945E2F66B54C009A691D /* KeyVox Widget.appex in Embed Foundation Extensions */,
 				8E7DB1A22F809A1C009E3576 /* KeyVox Share.appex in Embed Foundation Extensions */,
-				DA0000022FFA000100AA0001 /* KeyVox Dictation.appex in Embed Foundation Extensions */,
+				DA0000022FFA000100AA0001 /* KeyVox Transcription AU.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -140,7 +140,7 @@
 		8EECE7322F64020900BECF17 /* Launch Screen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = "Launch Screen.storyboard"; sourceTree = "<group>"; };
 		D20000032FF5000100AA0001 /* averaged-perceptron-tagger-eng */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "averaged-perceptron-tagger-eng"; path = "../Tools/Models/averaged-perceptron-tagger-eng"; sourceTree = SOURCE_ROOT; };
 		D20000042FF5000100AA0001 /* wordnet-3.0 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "wordnet-3.0"; path = "../Tools/Models/wordnet-3.0"; sourceTree = SOURCE_ROOT; };
-		DA0000012FFA000100AA0001 /* KeyVox Dictation.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "KeyVox Dictation.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
+		DA0000012FFA000100AA0001 /* KeyVox Transcription AU.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "KeyVox Transcription AU.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -171,7 +171,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				App/iCloud/UserDefaultsKeys.swift,
-				App/Integration/DictationAudioUnitContract.swift,
+				App/Integration/TranscriptionAUContract.swift,
 				App/Integration/KeyboardTypingMemoryLocation.swift,
 				App/Integration/KeyVoxIPCBridge.swift,
 				App/Integration/KeyVoxTTSRequest.swift,
@@ -190,7 +190,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				App/iCloud/UserDefaultsKeys.swift,
-				App/Integration/DictationAudioUnitContract.swift,
+				App/Integration/TranscriptionAUContract.swift,
 				App/Integration/KeyboardTypingMemoryLocation.swift,
 				App/Integration/KeyVoxIPCBridge.swift,
 				App/Integration/KeyVoxTTSRequest.swift,
@@ -248,14 +248,14 @@
 			);
 			target = 8E9E385E2F5BF1F200EAFA72 /* KeyVox iOSTests */;
 		};
-		DA0000052FFA000100AA0001 /* Exceptions for "KeyVox Dictation" folder in "KeyVox Dictation" target */ = {
+		DA0000052FFA000100AA0001 /* Exceptions for "KeyVox Transcription AU" folder in "KeyVox Transcription AU" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
 			);
-			target = DA00000B2FFA000100AA0001 /* KeyVox Dictation */;
+			target = DA00000B2FFA000100AA0001 /* KeyVox Transcription AU */;
 		};
-		DA0000062FFA000100AA0001 /* Exceptions for "KeyVox iOS" folder in "KeyVox Dictation" target */ = {
+		DA0000062FFA000100AA0001 /* Exceptions for "KeyVox iOS" folder in "KeyVox Transcription AU" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				App/AppReview/AppReviewRequestPolicy.swift,
@@ -266,7 +266,7 @@
 				App/iCloud/KeyVoxiCloudPayloads.swift,
 				App/iCloud/KeyVoxPlaybackVoice.swift,
 				App/iCloud/UserDefaultsKeys.swift,
-				App/Integration/DictationAudioUnitContract.swift,
+				App/Integration/TranscriptionAUContract.swift,
 				App/Integration/KeyVoxIPCBridge.swift,
 				App/Integration/KeyVoxTTSRequest.swift,
 				App/Stats/WeeklyWordStatsStore.swift,
@@ -287,7 +287,7 @@
 				Core/StyleRewrite/StyleRewriteLatestArtifactStore.swift,
 				Core/StyleRewrite/StyleRewritePipelineCoordinator.swift,
 			);
-			target = DA00000B2FFA000100AA0001 /* KeyVox Dictation */;
+			target = DA00000B2FFA000100AA0001 /* KeyVox Transcription AU */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -308,7 +308,7 @@
 				8E7DB73F2F81EAF7009E3576 /* Exceptions for "KeyVox iOS" folder in "KeyVox Keyboard" target */,
 				8E7DB7402F81EAF7009E3576 /* Exceptions for "KeyVox iOS" folder in "KeyVox Widget" target */,
 				8E7DB7412F81EAF7009E3576 /* Exceptions for "KeyVox iOS" folder in "KeyVox Share" target */,
-				DA0000062FFA000100AA0001 /* Exceptions for "KeyVox iOS" folder in "KeyVox Dictation" target */,
+				DA0000062FFA000100AA0001 /* Exceptions for "KeyVox iOS" folder in "KeyVox Transcription AU" target */,
 			);
 			explicitFolders = (
 				Resources/TTSVoicePreviews,
@@ -339,12 +339,12 @@
 			path = KeyVoxiOSTests;
 			sourceTree = "<group>";
 		};
-		DA0000072FFA000100AA0001 /* KeyVox Dictation */ = {
+		DA0000072FFA000100AA0001 /* KeyVox Transcription AU */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				DA0000052FFA000100AA0001 /* Exceptions for "KeyVox Dictation" folder in "KeyVox Dictation" target */,
+				DA0000052FFA000100AA0001 /* Exceptions for "KeyVox Transcription AU" folder in "KeyVox Transcription AU" target */,
 			);
-			path = "KeyVox Dictation";
+			path = "KeyVox Transcription AU";
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -459,7 +459,7 @@
 				8E7EC0502F5C28B00080C762 /* KeyVox Keyboard */,
 				8E97944E2F66B54A009A691D /* KeyVox Widget */,
 				8E7DB1992F809A1C009E3576 /* KeyVox Share */,
-				DA0000072FFA000100AA0001 /* KeyVox Dictation */,
+				DA0000072FFA000100AA0001 /* KeyVox Transcription AU */,
 				8E9794492F66B549009A691D /* Frameworks */,
 				8E9E38532F5BF1F000EAFA72 /* Products */,
 			);
@@ -473,7 +473,7 @@
 				8E7EC04F2F5C28B00080C762 /* KeyVox Keyboard.appex */,
 				8E9794482F66B549009A691D /* KeyVox Widget.appex */,
 				8E7DB1982F809A1C009E3576 /* KeyVox Share.appex */,
-				DA0000012FFA000100AA0001 /* KeyVox Dictation.appex */,
+				DA0000012FFA000100AA0001 /* KeyVox Transcription AU.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -628,9 +628,9 @@
 			productReference = 8E9E385F2F5BF1F200EAFA72 /* KeyVox iOSTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		DA00000B2FFA000100AA0001 /* KeyVox Dictation */ = {
+		DA00000B2FFA000100AA0001 /* KeyVox Transcription AU */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = DA00000E2FFA000100AA0001 /* Build configuration list for PBXNativeTarget "KeyVox Dictation" */;
+			buildConfigurationList = DA00000E2FFA000100AA0001 /* Build configuration list for PBXNativeTarget "KeyVox Transcription AU" */;
 			buildPhases = (
 				DA0000092FFA000100AA0001 /* Sources */,
 				DA0000082FFA000100AA0001 /* Frameworks */,
@@ -641,9 +641,9 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				DA0000072FFA000100AA0001 /* KeyVox Dictation */,
+				DA0000072FFA000100AA0001 /* KeyVox Transcription AU */,
 			);
-			name = "KeyVox Dictation";
+			name = "KeyVox Transcription AU";
 			packageProductDependencies = (
 				8E9E38952F5BF56600EAFA72 /* KeyVoxCore */,
 				D10000082FF4000100AA0001 /* KeyVoxLinguistics */,
@@ -655,8 +655,8 @@
 				D10000072FF4000100AA0001 /* KeyVoxWhisper */,
 				D10000092FF4000100AA0001 /* KeyVoxVoiceActivity */,
 			);
-			productName = "KeyVox Dictation";
-			productReference = DA0000012FFA000100AA0001 /* KeyVox Dictation.appex */;
+			productName = "KeyVox Transcription AU";
+			productReference = DA0000012FFA000100AA0001 /* KeyVox Transcription AU.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
@@ -732,7 +732,7 @@
 				8E7EC04E2F5C28B00080C762 /* KeyVox Keyboard */,
 				8E9794472F66B549009A691D /* KeyVox Widget */,
 				8E7DB1972F809A1C009E3576 /* KeyVox Share */,
-				DA00000B2FFA000100AA0001 /* KeyVox Dictation */,
+				DA00000B2FFA000100AA0001 /* KeyVox Transcription AU */,
 			);
 		};
 /* End PBXProject section */
@@ -857,7 +857,7 @@
 		};
 		DA0000042FFA000100AA0001 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = DA00000B2FFA000100AA0001 /* KeyVox Dictation */;
+			target = DA00000B2FFA000100AA0001 /* KeyVox Transcription AU */;
 			targetProxy = DA0000032FFA000100AA0001 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -1345,12 +1345,12 @@
 		DA00000C2FFA000100AA0001 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = "KeyVox Dictation/KeyVoxDictation.entitlements";
+				CODE_SIGN_ENTITLEMENTS = "KeyVox Transcription AU/KeyVoxTranscriptionAU.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = U7YT4DBC54;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "KeyVox Dictation/Info.plist";
+				INFOPLIST_FILE = "KeyVox Transcription AU/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = KeyVox;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
@@ -1360,7 +1360,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 1.7.1;
-				PRODUCT_BUNDLE_IDENTIFIER = com.cueit.keyvox.ios.dictation;
+				PRODUCT_BUNDLE_IDENTIFIER = com.cueit.keyvox.ios.transcription-au;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -1379,12 +1379,12 @@
 		DA00000D2FFA000100AA0001 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = "KeyVox Dictation/KeyVoxDictation.entitlements";
+				CODE_SIGN_ENTITLEMENTS = "KeyVox Transcription AU/KeyVoxTranscriptionAU.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = U7YT4DBC54;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "KeyVox Dictation/Info.plist";
+				INFOPLIST_FILE = "KeyVox Transcription AU/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = KeyVox;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
@@ -1394,7 +1394,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 1.7.1;
-				PRODUCT_BUNDLE_IDENTIFIER = com.cueit.keyvox.ios.dictation;
+				PRODUCT_BUNDLE_IDENTIFIER = com.cueit.keyvox.ios.transcription-au;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -1467,7 +1467,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		DA00000E2FFA000100AA0001 /* Build configuration list for PBXNativeTarget "KeyVox Dictation" */ = {
+		DA00000E2FFA000100AA0001 /* Build configuration list for PBXNativeTarget "KeyVox Transcription AU" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DA00000C2FFA000100AA0001 /* Debug */,

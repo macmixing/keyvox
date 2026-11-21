@@ -3,17 +3,17 @@ import KeyVoxCore
 import KeyVoxStyleRewrite
 import KeyVoxVibesAdapters
 
-/// The composition root for the dictation Audio Unit extension's process. It builds the same
+/// The composition root for the Transcription AU extension's process. It builds the same
 /// dictation services the containing app builds, on the models, dictionary, and settings in the
 /// shared container.
 @MainActor
-final class DictationAudioUnitServiceRegistry {
+final class TranscriptionAUServiceRegistry {
     let settingsDefaults: UserDefaults
     /// The dictionary as of the current dictation; the app can change it between dictations.
     private(set) var dictionaryStore: DictionaryStore
     let activeProviderRouter: SwitchableDictationProvider
     let styleRewritePipelineCoordinator: StyleRewritePipelineCoordinator
-    let selectedVibe: DictationAudioUnitSelectedVibe
+    let selectedVibe: TranscriptionAUSelectedVibe
 
     private let fileManager: FileManager
     private var activeProviderSelection: AppSettingsStore.ActiveDictationProvider?
@@ -53,7 +53,7 @@ final class DictationAudioUnitServiceRegistry {
             inferenceService: localRewriteInferenceService,
             linguisticAnalyzer: linguisticAnalyzer
         )
-        let selectedVibe = DictationAudioUnitSelectedVibe()
+        let selectedVibe = TranscriptionAUSelectedVibe()
 
         self.fileManager = fileManager
         self.settingsDefaults = settingsDefaults

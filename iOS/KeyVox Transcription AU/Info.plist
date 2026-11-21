@@ -18,7 +18,7 @@
 					<key>sandboxSafe</key>
 					<true/>
 					<key>subtype</key>
-					<string>kvdc</string>
+					<string>kvta</string>
 					<key>tags</key>
 					<array>
 						<string>Effects</string>
@@ -33,7 +33,7 @@
 		<key>NSExtensionPointIdentifier</key>
 		<string>com.apple.AudioUnit-UI</string>
 		<key>NSExtensionPrincipalClass</key>
-		<string>$(PRODUCT_MODULE_NAME).DictationAudioUnitViewController</string>
+		<string>$(PRODUCT_MODULE_NAME).TranscriptionAUViewController</string>
 	</dict>
 </dict>
 </plist>

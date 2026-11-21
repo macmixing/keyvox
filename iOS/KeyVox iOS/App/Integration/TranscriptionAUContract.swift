@@ -1,15 +1,15 @@
 import AudioToolbox
 import Foundation
 
-/// The message contract between the keyboard and the dictation Audio Unit extension it hosts.
+/// The message contract between the keyboard and the Transcription AU extension it hosts.
 /// The component codes repeat the ones in the extension's Info.plist, which cannot read code.
-nonisolated enum DictationAudioUnitContract {
-    static let messageChannelName = "com.cueit.keyvox.dictation"
+nonisolated enum TranscriptionAUContract {
+    static let messageChannelName = "com.cueit.keyvox.transcription-au"
 
     static var componentDescription: AudioComponentDescription {
         AudioComponentDescription(
             componentType: kAudioUnitType_Effect,
-            componentSubType: fourCharacterCode("kvdc"),
+            componentSubType: fourCharacterCode("kvta"),
             componentManufacturer: fourCharacterCode("KVox"),
             componentFlags: 0,
             componentFlagsMask: 0

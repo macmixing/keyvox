@@ -3,10 +3,10 @@ import AudioToolbox
 
 /// An Audio Unit that renders no audio: the keyboard hosts it for its message channel, which
 /// runs dictation in this extension's process.
-final class DictationAudioUnit: AUAudioUnit {
+final class TranscriptionAU: AUAudioUnit {
     private var inputBusArray: AUAudioUnitBusArray!
     private var outputBusArray: AUAudioUnitBusArray!
-    private let dictationMessageChannel = DictationAudioUnitMessageChannel()
+    private let dictationMessageChannel = TranscriptionAUMessageChannel()
 
     override init(
         componentDescription: AudioComponentDescription,
@@ -34,7 +34,7 @@ final class DictationAudioUnit: AUAudioUnit {
     }
 
     override func messageChannel(for channelName: String) -> any AUMessageChannel {
-        guard channelName == DictationAudioUnitContract.messageChannelName else {
+        guard channelName == TranscriptionAUContract.messageChannelName else {
             return super.messageChannel(for: channelName)
         }
         return dictationMessageChannel

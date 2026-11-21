@@ -1,7 +1,7 @@
 import Foundation
 
 /// Dictation the keyboard runs without the containing app: it records the microphone itself
-/// and has the dictation Audio Unit extension turn the recording into text.
+/// and has the Transcription AU extension turn the recording into text.
 protocol KeyboardStandaloneDictating: AnyObject {
     var onRecordingStarted: (() -> Void)? { get set }
     /// Called when recording could not start because a call holds the microphone; the
