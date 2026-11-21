@@ -30,7 +30,7 @@ final class TranscriptionAUSession {
     func begin(styleIdentifier: String?) -> Bool {
         abandonCurrentUtterance()
         KeyVoxIPCBridge.removeTranscription()
-        services.selectedVibe.style = styleIdentifier.flatMap(StyleRewriteStyle.init(rawValue:)) ?? .none
+        selectVibe(styleIdentifier)
         services.applySavedDictationSettings()
         guard services.activeProviderRouter.isModelReady else { return false }
 
@@ -70,8 +70,10 @@ final class TranscriptionAUSession {
         )
     }
 
-    /// Ends the capture and transcribes it; `outcome` changes from pending when it is done.
-    func finish() {
+    /// Ends the capture and transcribes it with the Vibe the keyboard has selected now;
+    /// `outcome` changes from pending when it is done.
+    func finish(styleIdentifier: String?) {
+        selectVibe(styleIdentifier)
         let utteranceID = activeUtteranceID
         let stream = captureAccumulator.snapshot()
         let stoppedCapture = StoppedCaptureProcessor.process(
@@ -201,5 +203,9 @@ final class TranscriptionAUSession {
             styleIdentifier: result.textTransformationStyleIdentifier
         )
         return .transcript(finalText)
+    }
+
+    private func selectVibe(_ styleIdentifier: String?) {
+        services.selectedVibe.style = styleIdentifier.flatMap(StyleRewriteStyle.init(rawValue:)) ?? .none
     }
 }

@@ -59,10 +59,12 @@ final class KeyboardTranscriptionAUClient: @unchecked Sendable {
         }
     }
 
-    /// Ends the dictation's audio and reports what the extension made of it.
-    func finish(completion: @escaping @MainActor (Outcome) -> Void) {
+    /// Ends the dictation's audio with the Vibe selected now and reports what the extension made
+    /// of it.
+    func finish(styleIdentifier: String, completion: @escaping @MainActor (Outcome) -> Void) {
         queue.async { [self] in
-            let outcome = send(.finish)?[Key.accepted] as? Bool == true ? awaitOutcome() : .failed
+            let accepted = send(.finish, [Key.styleIdentifier: styleIdentifier])?[Key.accepted] as? Bool == true
+            let outcome = accepted ? awaitOutcome() : .failed
             DispatchQueue.main.async {
                 completion(outcome)
             }

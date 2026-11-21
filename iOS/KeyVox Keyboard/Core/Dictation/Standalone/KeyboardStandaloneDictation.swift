@@ -200,7 +200,7 @@ final class KeyboardStandaloneDictation: KeyboardStandaloneDictating {
         guard !isAwaitingOutcome else { return }
         isAwaitingOutcome = true
         let dictationID = dictationID
-        audioUnitClient.finish { [weak self] outcome in
+        audioUnitClient.finish(styleIdentifier: selectedVibeIdentifierProvider()) { [weak self] outcome in
             guard let self, self.dictationID == dictationID else { return }
             self.isAwaitingOutcome = false
             if self.isFinishingInBackground {

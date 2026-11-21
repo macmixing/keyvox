@@ -8,7 +8,7 @@ final class TranscriptionAUMessageChannel: NSObject, AUMessageChannel {
     private enum Request: Sendable {
         case begin(styleIdentifier: String?)
         case appendAudio(Data, sampleRate: Double)
-        case finish
+        case finish(styleIdentifier: String?)
         case poll
         case cancel
         case releaseModels
@@ -47,7 +47,7 @@ final class TranscriptionAUMessageChannel: NSObject, AUMessageChannel {
             }
             return .appendAudio(audio, sampleRate: sampleRate)
         case .finish:
-            return .finish
+            return .finish(styleIdentifier: message[Key.styleIdentifier] as? String)
         case .poll:
             return .poll
         case .cancel:
@@ -77,8 +77,8 @@ final class TranscriptionAUMessageChannel: NSObject, AUMessageChannel {
                 return .accepted(false)
             }
             return .meter(level: meter.level, signalState: meter.signalState.ipcSignalState)
-        case .finish:
-            session.finish()
+        case .finish(let styleIdentifier):
+            session.finish(styleIdentifier: styleIdentifier)
             return .accepted(true)
         case .poll:
             switch session.outcome {

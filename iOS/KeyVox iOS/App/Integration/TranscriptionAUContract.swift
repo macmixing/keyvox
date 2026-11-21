@@ -21,7 +21,8 @@ nonisolated enum TranscriptionAUContract {
         case begin
         /// Adds captured microphone audio; answers with the live meter for it.
         case appendAudio
-        /// Ends the capture and starts transcription.
+        /// Ends the capture and starts transcription with the keyboard's selected Vibe, which
+        /// can differ from the one at `begin` when it changed during the dictation.
         case finish
         /// Answers with the current outcome.
         case poll
