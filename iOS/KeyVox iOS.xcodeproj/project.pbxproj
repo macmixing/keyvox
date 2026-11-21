@@ -171,10 +171,10 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				App/iCloud/UserDefaultsKeys.swift,
-				App/Integration/TranscriptionAUContract.swift,
 				App/Integration/KeyboardTypingMemoryLocation.swift,
 				App/Integration/KeyVoxIPCBridge.swift,
 				App/Integration/KeyVoxTTSRequest.swift,
+				App/Integration/TranscriptionAUContract.swift,
 				App/KeyVoxVibes/KeyVoxVibesTrialPolicy.swift,
 				App/LiveActivity/KeyVoxSessionLiveActivityAttributes.swift,
 				App/LiveActivity/KeyVoxSessionLiveActivityCoordinator.swift,
@@ -190,10 +190,10 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				App/iCloud/UserDefaultsKeys.swift,
-				App/Integration/TranscriptionAUContract.swift,
 				App/Integration/KeyboardTypingMemoryLocation.swift,
 				App/Integration/KeyVoxIPCBridge.swift,
 				App/Integration/KeyVoxTTSRequest.swift,
+				App/Integration/TranscriptionAUContract.swift,
 				App/KeyVoxVibes/KeyVoxVibesTrialPolicy.swift,
 				Resources/Assets.xcassets,
 				"Resources/Kanit-Light.ttf",
@@ -266,9 +266,9 @@
 				App/iCloud/KeyVoxiCloudPayloads.swift,
 				App/iCloud/KeyVoxPlaybackVoice.swift,
 				App/iCloud/UserDefaultsKeys.swift,
-				App/Integration/TranscriptionAUContract.swift,
 				App/Integration/KeyVoxIPCBridge.swift,
 				App/Integration/KeyVoxTTSRequest.swift,
+				App/Integration/TranscriptionAUContract.swift,
 				App/Stats/WeeklyWordStatsStore.swift,
 				Core/Audio/AudioCaptureTuning.swift,
 				"Core/Audio/AudioRecorder+Streaming.swift",
@@ -1360,7 +1360,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 1.7.1;
-				PRODUCT_BUNDLE_IDENTIFIER = com.cueit.keyvox.ios.transcription-au;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.cueit.keyvox.ios.transcription-au";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -1394,7 +1394,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 1.7.1;
-				PRODUCT_BUNDLE_IDENTIFIER = com.cueit.keyvox.ios.transcription-au;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.cueit.keyvox.ios.transcription-au";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
