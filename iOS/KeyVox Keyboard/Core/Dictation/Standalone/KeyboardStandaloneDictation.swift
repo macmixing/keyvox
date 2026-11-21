@@ -21,6 +21,9 @@ final class KeyboardStandaloneDictation: KeyboardStandaloneDictating {
 
     /// Dictations finishing after their keyboard went away, kept until their transcript arrives.
     private static var dictationsFinishingInBackground: [KeyboardStandaloneDictation] = []
+    /// How many keyboards have their dictation prepared and not yet deactivated; the extension's
+    /// models are shared, so they are freed only when none is left.
+    private static var preparedDictationCount = 0
 
     private let capture: KeyboardMicrophoneCapture
     private let audioUnitClient: KeyboardDictationAudioUnitClient
@@ -34,6 +37,7 @@ final class KeyboardStandaloneDictation: KeyboardStandaloneDictating {
     private var isCapturing = false
     private var isAudioUnitReady = false
     private var latestMeterSample: AudioIndicatorSample?
+    private var isPrepared = false
     private var isFinishingInBackground = false
     private var isAwaitingOutcome = false
     /// The keyboard went away while the dictation was finishing; the extension is let go of once
@@ -65,6 +69,10 @@ final class KeyboardStandaloneDictation: KeyboardStandaloneDictating {
     }
 
     func prepare() {
+        if !isPrepared {
+            isPrepared = true
+            Self.preparedDictationCount += 1
+        }
         capture.prepare()
         audioUnitClient.prepare()
     }
@@ -111,6 +119,10 @@ final class KeyboardStandaloneDictation: KeyboardStandaloneDictating {
     }
 
     func deactivate() {
+        if isPrepared {
+            isPrepared = false
+            Self.preparedDictationCount -= 1
+        }
         guard !isFinishingInBackground else {
             isDeactivationPending = true
             return
@@ -242,7 +254,11 @@ final class KeyboardStandaloneDictation: KeyboardStandaloneDictating {
         beginNewDictation()
         if isDeactivationPending {
             isDeactivationPending = false
-            audioUnitClient.disconnect()
+            if Self.preparedDictationCount > 0 {
+                audioUnitClient.releaseConnection()
+            } else {
+                audioUnitClient.disconnect()
+            }
         }
     }
 

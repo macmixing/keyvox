@@ -89,6 +89,15 @@ final class KeyboardDictationAudioUnitClient: @unchecked Sendable {
         }
     }
 
+    /// Lets go of the extension without having it free its models, which another keyboard's
+    /// dictation is using.
+    func releaseConnection() {
+        queue.async { [self] in
+            messageChannel = nil
+            audioUnit = nil
+        }
+    }
+
     private func setAbandonRequested(_ isRequested: Bool) {
         abandonLock.lock()
         isAbandonRequested = isRequested
