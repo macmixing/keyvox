@@ -1735,7 +1735,7 @@ Packages/
 - `KeyVox Keyboard/Core/Dictation/Standalone/MicrophoneCapture.html`
   - The page that captures the microphone and posts its audio to the keyboard.
 - `KeyVox Keyboard/Core/Dictation/Standalone/KeyboardDictationAudioUnitClient.swift`
-  - Hosts the dictation Audio Unit extension out of process, can start it ahead of a dictation, and exchanges `DictationAudioUnitContract` messages with it on its own queue, reporting back on the main queue.
+  - Hosts the dictation Audio Unit extension out of process, can start it ahead of a dictation, and exchanges `DictationAudioUnitContract` messages with it on its own queue, reporting back on the main queue; a cancel or disconnect stops a wait for a transcript instead of queueing behind it.
 - `KeyVox Keyboard/Core/Transport/KeyVoxIPCLiveMeterSignalState+AudioIndicator.swift`
   - Maps the shared live-meter signal state to the indicator's signal state.
 - `KeyVox Keyboard/InfoPlist.xcstrings`
