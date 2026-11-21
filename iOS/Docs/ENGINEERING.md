@@ -859,7 +859,7 @@ Warm path:
 1. keyboard writes `waitingForApp`
 2. keyboard posts `startRecording`
 3. keyboard waits briefly for `.recording`
-4. keyboard falls back to URL launch if the app does not take ownership quickly
+4. if the app does not take ownership in that time, as when it was closed less than the freshness window before the tap and its heartbeat has not yet gone stale, the keyboard posts `cancelRecording`, which resets the shared state to idle, and records the dictation itself on the cold path below when it has Full Access; without Full Access it falls back to URL launch
 
 Cold path in the keyboard, taken when the app is not warm and the keyboard has Full Access:
 
