@@ -448,6 +448,7 @@ iOS/
 │   │   │       ├── KeyboardDictationAudioUnitClient.swift
 │   │   │       ├── KeyboardMicrophoneCapture.swift
 │   │   │       ├── KeyboardMicrophoneCaptureSchemeHandler.swift
+│   │   │       ├── KeyboardMicrophoneSelection.swift
 │   │   │       ├── KeyboardStandaloneDictating.swift
 │   │   │       ├── KeyboardStandaloneDictation.swift
 │   │   │       └── MicrophoneCapture.html
@@ -649,6 +650,8 @@ iOS/
 │   │   │   ├── KeyboardFieldKeysTests.swift
 │   │   │   ├── KeyboardInteractionHapticsTests.swift
 │   │   │   ├── KeyboardLetterCaseControllerTests.swift
+│   │   │   ├── KeyboardMicrophoneSelectionTests.swift
+│   │   │   ├── KeyboardPredictionCoordinatorTests.swift
 │   │   │   ├── KeyboardToolbarModeTests.swift
 │   │   │   ├── KeyboardTextInputControllerTests.swift
 │   │   │   ├── KeyboardTypingMemoryResetTests.swift
@@ -1716,6 +1719,8 @@ Packages/
   - Coordinates one such dictation: prepares the capture page and the extension when the keyboard appears, starts the microphone capture and the extension together, forwards audio, keeps the latest live meter for the indicator, has a recording that a call or other audio cut off transcribed, and reports the transcript, no speech, a failure to start recording, or a failure.
 - `KeyVox Keyboard/Core/Dictation/Standalone/KeyboardMicrophoneCapture.swift`
   - Records the microphone through a web view with nothing to see and hands over mono Float32 audio; can load its page ahead of a capture without asking for the microphone; reports interruptions and page, capture, and web content process failures.
+- `KeyVox Keyboard/Core/Dictation/Standalone/KeyboardMicrophoneSelection.swift`
+  - Picks the microphone each capture asks for from the containing app's Prefer Built-In Microphone setting, and keeps the built-in microphone's WebKit ID from the microphones a page lists after it has recorded.
 - `KeyVox Keyboard/Core/Dictation/Standalone/KeyboardMicrophoneCaptureSchemeHandler.swift`
   - Serves the capture page from the keyboard's bundle under a custom scheme.
 - `KeyVox Keyboard/Core/Dictation/Standalone/MicrophoneCapture.html`
@@ -1734,6 +1739,7 @@ Packages/
   - Reads and writes the shared selected Vibe, paragraph, and list-formatting defaults, derives Vibe display text from `StyleRewriteStyle`, evaluates trial access using the shared Vibes trial duration policy, forces the resolved Vibe to `None` when access or Vibes AI install readiness is missing, and posts shared Darwin notifications so the containing app can refresh visible settings.
   - Reads Compact Keys availability and persists the active full/compact mode independently; availability defaults on while active mode defaults full.
   - Reads the shared keyboard typing settings and Left-Handed Layout with the same defaults the containing app uses; the keyboard never writes them.
+  - Reads the shared Prefer Built-In Microphone setting with the containing app's default for dictation made in the keyboard; the keyboard never writes it.
   - Reads the saved keyboard theme through `KeyboardThemeID` and the containing app's onboarding-completion flag.
 - `KeyVox Keyboard/Core/Input/KeyboardCompactKeysHoldController.swift`
   - Owns the cancellable half-second `#+=` hold gesture that requests compact-mode activation without turning the eventual touch-up into a normal symbol-page keypress.

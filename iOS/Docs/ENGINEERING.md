@@ -668,6 +668,7 @@ Keyboard onboarding detection is deliberately split across three signals:
 - `KeyVox.EmojiSkinTones`
   - the skin tone last chosen for each emoji, written by the keyboard
 - `KeyVox.PreferBuiltInMicrophone`
+  - written by the containing app; also read by the keyboard to pick the microphone for a dictation made in the keyboard
 - `KeyVox.LiveActivitiesEnabled`
 - `KeyVox.SessionDisableTiming`
 - `KeyVox.SpeakTimeoutTiming`
@@ -1042,6 +1043,9 @@ A keyboard extension cannot open the microphone itself, but a web view in its vi
 - the web view is one point square, nearly transparent, and takes no touches; it is created and its page loaded when the keyboard appears with Full Access, and it stays mounted for the keyboard's view controller, registered with `KeyboardPresentationViewRegistry`; the system can build a new keyboard view controller each time the keyboard comes up, and each builds its own
 - capture needs Full Access, the keyboard's `NSMicrophoneUsageDescription`, and the containing app's microphone permission; the web view's permission request is granted for the microphone only
 - the page sends mono Float32 audio at the microphone's sample rate, and the dictation extension converts it to the recorder's output format with the same accumulator the recorder uses
+- the page asks for the microphone the containing app's Prefer Built-In Microphone setting picks: with it on, `KeyboardMicrophoneSelection` passes the built-in microphone's WebKit ID as the capture's ideal device; with it off, or before the keyboard has that ID, WebKit picks the microphone
+- a page sees its microphones' names and IDs only once it has recorded, and the keyboard builds a fresh page each time it appears, so after each capture the page lists its microphones and `KeyboardMicrophoneSelection` keeps the ID of the one named like the built-in microphone, in the keyboard's own defaults; WebKit gave the built-in microphone the same ID on every page on an iPhone 13 Pro
+- an ID that is not listed when the capture starts is passed over for the microphone WebKit picks
 - the page requests `echoCancellation: true`. With it off, the web view's audio measured about 30 dB below `AudioRecorder`'s for the same sound on an iPhone 13 Pro, under the silence thresholds, so speech was rejected as silence; with it on, levels match the recorder's
 - a failed page load, a failed capture, an ended microphone track, or the web content process ending reports a failure, and the next dictation loads the page again
 - a call in progress either rejects the capture or hands the microphone over muted; both were measured on an iPhone 13 Pro, and the page reports both as a failure to start
