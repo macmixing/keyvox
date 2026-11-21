@@ -574,6 +574,8 @@ final class KeyboardViewController: UIInputViewController {
 
     @objc
     func handleMicTap() {
+        // A dictation waits until a restyle or other change to the latest one has landed.
+        guard !dictationChangeController.isApplyingChange else { return }
         interactionHaptics.emitMediumIfEnabled()
         switch keyboardState {
         case .speaking, .pausedSpeaking:
