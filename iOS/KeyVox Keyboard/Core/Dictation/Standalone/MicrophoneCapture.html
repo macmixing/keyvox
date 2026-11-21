@@ -46,13 +46,25 @@ async function reportMicrophones() {
   } catch (error) {}
 }
 
+// Opens the preferred microphone, required rather than preferred because WebKit does not always
+// honor a preference. A microphone that is not there is passed over for the one WebKit picks.
+async function openMicrophone(preferredMicrophoneID) {
+  const audio = { channelCount: 1, echoCancellation: true };
+  if (!preferredMicrophoneID) { return navigator.mediaDevices.getUserMedia({ audio }); }
+  try {
+    return await navigator.mediaDevices.getUserMedia({
+      audio: { ...audio, deviceId: { exact: preferredMicrophoneID } }
+    });
+  } catch (error) {
+    if (error.name !== 'OverconstrainedError') { throw error; }
+    return navigator.mediaDevices.getUserMedia({ audio });
+  }
+}
+
 async function startCapture(preferredMicrophoneID) {
   try {
     await release();
-    const audio = { channelCount: 1, echoCancellation: true };
-    // A microphone that is not there is passed over for the one WebKit picks.
-    if (preferredMicrophoneID) { audio.deviceId = { ideal: preferredMicrophoneID }; }
-    stream = await navigator.mediaDevices.getUserMedia({ audio });
+    stream = await openMicrophone(preferredMicrophoneID);
     const track = stream.getAudioTracks()[0];
     if (track.muted) { throw microphoneBusy; }
     context = new AudioContext();
