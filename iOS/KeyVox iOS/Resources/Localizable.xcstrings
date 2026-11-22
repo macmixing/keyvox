@@ -2435,37 +2435,37 @@
         }
       }
     },
-    "Decide when the dictation session turns off." : {
-      "comment" : "Description under the Dictation Timeout setting.",
+    "Decide when dictation turns off after you start it with the Dictation Shortcut or from the Home tab." : {
+      "comment" : "Description under the Dictation Timeout setting. Dictation Shortcut is the name of the KeyVox setting on the same screen; Home is the name of the app's Home tab.",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Lege fest, wann sich die Diktiersitzung ausschaltet."
+            "value" : "Lege fest, wann die Diktiersitzung endet, nachdem du sie mit dem Diktier-Kurzbefehl oder im Tab „Home“ gestartet hast."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Decide cuándo se desactiva la sesión de dictado."
+            "value" : "Decide cuándo se desactiva el dictado después de iniciarlo con el atajo de dictado o desde la pestaña Inicio."
           }
         },
         "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Decide cuándo se desactiva la sesión de dictado."
+            "value" : "Decide cuándo se desactiva el dictado después de iniciarlo con el atajo de dictado o desde la pestaña Inicio."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Choisissez quand la session de dictée se désactive."
+            "value" : "Choisissez quand la dictée se désactive une fois lancée avec l’option Raccourci de dictée ou depuis l’onglet Accueil."
           }
         },
         "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Choisissez quand la session de dictée se désactive."
+            "value" : "Choisissez quand la dictée se désactive une fois lancée avec l’option Raccourci de dictée ou depuis l’onglet Accueil."
           }
         }
       }

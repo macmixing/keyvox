@@ -192,6 +192,10 @@ The Keyboard settings screen lets you turn Predictive Text and the Emoji Keyboar
 
 > **Note:** Predictive text, emoji search, and emoji suggestions are currently available in English only.
 
+### Rescued Dictation
+
+If you switch apps or dismiss the keyboard while dictating, KeyVox still finishes the transcription. The next time the keyboard appears, it's waiting in the suggestion bar: tap it to insert it, or keep typing to dismiss it.
+
 ### Compact Keys
 
 Need more room above the keyboard? Long press **#+=** to collapse KeyVox into a shorter two-row layout. Tap the keyboard-symbol key to restore the full keyboard. Compact Keys is available by default and can be disabled in KeyVox Settings.
@@ -237,6 +241,10 @@ Both components install on-device and run locally with no internet connection re
 - 📜 License terms: [`LICENSE.md`](LICENSE.md)
 - 📄 Trademark policy: [`TRADEMARK.md`](TRADEMARK.md)
 - 📎 Third-party notices: [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)
+
+## Acknowledgments
+
+Thanks to [Johan Thorell](https://x.com/johanthorell) and [Thomas Paulmann](https://x.com/thomaspaulmann) of Raycast, whose work showed that a keyboard can record from a hidden web view. KeyVox's keyboard microphone builds on that idea.
 
 ## License
 

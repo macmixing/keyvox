@@ -79,7 +79,7 @@ extension KeyboardLogoBarView {
             return "play.fill"
         case .dictationStartFailed:
             return nil
-        case .idle, .waitingForApp, .preparingPlayback, .recording, .transcribing:
+        case .idle, .waitingForApp, .startingDictation, .preparingPlayback, .recording, .transcribing:
             return nil
         }
     }
@@ -90,6 +90,10 @@ extension KeyboardLogoBarView {
             accessibilityLabel = String(localized: "Start recording", comment: "VoiceOver label for the keyboard's dictation button when it is ready to record.")
             accessibilityValue = String(localized: "Ready", comment: "VoiceOver value for the keyboard's dictation button when it is ready to record.")
             isEnabled = true
+        case .startingDictation:
+            accessibilityLabel = String(localized: "Start recording", comment: "VoiceOver label for the keyboard's dictation button when it is ready to record.")
+            accessibilityValue = nil
+            isEnabled = false
         case .waitingForApp:
             accessibilityLabel = String(localized: "Opening app", comment: "VoiceOver label for the keyboard's dictation button while the KeyVox app is opening.")
             accessibilityValue = String(localized: "Waiting", comment: "VoiceOver value for the keyboard's dictation button while the KeyVox app is opening.")

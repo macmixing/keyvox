@@ -3,6 +3,7 @@ import KeyVoxCore
 import KeyVoxEmoji
 import KeyVoxKeyboardThemes
 import KeyVoxPredictiveKeyboard
+import KeyVoxStyleRewrite
 import UIKit
 
 final class KeyboardViewController: UIInputViewController {
@@ -14,6 +15,7 @@ final class KeyboardViewController: UIInputViewController {
     let interactionHaptics = KeyboardInteractionHaptics()
     let indicatorDriver = AudioIndicatorDriver()
     let appSettingsStore = KeyboardAppSettingsStore()
+    let rescuedDictationStore = KeyboardRescuedDictationStore()
     let startRecordingURL = URL(string: "keyvoxios://record/start")
     let startTTSURL = URL(string: "keyvoxios://tts/start")
     let openDictionaryURL = URL(string: "keyvoxios://tab/dictionary")
@@ -40,12 +42,36 @@ final class KeyboardViewController: UIInputViewController {
             self?.typingTraits.allowsPeriodShortcut ?? true
         }
     )
+    /// The one connection to the Transcription AU extension, shared by dictation and by restyles
+    /// made while the containing app's session is not running.
+    lazy var transcriptionAUClient = KeyboardTranscriptionAUClient()
     lazy var dictationChangeController = KeyboardDictationChangeController(
         textInputController: textInputController,
-        appSettingsStore: appSettingsStore
+        appSettingsStore: appSettingsStore,
+        audioUnitClient: transcriptionAUClient
+    )
+    lazy var standaloneDictation = KeyboardStandaloneDictation(
+        capture: KeyboardMicrophoneCapture(mount: { [weak self] captureView in
+            guard let self else { return }
+            self.view.addSubview(captureView)
+            KeyboardPresentationViewRegistry.register(captureView, mountedBy: self)
+        }, microphoneSelection: KeyboardMicrophoneSelection(
+            prefersBuiltInMicrophone: { [appSettingsStore] in
+                appSettingsStore.prefersBuiltInMicrophone
+            }
+        )),
+        audioUnitClient: transcriptionAUClient,
+        rescuedDictationStore: rescuedDictationStore,
+        isAvailableProvider: { [weak self] in
+            self?.hasFullAccess ?? false
+        },
+        selectedVibeIdentifierProvider: { [appSettingsStore] in
+            appSettingsStore.selectedVibeStyle.styleIdentifier
+        }
     )
     lazy var dictationController = KeyboardDictationController(
         ipcManager: ipcManager,
+        standaloneDictation: standaloneDictation,
         scheduleAction: keyboardMainQueueScheduler,
         openContainingApp: { [weak self] url in
             self?.containingAppLauncher.open(url)
@@ -220,6 +246,12 @@ final class KeyboardViewController: UIInputViewController {
     var hostDidBecomeActiveObserver: NSObjectProtocol?
     var hasConfiguredControllerBindings = false
     var isPresentationBound = false
+    /// Whether the suggestion bar is offering a rescued dictation in this presentation.
+    var isShowingRescuedDictation = false
+    /// Whether the offered rescued dictation has been on screen, which it must have been before
+    /// typing or dismissing the keyboard stops offering it.
+    var hasShownRescuedDictation = false
+    var rescuedDictationObserver: NSObjectProtocol?
     var transcriptionLandingStartedAt: Date?
 
     override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
@@ -321,6 +353,7 @@ final class KeyboardViewController: UIInputViewController {
     }
 
     deinit {
+        removeRescuedDictationObserver()
         stopPresentationUpdates()
         emojiDeleteRepeatController.cancel()
         removeHostLifecycleObservers()
@@ -426,6 +459,7 @@ final class KeyboardViewController: UIInputViewController {
             displayZoom: displayZoom,
             offersPredictions: typingTraits.showsSuggestions && fieldHasLetters && isLastDictationUntouched == false
                 && emojiPanel == .closed,
+            showsRescuedDictation: isShowingRescuedDictation && emojiPanel == .closed,
             isCapsLockEnabled: isCapsLockEnabled,
             isDictationCapsApplied: dictationChangeController.displayedCapsTransformApplied,
             isDictationCapsUppercase: dictationChangeController.displayedCapsTextIsUppercase,
@@ -446,6 +480,7 @@ final class KeyboardViewController: UIInputViewController {
             isTrackpadModeActive: isTrackpadModeActive
         )
         applyLetterCase()
+        noteRescuedDictationVisibility()
         if toolbarMode != .fullAccessWarning {
             setFullAccessInstructionsPresented(false)
         }
@@ -539,11 +574,13 @@ final class KeyboardViewController: UIInputViewController {
 
     @objc
     func handleMicTap() {
+        // A dictation waits until a restyle or other change to the latest one has landed.
+        guard !dictationChangeController.isApplyingChange else { return }
         interactionHaptics.emitMediumIfEnabled()
         switch keyboardState {
         case .speaking, .pausedSpeaking:
             ttsController.handlePlaybackControlTap()
-        case .idle, .waitingForApp, .dictationStartFailed, .preparingPlayback, .recording, .transcribing:
+        case .idle, .waitingForApp, .startingDictation, .dictationStartFailed, .preparingPlayback, .recording, .transcribing:
             dictationController.handleMicTap()
         }
     }
@@ -551,6 +588,7 @@ final class KeyboardViewController: UIInputViewController {
     @objc
     func handleSpeakTap() {
         guard keyboardState != .waitingForApp,
+              keyboardState != .startingDictation,
               keyboardState != .recording,
               keyboardState != .transcribing else { return }
         interactionHaptics.emitMediumIfEnabled()
@@ -700,6 +738,9 @@ final class KeyboardViewController: UIInputViewController {
         }
         let activation = resolveContestedTap(keyActivation)
         let kind = activation.kind
+        if kind.editsText {
+            dismissRescuedDictation()
+        }
         if kind == .emoji {
             openEmojiPage()
             return true
@@ -782,8 +823,15 @@ final class KeyboardViewController: UIInputViewController {
     }
 
     private func handleTranscriptionReady(_ text: String) {
-        let artifactID = KeyVoxIPCBridge.latestTranscriptionID()
-        let styleIdentifier = KeyVoxIPCBridge.latestTranscriptionStyleIdentifier()
+        insertDictation(
+            text,
+            artifactID: KeyVoxIPCBridge.latestTranscriptionID(),
+            styleIdentifier: KeyVoxIPCBridge.latestTranscriptionStyleIdentifier()
+        )
+    }
+
+    /// Inserts a dictation's transcript and records it for the keyboard's dictation controls.
+    func insertDictation(_ text: String, artifactID: UUID?, styleIdentifier: String?) {
         guard let insertion = textInputController.insertTranscriptionWithResult(text) else {
             return
         }

@@ -108,6 +108,7 @@ extension KeyboardViewController {
 
     /// Types `emoji` as a key types its character, exactly as shown, with the key's haptic.
     func typeEmoji(_ emoji: String) {
+        dismissRescuedDictation()
         var page = symbolPage
         guard textInputController.handleKeyActivation(
             .character(emoji),
@@ -124,6 +125,7 @@ extension KeyboardViewController {
     /// Deletes as a held delete key on the grid does; the press plays its haptic when the finger
     /// lifts, repeats as they delete.
     private func beginEmojiPageDelete() {
+        dismissRescuedDictation()
         var isRepeat = false
         emojiDeleteRepeatController.begin { [weak self] granularity in
             guard let self else { return false }

@@ -1,8 +1,8 @@
 # KeyVox iOS Engineering Notes
 
-This document captures the current implementation rules and maintainer-facing architecture for the iOS app, keyboard extension, and widget extension.
+This document captures the current implementation rules and maintainer-facing architecture for the iOS app, keyboard extension, Transcription AU extension, and widget extension.
 
-**Last Updated: 2026-10-28**
+**Last Updated: 2026-11-20**
 
 ## Design Philosophy
 
@@ -16,6 +16,7 @@ Speech stays local.
 The containing app owns privileged work.
 Shared state must stay explicit, deterministic, and recoverable.
 The keyboard extension remains intentionally thin.
+The Transcription AU extension runs the app's dictation pipeline for the keyboard and nothing else.
 The widget extension remains presentation-only.
 The share extension remains extraction and handoff only.
 Convenience matters, but not more than predictable behavior.
@@ -65,10 +66,11 @@ The keyboard extension owns:
 - toolbar mode selection and warning presentation
 - lightweight active-provider artifact inspection for missing-versus-repair warning state
 - warm/cold launch handoff into the containing app
+- dictation without the containing app when the app is not warm: recording the microphone through a web view with nothing to see, and hosting the Transcription AU extension that turns the recording into text
 - keyboard-owned copied-text speak control and transport state
 - text insertion into host apps
 - Vibes selection/status UI
-- latest-insertion Vibes revert/restyle transport through the containing app
+- latest-insertion Vibes revert/restyle transport through the containing app while its session is running, and through the Transcription AU extension otherwise
 - keyboard-only interaction helpers like trackpad mode, delete repeat, and haptics
 
 The keyboard extension does **not** own:
@@ -85,6 +87,23 @@ The keyboard extension does **not** own:
 - onboarding progression
 - keyboard typing settings or keyboard theme persistence; it only reads the shared values the containing app writes
 - prediction, correction, typing-memory, or emoji search and ranking rules, which belong to `KeyVoxPredictiveKeyboard` and `KeyVoxEmoji`
+
+### Transcription AU Extension
+
+The Transcription AU extension owns:
+
+- running the shared dictation pipeline for a keyboard dictation made without the containing app: the selected provider, post-processing, the dictionary, and the KeyVox Vibes rewrite in the style the keyboard resolved
+- the keyboard's long-press Vibes restyle of an inserted dictation while the containing app's session is not running
+- loading the installed dictation and Vibes models in place from the App Group container
+- publishing that dictation's transcript record, latest-dictation artifact, weekly word count, and successful-dictation time through the shared stores
+
+The Transcription AU extension does **not** own:
+
+- microphone capture; the keyboard sends it the audio
+- model installation, validation, or repair
+- settings, the KeyVox Vibes purchase and trial gate, or iCloud sync
+- Live Activities; iOS refuses to start one from an extension
+- any interface, although it is the UI kind of Audio Unit extension
 
 ### Widget Extension
 
@@ -118,8 +137,8 @@ The share extension does **not** own:
 
 ## Platform and Target Requirements
 
-- Supported deployment target: iOS 18.6 and newer for the app, keyboard, widget, and tests.
-- The app, keyboard, share, widget, and test targets build for both iPhone and iPad (`TARGETED_DEVICE_FAMILY = "1,2"`). On iPad the containing app runs in a single window (`UIApplicationSupportsMultipleScenes = false`) in every orientation; on iPhone it stays portrait-only.
+- Supported deployment target: iOS 18.6 and newer for the app, keyboard, Transcription AU extension, widget, and tests.
+- The app, keyboard, Transcription AU extension, share, widget, and test targets build for both iPhone and iPad (`TARGETED_DEVICE_FAMILY = "1,2"`). On iPad the containing app runs in a single window (`UIApplicationSupportsMultipleScenes = false`) in every orientation; on iPhone it stays portrait-only.
 - KeyVox Vibes runs through the local Vibes model and LoRA adapter path, so it is supported on the app's iOS 18.6+ deployment target.
 - The containing app declares:
   - `UIBackgroundModes = ["audio"]`
@@ -128,16 +147,21 @@ The share extension does **not** own:
 - The keyboard extension declares:
   - `NSExtensionPointIdentifier = com.apple.keyboard-service`
   - `RequestsOpenAccess = true`
+  - `NSMicrophoneUsageDescription`, localized in the keyboard's `InfoPlist.xcstrings`, which the web view's microphone capture requires; microphone permission itself stays the containing app's
+  - the `inter-app-audio` entitlement, without which iOS hides other targets' Audio Units from the keyboard
+- The Transcription AU extension declares:
+  - `NSExtensionPointIdentifier = com.apple.AudioUnit-UI`, the kind of Audio Unit extension iOS runs without a hard memory ceiling; the plain `com.apple.AudioUnit` kind is capped below what the dictation and Vibes models need
+  - one `aufx` Audio Component, subtype `kvta`, manufacturer `KVox`, matched by `TranscriptionAUContract.componentDescription`
 - The share extension declares:
   - `NSExtensionPointIdentifier = com.apple.share-services`
 - Both the app and keyboard extension require the App Group entitlement:
   - `group.com.cueit.keyvox`
-- The share extension also requires the App Group entitlement:
+- The share extension and the Transcription AU extension also require the App Group entitlement:
   - `group.com.cueit.keyvox`
 - The widget target also depends on the shared code/project wiring needed for ActivityKit and the shared App Group-backed session state.
-- The app, keyboard, share, and widget targets each ship a `PrivacyInfo.xcprivacy` declaring no tracking and no collected data, with required-reason entries only for the APIs that target uses: UserDefaults in all four, file timestamps in the app and keyboard, disk space in the app, and system boot time in the keyboard. The app's privacy manifest is not a member of the unit test target.
+- The app, keyboard, Transcription AU extension, share, and widget targets each ship a `PrivacyInfo.xcprivacy` declaring no tracking and no collected data, with required-reason entries only for the APIs that target uses: UserDefaults in all five, file timestamps in the app and keyboard, disk space in the app, and system boot time in the keyboard. The app's privacy manifest is not a member of the unit test target.
 - Among the shipping targets, only the keyboard extension links `KeyVoxPredictiveKeyboard` and `KeyVoxEmoji`.
-- `KeyVoxKeyboardThemes` is linked by the containing app, which stores the theme choice, and the keyboard extension, which colors its keys from it.
+- `KeyVoxKeyboardThemes` is linked by the containing app, which stores the theme choice, and the keyboard extension, which colors its keys from it. The Transcription AU extension links it only because it compiles `AppSettingsStore` for the saved dictation settings.
 
 ## Composition Root
 
@@ -193,10 +217,36 @@ Service ownership rules:
 - Haptic-emission policy stays app-owned; pure decision helpers decide when feedback should fire, and `AppHaptics` owns the UIKit bridge.
 - `AppServiceRegistry` wires KeyVox Vibes into `TranscriptionManager` through narrow callbacks for output transformation, latest-artifact recording, prewarm, and prewarm release. It also wires keyboard style rewrite IPC into the same app-owned local inference path. The app owns branded feature lifecycle and model runtime ownership; the packages own reusable transform and local inference mechanics.
 - `AppServiceRegistry` wires PocketTTS services and normalizes voice selection, but it must not proactively prewarm the PocketTTS runtime; playback owns runtime load and unload.
+- `AppServiceRegistry` sets the active dictation provider without loading its model; `TranscriptionManager` starts loading it when a recording starts, so it loads while the user speaks, and unloads it once the session has ended and nothing is being transcribed, including after a capture whose monitoring was released before transcription finished.
 - `AppServiceRegistry` applies `AppSettingsStore.whisperDictationLanguage` when creating `WhisperService` and keeps later device-local selection changes synchronized with the service.
-- `AppServiceRegistry` creates one health-routed linguistic analyzer and injects that same instance into Whisper continuation analysis, transcription post-processing, KeyVox Vibes output repair, and PocketTTS chunk planning.
+- `AppServiceRegistry` creates one health-routed linguistic analyzer through `DictationLinguisticAnalyzer`, the factory the Transcription AU extension also uses, and injects that same instance into Whisper continuation analysis, transcription post-processing, KeyVox Vibes output repair, and PocketTTS chunk planning.
 - `AppServiceRegistry` creates `PromotionCenter` with the iOS audience, current app version, App Group defaults, and the runtime-selected bundled or remote manifest source.
 - `AppServiceRegistry` creates `OnboardingStore` with the launch's protected-data availability and passes `CloudSyncCoordinator` an existing-installation signal that is true while onboarding state is unresolved, so a launch that cannot read protected data is never treated as a fresh dictionary install.
+
+### Transcription AU Extension Composition
+
+`TranscriptionAUServiceRegistry` is the composition root for the Transcription AU extension's process. It builds, on the models, dictionary, and settings in the App Group container:
+
+- `DictionaryStore`, read again at the start of every dictation because the app can change the dictionary while the extension's process lives
+- `WhisperService` and `ParakeetService` on `InstalledDictationModelLocator`
+- the shared health-routed linguistic analyzer
+- `SwitchableDictationProvider`
+- `TranscriptionPostProcessor`
+- `LocalRewriteInferenceService` on `InstalledLocalRewriteModelLocator`
+- `LocalStyleRewriteTextTransformer`
+- `StyleRewritePipelineCoordinator`
+- `StyleRewriteLatestArtifactStore`
+
+Rules:
+
+- The app and the extension run one implementation. The extension target compiles the app's own source files for capture accumulation, stop-time processing, model lookup, settings resolution, style rewrite, latest-artifact storage, weekly word stats, and review-request state; nothing is copied.
+- Capture tuning is `AudioCaptureTuning`, shared by `AudioRecorder` and the extension.
+- Saved dictation settings are read through `AppSettingsStore`'s static resolvers. The extension never creates an `AppSettingsStore`, whose initializer normalizes and writes settings.
+- The Vibe for a dictation is the style the keyboard sends with it, which `KeyboardAppSettingsStore` already resolved against the purchase, the trial, and the installed model. The extension holds no copy of that gate. The keyboard sends it at `begin`, where it warms up the Vibes model, and again at `finish`, where it replaces the first one for the rewrite, so a Vibe changed during the dictation applies as it does in the containing app, which reads the Vibe when it processes the text.
+- Building `TranscriptionPostProcessor` loads its language data, which took about two and a half seconds in a debug build on an iPhone 13 Pro, so the registry builds it off the main thread while the user speaks and the pipeline waits for it.
+- `TranscriptionAUSession` mirrors `TranscriptionManager`'s stop sequence: empty capture, model availability, provider warmup, dictionary hint gate, `DictationPipeline.run`, latest-artifact recording, Vibes release, transcript publishing.
+- The active provider is replaced only when the saved selection changes; replacing it unloads the loaded model.
+- The extension's process outlives a dismissed keyboard, so the keyboard's `releaseModels` message unloads both dictation models when it goes away.
 
 ### Linguistic Analysis Routing Contract
 
@@ -206,9 +256,9 @@ Service ownership rules:
 - Healthy native results stay on the native path. Inconclusive results are returned unchanged. Once a language produces an unhealthy result and a matching fallback is available, that analyzer instance retains the fallback route for the normalized language.
 - The bundled portable analyzer is currently configured for English. Its configured language and each request language are normalized before comparison; a missing or different request language cannot select that fallback.
 - Provider selection emits one concise `[KVXLinguistics]` diagnostic for the resolved route and reason. Fallback resource-load failures remain explicit and leave the primary result in place.
-- The containing app bundles `averaged-perceptron-tagger-eng` and `wordnet-3.0` and supplies `Bundle.main.resourceURL` to the factory. The keyboard extension neither bundles nor loads those resources.
+- The containing app bundles `averaged-perceptron-tagger-eng` and `wordnet-3.0` and supplies `Bundle.main.resourceURL` to the factory. The Transcription AU extension supplies the containing app's bundle, two levels above its own, so the resources ship once. The keyboard extension neither bundles nor loads those resources.
 - `DictationPipeline` carries the provider-reported language code into text-processing context and the final result. KeyVox Vibes requests and latest-utterance artifacts preserve that code for initial and later rewrites.
-- Keyboard-originated Vibes rewrites send the saved dictation language through `KeyVoxStyleRewriteIPCRequest`; the containing app performs the analysis and model-backed rewrite.
+- Keyboard-originated Vibes rewrites send the saved dictation language through `KeyVoxStyleRewriteIPCRequest`; the containing app performs the analysis and model-backed rewrite while its session is running, and the Transcription AU extension performs it otherwise.
 - PocketTTS uses the language capability declared by its installed model metadata. The current Speak model declares English independently of the user's dictation-language preference.
 
 ### Containing App Source Layout
@@ -247,7 +297,7 @@ Service ownership rules:
 
 - `Downloads/` owns the reusable foreground/background transfer mechanism: paired sessions, task identity, resume-data handoffs, lifecycle transition serialization, and raw transport callbacks. It must remain independent of any model family’s catalog, persisted job schema, install paths, retry policy, scheduling policy, or finalization.
 - `ModelDownloader/` owns dictation model install, validation, recovery, and background download behavior.
-- `LocalRewriteModel/` owns the Vibes rewrite base model catalog, foreground install state, manifest validation, SHA-256 checks, bundled adapter lookup, and installed-model invalidation.
+- `LocalRewriteModel/` owns the Vibes rewrite base model catalog, foreground install state, manifest validation, SHA-256 checks, bundled adapter lookup, and installed-model invalidation. `InstalledLocalRewriteModelLocator` is the one place that finds the installed model and adapters; the manager and the Transcription AU extension both use it.
 - `StyleRewrite/` owns the app adapter from dictation output and keyboard IPC requests into the reusable style rewrite and local inference packages.
 - `TTS/`, `Audio/`, and `Transcription/` remain isolated by runtime domain.
 
@@ -620,6 +670,7 @@ Keyboard onboarding detection is deliberately split across three signals:
 - `KeyVox.EmojiSkinTones`
   - the skin tone last chosen for each emoji, written by the keyboard
 - `KeyVox.PreferBuiltInMicrophone`
+  - written by the containing app; also read by the keyboard to pick the microphone for a dictation made in the keyboard
 - `KeyVox.LiveActivitiesEnabled`
 - `KeyVox.SessionDisableTiming`
 - `KeyVox.SpeakTimeoutTiming`
@@ -680,6 +731,19 @@ Keyboard onboarding detection is deliberately split across three signals:
 - `Keyboard/typing-memory.json`
   - durable keyboard typing memory, written by the keyboard extension under the current reset generation
   - removed by the containing app's learned-words reset after it increments `KeyVox.KeyboardTypingMemoryResetGeneration`
+
+### Transcription AU Message Contract
+
+`TranscriptionAUContract` is the only source of truth for the messages between the keyboard and the Transcription AU extension: the message channel name, the component description the keyboard instantiates, the commands, the outcomes, and the dictionary keys.
+
+- `begin` starts a dictation with the keyboard's resolved Vibe, which warms up the Vibes model, and answers whether the selected dictation model is installed
+- `appendAudio` adds mono Float32 audio at its capture sample rate and answers with the live meter for it
+- `finish` ends the audio with the keyboard's resolved Vibe at that moment, which the rewrite uses; `poll` answers `pending`, `transcript` with the text, `noSpeech`, or `failed`
+- `cancel` abandons the dictation; `releaseModels` also unloads the dictation models and drops a running restyle
+- `restyle` takes an encoded `KeyVoxStyleRewriteIPCRequest` and starts the rewrite; `pollRestyle` answers not accepted until it is done, then with the encoded `KeyVoxStyleRewriteIPCResponse`
+- an empty answer means the extension's process is gone, which the keyboard treats as a failure
+
+The extension publishes a finished dictation with `KeyVoxIPCBridge.setTranscription`, with its utterance ID and style identifier, so the keyboard inserts it and records its latest-insertion session exactly as it does for an app transcript. The extension does not write the shared recording state or the heartbeat and posts no Darwin notifications; those describe the containing app's session.
 
 ## App Update Contract
 
@@ -798,9 +862,35 @@ Warm path:
 1. keyboard writes `waitingForApp`
 2. keyboard posts `startRecording`
 3. keyboard waits briefly for `.recording`
-4. keyboard falls back to URL launch if the app does not take ownership quickly
+4. if the app does not take ownership in that time, as when it was closed less than the freshness window before the tap and its heartbeat has not yet gone stale, the keyboard posts `cancelRecording`, which resets the shared state to idle, and records the dictation itself on the cold path below when it has Full Access; without Full Access it falls back to URL launch
 
-Cold path:
+Cold path in the keyboard, taken when the app is not warm and the keyboard has Full Access:
+
+1. when the keyboard appears with Full Access, `KeyboardDictationController` has `KeyboardStandaloneDictation` prepare: the capture page loads and the Transcription AU extension is instantiated, so the first tap waits only for the microphone; the page asks for the microphone only when a capture starts
+2. on a tap, keyboard shows `startingDictation` and starts `KeyboardStandaloneDictation`: the microphone capture starts and the Transcription AU extension, instantiated out of process if preparing has not already done so, is sent `begin`
+3. while `startingDictation` shows, the mic button shows a spinner in place of the microphone and is disabled, further mic taps are ignored, Speak is disabled, and no cancel button shows
+4. once both are ready the spinner fades into the recording indicator; on an iPhone 13 Pro that is about 0.3 seconds after the tap, nearly all of it the page's request for the microphone
+5. captured audio goes to the extension as it arrives, and each answer carries the live meter for the indicator
+6. on stop the extension runs stop-time processing and the dictation pipeline and publishes the transcript record; the keyboard inserts it through the same path as an app transcript
+7. no app switch and no Live Activity happen on this path, and the shared recording state stays untouched; `KeyboardDictationController` ignores shared-state sync while such a dictation is active
+8. cancel abandons the dictation in the extension, also while it is being transcribed: the cancel does not wait for the transcript, nothing is published, and the next dictation starts without waiting for it; the extension host leaving the front cancels a dictation that is still starting and finishes one that is recording or being transcribed in the background (see Rescued Dictation below), so its transcript is never inserted into a host that is not in front
+9. a call or another app's audio cutting the recording off ends it there, and what was said before then is transcribed and inserted, as the app does for a recording it has cut off; the next dictation starts a new capture
+10. dismissing the keyboard cancels a dictation that is still starting, finishes one that is recording or being transcribed in the background (see Rescued Dictation below), and has the extension unload its dictation models, once that transcript arrives; the models are shared, so a dictation that finishes after another keyboard has been prepared lets go of the extension without unloading them
+
+Rescued dictation, for a keyboard dictation cut off while recording or being transcribed: by its host app leaving the front, such as a swipe to the app switcher or the host app being closed, or by the keyboard being dismissed:
+
+- the recording stops there and `KeyboardStandaloneDictation` has the extension transcribe what was captured instead of cancelling it, without waiting for the capture page to report that it stopped; the dictation keeps itself alive past its keyboard view controller until the transcript arrives
+- the extension publishes the transcript as the latest transcription, as for any dictation, and the keyboard keeps it in `KeyboardRescuedDictationStore`, in its own defaults, with the published dictation's artifact ID and style, so a later dictation replacing the latest transcription does not change what the rescued one inserts or what the dictation controls act on
+- measured on an iPhone 13 Pro running nothing but the phone itself: with a 64-second recording, the transcript was published 3.7 seconds after the host app had quit
+- the next time the keyboard appears, or as soon as the transcript arrives while it is up, the suggestion bar shows it as one suggestion across the whole bar, truncated at the end, in place of the dictation toolbar on any page that shows the toolbar (letters, numbers, or symbols, Compact Keys included), whether or not the field holds text; off the full keyboard's letter page the bar shows only the rescued dictation, never predictions, and the number pad, which has no toolbar, does not show it
+- tapping it inserts it through the same path as a dictation transcript, recorded with its own artifact ID and style; once it has been on screen, typing, deleting, or choosing an emoji stops offering it, and so does dismissing the keyboard; a rescued dictation that has not been on screen yet, such as while the number pad shows, stays kept; the mic and the other controls leave it offered
+- nothing is inserted without the tap, and no notification is posted
+
+A recording that cannot start because the audio is busy shows the start-failure state, the same as one the containing app could not start, with no app switch: the microphone being handed over muted because a call holds it, a call or another app's audio cutting the capture off before it started, or the dictation not starting within the waiting timeout.
+
+Any other failure on that path falls back to the cold path through the app, never silently, so the app's own recording start decides the outcome and shows the start-failure state itself when it cannot record: the microphone capture being refused or failing to start, the capture page failing to load, the microphone capture failing or its web content process ending, the extension not being found, not instantiating, or its process ending, `begin` refused because the selected model is missing, or the pipeline failing. Without Full Access, and when the mic is tapped while copied text is being spoken, the keyboard takes the cold path through the app directly.
+
+Cold path through the app:
 
 1. keyboard launches `keyvoxios://record/start`
 2. `AppSceneDelegate` captures the scene connection URL before the first root render
@@ -809,6 +899,8 @@ Cold path:
 5. the user returns to the host app once the session is active
 
 `ReturnToHostView` must never interrupt onboarding.
+
+A dictation made in the keyboard is recorded while the app is not running or is suspended, so on activation the app adopts the shared latest transcription and the persisted weekly word stats instead of trusting what it held in memory.
 
 ## Background Dictation Shortcut Contract
 
@@ -910,7 +1002,9 @@ Recorder file split:
 
 - `AudioRecorder+Session.swift` owns session setup, engine lifecycle, route recovery, and interruption observation
 - `AudioRecorder+Streaming.swift` owns buffer conversion, accumulation, and live metering
-- `AudioRecorder+StopPipeline.swift` owns stop-time and interruption-time capture finalization plus silence rejection
+- `AudioRecorder+StopPipeline.swift` owns stop-time and interruption-time capture finalization
+- `StoppedCaptureProcessor.swift` owns the stop-time processing itself, including silence rejection, for the recorder and the Transcription AU extension
+- `AudioCaptureTuning.swift` owns the capture output format, signal thresholds, and normalization values for the recorder and the Transcription AU extension
 
 Bluetooth routing rule:
 
@@ -939,6 +1033,8 @@ The recorder publishes:
 
 The keyboard never samples the recorder directly. It only consumes `live-meter-state.bin` through `KeyboardIPCManager` and `AudioIndicatorDriver`.
 
+For a dictation made in the keyboard, the Transcription AU extension computes the same meter with `AudioCaptureAccumulator` and returns it in its answer to each audio chunk; `KeyboardStandaloneDictation` hands the latest one to `AudioIndicatorDriver`.
+
 ### Stop-Time Processing
 
 When recording stops:
@@ -950,6 +1046,24 @@ When recording stops:
 5. accepted captures become `StoppedCapture.outputFrames`
 
 Interrupted captures follow the same post-stop processing rules before they are staged for recovery.
+
+### Keyboard Microphone Capture
+
+A keyboard extension cannot open the microphone itself, but a web view in its view tree can. `KeyboardMicrophoneCapture` owns that web view and `MicrophoneCapture.html`, the page that records.
+
+- the page is served from the keyboard's bundle through `KeyboardMicrophoneCaptureSchemeHandler`'s custom scheme
+- the web view is one point square, nearly transparent, and takes no touches; it is created and its page loaded when the keyboard appears with Full Access, and it stays mounted for the keyboard's view controller, registered with `KeyboardPresentationViewRegistry`; the system can build a new keyboard view controller each time the keyboard comes up, and each builds its own
+- capture needs Full Access, the keyboard's `NSMicrophoneUsageDescription`, and the containing app's microphone permission; the web view's permission request is granted for the microphone only
+- the page sends mono Float32 audio at the microphone's sample rate, and the Transcription AU extension converts it to the recorder's output format with the same accumulator the recorder uses
+- the page asks for the microphone the containing app's Prefer Built-In Microphone setting picks: with it on, `KeyboardMicrophoneSelection` passes the built-in microphone's WebKit ID, and the page requires that device; with it off, or before the keyboard has that ID, WebKit picks the microphone
+- a page sees its microphones' names and IDs only once it has recorded, and the keyboard builds a fresh page each time it appears, so after each capture the page lists its microphones and `KeyboardMicrophoneSelection` keeps the ID of the one named like the built-in microphone, in the keyboard's own defaults; WebKit gave the built-in microphone the same ID on every page on an iPhone 13 Pro
+- the ID is required rather than preferred because WebKit did not always honor it as a preference: with AirPods connected on an iPhone Duo, one of five captures that asked for the built-in microphone as the ideal device got the AirPods
+- an ID that is not listed when the capture starts is rejected by WebKit as overconstrained, and the page asks again without one, so WebKit picks the microphone
+- the page requests `echoCancellation: true`. With it off, the web view's audio measured about 30 dB below `AudioRecorder`'s for the same sound on an iPhone 13 Pro, under the silence thresholds, so speech was rejected as silence; with it on, levels match the recorder's
+- a failed page load, a failed capture, an ended microphone track, or the web content process ending reports a failure, and the next dictation loads the page again
+- a call ringing or in progress hands the microphone over muted, measured on an iPhone 13 Pro, and the page reports that as busy; any other capture that cannot start is reported as a failure
+- another app holding the audio does not stop a capture from starting; recording takes the audio over, measured on an iPhone 13 Pro
+- a call or another app's audio arriving during a capture mutes the microphone track and interrupts the audio context; the page ends the capture and reports it as interrupted instead of waiting, because the muted capture measured silent and did not recover within the recording
 
 ### Shared Voice-Activity Contract
 
@@ -1431,7 +1545,7 @@ It owns:
 - invoking the app-owned local style rewrite transformer
 - translating `TextTransformResult` into `DictationPipelineTextProcessingResult`
 - writing latest-utterance artifacts through `StyleRewriteLatestArtifactStore`
-- handling keyboard style rewrite IPC requests through the same transformer path
+- answering keyboard restyle requests through the same transformer path, from the app's IPC request or from the Transcription AU extension's restyle message
 - forwarding prewarm and release calls through the transformer contract
 
 `LocalRewriteModelManager` is the containing-app owner for the local Vibes rewrite base model.
@@ -1579,7 +1693,7 @@ The restore card remains visible until both unlocks are owned.
 - stores the current insertion text, current Vibe, deterministic paragraph/list state, Caps Lock display-transform state, and cached rendered variants
 - delegates deterministic paragraph/list state transitions and source selection to `KeyVoxCore.DictationDeterministicVariantResolver`
 - delegates paragraph collapse, ordered-list line preservation, and post-rewrite layout adjustment to `KeyVoxCore.DictationDeterministicTextFormatter`
-- regenerates Vibe variants from the current deterministic base text by sending style rewrite IPC to the containing app rather than morphing from the currently displayed style
+- regenerates Vibe variants from the current deterministic base text through `KeyboardLocalStyleRewriteTextTransformer` rather than morphing from the currently displayed style
 - applies paragraph/list long-press changes from deterministic artifact variants outside the KeyVox Vibes entitlement boundary, including persisted paragraph variants captured even when Paragraphs was disabled during recording
 - applies Caps Lock long-press changes locally from the current untouched insertion and the artifact's selected pre-Caps text, preserving Caps display state across Vibes and deterministic paragraph/list changes
 - accepts a transformer result as usable replacement text even when `applied == false`, because `applied` only means “different from the base request,” not “different from the currently displayed style”
@@ -1594,15 +1708,16 @@ Long-press rules:
 - cached variants replace instantly
 - generated variants may temporarily drive the logo indicator into processing state
 - if the user edits, deletes, moves away from, or otherwise invalidates the active insertion, long press no-ops
+- the mic ignores taps while a change is being applied, so a new dictation waits until the changed text lands
 
 `KeyboardModelAvailability` remains a lightweight file-presence gate for extension UI decisions.
 For Vibes AI it only checks the App Group rooted install manifest and GGUF artifact; it does not load, validate, or run the local rewrite model.
 
 `KeyboardLocalStyleRewriteTextTransformer` is the keyboard-side transport for long-press model-backed Vibes rewrites.
 
-- it writes `KeyVoxStyleRewriteIPCRequest` through `KeyVoxIPCBridge`
-- it waits for the matching `KeyVoxStyleRewriteIPCResponse`
-- it reports processing mode `app-ipc`
+- while the containing app's session is running (`KeyVoxIPCBridge.isSessionWarm()`), it writes `KeyVoxStyleRewriteIPCRequest` through `KeyVoxIPCBridge`, waits for the matching `KeyVoxStyleRewriteIPCResponse`, and reports processing mode `app-ipc`
+- otherwise it sends the same request to the Transcription AU extension through the keyboard's one `KeyboardTranscriptionAUClient`, starting the extension if it is not running, and reports processing mode `transcription-au`
+- both paths give up 30 seconds after the request, and the extension answers with the same `StyleRewritePipelineCoordinator.keyboardStyleRewriteResponse(for:)` the app uses
 - it falls back to the request base text on timeout, cancellation, empty response, or error
 - it does not load the local rewrite model or adapters inside the keyboard extension
 
@@ -1619,6 +1734,7 @@ Prewarm is best-effort and utterance-scoped at the transformer contract level:
 - stale, empty, unavailable-model, and cancelled utterance paths also release the same lifecycle
 - model invalidation still explicitly unloads the local model cache
 - repeated prewarm/release calls must remain harmless because `TranscriptionManager` owns the lifecycle hooks
+- the Transcription AU extension follows the same utterance-scoped lifecycle through `TranscriptionAUSession`: prewarm when a dictation begins, release when it is published, cancelled, or abandoned
 
 ### KeyVox Vibes Instrumentation
 
@@ -1654,6 +1770,8 @@ Restored dictionary timestamps count as local dictionary data only when a persis
 `WeeklyWordStatsCloudSync` syncs only the current-week usage snapshot.
 
 Weekly word stats merge by taking the maximum count seen for each device ID within the same week.
+
+The Transcription AU extension records a dictation's words through its own `WeeklyWordStatsStore` on the shared defaults, under the same installation ID. A store adopts the persisted snapshot before it records, and the app adopts it on activation, so neither process overwrites the other's words.
 
 Excluded from iCloud sync:
 
@@ -1748,6 +1866,7 @@ The extension is a transport and insertion surface, not the transcription owner.
 - full-access instructions presentation
 - keyboard state transitions
 - warm/cold app handoff
+- mounting the microphone capture's web view for a dictation made in the keyboard
 - keyboard-owned copied-text speak/replay transport presentation
 - cancel flow
 - host-text insertion
@@ -1769,6 +1888,9 @@ Rules:
 - UIKit can keep a dismissed keyboard's input view after releasing its controller, which leaves that controller's presentation views mounted and in memory; `KeyboardPresentationViewRegistry` records the views each controller mounts, and every appearance removes the ones whose controller has been released and that are off screen
 - every view that stays mounted in the input view after dismissal must be registered with `KeyboardPresentationViewRegistry`
 - extension-host resign-active notifications must pause the active presentation without deactivating it so host app background/foreground does not blank the keyboard
+- an extension-host resign-active notification also cancels a dictation the keyboard is still recording itself, which cannot continue in the background
+- deactivating the presentation ends any dictation made in the keyboard and has the Transcription AU extension unload its models, so no model stays loaded for a dismissed keyboard
+- nothing model-related loads in the keyboard's process; a dictation made in the keyboard adds the web view and the Audio Unit host connection, about 4 MB measured on an iPhone 13 Pro
 - `deinit` does not remove the presentation views; it stops presentation updates, cancels the emoji delete repeat, and removes the host lifecycle observers
 - the emoji search ends when the keyboard is about to disappear, as the system keyboard's does
 - host lifecycle observers are controller-scoped and remain installed until the controller is released
@@ -1784,6 +1906,7 @@ Implementation split:
 - `KeyboardViewController.swift` owns the controller-facing event and state surface
 - `KeyboardViewController+PresentationLifecycle.swift` owns presentation-tree creation, binding, teardown, and host-lifecycle observation
 - `KeyboardViewController+Debug.swift` owns debug-only lifecycle counters and testing hooks
+- `KeyboardViewController+RescuedDictation.swift` owns offering a rescued dictation in the suggestion bar
 - `KeyboardViewController+Typing.swift` owns letter-page typing: field preparation, shift handling, word boundaries, picked-word spacing, suggestion taps, contested taps, held-delete word deletion, and the return to letters after symbols
 - `KeyboardViewController+Emoji.swift` and `KeyboardViewController+EmojiSearch.swift` own emoji page and emoji search coordination
 - `KeyboardTTSController.swift` owns keyboard-side copied-text speak transport state and the App Group request/start-stop coordination surface
@@ -1805,6 +1928,7 @@ Implementation split:
 - `KeyVoxCore.DictationDeterministicTextFormatter` owns paragraph collapse, ordered-list line preservation, and post-rewrite layout adjustment
 - keyboard `Core` is grouped by domain:
   - `Dictation/` owns recording-state handoff, generic startup-failure feedback, live indicator driving, and latest-insertion long-press changes
+  - `Dictation/Standalone/` owns a dictation made without the containing app: `KeyboardStandaloneDictation` coordinates one dictation, `KeyboardMicrophoneCapture` with its page and scheme handler records, and `KeyboardTranscriptionAUClient` hosts the Transcription AU extension and exchanges messages with it on its own queue; `KeyboardDictationController` sees them only through `KeyboardStandaloneDictating`
   - `Emoji/` owns emoji indexes, drawability checks, Frequently Used and skin-tone persistence, panel state, and emoji layout math
   - `Feedback/` owns extension-local haptics configuration and dispatch, including the Core Haptics text-input tap
   - `Input/` owns text insertion, key activation values, letter-case shift state, held-key popups, delete repeat and word deletion, symbol-page return, touch routing, special-key interaction, and cursor trackpad behavior
@@ -1929,8 +2053,9 @@ When the model is installed and Full Access is granted but microphone permission
 When a microphone tap cannot start dictation:
 
 - keep the branded toolbar and key grid visible
-- the keyboard does not inspect its own audio session or other apps' audio before a tap; every microphone tap hands off to the containing app through the warm or cold path, so audio another app holds never blocks the request on the keyboard side
+- the keyboard does not inspect its own audio session or other apps' audio before a tap; a tap either hands off to the containing app through the warm or cold path or starts a dictation made in the keyboard, so audio another app holds never blocks the request on the keyboard side
 - when `AudioRecorder.startRecording()` throws, have the containing app publish the separate `recordingStartFailed` state through the existing App Group bridge
+- a dictation made in the keyboard shows the same failure when a call holds the microphone or it does not start in time; any other way it fails to start hands it to the containing app, which shows the failure if its own start throws
 - do not use CallKit or represent the failure as phone-call detection
 - replace the microphone with a red X for two seconds
 - use the same generic failure feedback for that explicit startup failure or a keyboard-side no-response timeout
@@ -2198,7 +2323,7 @@ Views may surface manager state, but runtime ownership stays in the managers and
 - TTS manager engine-unload behavior on replayable completion, explicit stop, and playback error
 - Home copied-text playback preparation presentation policy
 - stop-time capture processing
-- keyboard dictation controller behavior
+- keyboard dictation controller behavior, including starting, stopping, cancelling, and falling back from a dictation made in the keyboard
 - keyboard deterministic dictation formatting and latest-insertion change behavior
 - keyboard interaction haptics
 - keyboard controller presentation teardown and rebuild behavior
@@ -2216,6 +2341,7 @@ Views may surface manager state, but runtime ownership stays in the managers and
 - real host-app text insertion across third-party apps
 - keyboard-extension wake timing under device memory pressure
 - exact process relaunch timing between extension and containing app
+- the keyboard's web view microphone capture, hosting the Transcription AU extension, and that extension's process lifetime
 - App Store review behavior around extension-to-app launch UX
 - widget rendering differences across iOS releases
 

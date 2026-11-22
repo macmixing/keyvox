@@ -254,6 +254,10 @@ final class TranscriptionManager: ObservableObject {
         activeUtteranceID = UUID()
         captureMonitoring = .ownedBy(activeUtteranceID)
         refreshModelAvailability()
+        if isModelAvailable {
+            // Loads while the user speaks; the session's end unloads it.
+            transcriptionService.warmup()
+        }
         cancelIdleTimeout()
 
         if isFromURL {
@@ -493,6 +497,15 @@ final class TranscriptionManager: ObservableObject {
 
     func refreshModelAvailability() {
         isModelAvailable = modelAvailabilityProvider()
+    }
+
+    /// Shows a dictation the keyboard made without the app, which the app did not see happen.
+    func adoptSharedLastTranscription() {
+        guard let sharedText = KeyVoxIPCBridge.latestTranscription(),
+              sharedText != lastTranscriptionText else {
+            return
+        }
+        lastTranscriptionText = sharedText
     }
 
     private func capturePipelineOutput(_ delivery: DictationPipelineOutputDelivery) {

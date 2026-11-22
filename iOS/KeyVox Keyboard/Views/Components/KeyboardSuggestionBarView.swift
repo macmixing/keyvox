@@ -4,9 +4,12 @@ import UIKit
 /// The three suggestion slots shown above the letter keys: leading, primary (center),
 /// and trailing. The autocorrection space will apply is shown in a heavier weight. The trailing
 /// slot splits evenly among the bar's first emoji when it has any, as on the system keyboard. An
-/// emoji that would blend into its key gets a soft glow so it stays easy to see.
+/// emoji that would blend into its key gets a soft glow so it stays easy to see. A rescued
+/// dictation shows as one suggestion across the whole bar in their place.
 final class KeyboardSuggestionBarView: UIView {
     var onItemSelected: ((SuggestionBar.Item) -> Void)?
+    /// Called when the rescued dictation is tapped.
+    var onRescuedDictationSelected: (() -> Void)?
     /// Called when a suggestion is pressed and held, instead of selecting it.
     var onItemLongPressed: ((SuggestionBar.Item) -> Void)?
 
@@ -19,6 +22,7 @@ final class KeyboardSuggestionBarView: UIView {
 
     private let stackView = UIStackView()
     private let trailingSlot = UIStackView()
+    private let rescuedDictationButton = UIButton(configuration: .plain())
     /// The leading, primary, and trailing buttons, then the trailing slot's emoji buttons.
     private var buttons: [UIButton] = []
     private var items: [SuggestionBar.Item?] = Array(repeating: nil, count: 3 + emojiSlots)
@@ -65,7 +69,25 @@ final class KeyboardSuggestionBarView: UIView {
         }
         stackView.addArrangedSubview(trailingSlot)
 
+        var rescuedConfiguration = UIButton.Configuration.plain()
+        rescuedConfiguration.contentInsets = NSDirectionalEdgeInsets(top: 4, leading: 6, bottom: 4, trailing: 6)
+        rescuedConfiguration.titleLineBreakMode = .byTruncatingTail
+        rescuedDictationButton.configuration = rescuedConfiguration
+        rescuedDictationButton.translatesAutoresizingMaskIntoConstraints = false
+        rescuedDictationButton.isHidden = true
+        rescuedDictationButton.layer.cornerRadius = KeyboardStyle.keyCornerRadius
+        rescuedDictationButton.layer.borderWidth = KeyboardStyle.keyBorderWidth
+        rescuedDictationButton.addTarget(self, action: #selector(handleRescuedDictationTap), for: .touchUpInside)
+        rescuedDictationButton.configurationUpdateHandler = { [weak self] button in
+            self?.applyKeyAppearance(to: button, isShown: true)
+        }
+        addSubview(rescuedDictationButton)
+
         NSLayoutConstraint.activate([
+            rescuedDictationButton.leadingAnchor.constraint(equalTo: leadingAnchor),
+            rescuedDictationButton.trailingAnchor.constraint(equalTo: trailingAnchor),
+            rescuedDictationButton.topAnchor.constraint(equalTo: topAnchor),
+            rescuedDictationButton.bottomAnchor.constraint(equalTo: bottomAnchor),
             stackView.leadingAnchor.constraint(equalTo: leadingAnchor),
             stackView.trailingAnchor.constraint(equalTo: trailingAnchor),
             stackView.topAnchor.constraint(equalTo: topAnchor),
@@ -105,11 +127,26 @@ final class KeyboardSuggestionBarView: UIView {
         }
     }
 
+    /// Shows `text` as one suggestion across the bar, or the bar's own suggestions when nil.
+    func showRescuedDictation(_ text: String?) {
+        stackView.isHidden = text != nil
+        rescuedDictationButton.isHidden = text == nil
+        guard let text else { return }
+        let singleLine = text.components(separatedBy: .newlines).joined(separator: " ")
+        rescuedDictationButton.configuration?.attributedTitle = AttributedString(
+            singleLine,
+            attributes: AttributeContainer([.font: UIFont.systemFont(ofSize: 16, weight: .medium)])
+        )
+        rescuedDictationButton.accessibilityLabel = text
+        applyKeyAppearance(to: rescuedDictationButton, isShown: true)
+    }
+
     private func refreshAppearance() {
         // Whether an emoji needs its glow depends on the keys' colors, so the emoji are titled
         // again for the new colors.
         buttons.dropFirst(3).forEach(applyTitle)
         buttons.forEach(applyAppearance)
+        applyKeyAppearance(to: rescuedDictationButton, isShown: true)
     }
 
     /// Titles a suggestion with its text, and gives an emoji that would blend into its key a soft
@@ -147,7 +184,11 @@ final class KeyboardSuggestionBarView: UIView {
 
     /// Gives a suggestion the keys' colors, and the keys' pressed colors while it is touched.
     private func applyAppearance(to button: UIButton) {
-        guard items.indices.contains(button.tag), items[button.tag] != nil else {
+        applyKeyAppearance(to: button, isShown: items.indices.contains(button.tag) && items[button.tag] != nil)
+    }
+
+    private func applyKeyAppearance(to button: UIButton, isShown: Bool) {
+        guard isShown else {
             button.configuration?.baseForegroundColor = .clear
             button.backgroundColor = .clear
             button.layer.borderColor = UIColor.clear.cgColor
@@ -167,6 +208,11 @@ final class KeyboardSuggestionBarView: UIView {
     private func handleTap(_ sender: UIButton) {
         guard items.indices.contains(sender.tag), let item = items[sender.tag] else { return }
         onItemSelected?(item)
+    }
+
+    @objc
+    private func handleRescuedDictationTap() {
+        onRescuedDictationSelected?()
     }
 
     @objc

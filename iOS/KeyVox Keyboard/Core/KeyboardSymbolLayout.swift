@@ -40,6 +40,19 @@ enum KeyboardKeyKind: Equatable {
     case nextKeyboard
 }
 
+extension KeyboardKeyKind {
+    /// Whether the key types into or deletes from the text, rather than changing the keyboard.
+    var editsText: Bool {
+        switch self {
+        case .character, .delete, .space, .returnKey:
+            return true
+        case .abc, .alternateSymbols, .numberSymbols, .emoji, .emojiSearchDone, .restoreFullKeyboard, .shift,
+             .nextKeyboard:
+            return false
+        }
+    }
+}
+
 struct KeyboardKeyModel: Equatable {
     /// What holding a character key offers.
     enum HeldOffer: Equatable {

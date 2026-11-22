@@ -100,7 +100,7 @@ final class KeyboardIPCManager {
         switch currentKeyboardState() {
         case .recording, .transcribing:
             snapshot = KeyVoxIPCBridge.currentLiveMeterSnapshot()
-        case .idle, .waitingForApp, .dictationStartFailed, .preparingPlayback, .speaking, .pausedSpeaking:
+        case .idle, .waitingForApp, .startingDictation, .dictationStartFailed, .preparingPlayback, .speaking, .pausedSpeaking:
             snapshot = nil
         }
 
@@ -108,7 +108,7 @@ final class KeyboardIPCManager {
 
         return AudioIndicatorSample(
             level: snapshot.level,
-            signalState: mapSignalState(snapshot.signalState),
+            signalState: snapshot.signalState.audioIndicatorSignalState,
             timestamp: snapshot.timestamp
         )
     }
@@ -236,17 +236,6 @@ final class KeyboardIPCManager {
 
     private func latestTranscription() -> String? {
         KeyVoxIPCBridge.latestTranscription()
-    }
-
-    private func mapSignalState(_ signalState: KeyVoxIPCLiveMeterSignalState) -> AudioIndicatorSignalState {
-        switch signalState {
-        case .dead:
-            return .inactive
-        case .quiet:
-            return .lowActivity
-        case .active:
-            return .active
-        }
     }
 
     private func handleNotification(named name: String) {

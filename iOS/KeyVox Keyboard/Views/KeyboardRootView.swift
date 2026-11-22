@@ -236,6 +236,7 @@ final class KeyboardRootView: UIView {
         display: KeyboardDisplay,
         displayZoom: KeyboardDisplayZoom,
         offersPredictions: Bool,
+        showsRescuedDictation: Bool,
         isCapsLockEnabled: Bool,
         isDictationCapsApplied: Bool,
         isDictationCapsUppercase: Bool,
@@ -265,18 +266,20 @@ final class KeyboardRootView: UIView {
         // offered (the field allows them and holds letters, and no dictation is still as it
         // landed); the dictation buttons show on the number and symbol pages, in a field without
         // letters or predictions, in Compact Keys, while dictating, and until the user changes
-        // the text after a dictation.
+        // the text after a dictation. A rescued dictation shows the bar in their place on any
+        // page that shows the toolbar, Compact Keys included, whatever the field holds; off the
+        // full keyboard's letter page the bar shows only the rescued dictation, never predictions.
+        let showsPredictions = keysMode == .full && symbolPage == .letters && offersPredictions
         let showsSuggestionBar = showsBrandedToolbar
             && !shouldShowCancel
-            && keysMode == .full
-            && symbolPage == .letters
-            && offersPredictions
+            && (showsPredictions || showsRescuedDictation)
         let showsToolbarAccessories = showsBrandedToolbar && !showsSuggestionBar
         let shouldShowVibes = showsToolbarAccessories && isVibesAvailable
         let wasVibesButtonHidden = vibesButton.isHidden
         let shouldEnableSpeak = showsToolbarAccessories
             && hasCompletedOnboarding
             && state != .waitingForApp
+            && state != .startingDictation
             && state != .recording
             && state != .transcribing
         if self.isLeftHandedLayoutEnabled != isLeftHandedLayoutEnabled {

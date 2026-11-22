@@ -1,0 +1,105 @@
+<!doctype html>
+<meta charset="utf-8">
+<script>
+const post = (message) => webkit.messageHandlers.capture.postMessage(message);
+
+let context = null;
+let stream = null;
+let source = null;
+let processor = null;
+// A call ringing or in progress hands the microphone over muted, and nothing can be recorded.
+const microphoneBusy = new Error('microphone busy');
+
+function base64(bytes) {
+  let binary = '';
+  for (let offset = 0; offset < bytes.length; offset += 0x8000) {
+    binary += String.fromCharCode.apply(null, bytes.subarray(offset, offset + 0x8000));
+  }
+  return btoa(binary);
+}
+
+function release() {
+  if (processor) { processor.onaudioprocess = null; processor.disconnect(); }
+  if (source) { source.disconnect(); }
+  if (stream) { stream.getTracks().forEach((track) => track.stop()); }
+  const closing = context;
+  context = null; stream = null; source = null; processor = null;
+  return closing ? closing.close() : Promise.resolve();
+}
+
+// A call or another app taking the phone's audio mutes the microphone track and interrupts
+// the audio context. The capture ends there; what was recorded up to then is kept.
+async function endInterruptedCapture() {
+  if (!stream) { return; }
+  await release();
+  post({ type: 'interrupted' });
+}
+
+// Lists the microphones once the page has recorded, the first time it can see their names and IDs.
+async function reportMicrophones() {
+  try {
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    const microphones = devices
+      .filter((device) => device.kind === 'audioinput')
+      .map((device) => ({ label: device.label, id: device.deviceId }));
+    post({ type: 'microphones', microphones });
+  } catch (error) {}
+}
+
+// Opens the preferred microphone, required rather than preferred because WebKit does not always
+// honor a preference. A microphone that is not there is passed over for the one WebKit picks.
+async function openMicrophone(preferredMicrophoneID) {
+  const audio = { channelCount: 1, echoCancellation: true };
+  if (!preferredMicrophoneID) { return navigator.mediaDevices.getUserMedia({ audio }); }
+  try {
+    return await navigator.mediaDevices.getUserMedia({
+      audio: { ...audio, deviceId: { exact: preferredMicrophoneID } }
+    });
+  } catch (error) {
+    if (error.name !== 'OverconstrainedError') { throw error; }
+    return navigator.mediaDevices.getUserMedia({ audio });
+  }
+}
+
+async function startCapture(preferredMicrophoneID) {
+  try {
+    await release();
+    stream = await openMicrophone(preferredMicrophoneID);
+    const track = stream.getAudioTracks()[0];
+    if (track.muted) { throw microphoneBusy; }
+    context = new AudioContext();
+    await context.resume();
+    const sampleRate = context.sampleRate;
+    source = context.createMediaStreamSource(stream);
+    processor = context.createScriptProcessor(2048, 1, 1);
+    processor.onaudioprocess = (event) => {
+      const samples = event.inputBuffer.getChannelData(0);
+      post({
+        type: 'audio',
+        sampleRate,
+        samples: base64(new Uint8Array(samples.buffer, samples.byteOffset, samples.byteLength))
+      });
+    };
+    const startedContext = context;
+    track.onended = () => post({ type: 'failed' });
+    track.onmute = endInterruptedCapture;
+    startedContext.onstatechange = () => {
+      if (startedContext.state === 'interrupted') { endInterruptedCapture(); }
+    };
+    source.connect(processor);
+    processor.connect(context.destination);
+    post({ type: 'started' });
+    reportMicrophones();
+  } catch (error) {
+    await release();
+    post({ type: error === microphoneBusy ? 'busy' : 'failed' });
+  }
+}
+
+async function stopCapture() {
+  await release();
+  post({ type: 'stopped' });
+}
+
+post({ type: 'ready' });
+</script>

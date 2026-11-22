@@ -46,6 +46,16 @@
 		D10000032FF4000100AA0001 /* KeyVoxVoiceActivity in Frameworks */ = {isa = PBXBuildFile; productRef = D10000092FF4000100AA0001 /* KeyVoxVoiceActivity */; };
 		D20000012FF5000100AA0001 /* averaged-perceptron-tagger-eng in Resources */ = {isa = PBXBuildFile; fileRef = D20000032FF5000100AA0001 /* averaged-perceptron-tagger-eng */; };
 		D20000022FF5000100AA0001 /* wordnet-3.0 in Resources */ = {isa = PBXBuildFile; fileRef = D20000042FF5000100AA0001 /* wordnet-3.0 */; };
+		DA0000022FFA000100AA0001 /* KeyVox Transcription AU.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = DA0000012FFA000100AA0001 /* KeyVox Transcription AU.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		DA00000F2FFA000100AA0001 /* KeyVoxCore in Frameworks */ = {isa = PBXBuildFile; productRef = 8E9E38952F5BF56600EAFA72 /* KeyVoxCore */; };
+		DA0000102FFA000100AA0001 /* KeyVoxLinguistics in Frameworks */ = {isa = PBXBuildFile; productRef = D10000082FF4000100AA0001 /* KeyVoxLinguistics */; };
+		DA0000112FFA000100AA0001 /* KeyVoxLocalInference in Frameworks */ = {isa = PBXBuildFile; productRef = 9B5100032FB1000100AA0001 /* KeyVoxLocalInference */; };
+		DA0000122FFA000100AA0001 /* KeyVoxStyleRewrite in Frameworks */ = {isa = PBXBuildFile; productRef = 8EB365C82F9F20D300EBD9A2 /* KeyVoxStyleRewrite */; };
+		DA0000132FFA000100AA0001 /* KeyVoxVibesAdapters in Frameworks */ = {isa = PBXBuildFile; productRef = 9B5200032FB2000100AA0001 /* KeyVoxVibesAdapters */; };
+		DA0000142FFA000100AA0001 /* KeyVoxModels in Frameworks */ = {isa = PBXBuildFile; productRef = 928D300FF612F97300000002 /* KeyVoxModels */; };
+		DA0000152FFA000100AA0001 /* KeyVoxKeyboardThemes in Frameworks */ = {isa = PBXBuildFile; productRef = AB7E00022FF7000100AA0001 /* KeyVoxKeyboardThemes */; };
+		DA0000162FFA000100AA0001 /* KeyVoxWhisper in Frameworks */ = {isa = PBXBuildFile; productRef = D10000072FF4000100AA0001 /* KeyVoxWhisper */; };
+		DA0000172FFA000100AA0001 /* KeyVoxVoiceActivity in Frameworks */ = {isa = PBXBuildFile; productRef = D10000092FF4000100AA0001 /* KeyVoxVoiceActivity */; };
 		E3A100032FF6000100AA0001 /* KeyVoxEmoji in Frameworks */ = {isa = PBXBuildFile; productRef = E3A100022FF6000100AA0001 /* KeyVoxEmoji */; };
 		E3A100042FF6000100AA0001 /* KeyVoxEmoji in Frameworks */ = {isa = PBXBuildFile; productRef = E3A100022FF6000100AA0001 /* KeyVoxEmoji */; };
 		F41000012FF3000100AA0001 /* KeyVoxPromotions in Frameworks */ = {isa = PBXBuildFile; productRef = F41000032FF3000100AA0001 /* KeyVoxPromotions */; };
@@ -80,6 +90,13 @@
 			remoteGlobalIDString = 8E9E38512F5BF1F000EAFA72;
 			remoteInfo = KeyVox;
 		};
+		DA0000032FFA000100AA0001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 8E9E384A2F5BF1F000EAFA72 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = DA00000B2FFA000100AA0001;
+			remoteInfo = "KeyVox Transcription AU";
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -102,6 +119,7 @@
 				8E7EC0562F5C28B00080C762 /* KeyVox Keyboard.appex in Embed Foundation Extensions */,
 				8E97945E2F66B54C009A691D /* KeyVox Widget.appex in Embed Foundation Extensions */,
 				8E7DB1A22F809A1C009E3576 /* KeyVox Share.appex in Embed Foundation Extensions */,
+				DA0000022FFA000100AA0001 /* KeyVox Transcription AU.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -122,6 +140,7 @@
 		8EECE7322F64020900BECF17 /* Launch Screen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = "Launch Screen.storyboard"; sourceTree = "<group>"; };
 		D20000032FF5000100AA0001 /* averaged-perceptron-tagger-eng */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "averaged-perceptron-tagger-eng"; path = "../Tools/Models/averaged-perceptron-tagger-eng"; sourceTree = SOURCE_ROOT; };
 		D20000042FF5000100AA0001 /* wordnet-3.0 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "wordnet-3.0"; path = "../Tools/Models/wordnet-3.0"; sourceTree = SOURCE_ROOT; };
+		DA0000012FFA000100AA0001 /* KeyVox Transcription AU.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "KeyVox Transcription AU.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -129,6 +148,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
+				InfoPlist.xcstrings,
 				PrivacyInfo.xcprivacy,
 			);
 			target = 8E9E385E2F5BF1F200EAFA72 /* KeyVox iOSTests */;
@@ -154,6 +174,7 @@
 				App/Integration/KeyboardTypingMemoryLocation.swift,
 				App/Integration/KeyVoxIPCBridge.swift,
 				App/Integration/KeyVoxTTSRequest.swift,
+				App/Integration/TranscriptionAUContract.swift,
 				App/KeyVoxVibes/KeyVoxVibesTrialPolicy.swift,
 				App/LiveActivity/KeyVoxSessionLiveActivityAttributes.swift,
 				App/LiveActivity/KeyVoxSessionLiveActivityCoordinator.swift,
@@ -172,6 +193,7 @@
 				App/Integration/KeyboardTypingMemoryLocation.swift,
 				App/Integration/KeyVoxIPCBridge.swift,
 				App/Integration/KeyVoxTTSRequest.swift,
+				App/Integration/TranscriptionAUContract.swift,
 				App/KeyVoxVibes/KeyVoxVibesTrialPolicy.swift,
 				Resources/Assets.xcassets,
 				"Resources/Kanit-Light.ttf",
@@ -226,6 +248,47 @@
 			);
 			target = 8E9E385E2F5BF1F200EAFA72 /* KeyVox iOSTests */;
 		};
+		DA0000052FFA000100AA0001 /* Exceptions for "KeyVox Transcription AU" folder in "KeyVox Transcription AU" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = DA00000B2FFA000100AA0001 /* KeyVox Transcription AU */;
+		};
+		DA0000062FFA000100AA0001 /* Exceptions for "KeyVox iOS" folder in "KeyVox Transcription AU" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				App/AppReview/AppReviewRequestPolicy.swift,
+				App/AppReview/AppReviewRequestStore.swift,
+				App/Composition/DictationLinguisticAnalyzer.swift,
+				App/Composition/SharedPaths.swift,
+				App/iCloud/AppSettingsStore.swift,
+				App/iCloud/KeyVoxiCloudPayloads.swift,
+				App/iCloud/KeyVoxPlaybackVoice.swift,
+				App/iCloud/UserDefaultsKeys.swift,
+				App/Integration/KeyVoxIPCBridge.swift,
+				App/Integration/KeyVoxTTSRequest.swift,
+				App/Integration/TranscriptionAUContract.swift,
+				App/Stats/WeeklyWordStatsStore.swift,
+				Core/Audio/AudioCaptureTuning.swift,
+				"Core/Audio/AudioRecorder+Streaming.swift",
+				Core/Audio/LiveInputSignalState.swift,
+				"Core/Audio/LiveInputSignalState+IPC.swift",
+				Core/Audio/StoppedCaptureProcessor.swift,
+				"Core/Extensions/String+NilIfEmpty.swift",
+				Core/LocalRewriteModel/InstalledLocalRewriteModelLocator.swift,
+				Core/LocalRewriteModel/LocalRewriteModelCatalog.swift,
+				Core/LocalRewriteModel/LocalRewriteModelInstallManifest.swift,
+				Core/ModelDownloader/DictationModelCatalog.swift,
+				Core/ModelDownloader/InstalledDictationModelLocator.swift,
+				Core/ModelDownloader/ModelInstallManifest.swift,
+				Core/StyleRewrite/LocalRewriteInferenceService.swift,
+				Core/StyleRewrite/LocalStyleRewriteTextTransformer.swift,
+				Core/StyleRewrite/StyleRewriteLatestArtifactStore.swift,
+				Core/StyleRewrite/StyleRewritePipelineCoordinator.swift,
+			);
+			target = DA00000B2FFA000100AA0001 /* KeyVox Transcription AU */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -245,6 +308,7 @@
 				8E7DB73F2F81EAF7009E3576 /* Exceptions for "KeyVox iOS" folder in "KeyVox Keyboard" target */,
 				8E7DB7402F81EAF7009E3576 /* Exceptions for "KeyVox iOS" folder in "KeyVox Widget" target */,
 				8E7DB7412F81EAF7009E3576 /* Exceptions for "KeyVox iOS" folder in "KeyVox Share" target */,
+				DA0000062FFA000100AA0001 /* Exceptions for "KeyVox iOS" folder in "KeyVox Transcription AU" target */,
 			);
 			explicitFolders = (
 				Resources/TTSVoicePreviews,
@@ -273,6 +337,14 @@
 		8E9E38622F5BF1F200EAFA72 /* KeyVoxiOSTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = KeyVoxiOSTests;
+			sourceTree = "<group>";
+		};
+		DA0000072FFA000100AA0001 /* KeyVox Transcription AU */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				DA0000052FFA000100AA0001 /* Exceptions for "KeyVox Transcription AU" folder in "KeyVox Transcription AU" target */,
+			);
+			path = "KeyVox Transcription AU";
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -345,6 +417,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		DA0000082FFA000100AA0001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DA00000F2FFA000100AA0001 /* KeyVoxCore in Frameworks */,
+				DA0000102FFA000100AA0001 /* KeyVoxLinguistics in Frameworks */,
+				DA0000112FFA000100AA0001 /* KeyVoxLocalInference in Frameworks */,
+				DA0000122FFA000100AA0001 /* KeyVoxStyleRewrite in Frameworks */,
+				DA0000132FFA000100AA0001 /* KeyVoxVibesAdapters in Frameworks */,
+				DA0000142FFA000100AA0001 /* KeyVoxModels in Frameworks */,
+				DA0000152FFA000100AA0001 /* KeyVoxKeyboardThemes in Frameworks */,
+				DA0000162FFA000100AA0001 /* KeyVoxWhisper in Frameworks */,
+				DA0000172FFA000100AA0001 /* KeyVoxVoiceActivity in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -371,6 +459,7 @@
 				8E7EC0502F5C28B00080C762 /* KeyVox Keyboard */,
 				8E97944E2F66B54A009A691D /* KeyVox Widget */,
 				8E7DB1992F809A1C009E3576 /* KeyVox Share */,
+				DA0000072FFA000100AA0001 /* KeyVox Transcription AU */,
 				8E9794492F66B549009A691D /* Frameworks */,
 				8E9E38532F5BF1F000EAFA72 /* Products */,
 			);
@@ -384,6 +473,7 @@
 				8E7EC04F2F5C28B00080C762 /* KeyVox Keyboard.appex */,
 				8E9794482F66B549009A691D /* KeyVox Widget.appex */,
 				8E7DB1982F809A1C009E3576 /* KeyVox Share.appex */,
+				DA0000012FFA000100AA0001 /* KeyVox Transcription AU.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -481,6 +571,7 @@
 				8E7EC0552F5C28B00080C762 /* PBXTargetDependency */,
 				8E97945D2F66B54C009A691D /* PBXTargetDependency */,
 				8E7DB1A12F809A1C009E3576 /* PBXTargetDependency */,
+				DA0000042FFA000100AA0001 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				8E7DB6AB2F81EAF6009E3576 /* KeyVox iOS */,
@@ -537,6 +628,37 @@
 			productReference = 8E9E385F2F5BF1F200EAFA72 /* KeyVox iOSTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
+		DA00000B2FFA000100AA0001 /* KeyVox Transcription AU */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DA00000E2FFA000100AA0001 /* Build configuration list for PBXNativeTarget "KeyVox Transcription AU" */;
+			buildPhases = (
+				DA0000092FFA000100AA0001 /* Sources */,
+				DA0000082FFA000100AA0001 /* Frameworks */,
+				DA00000A2FFA000100AA0001 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				DA0000072FFA000100AA0001 /* KeyVox Transcription AU */,
+			);
+			name = "KeyVox Transcription AU";
+			packageProductDependencies = (
+				8E9E38952F5BF56600EAFA72 /* KeyVoxCore */,
+				D10000082FF4000100AA0001 /* KeyVoxLinguistics */,
+				9B5100032FB1000100AA0001 /* KeyVoxLocalInference */,
+				8EB365C82F9F20D300EBD9A2 /* KeyVoxStyleRewrite */,
+				9B5200032FB2000100AA0001 /* KeyVoxVibesAdapters */,
+				928D300FF612F97300000002 /* KeyVoxModels */,
+				AB7E00022FF7000100AA0001 /* KeyVoxKeyboardThemes */,
+				D10000072FF4000100AA0001 /* KeyVoxWhisper */,
+				D10000092FF4000100AA0001 /* KeyVoxVoiceActivity */,
+			);
+			productName = "KeyVox Transcription AU";
+			productReference = DA0000012FFA000100AA0001 /* KeyVox Transcription AU.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -562,6 +684,9 @@
 					8E9E385E2F5BF1F200EAFA72 = {
 						CreatedOnToolsVersion = 26.3;
 						TestTargetID = 8E9E38512F5BF1F000EAFA72;
+					};
+					DA00000B2FFA000100AA0001 = {
+						CreatedOnToolsVersion = 27.2;
 					};
 				};
 			};
@@ -607,6 +732,7 @@
 				8E7EC04E2F5C28B00080C762 /* KeyVox Keyboard */,
 				8E9794472F66B549009A691D /* KeyVox Widget */,
 				8E7DB1972F809A1C009E3576 /* KeyVox Share */,
+				DA00000B2FFA000100AA0001 /* KeyVox Transcription AU */,
 			);
 		};
 /* End PBXProject section */
@@ -654,6 +780,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		DA00000A2FFA000100AA0001 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -692,6 +825,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		DA0000092FFA000100AA0001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -715,6 +855,11 @@
 			target = 8E9E38512F5BF1F000EAFA72 /* KeyVox iOS */;
 			targetProxy = 8E9E38602F5BF1F200EAFA72 /* PBXContainerItemProxy */;
 		};
+		DA0000042FFA000100AA0001 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = DA00000B2FFA000100AA0001 /* KeyVox Transcription AU */;
+			targetProxy = DA0000032FFA000100AA0001 /* PBXContainerItemProxy */;
+		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
@@ -724,7 +869,7 @@
 				CODE_SIGN_ENTITLEMENTS = "KeyVox Share/KeyVoxShare.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = U7YT4DBC54;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "KeyVox Share/Info.plist";
@@ -736,7 +881,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.7.0;
+				MARKETING_VERSION = 1.7.1;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.cueit.keyvox.ios.KeyVox-Share";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -759,7 +904,7 @@
 				CODE_SIGN_ENTITLEMENTS = "KeyVox Share/KeyVoxShare.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = U7YT4DBC54;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "KeyVox Share/Info.plist";
@@ -771,7 +916,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.7.0;
+				MARKETING_VERSION = 1.7.1;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.cueit.keyvox.ios.KeyVox-Share";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -793,19 +938,20 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = "KeyVox Keyboard/KeyVoxKeyboard.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = U7YT4DBC54;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "KeyVox Keyboard/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = KeyVox;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "KeyVox needs access to your microphone to transcribe your speech.";
 				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.7.0;
+				MARKETING_VERSION = 1.7.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.cueit.keyvox.ios.keyboard;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -827,19 +973,20 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = "KeyVox Keyboard/KeyVoxKeyboard.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = U7YT4DBC54;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "KeyVox Keyboard/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = KeyVox;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "KeyVox needs access to your microphone to transcribe your speech.";
 				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.7.0;
+				MARKETING_VERSION = 1.7.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.cueit.keyvox.ios.keyboard;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -864,7 +1011,7 @@
 				CODE_SIGN_ENTITLEMENTS = "KeyVox Widget/KeyVox Widget.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = U7YT4DBC54;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "KeyVox Widget/Info.plist";
@@ -876,7 +1023,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.7.0;
+				MARKETING_VERSION = 1.7.1;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.cueit.keyvox.ios.KeyVox-Widget";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -901,7 +1048,7 @@
 				CODE_SIGN_ENTITLEMENTS = "KeyVox Widget/KeyVox Widget.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = U7YT4DBC54;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "KeyVox Widget/Info.plist";
@@ -913,7 +1060,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.7.0;
+				MARKETING_VERSION = 1.7.1;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.cueit.keyvox.ios.KeyVox-Widget";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -1061,7 +1208,7 @@
 				CODE_SIGN_ENTITLEMENTS = "KeyVox iOS/KeyVoxiOS.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = U7YT4DBC54;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1080,7 +1227,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.7.0;
+				MARKETING_VERSION = 1.7.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.cueit.keyvox.ios;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1106,7 +1253,7 @@
 				CODE_SIGN_ENTITLEMENTS = "KeyVox iOS/KeyVoxiOS.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = U7YT4DBC54;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1125,7 +1272,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.7.0;
+				MARKETING_VERSION = 1.7.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.cueit.keyvox.ios;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1148,7 +1295,7 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = U7YT4DBC54;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
@@ -1174,7 +1321,7 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = U7YT4DBC54;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
@@ -1192,6 +1339,74 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/KeyVox iOS.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/KeyVox iOS";
+			};
+			name = Release;
+		};
+		DA00000C2FFA000100AA0001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = "KeyVox Transcription AU/KeyVoxTranscriptionAU.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 5;
+				DEVELOPMENT_TEAM = U7YT4DBC54;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "KeyVox Transcription AU/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = KeyVox;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.7.1;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.cueit.keyvox.ios.transcription-au";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		DA00000D2FFA000100AA0001 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = "KeyVox Transcription AU/KeyVoxTranscriptionAU.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 5;
+				DEVELOPMENT_TEAM = U7YT4DBC54;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "KeyVox Transcription AU/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = KeyVox;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.7.1;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.cueit.keyvox.ios.transcription-au";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};
@@ -1248,6 +1463,15 @@
 			buildConfigurations = (
 				8E9E38772F5BF1F200EAFA72 /* Debug */,
 				8E9E38782F5BF1F200EAFA72 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		DA00000E2FFA000100AA0001 /* Build configuration list for PBXNativeTarget "KeyVox Transcription AU" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DA00000C2FFA000100AA0001 /* Debug */,
+				DA00000D2FFA000100AA0001 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

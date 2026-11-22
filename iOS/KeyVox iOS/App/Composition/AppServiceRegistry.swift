@@ -114,9 +114,8 @@ final class AppServiceRegistry {
             defaults: settingsDefaults,
             forcePresentation: runtimeFlags.forceKeyVoxVibesIntro
         )
-        let linguisticAnalyzer = LinguisticAnalyzerFactory.healthRouted(
-            portableResourceDirectory: { Bundle.main.resourceURL },
-            portableLanguageCode: "en"
+        let linguisticAnalyzer = DictationLinguisticAnalyzer.make(
+            portableResourceDirectory: { Bundle.main.resourceURL }
         )
         let whisperService = WhisperService(
             modelPathResolver: modelLocator.resolvedWhisperModelPath,
@@ -515,9 +514,10 @@ final class AppServiceRegistry {
             parakeetService
         }
 
+        // The model loads when a dictation starts and unloads when the session ends.
         activeProviderRouter.replaceActiveProvider(
             with: activeProvider,
-            warmNewProviderIfReady: true
+            warmNewProviderIfReady: false
         )
     }
 

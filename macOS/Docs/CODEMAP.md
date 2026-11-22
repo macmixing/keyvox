@@ -324,7 +324,9 @@ KeyVox/
 - `Packages/KeyVoxVoiceActivity/Sources/KeyVoxSpeechRuntime/SpeechRuntime.swift`
   - Exposes the shared `whisper.cpp` runtime bridge consumed by both the VAD detector and `KeyVoxWhisper`.
 - `Packages/KeyVoxVoiceActivity/Package.swift`
-  - Owns the single pinned `whisper.cpp` XCFramework binary target; `KeyVoxWhisper` consumes it only through the `KeyVoxSpeechRuntime` product.
+  - Owns the single `whisper.cpp` XCFramework binary target, vendored under `Artifacts/`; `KeyVoxWhisper` consumes it only through the `KeyVoxSpeechRuntime` product.
+- `Packages/KeyVoxVoiceActivity/Artifacts/`
+  - Holds the vendored `whisper.xcframework`, built from release source with prebuilt Metal kernels by `build-whisper-xcframework.sh`, and its provenance README.
 
 ### App Layer
 

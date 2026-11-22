@@ -291,6 +291,463 @@ struct KeyboardDictationControllerTests {
         #expect(receivedTexts == ["Hello world"])
         #expect(controller.state == .idle)
     }
+
+    @Test func coldSessionDictatesInKeyboardWithoutOpeningContainingApp() {
+        let ipcManager = KeyboardDictationIPCManagerSpy()
+        ipcManager.isSessionWarmValue = false
+        let standaloneDictation = KeyboardStandaloneDictationSpy()
+        let appLauncher = KeyboardContainingAppLauncherSpy()
+        let controller = KeyboardDictationController(
+            ipcManager: ipcManager,
+            standaloneDictation: standaloneDictation,
+            scheduleAction: KeyboardActionSchedulerSpy().schedule,
+            openContainingApp: appLauncher.open,
+            startRecordingURL: Self.startRecordingURL
+        )
+        let transcript = UUID().uuidString
+        var receivedTexts: [String] = []
+        controller.onTranscriptionReady = { text in
+            receivedTexts.append(text)
+        }
+
+        controller.handleMicTap()
+        controller.handleMicTap()
+
+        #expect(controller.state == .startingDictation)
+        #expect(standaloneDictation.startCallCount == 1)
+
+        standaloneDictation.onRecordingStarted?()
+
+        #expect(controller.state == .recording)
+
+        controller.handleMicTap()
+
+        #expect(controller.state == .transcribing)
+        #expect(standaloneDictation.stopCallCount == 1)
+
+        standaloneDictation.onTranscriptionReady?(transcript)
+
+        #expect(controller.state == .idle)
+        #expect(receivedTexts == [transcript])
+        #expect(appLauncher.openedURLs.isEmpty)
+        #expect(ipcManager.sendStartCommandCallCount == 0)
+        #expect(ipcManager.sendStopCommandCallCount == 0)
+    }
+
+    @Test func coldSessionOpensContainingAppWhenKeyboardDictationIsUnavailable() {
+        let ipcManager = KeyboardDictationIPCManagerSpy()
+        ipcManager.isSessionWarmValue = false
+        let standaloneDictation = KeyboardStandaloneDictationSpy()
+        standaloneDictation.isAvailable = false
+        let appLauncher = KeyboardContainingAppLauncherSpy()
+        let controller = KeyboardDictationController(
+            ipcManager: ipcManager,
+            standaloneDictation: standaloneDictation,
+            scheduleAction: KeyboardActionSchedulerSpy().schedule,
+            openContainingApp: appLauncher.open,
+            startRecordingURL: Self.startRecordingURL
+        )
+
+        controller.handleMicTap()
+
+        #expect(controller.state == .waitingForApp)
+        #expect(standaloneDictation.startCallCount == 0)
+        #expect(appLauncher.openedURLs == [Self.startRecordingURL])
+    }
+
+    @Test func warmSessionDoesNotDictateInKeyboard() {
+        let ipcManager = KeyboardDictationIPCManagerSpy()
+        ipcManager.isSessionWarmValue = true
+        let standaloneDictation = KeyboardStandaloneDictationSpy()
+        let controller = KeyboardDictationController(
+            ipcManager: ipcManager,
+            standaloneDictation: standaloneDictation,
+            scheduleAction: KeyboardActionSchedulerSpy().schedule,
+            openContainingApp: { _ in },
+            startRecordingURL: Self.startRecordingURL
+        )
+
+        controller.handleMicTap()
+
+        #expect(controller.state == .recording)
+        #expect(ipcManager.sendStartCommandCallCount == 1)
+        #expect(standaloneDictation.startCallCount == 0)
+    }
+
+    @Test func warmSessionThatDoesNotStartRecordingFallsBackToKeyboardDictation() {
+        let ipcManager = KeyboardDictationIPCManagerSpy()
+        ipcManager.isSessionWarmValue = true
+        let standaloneDictation = KeyboardStandaloneDictationSpy()
+        let scheduler = KeyboardActionSchedulerSpy()
+        let appLauncher = KeyboardContainingAppLauncherSpy()
+        let controller = KeyboardDictationController(
+            ipcManager: ipcManager,
+            standaloneDictation: standaloneDictation,
+            scheduleAction: scheduler.schedule,
+            openContainingApp: appLauncher.open,
+            startRecordingURL: Self.startRecordingURL
+        )
+
+        controller.handleMicTap()
+        scheduler.runScheduledAction(after: 0.5)
+
+        #expect(ipcManager.sendStartCommandCallCount == 1)
+        #expect(ipcManager.sendCancelCommandCallCount == 1)
+        #expect(standaloneDictation.startCallCount == 1)
+        #expect(controller.state == .startingDictation)
+        #expect(appLauncher.openedURLs.isEmpty)
+    }
+
+    @Test(arguments: [false, true])
+    func keyboardDictationFailureFallsBackToContainingApp(failsAfterRecordingStarted: Bool) {
+        let ipcManager = KeyboardDictationIPCManagerSpy()
+        ipcManager.isSessionWarmValue = false
+        let standaloneDictation = KeyboardStandaloneDictationSpy()
+        let appLauncher = KeyboardContainingAppLauncherSpy()
+        let controller = KeyboardDictationController(
+            ipcManager: ipcManager,
+            standaloneDictation: standaloneDictation,
+            scheduleAction: KeyboardActionSchedulerSpy().schedule,
+            openContainingApp: appLauncher.open,
+            startRecordingURL: Self.startRecordingURL
+        )
+
+        controller.handleMicTap()
+        if failsAfterRecordingStarted {
+            standaloneDictation.onRecordingStarted?()
+            controller.handleMicTap()
+        }
+        standaloneDictation.onFailure?()
+
+        #expect(controller.state == .waitingForApp)
+        #expect(appLauncher.openedURLs == [Self.startRecordingURL])
+    }
+
+    @Test func keyboardDictationThatNeverStartsShowsFailureWithoutOpeningContainingApp() {
+        let ipcManager = KeyboardDictationIPCManagerSpy()
+        ipcManager.isSessionWarmValue = false
+        let standaloneDictation = KeyboardStandaloneDictationSpy()
+        let scheduler = KeyboardActionSchedulerSpy()
+        let appLauncher = KeyboardContainingAppLauncherSpy()
+        let controller = KeyboardDictationController(
+            ipcManager: ipcManager,
+            standaloneDictation: standaloneDictation,
+            scheduleAction: scheduler.schedule,
+            openContainingApp: appLauncher.open,
+            startRecordingURL: Self.startRecordingURL
+        )
+
+        controller.handleMicTap()
+        scheduler.runScheduledAction(after: 5.0)
+
+        #expect(controller.state == .dictationStartFailed)
+        #expect(standaloneDictation.cancelCallCount == 1)
+        #expect(appLauncher.openedURLs.isEmpty)
+
+        scheduler.runScheduledAction(after: 2.0)
+
+        #expect(controller.state == .idle)
+    }
+
+    @Test func keyboardDictationStaysInControlWhileSharedStateIsIdle() {
+        let ipcManager = KeyboardDictationIPCManagerSpy()
+        ipcManager.isSessionWarmValue = false
+        ipcManager.reconciledRecordingStateValue = .idle
+        let standaloneDictation = KeyboardStandaloneDictationSpy()
+        let controller = KeyboardDictationController(
+            ipcManager: ipcManager,
+            standaloneDictation: standaloneDictation,
+            scheduleAction: KeyboardActionSchedulerSpy().schedule,
+            openContainingApp: { _ in },
+            startRecordingURL: Self.startRecordingURL
+        )
+
+        controller.handleMicTap()
+        standaloneDictation.onRecordingStarted?()
+        controller.syncStateFromSharedState()
+
+        #expect(controller.state == .recording)
+    }
+
+    @Test func cancelTapEndsKeyboardDictationWithoutCommandingContainingApp() {
+        let ipcManager = KeyboardDictationIPCManagerSpy()
+        ipcManager.isSessionWarmValue = false
+        let standaloneDictation = KeyboardStandaloneDictationSpy()
+        let controller = KeyboardDictationController(
+            ipcManager: ipcManager,
+            standaloneDictation: standaloneDictation,
+            scheduleAction: KeyboardActionSchedulerSpy().schedule,
+            openContainingApp: { _ in },
+            startRecordingURL: Self.startRecordingURL
+        )
+
+        controller.handleMicTap()
+        standaloneDictation.onRecordingStarted?()
+        controller.handleCancelTap()
+
+        #expect(controller.state == .idle)
+        #expect(standaloneDictation.cancelCallCount == 1)
+        #expect(ipcManager.sendCancelCommandCallCount == 0)
+    }
+
+    @Test(arguments: [false, true])
+    func hostLeavingTheFrontFinishesAKeyboardDictationInTheBackground(isTranscribing: Bool) {
+        let ipcManager = KeyboardDictationIPCManagerSpy()
+        ipcManager.isSessionWarmValue = false
+        let standaloneDictation = KeyboardStandaloneDictationSpy()
+        let appLauncher = KeyboardContainingAppLauncherSpy()
+        let controller = KeyboardDictationController(
+            ipcManager: ipcManager,
+            standaloneDictation: standaloneDictation,
+            scheduleAction: KeyboardActionSchedulerSpy().schedule,
+            openContainingApp: appLauncher.open,
+            startRecordingURL: Self.startRecordingURL
+        )
+
+        controller.handleMicTap()
+        standaloneDictation.onRecordingStarted?()
+        if isTranscribing {
+            controller.handleMicTap()
+        }
+        controller.endStandaloneRecordingForHostLeaving()
+
+        #expect(controller.state == .idle)
+        #expect(standaloneDictation.finishInBackgroundCallCount == 1)
+        #expect(standaloneDictation.cancelCallCount == 0)
+        #expect(appLauncher.openedURLs.isEmpty)
+    }
+
+    @Test func hostLeavingTheFrontCancelsAStartingKeyboardDictation() {
+        let ipcManager = KeyboardDictationIPCManagerSpy()
+        ipcManager.isSessionWarmValue = false
+        let standaloneDictation = KeyboardStandaloneDictationSpy()
+        let controller = KeyboardDictationController(
+            ipcManager: ipcManager,
+            standaloneDictation: standaloneDictation,
+            scheduleAction: KeyboardActionSchedulerSpy().schedule,
+            openContainingApp: { _ in },
+            startRecordingURL: Self.startRecordingURL
+        )
+
+        controller.handleMicTap()
+        controller.endStandaloneRecordingForHostLeaving()
+
+        #expect(controller.state == .idle)
+        #expect(standaloneDictation.cancelCallCount == 1)
+        #expect(standaloneDictation.finishInBackgroundCallCount == 0)
+    }
+
+    @Test func keyboardRecordingThatCannotStartShowsFailureWithoutOpeningContainingApp() {
+        let ipcManager = KeyboardDictationIPCManagerSpy()
+        ipcManager.isSessionWarmValue = false
+        let standaloneDictation = KeyboardStandaloneDictationSpy()
+        let scheduler = KeyboardActionSchedulerSpy()
+        let appLauncher = KeyboardContainingAppLauncherSpy()
+        let controller = KeyboardDictationController(
+            ipcManager: ipcManager,
+            standaloneDictation: standaloneDictation,
+            scheduleAction: scheduler.schedule,
+            openContainingApp: appLauncher.open,
+            startRecordingURL: Self.startRecordingURL
+        )
+
+        controller.handleMicTap()
+        standaloneDictation.onRecordingStartFailed?()
+
+        #expect(controller.state == .dictationStartFailed)
+        #expect(appLauncher.openedURLs.isEmpty)
+
+        scheduler.runScheduledAction(after: 2.0)
+
+        #expect(controller.state == .idle)
+
+        controller.handleMicTap()
+
+        #expect(standaloneDictation.startCallCount == 2)
+    }
+
+    @Test func keyboardRecordingCutOffIsTranscribedAndInserted() {
+        let ipcManager = KeyboardDictationIPCManagerSpy()
+        ipcManager.isSessionWarmValue = false
+        let standaloneDictation = KeyboardStandaloneDictationSpy()
+        let appLauncher = KeyboardContainingAppLauncherSpy()
+        let controller = KeyboardDictationController(
+            ipcManager: ipcManager,
+            standaloneDictation: standaloneDictation,
+            scheduleAction: KeyboardActionSchedulerSpy().schedule,
+            openContainingApp: appLauncher.open,
+            startRecordingURL: Self.startRecordingURL
+        )
+        let transcript = UUID().uuidString
+        var receivedTexts: [String] = []
+        controller.onTranscriptionReady = { text in
+            receivedTexts.append(text)
+        }
+
+        controller.handleMicTap()
+        standaloneDictation.onRecordingStarted?()
+        standaloneDictation.onTranscribingStarted?()
+
+        #expect(controller.state == .transcribing)
+        #expect(standaloneDictation.stopCallCount == 0)
+
+        standaloneDictation.onTranscriptionReady?(transcript)
+
+        #expect(controller.state == .idle)
+        #expect(receivedTexts == [transcript])
+        #expect(appLauncher.openedURLs.isEmpty)
+    }
+
+    @Test func keyboardDictationWithoutSpeechReturnsToIdle() {
+        let ipcManager = KeyboardDictationIPCManagerSpy()
+        ipcManager.isSessionWarmValue = false
+        let standaloneDictation = KeyboardStandaloneDictationSpy()
+        let appLauncher = KeyboardContainingAppLauncherSpy()
+        let controller = KeyboardDictationController(
+            ipcManager: ipcManager,
+            standaloneDictation: standaloneDictation,
+            scheduleAction: KeyboardActionSchedulerSpy().schedule,
+            openContainingApp: appLauncher.open,
+            startRecordingURL: Self.startRecordingURL
+        )
+
+        controller.handleMicTap()
+        standaloneDictation.onRecordingStarted?()
+        controller.handleMicTap()
+        standaloneDictation.onNoSpeech?()
+
+        #expect(controller.state == .idle)
+        #expect(appLauncher.openedURLs.isEmpty)
+    }
+
+    @Test func leavingTheKeyboardEndsKeyboardDictation() {
+        let ipcManager = KeyboardDictationIPCManagerSpy()
+        ipcManager.isSessionWarmValue = false
+        let standaloneDictation = KeyboardStandaloneDictationSpy()
+        let controller = KeyboardDictationController(
+            ipcManager: ipcManager,
+            standaloneDictation: standaloneDictation,
+            scheduleAction: KeyboardActionSchedulerSpy().schedule,
+            openContainingApp: { _ in },
+            startRecordingURL: Self.startRecordingURL
+        )
+
+        controller.handleMicTap()
+        standaloneDictation.onRecordingStarted?()
+        controller.unregisterObservers()
+        controller.syncStateFromSharedState()
+
+        #expect(controller.state == .idle)
+        #expect(standaloneDictation.deactivateCallCount == 1)
+    }
+
+    @Test(arguments: [false, true])
+    func dismissingTheKeyboardFinishesAKeyboardDictationInTheBackground(isTranscribing: Bool) {
+        let ipcManager = KeyboardDictationIPCManagerSpy()
+        ipcManager.isSessionWarmValue = false
+        let standaloneDictation = KeyboardStandaloneDictationSpy()
+        let controller = KeyboardDictationController(
+            ipcManager: ipcManager,
+            standaloneDictation: standaloneDictation,
+            scheduleAction: KeyboardActionSchedulerSpy().schedule,
+            openContainingApp: { _ in },
+            startRecordingURL: Self.startRecordingURL
+        )
+
+        controller.handleMicTap()
+        standaloneDictation.onRecordingStarted?()
+        if isTranscribing {
+            controller.handleMicTap()
+        }
+        controller.unregisterObservers()
+
+        #expect(standaloneDictation.finishInBackgroundCallCount == 1)
+        #expect(standaloneDictation.cancelCallCount == 0)
+        #expect(standaloneDictation.deactivateCallCount == 1)
+    }
+
+    @Test func dismissingTheKeyboardWhileADictationStartsDoesNotFinishItInTheBackground() {
+        let ipcManager = KeyboardDictationIPCManagerSpy()
+        ipcManager.isSessionWarmValue = false
+        let standaloneDictation = KeyboardStandaloneDictationSpy()
+        let controller = KeyboardDictationController(
+            ipcManager: ipcManager,
+            standaloneDictation: standaloneDictation,
+            scheduleAction: KeyboardActionSchedulerSpy().schedule,
+            openContainingApp: { _ in },
+            startRecordingURL: Self.startRecordingURL
+        )
+
+        controller.handleMicTap()
+        controller.unregisterObservers()
+
+        #expect(standaloneDictation.finishInBackgroundCallCount == 0)
+        #expect(standaloneDictation.deactivateCallCount == 1)
+    }
+
+    @Test func showingTheKeyboardPreparesKeyboardDictationOnlyWhenAvailable() {
+        let standaloneDictation = KeyboardStandaloneDictationSpy()
+        let controller = KeyboardDictationController(
+            ipcManager: KeyboardDictationIPCManagerSpy(),
+            standaloneDictation: standaloneDictation,
+            scheduleAction: KeyboardActionSchedulerSpy().schedule,
+            openContainingApp: { _ in },
+            startRecordingURL: Self.startRecordingURL
+        )
+
+        controller.registerObservers()
+        #expect(standaloneDictation.prepareCallCount == 1)
+        #expect(standaloneDictation.startCallCount == 0)
+
+        controller.unregisterObservers()
+        standaloneDictation.isAvailable = false
+        controller.registerObservers()
+        #expect(standaloneDictation.prepareCallCount == 1)
+    }
+
+    private static let startRecordingURL = URL(string: "keyvoxios://record/start")!
+}
+
+private final class KeyboardStandaloneDictationSpy: KeyboardStandaloneDictating {
+    var onRecordingStarted: (() -> Void)?
+    var onRecordingStartFailed: (() -> Void)?
+    var onTranscribingStarted: (() -> Void)?
+    var onTranscriptionReady: ((String) -> Void)?
+    var onNoSpeech: (() -> Void)?
+    var onFailure: (() -> Void)?
+
+    var isAvailable = true
+
+    var prepareCallCount = 0
+    var startCallCount = 0
+    var stopCallCount = 0
+    var cancelCallCount = 0
+    var finishInBackgroundCallCount = 0
+    var deactivateCallCount = 0
+
+    func prepare() {
+        prepareCallCount += 1
+    }
+
+    func start() {
+        startCallCount += 1
+    }
+
+    func stop() {
+        stopCallCount += 1
+    }
+
+    func cancel() {
+        cancelCallCount += 1
+    }
+
+    func finishInBackground() {
+        finishInBackgroundCallCount += 1
+    }
+
+    func deactivate() {
+        deactivateCallCount += 1
+    }
 }
 
 private final class KeyboardDictationIPCManagerSpy: KeyboardDictationIPCManaging {

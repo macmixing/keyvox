@@ -8,6 +8,17 @@ final class KeyboardLocalStyleRewriteTextTransformer: DictationTextTransforming 
         static let pollIntervalNanoseconds: UInt64 = 50_000_000
     }
 
+    private let audioUnitClient: KeyboardTranscriptionAUClient
+    private let isAppSessionWarm: () -> Bool
+
+    init(
+        audioUnitClient: KeyboardTranscriptionAUClient,
+        isAppSessionWarm: @escaping () -> Bool = KeyVoxIPCBridge.isSessionWarm
+    ) {
+        self.audioUnitClient = audioUnitClient
+        self.isAppSessionWarm = isAppSessionWarm
+    }
+
     func prewarm(request: TextTransformRequest) {}
 
     func transform(_ request: TextTransformRequest) async -> TextTransformResult {
@@ -20,11 +31,8 @@ final class KeyboardLocalStyleRewriteTextTransformer: DictationTextTransforming 
             createdAt: Date()
         )
 
-        KeyVoxIPCBridge.writeStyleRewriteRequest(ipcRequest)
-
         do {
-            let response = try await waitForResponse(id: ipcRequest.id)
-            KeyVoxIPCBridge.clearStyleRewriteResponse()
+            let (response, processingMode) = try await response(to: ipcRequest)
 
             if let text = response.text,
                text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false {
@@ -39,7 +47,7 @@ final class KeyboardLocalStyleRewriteTextTransformer: DictationTextTransforming 
                     errors: response.errorMessage.map {
                         [TextTransformErrorSummary(chunkIndex: nil, message: $0, errorCode: .generationFailed)]
                     } ?? [],
-                    processingMode: "app-ipc"
+                    processingMode: processingMode
                 )
             }
 
@@ -71,6 +79,29 @@ final class KeyboardLocalStyleRewriteTextTransformer: DictationTextTransforming 
 
     func releasePrewarmSession(reason: String) {}
 
+    /// The containing app answers while its session is running; otherwise the Transcription AU
+    /// extension does.
+    private func response(
+        to request: KeyVoxStyleRewriteIPCRequest
+    ) async throws -> (KeyVoxStyleRewriteIPCResponse, processingMode: String) {
+        if isAppSessionWarm() {
+            KeyVoxIPCBridge.writeStyleRewriteRequest(request)
+            let response = try await waitForResponse(id: request.id)
+            KeyVoxIPCBridge.clearStyleRewriteResponse()
+            return (response, "app-ipc")
+        }
+
+        let response = await withCheckedContinuation { continuation in
+            audioUnitClient.restyle(request, timeout: ResponseWait.timeout) { response in
+                continuation.resume(returning: response)
+            }
+        }
+        guard let response else {
+            throw KeyboardStyleRewriteIPCError.audioUnitUnavailable
+        }
+        return (response, "transcription-au")
+    }
+
     private func waitForResponse(id: UUID) async throws -> KeyVoxStyleRewriteIPCResponse {
         let deadline = Date().addingTimeInterval(ResponseWait.timeout)
 
@@ -94,6 +125,7 @@ final class KeyboardLocalStyleRewriteTextTransformer: DictationTextTransforming 
 private enum KeyboardStyleRewriteIPCError: Error, CustomStringConvertible {
     case cancelled
     case timedOut
+    case audioUnitUnavailable
 
     var description: String {
         switch self {
@@ -101,6 +133,8 @@ private enum KeyboardStyleRewriteIPCError: Error, CustomStringConvertible {
             return "cancelled"
         case .timedOut:
             return "timedOut"
+        case .audioUnitUnavailable:
+            return "audioUnitUnavailable"
         }
     }
 }

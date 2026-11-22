@@ -16,6 +16,28 @@ final class KeyboardLogoBarView: UIControl {
         static let ringLineWidth: CGFloat = 2
         static let shadowRadius: CGFloat = 5
         static let barGlowRadius: CGFloat = 1.5
+        static let startingSpinnerFadeDuration: TimeInterval = 0.12
+        static let startingSpinnerDarkLightening: CGFloat = 0.45
+    }
+
+    /// The spinner fades most of its spokes, which the dark button swallows, so there it is the
+    /// bars' indigo brought part of the way to white.
+    private static let startingSpinnerColor = UIColor { traits in
+        let indigo = UIColor.systemIndigo.resolvedColor(with: traits)
+        guard traits.userInterfaceStyle == .dark else { return indigo }
+
+        var red: CGFloat = 0
+        var green: CGFloat = 0
+        var blue: CGFloat = 0
+        var alpha: CGFloat = 0
+        guard indigo.getRed(&red, green: &green, blue: &blue, alpha: &alpha) else { return indigo }
+        let lightening = Metrics.startingSpinnerDarkLightening
+        return UIColor(
+            red: red + (1 - red) * lightening,
+            green: green + (1 - green) * lightening,
+            blue: blue + (1 - blue) * lightening,
+            alpha: alpha
+        )
     }
 
     override var intrinsicContentSize: CGSize {
@@ -36,6 +58,8 @@ final class KeyboardLogoBarView: UIControl {
     private let ringLayer = CAShapeLayer()
     private let transportProgressLayer = CAShapeLayer()
     private let barLayers = (0..<5).map { _ in CAGradientLayer() }
+    /// Spins while the microphone is being switched on, before there is anything to meter.
+    private let startingSpinnerView = UIActivityIndicatorView(style: .medium)
     private let microphoneImageView = UIImageView()
     private let recordingStartFailureImageView = UIImageView()
     private let microphoneBaseImage = UIImage(named: "microphone-icon")
@@ -47,6 +71,7 @@ final class KeyboardLogoBarView: UIControl {
     var indicatorPhase: AudioIndicatorPhase = .idle
     var timelineState: AudioIndicatorTimelineState = .initial
     private var barsAreVisible = false
+    private var isStartingSpinnerVisible = false
     private var isAnimatingActivationTransition = false
     private var lastRasterizedMicrophonePixelSize = CGSize.zero
 
@@ -58,6 +83,7 @@ final class KeyboardLogoBarView: UIControl {
         observeAppearanceChanges()
         bringSubviewToFront(microphoneImageView)
         bringSubviewToFront(recordingStartFailureImageView)
+        bringSubviewToFront(startingSpinnerView)
         configureInitialPresentation()
         updateAccessibility()
     }
@@ -128,6 +154,12 @@ final class KeyboardLogoBarView: UIControl {
         recordingStartFailureImageView.contentMode = .scaleAspectFit
         recordingStartFailureImageView.tintColor = nil
         addSubview(recordingStartFailureImageView)
+
+        startingSpinnerView.color = Self.startingSpinnerColor
+        startingSpinnerView.hidesWhenStopped = true
+        startingSpinnerView.isUserInteractionEnabled = false
+        startingSpinnerView.alpha = 0
+        addSubview(startingSpinnerView)
     }
 
     private func configureSizeConstraints() {
@@ -188,6 +220,15 @@ final class KeyboardLogoBarView: UIControl {
             return
         }
 
+        if oldPhase == .starting {
+            setStartingSpinnerVisible(false)
+        }
+
+        if newPhase == .starting {
+            animateMicrophoneIntoStartingSpinner()
+            return
+        }
+
         if newPhase == .idle {
             isAnimatingActivationTransition = false
             microphoneImageView.isHidden = false
@@ -215,7 +256,13 @@ final class KeyboardLogoBarView: UIControl {
 
         barsAreVisible = true
         setBarsHidden(false)
-        setBarOpacity(1)
+        if oldPhase == .starting {
+            // The bars come in as the spinner goes out.
+            setBarOpacity(0.2)
+            animateBarOpacity(to: 1, duration: 0.16)
+        } else {
+            setBarOpacity(1)
+        }
 
         guard !isAnimatingActivationTransition else { return }
 
@@ -260,6 +307,52 @@ final class KeyboardLogoBarView: UIControl {
         )
     }
 
+    private func animateMicrophoneIntoStartingSpinner() {
+        isAnimatingActivationTransition = false
+        barsAreVisible = false
+        setBarsHidden(true)
+        setBarOpacity(0)
+        setStartingSpinnerVisible(true)
+
+        UIView.animate(
+            withDuration: 0.14,
+            delay: 0,
+            options: [.beginFromCurrentState, .allowUserInteraction, .curveEaseInOut],
+            animations: {
+                self.microphoneImageView.alpha = 0
+                self.microphoneImageView.transform = CGAffineTransform(scaleX: 0.18, y: 0.18)
+            },
+            completion: { _ in
+                guard self.indicatorPhase != .idle else { return }
+                self.microphoneImageView.isHidden = true
+                self.microphoneImageView.alpha = 0
+                self.microphoneImageView.transform = .identity
+            }
+        )
+    }
+
+    private func setStartingSpinnerVisible(_ visible: Bool) {
+        guard isStartingSpinnerVisible != visible else { return }
+        isStartingSpinnerVisible = visible
+
+        if visible {
+            startingSpinnerView.startAnimating()
+        }
+
+        UIView.animate(
+            withDuration: Metrics.startingSpinnerFadeDuration,
+            delay: 0,
+            options: [.beginFromCurrentState, .allowUserInteraction, .curveEaseInOut],
+            animations: {
+                self.startingSpinnerView.alpha = visible ? 1 : 0
+            },
+            completion: { _ in
+                guard !self.isStartingSpinnerVisible else { return }
+                self.startingSpinnerView.stopAnimating()
+            }
+        )
+    }
+
     func animateTransportReturnToMicrophone() {
         let iconSide = min(bounds.width, bounds.height) * currentCenterIconSizeRatio()
         updateCenterIconImageIfNeeded(for: CGSize(width: iconSide, height: iconSide))
@@ -284,6 +377,7 @@ final class KeyboardLogoBarView: UIControl {
 
     func animateRecordingStartFailure() {
         isAnimatingActivationTransition = false
+        setStartingSpinnerVisible(false)
         indicatorPhase = .idle
         timelineState = .initial
         barsAreVisible = false
@@ -438,6 +532,9 @@ final class KeyboardLogoBarView: UIControl {
         transportProgressLayer.lineWidth = Metrics.ringLineWidth * scale
         transportProgressLayer.strokeEnd = playbackProgress
         transportProgressLayer.isHidden = keyboardState.isTTSPlaybackActive == false
+
+        startingSpinnerView.center = CGPoint(x: bounds.midX, y: bounds.midY)
+        startingSpinnerView.transform = CGAffineTransform(scaleX: scale, y: scale)
 
         let barWidth = Metrics.barWidth * scale
         let barSpacing = Metrics.barSpacing * scale

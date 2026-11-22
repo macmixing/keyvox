@@ -1,0 +1,231 @@
+import AVFoundation
+import AudioToolbox
+
+/// Hosts the Transcription AU extension out of process and exchanges messages with it.
+/// Every exchange waits for the extension's answer, so the client works on its own queue and
+/// reports back on the main queue.
+final class KeyboardTranscriptionAUClient: @unchecked Sendable {
+    enum Outcome: Sendable {
+        case transcript(String)
+        case noSpeech
+        case failed
+    }
+
+    typealias LiveMeter = (level: Float, signalState: KeyVoxIPCLiveMeterSignalState)
+
+    private typealias Key = TranscriptionAUContract.Key
+
+    private static let componentDiscoveryTimeout: TimeInterval = 2
+    private static let componentDiscoveryPollInterval: TimeInterval = 0.02
+    private static let instantiationTimeout: TimeInterval = 10
+    private static let outcomePollInterval: TimeInterval = 0.05
+
+    private let queue = DispatchQueue(label: "com.cueit.keyvox.keyboard.dictation-audio-unit")
+    // Both are used only on `queue`.
+    private var audioUnit: AVAudioUnit?
+    private var messageChannel: (any AUMessageChannel)?
+    /// Set as soon as a cancel or disconnect is asked for, so a wait for an outcome already on
+    /// `queue` stops and lets it through instead of holding it until the transcript is done.
+    private let abandonLock = NSLock()
+    private var isAbandonRequested = false
+
+    /// Starts the extension if it is not running, without beginning a dictation.
+    func prepare() {
+        queue.async { [self] in
+            _ = connect()
+        }
+    }
+
+    /// Starts the extension if it is not running and begins a dictation in it. Reports whether
+    /// the extension took the dictation.
+    func begin(styleIdentifier: String, completion: @escaping @MainActor (Bool) -> Void) {
+        queue.async { [self] in
+            let accepted = connect()
+                && send(.begin, [Key.styleIdentifier: styleIdentifier])?[Key.accepted] as? Bool == true
+            DispatchQueue.main.async {
+                completion(accepted)
+            }
+        }
+    }
+
+    /// Adds audio to the dictation. Reports the live meter for it, or nil when the extension
+    /// did not take it.
+    func append(audio: Data, sampleRate: Double, completion: @escaping @MainActor (LiveMeter?) -> Void) {
+        queue.async { [self] in
+            let meter = liveMeter(from: send(.appendAudio, [Key.audio: audio, Key.sampleRate: sampleRate]))
+            DispatchQueue.main.async {
+                completion(meter)
+            }
+        }
+    }
+
+    /// Ends the dictation's audio with the Vibe selected now and reports what the extension made
+    /// of it.
+    func finish(styleIdentifier: String, completion: @escaping @MainActor (Outcome) -> Void) {
+        queue.async { [self] in
+            let accepted = send(.finish, [Key.styleIdentifier: styleIdentifier])?[Key.accepted] as? Bool == true
+            let outcome = accepted ? awaitOutcome() : .failed
+            DispatchQueue.main.async {
+                completion(outcome)
+            }
+        }
+    }
+
+    /// Abandons the dictation in the extension.
+    func cancel() {
+        setAbandonRequested(true)
+        queue.async { [self] in
+            _ = send(.cancel)
+            setAbandonRequested(false)
+        }
+    }
+
+    /// Starts the extension if it is not running and has it restyle an inserted dictation.
+    /// Reports its response, or nil when the extension did not answer within `timeout` of this
+    /// call or was let go of.
+    func restyle(
+        _ request: KeyVoxStyleRewriteIPCRequest,
+        timeout: TimeInterval,
+        completion: @escaping @MainActor (KeyVoxStyleRewriteIPCResponse?) -> Void
+    ) {
+        let deadline = Date().addingTimeInterval(timeout)
+        queue.async { [self] in
+            let response = performRestyle(request, deadline: deadline)
+            DispatchQueue.main.async {
+                completion(response)
+            }
+        }
+    }
+
+    /// Abandons the dictation, has the extension free its models, and lets go of it.
+    func disconnect() {
+        setAbandonRequested(true)
+        queue.async { [self] in
+            _ = send(.releaseModels)
+            messageChannel = nil
+            audioUnit = nil
+            setAbandonRequested(false)
+        }
+    }
+
+    /// Lets go of the extension without having it free its models, which another keyboard's
+    /// dictation is using.
+    func releaseConnection() {
+        queue.async { [self] in
+            messageChannel = nil
+            audioUnit = nil
+        }
+    }
+
+    private func setAbandonRequested(_ isRequested: Bool) {
+        abandonLock.lock()
+        isAbandonRequested = isRequested
+        abandonLock.unlock()
+    }
+
+    private var abandonRequested: Bool {
+        abandonLock.lock()
+        defer { abandonLock.unlock() }
+        return isAbandonRequested
+    }
+
+    private func connect() -> Bool {
+        if messageChannel != nil { return true }
+        guard let audioUnit = instantiateAudioUnit() else { return false }
+
+        self.audioUnit = audioUnit
+        messageChannel = audioUnit.auAudioUnit.messageChannel(
+            for: TranscriptionAUContract.messageChannelName
+        )
+        return true
+    }
+
+    private func liveMeter(from reply: [AnyHashable: Any]?) -> LiveMeter? {
+        guard let reply,
+              let level = reply[Key.meterLevel] as? Float,
+              let rawSignalState = reply[Key.meterSignalState] as? Int,
+              let signalState = KeyVoxIPCLiveMeterSignalState(rawValue: UInt8(clamping: rawSignalState)) else {
+            return nil
+        }
+        return (level, signalState)
+    }
+
+    private func awaitOutcome() -> Outcome {
+        while true {
+            guard !abandonRequested else { return .failed }
+            guard let reply = send(.poll),
+                  let rawOutcome = reply[Key.outcome] as? String,
+                  let outcome = TranscriptionAUContract.Outcome(rawValue: rawOutcome) else {
+                return .failed
+            }
+
+            switch outcome {
+            case .pending:
+                Thread.sleep(forTimeInterval: Self.outcomePollInterval)
+            case .transcript:
+                guard let text = reply[Key.text] as? String else { return .failed }
+                return .transcript(text)
+            case .noSpeech:
+                return .noSpeech
+            case .failed:
+                return .failed
+            }
+        }
+    }
+
+    private func performRestyle(
+        _ request: KeyVoxStyleRewriteIPCRequest,
+        deadline: Date
+    ) -> KeyVoxStyleRewriteIPCResponse? {
+        guard connect(),
+              let data = try? JSONEncoder().encode(request),
+              send(.restyle, [Key.restyleRequest: data])?[Key.accepted] as? Bool == true else {
+            return nil
+        }
+
+        while Date() < deadline {
+            guard !abandonRequested, let reply = send(.pollRestyle) else { return nil }
+            if let responseData = reply[Key.restyleResponse] as? Data,
+               let response = try? JSONDecoder().decode(KeyVoxStyleRewriteIPCResponse.self, from: responseData),
+               response.id == request.id {
+                return response
+            }
+            Thread.sleep(forTimeInterval: Self.outcomePollInterval)
+        }
+        return nil
+    }
+
+    /// Returns nil when the extension is not connected or its process is gone.
+    private func send(
+        _ command: TranscriptionAUContract.Command,
+        _ payload: [AnyHashable: Any] = [:]
+    ) -> [AnyHashable: Any]? {
+        var message = payload
+        message[Key.command] = command.rawValue
+        guard let reply = messageChannel?.callAudioUnit?(message), !reply.isEmpty else {
+            return nil
+        }
+        return reply
+    }
+
+    private func instantiateAudioUnit() -> AVAudioUnit? {
+        let description = TranscriptionAUContract.componentDescription
+        // Extension components are reported shortly after the first lookup.
+        let discoveryDeadline = Date().addingTimeInterval(Self.componentDiscoveryTimeout)
+        while AVAudioUnitComponentManager.shared().components(matching: description).isEmpty {
+            guard Date() < discoveryDeadline else { return nil }
+            Thread.sleep(forTimeInterval: Self.componentDiscoveryPollInterval)
+        }
+
+        let instantiated = DispatchSemaphore(value: 0)
+        nonisolated(unsafe) var audioUnit: AVAudioUnit?
+        AVAudioUnit.instantiate(with: description, options: [.loadOutOfProcess]) { unit, _ in
+            audioUnit = unit
+            instantiated.signal()
+        }
+        guard instantiated.wait(timeout: .now() + Self.instantiationTimeout) == .success else {
+            return nil
+        }
+        return audioUnit
+    }
+}

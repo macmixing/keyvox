@@ -175,6 +175,10 @@ final class KeyboardAppSettingsStore {
         defaults?.object(forKey: UserDefaultsKeys.periodShortcutEnabled) as? Bool ?? true
     }
 
+    var prefersBuiltInMicrophone: Bool {
+        defaults?.object(forKey: UserDefaultsKeys.preferBuiltInMicrophone) as? Bool ?? true
+    }
+
     var opensOnNumberPage: Bool {
         defaults?.object(forKey: UserDefaultsKeys.opensOnNumberPage) as? Bool ?? false
     }
