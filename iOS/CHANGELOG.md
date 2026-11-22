@@ -6,6 +6,49 @@ The format loosely follows Keep a Changelog and the project uses semantic versio
 
 ---
 
+## [1.7.1] - 2026-11-22
+
+Dictates right from the keyboard without opening the app, saves dictations cut off when the keyboard goes away, and removes a long pause that could come before the first Whisper dictation.
+
+### Added
+
+- Added dictation from the keyboard without opening the app. When the app's dictation session isn't on, the keyboard records and transcribes on its own.
+- Added rescued dictations: a dictation cut off when the keyboard is dismissed or the app you're typing in leaves the screen is still transcribed and offered in the suggestion bar, ready to insert with a tap.
+- Added a spinner on the mic while keyboard dictation is starting.
+
+### Changed
+
+- Changed long-press Vibes changes to work without the app's dictation session running.
+- Changed keyboard dictation to follow the Prefer Built-In Microphone setting.
+- Changed the Dictation Timeout description to say it applies to dictation started with the Dictation Shortcut or from the Home tab.
+- Changed the app to keep its dictation model loaded only while a dictation session is on.
+
+### Fixed
+
+- Fixed a long pause that could come before the first Whisper dictation.
+
+### Package versions
+
+KeyVox iOS 1.7.1
+  KeyVoxCore               1.3.15
+  KeyVoxEmoji              1.0.1
+  KeyVoxKeyboardThemes     1.0.0
+  KeyVoxLinguistics        1.0.2
+  KeyVoxLocalInference     1.0.5
+  KeyVoxModels             1.0.0
+  KeyVoxParakeet           1.1.1
+  KeyVoxPredictiveKeyboard 1.1.0
+  KeyVoxPromotions         1.2.0
+  KeyVoxState              1.0.0
+  KeyVoxStyleRewrite       1.2.0
+  KeyVoxTTS                1.1.1
+  KeyVoxTextComposition    1.1.0
+  KeyVoxVibesAdapters      1.0.5
+  KeyVoxVoiceActivity      1.1.2
+  KeyVoxWhisper            1.2.1
+
+---
+
 ## [1.7.0] - 2026-11-17
 
 Translates KeyVox into German, Spanish, and French, matches the keyboard to the text field you're typing in, and brings back the Live Activity on quick restarts.
