@@ -232,22 +232,11 @@ enum KeyboardEmojiSilhouetteRenderer {
             ) else {
                 return false
             }
-            // Drawn by the shared emoji renderer, centered in the box a label of the text takes,
-            // as a centered label draws it.
-            guard let font = attributes[.font] as? UIFont,
-                  let glyph = KeyboardEmojiGlyphRenderer.shared.glyph(for: text, size: font.pointSize, scale: scale) else {
-                return false
-            }
-            let boxWidth = CGFloat(width) / scale
-            let boxHeight = CGFloat(height) / scale
-            let top = boxHeight / 2 + glyph.rect.minY
-            // The bitmap's origin is its bottom left.
-            context.draw(glyph.image, in: CGRect(
-                x: (boxWidth / 2 + glyph.rect.minX) * scale,
-                y: (boxHeight - top - glyph.rect.height) * scale,
-                width: glyph.rect.width * scale,
-                height: glyph.rect.height * scale
-            ))
+            guard let font = attributes[.font] as? UIFont else { return false }
+            // Drawn by the shared emoji renderer from the bitmap's top left, as text draws; the
+            // bitmap's origin is its bottom left.
+            context.scaleBy(x: scale, y: scale)
+            KeyboardEmojiGlyphRenderer.shared.drawText(text, font: font, in: context, topLeft: CGPoint(x: 0, y: CGFloat(height) / scale))
             return true
         }
         return drawn ? data : nil
