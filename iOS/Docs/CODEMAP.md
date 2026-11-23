@@ -459,6 +459,7 @@ iOS/
 │   │   │   ├── KeyboardEmojiCategoryMemory.swift
 │   │   │   ├── KeyboardEmojiContrastCheck.swift
 │   │   │   ├── KeyboardEmojiFrequentlyUsedStore.swift
+│   │   │   ├── KeyboardEmojiGlyphRenderer.swift
 │   │   │   ├── KeyboardEmojiGridGeometry.swift
 │   │   │   ├── KeyboardEmojiPanel.swift
 │   │   │   ├── KeyboardEmojiPredictionsIndex.swift
@@ -566,6 +567,7 @@ iOS/
 │           ├── KeyboardEmojiCategoryStyle.swift
 │           ├── KeyboardEmojiCell.swift
 │           ├── KeyboardEmojiChoiceHighlightView.swift
+│           ├── KeyboardEmojiGlyphView.swift
 │           ├── KeyboardEmojiGridLayout.swift
 │           ├── KeyboardEmojiPageView+SkinTones.swift
 │           ├── KeyboardEmojiPageView.swift
@@ -1658,6 +1660,7 @@ Packages/
   - Owns toolbar mode switching, full-access instructions presentation, warm/cold app launch behavior, onboarding presentation reporting, Caps Lock, Vibes key cycling, missing-model Vibes recovery launch, dictionary/settings tab launch, the KeyVox Speak setup launch when no Speak voice is ready, the letter/number/symbol page, keys mode and controller-view height, emoji panel state, trackpad mode, and insertion.
   - On each layout pass reads the display kind through `KeyboardDisplay` and the Display Zoom through `KeyboardDisplayZoom`, decides landscape from `KeyboardScreenShape`, and shows its own globe key whenever the system asks for one; on each UI update applies the saved keyboard theme as a `KeyboardThemeTrait` override.
   - Waits for the host's first `textDidChange(_:)` after appearing before reading the focused field, then prepares typing for that field; a later change of the field's typing traits starts the new field fresh.
+  - Empties the shared emoji renderer on a memory warning.
   - Tracks whether the latest dictation is still untouched and whether the field holds letters, which together decide whether the toolbar offers suggestions or the dictation accessories.
   - Missing-model taps open `keyvoxios://vibes/model-recovery`; access-aware recovery scene selection remains app-owned by `KeyVoxVibesPurchaseController`.
 - `KeyVox Keyboard/App/KeyboardViewController+RescuedDictation.swift`
@@ -1864,7 +1867,7 @@ Packages/
 - `KeyVox Keyboard/Views/Components/KeyboardHeldKeyPopupView.swift`
   - Renders a held key's popup cells from the package's `HeldKeyPopupLayout`, highlighting the cell under the finger.
 - `KeyVox Keyboard/Views/Components/KeyboardSuggestionBarView.swift`
-  - Leading, primary, and trailing suggestion slots, the autocorrection in a heavier weight, up to three emoji splitting the trailing slot, a soft glow in the keys' label color on an emoji that would blend into its key, taps that select an item, and long presses that report it instead; a rescued dictation as one suggestion across the whole bar, truncated at the end, in place of the slots.
+  - Leading, primary, and trailing suggestion slots, the autocorrection in a heavier weight, up to three emoji splitting the trailing slot, each emoji drawn through `KeyboardEmojiGlyphView`, a soft glow in the keys' label color baked into the picture of an emoji that would blend into its key, taps that select an item, and long presses that report it instead; a rescued dictation as one suggestion across the whole bar, truncated at the end, in place of the slots.
 - `KeyVox Keyboard/Views/FullAccessView.swift`
   - Full-screen keyboard-only instructional view shown when the user needs to enable Full Access.
 
@@ -1922,10 +1925,14 @@ Packages/
   - Closed, browsing, and searching panel state, and where a category tap scrolls the grid.
 - `KeyVox Keyboard/Core/Emoji/KeyboardEmojiGridGeometry.swift`, `KeyboardEmojiSearchGeometry.swift`, `KeyboardEmojiSkinTonePickerLayout.swift`, `KeyboardEmojiSearchSkinTonePickerLayout.swift`, and `KeyboardEmojiTwoPersonPickerLayout.swift`
   - Measured layout math for the emoji grid, the search field and results (including the extra keyboard height while searching), and the skin-tone and two-person pickers, which stay inside the space they show in, every measured size shrunk by the Display Zoom size scale they are given.
+- `KeyVox Keyboard/Core/Emoji/KeyboardEmojiGlyphRenderer.swift`
+  - The one shared emoji renderer, adapted from Hex: draws emoji with a private copy of the emoji font, replaced every 32 emoji and once drawing pauses, keeps finished pictures in a 2 MB least-recently-used cache, each placed where a centered label drew it, and draws emoji that are measured rather than shown straight into the caller's bitmap exactly where text drew them; emptied on a memory warning.
+- `KeyVox Keyboard/Views/Emoji/KeyboardEmojiGlyphView.swift`
+  - Shows one emoji from the shared renderer centered where a centered label drew it, with an optional glow drawn into its picture with the same shadow text draws, and falls back to text only when the renderer cannot draw it.
 - `KeyVox Keyboard/Core/Emoji/KeyboardEmojiContrastCheck.swift`
-  - Draws an emoji once and reports whether most of it is too close in color, lightness and hue together, to the key it sits on to stand apart, which only a dark key can cause, against the key's fill laid over the appearance's background, remembering each answer per emoji and key color.
+  - Draws an emoji once with the shared emoji renderer and reports whether most of it is too close in color, lightness and hue together, to the key it sits on to stand apart, which only a dark key can cause, against the key's fill laid over the appearance's background, remembering each answer per emoji and key color.
 - `KeyVox Keyboard/Core/Emoji/KeyboardEmojiSilhouetteRenderer.swift`
-  - Draws a two-person emoji with each unchosen person as a solid gray silhouette, attributing outline and clothing pixels to the nearest person and keeping a joining heart in color.
+  - Draws a two-person emoji, from the shared emoji renderer, with each unchosen person as a solid gray silhouette, attributing outline and clothing pixels to the nearest person and keeping a joining heart in color.
 - `KeyVox Keyboard/Views/Emoji/KeyboardEmojiPageView.swift` and `KeyboardEmojiPageView+SkinTones.swift`
   - Sideways-scrolling emoji grid over the category bar, showing and typing each emoji in its chosen tone, with held-emoji skin-tone and two-person pickers; shrinks the grid, the gap above the bar, the bar, and the pickers by the size scale `KeyboardRootView` gives it under Display Zoom.
 - `KeyVox Keyboard/Views/Emoji/KeyboardEmojiCategoryBar.swift` and `KeyboardEmojiCategoryBar+Scrub.swift`
@@ -1933,9 +1940,9 @@ Packages/
 - `KeyVox Keyboard/Views/Emoji/KeyboardEmojiSearchFieldView.swift`, `KeyboardEmojiSearchResultsView.swift`, and `KeyboardEmojiSearchResultsView+SkinTones.swift`
   - The search field in the toolbar's place, the single scrolling row of results, and the picker a held result opens, their sizes shrunk by the size scale `KeyboardRootView` gives them under Display Zoom.
 - `KeyVox Keyboard/Views/Emoji/KeyboardEmojiSkinTonePickerView.swift`, `KeyboardEmojiTwoPersonPickerView.swift`, `KeyboardEmojiChoiceHighlightView.swift`, and `KeyboardEmojiPickerPanelShape.swift`
-  - Picker rendering with one shared choice highlight for both pickers in light and dark appearance and one panel-and-stem outline, the corners, shadow, and highlight shrunk by the size scale their owner gives them under Display Zoom.
+  - Picker rendering, each choice and the two-person picker's plain emoji drawn through `KeyboardEmojiGlyphView`, with one shared choice highlight for both pickers in light and dark appearance and one panel-and-stem outline, the corners, shadow, and highlight shrunk by the size scale their owner gives them under Display Zoom.
 - `KeyVox Keyboard/Views/Emoji/KeyboardEmojiCell.swift`, `KeyboardEmojiGridLayout.swift`, and `KeyboardEmojiCategoryStyle.swift`
-  - Grid cells labeled by their emoji for VoiceOver, the collection layout that places each emoji from `KeyboardEmojiGridGeometry`, and each category's bar symbol and VoiceOver wording.
+  - Grid cells that show their emoji through `KeyboardEmojiGlyphView`, labeled by their emoji for VoiceOver, the collection layout that places each emoji from `KeyboardEmojiGridGeometry`, and each category's bar symbol and VoiceOver wording.
 
 ### Keyboard Themes
 
