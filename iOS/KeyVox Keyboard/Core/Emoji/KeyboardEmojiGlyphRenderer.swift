@@ -1,4 +1,4 @@
-// Research port of Hex's KeyboardEmojiGlyphRenderer (github.com/anomalyco/hex, MIT,
+// Adapted from Hex's EmojiGlyphRenderer (github.com/anomalyco/hex, MIT,
 // Copyright (c) 2026 Christopher Langton), as carried in getdictus/dictus-ios #1030.
 import CoreText
 import UIKit
