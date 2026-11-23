@@ -264,6 +264,11 @@ final class KeyboardViewController: UIInputViewController {
         configureDictationBehavior()
     }
 
+    override func didReceiveMemoryWarning() {
+        super.didReceiveMemoryWarning()
+        KeyboardEmojiGlyphRenderer.shared.purge()
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .clear

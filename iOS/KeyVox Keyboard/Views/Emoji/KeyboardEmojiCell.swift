@@ -5,17 +5,17 @@ import UIKit
 final class KeyboardEmojiCell: UICollectionViewCell {
     static let reuseIdentifier = "KeyboardEmojiCell"
 
-    private let label = UILabel()
+    private let glyphView = KeyboardEmojiGlyphView()
 
     override init(frame: CGRect) {
         super.init(frame: frame)
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.textAlignment = .center
-        label.adjustsFontSizeToFitWidth = false
-        contentView.addSubview(label)
+        glyphView.translatesAutoresizingMaskIntoConstraints = false
+        contentView.addSubview(glyphView)
         NSLayoutConstraint.activate([
-            label.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
-            label.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+            glyphView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            glyphView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            glyphView.topAnchor.constraint(equalTo: contentView.topAnchor),
+            glyphView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
         ])
         isAccessibilityElement = true
         accessibilityTraits = .keyboardKey
@@ -27,8 +27,7 @@ final class KeyboardEmojiCell: UICollectionViewCell {
     }
 
     func show(_ emoji: String, font: UIFont) {
-        label.text = emoji
-        label.font = font
+        glyphView.show(emoji, pointSize: font.pointSize)
         accessibilityLabel = emoji
     }
 }
