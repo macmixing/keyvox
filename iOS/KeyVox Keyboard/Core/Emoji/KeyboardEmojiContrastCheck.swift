@@ -7,6 +7,7 @@ import UIKit
 /// bright color on a light key still stands apart. Only a dark key hides an emoji: on a light key,
 /// even a white emoji still reads, so no emoji blends into one. Answers are remembered for each
 /// emoji and key color.
+@MainActor
 enum KeyboardEmojiContrastCheck {
     /// The lightness, in CIELAB from 0 (black) to 100 (white), below which a key is dark.
     private static let darkKeyLightness = 50.0
@@ -117,12 +118,10 @@ enum KeyboardEmojiContrastCheck {
             ) else {
                 return false
             }
-            // UIKit draws top down.
-            context.translateBy(x: 0, y: CGFloat(height))
-            context.scaleBy(x: 1, y: -1)
-            UIGraphicsPushContext(context)
-            (text as NSString).draw(at: .zero, withAttributes: attributes)
-            UIGraphicsPopContext()
+            guard let font = attributes[.font] as? UIFont else { return false }
+            // Drawn by the shared emoji renderer from the bitmap's top left, as text draws; the
+            // bitmap's origin is its bottom left.
+            KeyboardEmojiGlyphRenderer.shared.drawText(text, font: font, in: context, topLeft: CGPoint(x: 0, y: CGFloat(height)))
             return true
         }
         return drawn ? data : nil

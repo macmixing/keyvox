@@ -27,7 +27,7 @@ final class KeyboardEmojiGlyph {
 /// read from the same file (memory-mapped, so its pages are clean and not counted), and
 /// replaces the copy after `rendersPerFont` emoji or once drawing pauses, which frees what
 /// it cached. Finished bitmaps stay in a least-recently-used cache of `byteLimit` bytes,
-/// so scrolling back redraws nothing. The panel owns one and drops it when it closes.
+/// so scrolling back redraws nothing. The keyboard shares one, emptied on a memory warning.
 @MainActor
 final class KeyboardEmojiGlyphRenderer {
     /// One per keyboard process, shared by the page and the search results.
@@ -147,30 +147,14 @@ final class KeyboardEmojiGlyphRenderer {
             attributes: [.font: UIFont.systemFont(ofSize: size)]
         ))
         let width = CGFloat(CTLineGetTypographicBounds(line, nil, nil, nil))
-        var pieces: [GlyphRun] = []
+        let pieces = glyphRuns(of: line)
         var ink = CGRect.null
-        for run in (CTLineGetGlyphRuns(line) as? [CTRun]) ?? [] {
-            let count = CTRunGetGlyphCount(run)
-            guard count > 0 else { continue }
-            var glyphs = [CGGlyph](repeating: 0, count: count)
-            var positions = [CGPoint](repeating: .zero, count: count)
-            CTRunGetGlyphs(run, CFRange(location: 0, length: count), &glyphs)
-            CTRunGetPositions(run, CFRange(location: 0, length: count), &positions)
-            let attributes = CTRunGetAttributes(run) as NSDictionary
-            // A run's font attribute is always a CTFont; the type check keeps the cast honest.
-            guard let used = attributes[kCTFontAttributeName as String] else { continue }
-            let object = used as AnyObject
-            guard CFGetTypeID(object) == CTFontGetTypeID() else { continue }
-            let runFont = unsafeBitCast(object, to: CTFont.self)
-            // The emoji font's own glyphs drawn with the private copy, so its cache stays
-            // ours; anything else (a text-style emoji, a fallback box) as the label would.
-            let font = privateFont(matching: runFont) ?? runFont
-            var rects = [CGRect](repeating: .zero, count: count)
-            CTFontGetBoundingRectsForGlyphs(font, .default, glyphs, &rects, count)
-            for (rect, position) in zip(rects, positions) where !rect.isEmpty {
+        for piece in pieces {
+            var rects = [CGRect](repeating: .zero, count: piece.glyphs.count)
+            CTFontGetBoundingRectsForGlyphs(piece.font, .default, piece.glyphs, &rects, piece.glyphs.count)
+            for (rect, position) in zip(rects, piece.positions) where !rect.isEmpty {
                 ink = ink.union(rect.offsetBy(dx: position.x, dy: position.y))
             }
-            pieces.append(GlyphRun(font: font, glyphs: glyphs, positions: positions))
         }
         guard !pieces.isEmpty, !ink.isNull else { return nil }
         let pad = 1 / scale
@@ -206,13 +190,58 @@ final class KeyboardEmojiGlyphRenderer {
             CTFontDrawGlyphs(piece.font, piece.glyphs, piece.positions, piece.glyphs.count, context)
         }
         guard let image = context.makeImage() else { return nil }
+        noteRender()
+        return KeyboardEmojiGlyph(image: image, rect: rect)
+    }
+
+    /// Draws `text` laid out in `font` into `context`, where text drawn with the top left of its
+    /// line at `topLeft` would draw, in the context's own bottom-up points, the emoji font's
+    /// glyphs drawn with the private copy. For drawings that are measured rather than shown.
+    func drawText(_ text: String, font: UIFont, in context: CGContext, topLeft: CGPoint) {
+        autoreleasepool {
+            let line = CTLineCreateWithAttributedString(NSAttributedString(string: text, attributes: [.font: font]))
+            context.saveGState()
+            // Text puts the line's baseline the font's ascender below its top.
+            context.translateBy(x: topLeft.x, y: topLeft.y - font.ascender)
+            for piece in glyphRuns(of: line) {
+                CTFontDrawGlyphs(piece.font, piece.glyphs, piece.positions, piece.glyphs.count, context)
+            }
+            context.restoreGState()
+            noteRender()
+        }
+    }
+
+    /// The glyph runs of `line`, the emoji font's own glyphs with the private copy, so its cache
+    /// stays ours; anything else (a text-style emoji, a fallback box) with its own run font.
+    private func glyphRuns(of line: CTLine) -> [GlyphRun] {
+        var pieces: [GlyphRun] = []
+        for run in (CTLineGetGlyphRuns(line) as? [CTRun]) ?? [] {
+            let count = CTRunGetGlyphCount(run)
+            guard count > 0 else { continue }
+            var glyphs = [CGGlyph](repeating: 0, count: count)
+            var positions = [CGPoint](repeating: .zero, count: count)
+            CTRunGetGlyphs(run, CFRange(location: 0, length: count), &glyphs)
+            CTRunGetPositions(run, CFRange(location: 0, length: count), &positions)
+            let attributes = CTRunGetAttributes(run) as NSDictionary
+            // A run's font attribute is always a CTFont; the type check keeps the cast honest.
+            guard let used = attributes[kCTFontAttributeName as String] else { continue }
+            let object = used as AnyObject
+            guard CFGetTypeID(object) == CTFontGetTypeID() else { continue }
+            let runFont = unsafeBitCast(object, to: CTFont.self)
+            pieces.append(GlyphRun(font: privateFont(matching: runFont) ?? runFont, glyphs: glyphs, positions: positions))
+        }
+        return pieces
+    }
+
+    /// Counts a drawing against the font copy, replacing the copy after `rendersPerFont`, or once
+    /// drawing pauses.
+    private func noteRender() {
         rendersOnFont += 1
         if rendersOnFont >= rendersPerFont {
             dropFont()
         } else {
             scheduleIdleDrop()
         }
-        return KeyboardEmojiGlyph(image: image, rect: rect)
     }
 
     /// One run of the emoji's line, drawn with the private font copy when it is the emoji font's.
