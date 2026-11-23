@@ -19,12 +19,16 @@ final class KeyboardSuggestionBarView: UIView {
     /// How far an emoji's glow spreads around it, in points, and how strongly it shows.
     private static let emojiGlowRadius: CGFloat = 3
     private static let emojiGlowOpacity: CGFloat = 0.9
+    /// The size of the bar's words, and the size its emoji are drawn at.
+    private static let textPointSize: CGFloat = 16
 
     private let stackView = UIStackView()
     private let trailingSlot = UIStackView()
     private let rescuedDictationButton = UIButton(configuration: .plain())
     /// The leading, primary, and trailing buttons, then the trailing slot's emoji buttons.
     private var buttons: [UIButton] = []
+    /// The trailing slot's emoji, drawn by the shared emoji renderer, one per emoji button.
+    private var emojiGlyphViews: [KeyboardEmojiGlyphView] = []
     private var items: [SuggestionBar.Item?] = Array(repeating: nil, count: 3 + emojiSlots)
 
     override init(frame: CGRect) {
@@ -58,6 +62,18 @@ final class KeyboardSuggestionBarView: UIView {
             button.layer.borderWidth = KeyboardStyle.keyBorderWidth
             button.configurationUpdateHandler = { [weak self] button in
                 self?.applyAppearance(to: button)
+            }
+            if index >= 3 {
+                let glyphView = KeyboardEmojiGlyphView()
+                glyphView.translatesAutoresizingMaskIntoConstraints = false
+                button.addSubview(glyphView)
+                NSLayoutConstraint.activate([
+                    glyphView.leadingAnchor.constraint(equalTo: button.leadingAnchor),
+                    glyphView.trailingAnchor.constraint(equalTo: button.trailingAnchor),
+                    glyphView.topAnchor.constraint(equalTo: button.topAnchor),
+                    glyphView.bottomAnchor.constraint(equalTo: button.bottomAnchor),
+                ])
+                emojiGlyphViews.append(glyphView)
             }
             if index < 2 {
                 stackView.addArrangedSubview(button)
@@ -135,7 +151,7 @@ final class KeyboardSuggestionBarView: UIView {
         let singleLine = text.components(separatedBy: .newlines).joined(separator: " ")
         rescuedDictationButton.configuration?.attributedTitle = AttributedString(
             singleLine,
-            attributes: AttributeContainer([.font: UIFont.systemFont(ofSize: 16, weight: .medium)])
+            attributes: AttributeContainer([.font: UIFont.systemFont(ofSize: Self.textPointSize, weight: .medium)])
         )
         rescuedDictationButton.accessibilityLabel = text
         applyKeyAppearance(to: rescuedDictationButton, isShown: true)
@@ -153,33 +169,38 @@ final class KeyboardSuggestionBarView: UIView {
     /// glow in the keys' label color so it stands apart from the key.
     private func applyTitle(to button: UIButton) {
         let item = items.indices.contains(button.tag) ? items[button.tag] : nil
+        if button.tag >= 3 {
+            applyEmoji(item, to: emojiGlyphViews[button.tag - 3])
+            return
+        }
         var configuration = button.configuration
         configuration?.attributedTitle = item.map { item in
-            var attributes: [NSAttributedString.Key: Any] = [
+            let attributes: [NSAttributedString.Key: Any] = [
                 .font: UIFont.systemFont(
-                    ofSize: 16,
+                    ofSize: Self.textPointSize,
                     weight: item.kind == .autocorrection ? .bold : .medium
                 ),
             ]
-            if button.tag >= 3, KeyboardEmojiContrastCheck.blendsIn(
-                item.text,
-                keyTint: KeyboardStyle.keyTintColor(KeyboardStyle.keyFillColor).resolvedColor(with: traitCollection),
-                backdrop: KeyboardStyle.keyBackdropStandInColor.resolvedColor(with: traitCollection)
-            ) {
-                attributes[.shadow] = emojiGlow
-            }
             return AttributedString(item.text, attributes: AttributeContainer(attributes))
         }
         button.configuration = configuration
     }
 
-    /// A soft halo around an emoji, in the keys' label color, which stands apart from the keys.
-    private var emojiGlow: NSShadow {
-        let glow = NSShadow()
-        glow.shadowColor = KeyboardStyle.keyLabelColor.resolvedColor(with: traitCollection).withAlphaComponent(Self.emojiGlowOpacity)
-        glow.shadowBlurRadius = Self.emojiGlowRadius
-        glow.shadowOffset = .zero
-        return glow
+    /// Shows an emoji in its slot, with a soft halo in the keys' label color when it would blend
+    /// into its key, so it stands apart from the key.
+    private func applyEmoji(_ item: SuggestionBar.Item?, to glyphView: KeyboardEmojiGlyphView) {
+        glyphView.show(item?.text, pointSize: Self.textPointSize)
+        let blendsIn = item.map { item in
+            KeyboardEmojiContrastCheck.blendsIn(
+                item.text,
+                keyTint: KeyboardStyle.keyTintColor(KeyboardStyle.keyFillColor).resolvedColor(with: traitCollection),
+                backdrop: KeyboardStyle.keyBackdropStandInColor.resolvedColor(with: traitCollection)
+            )
+        } ?? false
+        glyphView.setGlow(
+            blendsIn ? KeyboardStyle.keyLabelColor.resolvedColor(with: traitCollection).withAlphaComponent(Self.emojiGlowOpacity) : nil,
+            radius: Self.emojiGlowRadius
+        )
     }
 
     /// Gives a suggestion the keys' colors, and the keys' pressed colors while it is touched.

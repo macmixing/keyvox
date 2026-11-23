@@ -29,7 +29,7 @@ final class KeyboardEmojiTwoPersonPickerView: UIView {
     private let secondHighlight = KeyboardEmojiChoiceHighlightView()
     private var firstToneViews: [UIImageView] = []
     private var secondToneViews: [UIImageView] = []
-    private let plainLabel = UILabel()
+    private let plainView = KeyboardEmojiGlyphView()
     private let chosenView = UIImageView()
     private var layout: KeyboardEmojiTwoPersonPickerLayout?
     /// How much the panel's corners and the highlights shrink, below 1 under Display Zoom.
@@ -56,8 +56,7 @@ final class KeyboardEmojiTwoPersonPickerView: UIView {
             addSubview(first)
             addSubview(second)
         }
-        plainLabel.textAlignment = .center
-        addSubview(plainLabel)
+        addSubview(plainView)
         addSubview(chosenView)
         registerForTraitChanges([UITraitUserInterfaceStyle.self]) { (self: Self, _: UITraitCollection) in
             self.applyColors()
@@ -122,10 +121,10 @@ final class KeyboardEmojiTwoPersonPickerView: UIView {
             place(firstToneViews[tone], at: layout.firstToneCenters[tone])
             place(secondToneViews[tone], at: layout.secondToneCenters[tone])
         }
-        plainLabel.text = emoji.text
-        plainLabel.font = bottomFont
-        plainLabel.sizeToFit()
-        plainLabel.center = layout.plainCenter
+        plainView.show(emoji.text, pointSize: bottomFont.pointSize)
+        // The emoji is drawn centered in the view, so only its center matters.
+        plainView.bounds = CGRect(x: 0, y: 0, width: bottomFont.lineHeight, height: bottomFont.lineHeight)
+        plainView.center = layout.plainCenter
         showChoice()
         applyColors()
         isHidden = false
