@@ -11,7 +11,7 @@ KeyVox iOS ships as five cooperating targets:
 - The share extension owns shared text/URL/PDF extraction, OCR for shared images and rendered PDF pages, TTS request handoff to the main app, and visual feedback during share processing.
 - The widget extension owns the Live Activity and Dynamic Island presentation plus the stop-session App Intent.
 
-Shared speech and text behavior lives in `../Packages/KeyVoxCore`, including `DictationPipeline`, provider seams, dictation-language metadata and Whisper configuration, provider-specific voice-activity use, deterministic paragraph/list state resolution and text shaping, dictionary persistence primitives, model-artifact cleanup, guarded compact-time/date/math normalization, and post-processing order. The lower-level provider wrappers live in `../Packages/KeyVoxWhisper` and `../Packages/KeyVoxParakeet`; the shared Silero model and detector live in `../Packages/KeyVoxVoiceActivity` and are used by both providers.
+Shared speech and text behavior lives in `../Packages/KeyVoxCore`, including `DictationPipeline`, provider seams, dictation-language metadata and Whisper configuration, provider-specific voice-activity use, deterministic paragraph/list state resolution and text shaping, dictionary persistence primitives, model-artifact cleanup, guarded compact-time/date/math normalization, and post-processing order. The lower-level provider wrappers live in `../Packages/KeyVoxWhisper` and `../Packages/KeyVoxParakeet`; the shared Silero model and detectors live in `../Packages/KeyVoxVoiceActivity`; both providers use its detector, and the live meter uses its live detector.
 Shared linguistic contracts, native analysis, portable analysis, health evaluation, and fallback routing live in `../Packages/KeyVoxLinguistics`. The containing app owns the portable linguistic resources and injects one analyzer into every app-side consumer; the keyboard transports language context but does not load the analyzer resources.
 The local PocketTTS runtime now lives in `../Packages/KeyVoxTTS`.
 Keyboard typing prediction, autocorrection, held-key characters, smart quotes, and typing memory live in `../Packages/KeyVoxPredictiveKeyboard`; the emoji catalog, search, Frequently Used ranking, suggestion-bar emoji, and two-person skin tones live in `../Packages/KeyVoxEmoji`. Among the shipping targets only the keyboard extension links these two packages; the containing app owns only the keyboard settings that steer them and the typing-memory reset.
@@ -48,7 +48,7 @@ The current default runtime flow is:
 - **`../Packages/KeyVoxModels/`**: shared Whisper Base artifact identity and streaming model-file checksum verification used by the app-owned installer.
 - **`../Packages/KeyVoxState/`**: shared observable-state boundary that preserves Combine behavior on Apple platforms.
 - **`../Packages/KeyVoxPromotions/`**: campaign manifest loading, eligibility, selection, persistence, and published campaign state.
-- **`../Packages/KeyVoxVoiceActivity/`**: shared Silero model, VAD protocol/configuration, actor-isolated detector, and speech-runtime bridge.
+- **`../Packages/KeyVoxVoiceActivity/`**: shared Silero model, VAD protocol/configuration, actor-isolated detector, live detector for the live meter, and speech-runtime bridge.
 - **`../Packages/KeyVoxPredictiveKeyboard/`**: UI-independent English typing prediction and correction built on a bundled AOSP LatinIME native target with KeyVox ranking: the shared `PredictiveTypingSession`, `PredictionComputer`, noisy-channel and missing-space correction, completions, next-word and sentence-opener suggestions, personal vocabulary, typing memory and its file, held-key characters and popup layout, smart quotes, bundled language data, and package tests.
 - **`../Packages/KeyVoxEmoji/`**: UI-independent emoji catalog in the system emoji keyboard's categories and order, emoji search, Frequently Used ranking, suggestion-bar emoji by word, two-person skin tones, bundled emoji data, and package tests.
 - **`../Packages/KeyVoxKeyboardThemes/`**: UI-independent keyboard theme identifiers with their saved-value fallback, the per-platform theme catalog, each theme's light and dark key palette, and package tests.
@@ -858,9 +858,11 @@ Packages/
 │   ├── Sources/
 │   │   ├── CWhisper/
 │   │   ├── KeyVoxVoiceActivity/
+│   │   │   ├── LiveVoiceActivityDetector.swift
 │   │   │   ├── VoiceActivityAnalyzing.swift
 │   │   │   ├── VoiceActivityConfiguration.swift
 │   │   │   ├── VoiceActivityDetector.swift
+│   │   │   ├── VoiceActivityModelResource.swift
 │   │   │   └── Resources/ggml-silero-v5.1.2.bin
 │   │   └── KeyVoxSpeechRuntime/SpeechRuntime.swift
 │   └── Tests/KeyVoxVoiceActivityTests/
@@ -987,7 +989,7 @@ Packages/
 - `Packages/KeyVoxPromotions/Sources/KeyVoxPromotions/`
   - Owns campaign manifest decoding and retrieval, cached/bundled fallback, version and date eligibility, deterministic startup selection/rotation, persisted selection state, repository-cache refresh, and the published `PromotionCenter.currentCampaign` value.
 - `Packages/KeyVoxVoiceActivity/Sources/KeyVoxVoiceActivity/`
-  - Owns the shared VAD protocol, standard configuration, Silero resource, actor-isolated detector, and speech-segment results used by Whisper and Parakeet.
+  - Owns the shared VAD protocol, standard configuration, Silero resource, actor-isolated detector, and speech-segment results used by Whisper and Parakeet, plus the live detector that follows speech probability window by window for the iOS live meter.
 - `Packages/KeyVoxVoiceActivity/Sources/KeyVoxSpeechRuntime/SpeechRuntime.swift`
   - Exposes the shared `whisper.cpp` runtime bridge consumed by both the VAD detector and `KeyVoxWhisper`.
 - `Packages/KeyVoxVoiceActivity/Artifacts/`
@@ -1449,7 +1451,7 @@ Packages/
 - `KeyVox iOS/Core/Audio/AudioRecorder+AudioSessionActivation.swift`
   - Owns the recorder's session category configuration plus activation and deactivation, using the asynchronous system activation calls where the running iOS release provides them and synchronous activation otherwise.
 - `KeyVox iOS/Core/Audio/AudioRecorder+Streaming.swift`
-  - Owns input-buffer conversion, capture accumulation, and live meter/signal-state updates.
+  - Owns input-buffer conversion, capture accumulation, and live meter/signal-state updates scaled by live speech probability.
 - `KeyVox iOS/Core/Audio/AudioBluetoothRoutePolicy.swift`
   - Shared preserved-TTS Bluetooth route-family policy.
   - Maps the built-in microphone setting to the playback route family without changing the recorder baseline warm-session contract.

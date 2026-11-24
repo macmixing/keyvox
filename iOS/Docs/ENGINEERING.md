@@ -1031,6 +1031,8 @@ The recorder publishes:
 - `maxActiveSignalRunDuration`
 - whether meaningful speech has been observed during the current capture
 
+`audioLevel` and `LiveInputSignalState` follow speech presence, not loudness alone. `AudioCaptureAccumulator` feeds each converted 16 kHz chunk to a `LiveVoiceActivityDetector` from `KeyVoxVoiceActivity`, loaded on the first captured chunk and reset with the capture. The loudness level is scaled by the latest speech probability, and the signal state becomes active only when the audio is loud enough and that probability reaches `VoiceActivityConfiguration.standard.threshold`. If the detector cannot load, the meter follows loudness alone. `maxActiveSignalRunDuration` and meaningful-speech tracking stay loudness based.
+
 The keyboard never samples the recorder directly. It only consumes `live-meter-state.bin` through `KeyboardIPCManager` and `AudioIndicatorDriver`.
 
 For a dictation made in the keyboard, the Transcription AU extension computes the same meter with `AudioCaptureAccumulator` and returns it in its answer to each audio chunk; `KeyboardStandaloneDictation` hands the latest one to `AudioIndicatorDriver`.
