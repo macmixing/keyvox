@@ -18,7 +18,8 @@ from pathlib import Path
 from languages import LANGUAGES, language_argument
 from normalize import is_word
 from readers import source_paths
-from vocabulary.hunspell_check import hunspell_accepted
+from vocabulary.hunspell_check import hunspell_accepted, hunspell_version
+from vocabulary.hunspell_snapshot import snapshot_accepted, write_snapshot
 from vocabulary.latinime_words import latinime_words
 from vocabulary.lexicon_check import lexicon_accepted
 from vocabulary.lexicon_forms import lexicon_forms
@@ -38,6 +39,8 @@ def main() -> None:
     parser.add_argument("data_dir", type=Path)
     parser.add_argument("output", type=Path)
     parser.add_argument("common_output", type=Path)
+    parser.add_argument("--write-spelling-snapshot", action="store_true",
+                        help="write the hunspell snapshot afresh and print its SHA-256 to record")
     arguments = parser.parse_args()
     language = LANGUAGES[arguments.language]
     vocabulary = language.vocabulary
@@ -56,7 +59,19 @@ def main() -> None:
     lexicon = {form for form in forms if is_word(form)}
     if vocabulary.spelling_check == "hunspell":
         extension = source_paths(arguments.data_dir, vocabulary.spelling_dictionary)[0]
-        check = lambda words: hunspell_accepted(words, extension)
+        snapshot = (arguments.data_dir / "sources" / "spelling-snapshots"
+                    / f"{language.identifier}_hunspell_accepted.txt")
+
+        def check(words: set[str]) -> set[str]:
+            if arguments.write_spelling_snapshot:
+                accepted = hunspell_accepted(words, extension)
+                digest = write_snapshot(accepted, snapshot)
+                print(f"{snapshot}: hunspell {hunspell_version()}, SHA-256 {digest}")
+                return accepted
+            return snapshot_accepted(
+                words, snapshot, vocabulary.spelling_snapshot_sha256, vocabulary.spelling_snapshot_hunspell,
+                hunspell_version, lambda fresh: hunspell_accepted(fresh, extension),
+            )
     elif vocabulary.spelling_check == "lexicon":
         # The lexicon's elided forms, such as "l'", end in an apostrophe and so are no words.
         check = lambda words: lexicon_accepted(words, forms)

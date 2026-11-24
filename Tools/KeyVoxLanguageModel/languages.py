@@ -55,6 +55,10 @@ class LexiconVocabulary:
     # "hunspell": the Hunspell dictionary `spelling_dictionary`, with its affix rules.
     spelling_check: str | None = None
     spelling_dictionary: Source | None = None
+    # For "hunspell": the SHA-256 of the words the dictionary accepted and the hunspell version
+    # that accepted them (vocabulary/hunspell_snapshot.py).
+    spelling_snapshot_sha256: str | None = None
+    spelling_snapshot_hunspell: str | None = None
 
 
 @dataclass(frozen=True)
@@ -177,6 +181,8 @@ LANGUAGES = {
             lexicons=(wikidata_forms("es", "15827ccb68d187ae72a1b7f1e443b9a301ba9c3645d8397aaefa4acf5a407fb5"),),
             spelling_check="hunspell",
             spelling_dictionary=RLA_ES,
+            spelling_snapshot_sha256="d83ae2e0376e714d20428706c11e75dc54873a780a1e3964feba150247d802b1",
+            spelling_snapshot_hunspell="1.7.6",
         ),
         # CLDR's Spanish quotation marks.
         text_rules=_text_rules("«»“”"),
