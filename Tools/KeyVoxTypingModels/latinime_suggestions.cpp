@@ -5,6 +5,10 @@
 // usage: latinime_suggestions DICTIONARY_DIRECTORY < QUERIES
 //   each query line: typed<TAB>previous word[<TAB>older word[<TAB>oldest word]]
 //   each output line: query index, then word<TAB>score<TAB>type for each suggestion, best first
+//
+// Each query searches in a session of its own. A session continues its last search when the
+// new typed letters start with the last ones, keeping that search's previous words, so a shared
+// session would answer a query for the query asked before it.
 
 #include <algorithm>
 #include <cmath>
@@ -221,7 +225,6 @@ int main(int argc, char **argv) {
     Dictionary dictionary(&env, std::move(policy));
     auto keys = qwertyKeys();
     auto proximity = makeProximityInfo(&env, keys);
-    DicTraverseSession session(&env, nullptr, true);
     std::string line;
     long index = 0;
     while (std::getline(std::cin, line)) {
@@ -234,6 +237,7 @@ int main(int argc, char **argv) {
         for (size_t position = 1; position < fields.size() && position <= 3; ++position) {
             if (!fields[position].empty()) previous.push_back(fields[position]);
         }
+        DicTraverseSession session(&env, nullptr, true);
         const auto results = suggest(&dictionary, &proximity, &session, &env, keys,
                 fields[0], previous);
         std::cout << index++;
