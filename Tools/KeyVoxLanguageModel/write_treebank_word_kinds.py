@@ -31,7 +31,12 @@ def tokens(path: Path):
         joined_until = 0
         joined_form = None
         for line in lines:
-            if not line.strip() or line.startswith("#"):
+            if not line.strip():
+                # A blank line ends the sentence; the next one numbers its words from 1 again.
+                joined_until = 0
+                joined_form = None
+                continue
+            if line.startswith("#"):
                 continue
             fields = line.rstrip("\n").split("\t")
             identifier, form, tag = fields[0], fields[1], fields[3]
