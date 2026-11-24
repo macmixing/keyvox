@@ -3,7 +3,7 @@ import KeyVoxPredictiveKeyboard
 
 /// The engine, sized to the harness keyboard grid, plus how long it took to start.
 struct EngineSetup {
-    let engine: EnglishPredictiveEngine
+    let engine: PredictiveEngine
     let layout: KeyboardLayoutModel
     let keys: KeyCenterMap
     let language: ContextLanguageScorer
@@ -11,10 +11,11 @@ struct EngineSetup {
     /// Physical footprint the engine added when it loaded.
     let startupFootprintBytes: UInt64
 
-    init() throws {
+    /// - Parameter languageIdentifier: The bundled typing language to load, by its folder name.
+    init(languageIdentifier: String = "en") throws {
         let footprintBefore = MemoryFootprint.current()
         let started = ContinuousClock.now
-        engine = try EnglishPredictiveEngine()
+        engine = try PredictiveEngine(language: TypingLanguage.bundled(identifier: languageIdentifier))
         layout = KeyboardLayoutModel()
         engine.updateKeyboardGeometry(layout.predictionGeometry, keyboardSize: layout.keyboardSize)
         startupMilliseconds = Self.milliseconds(since: started)

@@ -13,8 +13,8 @@ final class LearnedSuggestionsTests: XCTestCase {
     private let learnedWord = "plantix"
 
     override func setUpWithError() throws {
-        computer = PredictionComputer(engine: try EnglishPredictiveEngine())
-        let unknown = try computer.compute(PredictiveTypingSession().request(textBeforeCursor: "we need \(learnedWord)"))
+        computer = PredictionComputer(engine: try PredictiveEngine(language: .english))
+        let unknown = try computer.compute(PredictiveTypingSession(language: .english).request(textBeforeCursor: "we need \(learnedWord)"))
         XCTAssertEqual(unknown.typedWordKind, .unknown, "the test word must be one the keyboard does not know")
     }
 
@@ -58,11 +58,11 @@ final class LearnedSuggestionsTests: XCTestCase {
     }
 
     func testEverydayWordsFollowAWordTheBundledDataHasNothingToFollow() throws {
-        let engine = try EnglishPredictiveEngine()
+        let engine = try PredictiveEngine(language: .english)
         let expected = { (wordBefore: String?) in
             SuggestionBarComposer.composeNextWords(
                 engine.unknownWordFollowers.words(afterUnknownWordFollowing: wordBefore)
-                    .map { WordCasing.capitalizingPronoun(engine.capitalizedSpellings.written($0)) }
+                    .map { TypingLanguage.english.casing.writingAlwaysCapitalized(engine.capitalizedSpellings.written($0)) }
             )
         }
         XCTAssertEqual(try bar(for: "i like \(learnedWord) "), expected("like"))
@@ -70,7 +70,7 @@ final class LearnedSuggestionsTests: XCTestCase {
     }
 
     func testCapitalsTheUserGivesADictionaryWordShowUnlessTheWordsBeforeCallForTheEverydayWord() throws {
-        let engine = try EnglishPredictiveEngine()
+        let engine = try PredictiveEngine(language: .english)
         let lift = { (word: String, before: String) throws -> Double in
             let analysis = try engine.analyze(word: word, previousWords: [before])
             return analysis.precedingPairObserved ? analysis.precedingLogProbability - analysis.unigramLogProbability : -.infinity
@@ -98,11 +98,11 @@ final class LearnedSuggestionsTests: XCTestCase {
     private let memory = TypingMemory()
 
     private func bar(for text: String) throws -> SuggestionBar {
-        try computer.compute(PredictiveTypingSession().request(textBeforeCursor: text)).bar
+        try computer.compute(PredictiveTypingSession(language: .english).request(textBeforeCursor: text)).bar
     }
 
     private func autocorrection(of text: String) throws -> String? {
-        try computer.compute(PredictiveTypingSession().request(textBeforeCursor: text)).autocorrection
+        try computer.compute(PredictiveTypingSession(language: .english).request(textBeforeCursor: text)).autocorrection
     }
 }
 

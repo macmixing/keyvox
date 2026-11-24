@@ -3,11 +3,11 @@ import KeyVoxPredictiveKeyboard
 
 /// Memoizes engine word analyses so parameter searches score each word in context once.
 final class CachedLanguageAnalysis: @unchecked Sendable {
-    private let engine: EnglishPredictiveEngine
+    private let engine: PredictiveEngine
     private let lock = NSLock()
     private var analyses: [String: WordLanguageAnalysis] = [:]
 
-    init(engine: EnglishPredictiveEngine) {
+    init(engine: PredictiveEngine) {
         self.engine = engine
     }
 

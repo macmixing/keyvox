@@ -18,7 +18,7 @@ final class ContestedTapPolicyTests: XCTestCase {
     /// delete to yield to it.
     private func deleteTap(landedOnDelete: Bool) -> ContestedTap {
         let distance = policy.maximumDistance(for: .delete) / 2
-        let letter = EnglishKeyboardLayout.defaultGeometry[0].character
+        let letter = TypingLanguage.english.letterLayout.defaultGeometry[0].character
         return ContestedTap(
             otherKey: .delete,
             landedOnOtherKey: landedOnDelete,

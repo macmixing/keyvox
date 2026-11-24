@@ -26,6 +26,7 @@ enum CompareCommand {
         ))
         let typer = SessionTyper(
             computer: computer,
+            typingLanguage: setup.engine.language,
             layout: setup.layout,
             contestedTaps: options.contestedTaps.map(ContestedTapPolicy.init(parameters:))
         )

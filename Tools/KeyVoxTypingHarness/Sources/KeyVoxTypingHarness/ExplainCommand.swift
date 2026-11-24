@@ -18,7 +18,7 @@ enum ExplainCommand {
         let vocabulary = PersonalVocabulary(words: options.personalWords, textReplacements: [])
         try computer.updateVocabulary(vocabulary)
         let personalWordsFootprintBytes = MemoryFootprint.current() &- footprintBeforePersonalWords
-        let session = PredictiveTypingSession()
+        let session = PredictiveTypingSession(language: setup.engine.language)
         var text = options.previousWords.reversed().joined(separator: " ")
         if text.isEmpty == false { text.append(" ") }
         for (index, letter) in options.typedWord.enumerated() {

@@ -22,7 +22,7 @@ final class KeyboardHeldKeyController {
         case closed
     }
 
-    private static let bundledCharacters = try? HeldKeyCharacters.bundled()
+    private static let bundledCharacters = try? HeldKeyCharacters.bundled(for: KeyboardTypingLanguage.current)
 
     private let holdDuration: TimeInterval
     private var openingTimer: Timer?

@@ -2,29 +2,37 @@
 /// smart quotes on, as in Messages: an opening mark where a quotation can begin (at the start
 /// of the text, or after a space, a line break, an opening bracket, a dash, or another opening
 /// quote mark), and a closing mark everywhere else, such as inside or after a word, a number,
-/// or closing punctuation, and right after its own opening mark, which it closes. The closing
-/// single mark is the apostrophe.
-public enum SmartQuotes {
-    /// What the apostrophe key shows and, after a word, types.
+/// or closing punctuation, and right after its own opening mark, which it closes. Which marks
+/// those are is the typing language's.
+public struct SmartQuotes: Sendable {
+    /// What the apostrophe key shows and types as its key value.
     public static let apostrophe = "’"
-    static let openingQuote = "‘"
+    /// What the quote key types as its key value.
     static let doubleQuote = "\""
-    static let openingDoubleQuote = "“"
-    static let closingDoubleQuote = "”"
+
+    /// The marks the apostrophe key types.
+    let single: (opening: String, closing: String)
+    /// The marks the quote key types.
+    let double: (opening: String, closing: String)
+
+    init(marks: TypingLanguageManifest.QuotationMarks) {
+        single = (marks.openingSingle, marks.closingSingle)
+        double = (marks.openingDouble, marks.closingDouble)
+    }
 
     /// The text a key typing `value` inserts after `textBeforeCursor`.
-    public static func text(for value: String, after textBeforeCursor: String?) -> String {
+    public func text(for value: String, after textBeforeCursor: String?) -> String {
         let marks: (opening: String, closing: String)
         switch value {
-        case apostrophe:
-            marks = (openingQuote, apostrophe)
-        case doubleQuote:
-            marks = (openingDoubleQuote, closingDoubleQuote)
+        case Self.apostrophe:
+            marks = single
+        case Self.doubleQuote:
+            marks = double
         default:
             return value
         }
         guard let previous = textBeforeCursor?.last else { return marks.opening }
-        return opensQuotation(after: previous, opening: marks.opening) ? marks.opening : marks.closing
+        return Self.opensQuotation(after: previous, opening: marks.opening) ? marks.opening : marks.closing
     }
 
     private static func opensQuotation(after character: Character, opening: String) -> Bool {

@@ -5,11 +5,11 @@ import XCTest
 /// never leads with a word already picked unless it is a grammar word, never writes a three-word
 /// phrase again, and writes something different each time from the same start.
 final class RepeatedPicksTests: XCTestCase {
-    private var engine: EnglishPredictiveEngine!
+    private var engine: PredictiveEngine!
     private var computer: PredictionComputer!
 
     override func setUpWithError() throws {
-        engine = try EnglishPredictiveEngine()
+        engine = try PredictiveEngine(language: .english)
         computer = PredictionComputer(engine: engine)
     }
 
@@ -46,7 +46,7 @@ final class RepeatedPicksTests: XCTestCase {
     }
 
     func testAWordTheUserTypesEndsTheRunOfPicks() throws {
-        let session = PredictiveTypingSession()
+        let session = PredictiveTypingSession(language: .english)
         let picked = try computer.compute(session.request(textBeforeCursor: "I "))
         let item = try XCTUnwrap(picked.bar.primary)
         let edit = session.choiceEdit(item, textBeforeCursor: "I ", result: picked)
@@ -58,7 +58,7 @@ final class RepeatedPicksTests: XCTestCase {
     /// The text written by typing `start` and then picking the bar's `slot` word `times` times,
     /// the first pick completing `start` with the middle word, as the keyboard applies each pick.
     private func pick(from start: String, slot: KeyPath<SuggestionBar, SuggestionBar.Item?>, times: Int) throws -> String {
-        let session = PredictiveTypingSession()
+        let session = PredictiveTypingSession(language: .english)
         var text = start
         for tap in 0...times {
             let result = try computer.compute(session.request(textBeforeCursor: text))

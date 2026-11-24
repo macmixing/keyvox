@@ -3,7 +3,7 @@ import KeyVoxPredictiveKeyboard
 /// Decides what space does to a typed word with the noisy-channel corrector, which weighs
 /// touch positions against context likelihood over the engine's candidates.
 struct CorrectionEvaluator {
-    let engine: EnglishPredictiveEngine
+    let engine: PredictiveEngine
     let parameters: NoisyChannelCorrector.Parameters
     let keys: KeyCenterMap
     let language: ContextLanguageScorer
@@ -28,7 +28,7 @@ struct CorrectionEvaluator {
             previousWords: previousWords,
             candidates: response.suggestions.map(\.word)
         )
-        let written = WordCasing.apply(of: typing.typedWord, to: decision.replacement ?? typing.typedWord)
+        let written = engine.language.casing.apply(of: typing.typedWord, to: decision.replacement ?? typing.typedWord)
         return CorrectionOutcome(
             intendedWord: intendedWord,
             typedWord: typing.typedWord,

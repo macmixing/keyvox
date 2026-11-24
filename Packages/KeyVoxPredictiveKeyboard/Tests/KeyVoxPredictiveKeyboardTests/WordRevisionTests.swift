@@ -8,7 +8,7 @@ final class WordRevisionTests: XCTestCase {
     private var computer: PredictionComputer!
 
     override func setUpWithError() throws {
-        computer = PredictionComputer(engine: try EnglishPredictiveEngine())
+        computer = PredictionComputer(engine: try PredictiveEngine(language: .english))
     }
 
     /// "lol" typed with ordinary finger spread on l, o, l, then "what": not "look what".
@@ -84,7 +84,7 @@ final class WordRevisionTests: XCTestCase {
 
     /// A tap on `key` of the default layout, moved from its center by fractions of its size.
     private func touch(on key: Character, offsetBy offset: CGVector) -> CGPoint {
-        let frame = EnglishKeyboardLayout.defaultGeometry.first { $0.character == key }!.frame
+        let frame = TypingLanguage.english.letterLayout.defaultGeometry.first { $0.character == key }!.frame
         return CGPoint(x: frame.midX + offset.dx * frame.width, y: frame.midY + offset.dy * frame.height)
     }
 }

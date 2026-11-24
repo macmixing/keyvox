@@ -9,12 +9,13 @@ import KeyVoxPredictiveKeyboard
 /// exactly as a keyboard host applies them.
 struct SessionTyper {
     let computer: PredictionComputer
+    let typingLanguage: TypingLanguage
     let layout: KeyboardLayoutModel
     /// Resolves taps that land on another key just past a letter; nil keeps every key hit.
     let contestedTaps: ContestedTapPolicy?
 
     func type(_ sentence: TypingPlan.Sentence) throws -> String {
-        let session = PredictiveTypingSession()
+        let session = PredictiveTypingSession(language: typingLanguage)
         var text = ""
         for (word, offsets) in zip(sentence.words, sentence.taps) {
             try typeLetters(of: word, offsets: offsets, session: session, text: &text)
@@ -26,7 +27,7 @@ struct SessionTyper {
     /// The suggestion bar after typing each word of `context` and a space, then the letters
     /// of `prefix`, every tap at its key's center.
     func bar(afterTyping context: [String], prefix: String) throws -> SuggestionBar {
-        let session = PredictiveTypingSession()
+        let session = PredictiveTypingSession(language: typingLanguage)
         var text = ""
         for word in context {
             try typeLetters(of: word, offsets: centered(word), session: session, text: &text)

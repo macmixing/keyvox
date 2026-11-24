@@ -5,30 +5,31 @@ import XCTest
 /// quotes on, measured on its number page and symbol page after each kind of character.
 final class SmartQuotesTests: XCTestCase {
     private let apostrophe = SmartQuotes.apostrophe
+    private let quotes = TypingLanguage.english.quotes
 
     func testApostropheOpensAQuotationWhereOneCanBegin() {
         // A quotation opened earlier does not count: only the character before the cursor does.
-        for before in [nil, "", "a ", "a\n", "(", "-", SmartQuotes.openingDoubleQuote, SmartQuotes.openingQuote + "a "] {
+        for before in [nil, "", "a ", "a\n", "(", "-", quotes.double.opening, quotes.single.opening + "a "] {
             XCTAssertEqual(
-                SmartQuotes.text(for: apostrophe, after: before),
-                SmartQuotes.openingQuote,
+                quotes.text(for: apostrophe, after: before),
+                quotes.single.opening,
                 "after \(String(describing: before))"
             )
         }
     }
 
     func testApostropheAfterWordsNumbersAndClosingMarks() {
-        for before in ["a", "1", ")", ".", "$", SmartQuotes.openingQuote, "a" + apostrophe] {
-            XCTAssertEqual(SmartQuotes.text(for: apostrophe, after: before), apostrophe, "after \(before)")
+        for before in ["a", "1", ")", ".", "$", quotes.single.opening, "a" + apostrophe] {
+            XCTAssertEqual(quotes.text(for: apostrophe, after: before), apostrophe, "after \(before)")
         }
     }
 
     func testQuoteKeyOpensAtTheStartOfTheText() {
-        XCTAssertEqual(SmartQuotes.text(for: SmartQuotes.doubleQuote, after: nil), SmartQuotes.openingDoubleQuote)
-        XCTAssertEqual(SmartQuotes.text(for: SmartQuotes.doubleQuote, after: ""), SmartQuotes.openingDoubleQuote)
+        XCTAssertEqual(quotes.text(for: SmartQuotes.doubleQuote, after: nil), quotes.double.opening)
+        XCTAssertEqual(quotes.text(for: SmartQuotes.doubleQuote, after: ""), quotes.double.opening)
     }
 
     func testOtherKeysTypeTheirOwnCharacter() {
-        XCTAssertEqual(SmartQuotes.text(for: "-", after: "a "), "-")
+        XCTAssertEqual(quotes.text(for: "-", after: "a "), "-")
     }
 }

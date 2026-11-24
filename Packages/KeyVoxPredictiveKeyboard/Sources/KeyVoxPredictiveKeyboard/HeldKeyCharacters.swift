@@ -61,9 +61,9 @@ public struct HeldKeyCharacters: Sendable {
         self.offers = offers
     }
 
-    /// The list bundled with the keyboard.
-    public static func bundled() throws -> HeldKeyCharacters {
-        try HeldKeyCharacters(contentsOf: PredictiveArtifactLocator().url(name: "held_key_characters", extension: "txt"))
+    /// The list bundled with `language`.
+    public static func bundled(for language: TypingLanguage) throws -> HeldKeyCharacters {
+        try HeldKeyCharacters(contentsOf: language.resources.url("held_key_characters.txt"))
     }
 
     /// What holding the key that types `key` offers, or nil for a key holding does nothing on.

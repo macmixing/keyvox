@@ -63,7 +63,7 @@ final class KeyboardPredictionCoordinator {
         selectedText: @escaping () -> String?,
         textAfterCursor: @escaping () -> String?
     ) {
-        session = PredictiveTypingSession(memory: memory)
+        session = PredictiveTypingSession(language: KeyboardTypingLanguage.current, memory: memory)
         self.textBeforeCursor = textBeforeCursor
         self.selectedText = selectedText
         self.textAfterCursor = textAfterCursor

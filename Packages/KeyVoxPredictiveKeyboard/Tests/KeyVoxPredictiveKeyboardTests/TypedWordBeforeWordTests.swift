@@ -12,7 +12,7 @@ final class TypedWordBeforeWordTests: XCTestCase {
     private let pick = SuggestionBar.Item(text: "typing", kind: .suggestion)
 
     func testWordTypedRightBeforeAnotherIsSuggestedForAlone() {
-        let session = PredictiveTypingSession()
+        let session = PredictiveTypingSession(language: .english)
         type(typed, after: textBefore, before: textAfter, in: session)
 
         let request = session.request(textBeforeCursor: textBefore + typed, textAfterCursor: textAfter)
@@ -25,7 +25,7 @@ final class TypedWordBeforeWordTests: XCTestCase {
     }
 
     func testDeletingALetterThatMatchesTheNextWordKeepsTheTypedWordAlone() {
-        let session = PredictiveTypingSession()
+        let session = PredictiveTypingSession(language: .english)
         let extra = String(textAfter.prefix(1))
         type(typed + extra, after: textBefore, before: textAfter, in: session)
         session.textDidChange(textBeforeCursor: textBefore + typed, textAfterCursor: textAfter)
@@ -39,7 +39,7 @@ final class TypedWordBeforeWordTests: XCTestCase {
     }
 
     func testCursorMovedIntoAWordJustTypedSuggestsForTheWholeWord() {
-        let session = PredictiveTypingSession()
+        let session = PredictiveTypingSession(language: .english)
         let word = typed + textAfter.prefix { $0.isLetter }
         type(word, after: textBefore, before: "", in: session)
         let rest = String(word.dropFirst(typed.count))

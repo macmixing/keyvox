@@ -32,7 +32,7 @@ struct KeyboardTextInputControllerTests {
             emitKeypress: haptics.emitKeypressIfEnabled
         )
         var symbolPage = KeyboardSymbolPage.primary
-        let tapped = SmartQuotes.text(for: SmartQuotes.apostrophe, after: nil)
+        let tapped = KeyboardTypingLanguage.current.quotes.text(for: SmartQuotes.apostrophe, after: nil)
 
         _ = controller.handleKeyActivation(
             .character(SmartQuotes.apostrophe),

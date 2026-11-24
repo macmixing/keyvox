@@ -24,7 +24,7 @@ if [[ $# -eq 2 ]]; then
 fi
 PYTHON="${PYTHON:-python3}"
 TOOLS_DIR="$(cd "$(dirname "$0")" && pwd)"
-BUNDLED_DIR="$TOOLS_DIR/../../Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/PredictiveData"
+BUNDLED_DIR="$TOOLS_DIR/../../Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/PredictiveData/en"
 LINGUISTICS_DIR="$TOOLS_DIR/../../Packages/KeyVoxLinguistics/Sources/KeyVoxLinguistics/Resources"
 BUILT_DIR="$DATA_DIR/bundled"
 SCRATCH_DIR="$(mktemp -d)"
@@ -42,7 +42,7 @@ cd "$TOOLS_DIR"
 
 # Context model.
 "$PYTHON" count_ngrams.py "$DATA_DIR"
-"$PYTHON" write_context_model.py "$DATA_DIR" "$BUILT_DIR/context_artifact_800k.bin"
+"$PYTHON" write_context_model.py "$DATA_DIR" "$BUILT_DIR/context_model.bin"
 
 # Sentence openers.
 xcrun swiftc -O tag_word_kinds.swift -o "$SCRATCH_DIR/tag_word_kinds"
@@ -66,7 +66,7 @@ xcrun swiftc -O tag_word_kinds.swift -o "$SCRATCH_DIR/tag_word_kinds"
 "$PYTHON" write_grammar_words.py "$DATA_DIR" "$BUILT_DIR/grammar_words.txt"
 
 differ=0
-for file in context_artifact_800k.bin sentence_openers.txt capitalized_spellings.txt unknown_word_followers.txt \
+for file in context_model.bin sentence_openers.txt capitalized_spellings.txt unknown_word_followers.txt \
   word_followers.txt grammar_words.txt; do
   destination="$BUNDLED_DIR"
   [[ "$file" == capitalized_spellings.txt ]] && destination="$LINGUISTICS_DIR"

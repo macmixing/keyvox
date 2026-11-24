@@ -13,7 +13,8 @@ _CAPITALIZED_SHARE = 0.9
 
 
 def is_pronoun_i(word: str) -> bool:
-    """The keyboard's rule in WordCasing.capitalizingPronoun: "i" and its "i'" contractions."""
+    """The keyboard's English rule in WordCasing.writingAlwaysCapitalized, from the
+    always-capitalized words in PredictiveData/en/language.json: "i" and its "i'" contractions."""
     return word[:1] == "i" and (len(word) == 1 or word[1] in "'’")
 
 

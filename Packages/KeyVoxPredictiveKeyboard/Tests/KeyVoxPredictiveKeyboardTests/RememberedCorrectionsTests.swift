@@ -11,12 +11,12 @@ final class RememberedCorrectionsTests: XCTestCase {
     private let start = Date(timeIntervalSince1970: 1_000_000)
 
     override func setUpWithError() throws {
-        computer = PredictionComputer(engine: try EnglishPredictiveEngine())
+        computer = PredictionComputer(engine: try PredictiveEngine(language: .english))
     }
 
     func testUndoneCorrectionStaysOffWhileTheKeyboardRuns() throws {
         let memory = TypingMemory()
-        let session = PredictiveTypingSession(memory: memory, now: { self.start })
+        let session = PredictiveTypingSession(language: .english, memory: memory, now: { self.start })
         let correction = try spaceCorrection(of: "teh", session: session)
         XCTAssertNotNil(correction)
         let deleted = try correctedAndSeparatorDeleted("teh", session: session)
@@ -25,8 +25,8 @@ final class RememberedCorrectionsTests: XCTestCase {
         let revert = session.choiceEdit(try XCTUnwrap(bar.primary), textBeforeCursor: deleted)
         XCTAssertEqual(String(deleted.dropLast(revert.deleteCount)) + revert.insertText, "teh ")
 
-        XCTAssertNil(try spaceCorrection(of: "teh", session: PredictiveTypingSession(memory: memory, now: { self.start })))
-        let restarted = PredictiveTypingSession(memory: TypingMemory(saved: memory.saved), now: { self.start })
+        XCTAssertNil(try spaceCorrection(of: "teh", session: PredictiveTypingSession(language: .english, memory: memory, now: { self.start })))
+        let restarted = PredictiveTypingSession(language: .english, memory: TypingMemory(saved: memory.saved), now: { self.start })
         XCTAssertEqual(try spaceCorrection(of: "teh", session: restarted), correction)
     }
 
@@ -34,23 +34,23 @@ final class RememberedCorrectionsTests: XCTestCase {
     /// the system keyboard, so "i" keeps becoming "I".
     func testDeletingTheSpaceAfterACorrectionKeepsIt() throws {
         let memory = TypingMemory()
-        let session = PredictiveTypingSession(memory: memory, now: { self.start })
+        let session = PredictiveTypingSession(language: .english, memory: memory, now: { self.start })
         let correction = try XCTUnwrap(try spaceCorrection(of: "so i", session: session))
         let deleted = try correctedAndSeparatorDeleted("so i", session: session)
         XCTAssertEqual(deleted, "so " + correction)
 
-        XCTAssertEqual(try spaceCorrection(of: "so i", session: PredictiveTypingSession(memory: memory, now: { self.start })), correction)
+        XCTAssertEqual(try spaceCorrection(of: "so i", session: PredictiveTypingSession(language: .english, memory: memory, now: { self.start })), correction)
     }
 
     func testKeptTypedWordStaysOffAfterARestartUntilChosen() throws {
         let memory = TypingMemory()
-        let session = PredictiveTypingSession(memory: memory, now: { self.start })
+        let session = PredictiveTypingSession(language: .english, memory: memory, now: { self.start })
         let bar = try result(for: "teh", session: session)
         let correction = try XCTUnwrap(bar.autocorrection)
         _ = session.choiceEdit(SuggestionBar.Item(text: "teh", kind: .typed), textBeforeCursor: "teh", result: bar)
 
         let restarted = TypingMemory(saved: memory.saved)
-        let later = PredictiveTypingSession(memory: restarted, now: { self.start.addingTimeInterval(60) })
+        let later = PredictiveTypingSession(language: .english, memory: restarted, now: { self.start.addingTimeInterval(60) })
         XCTAssertNil(try spaceCorrection(of: "teh", session: later))
         _ = later.choiceEdit(SuggestionBar.Item(text: correction, kind: .suggestion), textBeforeCursor: "teh")
         XCTAssertEqual(try spaceCorrection(of: "teh", session: later), correction)
@@ -58,7 +58,7 @@ final class RememberedCorrectionsTests: XCTestCase {
 
     func testCorrectionWaitingWithoutAutocorrectionIsNotTurnedDown() throws {
         let memory = TypingMemory()
-        let session = PredictiveTypingSession(memory: memory, now: { self.start })
+        let session = PredictiveTypingSession(language: .english, memory: memory, now: { self.start })
         let bar = try result(for: "teh", session: session)
         _ = session.choiceEdit(
             SuggestionBar.Item(text: "teh", kind: .typed),
@@ -71,7 +71,7 @@ final class RememberedCorrectionsTests: XCTestCase {
 
     func testUnknownWordKeptAsTypedIsLearnedOnItsSecondUseAsWritten() {
         let memory = TypingMemory()
-        let session = PredictiveTypingSession(memory: memory, now: { self.start })
+        let session = PredictiveTypingSession(language: .english, memory: memory, now: { self.start })
         for (use, text) in ["Zorbix", "it is zorbix"].enumerated() {
             XCTAssertFalse(memory.learnedWords.contains("zorbix"), "before use \(use + 1)")
             _ = session.wordBoundaryEdit(separator: " ", textBeforeCursor: text, result: unknownWordResult(for: text, session: session))
@@ -83,7 +83,7 @@ final class RememberedCorrectionsTests: XCTestCase {
 
     func testKnownWordsAreNotCounted() throws {
         let memory = TypingMemory()
-        let session = PredictiveTypingSession(memory: memory, now: { self.start })
+        let session = PredictiveTypingSession(language: .english, memory: memory, now: { self.start })
         for _ in 0..<LearnedWords.usesToLearn {
             _ = session.wordBoundaryEdit(separator: " ", textBeforeCursor: "the dogs", result: try result(for: "the dogs", session: session))
         }
@@ -93,7 +93,7 @@ final class RememberedCorrectionsTests: XCTestCase {
 
     func testDictionaryWordWrittenWithCapitalsWithinASentenceTeachesItsCapitals() throws {
         let memory = TypingMemory()
-        let session = PredictiveTypingSession(memory: memory, now: { self.start })
+        let session = PredictiveTypingSession(language: .english, memory: memory, now: { self.start })
         let atStart = try result(for: "Rose", session: session)
         XCTAssertEqual(atStart.typedWordKind, .dictionaryWord)
         _ = session.wordBoundaryEdit(separator: " ", textBeforeCursor: "Rose", result: atStart)
@@ -105,7 +105,7 @@ final class RememberedCorrectionsTests: XCTestCase {
     func testKnownNameTheDictionaryHasAsAnEverydayWordStillTeachesItsCapitals() throws {
         try computer.updateVocabulary(PersonalVocabulary(words: [], knownNames: ["Rose"], textReplacements: []))
         let memory = TypingMemory()
-        let session = PredictiveTypingSession(memory: memory, now: { self.start })
+        let session = PredictiveTypingSession(language: .english, memory: memory, now: { self.start })
         let named = try result(for: "I met Rose", session: session)
         XCTAssertEqual(named.typedWordKind, .dictionaryWord)
         _ = session.wordBoundaryEdit(separator: " ", textBeforeCursor: "I met Rose", result: named)

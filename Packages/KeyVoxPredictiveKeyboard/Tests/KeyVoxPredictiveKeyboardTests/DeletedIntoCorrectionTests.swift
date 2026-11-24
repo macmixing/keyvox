@@ -10,7 +10,7 @@ final class DeletedIntoCorrectionTests: XCTestCase {
     private var computer: PredictionComputer!
 
     override func setUpWithError() throws {
-        computer = PredictionComputer(engine: try EnglishPredictiveEngine())
+        computer = PredictionComputer(engine: try PredictiveEngine(language: .english))
     }
 
     /// "I male mistakes": the next word made "male" "make"; deleting back to "ma" and typing
@@ -224,7 +224,7 @@ final class DeletedIntoCorrectionTests: XCTestCase {
     }
 
     private func typing(_ memory: TypingMemory) -> Typing {
-        Typing(computer: computer, session: PredictiveTypingSession(memory: memory))
+        Typing(computer: computer, session: PredictiveTypingSession(language: .english, memory: memory))
     }
 
     /// Types into a text as the keyboard does: one letter or deletion at a time, telling the

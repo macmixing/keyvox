@@ -3,7 +3,7 @@ import UIKit
 
 /// Letter-page typing: shift state, predictions, and autocorrection at word boundaries.
 extension KeyboardViewController {
-    private static let wordEndingCharacters = try? CharacterList.wordEnding()
+    private static let wordEndingCharacters = try? CharacterList.wordEnding(for: KeyboardTypingLanguage.current)
 
     /// Reads the focused field's traits and starts it on the right page with a fresh
     /// typing session.
@@ -100,7 +100,7 @@ extension KeyboardViewController {
         case let .character(value) where Self.wordEndingCharacters?.contains(value) == true:
             let separator = activation.isHeldKeyChoice
                 ? value
-                : SmartQuotes.text(for: value, after: textDocumentProxy.documentContextBeforeInput)
+                : KeyboardTypingLanguage.current.quotes.text(for: value, after: textDocumentProxy.documentContextBeforeInput)
             return applyWordBoundary(separator: separator, emitsKeypress: false)
         case let .character(value):
             return applyPickedWordSpace(value, typesExactly: activation.isHeldKeyChoice)

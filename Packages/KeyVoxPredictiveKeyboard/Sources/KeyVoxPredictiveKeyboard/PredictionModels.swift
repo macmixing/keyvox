@@ -94,6 +94,8 @@ public struct WordLanguageAnalysis: Equatable, Sendable {
 
 public enum PredictiveKeyboardError: Error, Equatable {
     case missingArtifact(String)
+    /// The bundled typing language's `language.json` is missing a rule or names another language.
+    case invalidTypingLanguage(String)
     case nativeEngineInitializationFailed(String)
     case nativePredictionFailed(String)
     case invalidAccentOverlay

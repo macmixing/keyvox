@@ -9,7 +9,7 @@ final class SpaceBeforePickTests: XCTestCase {
     private let pick = SuggestionBar.Item(text: "we", kind: .suggestion)
 
     func testFirstTapAfterACommaOnlyAddsTheSpace() {
-        let session = PredictiveTypingSession()
+        let session = PredictiveTypingSession(language: .english)
         let first = session.choiceEdit(pick, textBeforeCursor: "Hello,")
         XCTAssertEqual(first, TextEdit(deleteCount: 0, insertText: " "))
         let second = session.choiceEdit(pick, textBeforeCursor: "Hello," + first.insertText)
@@ -17,14 +17,14 @@ final class SpaceBeforePickTests: XCTestCase {
     }
 
     func testNoNextWordsRightAfterAHyphen() throws {
-        let computer = PredictionComputer(engine: try EnglishPredictiveEngine())
-        let session = PredictiveTypingSession()
+        let computer = PredictionComputer(engine: try PredictiveEngine(language: .english))
+        let session = PredictiveTypingSession(language: .english)
         XCTAssertEqual(try computer.compute(session.request(textBeforeCursor: "Hello-")).bar, .empty)
         XCTAssertNotEqual(try computer.compute(session.request(textBeforeCursor: "Hello, ")).bar, .empty)
     }
 
     func testTapAfterAnOpeningBracketPicksAtOnce() {
-        let edit = PredictiveTypingSession().choiceEdit(pick, textBeforeCursor: "Hello(")
+        let edit = PredictiveTypingSession(language: .english).choiceEdit(pick, textBeforeCursor: "Hello(")
         XCTAssertEqual(edit.insertText, pick.text + " ")
     }
 }

@@ -31,13 +31,14 @@ enum BarsCommand {
         ))
         let typer = SessionTyper(
             computer: computer,
+            typingLanguage: setup.engine.language,
             layout: setup.layout,
             contestedTaps: ContestedTapPolicy(parameters: ContestedTapPolicy.standardParameters)
         )
         for index in probes.indices {
             let bar: SuggestionBar
             if let text = probes[index].text {
-                let request = PredictiveTypingSession().request(textBeforeCursor: text + probes[index].prefix)
+                let request = PredictiveTypingSession(language: setup.engine.language).request(textBeforeCursor: text + probes[index].prefix)
                 bar = try computer.compute(request).bar
             } else {
                 bar = try typer.bar(afterTyping: probes[index].context, prefix: probes[index].prefix)

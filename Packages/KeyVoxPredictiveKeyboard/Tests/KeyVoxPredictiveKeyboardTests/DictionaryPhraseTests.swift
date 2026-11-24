@@ -7,7 +7,7 @@ final class DictionaryPhraseTests: XCTestCase {
     private var computer: PredictionComputer!
 
     override func setUpWithError() throws {
-        computer = PredictionComputer(engine: try EnglishPredictiveEngine())
+        computer = PredictionComputer(engine: try PredictiveEngine(language: .english))
         try computer.updateVocabulary(PersonalVocabulary(
             words: ["Dom Esposito", "Dont Answer"],
             textReplacements: []
@@ -19,14 +19,14 @@ final class DictionaryPhraseTests: XCTestCase {
     }
 
     func testPhraseWordMissingItsApostropheIsCorrectedAsWithoutThePhrase() throws {
-        let withoutDictionary = PredictionComputer(engine: try EnglishPredictiveEngine())
-        let request = PredictiveTypingSession().request(textBeforeCursor: "I dont")
+        let withoutDictionary = PredictionComputer(engine: try PredictiveEngine(language: .english))
+        let request = PredictiveTypingSession(language: .english).request(textBeforeCursor: "I dont")
         XCTAssertNotNil(try withoutDictionary.compute(request).autocorrection)
         XCTAssertEqual(try autocorrection(typing: "I dont"), try withoutDictionary.compute(request).autocorrection)
     }
 
     private func autocorrection(typing text: String) throws -> String? {
-        let request = PredictiveTypingSession().request(textBeforeCursor: text)
+        let request = PredictiveTypingSession(language: .english).request(textBeforeCursor: text)
         return try computer.compute(request).autocorrection
     }
 }
