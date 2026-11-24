@@ -339,12 +339,8 @@ enum KeyboardSymbolLayout {
         }
     }
 
-    private static let letterRows: [[KeyboardKeyModel]] = [
-        characterRow(["q", "w", "e", "r", "t", "y", "u", "i", "o", "p"]),
-        characterRow(["a", "s", "d", "f", "g", "h", "j", "k", "l"]),
-        [key(.shift, width: 1.45)]
-            + characterRow(["z", "x", "c", "v", "b", "n", "m"])
-            + [key(.delete, width: 1.45)],
+    /// The typing language's letter rows (`KeyboardLetterRows`) over the bottom row.
+    private static let letterRows: [[KeyboardKeyModel]] = KeyboardLetterRows.current.rows.map(\.keys) + [
         [
             key(.numberSymbols, width: 1.25),
             key(.emoji, width: 1.25),
