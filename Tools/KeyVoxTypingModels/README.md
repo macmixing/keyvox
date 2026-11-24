@@ -58,10 +58,10 @@ PYTHON=<data-dir>/venv/bin/python ./build_typing_models.sh <data-dir>
 The built files land in `<data-dir>/built` under the names they have in `PredictiveData/en`,
 and `compare_with_bundled.py` then says for each whether it is the same as the bundled one,
 leaving out the write times in the dictionary header; with `--check` after the data directory,
-the build fails if any differs. The package is left alone. The dictionary and the accent
-overlay are the bundled bytes; the three `.kvtr` files are not, because the build now asks
-LatinIME for every record the rankers read, each in a search of its own (see "How the bundled
-rankers were trained"). Once the sources are
+the build fails if any differs. The package is left alone. The build runs the candidate caches
+with `--as-bundled`, which asks LatinIME the queries the bundled rankers learned from as the
+July caches asked them, so every built file is the bundled one (see "How the bundled rankers
+were trained"). Once the sources are
 downloaded, the build takes about 12 minutes on an Apple silicon Mac. Set `OMP_NUM_THREADS` to
 limit the cores the tree training uses.
 
@@ -80,6 +80,8 @@ Each query searches in a LatinIME session of its own. A session continues its la
 the new typed letters start with the last ones, and keeps that search's previous words, so a
 shared session answers a query for the one asked before it: "woll" after "we finished is" gets
 "will" at 758,130 asked alone and at 547,122 asked right after "woll" after "korea's south".
+With `--as-bundled`, the reader keeps one session for every query (`--shared-session`), as the
+July caches did.
 
 ## Steps
 
@@ -94,7 +96,7 @@ shared session answers a query for the one asked before it: "woll" after "we fin
 | `write_dictionary_inputs.py`, then `bin/write_latinime_dictionary` | `work/dictionary_*.tsv`, `built/dictionary/` |
 | `split_ite_events.py` | `work/ite/`: autocorrections, words left alone, and accepted predictions, split by typist |
 | `write_feature_context_model.py` | `work/feature_context_800k.bin`: the word and word-pair counts the rankers train with |
-| `cache_correction_candidates.py`, `cache_completion_candidates.py` | `work/*_candidates.pkl.gz`: LatinIME's candidates for every record `training_sets.py` gives the trainers |
+| `cache_correction_candidates.py`, `cache_completion_candidates.py` | `work/*_candidates.pkl.gz`: LatinIME's candidates; with `--as-bundled`, as the build runs them, for the queries the bundled rankers learned from (`bundled_queries.py`), otherwise for every record `training_sets.py` gives the trainers |
 | `train_correction_models.py`, `train_completion_ranker.py` | `work/*.pkl.gz` and held-out reports in `work/reports/` |
 | `export_tree_models.py` | `built/*.kvtr`, checked against the trained models on 10,000 rows |
 | `write_accent_words.py`, `write_accent_overlay.py` | `built/accent_overlay.bin` |
@@ -102,7 +104,8 @@ shared session answers a query for the one asked before it: "woll" after "we fin
 
 The rankers train on records split by the sentence the typist was copying, so a sentence's
 words are never on both sides of a training and test split. `training_sets.py` gives the
-records each trainer reads, and the candidate caches ask for exactly those: buckets 0-4 train
+records each trainer reads, and the candidate caches without `--as-bundled` ask for exactly
+those: buckets 0-4 train
 the correction ranker, bucket 5 the action model, 0-7 the completion ranker, and 8-9 are held
 out. The caches and the trainers take `--source`: `ite`, the default, trains on ITE's typing,
 `sim` on simulated typing, and `sim+ite` on both (see "Training on simulated typing"); the
@@ -111,7 +114,9 @@ held-out reports are on ITE's buckets 8-9 whatever the source.
 ## How the bundled rankers were trained
 
 The bundled rankers were trained in July 2026 by scripts that asked LatinIME for other records
-than the trainers read, in one shared search session:
+than the trainers read, in one shared search session. `bundled_queries.py` keeps those
+queries in their order, and the caches ask them that way with `--as-bundled`, so the build
+rebuilds the bundled rankers:
 
 - The cache asked for a fifth of the calibration typists' plausible autocorrections, sampled
   after keeping the plausible ones (49,041 records). The trainer sampled a fifth first and kept
@@ -123,9 +128,10 @@ than the trainers read, in one shared search session:
   the 51,165 completion queries got the answer for the query asked before them; asked each in a
   session of its own, they answer differently.
 
-A record whose query was never asked got no candidates and was left out, as was one whose
-cached candidates were only the typed letters or two-word suggestions. What each set trained or
-was measured on:
+A record whose query was never asked gets no candidates and is left out, as is one whose
+cached candidates are only the typed letters or two-word suggestions; `candidate_groups` prints
+both counts for every set of records it makes. What each set trains or is measured on, from a
+build's printout:
 
 | Set (sentence buckets) | Records | Kept | Never asked | No candidates | Trained on |
 | --- | --- | --- | --- | --- | --- |
@@ -142,8 +148,9 @@ Of the 12,086 correction ranker records never asked, 9,563 came from the differe
 samples and 2,523 were wrong autocorrections; of the 2,992 wrong autocorrections in that set,
 469 kept candidates.
 
-The build now asks for every record the trainers read, each in its own session, and leaves out
-only records whose candidates are the typed letters or two-word suggestions:
+Without `--as-bundled`, the caches ask for every record the trainers read, each in its own
+session, and only records whose candidates are the typed letters or two-word suggestions are
+left out:
 
 | Set (sentence buckets) | Records | Kept | No candidates | Trained on |
 | --- | --- | --- | --- | --- |
@@ -156,7 +163,7 @@ only records whose candidates are the typed letters or two-word suggestions:
 | Completion ranker training (0-7) | 160,959 | 160,769 | 190 | 916,693 candidate rows |
 | Held-out completions (8-9) | 40,625 | 40,575 | 50 | measured only |
 
-The package keeps the July rankers: the rankers this build trains fix two fewer mistyped words
+The package keeps the July rankers: the rankers trained that way fix two fewer mistyped words
 on the 400-sentence plan and change two more to another word (see "Results"), and replacing
 them needs every headline measure at least as good.
 
@@ -179,9 +186,9 @@ directory:
 | `write_simulated_records.py` | `work/simulation/corrections.tsv`, `preserves.tsv`, `completions.tsv`: records in the shape `split_ite_events.py` writes |
 | `write_feature_context_model.py --leave-out-simulation-sentences` | `work/feature_context_800k.bin` without the sentences the simulator types |
 
-Then run the candidate caches, the trainers, and `export_tree_models.py` with `--source sim`
-or `--source sim+ite`, in a copy of the data directory, since they write the same files as an
-ITE build.
+Then run the candidate caches, without `--as-bundled`, the trainers, and `export_tree_models.py`
+with `--source sim` or `--source sim+ite`, in a copy of the data directory, since they write the
+same files as an ITE build.
 
 ### What is measured
 
@@ -280,17 +287,17 @@ So the correction measures move only when a ranker keeps or drops the intended w
 
 ## Results
 
-Built with the commands above, the dictionary and `accent_overlay.bin` are the bundled bytes,
-apart from the write times in the dictionary header. The July dictionary held the same words,
+Built with the commands above, the three `.kvtr` files and `accent_overlay.bin` are the same
+bytes as the ones built in July 2026 that the package bundles, and the dictionary is the
+bundled one apart from the write times in its header. The July dictionary held the same words,
 word pairs, and three-word sequences with the same probabilities as this build; its bytes
 differed only in the order entries were written, from a few sentences whose state in the July
-export cannot be recovered, and the package now bundles this build's dictionary. Before the
-caches asked for every record each in its own session, the three `.kvtr` files were the bundled
-bytes too, and `Tools/KeyVoxTypingHarness` scored them the same as the July files on every
-measure.
+export cannot be recovered, and the package now bundles this build's dictionary.
+`Tools/KeyVoxTypingHarness` scored the built files the same as the July files on every measure.
 
-The harness scored the bundled rankers and three trained ones: on ITE's typing (`ite`), on
-simulated typing alone (`sim`), and on both (`sim+ite`):
+The harness scored the bundled rankers and three trained with caches asked without
+`--as-bundled`: on ITE's typing (`ite`), on simulated typing alone (`sim`), and on both
+(`sim+ite`):
 
 | Measure | Plan | Bundled | `ite` | `sim` | `sim+ite` |
 | --- | --- | --- | --- | --- | --- |
