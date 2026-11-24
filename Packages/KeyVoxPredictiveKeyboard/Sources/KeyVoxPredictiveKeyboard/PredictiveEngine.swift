@@ -28,7 +28,7 @@ public final class PredictiveEngine: @unchecked Sendable {
         let actionURL = try resources.url("autocorrect_decision.kvtr")
         let accentURL = try resources.url("accent_overlay.bin")
         accentOverlay = try AccentSuggestionOverlay(data: Data(contentsOf: accentURL))
-        capitalizedSpellings = try CapitalizedSpellings()
+        capitalizedSpellings = try CapitalizedSpellings(languageCode: language.identifier)
         sentenceOpeners = try SentenceOpeners(contentsOf: resources.url("sentence_openers.txt"))
         unknownWordFollowers = try UnknownWordFollowers(
             contentsOf: resources.url("unknown_word_followers.txt")

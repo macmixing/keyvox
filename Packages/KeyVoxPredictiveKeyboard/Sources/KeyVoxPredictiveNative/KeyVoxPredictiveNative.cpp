@@ -1020,7 +1020,7 @@ private:
                 || static_cast<double>(distance) / static_cast<double>(longest) > 0.5) {
             return 0;
         }
-        if (typed.size() <= 4 && !hasVowel(typed)) return 0;
+        if (utf8CodePoints(typed).size() <= 4 && !hasVowel(typed)) return 0;
         if (typed.size() >= 2 && typed[typed.size() - 1] == typed[typed.size() - 2]
                 && best.word.rfind(typed, 0) == 0) {
             return 0;
