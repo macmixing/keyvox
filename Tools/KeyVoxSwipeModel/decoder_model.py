@@ -41,9 +41,20 @@ class MemoryBlock(nn.Module):
         self.up = nn.Linear(config.bottleneck, config.width)
         self.dropout = nn.Dropout(config.dropout)
 
+    def window(self, narrow: torch.Tensor) -> torch.Tensor:
+        """The depthwise convolution over neighbouring frames, [B, T, C] in and out. On the
+        CPU it runs as shifted multiply-adds, which PyTorch computes far faster there."""
+        if narrow.device.type != "cpu":
+            return self.memory(narrow.transpose(1, 2)).transpose(1, 2)
+        weight = self.memory.weight[:, 0, :]
+        reach = weight.shape[1] // 2
+        padded = F.pad(narrow, (0, 0, reach, reach))
+        frames = narrow.shape[1]
+        return sum(padded[:, tap:tap + frames, :] * weight[:, tap] for tap in range(weight.shape[1]))
+
     def forward(self, x: torch.Tensor, previous: torch.Tensor | None) -> tuple[torch.Tensor, torch.Tensor]:
         narrow = self.down(x)
-        memory = narrow + self.memory(narrow.transpose(1, 2)).transpose(1, 2)
+        memory = narrow + self.window(narrow)
         if previous is not None:
             memory = memory + previous
         return x + self.dropout(F.relu(self.up(memory))), memory

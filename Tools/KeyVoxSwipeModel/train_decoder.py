@@ -6,7 +6,11 @@ wrong candidates become that swipe's hard negatives. The loss is a listwise cros
 that ranks the true word above its negatives, each scored exactly as at decode time
 (`scoring.py`, with the encoder's tuned weights), plus 0.3 times the true word's CTC loss
 per key. After every epoch the validation split is decoded with the decoder, and the
-checkpoint with the best validation top-1 is kept as `decoder.pt`."""
+checkpoint with the best validation top-1 is kept as `decoder.pt`.
+
+The encoder's outputs and the mined negatives are saved once as `decoder-inputs.npz` and
+reused; `--prepare-only` stops there, so the encoder can run on one machine's GPU and the
+decoder can train elsewhere."""
 
 import argparse
 import json
@@ -31,6 +35,31 @@ WEIGHT_DECAY = 1e-2
 GRADIENT_CLIP = 1.0
 WARMUP_FRACTION = 0.05
 VALIDATION_BATCH = 4096
+INPUTS_FILE = "decoder-inputs.npz"
+
+
+def prepare_inputs(arguments, encoder_dir, encoder_settings, scoring, pruning, layout, lexicon, trie, device,
+                   path: Path) -> None:
+    """Runs the frozen encoder over the training and validation swipes, mines each
+    training swipe's hard negatives, and saves what training needs."""
+    encoder = load_encoder(encoder_dir / "best.pt", device)
+    prepared = arguments.data_dir / "prepared"
+    names = ["train.npz"] + (["extra.npz"] if encoder_settings["extra"] else [])
+    xy = np.concatenate([np.load(prepared / name)["xy"] for name in names])
+    forms = np.concatenate([np.load(prepared / name)["form"] for name in names])
+    if arguments.limit:
+        xy, forms = xy[: arguments.limit], forms[: arguments.limit]
+    targets = target_forms(forms, lexicon.forms)
+    frames = compute_frames(encoder, xy, layout, device, dtype=np.float16)
+    symbols = len(layout.letters) + 1
+    candidates = beam_search(arguments.data_dir, frames[..., :symbols].astype(np.float32), trie, pruning)
+    scores = candidate_scores(candidates, lexicon.frequency, trie.form_path_length, scoring)
+    _, path_lengths = lexicon_paths(lexicon, layout.key_index, frames.shape[1])
+    options, keep = ranking_options(candidates, scores, targets, path_lengths)
+    val = np.load(prepared / "val.npz")
+    np.savez(path, train_frames=frames[keep], train_options=options[keep],
+             val_frames=compute_frames(encoder, val["xy"], layout, device, dtype=np.float16),
+             val_targets=target_forms(val["form"], lexicon.forms))
 
 
 def main() -> None:
@@ -45,6 +74,8 @@ def main() -> None:
     parser.add_argument("--limit", type=int, default=0, help="train on only the first N swipes")
     parser.add_argument("--device", default="mps" if torch.backends.mps.is_available() else "cpu")
     parser.add_argument("--seed", type=int, default=0)
+    parser.add_argument("--prepare-only", action="store_true",
+                        help=f"only write models/<run>/{INPUTS_FILE}, so training can run on another machine")
     arguments = parser.parse_args()
 
     torch.manual_seed(arguments.seed)
@@ -58,33 +89,24 @@ def main() -> None:
     layout = load_layout(arguments.data_dir, encoder_settings["layout"])
     lexicon = load_lexicon(arguments.lexicon)
     trie = build_trie(lexicon, layout)
-    encoder = load_encoder(encoder_dir / "best.pt", device)
-
-    prepared = arguments.data_dir / "prepared"
-    names = ["train.npz"] + (["extra.npz"] if encoder_settings["extra"] else [])
-    xy = np.concatenate([np.load(prepared / name)["xy"] for name in names])
-    forms = np.concatenate([np.load(prepared / name)["form"] for name in names])
-    if arguments.limit:
-        xy, forms = xy[: arguments.limit], forms[: arguments.limit]
-    targets = target_forms(forms, lexicon.forms)
-    frames = compute_frames(encoder, xy, layout, device, dtype=np.float16)
-    symbols = len(layout.letters) + 1
-    candidates = beam_search(arguments.data_dir, frames[..., :symbols].astype(np.float32), trie, pruning)
-    scores = candidate_scores(candidates, lexicon.frequency, trie.form_path_length, scoring)
-    paths, path_lengths = lexicon_paths(lexicon, layout.key_index, frames.shape[1])
-    options, keep = ranking_options(candidates, scores, targets, path_lengths)
-    print(f"decoder training swipes: {keep.sum()} of {len(keep)}", flush=True)
-
-    train_frames = torch.from_numpy(frames[keep]).to(device)
-    train_options = torch.from_numpy(options[keep]).to(device)
-    del frames, candidates, scores
-    val = np.load(prepared / "val.npz")
-    val_frames = compute_frames(encoder, val["xy"], layout, device)
-    val_targets = target_forms(val["form"], lexicon.forms)
+    inputs_path = run_dir / INPUTS_FILE
+    if not inputs_path.exists():
+        prepare_inputs(arguments, encoder_dir, encoder_settings, scoring, pruning, layout, lexicon, trie, device,
+                       inputs_path)
+    if arguments.prepare_only:
+        return
+    inputs = np.load(inputs_path)
+    print(f"decoder training swipes: {len(inputs['train_options'])}", flush=True)
+    train_frames = torch.from_numpy(inputs["train_frames"]).to(device)
+    train_options = torch.from_numpy(inputs["train_options"]).to(device)
+    val_frames = inputs["val_frames"].astype(np.float32)
+    val_targets = inputs["val_targets"]
+    paths, path_lengths = lexicon_paths(lexicon, layout.key_index, val_frames.shape[1])
     paths_t, lengths_t = torch.from_numpy(paths), torch.from_numpy(path_lengths)
     frequency = torch.from_numpy(lexicon.frequency).to(device)
+    symbols = len(layout.letters) + 1
 
-    config = DecoderConfig(symbols=symbols, coefficients=encoder.config.basis ** 2)
+    config = DecoderConfig(symbols=symbols, coefficients=val_frames.shape[2] - symbols - 1)
     decoder = SwipeDecoder(config).to(device)
     optimizer = torch.optim.AdamW(decoder.parameters(), lr=arguments.learning_rate, weight_decay=WEIGHT_DECAY)
     steps_per_epoch = len(train_frames) // arguments.batch
