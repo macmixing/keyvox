@@ -25,6 +25,8 @@ public final class LiveVoiceActivityDetector {
     }
 
     public init?(modelURL: URL) {
+        WhisperRuntimeLogFilter.install
+
         var params = whisper_vad_default_context_params()
         params.n_threads = 1
         params.use_gpu = false

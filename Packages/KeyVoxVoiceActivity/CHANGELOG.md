@@ -15,6 +15,7 @@ A new live detector follows speech in audio as it is captured, so recording indi
 - Added `LiveVoiceActivityDetector`, which reads live 16 kHz mono audio one Silero window at a time, keeps the model's memory between windows, and reports the latest speech probability.
 - Ran the live detector on one CPU thread with a `reset()` that clears the model's memory and any partial window between captures.
 - Shared the bundled Silero model location between `VoiceActivityDetector` and `LiveVoiceActivityDetector`.
+- Limited whisper.cpp's console output to warnings and errors for the process once a live detector is created, since each window's detection pass logs informational lines.
 - Built the live detector only with the Apple whisper.cpp runtime, which provides the streaming detection calls it needs; the Android runtime builds the package without it.
 
 ### Notes
