@@ -47,8 +47,11 @@ extension KeyboardKeyGridView {
             let location = touch.location(in: self)
             typePendingCharacters()
 
-            // A greyed-out return key takes no taps, as the system keyboard's does.
-            let hitKey = keyView(at: location).flatMap { isEnabled($0) ? $0 : nil }
+            // A greyed-out return key takes no taps, as the system keyboard's does, and while the
+            // space bar is a trackpad no other finger presses a key.
+            let hitKey = keyView(at: location).flatMap {
+                isEnabled($0) && spaceTrackpadController.isActive == false ? $0 : nil
+            }
             let session = KeyboardKeyTouchSession(
                 keyView: hitKey,
                 location: location,
@@ -123,6 +126,7 @@ extension KeyboardKeyGridView {
                     continue
                 }
                 guard session.hasTyped == false,
+                      spaceTrackpadController.isActive == false,
                       let hitKey = keyView(at: location),
                       isEnabled(hitKey),
                       hitKey !== session.keyView,
