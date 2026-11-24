@@ -103,7 +103,7 @@ The builds of November 24, 2026. Every context model fills the default limits (1
 | de | 118,350,701 | 209,470 | 146,689 | 220 |
 | de-bundestag | 138,467,367 | 209,470 | 146,689 | 222 |
 | es | 281,865,056 | 236,307 | 2,955 | 158 |
-| fr | 393,698,831 | 160,541 | 19,021 | 195 |
+| fr | 393,698,831 | 165,093 | 19,021 | 195 |
 
 Texts, sentences, and words each source gave after deduplication:
 
@@ -189,22 +189,22 @@ A word the lexicons know is kept in every spelling they write it in, and in no o
 writes in lowercase takes its capital, and a word the list capitalizes only for starting a sentence
 loses it. A word the lexicons do not know, such as a name or a compound, keeps the word list's
 spellings. The language's spelling check, where it has one, is then asked about each such word
-in lowercase: a spelling with capitals is written in lowercase if the check accepts that, as its
-capital was only the sentence's, and is otherwise kept as a name. French's check, the lexicons with
-an elided word checked part by part (`vocabulary/lexicon_check.py`), also leaves out a lowercase
-spelling it rejects. Spanish's, the [RLA-ES](https://github.com/sbosio/rla-es) generic Spanish
-Hunspell dictionary with its affix rules (`hunspell -d` with its `.aff` and `.dic`,
-`vocabulary/hunspell_check.py`), decides only capitals and leaves out no word
-(`spelling_check_drops_words` in `languages.py`). German has no spelling check. The vocabulary's
+spelled with capitals, in lowercase: the word is written in lowercase if the check accepts that,
+as its capital was only the sentence's, and is otherwise kept as a name. The check never leaves a
+word out: the word list is what Android offers the language's typists, loanwords and forms the
+check lacks included. French's check is the lexicons, an elided word checked part by part
+(`vocabulary/lexicon_check.py`); Spanish's is the [RLA-ES](https://github.com/sbosio/rla-es)
+generic Spanish Hunspell dictionary with its affix rules (`hunspell -d` with its `.aff` and
+`.dic`, `vocabulary/hunspell_check.py`). German has no spelling check. The vocabulary's
 common part, which SCOWL's size 50 is for English, is the spellings the word list itself writes:
 a spelling only the lexicons add is a rare sense, and does not keep the word's usual spelling with
 a capital from the capitalized spellings.
 
-| Language | Word list | Vocabulary | Left out by the spelling check | Written in lowercase by it |
-| --- | --- | --- | --- | --- |
-| de | 205,887 words | 209,470 spellings | (no check) | (no check) |
-| es | 236,193 words | 236,307 spellings | none | 2,146 words |
-| fr | 163,631 single words | 160,541 spellings | 4,552 words | |
+| Language | Word list | Vocabulary | Written in lowercase by the spelling check |
+| --- | --- | --- | --- |
+| de | 205,887 words | 209,470 spellings | (no check) |
+| es | 236,193 words | 236,307 spellings | 2,146 words |
+| fr | 163,631 single words | 165,093 spellings | 812 words |
 
 RLA-ES's affix rules reject 12,825 of the Spanish word list's lowercase words that Wikidata
 Lexemes do not list, most of them Spanish forms in use: of 40 drawn at random, 36 were Spanish
@@ -213,6 +213,11 @@ words, among them gerunds and infinitives with enclitic pronouns ("manteniéndol
 for "aúnan"). Leaving them out would leave out "ayudándole" with them, so RLA-ES keeps every word.
 Of the word list's capitalized words that Wikidata does not list, 3,462 stay capitalized, as RLA-ES
 rejects them in lowercase; they are mostly names and acronyms.
+
+The French lexicons do not list 4,552 of the French word list's lowercase words. Of 50 drawn at
+random, they are French words ("latrine", "surdéveloppé", "réouvrit", "royannaise"), loanwords
+French typists use ("bike", "pharma", "boot"), other English words ("shearing", "crow"), and
+names the word list writes in lowercase ("eunice", "larue"); all are kept.
 
 License obligations of the vocabulary:
 
