@@ -6,6 +6,23 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.2.0] - 2026-11-23
+
+A new live detector follows speech in audio as it is captured, so recording indicators can react to a voice instead of loudness.
+
+### Includes
+
+- Added `LiveVoiceActivityDetector`, which reads live 16 kHz mono audio one Silero window at a time, keeps the model's memory between windows, and reports the latest speech probability.
+- Ran the live detector on one CPU thread with a `reset()` that clears the model's memory and any partial window between captures.
+- Shared the bundled Silero model location between `VoiceActivityDetector` and `LiveVoiceActivityDetector`.
+- Built the live detector only with the Apple whisper.cpp runtime, which provides the streaming detection calls it needs; the Android runtime builds the package without it.
+
+### Notes
+
+- `1.2.0` is a minor release because it adds the public `LiveVoiceActivityDetector` API; the existing `VoiceActivityDetector` API is unchanged.
+
+---
+
 ## [1.1.2] - 2026-11-21
 
 The Apple speech runtime now loads its Metal kernels prebuilt instead of compiling them in each new process.
