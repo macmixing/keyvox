@@ -204,6 +204,93 @@ Attribution: Based on the OpenAssistant OASST2 dataset created by the OpenAssist
 
 Attribution: Based on YouTube-Commons by PleIAs: transcripts of videos their creators published under the Creative Commons Attribution license, each credited to its channel in the dataset.
 
+### Multilingual typing-language sources (derived predictive-keyboard data)
+- Note: The entries below are the sources of the German, Spanish, and French typing-language data that `Tools/KeyVoxLanguageModel` builds: the non-reversible word, word-pair, and word-sequence count artifact and the non-reversible sentence-opener, capitalized-spelling, next-word, and grammar-word lists, and the vocabulary they are built with. Tatoeba, OASST2, and YouTube-Commons are credited above, and their German, Spanish, and French text is used the same way.
+
+### Tatoeba German, Spanish, and French sentences (derived predictive-keyboard data)
+- Source: <https://tatoeba.org/en/downloads>
+- License: CC BY 2.0 FR
+- License URL: <https://creativecommons.org/licenses/by/2.0/fr/deed.en>
+- Note: German, Spanish, and French sentences were normalized, aggregated, and transformed into the non-reversible artifacts and lists described above.
+
+Attribution: Based on sentence data contributed by the Tatoeba community.
+
+### YODAS2 (derived predictive-keyboard data)
+- Source: <https://huggingface.co/datasets/espnet/yodas2>
+- License: CC BY 3.0
+- License URL: <https://creativecommons.org/licenses/by/3.0/>
+- Note: German, Spanish, and French captions written by hand were normalized, aggregated, and transformed into the non-reversible count artifact. The dataset credits each caption to its video.
+
+Attribution: Based on YODAS2 by Li et al. (ESPnet): manual captions of videos published under Creative Commons licenses.
+
+### WildChat-4.8M (derived predictive-keyboard data)
+- Source: <https://huggingface.co/datasets/allenai/WildChat-4.8M>
+- License: Open Data Commons Attribution License (ODC-By) 1.0
+- License URL: <https://opendatacommons.org/licenses/by/1-0/>
+- Note: German, Spanish, and French user messages of up to 50 words were normalized, aggregated, and transformed into the non-reversible count artifact and sentence-opener lists.
+
+Attribution: Based on the WildChat-4.8M dataset by the Allen Institute for AI (Zhao et al., 2024).
+
+### 88milSMS (derived predictive-keyboard data)
+- Source: <https://hdl.handle.net/11403/comere/cmr-88milsms/cmr-88milsms-tei-v1>
+- License: CC BY 4.0
+- License URL: <https://creativecommons.org/licenses/by/4.0/>
+- Note: French text messages were normalized, aggregated, and transformed into the non-reversible count artifact and sentence-opener lists.
+
+Attribution: Based on 88milSMS (Panckhurst et al., CoMeRe corpus, ORTOLANG): text messages collected in Montpellier, France, in 2011.
+
+### Open Discourse (derived predictive-keyboard data)
+- Source: <https://doi.org/10.7910/DVN/FIKIBO>
+- License: CC0 1.0
+- License URL: <https://creativecommons.org/publicdomain/zero/1.0/>
+- Note: Speeches of the German Bundestag from 2000 on were normalized, aggregated, and transformed into a variant of the German count artifact.
+
+Attribution: Based on Open Discourse (Richter et al.): the speeches of the German Bundestag.
+
+### AOSP LatinIME word lists (derived predictive-keyboard data)
+- Upstream: <https://android.googlesource.com/platform/packages/inputmethods/LatinIME/+/127336e9f29d69607eab55982324b210279ae8c5/dictionaries/>
+- Upstream revision: `127336e9f29d69607eab55982324b210279ae8c5`
+- License: Apache License 2.0
+- License URL: <https://www.apache.org/licenses/LICENSE-2.0>
+- Note: The German, Spanish, and French vocabularies are modified versions of the `de`, `es`, and `fr` word lists: single words only, with their capitals settled by Wikidata Lexemes and Grammalecte and their spellings checked against RLA-ES and Grammalecte.
+
+Copyright (c) 2008, The Android Open Source Project
+
+### Wikidata Lexemes (derived predictive-keyboard data)
+- Source: <https://dumps.wikimedia.org/wikidatawiki/entities/>
+- License: CC0 1.0
+- License URL: <https://creativecommons.org/publicdomain/zero/1.0/>
+- Note: German, Spanish, and French word forms and their lexical categories settle the capitals in the vocabularies and tell German nouns from names.
+
+Attribution: Based on Wikidata Lexemes.
+
+### Grammalecte French lexicon (derived predictive-keyboard data)
+- Source: <https://grammalecte.net/>
+- Upstream version: 7.7
+- License: Mozilla Public License 2.0
+- License URL: <https://www.mozilla.org/en-US/MPL/2.0/>
+- Note: The French vocabulary takes spellings from the lexicon's inflected forms and checks spellings against them. The French vocabulary, and files built from it, are covered by the Mozilla Public License 2.0 and available in source form in this repository.
+
+Attribution: Based on the Grammalecte French lexicon v7.7 by Olivier R.
+
+### RLA-ES Spanish spelling dictionaries (build-time spelling check)
+- Source: <https://github.com/sbosio/rla-es>
+- Upstream version: 2.9
+- License: Mozilla Public License 1.1 or later (one of its GPL 3+, LGPL 3+, and MPL 1.1+ options)
+- License URL: <https://www.mozilla.org/en-US/MPL/1.1/>
+- Note: The generic Spanish dictionary checks the spellings of the Spanish vocabulary; none of its files are copied into it.
+
+Attribution: Based on the RLA-ES Spanish spelling dictionaries v2.9 by Santiago Bosio and contributors.
+
+### UD Spanish AnCora (derived predictive-keyboard data)
+- Source: <https://github.com/UniversalDependencies/UD_Spanish-AnCora>
+- Upstream version: Universal Dependencies release 2.19
+- License: CC BY 4.0
+- License URL: <https://creativecommons.org/licenses/by/4.0/>
+- Note: Each Spanish word's most common part of speech in the treebank was aggregated into the non-reversible word kinds the Spanish sentence-opener and grammar-word lists are built from.
+
+Attribution: Based on UD Spanish AnCora (Taulé, Martí, and Recasens; Universal Dependencies release 2.19).
+
 ### Aalto ITE Typing dataset (derived predictive-keyboard rankers)
 - Source: <https://doi.org/10.5281/zenodo.12528163>
 - License: CC BY 4.0
