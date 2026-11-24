@@ -102,7 +102,7 @@ The builds of November 24, 2026. Every context model fills the default limits (1
 | en | 528,779,799 | 109,172 (SCOWL size 60) | 18,144 | 152 |
 | de | 118,350,701 | 209,470 | 146,689 | 220 |
 | de-bundestag | 138,467,367 | 209,470 | 146,689 | 222 |
-| es | 281,865,056 | 236,307 | 2,955 | 158 |
+| es | 281,865,056 | 236,307 | 2,955 | 156 |
 | fr | 393,698,831 | 165,093 | 19,021 | 195 |
 
 Texts, sentences, and words each source gave after deduplication:
@@ -115,11 +115,11 @@ Texts, sentences, and words each source gave after deduplication:
 | de | YODAS2 | 19,250 | 1,353,933 | 23,715,021 |
 | de | YouTube-Commons | 41,435 | 175,889 | 89,023,396 |
 | de-bundestag | Open Discourse (besides de's) | 69,394 | 1,314,524 | 20,116,666 |
-| es | Tatoeba | 378,560 | 395,561 | 2,695,083 |
-| es | OASST2 | 27,962 | 200,168 | 2,674,964 |
-| es | WildChat | 83,713 | 142,155 | 1,336,910 |
-| es | YODAS2 | 31,807 | 829,271 | 31,351,845 |
-| es | YouTube-Commons | 154,232 | 305,293 | 243,806,254 |
+| es | Tatoeba | 378,560 | 391,930 | 2,695,083 |
+| es | OASST2 | 27,962 | 198,026 | 2,674,964 |
+| es | WildChat | 83,713 | 140,725 | 1,336,910 |
+| es | YODAS2 | 31,807 | 789,767 | 31,351,845 |
+| es | YouTube-Commons | 154,232 | 301,581 | 243,806,254 |
 | fr | Tatoeba | 643,367 | 663,079 | 4,746,195 |
 | fr | OASST2 | 3,779 | 17,590 | 249,029 |
 | fr | WildChat | 84,681 | 137,789 | 1,196,874 |
@@ -155,7 +155,8 @@ Under `<data-dir>/sources`:
 - `aosp-latinime/<code>_wordlist.combined.gz`: LatinIME's `dictionaries/<code>_wordlist.combined.gz`
   at the pinned commit, which googlesource serves base64-encoded with `?format=TEXT`, decoded.
 - `word-kinds/<identifier>_word_kinds.tsv`: the word-kind snapshots described under "Word kinds",
-  kept from the builds that made them; they have no upstream to download from.
+  and `spelling-snapshots/es_hunspell_accepted.txt`, the Hunspell snapshot described under
+  "Vocabulary", kept from the builds that made them; they have no upstream to download from.
 - `wikidata-lexemes/<code>_forms.tsv`: every form of the lexemes in German (Q188), Spanish
   (Q1321), or French (Q150) in the Wikidata lexemes dump of November 18, 2026: a header row, then
   a row per form with its form, lemma, lexical category, and grammatical features.
@@ -166,9 +167,10 @@ Under `<data-dir>/sources`:
 apostrophes, so German "ß" and accented letters are letters, accents are kept, and a French elided
 word stays one word with what follows it ("l'équipe", "qu'il"), as LatinIME's word lists write
 them. A language's text rules in `languages.py` add, for German, Spanish, and French, composing
-letters with their accents (NFC); the marks that open a sentence where they stand, Spanish "¿" and
-"¡", which are not word characters; and the language's quotation marks (from CLDR), where a
-quotation can begin.
+letters with their accents (NFC), and the language's quotation marks (from CLDR), where a
+quotation can begin. Sentences end only at the shared ending marks and line breaks: Spanish "¿" and
+"¡" are not word characters and neither end nor start a sentence, so a question after a comma stays
+in its sentence, and one after a period already starts its own.
 
 ## Vocabulary
 
@@ -213,6 +215,16 @@ words, among them gerunds and infinitives with enclitic pronouns ("manteniéndol
 for "aúnan"). Leaving them out would leave out "ayudándole" with them, so RLA-ES keeps every word.
 Of the word list's capitalized words that Wikidata does not list, 3,462 stay capitalized, as RLA-ES
 rejects them in lowercase; they are mostly names and acronyms.
+
+Which words Hunspell accepts can change with the installed hunspell, so the words RLA-ES accepted
+are kept as a snapshot, `<data-dir>/sources/spelling-snapshots/es_hunspell_accepted.txt` (2,146
+words, one per line in code-point order), with its SHA-256 and the hunspell version that made it
+recorded in `languages.py` (`spelling_snapshot_sha256`, `spelling_snapshot_hunspell`):
+`d83ae2e0376e714d20428706c11e75dc54873a780a1e3964feba150247d802b1`, hunspell 1.7.6. A build reads
+the snapshot after checking its hash, and fails if it does not match; without the snapshot it runs
+hunspell afresh and fails unless the words accepted hash to the recorded snapshot's
+(`vocabulary/hunspell_snapshot.py`). To change it on purpose, run `write_vocabulary.py` with
+`--write-spelling-snapshot`, check the result, and record the hash and version it prints.
 
 The French lexicons do not list 4,552 of the French word list's lowercase words. Of 50 drawn at
 random, they are French words ("latrine", "surdéveloppé", "réouvrit", "royannaise"), loanwords
@@ -264,7 +276,10 @@ Set to Spanish, Apple's tagger on macOS 27.2 marks every word as OtherWord (all 
 3,000 Tatoeba sentences), so Spanish takes its word kinds from the
 [UD Spanish AnCora](https://github.com/UniversalDependencies/UD_Spanish-AnCora) treebank (CC BY 4.0)
 with `write_treebank_word_kinds.py`, in the same classes; a word the treebank splits ("del",
-"dámelo") takes its first part's class, as Apple's tagger joins contractions.
+"dámelo") takes its first part's class, as Apple's tagger joins contractions, and the words after
+it, in its sentence and the next ones, are read on their own.
+`.venv/bin/python -m unittest test_write_treebank_word_kinds` checks that a sentence after one
+with a split word keeps all its words.
 
 ## Sentence openers
 
