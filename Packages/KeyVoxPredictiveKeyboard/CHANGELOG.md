@@ -6,6 +6,23 @@ The format loosely follows Keep a Changelog, and the package uses semantic versi
 
 ---
 
+## [2.1.0] - 2026-11-24
+
+Letter layouts: each of Apple's letter layouts is bundled as data, and each typing language names the one its keyboard shows and the others Apple's keyboard offers.
+
+### Includes
+
+- `PredictiveData/letter_layouts` holds one file per Apple layout name, with the letter rows of Apple's iOS 27.2 iPhone keyboard: QWERTY, QWERTZ, QWERTZ-German, AZERTY, AZERTY-French, QWERTY-Spanish, QWERTY-Accents, QWERTZ-Accents, and Dvorak. Each row lists its character keys, shift and delete keys, and padding, with their widths in letter keys.
+- `LetterKeyLayout.bundled(identifier:)` reads one; `LetterKeyLayout` gains its `identifier`, its `rows` (`LetterKeyRow`), and its `width` in letter keys, and its `defaultGeometry` places the layout's letters where Apple's keyboard draws them.
+- A language's `language.json` names its `defaultLetterLayout` and Apple's `alternativeLetterLayouts` in Apple's order in place of its own letter rows; `TypingLanguage.letterLayout` is the default layout and `TypingLanguage.alternativeLetterLayouts` names the others. English shows QWERTY and lists AZERTY, QWERTZ, and Dvorak.
+- `PredictiveKeyboardError.invalidLetterLayout` reports a layout file that does not decode, names another layout, or has rows of different widths.
+
+### Notes
+
+- `2.1.0` adds public API; English typing is unchanged, its letters sitting where they did.
+
+---
+
 ## [2.0.0] - 2026-11-24
 
 Typing languages: each language the keyboard types in is read from its own folder, and English is the first.
