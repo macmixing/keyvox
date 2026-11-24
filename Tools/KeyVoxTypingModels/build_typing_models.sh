@@ -3,13 +3,21 @@
 # <data-dir>, into <data-dir>/built under the names of the package's English typing language
 # folder: the LatinIME dictionary (dictionary/), the correction and completion rankers and the
 # autocorrect decision model (.kvtr), and the accent overlay.
-# The bundled files in the package are left alone; compare and measure before copying.
+# The bundled files in the package are left alone: each built file is compared with the bundled
+# one, and with --check the script fails if any differ. Measure before copying.
 # Set PYTHON to the interpreter with requirements.txt installed (default: python3).
 set -euo pipefail
 
-if [[ $# -ne 1 ]]; then
-  echo "usage: $0 <data-dir>" >&2
+usage() {
+  echo "usage: $0 <data-dir> [--check]" >&2
   exit 1
+}
+
+[[ $# -eq 1 || $# -eq 2 ]] || usage
+CHECK=0
+if [[ $# -eq 2 ]]; then
+  [[ "$2" == "--check" ]] || usage
+  CHECK=1
 fi
 mkdir -p "$1"
 DATA_DIR="$(cd "$1" && pwd)"
@@ -50,3 +58,7 @@ rm -rf "$DATA_DIR/built/dictionary"
 
 chmod -R u+rwX,go+rX "$DATA_DIR/built"
 echo "built files in $DATA_DIR/built"
+
+if ! "$PYTHON" compare_with_bundled.py "$DATA_DIR" && [[ $CHECK -eq 1 ]]; then
+  exit 1
+fi
