@@ -4,7 +4,10 @@
 Counts every dictionary word, and the 800,000 word pairs of dictionary words that score best
 on count and likelihood together, in Tatoeba and OASST1, leaving out the sentences ITE
 typists copied. The keyboard reads the same features from its own context model at run
-time; this file only stands in for it while training."""
+time; this file only stands in for it while training.
+
+With `--leave-out-simulation-sentences`, the sentences the typo simulator types are left out
+too, for rankers trained on simulated typing (`simulation_sentences.py`)."""
 
 import argparse
 import math
@@ -14,6 +17,7 @@ from pathlib import Path
 
 import feature_context_model
 from paths import DataPaths
+from simulation_sentences import is_simulation_sentence
 from sources import ite_path, oasst1_path, tatoeba_path
 from text_sources import OASST1_WEIGHT, ite_sentences, oasst1_messages, tatoeba_sentences
 from words import tokenize
@@ -24,7 +28,9 @@ BIGRAM_CAP = 800_000
 def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("data_dir", type=Path)
-    data_dir = parser.parse_args().data_dir
+    parser.add_argument("--leave-out-simulation-sentences", action="store_true")
+    arguments = parser.parse_args()
+    data_dir = arguments.data_dir
     paths = DataPaths(data_dir)
 
     vocabulary = {line.split("\t", 1)[0] for line in
@@ -53,7 +59,10 @@ def main():
 
     def observe_text(text, weight=1):
         tokens = tokenize(text)
-        if 2 <= len(tokens) <= 40 and " ".join(tokens) not in excluded:
+        joined = " ".join(tokens)
+        if (2 <= len(tokens) <= 40 and joined not in excluded
+                and not (arguments.leave_out_simulation_sentences
+                         and is_simulation_sentence(joined))):
             observe(tokens, weight)
 
     for sentence in tatoeba_sentences(tatoeba_path(data_dir)):
