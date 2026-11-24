@@ -252,7 +252,7 @@ Attribution: Based on Open Discourse (Richter et al.): the speeches of the Germa
 - Upstream revision: `127336e9f29d69607eab55982324b210279ae8c5`
 - License: Apache License 2.0
 - License URL: <https://www.apache.org/licenses/LICENSE-2.0>
-- Note: The German, Spanish, and French vocabularies are modified versions of the `de`, `es`, and `fr` word lists: single words only, with their capitals settled by Wikidata Lexemes, Grammalecte, and RLA-ES and the French spellings checked against Grammalecte.
+- Note: The German, Spanish, and French vocabularies are modified versions of the `de`, `es`, and `fr` word lists: single words only, with their capitals settled by Wikidata Lexemes, Grammalecte, and RLA-ES.
 
 Copyright (c) 2008, The Android Open Source Project
 
@@ -269,7 +269,7 @@ Attribution: Based on Wikidata Lexemes.
 - Upstream version: 7.7
 - License: Mozilla Public License 2.0
 - License URL: <https://www.mozilla.org/en-US/MPL/2.0/>
-- Note: The French vocabulary takes spellings from the lexicon's inflected forms and checks spellings against them. The French vocabulary, and files built from it, are covered by the Mozilla Public License 2.0 and available in source form in this repository.
+- Note: The French vocabulary takes spellings from the lexicon's inflected forms and settles capitals with them. The French vocabulary, and files built from it, are covered by the Mozilla Public License 2.0 and available in source form in this repository.
 
 Attribution: Based on the Grammalecte French lexicon v7.7 by Olivier R.
 
