@@ -102,7 +102,7 @@ The builds of November 24, 2026. Every context model fills the default limits (1
 | en | 528,779,799 | 109,172 (SCOWL size 60) | 18,144 | 152 |
 | de | 118,350,701 | 209,470 | 146,689 | 220 |
 | de-bundestag | 138,467,367 | 209,470 | 146,689 | 222 |
-| es | 281,865,056 | 223,482 | 2,955 | 158 |
+| es | 281,865,056 | 236,307 | 2,955 | 158 |
 | fr | 393,698,831 | 160,541 | 19,021 | 195 |
 
 Texts, sentences, and words each source gave after deduplication:
@@ -154,6 +154,8 @@ Under `<data-dir>/sources`:
   `date`, `text`).
 - `aosp-latinime/<code>_wordlist.combined.gz`: LatinIME's `dictionaries/<code>_wordlist.combined.gz`
   at the pinned commit, which googlesource serves base64-encoded with `?format=TEXT`, decoded.
+- `word-kinds/<identifier>_word_kinds.tsv`: the word-kind snapshots described under "Word kinds",
+  kept from the builds that made them; they have no upstream to download from.
 - `wikidata-lexemes/<code>_forms.tsv`: every form of the lexemes in German (Q188), Spanish
   (Q1321), or French (Q150) in the Wikidata lexemes dump of November 18, 2026: a header row, then
   a row per form with its form, lemma, lexical category, and grammatical features.
@@ -186,25 +188,31 @@ A word the lexicons know is kept in every spelling they write it in, and in no o
 (`vocabulary/spellings.py`): German "Leben" and "leben" are both kept, a German noun the word list
 writes in lowercase takes its capital, and a word the list capitalizes only for starting a sentence
 loses it. A word the lexicons do not know, such as a name or a compound, keeps the word list's
-spellings. Such a word must then pass the language's spelling check, where it has one: a
-lowercase spelling is kept only if the check accepts it, and a spelling with capitals is written
-in lowercase if the check accepts that, as its capital was only the sentence's, and is otherwise
-kept as a name. The check is, for Spanish, the [RLA-ES](https://github.com/sbosio/rla-es) generic
-Spanish Hunspell dictionary (`vocabulary/hunspell_check.py`), and for French, the lexicons, an
-elided word checked part by part (`vocabulary/lexicon_check.py`). German has no spelling check. The vocabulary's
+spellings. The language's spelling check, where it has one, is then asked about each such word
+in lowercase: a spelling with capitals is written in lowercase if the check accepts that, as its
+capital was only the sentence's, and is otherwise kept as a name. French's check, the lexicons with
+an elided word checked part by part (`vocabulary/lexicon_check.py`), also leaves out a lowercase
+spelling it rejects. Spanish's, the [RLA-ES](https://github.com/sbosio/rla-es) generic Spanish
+Hunspell dictionary with its affix rules (`hunspell -d` with its `.aff` and `.dic`,
+`vocabulary/hunspell_check.py`), decides only capitals and leaves out no word
+(`spelling_check_drops_words` in `languages.py`). German has no spelling check. The vocabulary's
 common part, which SCOWL's size 50 is for English, is the spellings the word list itself writes:
 a spelling only the lexicons add is a rare sense, and does not keep the word's usual spelling with
 a capital from the capitalized spellings.
 
-| Language | Word list | Vocabulary | Left out by the spelling check |
-| --- | --- | --- | --- |
-| de | 205,887 words | 209,470 spellings | (no check) |
-| es | 236,193 words | 223,482 spellings | 12,825 words |
-| fr | 163,631 single words | 160,541 spellings | 4,552 words |
+| Language | Word list | Vocabulary | Left out by the spelling check | Written in lowercase by it |
+| --- | --- | --- | --- | --- |
+| de | 205,887 words | 209,470 spellings | (no check) | (no check) |
+| es | 236,193 words | 236,307 spellings | none | 2,146 words |
+| fr | 163,631 single words | 160,541 spellings | 4,552 words | |
 
-Besides foreign words, RLA-ES's generic dictionary rejects some Spanish forms in use, such as
-"ayudándole", "deshizo", and "recalculó"; such a form stays in the vocabulary only where Wikidata
-Lexemes list it.
+RLA-ES's affix rules reject 12,825 of the Spanish word list's lowercase words that Wikidata
+Lexemes do not list, most of them Spanish forms in use: of 40 drawn at random, 36 were Spanish
+words, among them gerunds and infinitives with enclitic pronouns ("manteniéndolos",
+"desestabilizarla", "arrojándole"), and 4 were not ("broadcast", "ione", "comintern", and "aunan"
+for "aúnan"). Leaving them out would leave out "ayudándole" with them, so RLA-ES keeps every word.
+Of the word list's capitalized words that Wikidata does not list, 3,462 stay capitalized, as RLA-ES
+rejects them in lowercase; they are mostly names and acronyms.
 
 License obligations of the vocabulary:
 
@@ -216,8 +224,8 @@ License obligations of the vocabulary:
   file made from it that ships, are covered by the MPL 2.0: they must carry its notice and be
   available in source form under it, which the repository and these tools provide.
 - RLA-ES, under the MPL 1.1 or later (of its three license options): only its accepting or
-  rejecting a spelling is used, and none of its files are copied or shipped; it is credited all
-  the same.
+  rejecting a spelling is used, to decide capitals, and none of its files are copied or shipped;
+  it is credited all the same.
 
 ## Word kinds
 
@@ -229,10 +237,23 @@ data was built. The tagger gives a joined word its first part's class; French wo
 elided article or preposition ("l'homme", "d'argent") take the class of the word they are joined
 to instead, so they are not counted as grammar words.
 
-The tagger's answers can change: the bundled English sentence openers were built with word kinds
-tagged on October 8, 2026, and tagging the same sentences on macOS 27.2 classes 1,477 of the
-114,496 words differently, which adds one line to a rebuilt `sentence_openers.txt`; the other five
-English files rebuild identically.
+The tagger's answers can change from one system to another: the bundled English sentence openers were
+built with word kinds tagged on October 8, 2026, and tagging the same sentences on macOS 27.2
+classes 1,477 of the 114,496 words differently. So the word kinds each language's data was built
+with are kept as a snapshot, `<data-dir>/sources/word-kinds/<identifier>_word_kinds.tsv`, with its
+SHA-256 recorded in `languages.py` (`AppleTaggerKinds.snapshot_sha256`):
+
+| Language | Snapshot | SHA-256 |
+| --- | --- | --- |
+| en | Tagged October 8, 2026 | `a46077a3b030c478fe39dc19d9b96a32f0934a9ac69e4aec551fb8a923d8ee3d` |
+| de | Tagged November 24, 2026, macOS 27.2 | `e0814d62d7ae0f32a9c1fb30ef06c89d84c1c0ce97003ccede0d389494697280` |
+| fr | Tagged November 24, 2026, macOS 27.2 | `eb82387afdbccf501cf3caeeb457c7b58a5fa7f1121381e3e98c81355982823e` |
+
+`write_word_kinds.py` copies the snapshot after checking its hash, and fails if it does not match.
+Without the snapshot it tags the sentences afresh and fails unless the result matches the recorded
+hash, so a build never goes on with word kinds other than the recorded ones. To change a
+language's word kinds on purpose, tag afresh, measure the result, and record the new file and its
+hash together.
 
 Set to Spanish, Apple's tagger on macOS 27.2 marks every word as OtherWord (all 4,361 words of
 3,000 Tatoeba sentences), so Spanish takes its word kinds from the
