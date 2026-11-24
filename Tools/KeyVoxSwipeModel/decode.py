@@ -73,7 +73,7 @@ def beam_search(data_dir: Path, emissions: np.ndarray, trie: KeyTrie, pruning: P
                 _pointer(nodes[index]), _pointer(log_probability[index]),
             )
 
-    workers = cpu_count() or 1
+    workers = max(1, (cpu_count() or 1) - 2)  # leaves two cores free
     size = (count + workers - 1) // workers
     with ThreadPoolExecutor(workers) as pool:
         list(pool.map(run, [range(start, min(count, start + size)) for start in range(0, count, size)]))
