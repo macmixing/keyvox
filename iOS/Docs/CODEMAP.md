@@ -979,7 +979,7 @@ Packages/
 - `Packages/KeyVoxLinguistics/Sources/KeyVoxLinguistics/PerceptronLinguisticAnalyzer.swift`
   - Supplies portable token boundaries and grammatical roles, with WordNet-backed lexical resolution where requested.
 - `Packages/KeyVoxLinguistics/Sources/KeyVoxLinguistics/CapitalizedSpellings.swift`
-  - Looks up the bundled list of words spelled only with capitals, shared by keyboard predictions and dictation continuation casing.
+  - Looks up the bundled per-language list of words spelled only with capitals (`capitalized_spellings_<language>.txt`), shared by keyboard predictions in the typing language and dictation continuation casing, which uses the English list.
 - `KeyVox iOS.xcodeproj/project.pbxproj`
   - The containing-app target copies `averaged-perceptron-tagger-eng` and `wordnet-3.0` into its bundle. The keyboard target has no ownership of these resources.
 
