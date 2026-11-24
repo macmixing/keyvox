@@ -6,6 +6,20 @@ The format loosely follows Keep a Changelog, and the package uses semantic versi
 
 ---
 
+## [2.0.1] - 2026-11-24
+
+The bundled English dictionary is the one `Tools/KeyVoxTypingModels` builds, with the same words, word pairs, and three-word sequences at the same probabilities.
+
+### Includes
+
+- `PredictiveData/en/dictionary` is rebuilt from the pinned SCOWL, Tatoeba, and OASST1 sources; only the order its entries were written in and the write times in its header change.
+
+### Notes
+
+- `2.0.1` changes no API or behavior; the correction and completion rankers, the autocorrect decision model, and the accent overlay the pipeline builds are the same bytes as the bundled ones, so they are unchanged.
+
+---
+
 ## [2.0.0] - 2026-11-24
 
 Typing languages: each language the keyboard types in is read from its own folder, and English is the first.
