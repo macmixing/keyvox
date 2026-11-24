@@ -239,7 +239,7 @@ extension KeyboardViewController {
             self.installedModels = KeyboardInstalledModels.check()
             self.configurePrimaryViewHeight()
             self.syncCapsLockState()
-            self.rootContainerView?.keyGridView.resetInteractionState()
+            // The keys were reset as the host left; a finger already back on them is a real press.
             self.dictationController.syncStateFromSharedState()
             self.ttsController.syncStateFromSharedState()
             KeyVoxIPCBridge.reportKeyboardOnboardingState(hasFullAccess: self.hasFullAccess)
