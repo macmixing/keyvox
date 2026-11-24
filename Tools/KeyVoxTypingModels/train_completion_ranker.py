@@ -1,10 +1,11 @@
 """Trains the completion ranker, which scores candidates while a word is still being typed,
 and writes it to `<data_dir>/work/completion_ranker.pkl.gz` with a held-out report.
 
-Trains on the records `training_sets.completion_sets` gives, every typist's accepted ITE word
-completions: the letters typed so far, the word the typist picked, and the words before it,
-with LatinIME's candidates for them from `cache_completion_candidates.py`. Records are split by
-the sentence being copied: buckets 0-7 train, 8-9 are held out."""
+Trains on the records `training_sets.completion_sets` gives for the training source
+(`--source`, `ite` unless given): every ITE typist's accepted word completions, simulated
+ones, or both, each the letters typed so far, the word picked, and the words before it, with
+LatinIME's candidates for them from `cache_completion_candidates.py`. Records are split by the
+sentence being typed: buckets 0-7 train, and ITE's buckets 8-9 are held out."""
 
 import argparse
 import gzip
@@ -17,17 +18,18 @@ from feature_context_model import FeatureContextModel
 from paths import DataPaths
 from ranker_features import candidate_groups
 from ranker_metrics import ranking_metrics
-from training_sets import completion_sets
+from training_sets import SOURCES, completion_sets
 from tree_training import fit_ranker
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("data_dir", type=Path)
+    parser.add_argument("--source", choices=SOURCES, default="ite")
     arguments = parser.parse_args()
     paths = DataPaths(arguments.data_dir)
 
-    training, held_out = completion_sets(paths)
+    training, held_out = completion_sets(paths, arguments.source)
     outputs = latinime_candidates.load(paths.completion_candidates)
     context = FeatureContextModel(paths.feature_context_model)
     ranker, training_rows = fit_ranker(candidate_groups(

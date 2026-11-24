@@ -2,9 +2,10 @@
 writes them to `<data_dir>/work/correction_ranker.pkl.gz` and `action.pkl.gz`, with a
 report of how they do on held-out sentences.
 
-They train on the records `training_sets.correction_sets` gives: records are split by the
-sentence being copied, buckets 0-4 train the ranker, bucket 5 the action model, and buckets
-8-9 are held out for the report."""
+They train on the records `training_sets.correction_sets` gives for the training source
+(`--source`, `ite` unless given): records are split by the sentence being typed, buckets 0-4
+train the ranker, bucket 5 the action model, and ITE's buckets 8-9 are held out for the
+report."""
 
 import argparse
 import gzip
@@ -18,7 +19,7 @@ from never_corrected_words import never_corrected_words
 from paths import DataPaths
 from ranker_features import candidate_groups
 from ranker_metrics import FIXED_THRESHOLDS, action_scores, evaluate_actions, ranking_metrics
-from training_sets import correction_sets
+from training_sets import SOURCES, correction_sets
 from tree_training import fit_action_model, fit_ranker
 
 
@@ -30,13 +31,14 @@ def save(model, path):
 def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("data_dir", type=Path)
+    parser.add_argument("--source", choices=SOURCES, default="ite")
     arguments = parser.parse_args()
     paths = DataPaths(arguments.data_dir)
 
     outputs = latinime_candidates.load(paths.correction_candidates)
     context = FeatureContextModel(paths.feature_context_model)
     protected = never_corrected_words(paths)
-    sets = correction_sets(paths)
+    sets = correction_sets(paths, arguments.source)
 
     ranker, ranker_rows = fit_ranker(
         candidate_groups(sets.ranker_typos, outputs, context, "correction ranker training"))
