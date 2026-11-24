@@ -3,11 +3,11 @@ dictionary's word list for the builders of the capitalized spellings and the fol
 Writes two lists, the vocabulary and its common part, as SCOWL's sizes 60 and 50 serve English.
 
 English's vocabulary is SCOWL (scowl_words.sh). Another language's is its AOSP LatinIME word
-list, each word's capitals settled by its lexicons and its spelling checked where the language
-has a check (vocabulary/spellings.py). Its common part is the spellings the word list itself
-writes: a spelling only the lexicons add is a rare sense, such as a rare verb form spelled like a
-common noun in lowercase. Only single words as the keyboard reads them are kept: letters with
-inner apostrophes, composed with their accents.
+list, each word's capitals settled by its lexicons and, where the language has one, a spelling
+check, which never leaves a word out (vocabulary/spellings.py). Its common part is the spellings
+the word list itself writes: a spelling only the lexicons add is a rare sense, such as a rare verb
+form spelled like a common noun in lowercase. Only single words as the keyboard reads them are
+kept: letters with inner apostrophes, composed with their accents.
 """
 
 import argparse
@@ -62,7 +62,7 @@ def main() -> None:
         check = lambda words: lexicon_accepted(words, forms)
     else:
         check = None
-    spellings = sorted(settled_spellings(word_list, lexicon, check, vocabulary.spelling_check_drops_words))
+    spellings = sorted(settled_spellings(word_list, lexicon, check))
     listed = set(word_list)
     common = [spelling for spelling in spellings if spelling in listed]
     arguments.output.write_text("".join(spelling + "\n" for spelling in spellings), encoding="utf-8")

@@ -1,6 +1,6 @@
-"""Checks lowercase spellings against a lexicon's forms as written, where a word joined to an
-elided form, as French joins an elided article or conjunction to the next word, is checked part
-by part: the lexicon lists the elided forms themselves, ending in an apostrophe."""
+"""Checks lowercase spellings against a lexicon's forms as written, to decide capitals, where a
+word joined to an elided form, as French joins an elided article or conjunction to the next word,
+is checked part by part: the lexicon lists the elided forms themselves, ending in an apostrophe."""
 
 _APOSTROPHE = "'"
 
