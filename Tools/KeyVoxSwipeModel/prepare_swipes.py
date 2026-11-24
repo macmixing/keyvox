@@ -6,13 +6,18 @@ keyboard's normalized frame. Each output file holds `xy` [N, points, 2], the tar
 its `layout`.
 
 - `train`, `val`, `test`: swipe.futo.org's first run and its official splits, unfiltered.
-- `extra`: the later English QWERTY runs (swipe-2 to swipe-5, one finger only). They are
-  released unfiltered, so swipes whose `distance` is unscored or beyond the first run's
-  filtered distribution are dropped. Other languages and layouts are never written here."""
+- `extra`: the later English QWERTY runs (swipe-2 to swipe-5, one finger only), for
+  training.
+- `layouts`: swipe-5's English swipes on other layouts (one finger only), never trained
+  on, to measure how well a model carries over to layouts it has not seen.
+
+The later runs are released unfiltered, so swipes whose `distance` is unscored or beyond
+the first run's filtered distribution are dropped. Other languages are never written."""
 
 import argparse
 import json
 from multiprocessing import Pool
+from os import cpu_count
 from pathlib import Path
 
 import numpy as np
@@ -30,6 +35,8 @@ EXTRA_DISTANCE_PERCENTILE = 99.0
 # The recordings give swipes they could not score a distance of this or more.
 UNSCORED_DISTANCE = 100_000.0
 BATCH_LINES = 20_000
+# Leaves two cores free for whatever else the machine is running.
+WORKERS = max(1, (cpu_count() or 1) - 2)
 
 
 def resample(points: list[dict], count: int = POINTS) -> np.ndarray:
@@ -101,7 +108,7 @@ def main() -> None:
     output = arguments.data_dir / "prepared"
     output.mkdir(exist_ok=True)
 
-    with Pool() as pool:
+    with Pool(WORKERS) as pool:
         train_distances = None
         for split, name in FIRST_RUN_SPLITS.items():
             rows = read_rows(arguments.data_dir / FUTO / name, pool)
@@ -110,16 +117,16 @@ def main() -> None:
             write(output / f"{split}.npz", rows)
 
         limit = float(np.percentile(train_distances, EXTRA_DISTANCE_PERCENTILE))
-        extra = []
+        extra, layouts = [], []
         for name in LATER_RUNS:
             rows = read_rows(arguments.data_dir / FUTO / name, pool)
-            kept = [
-                row for row in rows
-                if row[3] == QWERTY and row[4] == ENGLISH and row[5] == 0 and row[2] <= limit
-            ]
+            english = [row for row in rows if row[4] == ENGLISH and row[5] == 0 and row[2] <= limit]
+            kept = [row for row in english if row[3] == QWERTY]
             print(f"{name}: kept {len(kept)} of {len(rows)} (distance <= {limit:.1f})", flush=True)
             extra.extend(kept)
+            layouts.extend(row for row in english if row[3] != QWERTY)
         write(output / "extra.npz", extra)
+        write(output / "layouts.npz", layouts)
 
 
 if __name__ == "__main__":

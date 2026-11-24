@@ -39,6 +39,9 @@ _FUTO_FILES = (
     "swipe-5/layouts/german.json",
     "swipe-5/layouts/azerty.json",
     "swipe-5/layouts/spanish.json",
+    "swipe-5/layouts/clearflow.json",
+    "swipe-5/layouts/dvorak.json",
+    "swipe-5/layouts/kasroz.json",
 )
 _HOW_WE_SWIPE_FILES = (
     ("wy9q8", "metadata.tsv"),
