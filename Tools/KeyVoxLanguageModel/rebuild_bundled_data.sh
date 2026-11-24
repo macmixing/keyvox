@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Rebuilds every file the predictive keyboard bundles from these tools, from the sources in
-# <data-dir>: the context model, the sentence openers, the words spelled with capitals, the words
-# that follow an unknown word or a common word, and the grammar words.
+# Rebuilds every file the predictive keyboard bundles for English from the sources in <data-dir>,
+# with build_language_data.sh: the context model, the sentence openers, the words spelled with
+# capitals, the words that follow an unknown word or a common word, and the grammar words.
 # The builders share the source readers and the normalizing code, so a change made for one can
 # change another's output; run this after changing any tool here, never a single builder alone.
 #
@@ -22,48 +22,12 @@ if [[ $# -eq 2 ]]; then
   [[ "$2" == "--check" ]] || usage
   CHECK=1
 fi
-PYTHON="${PYTHON:-python3}"
 TOOLS_DIR="$(cd "$(dirname "$0")" && pwd)"
 BUNDLED_DIR="$TOOLS_DIR/../../Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/PredictiveData/en"
 LINGUISTICS_DIR="$TOOLS_DIR/../../Packages/KeyVoxLinguistics/Sources/KeyVoxLinguistics/Resources"
 BUILT_DIR="$DATA_DIR/bundled"
-SCRATCH_DIR="$(mktemp -d)"
 
-cleanup() {
-  rm -rf "$SCRATCH_DIR"
-}
-trap cleanup EXIT
-
-mkdir -p "$BUILT_DIR"
-cd "$TOOLS_DIR"
-
-"$PYTHON" download_sources.py "$DATA_DIR"
-"$PYTHON" extract_sentences.py "$DATA_DIR"
-
-# Context model.
-"$PYTHON" count_ngrams.py "$DATA_DIR"
-"$PYTHON" write_context_model.py "$DATA_DIR" "$BUILT_DIR/context_model.bin"
-
-# Sentence openers.
-xcrun swiftc -O tag_word_kinds.swift -o "$SCRATCH_DIR/tag_word_kinds"
-"$SCRATCH_DIR/tag_word_kinds" "$DATA_DIR/word_kinds.tsv" "$DATA_DIR/sentences/tatoeba.txt" "$DATA_DIR/sentences/oasst2.txt"
-"$PYTHON" count_sentence_openers.py "$DATA_DIR"
-"$PYTHON" write_sentence_openers.py "$DATA_DIR" \
-  --weight youtube-commons=0 --weight oasst2=0.3 --weight tatoeba=10 \
-  --output "$BUILT_DIR/sentence_openers.txt"
-
-# Words spelled with capitals.
-./scowl_words.sh 60 "$SCRATCH_DIR/scowl-60.txt"
-./scowl_words.sh 50 "$SCRATCH_DIR/scowl-50.txt"
-"$PYTHON" write_capitalized_spellings.py "$DATA_DIR" "$SCRATCH_DIR/scowl-60.txt" "$SCRATCH_DIR/scowl-50.txt" \
-  "$BUILT_DIR/capitalized_spellings_en.txt"
-
-# Words that follow an unknown word, and a common word.
-"$PYTHON" write_unknown_word_followers.py "$DATA_DIR" "$SCRATCH_DIR/scowl-60.txt" "$BUILT_DIR/unknown_word_followers.txt"
-"$PYTHON" write_word_followers.py "$DATA_DIR" "$SCRATCH_DIR/scowl-60.txt" "$BUILT_DIR/word_followers.txt"
-
-# Grammar words.
-"$PYTHON" write_grammar_words.py "$DATA_DIR" "$BUILT_DIR/grammar_words.txt"
+"$TOOLS_DIR/build_language_data.sh" en "$DATA_DIR" "$BUILT_DIR"
 
 differ=0
 for file in context_model.bin sentence_openers.txt capitalized_spellings_en.txt unknown_word_followers.txt \

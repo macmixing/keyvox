@@ -16,7 +16,8 @@ pronoun pulls the pronoun that refers back to it, as "man" makes "He" likelier (
 written by tag_word_kinds.swift. At most `--per-word` boosts are kept per word, each only when
 it moves an opener by at least `--floor`. The bar shows the three best-scoring openers.
 
-Each source's counts from count_sentence_openers.py are weighted (`--weight source=w`), and
+Each source's counts from count_sentence_openers.py are weighted by the language's opener
+weights (languages.py), which `--weight source=w` overrides, and
 its word evidence may be weighted apart (`--word-source source=w`): a word's pull on the next
 sentence's opener is a ratio within the sources, so a source whose openers are of the wrong
 style can still show which words pull which openers. A
@@ -26,10 +27,10 @@ mostly breaks lists and code rather than messages.
 Held-out texts are scored by how often the next sentence's first word is among the three;
 with `--apple`, the three are compared with Apple's suggestion bars for the same text.
 
-The defaults were tuned against Apple's suggestion bars after 136 sentences, captured with
-Tools/AppleKeyboardBaseline, for words shared with Apple, for Apple's habit of offering a word
-from the sentence just typed, and for how many different bars it shows. The bundled model
-was written with `--weight youtube-commons=0 --weight oasst2=0.3 --weight tatoeba=10`.
+The defaults were tuned against Apple's English suggestion bars after 136 sentences, captured
+with Tools/AppleKeyboardBaseline, for words shared with Apple, for Apple's habit of offering a
+word from the sentence just typed, and for how many different bars it shows. The bundled model
+was written with English's weights, `youtube-commons=0 oasst2=0.3 tatoeba=10`.
 
 The output must match `SentenceOpeners` in KeyVoxPredictiveKeyboard. Each line is a kind,
 a key, a tab, and `word:value` pairs:
@@ -45,6 +46,7 @@ import pickle
 from collections import Counter, defaultdict
 from pathlib import Path
 
+from languages import LANGUAGES, language_argument
 from normalize import LINE_BREAK, sentences_with_endings
 
 ANY = "*"
@@ -195,13 +197,13 @@ def held_out_scores(model: OpenerModel, sources: dict) -> dict[str, tuple[float,
     return scores
 
 
-def apple_comparison(model: OpenerModel, paths: list[Path]) -> tuple[float, int, int]:
+def apple_comparison(model: OpenerModel, paths: list[Path], rules) -> tuple[float, int, int]:
     """Mean words shared with Apple's bars, and how many different bars each shows."""
     shared, ours, apple, count = 0, set(), set(), 0
     for path in paths:
         for probe in json.loads(path.read_text(encoding="utf-8")):
             bar = [word.lower().replace("’", "'") for word in probe["bar"]]
-            sentences = list(sentences_with_endings(probe.get("text") or ""))
+            sentences = list(sentences_with_endings(probe.get("text") or "", rules))
             if sentences and sentences[-1][1]:
                 words, ending = sentences[-1]
                 predicted = model.lookup(ending, words[0], words)
@@ -216,6 +218,7 @@ def apple_comparison(model: OpenerModel, paths: list[Path]) -> tuple[float, int,
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
+    language_argument(parser)
     parser.add_argument("data_dir", type=Path)
     parser.add_argument("--output", type=Path)
     parser.add_argument("--weight", action="append", default=[], help="source=weight")
@@ -233,7 +236,9 @@ def main() -> None:
     parser.add_argument("--apple", type=Path, action="append", default=[])
     arguments = parser.parse_args()
 
-    weights = {name: float(weight) for name, _, weight in (item.partition("=") for item in arguments.weight)}
+    language = LANGUAGES[arguments.language]
+    weights = dict(language.opener_weights)
+    weights.update({name: float(weight) for name, _, weight in (item.partition("=") for item in arguments.weight)})
     word_weights = {name: float(weight) for name, _, weight in (item.partition("=") for item in arguments.word_source)}
     sources = {}
     for path in sorted((arguments.data_dir / "openers").glob("*.pkl")):
@@ -247,7 +252,7 @@ def main() -> None:
     for name, (hits, count) in held_out_scores(model, sources).items():
         print(f"held out {name}: next sentence's first word in the bar {hits:.1%} ({count} sentences)")
     if arguments.apple:
-        shared, ours, apple = apple_comparison(model, arguments.apple)
+        shared, ours, apple = apple_comparison(model, arguments.apple, language.text_rules)
         print(f"Apple: {shared:.2f} of 3 words shared; {ours} different bars (Apple {apple})")
     lines = model.lines()
     if arguments.output:

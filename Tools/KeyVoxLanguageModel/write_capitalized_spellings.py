@@ -2,13 +2,14 @@
 "iPhone": one per line as the lowercase word, a tab, and that spelling, in byte order of
 the lowercase word, for `CapitalizedSpellings` in KeyVoxLinguistics.
 
-A word is listed when its dictionary's SCOWL word list (size 60, from `scowl_words.sh`)
-spells it only one way, with capitals. Left out, so they stay as typed:
-- a word the common part of the word list (size 50) also spells in lowercase ("will",
-  "bob"), while a rare lowercase sense does not count ("charlie", "batman");
+A word is listed when its language's vocabulary (write_vocabulary.py; for English, SCOWL's
+size 60) spells it only one way, with capitals. Left out, so they stay as typed:
+- a word the common part of the vocabulary (for English, SCOWL's size 50) also spells in
+  lowercase ("will", "bob"), while a rare lowercase sense does not count ("charlie", "batman");
 - a word spelled with capitals in more than one way;
-- a spelling with capitals in a row ("NASA", "CDs"), unless `measured_spellings.txt` lists
-  it because the system keyboard was measured writing it that way ("iOS");
+- a spelling with capitals in a row ("NASA", "CDs"), unless the language's measured spellings
+  (for English, `measured_spellings.txt`) list it because the system keyboard was measured
+  writing it that way ("iOS");
 - a word the written sources show in lowercase more often than as spelled, away from where
   a sentence or quotation begins ("grey", or "th" after a number).
 Abbreviations ending in a period are skipped, since a typed word never does.
@@ -18,15 +19,15 @@ import argparse
 from collections import Counter, defaultdict
 from pathlib import Path
 
-from extract_sentences import oasst2_texts, tatoeba_rows
+from languages import LANGUAGES, language_argument
 from normalize import written_runs
+from readers import read_source
 
 # The sources written with care for capitals; video transcripts often are not. Tatoeba is
 # read whole: the language data leaves out its sentences that mention its recurring
 # characters only so the characters stop opening sentences, and those sentences still show
 # how words are written.
-WRITTEN_SOURCES = {"oasst2": oasst2_texts, "tatoeba": tatoeba_rows}
-MEASURED_SPELLINGS = Path(__file__).with_name("measured_spellings.txt")
+WRITTEN_SOURCES = ("oasst2", "tatoeba")
 
 
 def has_capitals_in_a_row(spelling: str) -> bool:
@@ -72,22 +73,24 @@ def capitals_only_spellings(scowl_words: Path, common_words: Path, measured: set
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
+    language_argument(parser)
     parser.add_argument("data_dir", type=Path)
-    parser.add_argument("scowl_words", type=Path, help="The size-60 word list.")
-    parser.add_argument("common_words", type=Path, help="The size-50 word list.")
+    parser.add_argument("scowl_words", type=Path, help="The vocabulary (for English, SCOWL's size 60).")
+    parser.add_argument("common_words", type=Path, help="Its common part (for English, SCOWL's size 50).")
     parser.add_argument("output", type=Path)
     arguments = parser.parse_args()
+    language = LANGUAGES[arguments.language]
 
     spellings = capitals_only_spellings(
         arguments.scowl_words,
         arguments.common_words,
-        read_measured_spellings(MEASURED_SPELLINGS),
+        read_measured_spellings(language.measured_spellings) if language.measured_spellings else set(),
     )
     as_spelled: Counter[str] = Counter()
     in_lowercase: Counter[str] = Counter()
-    for name, read in WRITTEN_SOURCES.items():
-        for text in read(arguments.data_dir / "sources" / name):
-            for run in written_runs(text):
+    for name in WRITTEN_SOURCES:
+        for text in read_source(arguments.data_dir, language.source(name)):
+            for run in written_runs(text, language.text_rules):
                 for word in run[1:]:
                     key = word.lower()
                     if key not in spellings:
