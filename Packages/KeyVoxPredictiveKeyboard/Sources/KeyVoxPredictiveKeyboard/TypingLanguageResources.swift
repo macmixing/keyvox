@@ -4,7 +4,7 @@ import Foundation
 public struct TypingLanguageResources: Sendable {
     private let directory: URL
 
-    init(identifier: String, bundle: Bundle = .module) throws {
+    init(identifier: String, bundle: Bundle = KeyVoxPredictiveKeyboardResources.bundle) throws {
         guard let data = bundle.url(forResource: "PredictiveData", withExtension: nil),
               data.hasDirectoryPath else {
             throw PredictiveKeyboardError.missingArtifact("PredictiveData")
