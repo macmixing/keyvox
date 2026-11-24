@@ -13,8 +13,9 @@ Typing languages: each language the keyboard types in is read from its own folde
 ### Includes
 
 - `TypingLanguage.bundled(identifier:)` reads one language from `PredictiveData/<identifier>`: its dictionary, context model, rankers, accent overlay, word lists, held-key characters, and spacing character lists, and from its `language.json` the letter rows, the letters single-letter edits try, the vowels a short typed word needs, the always-capitalized words, and the quotation marks.
-- `PredictiveEngine(language:)` replaces `EnglishPredictiveEngine()`, and the native engine takes the language's edit letters and vowels instead of its own English ones.
+- `PredictiveEngine(language:)` replaces `EnglishPredictiveEngine()`, and the native engine takes the language's edit letters and vowels instead of its own English ones, counting a short typed word's length in letters.
 - `PredictiveTypingSession(language:)`, `HeldKeyCharacters.bundled(for:)`, and the `CharacterList` lists take the language; `WordCasing` and `SmartQuotes` are the language's (`TypingLanguage.casing`, `TypingLanguage.quotes`), with `WordCasing.writingAlwaysCapitalized` in place of `capitalizingPronoun`.
+- The words spelled only with capitals come from the language's `KeyVoxLinguistics` list (`CapitalizedSpellings(languageCode:)`).
 - The English files move to `PredictiveData/en` under plain names: `dictionary/`, `context_model.bin`, `correction_ranker.kvtr`, `completion_ranker.kvtr`, and `autocorrect_decision.kvtr`.
 
 ### Notes
