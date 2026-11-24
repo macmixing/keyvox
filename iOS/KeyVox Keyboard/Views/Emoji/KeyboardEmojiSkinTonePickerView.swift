@@ -53,7 +53,7 @@ final class KeyboardEmojiSkinTonePickerView: UIView {
     private let shapeLayer = CAShapeLayer()
     private let dividerView = UIView()
     private let highlightView = KeyboardEmojiChoiceHighlightView()
-    private var labels: [UILabel] = []
+    private var choiceViews: [KeyboardEmojiGlyphView] = []
     private var choiceCenters: [CGPoint] = []
     private var style = Style.page
     /// How much the picker's corners, shadow, and highlight shrink, below 1 under Display Zoom.
@@ -105,19 +105,18 @@ final class KeyboardEmojiSkinTonePickerView: UIView {
         let shadowOffset = style.shadow?.offset ?? .zero
         shapeLayer.shadowOffset = CGSize(width: shadowOffset.width * sizeScale, height: shadowOffset.height * sizeScale)
         dividerView.frame = divider
-        while labels.count < choices.count {
-            let label = UILabel()
-            label.textAlignment = .center
-            labels.append(label)
-            addSubview(label)
+        while choiceViews.count < choices.count {
+            let choiceView = KeyboardEmojiGlyphView()
+            choiceViews.append(choiceView)
+            addSubview(choiceView)
         }
-        for (index, label) in labels.enumerated() {
-            label.isHidden = index >= choices.count
+        for (index, choiceView) in choiceViews.enumerated() {
+            choiceView.isHidden = index >= choices.count
             guard index < choices.count else { continue }
-            label.text = choices[index]
-            label.font = font
-            label.sizeToFit()
-            label.center = choiceCenters[index]
+            choiceView.show(choices[index], pointSize: font.pointSize)
+            // The emoji is drawn centered in the view, so only its center matters.
+            choiceView.bounds = CGRect(x: 0, y: 0, width: font.lineHeight, height: font.lineHeight)
+            choiceView.center = choiceCenters[index]
         }
         select(nil)
         applyColors()
@@ -132,7 +131,7 @@ final class KeyboardEmojiSkinTonePickerView: UIView {
         }
         highlightView.show(centeredAt: choiceCenters[index], sizeScale: sizeScale)
         // The highlight goes under the choices.
-        insertSubview(highlightView, belowSubview: labels[0])
+        insertSubview(highlightView, belowSubview: choiceViews[0])
     }
 
     func dismiss() {

@@ -1929,7 +1929,7 @@ Implementation split:
 - keyboard `Core` is grouped by domain:
   - `Dictation/` owns recording-state handoff, generic startup-failure feedback, live indicator driving, and latest-insertion long-press changes
   - `Dictation/Standalone/` owns a dictation made without the containing app: `KeyboardStandaloneDictation` coordinates one dictation, `KeyboardMicrophoneCapture` with its page and scheme handler records, and `KeyboardTranscriptionAUClient` hosts the Transcription AU extension and exchanges messages with it on its own queue; `KeyboardDictationController` sees them only through `KeyboardStandaloneDictating`
-  - `Emoji/` owns emoji indexes, drawability checks, Frequently Used and skin-tone persistence, panel state, and emoji layout math
+  - `Emoji/` owns emoji indexes, drawability checks, the shared emoji renderer, Frequently Used and skin-tone persistence, panel state, and emoji layout math
   - `Feedback/` owns extension-local haptics configuration and dispatch, including the Core Haptics text-input tap
   - `Input/` owns text insertion, key activation values, letter-case shift state, held-key popups, delete repeat and word deletion, symbol-page return, touch routing, special-key interaction, and cursor trackpad behavior
   - `Prediction/` owns the keyboard adapters for the shared typing session: the prediction coordinator and engines, field typing traits, personal vocabulary building, and persisted typing memory
@@ -2159,6 +2159,9 @@ Keys and characters:
 - tapping the search field starts the emoji search over the letter keys, lowercase, with a results row that makes the keyboard taller; keys type into the search instead of the document, results show the Frequently Used emoji until a non-space character is typed, a tapped result types into the document while the search stays, and done or the keyboard disappearing ends the search on the letter keys
 - the suggestion bar offers emoji for the word before the cursor in the user's chosen tones, most used first, once the user has typed an emoji, and keeps offering them after the keyboard starts again
 - a suggestion-bar emoji that would blend into a dark key, with most of it too close in color to the key's color in the current theme and appearance, gets a soft glow in the keys' label color; every other emoji shows unchanged
+- every emoji the keyboard shows or measures, on the page, in the search results, in the suggestion bar, in the pickers, in the glow check, and in the two-person silhouettes, is drawn by the one shared `KeyboardEmojiGlyphRenderer`, never as text: drawn as text, each emoji's picture stays in the system emoji font's cache, which nothing public empties, so browsing kept growing the keyboard's memory toward its limit
+- the renderer draws with a private copy of the emoji font, replaced every 32 emoji and once drawing pauses, which frees what it cached, keeps finished pictures in a 2 MB cache, and is emptied on a memory warning; on an iPhone 13 Pro, whose keyboard limit is 77 MB, the same 16-minute browsing and search run peaked at 60.9 MB with 136 memory warnings drawn as text and at 42.6 MB with none drawn by the renderer
+- shown emoji sit where a centered label drew them, the suggestion-bar glow is drawn into the emoji's picture with the same shadow text drew, and emoji that are measured rather than shown are drawn exactly where text drew them, pixel for pixel, so the glow decision and the silhouettes are unchanged
 - turning the Emoji Keyboard setting off removes the emoji key, closes an open emoji panel, and stops suggestion-bar emoji
 - under Display Zoom the emoji page, its bar, the search field and results, and the pickers shrink by the zoom, so they keep the rows and the size on screen they have with Display Zoom off
 

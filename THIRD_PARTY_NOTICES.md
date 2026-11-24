@@ -121,6 +121,13 @@ Attribution: Based on Kyutai's `pocket-tts` text-to-speech model. The Apple-plat
 
 Copyright (c) Georgi Gerganov and the llama.cpp contributors
 
+### Hex (emoji renderer source)
+- Upstream: <https://github.com/anomalyco/hex>
+- License: MIT
+- Note: the iOS keyboard's emoji renderer, `iOS/KeyVox Keyboard/Core/Emoji/KeyboardEmojiGlyphRenderer.swift`, is adapted from Hex's `EmojiGlyphRenderer` (`ios/HEXShared/FullKeyboard/Emoji/EmojiGlyphs.swift`).
+
+Copyright (c) 2026 Christopher Langton
+
 ### Qwen2.5-0.5B-Instruct (downloaded model artifact)
 - Upstream model: <https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct>
 - GGUF distribution: <https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF>
@@ -205,7 +212,7 @@ Attribution: Based on YouTube-Commons by PleIAs: transcripts of videos their cre
 
 Attribution: Based on Leino, Laine, Kurimo, and Oulasvirta, *Mobile Typing with Intelligent Text Entry: A Large-Scale Dataset and Results* (2024).
 
-### MIT License (applies to `whisper.cpp`, OpenAI Whisper, and `llama.cpp` above)
+### MIT License (applies to `whisper.cpp`, OpenAI Whisper, `llama.cpp`, and Hex above)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

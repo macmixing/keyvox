@@ -6,6 +6,7 @@ import UIKit
 /// tone, found by drawing the emoji with that person in another tone; every other pixel, such as
 /// outlines and clothes, belongs to whichever person's own pixels are nearest, so the whole of a
 /// grayed person turns gray. In an emoji whose people a heart joins, the heart keeps its color.
+@MainActor
 enum KeyboardEmojiSilhouetteRenderer {
     static let gray = UIColor(red: 142 / 255, green: 142 / 255, blue: 147 / 255, alpha: 1)
     /// How far apart two drawings' colors must be, summed over red, green, and blue out of 255
@@ -231,12 +232,11 @@ enum KeyboardEmojiSilhouetteRenderer {
             ) else {
                 return false
             }
-            // UIKit draws top down.
-            context.translateBy(x: 0, y: CGFloat(height))
-            context.scaleBy(x: scale, y: -scale)
-            UIGraphicsPushContext(context)
-            (text as NSString).draw(at: .zero, withAttributes: attributes)
-            UIGraphicsPopContext()
+            guard let font = attributes[.font] as? UIFont else { return false }
+            // Drawn by the shared emoji renderer from the bitmap's top left, as text draws; the
+            // bitmap's origin is its bottom left.
+            context.scaleBy(x: scale, y: scale)
+            KeyboardEmojiGlyphRenderer.shared.drawText(text, font: font, in: context, topLeft: CGPoint(x: 0, y: CGFloat(height) / scale))
             return true
         }
         return drawn ? data : nil
