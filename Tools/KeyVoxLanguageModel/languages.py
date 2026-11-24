@@ -117,8 +117,8 @@ _OPENER_WEIGHTS = {
 _BUNDESTAG_SHARE = 0.25
 
 
-def _text_rules(quotation_marks: str, sentence_opening_marks: str = "") -> TextRules:
-    return TextRules(composed=True, sentence_opening_marks=sentence_opening_marks, quotation_marks=quotation_marks)
+def _text_rules(quotation_marks: str) -> TextRules:
+    return TextRules(composed=True, quotation_marks=quotation_marks)
 
 
 _GERMAN_SOURCES = (
@@ -178,8 +178,8 @@ LANGUAGES = {
             spelling_check="hunspell",
             spelling_dictionary=RLA_ES,
         ),
-        # CLDR's Spanish quotation marks; "¿" and "¡" open a question or exclamation.
-        text_rules=_text_rules("«»“”", sentence_opening_marks="¿¡"),
+        # CLDR's Spanish quotation marks.
+        text_rules=_text_rules("«»“”"),
         deduplicate=True,
         opener_weights=_OPENER_WEIGHTS,
     ),
