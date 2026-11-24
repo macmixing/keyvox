@@ -26,7 +26,7 @@ def main():
 
     models = {
         "ranker": (paths.correction_ranker_model, paths.correction_ranker, CANDIDATE_FEATURES),
-        "action": (paths.action_model, paths.action, ACTION_FEATURES),
+        "action": (paths.action_model, paths.autocorrect_decision, ACTION_FEATURES),
         "completion": (paths.completion_ranker_model, paths.completion_ranker,
                        CANDIDATE_FEATURES),
     }

@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Builds every English typing model the predictive keyboard bundles from the sources in
-# <data-dir>, into <data-dir>/built: the LatinIME dictionary (candidate_v3_dict), the
-# correction ranker, completion ranker, and action model (.kvtr), and the accent overlay.
+# <data-dir>, into <data-dir>/built under the names of the package's English typing language
+# folder: the LatinIME dictionary (dictionary/), the correction and completion rankers and the
+# autocorrect decision model (.kvtr), and the accent overlay.
 # The bundled files in the package are left alone; compare and measure before copying.
 # Set PYTHON to the interpreter with requirements.txt installed (default: python3).
 set -euo pipefail
@@ -30,9 +31,9 @@ mkdir -p "$DATA_DIR/work" "$DATA_DIR/built"
 
 # Dictionary.
 "$PYTHON" write_dictionary_inputs.py "$DATA_DIR"
-rm -rf "$DATA_DIR/built/candidate_v3_dict"
+rm -rf "$DATA_DIR/built/dictionary"
 "$DATA_DIR/bin/write_latinime_dictionary" "$DATA_DIR/work/dictionary_unigrams.tsv" \
-  "$DATA_DIR/work/dictionary_ngrams.tsv" "$DATA_DIR/built/candidate_v3_dict" 2>/dev/null
+  "$DATA_DIR/work/dictionary_ngrams.tsv" "$DATA_DIR/built/dictionary" 2>/dev/null
 
 # Rankers and the action model.
 "$PYTHON" split_ite_events.py "$DATA_DIR"

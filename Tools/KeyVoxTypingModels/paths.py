@@ -1,6 +1,6 @@
 """Where each step reads and writes inside a data directory: inputs under `sources/`,
 intermediate files under `work/`, the compiled native tools under `bin/`, and the files the
-keyboard bundles under `built/`."""
+keyboard bundles under `built/`, named as in the package's English typing language folder."""
 
 from pathlib import Path
 
@@ -40,7 +40,7 @@ class DataPaths:
 
     @property
     def dictionary(self) -> Path:
-        return self.built / "candidate_v3_dict"
+        return self.built / "dictionary"
 
     # ITE typing events split by typist.
     def ite_split(self, name: str) -> Path:
@@ -97,16 +97,26 @@ class DataPaths:
     # Bundled files.
     @property
     def correction_ranker(self) -> Path:
-        return self.built / "production_ranker_800k.kvtr"
+        return self.built / "correction_ranker.kvtr"
 
     @property
     def completion_ranker(self) -> Path:
-        return self.built / "production_completion_ranker_800k.kvtr"
+        return self.built / "completion_ranker.kvtr"
 
     @property
-    def action(self) -> Path:
-        return self.built / "production_action_800k.kvtr"
+    def autocorrect_decision(self) -> Path:
+        return self.built / "autocorrect_decision.kvtr"
 
     @property
     def accent_overlay(self) -> Path:
         return self.built / "accent_overlay.bin"
+
+    @property
+    def bundled_files(self) -> tuple[Path, ...]:
+        """Every built file, each at the path it has in the language folder relative to `built/`.
+        LatinIME names a dictionary's files after its folder."""
+        return (
+            self.dictionary / "dictionary.header", self.dictionary / "dictionary.body",
+            self.correction_ranker, self.completion_ranker, self.autocorrect_decision,
+            self.accent_overlay,
+        )
