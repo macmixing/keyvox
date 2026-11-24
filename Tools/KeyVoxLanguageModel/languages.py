@@ -49,10 +49,13 @@ class LexiconVocabulary:
     capitals settled by the lexicons and, where given, its spelling checked."""
     word_list: Source
     lexicons: tuple[Source, ...]
-    # "lexicon": a lowercase word must be a lexicon form, or one joined to an elided form
-    # ("l'" + "équipe"); "hunspell": a lowercase word must pass the Hunspell dictionary.
+    # "lexicon": the lexicon's forms, a word joined to an elided form checked part by part;
+    # "hunspell": the Hunspell dictionary `spelling_dictionary`, with its affix rules.
     spelling_check: str | None = None
     spelling_dictionary: Source | None = None
+    # Whether a lowercase word the lexicons do not list is dropped when the check rejects it;
+    # otherwise the check only decides whether a capitalized word is written in lowercase.
+    spelling_check_drops_words: bool = True
 
 
 @dataclass(frozen=True)
@@ -175,6 +178,9 @@ LANGUAGES = {
             lexicons=(wikidata_forms("es", "15827ccb68d187ae72a1b7f1e443b9a301ba9c3645d8397aaefa4acf5a407fb5"),),
             spelling_check="hunspell",
             spelling_dictionary=RLA_ES,
+            # RLA-ES rejects Spanish forms in use, such as gerunds and infinitives with
+            # enclitic pronouns, so it decides only capitals.
+            spelling_check_drops_words=False,
         ),
         # CLDR's Spanish quotation marks; "¿" and "¡" open a question or exclamation.
         text_rules=_text_rules("«»“”", sentence_opening_marks="¿¡"),

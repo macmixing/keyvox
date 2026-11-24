@@ -62,7 +62,7 @@ def main() -> None:
         check = lambda words: lexicon_accepted(words, forms)
     else:
         check = None
-    spellings = sorted(settled_spellings(word_list, lexicon, check))
+    spellings = sorted(settled_spellings(word_list, lexicon, check, vocabulary.spelling_check_drops_words))
     listed = set(word_list)
     common = [spelling for spelling in spellings if spelling in listed]
     arguments.output.write_text("".join(spelling + "\n" for spelling in spellings), encoding="utf-8")
