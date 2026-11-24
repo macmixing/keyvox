@@ -12,7 +12,7 @@ The bundled English dictionary is the one `Tools/KeyVoxTypingModels` builds, wit
 
 ### Includes
 
-- `PredictiveData/en/dictionary` is rebuilt from the pinned SCOWL, Tatoeba, and OASST1 sources; only the order its entries were written in and the write times in its header change.
+- `PredictiveData/en/dictionary` is rebuilt from SCOWL and OASST1 at pinned revisions and from Tatoeba's English sentences as of its 2026-07-18 export, checked against their recorded SHA-256; only the order its entries were written in and the write times in its header change.
 
 ### Notes
 
