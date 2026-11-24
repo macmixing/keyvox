@@ -160,7 +160,7 @@ Copyright (c) 2008, The Android Open Source Project
 - Upstream: <https://github.com/en-wl/wordlist>
 - Upstream revision: `1e5b7d3a72f47a71da5d28686c1dd4b397178485`
 - License: ESDB permissive notice
-- Note: KeyVox uses a generated size-60 American English word list in its dictionary and accent-suggestion artifacts, its capitalized-spelling list, and its next-word lists.
+- Note: KeyVox generates its word lists from SCOWL at variant level 2: size 60 American (A) for the predictive keyboard's dictionary and its next-word lists; size 60 and size 50 American for the capitalized-spelling list it shares with dictation; size 60 in every spelling (American, British -ise, British -ize, Canadian, and Australian: A, B, Z, C, D) for its accent-suggestion overlay; and size 50 in every spelling, with the dictionary's words, for the words it never corrects.
 
 Copyright 2000-2026 by Kevin Atkinson
 
