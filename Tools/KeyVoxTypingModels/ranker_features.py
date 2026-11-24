@@ -43,8 +43,8 @@ def candidate_groups(records, outputs, context, label, buckets=None):
     """For each record with candidates: the record, its candidates, their feature rows, and
     which candidate is the intended word.
 
-    A record whose query the candidate cache never asked, or whose cached answer holds no
-    candidate other than the typed letters, is left out; how many is printed under `label`."""
+    A record whose query the candidate cache never asked, or whose cached candidates are only
+    the typed letters or two-word suggestions, is left out; how many is printed under `label`."""
     groups = []
     considered = never_asked = no_candidates = 0
     for record in records:
