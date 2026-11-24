@@ -326,6 +326,7 @@ final class KeyboardRootView: UIView {
         dictionaryButton.isHidden = !showsToolbarAccessories
         suggestionBarView.isHidden = !showsSuggestionBar
         suggestionBarView.isUserInteractionEnabled = showsSuggestionBar && !isTrackpadModeActive
+        suggestionBarView.isTrackpadModeActive = isTrackpadModeActive
         vibesButton.isTrackpadModeActive = isTrackpadModeActive
         vibesButton.isEnabled = shouldShowVibes && !isTrackpadModeActive
         vibesButton.isHidden = !shouldShowVibes

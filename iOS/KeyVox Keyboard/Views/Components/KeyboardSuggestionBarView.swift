@@ -5,13 +5,23 @@ import UIKit
 /// and trailing. The autocorrection space will apply is shown in a heavier weight. The trailing
 /// slot splits evenly among the bar's first emoji when it has any, as on the system keyboard. An
 /// emoji that would blend into its key gets a soft glow so it stays easy to see. A rescued
-/// dictation shows as one suggestion across the whole bar in their place.
+/// dictation shows as one suggestion across the whole bar in their place. While the space bar is a
+/// trackpad, the suggestions go blank as the keys do.
 final class KeyboardSuggestionBarView: UIView {
     var onItemSelected: ((SuggestionBar.Item) -> Void)?
     /// Called when the rescued dictation is tapped.
     var onRescuedDictationSelected: (() -> Void)?
     /// Called when a suggestion is pressed and held, instead of selecting it.
     var onItemLongPressed: ((SuggestionBar.Item) -> Void)?
+
+    var isTrackpadModeActive = false {
+        didSet {
+            guard isTrackpadModeActive != oldValue else { return }
+            emojiGlyphViews.forEach { $0.alpha = isTrackpadModeActive ? 0 : 1 }
+            buttons.forEach(applyAppearance)
+            applyKeyAppearance(to: rescuedDictationButton, isShown: true)
+        }
+    }
 
     /// The most emoji the trailing slot holds, as on the system keyboard; with the bar running to the
     /// keyboard's edge, they fit drawn without side insets.
@@ -216,13 +226,15 @@ final class KeyboardSuggestionBarView: UIView {
             return
         }
         let isPressed = button.isHighlighted
-        button.configuration?.baseForegroundColor = KeyboardStyle.keyLabelColor
+        button.configuration?.baseForegroundColor = isTrackpadModeActive ? .clear : KeyboardStyle.keyLabelColor
         button.backgroundColor = KeyboardStyle.keyTintColor(
             isPressed ? KeyboardStyle.keyPressedFillColor : KeyboardStyle.keyFillColor
         )
-        button.layer.borderColor = (isPressed ? KeyboardStyle.keyPressedBorderColor : KeyboardStyle.keyBorderColor)
-            .resolvedColor(with: traitCollection)
-            .cgColor
+        button.layer.borderColor = isTrackpadModeActive
+            ? UIColor.clear.cgColor
+            : (isPressed ? KeyboardStyle.keyPressedBorderColor : KeyboardStyle.keyBorderColor)
+                .resolvedColor(with: traitCollection)
+                .cgColor
     }
 
     @objc

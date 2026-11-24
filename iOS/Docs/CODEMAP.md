@@ -1657,7 +1657,7 @@ Packages/
 
 - `KeyVox Keyboard/App/KeyboardViewController.swift`
   - Extension controller and top-level keyboard surface owner.
-  - Owns toolbar mode switching, full-access instructions presentation, warm/cold app launch behavior, onboarding presentation reporting, Caps Lock, Vibes key cycling, missing-model Vibes recovery launch, dictionary/settings tab launch, the KeyVox Speak setup launch when no Speak voice is ready, the letter/number/symbol page, keys mode and controller-view height, emoji panel state, trackpad mode, and insertion.
+  - Owns toolbar mode switching, full-access instructions presentation, warm/cold app launch behavior, onboarding presentation reporting, Caps Lock, Vibes key cycling, missing-model Vibes recovery launch, dictionary/settings tab launch, the KeyVox Speak setup launch when no Speak voice is ready, the letter/number/symbol page, keys mode and controller-view height, emoji panel state, trackpad cursor movement (reading trackpad mode from the key grid, which owns it), and insertion.
   - On each layout pass reads the display kind through `KeyboardDisplay` and the Display Zoom through `KeyboardDisplayZoom`, decides landscape from `KeyboardScreenShape`, and shows its own globe key whenever the system asks for one; on each UI update applies the saved keyboard theme as a `KeyboardThemeTrait` override.
   - Waits for the host's first `textDidChange(_:)` after appearing before reading the focused field, then prepares typing for that field; a later change of the field's typing traits starts the new field fresh.
   - Empties the shared emoji renderer on a memory warning.
@@ -1867,7 +1867,7 @@ Packages/
 - `KeyVox Keyboard/Views/Components/KeyboardHeldKeyPopupView.swift`
   - Renders a held key's popup cells from the package's `HeldKeyPopupLayout`, highlighting the cell under the finger.
 - `KeyVox Keyboard/Views/Components/KeyboardSuggestionBarView.swift`
-  - Leading, primary, and trailing suggestion slots, the autocorrection in a heavier weight, up to three emoji splitting the trailing slot, each emoji drawn through `KeyboardEmojiGlyphView`, a soft glow in the keys' label color baked into the picture of an emoji that would blend into its key, taps that select an item, and long presses that report it instead; a rescued dictation as one suggestion across the whole bar, truncated at the end, in place of the slots.
+  - Leading, primary, and trailing suggestion slots, the autocorrection in a heavier weight, up to three emoji splitting the trailing slot, each emoji drawn through `KeyboardEmojiGlyphView`, a soft glow in the keys' label color baked into the picture of an emoji that would blend into its key, taps that select an item, and long presses that report it instead; a rescued dictation as one suggestion across the whole bar, truncated at the end, in place of the slots; and blank suggestions, as on the keys, while the space bar is a trackpad.
 - `KeyVox Keyboard/Views/FullAccessView.swift`
   - Full-screen keyboard-only instructional view shown when the user needs to enable Full Access.
 

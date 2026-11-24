@@ -157,13 +157,17 @@ final class KeyboardKeyGridView: UIView {
         touchSessions.removeAll()
         trackpadOriginKeyView = nil
         popupOwnerKeyView = nil
-        _ = spaceTrackpadController.cancel()
+        let hadTrackpad = spaceTrackpadController.cancel()
         compactKeysHoldController.cancel()
         deleteRepeatController.cancel()
         popupView.dismiss()
         cancelHeldKey()
         for keyView in keyViews {
             keyView.resetVisualState()
+        }
+        // The toolbar leaves trackpad mode with the keys, not at its next refresh.
+        if hadTrackpad {
+            onSpaceTrackpadEvent?(.cancelled)
         }
     }
 

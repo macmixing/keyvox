@@ -240,7 +240,10 @@ final class KeyboardViewController: UIInputViewController {
     var popupOverlayView: UIView?
     var fullAccessView: FullAccessView?
     var cursorTrackpadInteractor = KeyboardCursorTrackpadInteractor()
-    var isTrackpadModeActive = false
+    /// The key grid owns whether the space bar is a trackpad, so the toolbar can never outlive it.
+    var isTrackpadModeActive: Bool {
+        rootContainerView?.keyGridView.spaceTrackpadController.isActive ?? false
+    }
     var extensionHostIsActive = true
     var hostWillResignActiveObserver: NSObjectProtocol?
     var hostDidBecomeActiveObserver: NSObjectProtocol?
@@ -798,7 +801,6 @@ final class KeyboardViewController: UIInputViewController {
     func handleSpaceTrackpadEvent(_ event: KeyboardSpaceTrackpadEvent) {
         switch event {
         case .began:
-            isTrackpadModeActive = true
             cursorTrackpadInteractor.begin()
             updateUI()
         case let .moved(delta, timestamp):
@@ -811,7 +813,6 @@ final class KeyboardViewController: UIInputViewController {
             )
             handleTypingContextChange()
         case .ended, .cancelled:
-            isTrackpadModeActive = false
             cursorTrackpadInteractor.end()
             updateUI()
         }
