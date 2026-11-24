@@ -26,6 +26,14 @@ def target_forms(forms: np.ndarray, lexicon_forms: tuple[str, ...]) -> np.ndarra
     return np.array([index.get(str(form), -1) for form in forms], dtype=np.int32)
 
 
+def decode_accuracy(data_dir: Path, emissions: np.ndarray, trie, lexicon, scoring: Scoring, targets: np.ndarray,
+                    pruning: Pruning) -> tuple:
+    """Beam-searches emissions and returns the candidates, each swipe's target rank, and top-k accuracy."""
+    candidates = beam_search(data_dir, emissions, trie, pruning)
+    ranks = target_ranks(candidates, candidate_scores(candidates, lexicon.frequency, trie.form_path_length, scoring), targets)
+    return candidates, ranks, top_k_accuracy(ranks)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("data_dir", type=Path)
@@ -50,20 +58,18 @@ def main() -> None:
     emissions = run_emissions(arguments.data_dir / "models", arguments.run, split["xy"], layout, device,
                               arguments.exported, arguments.checkpoint)
     pruning = Pruning(beam=arguments.beam, gamma=arguments.prune_gamma, beta=arguments.prune_beta)
-    candidates = beam_search(arguments.data_dir, emissions, trie, pruning)
-    save_candidates(run_dir / f"candidates-{arguments.split}.npz", candidates, pruning)
-
     scoring_path = run_dir / "scoring.json"
     scoring = Scoring.load(scoring_path) if scoring_path.exists() else Scoring()
     targets = target_forms(split["form"], lexicon.forms)
-    ranks = target_ranks(candidates, candidate_scores(candidates, lexicon.frequency, trie.form_path_length, scoring), targets)
+    candidates, ranks, accuracy = decode_accuracy(arguments.data_dir, emissions, trie, lexicon, scoring, targets, pruning)
+    save_candidates(run_dir / f"candidates-{arguments.split}.npz", candidates, pruning)
     in_beam = np.isfinite(ranks)
     results = {
         "split": arguments.split,
         "swipes": int(len(targets)),
         "in_lexicon": float((targets >= 0).mean() * 100),
         "in_beam": float(in_beam.mean() * 100),
-        **top_k_accuracy(ranks),
+        **accuracy,
         "exported": arguments.exported,
         "checkpoint": arguments.checkpoint,
         "pruning": pruning.__dict__,
