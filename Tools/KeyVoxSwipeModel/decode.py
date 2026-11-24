@@ -78,17 +78,17 @@ def beam_search(data_dir: Path, emissions: np.ndarray, trie: KeyTrie, pruning: P
     with ThreadPoolExecutor(workers) as pool:
         list(pool.map(run, [range(start, min(count, start + size)) for start in range(0, count, size)]))
 
-    forms, scores, starts = [], [], [0]
-    for index in range(count):
-        for node, value in zip(nodes[index, : found[index]], log_probability[index, : found[index]]):
-            ending = trie.form_index[trie.form_start[node]:trie.form_start[node + 1]]
-            forms.extend(ending.tolist())
-            scores.extend([value] * len(ending))
-        starts.append(len(forms))
+    kept = np.arange(pruning.beam)[None, :] < found[:, None]
+    flat_nodes = nodes[kept]
+    flat_scores = log_probability[kept]
+    endings = trie.form_start[flat_nodes + 1] - trie.form_start[flat_nodes]
+    first = np.repeat(trie.form_start[flat_nodes], endings)
+    within = np.arange(endings.sum()) - np.repeat(np.cumsum(endings) - endings, endings)
+    per_swipe = np.bincount(np.repeat(np.arange(count), found), weights=endings, minlength=count).astype(np.int64)
     return Candidates(
-        start=np.array(starts, dtype=np.int64),
-        form=np.array(forms, dtype=np.int32),
-        log_probability=np.array(scores, dtype=np.float32),
+        start=np.concatenate([[0], np.cumsum(per_swipe)]).astype(np.int64),
+        form=trie.form_index[first + within].astype(np.int32),
+        log_probability=np.repeat(flat_scores, endings).astype(np.float32),
     )
 
 

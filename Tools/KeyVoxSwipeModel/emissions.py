@@ -18,8 +18,10 @@ def load_encoder(checkpoint: Path, device: torch.device) -> SwipeEncoder:
     return model.eval()
 
 
-def compute_emissions(model: SwipeEncoder, xy: np.ndarray, layout: Layout, device: torch.device) -> np.ndarray:
-    """[N, T, 2] swipes to [N, T / 2, K + 1] log-probabilities, blank at index 0."""
+def compute_frames(model: SwipeEncoder, xy: np.ndarray, layout: Layout, device: torch.device,
+                   dtype=np.float32) -> np.ndarray:
+    """[N, T, 2] swipes to [N, T / 2, K + 1 + basis^2 + 1]: log-probabilities (blank at index
+    0), then the cosine coefficients, then the gate probability."""
     centers = torch.from_numpy(layout.centers).to(device)
     basis = key_basis(centers, model.config.basis)
     mask = torch.ones(1, len(layout.letters), dtype=torch.bool, device=device)
@@ -30,5 +32,11 @@ def compute_emissions(model: SwipeEncoder, xy: np.ndarray, layout: Layout, devic
             coefficients, gate = model(batch)
             size = batch.shape[0]
             emissions = log_emissions(coefficients, gate, basis.expand(size, -1, -1), mask.expand(size, -1))
-            outputs.append(emissions.cpu().numpy())
+            frames = torch.cat([emissions, coefficients, torch.sigmoid(gate).unsqueeze(2)], dim=2)
+            outputs.append(frames.cpu().numpy().astype(dtype))
     return np.concatenate(outputs)
+
+
+def compute_emissions(model: SwipeEncoder, xy: np.ndarray, layout: Layout, device: torch.device) -> np.ndarray:
+    """[N, T, 2] swipes to [N, T / 2, K + 1] log-probabilities, blank at index 0."""
+    return compute_frames(model, xy, layout, device)[..., : len(layout.letters) + 1]
