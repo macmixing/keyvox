@@ -252,7 +252,7 @@ Attribution: Based on Open Discourse (Richter et al.): the speeches of the Germa
 - Upstream revision: `127336e9f29d69607eab55982324b210279ae8c5`
 - License: Apache License 2.0
 - License URL: <https://www.apache.org/licenses/LICENSE-2.0>
-- Note: The German, Spanish, and French vocabularies are modified versions of the `de`, `es`, and `fr` word lists: single words only, with their capitals settled by Wikidata Lexemes and Grammalecte and their spellings checked against RLA-ES and Grammalecte.
+- Note: The German, Spanish, and French vocabularies are modified versions of the `de`, `es`, and `fr` word lists: single words only, with their capitals settled by Wikidata Lexemes, Grammalecte, and RLA-ES and the French spellings checked against Grammalecte.
 
 Copyright (c) 2008, The Android Open Source Project
 
@@ -273,12 +273,12 @@ Attribution: Based on Wikidata Lexemes.
 
 Attribution: Based on the Grammalecte French lexicon v7.7 by Olivier R.
 
-### RLA-ES Spanish spelling dictionaries (build-time spelling check)
+### RLA-ES Spanish spelling dictionaries (build-time capitalization check)
 - Source: <https://github.com/sbosio/rla-es>
 - Upstream version: 2.9
 - License: Mozilla Public License 1.1 or later (one of its GPL 3+, LGPL 3+, and MPL 1.1+ options)
 - License URL: <https://www.mozilla.org/en-US/MPL/1.1/>
-- Note: The generic Spanish dictionary checks the spellings of the Spanish vocabulary; none of its files are copied into it.
+- Note: The generic Spanish dictionary decides which capitalized words of the Spanish vocabulary are written in lowercase; none of its files are copied into it.
 
 Attribution: Based on the RLA-ES Spanish spelling dictionaries v2.9 by Santiago Bosio and contributors.
 
