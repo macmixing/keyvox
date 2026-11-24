@@ -357,8 +357,20 @@ extension KeyboardKeyGridView {
         trackpadActivationFeedback.impactOccurred()
         trackpadActivationFeedback.prepare()
         dismissPopup(ownedBy: popupOwnerKeyView)
+        releaseKeysBesideTrackpad()
         updateAllKeyStates()
         onSpaceTrackpadEvent?(.began)
+    }
+
+    /// Lets go of every key other fingers were already holding, so none of them types, repeats, or
+    /// opens a popup while the space bar is a trackpad; the globe's touch stays with the system.
+    private func releaseKeysBesideTrackpad() {
+        cancelHeldKey()
+        deleteRepeatController.cancel()
+        compactKeysHoldController.cancel()
+        touchSessions = touchSessions.filter { _, session in
+            session.kind == .space || session.kind == .nextKeyboard
+        }
     }
 
     private func showPopup(for keyView: KeyboardKeyView) {
