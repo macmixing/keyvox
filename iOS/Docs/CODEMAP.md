@@ -516,6 +516,7 @@ iOS/
 │   │   │   ├── KeyboardTTSController.swift
 │   │   │   └── KeyVoxIPCLiveMeterSignalState+AudioIndicator.swift
 │   │   ├── KeyboardLayoutGeometry.swift
+│   │   ├── KeyboardLetterRows.swift
 │   │   ├── KeyboardKeysMode.swift
 │   │   ├── KeyboardDisplay.swift
 │   │   ├── KeyboardDisplayZoom.swift
@@ -656,6 +657,7 @@ iOS/
 │   │   │   ├── KeyboardFieldKeysTests.swift
 │   │   │   ├── KeyboardInteractionHapticsTests.swift
 │   │   │   ├── KeyboardLetterCaseControllerTests.swift
+│   │   │   ├── KeyboardLetterRowsTests.swift
 │   │   │   ├── KeyboardMicrophoneSelectionTests.swift
 │   │   │   ├── KeyboardPredictionCoordinatorTests.swift
 │   │   │   ├── KeyboardRescuedDictationStoreTests.swift
@@ -716,6 +718,7 @@ Packages/
 │   │   │   ├── LearnedVocabulary.swift
 │   │   │   ├── LearnedWords.swift
 │   │   │   ├── LetterKeyLayout.swift
+│   │   │   ├── LetterKeyRow.swift
 │   │   │   ├── MissingSpaceCorrector.swift
 │   │   │   ├── NoisyChannelCorrector.swift
 │   │   │   ├── PersonalVocabulary.swift
@@ -726,7 +729,8 @@ Packages/
 │   │   │   ├── PredictionRequest.swift
 │   │   │   ├── PredictionResult.swift
 │   │   │   ├── PredictiveData/
-│   │   │   │   └── en/
+│   │   │   │   ├── en/
+│   │   │   │   └── letter_layouts/
 │   │   │   ├── PredictiveEngine.swift
 │   │   │   ├── PredictiveTypingSession.swift
 │   │   │   ├── RepeatedPicks.swift
@@ -1816,7 +1820,9 @@ Packages/
   - Lightweight rooted-install gate used by the extension toolbar for Whisper, Parakeet, PocketTTS, and local Vibes AI availability.
 - `KeyVox Keyboard/Core/KeyboardLayoutGeometry.swift`
   - Row-geometry helper for keyboard-specific sizing rules that should not live in `KeyboardRootView` or `KeyboardKeyGridView`.
-  - Owns the letter page's inset middle row and shift row, the symbol pages' third row, and the bottom row's live widths, including the landscape side-key span, the paired page and emoji keys, the emoji search's three-key row, the globe row, and each field bottom row's split of the space bar's and return key's places, all driven from the measured key grid, plus the number pad's bottom row in its three columns across the pad's width from `KeyboardNumberPadGeometry`, with key widths one priority below required so a resize never forces Auto Layout to break key constraints.
+  - Owns the letter page's letter rows that are not equal keys across (`LetterRowLayout`: each key, inset, and extra gap as many letter keys wide as `KeyboardLetterRows` says, a letter key being the grid's width split among the layout's width in letter keys), the symbol pages' third row, and the bottom row's live widths, including the landscape side-key span, the paired page and emoji keys, the emoji search's three-key row, the globe row, and each field bottom row's split of the space bar's and return key's places, all driven from the measured key grid, plus the number pad's bottom row in its three columns across the pad's width from `KeyboardNumberPadGeometry`, with key widths one priority below required so a resize never forces Auto Layout to break key constraints.
+- `KeyVox Keyboard/Core/KeyboardLetterRows.swift`
+  - The letter page's letter rows drawn from the typing language's letter layout: the layout's keys at Apple's widths in letter keys, shift and delete taking in the padding beside them so they reach the row's letters, other padding left as an inset at a row's edge or a gap between keys, and whether a row is equal keys across.
 - `KeyVox Keyboard/Core/KeyboardKeysMode.swift`
   - Resolves full versus compact presentation from availability and persisted active state.
   - Takes the 286-point full or 174-point compact portrait height from `KeyboardStyle`, changes it by however much shorter or taller the keys are in landscape or on iPad, takes the toolbar's row (`KeyboardStyle.toolbarRowHeight`) off when told the row is not kept, and owns visible row count, per-orientation and per-display key height, row spacing, the top row's toolbar button height, and derived key-grid height, each scaled by `KeyboardDisplayZoom`'s size scale; under Display Zoom the height around the keys shrinks by the same scale.
@@ -1829,7 +1835,7 @@ Packages/
 - `KeyVox Keyboard/Core/KeyboardScreenShape.swift`
   - Decides landscape from whether the keyboard's scene is wider than it is tall rather than from the interface orientation.
 - `KeyVox Keyboard/Core/KeyboardSymbolLayout.swift`
-  - Defines the letter, number, and alternate symbol pages and the number pad page, whether a page shows the toolbar (`showsToolbar`, every page but the number pad) and keeps the toolbar's row (`keepsToolbarRow`, also while the emoji page or search is open), the key kinds, whether a key edits the text, and their titles, symbols, and accessibility labels, the Compact Keys rows, the emoji search's bottom row, the field's bottom row and return key look, and the bottom-row variants without the emoji key or with the globe key.
+  - Defines the letter page (its letter rows from `KeyboardLetterRows`), the number and alternate symbol pages, and the number pad page, whether a page shows the toolbar (`showsToolbar`, every page but the number pad) and keeps the toolbar's row (`keepsToolbarRow`, also while the emoji page or search is open), the key kinds, whether a key edits the text, and their titles, symbols, and accessibility labels, the Compact Keys rows, the emoji search's bottom row, the field's bottom row and return key look, and the bottom-row variants without the emoji key or with the globe key.
 - `KeyVox Keyboard/Core/KeyboardTopRowAccessoryLayout.swift`
   - Owns top-row accessory alignment driven from the measured key grid.
   - Keeps the left accessory slot stable by showing Settings while idle and the existing Cancel control while recording, transcribing, or playing speech.
@@ -1885,8 +1891,10 @@ Packages/
   - UI-independent typing state of one text field: the host reports taps, and text changes with the text on both sides of the cursor, and asks for the `TextEdit` that space, return, word-ending characters, picked-word spacing, or a suggestion tap should apply. Owns autocorrection undo, previous-word revision requests, deleted-into correction holds, picked-word runs, and the suggestion bar's emoji word. Use from one thread only.
 - `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/PredictionComputer.swift`
   - Computes the suggestion bar and space-bar autocorrection for a `PredictionRequest`, revisions for a `RevisionRequest`, and the intended letter for a contested tap; takes the keyboard geometry, personal vocabulary, and learned vocabulary from the host.
-- `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/TypingLanguage.swift`, `TypingLanguageManifest.swift`, `TypingLanguageResources.swift`, and `LetterKeyLayout.swift`
-  - One bundled typing language read from its `PredictiveData/<language>` folder: its files, and from its `language.json` the letter rows, edit letters, vowels, always-capitalized words (`WordCasing`), and quotation marks (`SmartQuotes`).
+- `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/TypingLanguage.swift`, `TypingLanguageManifest.swift`, and `TypingLanguageResources.swift`
+  - One bundled typing language read from its `PredictiveData/<language>` folder: its files, and from its `language.json` its default letter layout and the alternatives Apple's keyboard offers in Apple's order, edit letters, vowels, always-capitalized words (`WordCasing`), and quotation marks (`SmartQuotes`).
+- `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/LetterKeyLayout.swift` and `LetterKeyRow.swift`
+  - One of Apple's letter layouts read from `PredictiveData/letter_layouts/<layout>.json`, one file per Apple layout name (QWERTY, QWERTZ, QWERTZ-German, AZERTY, AZERTY-French, QWERTY-Spanish, QWERTY-Accents, QWERTZ-Accents, Dvorak) holding the letter rows of Apple's iOS 27.2 iPhone keyboard: each row's character keys, shift and delete keys, and padding, with their widths in letter keys, every row equally wide. The engine aims touches at its letters before the keyboard reports its key frames (`defaultGeometry`), and the keyboard draws its rows from the same layout.
 - `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/KeyVoxPredictiveKeyboardResources.swift`
   - Lets a host outside an app bundle, such as the Android engine, point the typing package at its unchanged SwiftPM resource bundle before the first typing language loads.
 - `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/PredictiveEngine.swift`
@@ -1984,7 +1992,7 @@ Packages/
 - `KeyVoxiOSTests/Core/Audio/`
   - Audio input preference resolution and stop-time capture processing.
 - `KeyVoxiOSTests/Core/Keyboard/`
-  - Keyboard dictation control, latest-insertion change behavior, deterministic paragraph/list/Caps formatting, controller presentation lifecycle coverage, toolbar warning precedence, interaction haptics, text insertion behavior, letter-case shift state, held-delete word deletion, typing-memory reset, emoji category memory and styles, emoji grid, search, and picker geometry, emoji drawability, and cursor-trackpad helpers.
+  - Keyboard dictation control, latest-insertion change behavior, deterministic paragraph/list/Caps formatting, controller presentation lifecycle coverage, toolbar warning precedence, interaction haptics, text insertion behavior, letter-case shift state, the letter rows each of the typing language's letter layouts draws, held-delete word deletion, typing-memory reset, emoji category memory and styles, emoji grid, search, and picker geometry, emoji drawability, and cursor-trackpad helpers.
   - The test target compiles every keyboard source except the keyboard's `Info.plist`, its `InfoPlist.xcstrings`, and privacy manifest.
 - `KeyVoxiOSTests/Core/TTS/`
   - Deterministic copied-text playback coverage for PocketTTS engine runtime lifecycle, TTS manager lifecycle handoff rules, system playback integration, and buffering policy behavior.
@@ -1997,7 +2005,7 @@ Packages/
 - `Packages/KeyVoxLocalInference/Tests/KeyVoxLocalInferenceTests/`
   - Package-level coverage for local prompt formatting, adapter-aware generation behavior, and opt-in live model prompt suites for Polished, Casual, and the Polished gauntlet.
 - `Packages/KeyVoxPredictiveKeyboard/Tests/KeyVoxPredictiveKeyboardTests/`
-  - Package-level coverage for autocorrection, missing-space correction, word revision, deleted-into and remembered corrections, contact names and dictionary phrases, learned words, capitals, and suggestions, sentence endings and openers, picked-word spacing and repeated picks, emoji suggestions, smart quotes, held-key characters and popup layout, character lists, and the typing-memory file.
+  - Package-level coverage for autocorrection, missing-space correction, word revision, deleted-into and remembered corrections, contact names and dictionary phrases, learned words, capitals, and suggestions, sentence endings and openers, picked-word spacing and repeated picks, emoji suggestions, smart quotes, held-key characters and popup layout, character lists, the bundled letter layouts and the layouts each language names, and the typing-memory file.
 - `Packages/KeyVoxEmoji/Tests/KeyVoxEmojiTests/`
   - Package-level coverage for the catalog, keyboard sections, Frequently Used ranking, search, suggestion-bar emoji, and two-person tones.
 - `Packages/KeyVoxKeyboardThemes/Tests/KeyVoxKeyboardThemesTests/`
