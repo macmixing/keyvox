@@ -1,12 +1,13 @@
 # KeyVox Language Model
 
 Builds the language data the predictive keyboard bundles in
-`Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/PredictiveData`, and the
+English typing language in
+`Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/PredictiveData/en`, and the
 capitalized spellings shared with dictation in `Packages/KeyVoxLinguistics/Sources/KeyVoxLinguistics/Resources`:
 
 | Bundled file | Built by | Reads |
 | --- | --- | --- |
-| `context_artifact_800k.bin` | `extract_sentences.py`, `count_ngrams.py`, `write_context_model.py` | Every source, through `extract_sentences.py` |
+| `context_model.bin` | `extract_sentences.py`, `count_ngrams.py`, `write_context_model.py` | Every source, through `extract_sentences.py` |
 | `sentence_openers.txt` | `tag_word_kinds.swift`, `count_sentence_openers.py`, `write_sentence_openers.py` | Every source, through `extract_sentences.py`'s readers and its sentences |
 | `capitalized_spellings.txt` | `scowl_words.sh`, `write_capitalized_spellings.py` | SCOWL, `measured_spellings.txt`, and OASST2 and Tatoeba through `extract_sentences.py`'s readers |
 | `unknown_word_followers.txt` | `scowl_words.sh`, `write_unknown_word_followers.py` | SCOWL, `count_ngrams.py`'s counts, and OASST2 and Tatoeba's sentences |

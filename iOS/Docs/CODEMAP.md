@@ -497,6 +497,7 @@ iOS/
 │   │   │   ├── KeyboardPersonalVocabularyBuilder.swift
 │   │   │   ├── KeyboardPredictionCoordinator.swift
 │   │   │   ├── KeyboardPredictionEngine.swift
+│   │   │   ├── KeyboardTypingLanguage.swift
 │   │   │   ├── KeyboardTypingMemory.swift
 │   │   │   └── KeyboardTypingTraits.swift
 │   │   ├── Settings/
@@ -705,8 +706,6 @@ Packages/
 │   │   │   ├── ContestedTapPolicy.swift
 │   │   │   ├── ContextLanguageScorer.swift
 │   │   │   ├── CorrectionRejections.swift
-│   │   │   ├── EnglishKeyboardLayout.swift
-│   │   │   ├── EnglishPredictiveEngine.swift
 │   │   │   ├── FollowerTable.swift
 │   │   │   ├── GrammarWords.swift
 │   │   │   ├── HeldKeyCharacters.swift
@@ -715,6 +714,7 @@ Packages/
 │   │   │   ├── LearnedCapitals.swift
 │   │   │   ├── LearnedVocabulary.swift
 │   │   │   ├── LearnedWords.swift
+│   │   │   ├── LetterKeyLayout.swift
 │   │   │   ├── MissingSpaceCorrector.swift
 │   │   │   ├── NoisyChannelCorrector.swift
 │   │   │   ├── PersonalVocabulary.swift
@@ -724,8 +724,9 @@ Packages/
 │   │   │   ├── PredictionModels.swift
 │   │   │   ├── PredictionRequest.swift
 │   │   │   ├── PredictionResult.swift
-│   │   │   ├── PredictiveArtifactLocator.swift
 │   │   │   ├── PredictiveData/
+│   │   │   │   └── en/
+│   │   │   ├── PredictiveEngine.swift
 │   │   │   ├── PredictiveTypingSession.swift
 │   │   │   ├── RepeatedPicks.swift
 │   │   │   ├── RevisionRequest.swift
@@ -742,6 +743,9 @@ Packages/
 │   │   │   ├── TypingMemory.swift
 │   │   │   ├── TypingMemoryFile.swift
 │   │   │   ├── TypingSlip.swift
+│   │   │   ├── TypingLanguage.swift
+│   │   │   ├── TypingLanguageManifest.swift
+│   │   │   ├── TypingLanguageResources.swift
 │   │   │   ├── TypingTextContext.swift
 │   │   │   ├── UnknownWordFollowers.swift
 │   │   │   ├── WordCasing.swift
@@ -1880,8 +1884,10 @@ Packages/
   - UI-independent typing state of one text field: the host reports taps, and text changes with the text on both sides of the cursor, and asks for the `TextEdit` that space, return, word-ending characters, picked-word spacing, or a suggestion tap should apply. Owns autocorrection undo, previous-word revision requests, deleted-into correction holds, picked-word runs, and the suggestion bar's emoji word. Use from one thread only.
 - `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/PredictionComputer.swift`
   - Computes the suggestion bar and space-bar autocorrection for a `PredictionRequest`, revisions for a `RevisionRequest`, and the intended letter for a contested tap; takes the keyboard geometry, personal vocabulary, and learned vocabulary from the host.
-- `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/EnglishPredictiveEngine.swift`
-  - Loads the bundled `PredictiveData` dictionary, context model, rankers, accent overlay, and word lists, and bridges to the `KeyVoxPredictiveNative` LatinIME target.
+- `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/TypingLanguage.swift`, `TypingLanguageManifest.swift`, `TypingLanguageResources.swift`, and `LetterKeyLayout.swift`
+  - One bundled typing language read from its `PredictiveData/<language>` folder: its files, and from its `language.json` the letter rows, edit letters, vowels, always-capitalized words (`WordCasing`), and quotation marks (`SmartQuotes`).
+- `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/PredictiveEngine.swift`
+  - Loads a typing language's dictionary, context model, rankers, accent overlay, and word lists, and bridges to the `KeyVoxPredictiveNative` LatinIME target, handing it the language's edit letters and vowels.
 - `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/NoisyChannelCorrector.swift`, `SuggestionCandidateRanker.swift`, `MissingSpaceCorrector.swift`, `TouchAlignmentScorer.swift`, and `ContextLanguageScorer.swift`
   - Score candidates by context likelihood against where the touches landed, decide when space replaces the typed word, rank completions and corrections on one score, and read a typed word as two words whose space was missed.
 - `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/SuggestionBar.swift` and `SuggestionBarComposer.swift`
@@ -1893,7 +1899,7 @@ Packages/
 - `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/HeldKeyCharacters.swift` and `HeldKeyPopupLayout.swift`
   - Bundled held-key characters per key with the side each popup opens toward, and the popup cell layout that reaches the keyboard's edge and spills to the other side, or takes a second row, when an offer does not fit; a centered offer, such as the web endings, keeps its listed order and slides along to stay on the keyboard.
 - `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/SmartQuotes.swift`, `CharacterList.swift`, and `TypingTextContext.swift`
-  - Opening and closing quote marks, the bundled character lists that end words, shape picked-word spacing, or suppress next-word suggestions, and the word and sentence context read around the cursor.
+  - The typing language's opening and closing quote marks, its bundled character lists that end words, shape picked-word spacing, or suppress next-word suggestions, and the word and sentence context read around the cursor.
 - `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/TypedWordTouches.swift`
   - Where each letter of the word before the cursor was tapped, kept only while the taps line up with its letters; tells a word the user tapped out apart from one the cursor was moved into.
 - `KeyVox Keyboard/Core/Prediction/KeyboardPredictionCoordinator.swift`
@@ -1901,6 +1907,8 @@ Packages/
   - Never rereads the document proxy when background work finishes.
 - `KeyVox Keyboard/Core/Prediction/KeyboardPredictionEngine.swift`
   - Serial-queue owner of one lazily created `PredictionComputer`, holding geometry, vocabulary, and learned words until the engine exists and remembering when the engine cannot load.
+- `KeyVox Keyboard/Core/Prediction/KeyboardTypingLanguage.swift`
+  - The bundled typing language the keyboard types in, shared by its engines, typing session, held keys, word-ending characters, and quote keys.
 - `KeyVox Keyboard/Core/Prediction/KeyboardTypingTraits.swift`
   - Resolves what the letter keyboard may do in the focused field from its keyboard type, content type, secure entry, autocorrection, and autocapitalization traits, narrowed by the shared keyboard typing settings; a feature the field turns off stays off. Carries the field's `KeyboardFieldKeys`.
 - `KeyVox Keyboard/Core/Prediction/KeyboardPersonalVocabularyBuilder.swift`
