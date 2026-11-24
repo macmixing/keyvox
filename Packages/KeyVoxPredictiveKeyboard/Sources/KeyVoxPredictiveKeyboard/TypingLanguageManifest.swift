@@ -3,13 +3,6 @@ import Foundation
 /// A typing language's `language.json`: the rules its keyboard follows that differ from one
 /// language to another.
 struct TypingLanguageManifest: Decodable {
-    struct LetterRow: Decodable {
-        /// The row's letter keys, left to right.
-        let letters: String
-        /// How far the row's first key sits from the left edge, in key widths.
-        let offset: Double
-    }
-
     struct QuotationMarks: Decodable {
         let openingSingle: String
         let closingSingle: String
@@ -18,7 +11,10 @@ struct TypingLanguageManifest: Decodable {
     }
 
     let identifier: String
-    let letterRows: [LetterRow]
+    /// The letter layout the keyboard shows unless the user picks another, by Apple's name.
+    let defaultLetterLayout: String
+    /// The other letter layouts Apple's keyboard offers for the language, in Apple's order.
+    let alternativeLetterLayouts: [String]
     /// The letters single-letter edits of a typed word try, in the order they are tried.
     let editLetters: String
     /// The letters a short typed word needs one of to be taken as an attempt at a word.

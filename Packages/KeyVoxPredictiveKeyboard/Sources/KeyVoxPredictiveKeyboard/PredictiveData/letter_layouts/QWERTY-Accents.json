@@ -1,0 +1,8 @@
+{
+  "identifier": "QWERTY-Accents",
+  "rows": [
+    [{"characters": "qwertyuiop"}],
+    [{"characters": "asdfghjkl´"}],
+    [{"shift": 1.3}, {"padding": 0.2}, {"characters": "zxcvbnm"}, {"padding": 0.2}, {"delete": 1.3}]
+  ]
+}

@@ -1,10 +1,7 @@
 {
   "identifier": "en",
-  "letterRows": [
-    { "letters": "qwertyuiop", "offset": 0 },
-    { "letters": "asdfghjkl", "offset": 0.5 },
-    { "letters": "zxcvbnm", "offset": 1.5 }
-  ],
+  "defaultLetterLayout": "QWERTY",
+  "alternativeLetterLayouts": ["AZERTY", "QWERTZ", "Dvorak"],
   "editLetters": "abcdefghijklmnopqrstuvwxyz",
   "vowels": "aeiouy",
   "alwaysCapitalizedWords": ["I"],

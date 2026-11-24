@@ -1,0 +1,8 @@
+{
+  "identifier": "QWERTZ",
+  "rows": [
+    [{"characters": "qwertzuiop"}],
+    [{"padding": 0.5}, {"characters": "asdfghjkl"}, {"padding": 0.5}],
+    [{"shift": 1.3}, {"padding": 0.2}, {"characters": "yxcvbnm"}, {"padding": 0.2}, {"delete": 1.3}]
+  ]
+}

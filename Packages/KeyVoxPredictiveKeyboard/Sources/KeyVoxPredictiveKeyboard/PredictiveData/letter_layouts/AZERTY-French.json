@@ -1,0 +1,8 @@
+{
+  "identifier": "AZERTY-French",
+  "rows": [
+    [{"characters": "azertyuiop"}],
+    [{"characters": "qsdfghjklm"}],
+    [{"shift": 1.3}, {"padding": 0.2}, {"characters": "wxcvbn´"}, {"padding": 0.2}, {"delete": 1.3}]
+  ]
+}
