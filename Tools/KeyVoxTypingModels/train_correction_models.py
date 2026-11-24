@@ -64,19 +64,25 @@ def main():
     external = annotate(clean_preserve + expressive_records(), section_sentences)
 
     ranker, ranker_rows = fit_ranker(
-        candidate_groups(corrections, outputs, context, RANKER_BUCKETS))
+        candidate_groups(corrections, outputs, context, "correction ranker training",
+                         RANKER_BUCKETS))
     action, action_rows = fit_action_model(
-        candidate_groups(corrections, outputs, context, ACTION_BUCKETS),
-        candidate_groups(preserves, outputs, context, ACTION_BUCKETS),
+        candidate_groups(corrections, outputs, context, "action model training, typos",
+                         ACTION_BUCKETS),
+        candidate_groups(preserves, outputs, context, "action model training, words typed as meant",
+                         ACTION_BUCKETS),
         ranker, protected)
     save(ranker, paths.correction_ranker_model)
     save(action, paths.action_model)
 
-    test_corrections = candidate_groups(corrections, outputs, context, TEST_BUCKETS)
-    test_preserves = candidate_groups(preserves, outputs, context, TEST_BUCKETS)
+    test_corrections = candidate_groups(corrections, outputs, context, "held-out typos",
+                                        TEST_BUCKETS)
+    test_preserves = candidate_groups(preserves, outputs, context, "held-out words typed as meant",
+                                      TEST_BUCKETS)
     correction_scores = action_scores(test_corrections, ranker, action, protected)
     preserve_scores = action_scores(test_preserves, ranker, action, protected)
-    external_scores = action_scores(candidate_groups(external, outputs, context),
+    external_scores = action_scores(candidate_groups(external, outputs, context,
+                                                     "copied-sentence and expressive words"),
                                     ranker, action, protected)
     correction_count = sum(record["bucket"] in TEST_BUCKETS for record in corrections)
     preserve_count = sum(record["bucket"] in TEST_BUCKETS for record in preserves)

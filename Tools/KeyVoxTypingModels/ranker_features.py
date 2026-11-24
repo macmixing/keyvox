@@ -3,8 +3,9 @@ engine computes them: 23 per candidate word, and 14 for the decision to correct.
 
 import math
 import re
+import sys
 
-from latinime_candidates import candidate_items
+from latinime_candidates import candidate_items, query_key
 from words import damerau_osa
 
 
@@ -38,20 +39,31 @@ def candidate_features(record, candidate, score, suggestion_type, rank, context)
     ]
 
 
-def candidate_groups(records, outputs, context, buckets=None):
+def candidate_groups(records, outputs, context, label, buckets=None):
     """For each record with candidates: the record, its candidates, their feature rows, and
-    which candidate is the intended word."""
+    which candidate is the intended word.
+
+    A record whose query the candidate cache never asked, or whose cached answer holds no
+    candidate other than the typed letters, is left out; how many is printed under `label`."""
     groups = []
+    considered = never_asked = no_candidates = 0
     for record in records:
         if buckets is not None and record["bucket"] not in buckets:
             continue
+        considered += 1
         choices = candidate_items(record, outputs)
         if not choices:
+            if query_key(record["typed"], record["previous"]) in outputs:
+                no_candidates += 1
+            else:
+                never_asked += 1
             continue
         rows = [candidate_features(record, candidate, score, kind, rank, context)
                 for rank, (candidate, score, kind) in enumerate(choices)]
         labels = [int(candidate == record["expected"]) for candidate, _, _ in choices]
         groups.append((record, choices, rows, labels))
+    print(f"{label}: {considered:,} records, {len(groups):,} kept, {never_asked:,} left out as "
+          f"never asked, {no_candidates:,} left out with no candidates", file=sys.stderr)
     return groups
 
 

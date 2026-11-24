@@ -33,8 +33,9 @@ def main():
     records = annotate(completion_records(data_dir), load_section_sentences(data_dir))
     outputs = latinime_candidates.load(paths.completion_candidates)
     context = FeatureContextModel(paths.feature_context_model)
-    ranker, training_rows = fit_ranker(candidate_groups(records, outputs, context, TRAIN_BUCKETS))
-    test = candidate_groups(records, outputs, context, TEST_BUCKETS)
+    ranker, training_rows = fit_ranker(candidate_groups(
+        records, outputs, context, "completion ranker training", TRAIN_BUCKETS))
+    test = candidate_groups(records, outputs, context, "held-out completions", TEST_BUCKETS)
     with gzip.open(paths.completion_ranker_model, "wb", compresslevel=9) as target:
         pickle.dump(ranker, target, protocol=pickle.HIGHEST_PROTOCOL)
 
