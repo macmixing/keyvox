@@ -28,7 +28,7 @@ cd "$(dirname "$0")"
 ./build_native_tools.sh "$DATA_DIR/bin"
 mkdir -p "$DATA_DIR/work" "$DATA_DIR/built"
 
-# Tatoeba's English sentences as of the pinned export.
+# Tatoeba's English sentences as of the cutoff, checked against their recorded SHA-256.
 "$PYTHON" rewind_tatoeba.py "$DATA_DIR"
 
 # Word lists: the dictionary's words, every spelling's words for accents, and the words

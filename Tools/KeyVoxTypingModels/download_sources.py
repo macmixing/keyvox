@@ -1,5 +1,8 @@
 """Downloads every input of the typing models into a data directory, skipping files already
-present, and records each file's SHA-256 in `<data_dir>/sources/checksums.txt`."""
+present, and records each file's SHA-256 in `<data_dir>/sources/checksums.txt`.
+
+Tatoeba's export and contribution log are only needed to rewind to the cutoff, so they are
+skipped while the sentences as of the cutoff are there and match their recorded SHA-256."""
 
 import argparse
 import hashlib
@@ -8,7 +11,8 @@ import urllib.request
 from pathlib import Path
 
 import remote_zip
-from sources import SOURCES
+import tatoeba_snapshot
+from sources import SOURCES, TATOEBA, tatoeba_path
 
 
 def sha256(path: Path) -> str:
@@ -34,6 +38,10 @@ def main() -> None:
 
     written = []
     for source in SOURCES:
+        if source is TATOEBA and tatoeba_snapshot.is_verified(data_dir):
+            print(f"using the verified {tatoeba_path(data_dir).name}; Tatoeba is not downloaded")
+            written.append(tatoeba_path(data_dir))
+            continue
         for file in source.files:
             destination = data_dir / file.path
             destination.parent.mkdir(parents=True, exist_ok=True)

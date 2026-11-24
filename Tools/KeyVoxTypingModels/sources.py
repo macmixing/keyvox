@@ -30,9 +30,10 @@ class Source:
 
 _OASST1_REVISION = "fdf72ae0827c1cda404aff25b6603abec9e3399b"
 
-# Tatoeba publishes only its current export, so the models read the English sentences as
-# they were in the weekly export of this time: `rewind_tatoeba.py` undoes every change the
-# contribution log records after it.
+# Tatoeba publishes only its current export, which is not pinned, so the models read the
+# English sentences as they were in the weekly export of this time: `rewind_tatoeba.py` undoes
+# every change the contribution log records after it, and checks the result against
+# TATOEBA_SNAPSHOT_SHA256.
 TATOEBA_CUTOFF = "2026-07-18 06:00:00"
 
 # Whether the export shows a sentence also depends on state the contribution log does not
@@ -41,6 +42,10 @@ TATOEBA_CUTOFF = "2026-07-18 06:00:00"
 # to; with them, the rebuilt rankers and accent overlay match the bundled ones byte for byte.
 TATOEBA_HIDDEN_AT_CUTOFF = ("8802780", "11708712", "13126511", "13760010")
 TATOEBA_SHOWN_AT_CUTOFF = ("300318", "757187", "12709696")
+
+# SHA-256 of the uncompressed text of the sentences as of the cutoff, as `rewind_tatoeba.py`
+# writes them: 2,031,914 sentences.
+TATOEBA_SNAPSHOT_SHA256 = "83de7e31a04faea3bd48ea2a3effe89297c58b322c1087e34c07b7d811b98b04"
 
 TATOEBA = Source(
     name="tatoeba",
@@ -110,8 +115,9 @@ def tatoeba_contributions_path(data_dir: Path) -> Path:
 
 
 def tatoeba_path(data_dir: Path) -> Path:
-    """The English sentences as of TATOEBA_CUTOFF, written by rewind_tatoeba.py."""
-    return data_dir / "work" / "tatoeba_eng_sentences_at_cutoff.tsv.bz2"
+    """The English sentences as of TATOEBA_CUTOFF, written by rewind_tatoeba.py and kept with
+    the sources, since today's export may no longer rewind to them."""
+    return data_dir / "sources" / "tatoeba" / "eng_sentences_at_cutoff.tsv.bz2"
 
 
 def oasst1_path(data_dir: Path) -> Path:
