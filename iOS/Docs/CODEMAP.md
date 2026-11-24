@@ -1867,7 +1867,7 @@ Packages/
 - `KeyVox Keyboard/Views/Components/KeyboardHeldKeyPopupView.swift`
   - Renders a held key's popup cells from the package's `HeldKeyPopupLayout`, highlighting the cell under the finger.
 - `KeyVox Keyboard/Views/Components/KeyboardSuggestionBarView.swift`
-  - Leading, primary, and trailing suggestion slots, the autocorrection in a heavier weight, up to three emoji splitting the trailing slot, each emoji drawn through `KeyboardEmojiGlyphView`, a soft glow in the keys' label color baked into the picture of an emoji that would blend into its key, taps that select an item, and long presses that report it instead; a rescued dictation as one suggestion across the whole bar, truncated at the end, in place of the slots.
+  - Leading, primary, and trailing suggestion slots, the autocorrection in a heavier weight, up to three emoji splitting the trailing slot, each emoji drawn through `KeyboardEmojiGlyphView`, a soft glow in the keys' label color baked into the picture of an emoji that would blend into its key, taps that select an item, and long presses that report it instead; a rescued dictation as one suggestion across the whole bar, truncated at the end, in place of the slots; and blank suggestions, as on the keys, while the space bar is a trackpad.
 - `KeyVox Keyboard/Views/FullAccessView.swift`
   - Full-screen keyboard-only instructional view shown when the user needs to enable Full Access.
 
