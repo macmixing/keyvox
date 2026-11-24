@@ -32,10 +32,7 @@ public actor VoiceActivityDetector: VoiceActivityAnalyzing {
     private var context: OpaquePointer?
 
     public init?() {
-        guard let modelURL = Bundle.module.url(
-            forResource: "ggml-silero-v5.1.2",
-            withExtension: "bin"
-        ) else {
+        guard let modelURL = VoiceActivityModelResource.bundledURL else {
             return nil
         }
         self.init(modelURL: modelURL)

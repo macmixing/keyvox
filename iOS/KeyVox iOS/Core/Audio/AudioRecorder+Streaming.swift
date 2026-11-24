@@ -1,5 +1,6 @@
 import AVFoundation
 import Foundation
+import KeyVoxVoiceActivity
 
 struct CaptureMeterUpdate: Equatable {
     let level: Float
@@ -30,6 +31,7 @@ final class AudioCaptureAccumulator {
     private var currentActiveSignalRunDuration: TimeInterval = 0
     private var maxActiveSignalRunDuration: TimeInterval = 0
     private var hadNonDeadSignal = false
+    private lazy var liveSpeechDetector: LiveVoiceActivityDetector? = LiveVoiceActivityDetector()
 
     func reset() {
         queue.sync {
@@ -43,6 +45,7 @@ final class AudioCaptureAccumulator {
             currentActiveSignalRunDuration = 0
             maxActiveSignalRunDuration = 0
             hadNonDeadSignal = false
+            liveSpeechDetector?.reset()
         }
     }
 
@@ -116,6 +119,9 @@ final class AudioCaptureAccumulator {
             let frameCount = Int(convertedBuffer.frameLength)
             let frames = Array(UnsafeBufferPointer(start: floatData[0], count: frameCount))
             audioData.append(contentsOf: frames)
+            // Without the detector the meter follows loudness alone.
+            let speechProbability = liveSpeechDetector?.append(frames) ?? 1
+            let isSpeech = speechProbability >= VoiceActivityConfiguration.standard.threshold
 
             let visualMeterHighPassCutoffFrequency: Float = 120
             let sampleInterval = 1 / Float(outputFormat.sampleRate)
@@ -164,10 +170,11 @@ final class AudioCaptureAccumulator {
 
             let visualActiveThreshold = activeSignalRMSThreshold * visualActiveSignalThresholdMultiplier
             // Visual meter scaling only. This does not modify captured audio samples.
+            // The meter moves with loudness only as far as the audio is likely speech.
             let visualRMS = max(visualMeterRMS - visualActiveThreshold, 0)
-            let level = min(sqrt(visualRMS) * 2.7, 1)
+            let level = min(sqrt(visualRMS) * 2.7, 1) * speechProbability
 
-            if visualMeterRMS > visualActiveThreshold {
+            if visualMeterRMS > visualActiveThreshold, isSpeech {
                 lastVisualActiveSignalTime = now
             }
 

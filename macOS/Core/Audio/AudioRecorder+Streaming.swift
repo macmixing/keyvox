@@ -1,6 +1,7 @@
 import Foundation
 import AVFoundation
 import CoreMedia
+import KeyVoxVoiceActivity
 
 extension AudioRecorder: AVCaptureAudioDataOutputSampleBufferDelegate {
     func captureOutput(
@@ -71,6 +72,9 @@ extension AudioRecorder: AVCaptureAudioDataOutputSampleBufferDelegate {
         audioDataQueue.sync {
             audioData.append(contentsOf: frames)
         }
+        // Without the detector the meter follows loudness alone.
+        let speechProbability = liveSpeechDetector?.append(frames) ?? 1
+        let isSpeech = speechProbability >= VoiceActivityConfiguration.standard.threshold
 
         let sampleInterval = 1 / Float(outputFormat.sampleRate)
         let highPassTimeConstant = 1 / (2 * Float.pi * visualMeterHighPassCutoffFrequency)
@@ -119,10 +123,11 @@ extension AudioRecorder: AVCaptureAudioDataOutputSampleBufferDelegate {
         let visualActiveThreshold = sessionActiveSignalRMSThreshold * visualActiveSignalThresholdMultiplier
         // Visual meter scaling only. This does not modify captured audio samples.
         // Remove low-level background noise before boosting the remaining signal.
+        // The meter moves with loudness only as far as the audio is likely speech.
         let visualRMS = max(visualMeterRMS - visualActiveThreshold, 0)
-        let level = min(sqrt(visualRMS) * 5.5, 1.0)
+        let level = min(sqrt(visualRMS) * 5.5, 1.0) * speechProbability
 
-        if visualMeterRMS > visualActiveThreshold {
+        if visualMeterRMS > visualActiveThreshold, isSpeech {
             lastVisualActiveSignalTime = now
         }
 

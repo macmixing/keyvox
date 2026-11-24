@@ -14,7 +14,7 @@ KeyVox is a macOS menu bar dictation app that records speech while a trigger key
 - **Packages/KeyVoxModels**: shared model artifact identity and streaming SHA-256 verification used by host-owned installers
 - **Packages/KeyVoxState**: shared observable-state boundary; Apple builds preserve Combine's `Published` and `ObservableObject` behavior
 - **Packages/KeyVoxPromotions**: campaign manifest loading, eligibility, selection, persistence, and published campaign state
-- **Packages/KeyVoxVoiceActivity**: shared Silero model, detector API, configuration, and speech-runtime bridge used by both dictation providers
+- **Packages/KeyVoxVoiceActivity**: shared Silero model, detector API, configuration, and speech-runtime bridge used by both dictation providers, plus the live detector behind the recording indicator
 - **Packages/KeyVoxTextComposition**: platform-neutral policy for joining finalized dictation to existing editor text, including leading capitalization, leading spacing, quotation-mark context, sentence boundaries, adjacent terminal punctuation, and trailing separators
 - **Core/Services**: reusable host integration services (paste/injection, update checking)
 - **Views**: SwiftUI UI layer (menu, onboarding, settings, overlays, warnings, branded visuals)
@@ -207,9 +207,12 @@ KeyVox/
 │   ├── KeyVoxVoiceActivity/
 │   │   └── Sources/
 │   │       ├── KeyVoxVoiceActivity/
+│   │       │   ├── LiveVoiceActivityDetector.swift
 │   │       │   ├── VoiceActivityAnalyzing.swift
 │   │       │   ├── VoiceActivityConfiguration.swift
 │   │       │   ├── VoiceActivityDetector.swift
+│   │       │   ├── VoiceActivityModelResource.swift
+│   │       │   ├── WhisperRuntimeLogFilter.swift
 │   │       │   └── Resources/ggml-silero-v5.1.2.bin
 │   │       ├── KeyVoxSpeechRuntime/SpeechRuntime.swift
 │   │       └── CWhisper/
@@ -320,7 +323,7 @@ KeyVox/
 - `Packages/KeyVoxPromotions/Sources/KeyVoxPromotions/`
   - Owns campaign manifest decoding and retrieval, cached/bundled fallback, version and date eligibility, deterministic startup selection/rotation, persisted selection state, repository-cache refresh, and the published `PromotionCenter.currentCampaign` value.
 - `Packages/KeyVoxVoiceActivity/Sources/KeyVoxVoiceActivity/`
-  - Owns the shared VAD protocol, standard configuration, Silero resource, actor-isolated detector, and speech-segment results used by Whisper and Parakeet.
+  - Owns the shared VAD protocol, standard configuration, Silero resource, actor-isolated detector, and speech-segment results used by Whisper and Parakeet, plus the live detector that follows speech probability window by window, and the whisper.cpp console filter it installs, for the live meter.
 - `Packages/KeyVoxVoiceActivity/Sources/KeyVoxSpeechRuntime/SpeechRuntime.swift`
   - Exposes the shared `whisper.cpp` runtime bridge consumed by both the VAD detector and `KeyVoxWhisper`.
 - `Packages/KeyVoxVoiceActivity/Package.swift`
@@ -645,7 +648,7 @@ KeyVox/
 - `Core/Audio/AudioRecorder+Session.swift`
   - Selected-device resolution plus capture-engine lifecycle setup and teardown.
 - `Core/Audio/AudioRecorder+Streaming.swift`
-  - Deterministic all-channel summing with clipping protection, mono conversion/downsampling, frame buffering, and quiet/dead/active waveform state updates.
+  - Deterministic all-channel summing with clipping protection, mono conversion/downsampling, frame buffering, and quiet/dead/active waveform state updates scaled by live speech probability.
 - `Core/Audio/AudioRecorder+PostProcessing.swift`
   - Stop-time gap removal, normalization, capture classification, and final output frame selection.
 - `Core/Audio/AudioRecorder+Thresholds.swift`
