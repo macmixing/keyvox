@@ -12,7 +12,7 @@ struct CompletionEvaluator {
 
     static let visibleCompletionCount = 3
 
-    let engine: EnglishPredictiveEngine
+    let engine: PredictiveEngine
 
     func evaluate(intendedWord: String, previousWords: [String]) throws -> Outcome {
         let letters = Array(intendedWord.filter { $0 != "'" })

@@ -289,7 +289,7 @@ Rules:
 - `KeyVoxWhisper` owns low-level Whisper context, parameters and request snapshots, compute policy, encoder configuration, segments, and language metadata. It consumes the shared speech runtime rather than owning VAD resources.
 - `KeyVoxParakeet` exposes a backend contract while the iOS app continues to use its Core ML backend.
 - `KeyVoxCoreResources` centralizes access to packaged pronunciation and file-type resources. Apple app builds use the SwiftPM resource bundle by default.
-- `KeyVoxPredictiveKeyboard` owns UI-independent English typing prediction and correction: the bundled AOSP LatinIME native target with KeyVox ranking, bundled language data, `PredictiveTypingSession`, `PredictionComputer`, personal vocabulary, typing memory and its file format, held-key characters and popup layout, and smart quotes. The keyboard host supplies touches, key geometry, document text, and storage locations, and applies the `TextEdit` values the session returns.
+- `KeyVoxPredictiveKeyboard` owns UI-independent typing prediction and correction for each bundled typing language: the bundled AOSP LatinIME native target with KeyVox ranking, each language's bundled data and rules in its own `PredictiveData/<language>` folder, read as a `TypingLanguage`, `PredictiveTypingSession`, `PredictionComputer`, personal vocabulary, typing memory and its file format, held-key characters and popup layout, and smart quotes. The keyboard host supplies touches, key geometry, document text, and storage locations, and applies the `TextEdit` values the session returns.
 - `KeyVoxEmoji` owns the UI-independent emoji catalog, search, suggestion-bar emoji by word, Frequently Used ranking, and two-person skin tones, with bundled data. The keyboard host decides which emoji the system can draw and owns persistence and presentation.
 - `KeyVoxKeyboardThemes` owns the UI-independent theme identifiers, saved-value fallback to the KeyVox theme, the per-platform theme catalog, and each theme's light and dark key palette as platform-neutral color values. Hosts store the choice and turn palette colors into platform colors.
 
@@ -2079,6 +2079,14 @@ Installed-model availability comes from `KeyboardInstalledModels`, checked when 
 
 ### Letter Typing and Prediction Rules
 
+Typing languages:
+
+- each typing language is one folder in the package's `PredictiveData`, named by its identifier (`en`), holding its dictionary, context model, rankers, accent overlay, word lists, held-key characters, and spacing character lists, plus a `language.json` with the rules that differ between languages: the letter rows the engine aims touches at before the keyboard reports its key frames, the letters single-letter edits try, the vowels a short typed word needs, the words always written with capitals, and the quotation marks
+- `TypingLanguage.bundled(identifier:)` reads one folder; `PredictiveEngine`, `PredictiveTypingSession`, `HeldKeyCharacters`, and `CharacterList` all take the language, so the rules that differ between languages come from it, while rules the bundled languages share, such as which marks end a sentence, stay in the shared code
+- the words a language spells only with capitals come from `KeyVoxLinguistics`, which bundles one list per language (`capitalized_spellings_<language>.txt`) shared with dictation
+- the keyboard types in `KeyboardTypingLanguage.current`, whose files are compiled into the package
+- the folders are found through `KeyVoxPredictiveKeyboardResources`, which a host outside an app bundle, such as the Android engine, configures with the package's unchanged resource bundle, as it does for Core and `KeyVoxLinguistics`
+
 `KeyVoxPredictiveKeyboard.PredictiveTypingSession` is the typing source of truth for the letter page. The keyboard reports taps, and text changes with the text on both sides of the cursor, asks the session what space, return, a word-ending character, a character after a suggestion tap, or a suggestion tap should change, and applies the returned `TextEdit` through `KeyboardTextInputController`. The keyboard must not re-implement correction, completion, next-word, sentence-opener, personal-word casing, or undo rules locally.
 
 Field preparation:
@@ -2122,7 +2130,7 @@ Vocabulary:
 - personal vocabulary combines KeyVox Dictionary phrases with the system supplementary lexicon's known names and text replacements; the dictionary is applied at once and the lexicon again on the main thread whenever the system answers
 - learned vocabulary from typing memory is handed to suggestions whenever it changes
 - pressing and holding a suggestion forgets a learned word or learned capitals; the user's own vocabulary is never forgotten this way
-- corrections and predictions are English only
+- corrections and predictions come from the typing language the keyboard types in, `KeyboardTypingLanguage.current`; English is the only bundled language
 
 Shift and letter case:
 
@@ -2133,7 +2141,7 @@ Shift and letter case:
 Keys and characters:
 
 - holding a key that offers held-key characters opens its popup after the hold duration; lifting on a cell types that character exactly as shown, and moving far enough below the popup closes it without typing
-- the apostrophe and quote keys type smart quotes from `SmartQuotes` unless the character was picked from a held key's popup
+- the apostrophe and quote keys type the typing language's smart quotes (`TypingLanguage.quotes`) unless the character was picked from a held key's popup
 - the double-space period runs only when the period-shortcut setting is on and nothing is selected
 - a held delete key repeats on `KeyboardDeleteRepeatSchedule`, switching from characters to whole words, and keeps repeating even once the finger slides off it; its press plays the keypress haptic on lift and repeats play theirs as they delete
 - when a host shows only part of the text before the cursor, word deletion deletes one more character to make the host reveal the preceding text before deleting the remaining words

@@ -8,7 +8,7 @@ final class ContactNameTests: XCTestCase {
     private var computer: PredictionComputer!
 
     override func setUpWithError() throws {
-        computer = PredictionComputer(engine: try EnglishPredictiveEngine())
+        computer = PredictionComputer(engine: try PredictiveEngine(language: .english))
         try computer.updateVocabulary(PersonalVocabulary(
             words: [],
             knownNames: ["Ahleah Old", "Dont Answer"],
@@ -28,9 +28,9 @@ final class ContactNameTests: XCTestCase {
     /// better are corrected as if no contact had the name.
     func testPartlyTypedContactNameGivesWayToABetterFittingCorrection() throws {
         try computer.updateVocabulary(PersonalVocabulary(words: [], knownNames: ["Tehya Old"], textReplacements: []))
-        let withoutContacts = PredictionComputer(engine: try EnglishPredictiveEngine())
+        let withoutContacts = PredictionComputer(engine: try PredictiveEngine(language: .english))
         for text in ["teh", "I like teh"] {
-            let request = PredictiveTypingSession().request(textBeforeCursor: text)
+            let request = PredictiveTypingSession(language: .english).request(textBeforeCursor: text)
             let expected = try withoutContacts.compute(request).autocorrection
             XCTAssertNotNil(expected)
             XCTAssertEqual(try autocorrection(typing: text), expected, text)
@@ -42,8 +42,8 @@ final class ContactNameTests: XCTestCase {
     }
 
     func testContactWordMissingItsApostropheIsCorrectedAsWithoutTheContact() throws {
-        let withoutContacts = PredictionComputer(engine: try EnglishPredictiveEngine())
-        let request = PredictiveTypingSession().request(textBeforeCursor: "I dont")
+        let withoutContacts = PredictionComputer(engine: try PredictiveEngine(language: .english))
+        let request = PredictiveTypingSession(language: .english).request(textBeforeCursor: "I dont")
         XCTAssertNotNil(try withoutContacts.compute(request).autocorrection)
         XCTAssertEqual(try autocorrection(typing: "I dont"), try withoutContacts.compute(request).autocorrection)
     }
@@ -52,14 +52,14 @@ final class ContactNameTests: XCTestCase {
     /// it, leaves typing corrected as if no contact had it.
     func testContactDictionaryWordWithCurlyApostropheIsCorrectedAsWithoutTheContact() throws {
         try computer.updateVocabulary(PersonalVocabulary(words: [], knownNames: ["it’s"], textReplacements: []))
-        let withoutContacts = PredictionComputer(engine: try EnglishPredictiveEngine())
-        let request = PredictiveTypingSession().request(textBeforeCursor: "so its")
+        let withoutContacts = PredictionComputer(engine: try PredictiveEngine(language: .english))
+        let request = PredictiveTypingSession(language: .english).request(textBeforeCursor: "so its")
         XCTAssertNotNil(try withoutContacts.compute(request).autocorrection)
         XCTAssertEqual(try autocorrection(typing: "so its"), try withoutContacts.compute(request).autocorrection)
     }
 
     private func autocorrection(typing text: String) throws -> String? {
-        let request = PredictiveTypingSession().request(textBeforeCursor: text)
+        let request = PredictiveTypingSession(language: .english).request(textBeforeCursor: text)
         return try computer.compute(request).autocorrection
     }
 }

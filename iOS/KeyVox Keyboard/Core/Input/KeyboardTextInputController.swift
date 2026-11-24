@@ -176,7 +176,7 @@ final class KeyboardTextInputController {
         case let .character(value):
             pendingSelectionDeletion = nil
             documentProxy.insertText(
-                typesExactly ? value : SmartQuotes.text(for: value, after: documentProxy.documentContextBeforeInput)
+                typesExactly ? value : KeyboardTypingLanguage.current.quotes.text(for: value, after: documentProxy.documentContextBeforeInput)
             )
             return true
         case .delete:

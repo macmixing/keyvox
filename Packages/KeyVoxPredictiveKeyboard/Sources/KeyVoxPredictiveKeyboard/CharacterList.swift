@@ -16,34 +16,34 @@ public struct CharacterList: Sendable {
     /// The characters that end the word before them, so typing one right after a word
     /// autocorrects it as space does; the rest, such as digits, an opening bracket, or an
     /// apostrophe, carry the word on.
-    public static func wordEnding() throws -> CharacterList {
-        try bundled("word_ending_characters")
+    public static func wordEnding(for language: TypingLanguage) throws -> CharacterList {
+        try bundled("word_ending_characters", for: language)
     }
 
     /// The characters that take the place of the space a word picked from the suggestion bar
     /// added, such as a period, a closing bracket, or an apostrophe; the rest follow the space.
-    public static func takingPickedWordSpace() throws -> CharacterList {
-        try bundled("picked_word_space_characters")
+    public static func takingPickedWordSpace(for language: TypingLanguage) throws -> CharacterList {
+        try bundled("picked_word_space_characters", for: language)
     }
 
     /// The characters a word picked from the suggestion bar is spaced away from, such as a comma
     /// or a closing bracket: tapping a suggestion right after one first adds the space, and the
     /// next tap picks; the rest take the picked word right after them.
-    public static func spacedFromPickedWord() throws -> CharacterList {
-        try bundled("spaced_from_picked_word_characters")
+    public static func spacedFromPickedWord(for language: TypingLanguage) throws -> CharacterList {
+        try bundled("spaced_from_picked_word_characters", for: language)
     }
 
     /// The characters the suggestion bar offers no next words right after, such as a hyphen, a
     /// slash, or a currency sign.
-    public static func withoutNextWords() throws -> CharacterList {
-        try bundled("no_next_word_characters")
+    public static func withoutNextWords(for language: TypingLanguage) throws -> CharacterList {
+        try bundled("no_next_word_characters", for: language)
     }
 
     public func contains(_ character: String) -> Bool {
         characters.contains(character)
     }
 
-    private static func bundled(_ name: String) throws -> CharacterList {
-        try CharacterList(contentsOf: PredictiveArtifactLocator().url(name: name, extension: "txt"))
+    private static func bundled(_ name: String, for language: TypingLanguage) throws -> CharacterList {
+        try CharacterList(contentsOf: language.resources.url("\(name).txt"))
     }
 }

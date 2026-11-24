@@ -8,7 +8,7 @@ final class SentenceStartTests: XCTestCase {
     private let sentenceEnds = ["a.", "a?", "a!"]
 
     private func typing(_ key: String, after text: String) -> String {
-        text + SmartQuotes.text(for: key, after: text)
+        text + TypingLanguage.english.quotes.text(for: key, after: text)
     }
 
     func testSentenceStartsAfterTheSpaceThatFollowsASentenceEnd() {

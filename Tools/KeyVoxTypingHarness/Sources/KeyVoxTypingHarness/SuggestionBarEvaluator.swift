@@ -16,7 +16,7 @@ struct SuggestionBarEvaluator {
         let midWordStepsComposedPrimaryNonContinuation: Int
     }
 
-    let engine: EnglishPredictiveEngine
+    let engine: PredictiveEngine
     let ranker: SuggestionCandidateRanker
     let corrector: NoisyChannelCorrector
 

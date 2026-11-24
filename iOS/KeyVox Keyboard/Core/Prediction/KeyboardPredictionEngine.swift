@@ -22,7 +22,7 @@ final class KeyboardPredictionEngine {
     func resolvedComputer() -> PredictionComputer? {
         if let computer { return computer }
         guard isUnavailable == false else { return nil }
-        guard let engine = try? EnglishPredictiveEngine() else {
+        guard let engine = try? PredictiveEngine(language: KeyboardTypingLanguage.current) else {
             isUnavailable = true
             return nil
         }

@@ -7,7 +7,7 @@ final class AutocorrectionTests: XCTestCase {
     private var computer: PredictionComputer!
 
     override func setUpWithError() throws {
-        computer = PredictionComputer(engine: try EnglishPredictiveEngine())
+        computer = PredictionComputer(engine: try PredictiveEngine(language: .english))
     }
 
     func testCommonTyposAreCorrected() throws {
@@ -47,7 +47,7 @@ final class AutocorrectionTests: XCTestCase {
     /// The space-bar replacement for the last typed word, with each letter tapped at its
     /// key's center.
     private func autocorrection(typing text: String) throws -> String? {
-        let request = PredictiveTypingSession().request(textBeforeCursor: text)
+        let request = PredictiveTypingSession(language: .english).request(textBeforeCursor: text)
         return try computer.compute(request).autocorrection
     }
 }

@@ -5,9 +5,12 @@ import KeyVoxPredictiveNative
 import CoreGraphics
 #endif
 
-public final class EnglishPredictiveEngine: @unchecked Sendable {
+/// The typing engine for one language: its dictionary, context model, and rankers, searched
+/// by the bundled LatinIME port.
+public final class PredictiveEngine: @unchecked Sendable {
     private let nativeEngine: KVPKEngineRef
     private let accentOverlay: AccentSuggestionOverlay
+    public let language: TypingLanguage
     /// Words spelled only with capitals, such as names.
     public let capitalizedSpellings: CapitalizedSpellings
     public let sentenceOpeners: SentenceOpeners
@@ -15,47 +18,49 @@ public final class EnglishPredictiveEngine: @unchecked Sendable {
     public let grammarWords: GrammarWords
     public let wordFollowers: WordFollowers
 
-    public init() throws {
-        let locator = PredictiveArtifactLocator()
-        let dictionaryURL = try locator.directory(named: "candidate_v3_dict")
-        let contextURL = try locator.url(name: "context_artifact_800k", extension: "bin")
-        let correctionURL = try locator.url(name: "production_ranker_800k", extension: "kvtr")
-        let completionURL = try locator.url(
-            name: "production_completion_ranker_800k",
-            extension: "kvtr"
-        )
-        let actionURL = try locator.url(name: "production_action_800k", extension: "kvtr")
-        let accentURL = try locator.url(name: "accent_overlay", extension: "bin")
+    public init(language: TypingLanguage) throws {
+        self.language = language
+        let resources = language.resources
+        let dictionaryURL = try resources.directory("dictionary")
+        let contextURL = try resources.url("context_model.bin")
+        let correctionURL = try resources.url("correction_ranker.kvtr")
+        let completionURL = try resources.url("completion_ranker.kvtr")
+        let actionURL = try resources.url("autocorrect_decision.kvtr")
+        let accentURL = try resources.url("accent_overlay.bin")
         accentOverlay = try AccentSuggestionOverlay(data: Data(contentsOf: accentURL))
-        capitalizedSpellings = try CapitalizedSpellings()
-        sentenceOpeners = try SentenceOpeners(
-            contentsOf: locator.url(name: "sentence_openers", extension: "txt")
-        )
+        capitalizedSpellings = try CapitalizedSpellings(languageCode: language.identifier)
+        sentenceOpeners = try SentenceOpeners(contentsOf: resources.url("sentence_openers.txt"))
         unknownWordFollowers = try UnknownWordFollowers(
-            contentsOf: locator.url(name: "unknown_word_followers", extension: "txt")
+            contentsOf: resources.url("unknown_word_followers.txt")
         )
-        grammarWords = try GrammarWords(contentsOf: locator.url(name: "grammar_words", extension: "txt"))
-        wordFollowers = try WordFollowers(contentsOf: locator.url(name: "word_followers", extension: "txt"))
+        grammarWords = try GrammarWords(contentsOf: resources.url("grammar_words.txt"))
+        wordFollowers = try WordFollowers(contentsOf: resources.url("word_followers.txt"))
 
-        let defaultGeometry = EnglishKeyboardLayout.defaultGeometry
+        let defaultGeometry = language.letterLayout.defaultGeometry
         let nativeGeometry = defaultGeometry.compactMap(Self.nativeGeometry)
         let createdEngine = dictionaryURL.path.withCString { dictionaryPath in
             contextURL.path.withCString { contextPath in
                 correctionURL.path.withCString { correctionPath in
                     completionURL.path.withCString { completionPath in
                         actionURL.path.withCString { actionPath in
-                            nativeGeometry.withUnsafeBufferPointer { keys in
-                                KVPKEngineCreate(
-                                    dictionaryPath,
-                                    contextPath,
-                                    correctionPath,
-                                    completionPath,
-                                    actionPath,
-                                    keys.baseAddress,
-                                    Int32(keys.count),
-                                    1_000,
-                                    400
-                                )
+                            language.editLetters.withCString { editLetters in
+                                language.vowels.withCString { vowels in
+                                    nativeGeometry.withUnsafeBufferPointer { keys in
+                                        KVPKEngineCreate(
+                                            dictionaryPath,
+                                            contextPath,
+                                            correctionPath,
+                                            completionPath,
+                                            actionPath,
+                                            editLetters,
+                                            vowels,
+                                            keys.baseAddress,
+                                            Int32(keys.count),
+                                            1_000,
+                                            400
+                                        )
+                                    }
+                                }
                             }
                         }
                     }

@@ -6,7 +6,7 @@ import XCTest
 /// in the trailing slot; tapping one types it in place of the typed word, or after the space.
 final class EmojiSuggestionTests: XCTestCase {
     func testEmojiAreForTheWordTypedOrTheLastWordBeforeSpacesAndPunctuation() {
-        let session = PredictiveTypingSession()
+        let session = PredictiveTypingSession(language: .english)
         XCTAssertEqual(session.emojiWord(textBeforeCursor: "I love dog"), "dog")
         XCTAssertEqual(session.emojiWord(textBeforeCursor: "I love pizza "), "pizza")
         XCTAssertEqual(session.emojiWord(textBeforeCursor: "so dog. "), "dog")
@@ -15,7 +15,7 @@ final class EmojiSuggestionTests: XCTestCase {
     }
 
     func testNoEmojiInsideAWordAfterAnEmojiALineBreakOrWithASelection() {
-        let session = PredictiveTypingSession()
+        let session = PredictiveTypingSession(language: .english)
         XCTAssertNil(session.emojiWord(textBeforeCursor: "I love do", textAfterCursor: "g"))
         XCTAssertNil(session.emojiWord(textBeforeCursor: "pizza 🍕 "))
         XCTAssertNil(session.emojiWord(textBeforeCursor: "pizza\n"))
@@ -36,19 +36,19 @@ final class EmojiSuggestionTests: XCTestCase {
     }
 
     func testTappingAnEmojiReplacesTheTypedWord() {
-        let edit = PredictiveTypingSession().choiceEdit(SuggestionBar.Item(text: "🐶", kind: .emoji), textBeforeCursor: "dog")
+        let edit = PredictiveTypingSession(language: .english).choiceEdit(SuggestionBar.Item(text: "🐶", kind: .emoji), textBeforeCursor: "dog")
         XCTAssertEqual(edit.deleteCount, "dog".count)
         XCTAssertEqual(edit.insertText, "🐶 ")
     }
 
     func testTappingAnEmojiAfterTheSpaceKeepsTheWord() {
-        let edit = PredictiveTypingSession().choiceEdit(SuggestionBar.Item(text: "🍕", kind: .emoji), textBeforeCursor: "pizza ")
+        let edit = PredictiveTypingSession(language: .english).choiceEdit(SuggestionBar.Item(text: "🍕", kind: .emoji), textBeforeCursor: "pizza ")
         XCTAssertEqual(edit.deleteCount, 0)
         XCTAssertEqual(edit.insertText, "🍕 ")
     }
 
     func testTappingAnEmojiAfterACommaTypesItSpacedAwayFromTheComma() {
-        let edit = PredictiveTypingSession().choiceEdit(SuggestionBar.Item(text: "🐶", kind: .emoji), textBeforeCursor: "so dog,")
+        let edit = PredictiveTypingSession(language: .english).choiceEdit(SuggestionBar.Item(text: "🐶", kind: .emoji), textBeforeCursor: "so dog,")
         XCTAssertEqual(edit.deleteCount, 0)
         XCTAssertEqual(edit.insertText, " 🐶 ")
     }

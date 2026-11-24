@@ -100,9 +100,6 @@ public final class PredictiveTypingSession {
         let previousWords: [String]
     }
 
-    private static let pickedWordSpaceCharacters = try? CharacterList.takingPickedWordSpace()
-    private static let spacedFromPickedWordCharacters = try? CharacterList.spacedFromPickedWord()
-    private static let noNextWordCharacters = try? CharacterList.withoutNextWords()
     private static let watchedContext = 24
     /// How many recent autocorrections, and words typed in place of them, are watched; older ones
     /// drop off.
@@ -136,10 +133,24 @@ public final class PredictiveTypingSession {
     /// session while the keyboard runs.
     private let memory: TypingMemory
     private let now: () -> Date
+    private let casing: WordCasing
+    private let quotes: SmartQuotes
+    private let pickedWordSpaceCharacters: CharacterList?
+    private let spacedFromPickedWordCharacters: CharacterList?
+    private let noNextWordCharacters: CharacterList?
 
-    public init(memory: TypingMemory = TypingMemory(), now: @escaping () -> Date = { Date() }) {
+    public init(
+        language: TypingLanguage,
+        memory: TypingMemory = TypingMemory(),
+        now: @escaping () -> Date = { Date() }
+    ) {
         self.memory = memory
         self.now = now
+        casing = language.casing
+        quotes = language.quotes
+        pickedWordSpaceCharacters = try? CharacterList.takingPickedWordSpace(for: language)
+        spacedFromPickedWordCharacters = try? CharacterList.spacedFromPickedWord(for: language)
+        noNextWordCharacters = try? CharacterList.withoutNextWords(for: language)
     }
 
     /// Call after a tapped character has been inserted.
@@ -210,7 +221,7 @@ public final class PredictiveTypingSession {
             guard deletedInto.isEmpty == false else { continue }
             watched.corrections.removeAll { kept < $0.range.upperBound }
             watchedCorrections[index] = watched
-            for correction in deletedInto where WordCasing.capitalizingPronoun(correction.typed) != correction.correction {
+            for correction in deletedInto where casing.writingAlwaysCapitalized(correction.typed) != correction.correction {
                 memory.recordDeletion(of: correction.correction, typed: correction.typed)
             }
             replacedCorrections += deletedInto
@@ -266,7 +277,7 @@ public final class PredictiveTypingSession {
                 : [],
             pickRun: pickRun,
             offersNextWords: word.text.isEmpty == false
-                || textBeforeCursor?.last.map { Self.noNextWordCharacters?.contains(String($0)) != true } ?? true,
+                || textBeforeCursor?.last.map { noNextWordCharacters?.contains(String($0)) != true } ?? true,
             revertibleText: word.endsAtCursor ? revertibleAutocorrection(endingAt: textBeforeCursor)?.original : nil
         )
     }
@@ -361,7 +372,7 @@ public final class PredictiveTypingSession {
         }
         let turnedDown = replacesDeletedChange
             ? self.autocorrection(in: result, for: currentWord)
-                .flatMap { WordCasing.capitalizingPronoun(currentWord) == $0 ? nil : $0 }
+                .flatMap { casing.writingAlwaysCapitalized(currentWord) == $0 ? nil : $0 }
                 .map { Correction(typed: currentWord, correction: $0, range: 0..<$0.count) }
             : nil
         let autocorrection = allowsAutocorrection && replacesDeletedChange == false
@@ -469,7 +480,7 @@ public final class PredictiveTypingSession {
         let textBeforeSpace = textBeforeCursor.map { String($0.dropLast()) }
         return TextEdit(
             deleteCount: 1,
-            insertText: typesExactly ? character : SmartQuotes.text(for: character, after: textBeforeSpace)
+            insertText: typesExactly ? character : quotes.text(for: character, after: textBeforeSpace)
         )
     }
 
@@ -477,7 +488,7 @@ public final class PredictiveTypingSession {
     /// suggestion-bar tap added.
     private func takesChosenSpace(_ character: String, currentWord: String, textBeforeCursor: String?) -> Bool {
         currentWord.isEmpty
-            && Self.pickedWordSpaceCharacters?.contains(character) == true
+            && pickedWordSpaceCharacters?.contains(character) == true
             && chosenText.map { textBeforeCursor?.hasSuffix($0) == true } == true
     }
 
@@ -515,7 +526,7 @@ public final class PredictiveTypingSession {
         // space, as on the system keyboard; the next tap picks. An emoji, offered for the word
         // before the mark, is spaced away and typed in one tap.
         let isAfterSpacedMark = word.text.isEmpty && textBeforeCursor?.last.map {
-            Self.spacedFromPickedWordCharacters?.contains(String($0)) == true
+            spacedFromPickedWordCharacters?.contains(String($0)) == true
         } == true
         if isAfterSpacedMark, item.kind != .emoji {
             return TextEdit(deleteCount: 0, insertText: " ")

@@ -1,15 +1,15 @@
 import XCTest
 @testable import KeyVoxPredictiveKeyboard
 
-final class EnglishPredictiveEngineTests: XCTestCase {
+final class PredictiveEngineTests: XCTestCase {
     func testStandaloneLowercasePronounUsesGrammaticalCapitalization() {
-        XCTAssertEqual(WordCasing.apply(of: "i", to: "i"), "I")
-        XCTAssertEqual(WordCasing.apply(of: "it", to: "it"), "it")
-        XCTAssertEqual(WordCasing.apply(of: "I", to: "I"), "I")
+        XCTAssertEqual(TypingLanguage.english.casing.apply(of: "i", to: "i"), "I")
+        XCTAssertEqual(TypingLanguage.english.casing.apply(of: "it", to: "it"), "it")
+        XCTAssertEqual(TypingLanguage.english.casing.apply(of: "I", to: "I"), "I")
     }
 
     func testMisspellingProducesRankedCandidates() throws {
-        let engine = try EnglishPredictiveEngine()
+        let engine = try PredictiveEngine(language: .english)
 
         let response = try engine.predict(
             typedWord: "teh",
@@ -26,7 +26,7 @@ final class EnglishPredictiveEngineTests: XCTestCase {
     }
 
     func testLexiconWordIsNeverActionable() throws {
-        let engine = try EnglishPredictiveEngine()
+        let engine = try PredictiveEngine(language: .english)
 
         let response = try engine.predict(
             typedWord: "emotion",
@@ -40,7 +40,7 @@ final class EnglishPredictiveEngineTests: XCTestCase {
     }
 
     func testAccentOverlayDoesNotCreateAutomaticAction() throws {
-        let engine = try EnglishPredictiveEngine()
+        let engine = try PredictiveEngine(language: .english)
 
         let response = try engine.predict(
             typedWord: "cafe",
@@ -56,7 +56,7 @@ final class EnglishPredictiveEngineTests: XCTestCase {
     }
 
     func testNextWordUsesNativePredictionWithoutAutomaticAction() throws {
-        let engine = try EnglishPredictiveEngine()
+        let engine = try PredictiveEngine(language: .english)
 
         let response = try engine.predict(
             typedWord: "",
@@ -70,7 +70,7 @@ final class EnglishPredictiveEngineTests: XCTestCase {
     }
 
     func testInputBeyondNativeWordLimitRemainsUnactionable() throws {
-        let engine = try EnglishPredictiveEngine()
+        let engine = try PredictiveEngine(language: .english)
 
         let response = try engine.predict(
             typedWord: String(repeating: "a", count: 80),
@@ -85,7 +85,7 @@ final class EnglishPredictiveEngineTests: XCTestCase {
     }
 
     func testContextualDeletionCandidateSurvivesNativeCandidateExpansion() throws {
-        let engine = try EnglishPredictiveEngine()
+        let engine = try PredictiveEngine(language: .english)
 
         let response = try engine.predict(
             typedWord: "fo",
@@ -101,7 +101,7 @@ final class EnglishPredictiveEngineTests: XCTestCase {
     }
 
     func testAdjacentSubstitutionRanksIntendedWordFirst() throws {
-        let engine = try EnglishPredictiveEngine()
+        let engine = try PredictiveEngine(language: .english)
 
         let response = try engine.predict(
             typedWord: "ocer",
@@ -114,7 +114,7 @@ final class EnglishPredictiveEngineTests: XCTestCase {
     }
 
     func testContractionRanksIntendedWordFirst() throws {
-        let engine = try EnglishPredictiveEngine()
+        let engine = try PredictiveEngine(language: .english)
 
         let response = try engine.predict(
             typedWord: "dnt",
@@ -127,7 +127,7 @@ final class EnglishPredictiveEngineTests: XCTestCase {
     }
 
     func testSingleDeletionRanksIntendedWordFirst() throws {
-        let engine = try EnglishPredictiveEngine()
+        let engine = try PredictiveEngine(language: .english)
 
         let response = try engine.predict(
             typedWord: "ltters",
@@ -140,7 +140,7 @@ final class EnglishPredictiveEngineTests: XCTestCase {
     }
 
     func testRankedSuggestionsAreUnique() throws {
-        let engine = try EnglishPredictiveEngine()
+        let engine = try PredictiveEngine(language: .english)
 
         let response = try engine.predict(
             typedWord: "lettrrs",
@@ -154,7 +154,7 @@ final class EnglishPredictiveEngineTests: XCTestCase {
     }
 
     func testObservedAdjacentKeyErrorsRetainIntendedCandidate() throws {
-        let engine = try EnglishPredictiveEngine()
+        let engine = try PredictiveEngine(language: .english)
         let cases: [(typed: String, previous: [String], expected: String)] = [
             ("jumls", ["fox"], "jumps"),
             ("pleaze", ["so"], "please"),

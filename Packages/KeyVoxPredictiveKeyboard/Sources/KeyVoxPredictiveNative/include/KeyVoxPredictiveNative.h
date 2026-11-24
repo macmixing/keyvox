@@ -66,6 +66,11 @@ KVPKEngineRef KVPKEngineCreate(
     const char *correctionRankerPath,
     const char *completionRankerPath,
     const char *actionModelPath,
+    /// The typing language's letters, as UTF-8, that single-letter edits of a typed word try,
+    /// in the order they are tried.
+    const char *editLetters,
+    /// The letters, as UTF-8, a short typed word needs one of to be taken as an attempt at a word.
+    const char *vowels,
     const KVPKKeyGeometry *keys,
     int32_t keyCount,
     int32_t keyboardWidth,

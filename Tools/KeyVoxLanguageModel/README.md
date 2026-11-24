@@ -1,14 +1,15 @@
 # KeyVox Language Model
 
 Builds the language data the predictive keyboard bundles in
-`Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/PredictiveData`, and the
+English typing language in
+`Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/PredictiveData/en`, and the
 capitalized spellings shared with dictation in `Packages/KeyVoxLinguistics/Sources/KeyVoxLinguistics/Resources`:
 
 | Bundled file | Built by | Reads |
 | --- | --- | --- |
-| `context_artifact_800k.bin` | `extract_sentences.py`, `count_ngrams.py`, `write_context_model.py` | Every source, through `extract_sentences.py` |
+| `context_model.bin` | `extract_sentences.py`, `count_ngrams.py`, `write_context_model.py` | Every source, through `extract_sentences.py` |
 | `sentence_openers.txt` | `tag_word_kinds.swift`, `count_sentence_openers.py`, `write_sentence_openers.py` | Every source, through `extract_sentences.py`'s readers and its sentences |
-| `capitalized_spellings.txt` | `scowl_words.sh`, `write_capitalized_spellings.py` | SCOWL, `measured_spellings.txt`, and OASST2 and Tatoeba through `extract_sentences.py`'s readers |
+| `capitalized_spellings_en.txt` | `scowl_words.sh`, `write_capitalized_spellings.py` | SCOWL, `measured_spellings.txt`, and OASST2 and Tatoeba through `extract_sentences.py`'s readers |
 | `unknown_word_followers.txt` | `scowl_words.sh`, `write_unknown_word_followers.py` | SCOWL, `count_ngrams.py`'s counts, and OASST2 and Tatoeba's sentences |
 | `word_followers.txt` | `scowl_words.sh`, `write_word_followers.py` | SCOWL, `count_ngrams.py`'s counts, and OASST2 and Tatoeba's sentences |
 | `grammar_words.txt` | `tag_word_kinds.swift`, `write_grammar_words.py` | `count_ngrams.py`'s vocabulary and `tag_word_kinds.swift`'s word kinds |
@@ -67,7 +68,7 @@ xcrun swiftc -O tag_word_kinds.swift -o <scratch>/tag_word_kinds
 
 ## Words spelled with capitals
 
-`capitalized_spellings.txt` holds the words the keyboard and dictation write with their capitals, such as
+`capitalized_spellings_en.txt` holds the words the keyboard and dictation write with their capitals, such as
 "Jennifer" or "iPhone". It is bundled in `Packages/KeyVoxLinguistics`. It is built from SCOWL, the word list the dictionary comes from, and
 the written sources in the data directory:
 

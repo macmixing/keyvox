@@ -8,7 +8,7 @@ final class MissingSpaceCorrectionTests: XCTestCase {
     private var computer: PredictionComputer!
 
     override func setUpWithError() throws {
-        computer = PredictionComputer(engine: try EnglishPredictiveEngine())
+        computer = PredictionComputer(engine: try PredictiveEngine(language: .english))
     }
 
     func testMergedWordsWithTyposInBothWordsSplitAtSentenceStart() throws {
@@ -34,8 +34,8 @@ final class MissingSpaceCorrectionTests: XCTestCase {
 
     func testMergedWordsTypedInCapitalsSplitIntoTwoWordsInCapitals() throws {
         let typed = "probalywroks"
-        let split = try XCTUnwrap(try computer.compute(PredictiveTypingSession().request(textBeforeCursor: typed)).autocorrection)
-        let request = PredictiveTypingSession().request(textBeforeCursor: typed.uppercased())
+        let split = try XCTUnwrap(try computer.compute(PredictiveTypingSession(language: .english).request(textBeforeCursor: typed)).autocorrection)
+        let request = PredictiveTypingSession(language: .english).request(textBeforeCursor: typed.uppercased())
         XCTAssertEqual(try computer.compute(request).autocorrection, split.uppercased())
     }
 
@@ -47,7 +47,7 @@ final class MissingSpaceCorrectionTests: XCTestCase {
     /// The space-bar replacement for the last typed word, lowercased, with each letter
     /// tapped at its key's center.
     private func autocorrection(typing text: String) throws -> String? {
-        let request = PredictiveTypingSession().request(textBeforeCursor: text)
+        let request = PredictiveTypingSession(language: .english).request(textBeforeCursor: text)
         return try computer.compute(request).autocorrection?.lowercased()
     }
 }

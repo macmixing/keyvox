@@ -18,7 +18,7 @@ final class PickedWordSpaceTests: XCTestCase {
         let (session, text) = pickedWord()
         let edit = session.pickedWordSpaceEdit(character: SmartQuotes.apostrophe, typesExactly: false, textBeforeCursor: text)
         XCTAssertEqual(edit?.deleteCount, 1)
-        XCTAssertEqual(edit?.insertText, SmartQuotes.text(for: SmartQuotes.apostrophe, after: String(text.dropLast())))
+        XCTAssertEqual(edit?.insertText, TypingLanguage.english.quotes.text(for: SmartQuotes.apostrophe, after: String(text.dropLast())))
     }
 
     func testLetterFollowsTheSpace() {
@@ -28,7 +28,7 @@ final class PickedWordSpaceTests: XCTestCase {
 
     /// A session right after picking a word from the bar, and the text it left.
     private func pickedWord() -> (PredictiveTypingSession, String) {
-        let session = PredictiveTypingSession()
+        let session = PredictiveTypingSession(language: .english)
         let typed = "hel"
         let edit = session.choiceEdit(SuggestionBar.Item(text: "hello", kind: .suggestion), textBeforeCursor: typed)
         return (session, String(typed.dropLast(edit.deleteCount)) + edit.insertText)

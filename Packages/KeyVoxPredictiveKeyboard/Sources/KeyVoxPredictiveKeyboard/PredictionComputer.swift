@@ -6,7 +6,8 @@ import CoreGraphics
 /// Computes suggestions and the space-bar autocorrection for a prediction request.
 /// Safe to call from any thread; the engine serializes its own native work.
 public final class PredictionComputer: @unchecked Sendable {
-    private let engine: EnglishPredictiveEngine
+    private let engine: PredictiveEngine
+    private let casing: WordCasing
     private let parameters: NoisyChannelCorrector.Parameters
     private let lock = NSLock()
     /// How much likelier than usual the words before must make a dictionary word for the bar to
@@ -23,12 +24,13 @@ public final class PredictionComputer: @unchecked Sendable {
     private var learned = LearnedVocabulary.empty
 
     public init(
-        engine: EnglishPredictiveEngine,
+        engine: PredictiveEngine,
         parameters: NoisyChannelCorrector.Parameters = NoisyChannelCorrector.standardParameters
     ) {
         self.engine = engine
+        casing = engine.language.casing
         self.parameters = parameters
-        keys = KeyCenterMap(geometry: EnglishKeyboardLayout.defaultGeometry)
+        keys = KeyCenterMap(geometry: engine.language.letterLayout.defaultGeometry)
         neighborKeySlips = NeighborKeySlips(keys: keys)
     }
 
@@ -216,7 +218,7 @@ public final class PredictionComputer: @unchecked Sendable {
             bar: request.revertibleText.map(SuggestionBarComposer.composeRevert) ?? SuggestionBarComposer.compose(
                 typedWord: typed,
                 autocorrection: autocorrection,
-                rankedWords: suggested.words.map { WordCasing.apply(of: typed, to: $0) }
+                rankedWords: suggested.words.map { casing.apply(of: typed, to: $0) }
             ),
             autocorrection: autocorrection,
             typedWordKind: isUsersWord ? .usersWord
@@ -276,7 +278,7 @@ public final class PredictionComputer: @unchecked Sendable {
         lock.unlock()
         let typed = request.word.replacingOccurrences(of: "’", with: "'")
         if let phraseStart = vocabulary.phraseForm(of: typed, before: request.followingWord) {
-            let written = WordCasing.apply(of: typed, to: phraseStart)
+            let written = casing.apply(of: typed, to: phraseStart)
             return written == typed ? nil : written
         }
         guard vocabulary.contains(typed) == false, vocabulary.keepsAsTyped(typed) == false,
@@ -307,7 +309,7 @@ public final class PredictionComputer: @unchecked Sendable {
                 forms: forms
             )
         )
-        return decision.replacement.map { WordCasing.apply(of: typed, to: $0) }
+        return decision.replacement.map { casing.apply(of: typed, to: $0) }
     }
 
     /// The letter a tap on a non-letter key was meant for, or nil to keep that key.
@@ -393,8 +395,8 @@ public final class PredictionComputer: @unchecked Sendable {
             return expansion
         }
         if let split {
-            let left = WordCasing.apply(of: typed, to: engine.capitalizedSpellings.written(split.left))
-            let right = WordCasing.capitalizingPronoun(
+            let left = casing.apply(of: typed, to: engine.capitalizedSpellings.written(split.left))
+            let right = casing.writingAlwaysCapitalized(
                 WordCasing.carryingAllCapitals(of: typed, to: engine.capitalizedSpellings.written(split.right))
             )
             return left + " " + right
@@ -416,7 +418,7 @@ public final class PredictionComputer: @unchecked Sendable {
         } else {
             chosen = decision.replacement ?? engine.capitalizedSpellings.written(typed)
         }
-        let written = WordCasing.apply(of: typed, to: chosen)
+        let written = casing.apply(of: typed, to: chosen)
         return written == typed ? nil : written
     }
 
@@ -486,7 +488,7 @@ public final class PredictionComputer: @unchecked Sendable {
                 + scored.filter { picks.repeats($0.word, after: request.previousWords) }.map(\.word)
         }
         return SuggestionBarComposer.composeNextWords(try ranked.map {
-            WordCasing.capitalizingPronoun(try suggestionForm(of: $0, previousWords: request.previousWords, learned: learned))
+            casing.writingAlwaysCapitalized(try suggestionForm(of: $0, previousWords: request.previousWords, learned: learned))
         })
     }
 

@@ -6,7 +6,7 @@ struct NextWordEvaluator {
         let rank: Int?
     }
 
-    let engine: EnglishPredictiveEngine
+    let engine: PredictiveEngine
 
     func evaluate(intendedWord: String, previousWords: [String]) throws -> Outcome {
         let response = try engine.predict(

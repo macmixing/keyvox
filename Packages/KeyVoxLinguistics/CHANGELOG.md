@@ -6,6 +6,21 @@ The format loosely follows Keep a Changelog and the package uses semantic versio
 
 ---
 
+## [1.1.0] - 2026-11-24
+
+The words spelled only with capitals are bundled per language, so the keyboard reads the list of the language it types in.
+
+### Includes
+
+- Added `CapitalizedSpellings(languageCode:)`, which loads the bundled `capitalized_spellings_<language>.txt`.
+- The English list is now `capitalized_spellings_en.txt`; `CapitalizedSpellings()` still loads it, for dictation's continuation casing.
+
+### Notes
+
+- `1.1.0` adds public API (`CapitalizedSpellings(languageCode:)`); existing callers work unchanged.
+
+---
+
 ## [1.0.2] - 2026-11-11
 
 A shared list of phrases that introduce examples, so dictation can tell when a spoken colon follows one.

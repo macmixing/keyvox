@@ -10,7 +10,7 @@ let package = Package(
             name: "KeyVoxLinguistics",
             resources: [
                 .copy("Resources/PERCEPTRON-LICENSE.txt"),
-                .copy("Resources/capitalized_spellings.txt"),
+                .copy("Resources/capitalized_spellings_en.txt"),
                 .copy("Resources/example_phrases.txt"),
                 .copy("Resources/greeting_phrases.txt"),
                 .copy("Resources/punctuation_name_phrases.txt"),

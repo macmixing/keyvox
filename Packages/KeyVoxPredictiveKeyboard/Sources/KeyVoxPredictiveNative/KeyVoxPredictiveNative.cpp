@@ -310,6 +310,14 @@ std::vector<int> utf8CodePoints(const std::string &text) {
     return result;
 }
 
+void appendUtf8(int codePoint, std::string *text);
+
+std::string utf8String(const std::vector<int> &codePoints) {
+    std::string text;
+    for (const int codePoint : codePoints) appendUtf8(codePoint, &text);
+    return text;
+}
+
 void appendUtf8(int codePoint, std::string *text) {
     if (codePoint <= 0x7F) {
         text->push_back(static_cast<char>(codePoint));
@@ -374,6 +382,8 @@ public:
            const char *correctionRankerPath,
            const char *completionRankerPath,
            const char *actionModelPath,
+           const char *editLetters,
+           const char *vowels,
            const KVPKKeyGeometry *keys,
            int32_t keyCount,
            int32_t keyboardWidth,
@@ -381,7 +391,12 @@ public:
         : context_(contextPath),
           correctionRanker_(correctionRankerPath),
           completionRanker_(completionRankerPath),
-          actionModel_(actionModelPath) {
+          actionModel_(actionModelPath),
+          editLetters_(utf8CodePoints(editLetters)),
+          editLetterSet_(editLetters_.begin(), editLetters_.end()) {
+        if (editLetters_.empty()) throw std::runtime_error("no edit letters");
+        const std::vector<int> vowelCodePoints = utf8CodePoints(vowels);
+        vowels_.insert(vowelCodePoints.begin(), vowelCodePoints.end());
         struct stat status {};
         if (stat(dictionaryPath, &status) != 0 || status.st_size <= 0
                 || status.st_size > INT32_MAX) {
@@ -852,9 +867,10 @@ private:
         const std::string &typed,
         std::vector<NativeCandidate> *candidates
     ) const {
-        if (typed.size() < 2 || typed.size() + 1 >= MAX_WORD_LENGTH
-                || !std::all_of(typed.begin(), typed.end(), [](unsigned char value) {
-                    return value >= 'a' && value <= 'z';
+        const std::vector<int> typedPoints = utf8CodePoints(typed);
+        if (typedPoints.size() < 2 || typedPoints.size() + 1 >= MAX_WORD_LENGTH
+                || !std::all_of(typedPoints.begin(), typedPoints.end(), [this](int codePoint) {
+                    return editLetterSet_.count(codePoint) > 0;
                 })) {
             return;
         }
@@ -875,15 +891,15 @@ private:
             observed.insert(candidate.word);
         }
 
-        const auto appendDictionaryCandidate = [&](const std::string &candidate) {
+        const auto appendDictionaryCandidate = [&](const std::vector<int> &codePoints) {
+            std::string candidate = utf8String(codePoints);
             if (!observed.insert(candidate).second) return;
-            const std::vector<int> codePoints = utf8CodePoints(candidate);
             if (dictionary_->getProbability(
                     CodePointArrayView(codePoints.data(), codePoints.size())) < 0) {
                 return;
             }
             candidates->push_back({
-                candidate,
+                std::move(candidate),
                 recoveryScore,
                 recoveryType,
                 0.0,
@@ -891,9 +907,9 @@ private:
             });
         };
 
-        for (size_t position = 0; position <= typed.size(); ++position) {
-            for (char inserted = 'a'; inserted <= 'z'; ++inserted) {
-                std::string candidate = typed;
+        for (size_t position = 0; position <= typedPoints.size(); ++position) {
+            for (const int inserted : editLetters_) {
+                std::vector<int> candidate = typedPoints;
                 candidate.insert(
                     candidate.begin() + static_cast<std::ptrdiff_t>(position),
                     inserted
@@ -902,18 +918,18 @@ private:
             }
         }
 
-        for (size_t position = 0; position < typed.size(); ++position) {
-            for (char replacement = 'a'; replacement <= 'z'; ++replacement) {
-                if (replacement == typed[position]) continue;
-                std::string candidate = typed;
+        for (size_t position = 0; position < typedPoints.size(); ++position) {
+            for (const int replacement : editLetters_) {
+                if (replacement == typedPoints[position]) continue;
+                std::vector<int> candidate = typedPoints;
                 candidate[position] = replacement;
                 appendDictionaryCandidate(candidate);
             }
         }
 
-        for (size_t position = 0; position + 1 < typed.size(); ++position) {
-            if (typed[position] == typed[position + 1]) continue;
-            std::string candidate = typed;
+        for (size_t position = 0; position + 1 < typedPoints.size(); ++position) {
+            if (typedPoints[position] == typedPoints[position + 1]) continue;
+            std::vector<int> candidate = typedPoints;
             std::swap(candidate[position], candidate[position + 1]);
             appendDictionaryCandidate(candidate);
         }
@@ -1004,7 +1020,7 @@ private:
                 || static_cast<double>(distance) / static_cast<double>(longest) > 0.5) {
             return 0;
         }
-        if (typed.size() <= 4 && !hasVowel(typed)) return 0;
+        if (utf8CodePoints(typed).size() <= 4 && !hasVowel(typed)) return 0;
         if (typed.size() >= 2 && typed[typed.size() - 1] == typed[typed.size() - 2]
                 && best.word.rfind(typed, 0) == 0) {
             return 0;
@@ -1046,8 +1062,11 @@ private:
         return false;
     }
 
-    static bool hasVowel(const std::string &word) {
-        return word.find_first_of("aeiouy") != std::string::npos;
+    bool hasVowel(const std::string &word) const {
+        const std::vector<int> codePoints = utf8CodePoints(word);
+        return std::any_of(codePoints.begin(), codePoints.end(), [this](int codePoint) {
+            return vowels_.count(codePoint) > 0;
+        });
     }
 
     JNIEnv environment_;
@@ -1061,6 +1080,10 @@ private:
     TreeModel correctionRanker_;
     TreeModel completionRanker_;
     TreeModel actionModel_;
+    /// The typing language's letters single-letter edits try, in order.
+    std::vector<int> editLetters_;
+    std::unordered_set<int> editLetterSet_;
+    std::unordered_set<int> vowels_;
     std::mutex mutex_;
 };
 
@@ -1072,6 +1095,8 @@ KVPKEngineRef KVPKEngineCreate(
     const char *correctionRankerPath,
     const char *completionRankerPath,
     const char *actionModelPath,
+    const char *editLetters,
+    const char *vowels,
     const KVPKKeyGeometry *keys,
     int32_t keyCount,
     int32_t keyboardWidth,
@@ -1081,7 +1106,7 @@ KVPKEngineRef KVPKEngineCreate(
         lastError.clear();
         return new Engine(
             dictionaryPath, contextPath, correctionRankerPath, completionRankerPath,
-            actionModelPath, keys, keyCount, keyboardWidth, keyboardHeight
+            actionModelPath, editLetters, vowels, keys, keyCount, keyboardWidth, keyboardHeight
         );
     } catch (const std::exception &error) {
         lastError = error.what();

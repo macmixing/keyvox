@@ -37,7 +37,7 @@ public struct ContextLanguageScorer: Sendable {
     private let analyze: @Sendable (String, [String]) throws -> WordLanguageAnalysis
     private let vocabulary: PersonalVocabulary
 
-    public init(engine: EnglishPredictiveEngine, vocabulary: PersonalVocabulary = .empty) {
+    public init(engine: PredictiveEngine, vocabulary: PersonalVocabulary = .empty) {
         analyze = { word, previousWords in
             try engine.analyze(word: word, previousWords: previousWords)
         }

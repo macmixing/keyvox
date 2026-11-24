@@ -8,7 +8,7 @@ final class SentenceOpenerBarTests: XCTestCase {
     private var computer: PredictionComputer!
 
     override func setUpWithError() throws {
-        computer = PredictionComputer(engine: try EnglishPredictiveEngine())
+        computer = PredictionComputer(engine: try PredictiveEngine(language: .english))
     }
 
     func testOpenersFollowThePreviousSentence() throws {
@@ -46,7 +46,7 @@ final class SentenceOpenerBarTests: XCTestCase {
     }
 
     private func bar(after text: String) throws -> [String] {
-        let request = PredictiveTypingSession().request(textBeforeCursor: text)
+        let request = PredictiveTypingSession(language: .english).request(textBeforeCursor: text)
         return try computer.compute(request).bar.items.map(\.text)
     }
 
