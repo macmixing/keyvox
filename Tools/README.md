@@ -101,8 +101,8 @@ Tools/Pronunciation/benchmarks/run_quality_gates.sh --repo-root "$(pwd)"
 
 ### `KeyVoxTypingModels/`
 
-Rebuilds the English dictionary, correction and completion rankers, action model, and accent
-overlay the predictive keyboard bundles, from pinned public sources. See
+Rebuilds the English dictionary, correction and completion rankers, autocorrect decision model,
+and accent overlay the predictive keyboard bundles, from pinned public sources. See
 `Tools/KeyVoxTypingModels/README.md`.
 
 ```bash

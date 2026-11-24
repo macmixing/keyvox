@@ -1,17 +1,17 @@
 # KeyVox Typing Models
 
-Builds the English typing models the predictive keyboard bundles in
-`Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/PredictiveData`:
+Builds the typing models the predictive keyboard bundles for its English typing language in
+`Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/PredictiveData/en`:
 
 | Bundled file | What it is | Built by |
 | --- | --- | --- |
-| `candidate_v3_dict/` | LatinIME version 403 dictionary: 106,973 words with probabilities, 93,385 word pairs, and 60,000 three-word sequences | `write_dictionary_inputs.py`, `write_latinime_dictionary.cpp` |
-| `production_ranker_800k.kvtr` | 220 gradient-boosted trees that score each correction candidate | `train_correction_models.py`, `export_tree_models.py` |
-| `production_action_800k.kvtr` | 160 trees that score whether to replace the typed letters with the best correction | `train_correction_models.py`, `export_tree_models.py` |
-| `production_completion_ranker_800k.kvtr` | 220 trees that score each candidate while a word is still being typed | `train_completion_ranker.py`, `export_tree_models.py` |
+| `dictionary/` | LatinIME version 403 dictionary, in `dictionary.header` and `dictionary.body`: 106,973 words with probabilities, 93,385 word pairs, and 60,000 three-word sequences | `write_dictionary_inputs.py`, `write_latinime_dictionary.cpp` |
+| `correction_ranker.kvtr` | 220 gradient-boosted trees that score each correction candidate | `train_correction_models.py`, `export_tree_models.py` |
+| `autocorrect_decision.kvtr` | 160 trees that score whether to replace the typed letters with the best correction | `train_correction_models.py`, `export_tree_models.py` |
+| `completion_ranker.kvtr` | 220 trees that score each candidate while a word is still being typed | `train_completion_ranker.py`, `export_tree_models.py` |
 | `accent_overlay.bin` | 262 accented words the dictionary lacks, by the plain letters that type them | `write_accent_words.py`, `write_accent_overlay.py` |
 
-The context model, `context_artifact_800k.bin`, and the word lists are built by
+The context model, `context_model.bin`, and the word lists are built by
 `Tools/KeyVoxLanguageModel`.
 
 ## Sources
@@ -47,7 +47,10 @@ python3.14 -m venv <data-dir>/venv
 PYTHON=<data-dir>/venv/bin/python ./build_typing_models.sh <data-dir>
 ```
 
-The built files land in `<data-dir>/built`; the package is left alone. Once the sources are
+The built files land in `<data-dir>/built` under the names they have in `PredictiveData/en`,
+and `compare_with_bundled.py` then says for each whether it is the same as the bundled one,
+leaving out the write times in the dictionary header; with `--check` after the data directory,
+the build fails if any differs. The package is left alone. Once the sources are
 downloaded, the build takes about 12 minutes on an Apple silicon Mac. Set `OMP_NUM_THREADS` to
 limit the cores the tree training uses.
 
@@ -70,13 +73,14 @@ Every other step gives the same bytes on either.
 | `build_native_tools.sh` | `bin/write_latinime_dictionary`, `bin/latinime_suggestions` |
 | `rewind_tatoeba.py` | `work/tatoeba_eng_sentences_at_cutoff.tsv.bz2` |
 | `scowl_word_list.sh` | `work/scowl-*.txt` |
-| `write_dictionary_inputs.py`, then `bin/write_latinime_dictionary` | `work/dictionary_*.tsv`, `built/candidate_v3_dict/` |
+| `write_dictionary_inputs.py`, then `bin/write_latinime_dictionary` | `work/dictionary_*.tsv`, `built/dictionary/` |
 | `split_ite_events.py` | `work/ite/`: autocorrections, words left alone, and accepted predictions, split by typist |
 | `write_feature_context_model.py` | `work/feature_context_800k.bin`: the word and word-pair counts the rankers train with |
 | `cache_correction_candidates.py`, `cache_completion_candidates.py` | `work/*_candidates.pkl.gz`: LatinIME's candidates for every training query |
 | `train_correction_models.py`, `train_completion_ranker.py` | `work/*.pkl.gz` and held-out reports in `work/reports/` |
 | `export_tree_models.py` | `built/*.kvtr`, checked against the trained models on 10,000 rows |
 | `write_accent_words.py`, `write_accent_overlay.py` | `built/accent_overlay.bin` |
+| `compare_with_bundled.py` | A line per built file: same as the bundled one or not |
 
 The rankers train on records split by the sentence the typist was copying, so a sentence's
 words are never on both sides of a training and test split.
@@ -107,6 +111,6 @@ measure:
 Only the speed lines differ between runs.
 
 To score built files, copy the harness's release build and put the built files in the copy's
-`KeyVoxPredictiveKeyboard_KeyVoxPredictiveKeyboard.bundle/Contents/Resources/PredictiveData`;
+`KeyVoxPredictiveKeyboard_KeyVoxPredictiveKeyboard.bundle/Contents/Resources/PredictiveData/en`;
 the copy reads its own bundle. The ITE plan is made with
 `Tools/KeyVoxTypingHarness/Scripts/ite_typo_plan.py <data-dir>/sources/ite/processed2020/english <plan.json> --split holdout --max-sentences 3000`.
