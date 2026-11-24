@@ -863,6 +863,7 @@ Packages/
 │   │   │   ├── VoiceActivityConfiguration.swift
 │   │   │   ├── VoiceActivityDetector.swift
 │   │   │   ├── VoiceActivityModelResource.swift
+│   │   │   ├── WhisperRuntimeLogFilter.swift
 │   │   │   └── Resources/ggml-silero-v5.1.2.bin
 │   │   └── KeyVoxSpeechRuntime/SpeechRuntime.swift
 │   └── Tests/KeyVoxVoiceActivityTests/
@@ -989,7 +990,7 @@ Packages/
 - `Packages/KeyVoxPromotions/Sources/KeyVoxPromotions/`
   - Owns campaign manifest decoding and retrieval, cached/bundled fallback, version and date eligibility, deterministic startup selection/rotation, persisted selection state, repository-cache refresh, and the published `PromotionCenter.currentCampaign` value.
 - `Packages/KeyVoxVoiceActivity/Sources/KeyVoxVoiceActivity/`
-  - Owns the shared VAD protocol, standard configuration, Silero resource, actor-isolated detector, and speech-segment results used by Whisper and Parakeet, plus the live detector that follows speech probability window by window for the iOS live meter.
+  - Owns the shared VAD protocol, standard configuration, Silero resource, actor-isolated detector, and speech-segment results used by Whisper and Parakeet, plus the live detector that follows speech probability window by window, and the whisper.cpp console filter it installs, for the iOS live meter.
 - `Packages/KeyVoxVoiceActivity/Sources/KeyVoxSpeechRuntime/SpeechRuntime.swift`
   - Exposes the shared `whisper.cpp` runtime bridge consumed by both the VAD detector and `KeyVoxWhisper`.
 - `Packages/KeyVoxVoiceActivity/Artifacts/`
