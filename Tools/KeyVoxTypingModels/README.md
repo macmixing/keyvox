@@ -84,12 +84,13 @@ words are never on both sides of a training and test split.
 ## Results
 
 Built with the commands above, the three `.kvtr` files and `accent_overlay.bin` are the same
-bytes as the bundled ones. The dictionary holds the same words, word pairs, and three-word
-sequences with the same probabilities; its bytes differ only in the order entries were
-written, from a few sentences whose state in the July export cannot be recovered, and in the
-write times in its header.
+bytes as the ones built in July 2026 that the package bundles. The July dictionary held the
+same words, word pairs, and three-word sequences with the same probabilities as this build;
+its bytes differed only in the order entries were written, from a few sentences whose state in
+the July export cannot be recovered. The package now bundles this build's dictionary, so a
+rebuild writes the same body, with new write times in its header.
 
-`Tools/KeyVoxTypingHarness` scores the built files the same as the bundled ones on every
+`Tools/KeyVoxTypingHarness` scored the built files the same as the July files on every
 measure:
 
 | Measure | 80 sentences, noise 0.3 (`compare`) | 400 sentences, noise 0.25 (`evaluate`) | ITE held-out typists, 3,000 sentences (`evaluate`) |
