@@ -114,8 +114,22 @@ class TemporalBlock(nn.Module):
         self.excite = SqueezeExcite(width)
         self.dropout = nn.Dropout(config.dropout)
 
+    def window(self, x: torch.Tensor) -> torch.Tensor:
+        """The dilated depthwise convolution. On the CPU it runs as shifted multiply-adds,
+        which PyTorch computes far faster there."""
+        if x.device.type != "cpu":
+            return self.depthwise(x)
+        weight = self.depthwise.weight[:, 0, :]
+        dilation = self.depthwise.dilation[0]
+        reach = self.depthwise.padding[0]
+        padded = F.pad(x, (reach, reach))
+        frames = x.shape[2]
+        taps = sum(padded[:, :, tap * dilation:tap * dilation + frames] * weight[:, tap:tap + 1]
+                   for tap in range(weight.shape[1]))
+        return taps + self.depthwise.bias.unsqueeze(1)
+
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        y = self.norm(self.depthwise(x))
+        y = self.norm(self.window(x))
         y = F.glu(pointwise(self.expand, y), dim=1)
         y = self.excite(pointwise(self.project, self.response(y)))
         return x + self.dropout(y)
