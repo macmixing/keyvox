@@ -60,9 +60,15 @@ class AppleTaggerKinds:
     """Word kinds from Apple's NaturalLanguage tagger (tag_word_kinds.swift) over the language's
     written sentences, in `tagger_language` when given, else as the tagger detects it. With
     `elided_host`, a word joined to an elided article or preposition takes the class of the word
-    it is joined to."""
+    it is joined to.
+
+    The tagger's answers can change from one system to another, so the word kinds a language's data
+    was built with are kept as a snapshot, `<data_dir>/sources/word-kinds/<identifier>_word_kinds.tsv`,
+    whose SHA-256 is `snapshot_sha256`. A build reads the snapshot when it is there, and otherwise
+    tags afresh and fails unless the result matches the hash."""
     tagger_language: str | None = None
     elided_host: bool = False
+    snapshot_sha256: str | None = None
     sentences: tuple[str, ...] = ("tatoeba", "oasst2")
 
 
@@ -122,7 +128,10 @@ _GERMAN_SOURCES = (
 )
 _GERMAN = dict(
     identifier="de",
-    word_kinds=AppleTaggerKinds(tagger_language="de"),
+    word_kinds=AppleTaggerKinds(
+        tagger_language="de",
+        snapshot_sha256="e0814d62d7ae0f32a9c1fb30ef06c89d84c1c0ce97003ccede0d389494697280",
+    ),
     vocabulary=LexiconVocabulary(
         word_list=latinime_word_list("de", "07ae553cd55f9901412065bad7617379908ed5f2a701d226ffde85a9b8ffd5c0"),
         lexicons=(wikidata_forms("de", "7a52e72e6da01d13ca3a75c1b7515163957a0f8c763e5ded53d147f5510de843"),),
@@ -141,7 +150,8 @@ LANGUAGES = {
             SourceUse(oasst2("en")),
             SourceUse(tatoeba("eng")),
         ),
-        word_kinds=AppleTaggerKinds(),
+        # Tagged on October 8, 2026; the bundled sentence openers were built with it.
+        word_kinds=AppleTaggerKinds(snapshot_sha256="a46077a3b030c478fe39dc19d9b96a32f0934a9ac69e4aec551fb8a923d8ee3d"),
         opener_weights={"youtube-commons": 0.0, "oasst2": 0.3, "tatoeba": 10.0},
         measured_spellings=MEASURED_SPELLINGS,
     ),
@@ -181,7 +191,11 @@ LANGUAGES = {
             SourceUse(yodas2("fr", "d2ec6e4f733a42e733ff057973dfe70126fc36a00ce6875aa90ff5c60cfcd153")),
             SourceUse(youtube_commons("fr", "1fd31ecb170ae31d7e13b7c6c134fcd22afd2cde53badeaa15a85db6a0ff8ad1")),
         ),
-        word_kinds=AppleTaggerKinds(tagger_language="fr", elided_host=True),
+        word_kinds=AppleTaggerKinds(
+            tagger_language="fr",
+            elided_host=True,
+            snapshot_sha256="eb82387afdbccf501cf3caeeb457c7b58a5fa7f1121381e3e98c81355982823e",
+        ),
         vocabulary=LexiconVocabulary(
             word_list=latinime_word_list("fr", "cc917a0a81acab0ea12089c2fb06b5c6be98c75f23a7605bfdbbeb698abfd65e"),
             lexicons=(
