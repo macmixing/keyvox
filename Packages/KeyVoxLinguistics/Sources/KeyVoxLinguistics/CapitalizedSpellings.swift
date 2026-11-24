@@ -10,17 +10,23 @@ public struct CapitalizedSpellings: Sendable {
 
     private static let newline = UInt8(ascii: "\n")
     private static let tab = UInt8(ascii: "\t")
-    private static let resourceName = "capitalized_spellings"
+    private static let resourceNamePrefix = "capitalized_spellings_"
     private static let resourceExtension = "txt"
 
     /// Lines of a lowercase word, a tab, and its spelling, in byte order of the lowercase
     /// word, mapped rather than read so they take no memory of their own.
     private let list: Data
 
-    /// The list bundled with this package, found through `KeyVoxLinguisticsResources`.
+    /// The English list bundled with this package, which dictation's casing uses.
     public init() throws {
+        try self.init(languageCode: "en")
+    }
+
+    /// The list bundled with this package for the language `languageCode`, such as `en`,
+    /// found through `KeyVoxLinguisticsResources`.
+    public init(languageCode: String) throws {
         guard let url = KeyVoxLinguisticsResources.bundle.url(
-            forResource: Self.resourceName,
+            forResource: Self.resourceNamePrefix + languageCode,
             withExtension: Self.resourceExtension
         ) else {
             throw Failure.missingResource

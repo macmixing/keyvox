@@ -56,7 +56,7 @@ xcrun swiftc -O tag_word_kinds.swift -o "$SCRATCH_DIR/tag_word_kinds"
 ./scowl_words.sh 60 "$SCRATCH_DIR/scowl-60.txt"
 ./scowl_words.sh 50 "$SCRATCH_DIR/scowl-50.txt"
 "$PYTHON" write_capitalized_spellings.py "$DATA_DIR" "$SCRATCH_DIR/scowl-60.txt" "$SCRATCH_DIR/scowl-50.txt" \
-  "$BUILT_DIR/capitalized_spellings.txt"
+  "$BUILT_DIR/capitalized_spellings_en.txt"
 
 # Words that follow an unknown word, and a common word.
 "$PYTHON" write_unknown_word_followers.py "$DATA_DIR" "$SCRATCH_DIR/scowl-60.txt" "$BUILT_DIR/unknown_word_followers.txt"
@@ -66,10 +66,10 @@ xcrun swiftc -O tag_word_kinds.swift -o "$SCRATCH_DIR/tag_word_kinds"
 "$PYTHON" write_grammar_words.py "$DATA_DIR" "$BUILT_DIR/grammar_words.txt"
 
 differ=0
-for file in context_model.bin sentence_openers.txt capitalized_spellings.txt unknown_word_followers.txt \
+for file in context_model.bin sentence_openers.txt capitalized_spellings_en.txt unknown_word_followers.txt \
   word_followers.txt grammar_words.txt; do
   destination="$BUNDLED_DIR"
-  [[ "$file" == capitalized_spellings.txt ]] && destination="$LINGUISTICS_DIR"
+  [[ "$file" == capitalized_spellings_en.txt ]] && destination="$LINGUISTICS_DIR"
   if cmp -s "$BUILT_DIR/$file" "$destination/$file"; then
     echo "$file: same as the bundled file"
     continue
