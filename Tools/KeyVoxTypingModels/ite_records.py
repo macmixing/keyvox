@@ -64,6 +64,23 @@ def plausible_corrections(records):
     return plausible
 
 
+def correction_records(paths):
+    """The ITE typos the correction ranker and action model learn from and are measured on: a
+    fifth of the calibration typists' autocorrections and all of the held-out typists', the
+    right ones and the wrong ones, each kept when its typed letters are a plausible typo of the
+    intended word."""
+    return plausible_corrections(
+        sample_calibration(read_records(paths.ite_split("ac_success_calibration")))
+        + read_records(paths.ite_split("ac_success_holdout"))
+        + read_records(paths.ite_split("ac_harm_holdout"), harm=True))
+
+
+def preserve_records(paths):
+    """Every typist's words in the logged autocorrection events that were typed as meant."""
+    return (read_records(paths.ite_split("preserve_calibration"))
+            + read_records(paths.ite_split("preserve_holdout")))
+
+
 def clean_sentence_records(data_dir):
     """Every word of the sentences ITE typists copied, typed correctly, with the words before it."""
     preserve = []
