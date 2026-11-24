@@ -711,6 +711,7 @@ Packages/
 │   │   │   ├── HeldKeyCharacters.swift
 │   │   │   ├── HeldKeyPopupLayout.swift
 │   │   │   ├── KeyCenterMap.swift
+│   │   │   ├── KeyVoxPredictiveKeyboardResources.swift
 │   │   │   ├── LearnedCapitals.swift
 │   │   │   ├── LearnedVocabulary.swift
 │   │   │   ├── LearnedWords.swift
@@ -1886,6 +1887,8 @@ Packages/
   - Computes the suggestion bar and space-bar autocorrection for a `PredictionRequest`, revisions for a `RevisionRequest`, and the intended letter for a contested tap; takes the keyboard geometry, personal vocabulary, and learned vocabulary from the host.
 - `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/TypingLanguage.swift`, `TypingLanguageManifest.swift`, `TypingLanguageResources.swift`, and `LetterKeyLayout.swift`
   - One bundled typing language read from its `PredictiveData/<language>` folder: its files, and from its `language.json` the letter rows, edit letters, vowels, always-capitalized words (`WordCasing`), and quotation marks (`SmartQuotes`).
+- `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/KeyVoxPredictiveKeyboardResources.swift`
+  - Lets a host outside an app bundle, such as the Android engine, point the typing package at its unchanged SwiftPM resource bundle before the first typing language loads.
 - `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/PredictiveEngine.swift`
   - Loads a typing language's dictionary, context model, rankers, accent overlay, and word lists, and bridges to the `KeyVoxPredictiveNative` LatinIME target, handing it the language's edit letters and vowels.
 - `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/NoisyChannelCorrector.swift`, `SuggestionCandidateRanker.swift`, `MissingSpaceCorrector.swift`, `TouchAlignmentScorer.swift`, and `ContextLanguageScorer.swift`

@@ -2085,6 +2085,7 @@ Typing languages:
 - `TypingLanguage.bundled(identifier:)` reads one folder; `PredictiveEngine`, `PredictiveTypingSession`, `HeldKeyCharacters`, and `CharacterList` all take the language, so the rules that differ between languages come from it, while rules the bundled languages share, such as which marks end a sentence, stay in the shared code
 - the words a language spells only with capitals come from `KeyVoxLinguistics`, which bundles one list per language (`capitalized_spellings_<language>.txt`) shared with dictation
 - the keyboard types in `KeyboardTypingLanguage.current`, whose files are compiled into the package
+- the folders are found through `KeyVoxPredictiveKeyboardResources`, which a host outside an app bundle, such as the Android engine, configures with the package's unchanged resource bundle, as it does for Core and `KeyVoxLinguistics`
 
 `KeyVoxPredictiveKeyboard.PredictiveTypingSession` is the typing source of truth for the letter page. The keyboard reports taps, and text changes with the text on both sides of the cursor, asks the session what space, return, a word-ending character, a character after a suggestion tap, or a suggestion tap should change, and applies the returned `TextEdit` through `KeyboardTextInputController`. The keyboard must not re-implement correction, completion, next-word, sentence-opener, personal-word casing, or undo rules locally.
 
