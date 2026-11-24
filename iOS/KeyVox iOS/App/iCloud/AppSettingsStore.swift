@@ -9,6 +9,7 @@ enum SessionDisableTiming: String, CaseIterable, Identifiable {
     case immediately
     case fiveMinutes
     case fifteenMinutes
+    case thirtyMinutes
     case oneHour
     case never
 
@@ -21,6 +22,7 @@ enum SessionDisableTiming: String, CaseIterable, Identifiable {
         case .immediately: return String(localized: "Immediately", comment: "Dictation settings picker for when the dictation session turns off after idle; timing option meaning right away.")
         case .fiveMinutes: return String(localized: "5 Minutes", comment: "Dictation settings picker for when the dictation session turns off after idle; timing option.")
         case .fifteenMinutes: return String(localized: "15 Minutes", comment: "Dictation settings picker for when the dictation session turns off after idle; timing option.")
+        case .thirtyMinutes: return String(localized: "30 Minutes", comment: "Dictation settings picker for when the dictation session turns off after idle; timing option.")
         case .oneHour: return String(localized: "1 Hour", comment: "Dictation settings picker for when the dictation session turns off after idle; timing option.")
         case .never: return String(localized: "Never", comment: "Dictation settings picker for when the dictation session turns off after idle; timing option.")
         }
@@ -33,6 +35,7 @@ enum SessionDisableTiming: String, CaseIterable, Identifiable {
         case .immediately, .never: return nil
         case .fiveMinutes: return 300
         case .fifteenMinutes: return 900
+        case .thirtyMinutes: return 1800
         case .oneHour: return 3600
         }
     }
