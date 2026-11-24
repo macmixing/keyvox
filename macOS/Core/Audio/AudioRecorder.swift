@@ -2,6 +2,7 @@ import Foundation
 import AVFoundation
 import Combine
 import KeyVoxCore
+import KeyVoxVoiceActivity
 
 enum LiveInputSignalState: Equatable {
     case dead
@@ -62,6 +63,7 @@ class AudioRecorder: NSObject, ObservableObject {
     var currentActiveSignalRunDuration: TimeInterval = 0
     var maxActiveSignalRunDuration: TimeInterval = 0
     var lastCaptureHadNonDeadSignal: Bool = false
+    lazy var liveSpeechDetector: LiveVoiceActivityDetector? = LiveVoiceActivityDetector()
     var captureStartedAt = Date.distantPast
 
     @discardableResult

@@ -1,6 +1,7 @@
 import Foundation
 import AVFoundation
 import KeyVoxCore
+import KeyVoxVoiceActivity
 
 extension AudioRecorder {
     func prepareRecordingSession() {
@@ -61,6 +62,7 @@ extension AudioRecorder {
         currentActiveSignalRunDuration = 0
         maxActiveSignalRunDuration = 0
         lastCaptureHadNonDeadSignal = false
+        liveSpeechDetector?.reset()
         captureStartedAt = Date()
         DispatchQueue.main.async {
             self.audioLevel = 0
