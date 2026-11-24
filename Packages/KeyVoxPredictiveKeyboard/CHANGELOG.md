@@ -16,6 +16,7 @@ Typing languages: each language the keyboard types in is read from its own folde
 - `PredictiveEngine(language:)` replaces `EnglishPredictiveEngine()`, and the native engine takes the language's edit letters and vowels instead of its own English ones, counting a short typed word's length in letters.
 - `PredictiveTypingSession(language:)`, `HeldKeyCharacters.bundled(for:)`, and the `CharacterList` lists take the language; `WordCasing` and `SmartQuotes` are the language's (`TypingLanguage.casing`, `TypingLanguage.quotes`), with `WordCasing.writingAlwaysCapitalized` in place of `capitalizingPronoun`.
 - The words spelled only with capitals come from the language's `KeyVoxLinguistics` list (`CapitalizedSpellings(languageCode:)`).
+- `KeyVoxPredictiveKeyboardResources.configure(bundleURL:)` lets a host outside an app bundle, such as the Android engine, point the package at its unchanged resource bundle, as `KeyVoxCoreResources` and `KeyVoxLinguisticsResources` do.
 - The English files move to `PredictiveData/en` under plain names: `dictionary/`, `context_model.bin`, `correction_ranker.kvtr`, `completion_ranker.kvtr`, and `autocorrect_decision.kvtr`.
 
 ### Notes
