@@ -116,7 +116,7 @@ def main() -> None:
         model.load_state_dict(state["model"])
         optimizer.load_state_dict(state["optimizer"])
         start_epoch, best = state["epoch"] + 1, state["best"]
-        torch.set_rng_state(state["rng"])
+        torch.set_rng_state(state["rng"].cpu())
     settings = {**vars(arguments), "data_dir": str(arguments.data_dir), "config": config.to_dict(),
                 "augment": augment_config.__dict__, "parameters": sum(p.numel() for p in model.parameters())}
     (run_dir / "settings.json").write_text(json.dumps(settings, indent=2) + "\n")
