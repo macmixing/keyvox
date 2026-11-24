@@ -71,6 +71,7 @@ def main() -> None:
     parser.add_argument("--epochs", type=int, default=20)
     parser.add_argument("--batch", type=int, default=1024)
     parser.add_argument("--learning-rate", type=float, default=1e-3)
+    parser.add_argument("--blocks", type=int, default=DecoderConfig.blocks)
     parser.add_argument("--limit", type=int, default=0, help="train on only the first N swipes")
     parser.add_argument("--device", default="mps" if torch.backends.mps.is_available() else "cpu")
     parser.add_argument("--seed", type=int, default=0)
@@ -106,7 +107,7 @@ def main() -> None:
     frequency = torch.from_numpy(lexicon.frequency).to(device)
     symbols = len(layout.letters) + 1
 
-    config = DecoderConfig(symbols=symbols, coefficients=val_frames.shape[2] - symbols - 1)
+    config = DecoderConfig(symbols=symbols, coefficients=val_frames.shape[2] - symbols - 1, blocks=arguments.blocks)
     decoder = SwipeDecoder(config).to(device)
     optimizer = torch.optim.AdamW(decoder.parameters(), lr=arguments.learning_rate, weight_decay=WEIGHT_DECAY)
     steps_per_epoch = len(train_frames) // arguments.batch
