@@ -1,6 +1,8 @@
 import Foundation
 import KeyVoxSpeechRuntime
 
+// Only the Apple whisper.cpp runtime provides the streaming detection calls this detector needs.
+#if canImport(whisper)
 /// Follows how likely live 16 kHz mono audio is to be speech, one model window at a time,
 /// carrying the model's memory from each window into the next.
 ///
@@ -76,3 +78,4 @@ public final class LiveVoiceActivityDetector {
         speechProbability = 0
     }
 }
+#endif
