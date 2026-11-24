@@ -2,17 +2,20 @@
 // QWERTY layout, after up to three previous words. Typed letters left empty ask for
 // next-word predictions.
 //
-// usage: latinime_suggestions DICTIONARY_DIRECTORY < QUERIES
+// usage: latinime_suggestions DICTIONARY_DIRECTORY [--shared-session] < QUERIES
 //   each query line: typed<TAB>previous word[<TAB>older word[<TAB>oldest word]]
 //   each output line: query index, then word<TAB>score<TAB>type for each suggestion, best first
 //
 // Each query searches in a session of its own. A session continues its last search when the
 // new typed letters start with the last ones, keeping that search's previous words, so a shared
-// session would answer a query for the query asked before it.
+// session answers some queries for the query asked before them. With --shared-session every
+// query searches in one session, as the caches the bundled rankers learned from did.
 
 #include <algorithm>
 #include <cmath>
+#include <cstring>
 #include <iostream>
+#include <memory>
 #include <sstream>
 #include <string>
 #include <sys/stat.h>
@@ -212,8 +215,9 @@ static std::vector<Result> suggest(Dictionary *dictionary, ProximityInfo *proxim
 }
 
 int main(int argc, char **argv) {
-    if (argc != 2) {
-        std::cerr << "usage: latinime_suggestions DICTIONARY_DIRECTORY < QUERIES\n";
+    const bool sharesSession = argc == 3 && std::strcmp(argv[2], "--shared-session") == 0;
+    if (argc != 2 && !sharesSession) {
+        std::cerr << "usage: latinime_suggestions DICTIONARY_DIRECTORY [--shared-session] < QUERIES\n";
         return 2;
     }
     struct stat info {};
@@ -225,6 +229,8 @@ int main(int argc, char **argv) {
     Dictionary dictionary(&env, std::move(policy));
     auto keys = qwertyKeys();
     auto proximity = makeProximityInfo(&env, keys);
+    std::unique_ptr<DicTraverseSession> sharedSession;
+    if (sharesSession) sharedSession = std::make_unique<DicTraverseSession>(&env, nullptr, true);
     std::string line;
     long index = 0;
     while (std::getline(std::cin, line)) {
@@ -237,8 +243,10 @@ int main(int argc, char **argv) {
         for (size_t position = 1; position < fields.size() && position <= 3; ++position) {
             if (!fields[position].empty()) previous.push_back(fields[position]);
         }
-        DicTraverseSession session(&env, nullptr, true);
-        const auto results = suggest(&dictionary, &proximity, &session, &env, keys,
+        std::unique_ptr<DicTraverseSession> ownSession;
+        if (!sharedSession) ownSession = std::make_unique<DicTraverseSession>(&env, nullptr, true);
+        DicTraverseSession *session = sharedSession ? sharedSession.get() : ownSession.get();
+        const auto results = suggest(&dictionary, &proximity, session, &env, keys,
                 fields[0], previous);
         std::cout << index++;
         for (const auto &result : results) {

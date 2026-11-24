@@ -29,8 +29,11 @@ def unique_queries(collections):
     return keys
 
 
-def run_suggestions(reader, dictionary, keys, query_path):
-    """LatinIME's candidates for each query, deduplicated, best first, as (word, score, type)."""
+def run_suggestions(reader, dictionary, keys, query_path, shared_session=False):
+    """LatinIME's candidates for each query, deduplicated, best first, as (word, score, type).
+
+    Each query searches in a session of its own, or, with `shared_session`, all in one, as the
+    caches the bundled rankers learned from did (`latinime_suggestions.cpp`)."""
     with query_path.open("w", encoding="utf-8") as target:
         for typed, previous in keys:
             target.write("\t".join((typed, *previous)) + "\n")
@@ -38,7 +41,8 @@ def run_suggestions(reader, dictionary, keys, query_path):
     outputs = {}
     with query_path.open(encoding="utf-8") as stdin:
         process = subprocess.Popen(
-            [str(reader), str(dictionary)], stdin=stdin,
+            [str(reader), str(dictionary), *(["--shared-session"] if shared_session else [])],
+            stdin=stdin,
             stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, bufsize=1,
         )
         for line in process.stdout:
