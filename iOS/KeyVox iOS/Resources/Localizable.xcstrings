@@ -780,6 +780,41 @@
         }
       }
     },
+    "30 Minutes" : {
+      "comment" : "Dictation settings picker for when the dictation session turns off after idle; timing option.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "30 Minuten"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "30 minutos"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "30 minutos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "30 minutes"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "30 minutes"
+          }
+        }
+      }
+    },
     "A newer Parakeet model is available for on-device dictation. Download the updated Parakeet model now (%@), or do it later from Settings." : {
       "comment" : "Message in the Parakeet model update prompt. Parakeet is a brand name and stays in English. The value in parentheses is the approximate download size. Settings refers to the app's Settings tab.",
       "localizations" : {
