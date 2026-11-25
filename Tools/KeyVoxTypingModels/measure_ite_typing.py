@@ -9,7 +9,10 @@ reproduces, and writes it to `<data_dir>/work/simulation/ite_typing.json`:
   autocorrections, right and wrong): what kinds of mistakes a typo the keyboard must fix is
   made of, without how often words are typed with one, which these records cannot tell;
 - how many letters typists had typed when they picked a suggested completion, by the length of
-  the word they picked."""
+  the word they picked.
+
+Every record is from the typists the harness's ITE plan never holds out, and from sentences
+outside the buckets the rankers are measured on (`training_sets.TEST_BUCKETS`)."""
 
 import argparse
 import json
@@ -17,9 +20,12 @@ from collections import Counter, defaultdict
 from pathlib import Path
 
 from ite_copied_typing import copied_sentences, is_tuning_typist, section_participants
-from ite_records import completion_records, plausible_corrections, read_records
+from ite_records import (
+    annotate, completion_records, load_section_sentences, plausible_corrections, read_records,
+)
 from letter_layout import LetterLayout
 from paths import DataPaths
+from training_sets import TEST_BUCKETS
 from typo_kinds import TypoCounts, position_of
 
 LANGUAGE = "en"
@@ -47,19 +53,25 @@ def main():
                     letters[position_of(index, len(plain))][letter] += 1
 
     participants = section_participants(data_dir)
+    section_sentences = load_section_sentences(data_dir)
+
+    def calibration_records(records):
+        """The records of tuning typists, from sentences outside the measured buckets."""
+        for record in annotate(records, section_sentences):
+            participant = participants.get(record["participant"])
+            if (participant is not None and is_tuning_typist(participant)
+                    and record["bucket"] not in TEST_BUCKETS):
+                yield record
+
     autocorrected = TypoCounts()
     for name, harm in (("ac_success_calibration", False), ("ac_success_holdout", False),
                        ("ac_harm_holdout", True)):
-        for record in plausible_corrections(read_records(paths.ite_split(name), harm=harm)):
-            participant = participants.get(record["participant"])
-            if participant is not None and is_tuning_typist(participant):
-                autocorrected.add(record["expected"], record["typed"], layout)
+        for record in calibration_records(plausible_corrections(
+                read_records(paths.ite_split(name), harm=harm))):
+            autocorrected.add(record["expected"], record["typed"], layout)
 
     prefixes = defaultdict(Counter)
-    for record in completion_records(data_dir):
-        participant = participants.get(record["participant"])
-        if participant is None or not is_tuning_typist(participant):
-            continue
+    for record in calibration_records(completion_records(data_dir)):
         prefixes[len(record["expected"])][len(record["typed"])] += 1
 
     measurements = {
