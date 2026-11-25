@@ -97,6 +97,18 @@ Builds benchmark evaluator and enforces pronunciation quality gates (coverage, h
 Tools/Pronunciation/benchmarks/run_quality_gates.sh --repo-root "$(pwd)"
 ```
 
+## Predictive Keyboard Models
+
+### `KeyVoxTypingModels/`
+
+Rebuilds the English dictionary, correction and completion rankers, autocorrect decision model,
+and accent overlay the predictive keyboard bundles, from pinned public sources. See
+`Tools/KeyVoxTypingModels/README.md`.
+
+```bash
+PYTHON=<data-dir>/venv/bin/python Tools/KeyVoxTypingModels/build_typing_models.sh <data-dir>
+```
+
 ## Update Feed
 
 ### `UpdateFeed/configure_local_feed.sh`

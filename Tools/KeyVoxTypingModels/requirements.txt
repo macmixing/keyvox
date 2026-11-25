@@ -1,0 +1,7 @@
+joblib==1.5.3
+numpy==2.5.1
+pyarrow==25.0.0
+regex==2026.7.19
+scikit-learn==1.9.0
+scipy==1.18.0
+threadpoolctl==3.8.0

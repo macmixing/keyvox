@@ -14,6 +14,9 @@ and the same files for German, Spanish, and French, which are built but not bund
 | `word_followers.txt` | `write_vocabulary.py`, `write_word_followers.py` | The vocabulary, `count_ngrams.py`'s counts, and OASST2 and Tatoeba's sentences |
 | `grammar_words.txt` | `write_word_kinds.py`, `write_grammar_words.py` | `count_ngrams.py`'s vocabulary and the word kinds |
 
+English's dictionary, rankers, and accent overlay, bundled beside these files, are built by
+`Tools/KeyVoxTypingModels`.
+
 What differs between languages is in `languages.py`: each build's sources in the order they are
 read, how much of each is read, how its text is split into words, its sentence-opener weights,
 where its word kinds and its vocabulary come from. The sources themselves, with their versions,

@@ -1,0 +1,159 @@
+# KeyVox Typing Models
+
+Builds the typing models the predictive keyboard bundles for its English typing language in
+`Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/PredictiveData/en`:
+
+| Bundled file | What it is | Built by |
+| --- | --- | --- |
+| `dictionary/` | LatinIME version 403 dictionary, in `dictionary.header` and `dictionary.body`: 106,973 words with probabilities, 93,385 word pairs, and 60,000 three-word sequences | `write_dictionary_inputs.py`, `write_latinime_dictionary.cpp` |
+| `correction_ranker.kvtr` | 220 gradient-boosted trees that score each correction candidate | `train_correction_models.py`, `export_tree_models.py` |
+| `autocorrect_decision.kvtr` | 160 trees that score whether to replace the typed letters with the best correction | `train_correction_models.py`, `export_tree_models.py` |
+| `completion_ranker.kvtr` | 220 trees that score each candidate while a word is still being typed | `train_completion_ranker.py`, `export_tree_models.py` |
+| `accent_overlay.bin` | 262 accented words the dictionary lacks, by the plain letters that type them | `write_accent_words.py`, `write_accent_overlay.py` |
+
+The context model, `context_model.bin`, and the word lists are built by
+`Tools/KeyVoxLanguageModel`.
+
+## Sources
+
+Every input is pinned to a revision or a recorded SHA-256 in `sources.py` or
+`scowl_word_list.sh`, and credited in `THIRD_PARTY_NOTICES.md`.
+
+| Source | Used for | Pinned to | License |
+| --- | --- | --- | --- |
+| [SCOWL](https://github.com/en-wl/wordlist) | The dictionary's words (size 60, American, variant level 2), accented words (size 60, every spelling), and, with the dictionary's words, words never corrected (size 50, every spelling) | Commit `1e5b7d3a72f47a71da5d28686c1dd4b397178485`, archive SHA-256 checked | ESDB permissive notice |
+| [Tatoeba](https://tatoeba.org/en/downloads) | Word, word-pair, and three-word counts | The English sentences as of the 2026-07-18 06:00 export, rewound from today's export and contribution log and checked against their recorded SHA-256 | CC BY 2.0 FR |
+| [OpenAssistant OASST1](https://huggingface.co/datasets/OpenAssistant/oasst1) | Word, word-pair, and three-word counts | Revision `fdf72ae0827c1cda404aff25b6603abec9e3399b` | Apache 2.0 |
+| [Aalto ITE Typing dataset](https://doi.org/10.5281/zenodo.12528163) | The typing events the rankers learn from, and the sentences left out of the counts | Zenodo record 12528163; five files are read from the archive by byte range | CC BY 4.0 |
+| [AOSP LatinIME](https://android.googlesource.com/platform/packages/inputmethods/LatinIME/) | Writing and reading the dictionary | The native sources bundled in `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveNative/latinime`, compiled unchanged | Apache 2.0 |
+
+Tatoeba publishes only its current export, which changes every week. `rewind_tatoeba.py` turns
+it back into the export of the cutoff `sources.py` pins: every sentence the contribution log
+added, edited, or deleted after the cutoff gets its state as of the cutoff. Rewinding the 2026-11-21 export to 2026-10-03 this way
+matched the real 2026-10-03 export with no sentence missing or changed, and kept 7 sentences
+beyond its 2,038,137, because the export also hides sentences for reasons the log does not
+record. `sources.py` lists the sentences hidden or shown at the
+cutoff other than the log implies: the ones the bundled dictionary's probabilities point
+to. The probabilities cannot tell "He is sure of success." from "He is sure of winning.";
+either gives the same probabilities, and the listed one gives the results below.
+
+The rewound sentences, 2,031,914 of them, must match the SHA-256 `sources.py` records over
+their uncompressed text. They are kept in `sources/tatoeba/eng_sentences_at_cutoff.tsv.bz2`, and
+while that file is there and matches, later builds use it as it is and do not download
+Tatoeba. When it is missing, today's export and log are rewound again; if Tatoeba has since
+changed in a way the log does not undo, or a listed sentence no longer fits, the build stops
+with a message saying Tatoeba has drifted and leaves the rewound sentences in
+`eng_sentences_at_cutoff.unverified.tsv.bz2` to compare.
+
+## Building
+
+The data directory needs about 1 GB, plus the Python environment.
+
+```bash
+python3.14 -m venv <data-dir>/venv
+<data-dir>/venv/bin/pip install -r requirements.txt
+PYTHON=<data-dir>/venv/bin/python ./build_typing_models.sh <data-dir>
+```
+
+The built files land in `<data-dir>/built` under the names they have in `PredictiveData/en`,
+and `compare_with_bundled.py` then says for each whether it is the same as the bundled one,
+leaving out the write times in the dictionary header; with `--check` after the data directory,
+the build fails if any differs. The package is left alone. Once the sources are
+downloaded, the build takes about 12 minutes on an Apple silicon Mac. Set `OMP_NUM_THREADS` to
+limit the cores the tree training uses.
+
+`requirements.txt` pins the versions the bundled files were built with, on Python 3.14.
+The LatinIME tools are compiled with the Xcode command line tools.
+
+`latinime_suggestions.cpp` orders candidates of equal score with `std::sort`, which leaves
+the order of ties to the C++ standard library. The bundled rankers were trained on the order
+that Apple clang 21.0.0 (clang-2100.3.34.1) with libc++ 220106 (macOS 27.2 SDK) gives;
+`build_native_tools.sh` checks for exactly that compiler and libc++ version and stops with a
+message naming both on any other toolchain. Apple clang 15.0.0 with libc++ 160006 (macOS 13),
+for one, orders 8,485 of the 84,720 correction queries' ties differently, and the trained
+rankers differ. Every other step gives the same bytes on either.
+
+## Steps
+
+`build_typing_models.sh` runs them in this order:
+
+| Step | Writes |
+| --- | --- |
+| `download_sources.py` | `sources/`, with each file's SHA-256 in `sources/checksums.txt` |
+| `build_native_tools.sh` | `bin/write_latinime_dictionary`, `bin/latinime_suggestions` |
+| `rewind_tatoeba.py` | `sources/tatoeba/eng_sentences_at_cutoff.tsv.bz2`, checked against its recorded SHA-256 |
+| `scowl_word_list.sh` | `work/scowl-*.txt` |
+| `write_dictionary_inputs.py`, then `bin/write_latinime_dictionary` | `work/dictionary_*.tsv`, `built/dictionary/` |
+| `split_ite_events.py` | `work/ite/`: autocorrections, words left alone, and accepted predictions, split by typist |
+| `write_feature_context_model.py` | `work/feature_context_800k.bin`: the word and word-pair counts the rankers train with |
+| `cache_correction_candidates.py`, `cache_completion_candidates.py` | `work/*_candidates.pkl.gz`: LatinIME's candidates for the queries below |
+| `train_correction_models.py`, `train_completion_ranker.py` | `work/*.pkl.gz` and held-out reports in `work/reports/` |
+| `export_tree_models.py` | `built/*.kvtr`, checked against the trained models on 10,000 rows |
+| `write_accent_words.py`, `write_accent_overlay.py` | `built/accent_overlay.bin` |
+| `compare_with_bundled.py` | A line per built file: same as the bundled one or not |
+
+The rankers train on records split by the sentence the typist was copying, so a sentence's
+words are never on both sides of a training and test split.
+
+## How the bundled rankers were trained
+
+The steps train exactly as the July scripts that built the bundled rankers did, including two
+mismatches between the queries the correction cache asks and the records the trainer reads.
+A record whose query was never asked gets no candidates and is left out, as is one whose
+cached candidates are only the typed letters or two-word suggestions; `candidate_groups` prints both counts for every set of
+records it makes.
+
+- The cache asks for a fifth of the calibration typists' plausible autocorrections, sampled
+  after keeping the plausible ones (49,041 records). The trainer samples a fifth first and keeps
+  the plausible ones after (49,196 records), so it reads records the cache never asked for.
+- The cache never asks for the held-out typists' wrong autocorrections, the records with the
+  word the logged keyboard chose. The trainer reads them, and only those whose query another
+  record asked keep candidates.
+
+What each set trains or is measured on, from a build's printout:
+
+| Set (sentence buckets) | Records | Kept | Never asked | No candidates | Trained on |
+| --- | --- | --- | --- | --- | --- |
+| Correction ranker training (0-4) | 58,285 | 45,938 | 12,086 | 261 | 286,616 candidate rows from the 44,890 kept records whose candidates include the intended word |
+| Action model training, typos (5) | 11,548 | 8,990 | 2,511 | 47 | with the next row, 7,220 rows: the kept records whose best candidate may replace the typed letters |
+| Action model training, words typed as meant (5) | 5,797 | 5,775 | 0 | 22 | |
+| Held-out typos (8-9) | 22,983 | 18,028 | 4,848 | 107 | measured only |
+| Held-out words typed as meant (8-9) | 10,851 | 10,726 | 0 | 125 | measured only |
+| Copied-sentence and expressive words | 12,124 | 11,974 | 0 | 150 | measured only |
+| Completion ranker training (0-7) | 160,959 | 160,769 | 0 | 190 | 916,690 candidate rows from the 132,501 kept records whose candidates include the intended word |
+| Held-out completions (8-9) | 40,625 | 40,575 | 0 | 50 | measured only |
+
+Of the 12,086 correction ranker records never asked, 9,563 come from the different calibration
+samples and 2,523 are wrong autocorrections; of the 2,992 wrong autocorrections in that set,
+469 keep candidates. Asking for every record the trainer reads changes the rankers, so it belongs with
+retraining them against the score gates.
+
+## Results
+
+Built with the commands above, the three `.kvtr` files and `accent_overlay.bin` are the same
+bytes as the ones built in July 2026 that the package bundles. The July dictionary held the
+same words, word pairs, and three-word sequences with the same probabilities as this build;
+its bytes differed only in the order entries were written, from a few sentences whose state in
+the July export cannot be recovered. The package now bundles this build's dictionary, so a
+rebuild writes the same body, with new write times in its header.
+
+`Tools/KeyVoxTypingHarness` scored the built files the same as the July files on every
+measure:
+
+| Measure | 80 sentences, noise 0.3 (`compare`) | 400 sentences, noise 0.25 (`evaluate`) | ITE held-out typists, 3,000 sentences (`evaluate`) |
+| --- | --- | --- | --- |
+| Final words correct | 96.1% | 98.7% | 98.2% (`compare`: 98.3%) |
+| Mistyped words fixed | | 94.7% | 55.9% |
+| Mistyped words changed to a different word | | 1.3% | 10.1% |
+| Correctly typed words wrongly changed | | 0.0% | 0.5% |
+| Completion offered within 2 letters | | 50.5% | 51.6% |
+| Completion keystroke savings | | 39.9% | 37.6% |
+| Suggestion bar shows the word within 3 letters | | 85.3% | 84.8% |
+| Next word first / in top 3 | | 9.0% / 21.3% | 15.5% / 26.5% |
+
+Only the speed lines differ between runs.
+
+To score built files, copy the harness's release build and put the built files in the copy's
+`KeyVoxPredictiveKeyboard_KeyVoxPredictiveKeyboard.bundle/Contents/Resources/PredictiveData/en`;
+the copy reads its own bundle. The ITE plan is made with
+`Tools/KeyVoxTypingHarness/Scripts/ite_typo_plan.py <data-dir>/sources/ite/processed2020/english <plan.json> --split holdout --max-sentences 3000`.
