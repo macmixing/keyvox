@@ -8,7 +8,7 @@ The format loosely follows Keep a Changelog, and the package uses semantic versi
 
 ## [2.0.2] - 2026-11-25
 
-The English typing language bundles a swipe vocabulary: 22,456 words people write that the English dictionary lacks, so a swipe can decode to them.
+The English typing language bundles a swipe vocabulary: 22,472 words people write that the English dictionary lacks, so a swipe can decode to them.
 
 ### Includes
 
