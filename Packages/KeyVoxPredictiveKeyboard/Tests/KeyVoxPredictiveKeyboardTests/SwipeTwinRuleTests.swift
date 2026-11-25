@@ -4,10 +4,9 @@ import XCTest
 /// Every doubled-letter twin decodes as the circle asks: twins are words on one key path whose
 /// letters differ by one doubled run, found from the bundled swipe lexicon itself, plus a user's
 /// word doubling a letter of a dictionary word. Swiped without a loop, the single word comes out,
-/// unless the language data says it is not a word people mean against a twin (a name, a word typing
-/// does not take, or a misspelling of the twin, `SwipeTwinFacts`) that is no name, when one of those
-/// twins does; swiped with a
-/// loop at the doubled key, the doubled word does. The same swipes decoded with loop
+/// unless it is a misspelling of a twin, written `misspellingRatio` times less often in the context
+/// model (`SwipeTwinFacts`), when one of those twins does, names and the user's words alike; swiped
+/// with a loop at the doubled key, the doubled word does. The same swipes decoded with loop
 /// detection off show what the circle does without it, and doubled-letter words without a single
 /// twin are listed as they decode.
 ///
@@ -26,8 +25,10 @@ final class SwipeTwinRuleTests: XCTestCase {
     private var decoder: SwipeWordDecoder!
     /// Every spelling the lexicon has for each letter form.
     private var spellings: [String: [String]] = [:]
-    /// The twins each single word is not meant against, from every twin checked so far.
+    /// The twins each single word misspells, from every twin checked so far.
     private var beatenBy: [String: Set<String>] = [:]
+    /// The lexicon's letter forms on each key path.
+    private var groups: [[Int]: [String: [Int]]] = [:]
     private var engine: PredictiveEngine!
     private let keys = KeyCenterMap(geometry: TypingLanguage.english.letterLayout.defaultGeometry)
 
@@ -38,7 +39,6 @@ final class SwipeTwinRuleTests: XCTestCase {
         decoder = try SwipeWordDecoder(language: .english)
         let keyIndex = decoder.settings.keyIndex
 
-        var groups: [[Int]: [String: [Int]]] = [:]
         var frequency: [String: Int] = [:]
         let lexiconWords = try SwipeVocabulary.lexiconWords(of: engine)
         for word in lexiconWords { spellings[SwipeLetterForm.form(of: word.spelling), default: []].append(word.spelling) }
@@ -115,28 +115,30 @@ final class SwipeTwinRuleTests: XCTestCase {
         var wrongTwin: [String] = []
         var detectorMissed: [String] = []
         var summary: String {
-            "no loop -> single \(plainSingle), no loop -> doubled as the single is not meant \(plainDoubled), loop -> doubled \(loopedDoubled), an unrelated word \(otherWord), against the circle \(wrongTwin.count), swipes whose loops the detector read wrong \(detectorMissed.count); "
+            "no loop -> single \(plainSingle), no loop -> doubled as the single misspells it \(plainDoubled), loop -> doubled \(loopedDoubled), an unrelated word \(otherWord), against the circle \(wrongTwin.count), swipes whose loops the detector read wrong \(detectorMissed.count); "
                 + "with loop detection off: no loop -> single \(withoutDetection.plainSingle), loop -> doubled \(withoutDetection.loopedDoubled)"
         }
     }
 
     /// Each twin's swipe without a loop must decode to a word on its key path doubling no letter,
-    /// or, when the single word is not meant against some of its twins that are no names, to one of
-    /// those; with a loop at the doubled key, to one doubling that key's letter alone.
+    /// or, when the single word misspells some of its twins, to one of those; with a loop at the
+    /// doubled key, to one doubling that key's letter alone.
     private func check(_ twins: [Twin], personal: SwipeLexicon?, vocabulary: PersonalVocabulary) throws -> Results {
         var results = Results()
         let ratio = log(decoder.settings.scoring.misspellingRatio)
         func facts(_ form: String, personal: Bool) -> [SwipeTwinFacts] {
             (personal ? [form] : spellings[form] ?? [form]).map { SwipeTwinFacts(spelling: $0, engine: engine) }
         }
-        func isNamed(_ form: String, personal: Bool) -> Bool { personal || facts(form, personal: false).allSatisfy(\.isNameOnly) }
         func logFrequency(_ form: String, personal: Bool) -> Double { facts(form, personal: personal).map(\.logFrequency).max()! }
         for twin in twins {
-            let singleIsMeant = isNamed(twin.single, personal: false) == false
-                && facts(twin.single, personal: false).contains(where: \.isValid)
-                && logFrequency(twin.doubled, personal: personal != nil) - logFrequency(twin.single, personal: false) < ratio
-            if singleIsMeant == false, isNamed(twin.doubled, personal: personal != nil) == false {
-                beatenBy[twin.single, default: []].insert(twin.doubled)
+            // Every word on its key path repeats each of its letters at least as many times.
+            let path = SwipeLetterForm.keyPath(of: twin.single, keyIndex: decoder.settings.keyIndex, keepsDoubleLetters: false) ?? []
+            let lexiconTwins = (groups[path] ?? [:]).keys.filter { $0 != twin.single && $0 != twin.doubled }
+            for doubled in lexiconTwins + [twin.doubled] {
+                let isPersonal = personal != nil && doubled == twin.doubled
+                if logFrequency(doubled, personal: isPersonal) - logFrequency(twin.single, personal: false) >= ratio {
+                    beatenBy[twin.single, default: []].insert(doubled)
+                }
             }
         }
         for twin in twins {

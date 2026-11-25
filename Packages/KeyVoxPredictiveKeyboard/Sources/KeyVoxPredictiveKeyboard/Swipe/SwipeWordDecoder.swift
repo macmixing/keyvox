@@ -183,15 +183,13 @@ final class SwipeWordDecoder: @unchecked Sendable {
     /// Between twins, words whose letters differ only in how many times letters repeat at their
     /// keys, the circle decides, whatever the words before or their frequencies. At each key where
     /// a word repeats the letter more than its twins there and no letter fewer times, a loop around
-    /// the key puts it first, and no loop puts it after them. With no loop, its twins win whenever
-    /// one is a word people mean: a word typing takes, not a name the dictionary spells only with
-    /// capitals or a word only the user has, and not a misspelling of it, written
-    /// `misspellingRatio` times less often in the context model, the rule the language data's swipe
-    /// vocabulary build leaves misspellings out by. Otherwise it wins over them, unless it is a
-    /// name itself. So "been" beats "Ben", "hello" beats "helo", "see" beats "se", and a contact's
-    /// "Mann" never beats "man". Words without a twin are untouched. Among words alike in both,
-    /// its score with the context counted `samePathContextWeight` times when `usesContext` ranks
-    /// it, then its spelling.
+    /// the key puts it first, and no loop puts it after them unless every one is a misspelling of it,
+    /// written `misspellingRatio` times less often in the context model, the rule the language
+    /// data's swipe vocabulary build leaves misspellings out by; then it wins over them. Names and the user's own words are weighed the same way. So "been" beats "Ben", "hello"
+    /// beats "helo", and "see" beats "se", while "Mary" beats "marry", "Paris" beats "Parris", and a
+    /// contact's "Mann" never beats "man". Words without a twin are untouched. Among words alike in
+    /// both, its score with the context counted `samePathContextWeight` times when `usesContext`
+    /// ranks it, then its spelling.
     private func rankingSamePaths(
         _ candidates: inout [SwipeCandidate],
         usesContext: Bool,
@@ -201,7 +199,7 @@ final class SwipeWordDecoder: @unchecked Sendable {
         var facts: [String: SwipeTwinFacts] = [:]
         func factsOf(_ spelling: String) -> SwipeTwinFacts {
             if let known = facts[spelling] { return known }
-            let found = twinFacts?(spelling) ?? SwipeTwinFacts(isNameOnly: false, isValid: true, logFrequency: 0)
+            let found = twinFacts?(spelling) ?? SwipeTwinFacts(logFrequency: 0)
             facts[spelling] = found
             return found
         }
@@ -214,14 +212,11 @@ final class SwipeWordDecoder: @unchecked Sendable {
         for (path, set) in sets where set.count > 1 && path.isEmpty == false {
             let looped = settings.keepsDoubleLetters ? nil : loopedKeys?(path)
             let repeats = Dictionary(uniqueKeysWithValues: set.compactMap { word in Self.repeats(of: word, keyIndex: keyIndex).map { (word, $0) } })
-            let isUsersOnly = Dictionary(uniqueKeysWithValues: set.map { word in (word, words[word]!.allSatisfy { candidates[$0].isPersonal }) })
-            func spellingFacts(_ word: String) -> [SwipeTwinFacts] { words[word]!.map { factsOf(candidates[$0].spelling) } }
-            // A name: a word only the user has, or one the dictionary spells only with capitals.
-            func isNamed(_ word: String) -> Bool { isUsersOnly[word]! || spellingFacts(word).allSatisfy(\.isNameOnly) }
-            func logFrequency(_ word: String) -> Double { spellingFacts(word).map(\.logFrequency).max()! }
-            func isMeant(_ shorter: String, against longer: String) -> Bool {
-                isNamed(shorter) == false && spellingFacts(shorter).contains(where: \.isValid)
-                    && logFrequency(longer) - logFrequency(shorter) < log(settings.scoring.misspellingRatio)
+            func logFrequency(_ word: String) -> Double { words[word]!.map { factsOf(candidates[$0].spelling).logFrequency }.max()! }
+            // A twin repeating letters fewer times is a misspelling of the word only when the word is
+            // written `misspellingRatio` times as often.
+            func isMisspelling(_ shorter: String, of longer: String) -> Bool {
+                logFrequency(longer) - logFrequency(shorter) >= log(settings.scoring.misspellingRatio)
             }
             var loops: [String: Int] = [:]
             var unlooped: [String: Int] = [:]
@@ -236,7 +231,7 @@ final class SwipeWordDecoder: @unchecked Sendable {
                     guard shorter.isEmpty == false else { continue }
                     if flags[key] {
                         loops[longer, default: 0] += 1
-                    } else if isNamed(longer) || shorter.contains(where: { isMeant($0, against: longer) }) {
+                    } else if shorter.contains(where: { isMisspelling($0, of: longer) == false }) {
                         unlooped[longer, default: 0] += 1
                     } else {
                         for word in shorter { unlooped[word, default: 0] += 1 }
