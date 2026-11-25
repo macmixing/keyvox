@@ -2103,7 +2103,7 @@ Field preparation:
 
 ### Swipe Typing Rules
 
-A finger sliding across the letter keys types the word it traces, as a word picked from the suggestion bar would go in. The package owns deciding and decoding; the keyboard owns following fingers, drawing the trail, threading, and applying the `TextEdit`.
+A finger sliding across the letter keys types the word it traces, spaced as the system keyboard spaces swiped words (`~/KeyVoxLanguageData/swipe/apple-swipe-spacing/README.md`). The package owns deciding and decoding; the keyboard owns following fingers, drawing the trail, threading, and applying the `TextEdit`.
 
 The gate (`SwipeGate`, from `~/KeyVoxLanguageData/swipe/tap-vs-swipe/README.md`, section 5, with the hold and lift evidence `KeyVoxTypingHarness swipe-gate` measures):
 
@@ -2116,15 +2116,18 @@ The gate (`SwipeGate`, from `~/KeyVoxLanguageData/swipe/tap-vs-swipe/README.md`,
 
 Decoding and insertion:
 
-- the path goes to `KeyboardPredictionCoordinator.decodeSwipe`, which runs `PredictionComputer.swipeWords` on the suggestion engine's queue with the words before the cursor and the shift state (`SwipeWordCase`); anything typed, picked, or deleted before the word arrives first waits for it, so words and keys go in the order they were made, and a finger landing during a swipe ends it first
-- a word in progress when a swipe ends is ended first as space would end it, autocorrection included; the word of a swipe before it goes in first, so the shift state reaches the swiped words in the order they were swiped
+- the path goes to `KeyboardPredictionCoordinator.decodeSwipe`, which runs `PredictionComputer.swipeWords` on the suggestion engine's queue with the words before the cursor, a word just swiped in among them (`PredictiveTypingSession.previousWords(beforeSwipeAfter:selectedText:)`), and the shift state (`SwipeWordCase`); anything typed, picked, or deleted before the word arrives first waits for it, so words and keys go in the order they were made, and a finger landing during a swipe ends it first
+- a typed word in progress when a swipe ends is ended first as space would end it, autocorrection included, while a word just swiped in stays as it is; the word of a swipe before it goes in first, so the shift state reaches the swiped words in the order they were swiped
 - a swiped word goes only where it was swiped (`KeyboardSwipePlace`: the field, counted on the main thread and named by the document proxy's `documentIdentifier`, and the text around the cursor when the swipe ended, or, for a finger held undecided, when it lifted): once the cursor has moved from there or another field has the keyboard, the word goes nowhere, and another field taking the keyboard drops every swipe held undecided or being decoded
 - `documentIdentifier`, observed on the iOS 27.2 simulator in a host with two text views of the same kind, stays the same while typing in a field and is new each time a field takes focus, a return to an earlier field included, so a swipe made before the user left a field never goes in after they come back (`~/KeyVoxLanguageData/swipe/document-identifier/`)
 - the place is recorded on the main thread after every change to the text or cursor: the host's, through `textDidChange(_:)` and `selectionDidChange(_:)`, and the keyboard's own, since every edit the keyboard makes goes through `KeyboardTextInputController`, which hands over a pending swipe before it reads or changes the text and has the place read again once it is done
 - a decoded word's hand-over never reads the document proxy: it compares where the swipe ended with the recorded place, drops a word whose place moved before touching the document, and builds the edit from the text read when the swipe ended
 - between the keyboard appearing or going away and the next field's state being handed over no place is read; a swipe ending then does nothing at all, no haptic, no ended word, no edit, its trail ending at once rather than fading, and a swipe already decoding goes nowhere
-- the word goes in through `PredictiveTypingSession.swipeEdit`: a space after it unless one or punctuation follows, a space before it right after a mark a picked word is spaced away from, and punctuation typed right after it takes the place of its space, as after a pick
-- the suggestion bar does not change while a finger swipes; once the swiped word goes in, it shows what follows that word, as after any word
+- the word goes in through `PredictiveTypingSession.swipeEdit` with no space after it, as measured on the system keyboard: swiping "hello" gives "hello"; only a word right after the cursor gets a space between them, and punctuation that follows gets none
+- the session records the word it just swiped in while the text before the cursor still ends with it and nothing has been typed since (`PredictiveTypingSession.endsWithSwipedWord`); a letter typed after it, a deletion into it, a suggestion tap, a cursor move away from it, or a word boundary ends the record
+- a word swiped right after that word goes in after a space: swiping "hello" then "there" gives "hello there"; a space also goes before a swiped word right after a mark a picked word is spaced away from, such as a comma, and none goes before one at the start of the text, after a space or other punctuation, or in place of a selection
+- space, return, or punctuation right after a word just swiped in ends it as it was swiped: only the separator goes in, nothing is autocorrected or revised, and nothing is learned from it; one space tap gives "hello " as on the system keyboard, since the double-space period needs a space already before the cursor, and two spaces typed after it still give "hello. "; punctuation typed right after it follows the word, so "hello" then a period gives "hello."
+- the suggestion bar does not change while a finger swipes; once the swiped word goes in, the bar shows suggestions for that word, as for a word typed right before the cursor, but offers no autocorrection for it, since space ends it as swiped; after a space it shows what follows the word
 
 What a swipe can decode to, and how it is written, is typing's:
 
