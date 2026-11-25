@@ -67,3 +67,27 @@ each step removed and when:
 ```sh
 python3 print_deletion_timeline.py --simulator <simulator-udid> --save <timeline.json>
 ```
+
+## Swipe trail capture
+
+`SwipeTrailCaptureTests` swipes words across the KeyVox keyboard for recording its swipe
+trail. Each word is one finger drawn through its letters' key centers with XCTest's event
+synthesis, in minimum-jerk strokes that slow into every key; the Simulator keeps a
+synthesized path's timing only when its points are sparse, so they are given at 20 Hz and the
+keyboard still sees the screen's own samples in between. Record the screen alongside:
+
+```sh
+xcrun simctl io <simulator-udid> recordVideo --codec=h264 --force swipes.mov &
+TEST_RUNNER_SWIPE_KEYBOARD_MARKER=Shift \
+TEST_RUNNER_SWIPE_WORDS=hello,world,keyboard \
+TEST_RUNNER_SWIPE_OUTPUT=/tmp/swipes.json \
+xcodebuild test -project AppleKeyboardBaseline.xcodeproj -scheme BaselineUITests \
+  -destination "platform=iOS Simulator,id=<simulator-udid>" \
+  -derivedDataPath /tmp/keyvox-apple-baseline -parallel-testing-enabled NO \
+  -only-testing:BaselineUITests/SwipeTrailCaptureTests
+kill -INT %1
+```
+
+`TEST_RUNNER_SWIPE_PAUSE` sets the rest after each swipe (default 1.2 s). The output holds
+each swipe's wall-clock start and end, for picking frames of the recording, and the text the
+swipes typed.
