@@ -61,6 +61,12 @@ struct KeyboardSettingsView: View {
                     )
                     divider
                     SettingsRow(
+                        icon: "hand.draw",
+                        title: KeyboardSettingsCopy.swipeTypingTitle,
+                        isOn: $settingsStore.swipeTypingEnabled
+                    )
+                    divider
+                    SettingsRow(
                         // Drawn as an outline on this always-dark screen.
                         icon: "face.smiling.inverse",
                         title: KeyboardSettingsCopy.emojiKeyboardTitle,

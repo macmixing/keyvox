@@ -43,6 +43,41 @@
       "comment" : "Approximate voice download size shown right after the install status sentence on the KeyVox Speak setup card; keep the leading space.",
       "shouldTranslate" : false
     },
+    "Swipe Typing" : {
+      "comment" : "Keyboard settings toggle that lets the user type a word by sliding a finger across its letters.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wischen zum Tippen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Escribir deslizando"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Escribir deslizando"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Saisie par glissement"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Saisie par glissement"
+          }
+        }
+      }
+    },
     "“.” Shortcut" : {
       "comment" : "Keyboard settings toggle for typing a period by double-tapping the space bar. Use the term the system keyboard settings use in this language.",
       "localizations" : {
@@ -1595,37 +1630,37 @@
         }
       }
     },
-    "Auto-Correction and Predictive Text currently support English only." : {
+    "Auto-Correction, Predictive Text, and Swipe Typing currently support English only." : {
       "comment" : "Note in keyboard settings explaining which typing features are limited to English.",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Auto-Korrektur und Textvorschläge unterstützen derzeit nur Englisch."
+            "value" : "Auto-Korrektur, Textvorschläge und Wischen zum Tippen unterstützen derzeit nur Englisch."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Por ahora, la autocorrección y el texto predictivo solo están disponibles en inglés."
+            "value" : "Por ahora, la autocorrección, el texto predictivo y la escritura deslizando solo están disponibles en inglés."
           }
         },
         "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Por ahora, la autocorrección y el texto predictivo solo están disponibles en inglés."
+            "value" : "Por ahora, la autocorrección, el texto predictivo y la escritura deslizando solo están disponibles en inglés."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "La correction automatique et la prédiction ne sont actuellement disponibles qu’en anglais."
+            "value" : "La correction automatique, la prédiction et la saisie par glissement ne sont actuellement disponibles qu’en anglais."
           }
         },
         "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "La correction automatique et la prédiction ne sont actuellement disponibles qu’en anglais."
+            "value" : "La correction automatique, la prédiction et la saisie par glissement ne sont actuellement disponibles qu’en anglais."
           }
         }
       }

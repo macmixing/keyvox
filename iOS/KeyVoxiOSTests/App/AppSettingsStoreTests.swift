@@ -112,6 +112,7 @@ struct AppSettingsStoreTests {
         #expect(store.autoCorrectionEnabled)
         #expect(store.shiftCapsLockEnabled)
         #expect(store.predictiveTextEnabled)
+        #expect(store.swipeTypingEnabled)
         #expect(store.periodShortcutEnabled)
     }
 
@@ -124,6 +125,7 @@ struct AppSettingsStoreTests {
         store.autoCorrectionEnabled = false
         store.shiftCapsLockEnabled = false
         store.predictiveTextEnabled = false
+        store.swipeTypingEnabled = false
         store.periodShortcutEnabled = false
         let keyboardSettings = KeyboardAppSettingsStore(defaults: defaults)
 
@@ -131,6 +133,7 @@ struct AppSettingsStoreTests {
         #expect(keyboardSettings.isAutoCorrectionEnabled == false)
         #expect(keyboardSettings.isShiftCapsLockEnabled == false)
         #expect(keyboardSettings.isPredictiveTextEnabled == false)
+        #expect(keyboardSettings.isSwipeTypingEnabled == false)
         #expect(keyboardSettings.isPeriodShortcutEnabled == false)
     }
 

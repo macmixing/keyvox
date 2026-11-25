@@ -8,6 +8,7 @@ enum KeyboardSettingsCopy {
     static let autoCorrectionTitle = String(localized: "Auto-Correction", comment: "Keyboard settings toggle. Use the term the system keyboard settings use in this language.")
     static let capsLockTitle = String(localized: "Enable Caps Lock", comment: "Keyboard settings toggle. Use the term the system keyboard settings use in this language.")
     static let predictiveTextTitle = String(localized: "Predictive Text", comment: "Keyboard settings toggle. Use the term the system keyboard settings use in this language.")
+    static let swipeTypingTitle = String(localized: "Swipe Typing", comment: "Keyboard settings toggle that lets the user type a word by sliding a finger across its letters.")
     static let emojiKeyboardTitle = String(localized: "Emoji Keyboard", comment: "Keyboard settings toggle that shows or hides the emoji keyboard.")
     static let periodShortcutTitle = String(localized: "“.” Shortcut", comment: "Keyboard settings toggle for typing a period by double-tapping the space bar. Use the term the system keyboard settings use in this language.")
     static let periodShortcutDescription = String(localized: "Double tap the space bar to type a period followed by a space.", comment: "Description under the period shortcut toggle in keyboard settings.")
@@ -23,5 +24,5 @@ enum KeyboardSettingsCopy {
     static let openOnNumberPageDescription = String(localized: "Show numbers and symbols when the keyboard opens. Tap ABC for letters.", comment: "Description under the Open on 123 toggle. ABC is the keyboard's letters key label and stays as written.")
     static let resetLearnedWordsTitle = String(localized: "Reset Learned Words", comment: "Keyboard settings button that clears words the keyboard has learned.")
     static let resetLearnedWordsHint = String(localized: "To forget a single word, press and hold it in the suggestion bar.", comment: "Hint under the Reset Learned Words button.")
-    static let englishOnlyNote = String(localized: "Auto-Correction and Predictive Text currently support English only.", comment: "Note in keyboard settings explaining which typing features are limited to English.")
+    static let englishOnlyNote = String(localized: "Auto-Correction, Predictive Text, and Swipe Typing currently support English only.", comment: "Note in keyboard settings explaining which typing features are limited to English.")
 }
