@@ -4,7 +4,8 @@ import XCTest
 /// A swipe reaches every word typing reaches, written as typing writes it: the bundled
 /// dictionary's words, the user's KeyVox Dictionary entries, contact names with their capitals,
 /// text replacement shortcuts expanded, learned words, and the capitals the user gives a
-/// dictionary word; the shift state carries over as it does to typed letters.
+/// dictionary word; the shift state carries over as it does to typed letters. It also reaches the
+/// swipe vocabulary's words, which typing never offers.
 final class SwipeWordsTests: XCTestCase {
     private var engine: PredictiveEngine!
     private var computer: PredictionComputer!
@@ -18,6 +19,13 @@ final class SwipeWordsTests: XCTestCase {
     func testADictionaryWordDecodesToItself() throws {
         XCTAssertEqual(try best("hello"), "hello")
         XCTAssertEqual(try best("keyboard", previousWords: ["the"]), "keyboard")
+    }
+
+    func testASwipeVocabularyWordDecodesToItself() throws {
+        for word in ["haha", "hahaha", "omg", "lmao"] {
+            try requireUnknown(word)
+            XCTAssertEqual(try best(word), word)
+        }
     }
 
     func testAKeyVoxDictionaryEntryDecodesWrittenTheUsersWay() throws {
