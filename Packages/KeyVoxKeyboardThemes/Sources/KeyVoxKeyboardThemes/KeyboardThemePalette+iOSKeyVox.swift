@@ -29,6 +29,23 @@ extension KeyboardThemePalette {
         microphoneBackground: .appearance(
             light: KeyboardThemeRGBA(red: 0.901, green: 0.901, blue: 0.976),
             dark: KeyboardThemeRGBA(red: 0, green: 0, blue: 0, alpha: 0.82)
+        ),
+        // The special keys' indigo in light and the letter keys' lavender in dark, each over a glow
+        // of the same hue, stronger in dark where it reads against the deeper backdrop.
+        swipeTrail: KeyboardThemeSwipeTrail(
+            color: .appearance(
+                light: KeyboardThemeRGBA(red: 0.35, green: 0.36, blue: 0.66),
+                dark: KeyboardThemeRGBA(red: 0.67, green: 0.67, blue: 0.92)
+            ),
+            glowColor: .appearance(
+                light: KeyboardThemeRGBA(red: 0.35, green: 0.36, blue: 0.66, alpha: 0.22),
+                dark: KeyboardThemeRGBA(red: 0.67, green: 0.67, blue: 0.92, alpha: 0.32)
+            ),
+            width: 7,
+            tailWidthScale: 0.3,
+            glowWidthScale: 2.6,
+            fadeDuration: 0.3,
+            liftFadeDuration: 0.22
         )
     )
 

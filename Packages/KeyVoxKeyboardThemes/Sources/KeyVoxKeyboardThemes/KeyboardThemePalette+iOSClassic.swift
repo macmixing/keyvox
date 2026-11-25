@@ -57,6 +57,23 @@ extension KeyboardThemePalette {
                 alpha: iOSClassicKeyFillOpacity.light
             ),
             dark: KeyboardThemeRGBA(red: 0, green: 0, blue: 0, alpha: 0.82)
+        ),
+        // Neutral like the keys: the popup characters' black in light and white in dark, over a
+        // faint glow of the same shade.
+        swipeTrail: KeyboardThemeSwipeTrail(
+            color: .appearance(
+                light: KeyboardThemeRGBA(red: 0, green: 0, blue: 0, alpha: 0.55),
+                dark: KeyboardThemeRGBA(red: 1, green: 1, blue: 1, alpha: 0.85)
+            ),
+            glowColor: .appearance(
+                light: KeyboardThemeRGBA(red: 0, green: 0, blue: 0, alpha: 0.08),
+                dark: KeyboardThemeRGBA(red: 1, green: 1, blue: 1, alpha: 0.16)
+            ),
+            width: 6,
+            tailWidthScale: 0.3,
+            glowWidthScale: 2.4,
+            fadeDuration: 0.3,
+            liftFadeDuration: 0.22
         )
     )
 
