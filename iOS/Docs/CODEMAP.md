@@ -1921,11 +1921,11 @@ Packages/
   - Where each letter of the word before the cursor was tapped, kept only while the taps line up with its letters; tells a word the user tapped out apart from one the cursor was moved into.
 - `KeyVox Keyboard/Core/Prediction/KeyboardPredictionCoordinator.swift`
   - Runs the shared typing session on the main thread and suggestion work on a serial background engine, publishing a result only when no newer request was made; at a word boundary it uses the current result or computes it on the spot so a fast space never skips an autocorrection. Contested-tap checks run on a second engine so keys such as delete never wait for suggestions. Swipes decode on the suggestion engine's queue; anything typed before a swipe's word arrives waits for it, a word whose place moved meanwhile goes nowhere, and the bar shows what follows the word once it goes in.
-  - Never rereads the document proxy when background work finishes.
+  - Never rereads the document proxy when background work finishes: a swipe's word is checked against the place recorded on the main thread at the last change to the text or cursor and typed from the text read when the swipe ended.
 - `KeyVox Keyboard/Core/Prediction/KeyboardPredictionEngine.swift`
   - Serial-queue owner of one lazily created `PredictionComputer`, holding geometry, vocabulary, and learned words until the engine exists and remembering when the engine cannot load.
 - `KeyVox Keyboard/Core/Prediction/KeyboardSwipePlace.swift`
-  - Where a swiped word goes: the text around the cursor when its swipe ended, so a word whose cursor or field moved goes nowhere.
+  - Where a swiped word goes: the field, counted on the main thread and named by its document identifier, and the text around the cursor when its swipe ended, so a word whose cursor or field moved goes nowhere.
 - `KeyVox Keyboard/Core/Prediction/KeyboardTypingLanguage.swift`
   - The bundled typing language the keyboard types in, shared by its engines, typing session, held keys, word-ending characters, and quote keys.
 - `KeyVox Keyboard/Core/Prediction/KeyboardTypingTraits.swift`
