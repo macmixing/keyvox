@@ -70,6 +70,22 @@ final class SwipeGateTests: XCTestCase {
         XCTAssertEqual(gate.touchEnded(0, at: point(atPitches: 3.5), time: 10.3), .tap)
     }
 
+    func testAFingerThatStopsSwipingStillKeepsALandingFingerFromSwiping() {
+        var gate = SwipeGate<Int>()
+        gate.touchBegan(0, at: origin, time: 10, pitch: pitch, isEligible: true)
+        XCTAssertFalse(gate.touchMoved(0, to: point(atPitches: 0.6), time: 10.05))
+        XCTAssertTrue(gate.isTraveling(0))
+        gate.touchStopsSwiping(0)
+        XCTAssertFalse(gate.isTraveling(0))
+        XCTAssertFalse(gate.touchMoved(0, to: point(atPitches: 1.5), time: 10.1 + hold))
+        gate.touchBegan(1, at: origin, time: 10.3, pitch: pitch, isEligible: true)
+        XCTAssertFalse(gate.touchMoved(1, to: point(atPitches: 1.2), time: 10.35))
+        XCTAssertFalse(gate.touchMoved(1, to: point(atPitches: 1.5), time: 10.35 + hold), "the first finger is still down")
+        XCTAssertFalse(gate.isTraveling(1))
+        XCTAssertEqual(gate.touchEnded(0, at: point(atPitches: 1.5), time: 10.6), .tap)
+        XCTAssertEqual(gate.touchEnded(1, at: point(atPitches: 1.5), time: 10.6), .tap)
+    }
+
     func testAnotherFingerLandingAfterTheSwipeStartsLeavesIt() {
         var gate = SwipeGate<Int>()
         gate.touchBegan(0, at: origin, time: 10, pitch: pitch, isEligible: true)

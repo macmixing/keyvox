@@ -201,6 +201,14 @@ public struct SwipeGate<TouchID: Hashable> {
         return .undecided
     }
 
+    /// The finger can no longer swipe, as when a held key's popup takes it, but it stays down, so a
+    /// finger landing beside it still never swipes, until it lifts or is cancelled. A finger
+    /// already swiping keeps swiping.
+    public mutating func touchStopsSwiping(_ id: TouchID) {
+        guard touches[id]?.isSwipe == false else { return }
+        touches[id]?.canSwipe = false
+    }
+
     /// The finger was cancelled; it is neither a tap nor a swipe.
     public mutating func touchCancelled(_ id: TouchID) {
         touches[id] = nil
