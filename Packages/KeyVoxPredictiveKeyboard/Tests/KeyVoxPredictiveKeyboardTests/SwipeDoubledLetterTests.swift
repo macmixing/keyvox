@@ -57,6 +57,39 @@ final class SwipeDoubledLetterTests: XCTestCase {
         }
     }
 
+    func testACircleDoublesALetterButNeverTriplesItWhereAllThreeAreWords() throws {
+        let engine = try PredictiveEngine(language: .english)
+        let forms = Set(try SwipeVocabulary.lexiconWords(of: engine).map { SwipeLetterForm.form(of: $0.spelling) })
+        // Every word doubled at a letter it has once, whose tripled form is a word too.
+        var families: [String: String] = [:]
+        for single in forms {
+            let letters = Array(single)
+            for index in letters.indices
+            where (index == 0 || letters[index - 1] != letters[index])
+                && (index == letters.count - 1 || letters[index + 1] != letters[index]) {
+                var doubled = letters, tripled = letters
+                doubled.insert(letters[index], at: index)
+                tripled.insert(contentsOf: [letters[index], letters[index]], at: index)
+                if forms.contains(String(doubled)), forms.contains(String(tripled)) {
+                    families[String(doubled)] = String(tripled)
+                }
+            }
+        }
+        XCTAssertFalse(families.isEmpty, "the lexicon has letters once, twice, and three times")
+        let keyIndex = try SwipeModelSettings.bundled(for: .english).keyIndex
+        var onTheirKeyPath = 0
+        for (doubled, tripled) in families.sorted(by: { $0.key < $1.key }) {
+            let swiped = try best(swipingKeysOf: doubled, previousWords: [], loopingAtDoubles: true).map(SwipeLetterForm.form(of:))
+            XCTAssertNotEqual(swiped, tripled, "a circle at \(doubled)")
+            // A swipe the model reads as another word altogether, as very short ones can be, is not the circle's.
+            guard let swiped, SwipeLetterForm.keyPath(of: swiped, keyIndex: keyIndex, keepsDoubleLetters: false)
+                == SwipeLetterForm.keyPath(of: doubled, keyIndex: keyIndex, keepsDoubleLetters: false) else { continue }
+            onTheirKeyPath += 1
+            XCTAssertEqual(swiped, doubled, "a circle at \(doubled)")
+        }
+        XCTAssertGreaterThan(onTheirKeyPath, 0)
+    }
+
     func testWithoutACircleANameKeepsItsLettersOverACommonerTwin() throws {
         for word in ["mary", "paris", "anderson", "mr"] {
             XCTAssertEqual(try best(swipingKeysOf: word, previousWords: [])?.lowercased(), word, "no circle")

@@ -183,8 +183,9 @@ final class SwipeWordDecoder: @unchecked Sendable {
     /// Between twins, words whose letters differ only in how many times letters repeat at their
     /// keys, the circle decides, whatever the words before or their frequencies. At each key where
     /// a word repeats the letter more than its twins there and no letter fewer times, a loop around
-    /// the key puts it first when one of them has the letter once there, as a loop asks for the
-    /// letter doubled, not tripled. With no loop, or no such twin, its twins win unless every one
+    /// the key puts it first when it has the letter exactly twice there and a twin otherwise the
+    /// same has it once, as a loop asks for that letter doubled, not tripled and not other letters
+    /// added. With no loop, or no such twin, its twins win unless every one
     /// is a misspelling of it, written `misspellingRatio` times less often in the context model, the
     /// rule the language data's swipe vocabulary build leaves misspellings out by; then it wins over
     /// them. Names and the user's own words are weighed the same way. So "been" beats "Ben", "hello"
@@ -231,7 +232,11 @@ final class SwipeWordDecoder: @unchecked Sendable {
                             && other.value.indices.allSatisfy { other.value[$0] <= own[$0] }
                     }.map(\.key)
                     guard shorter.isEmpty == false else { continue }
-                    if flags[key], shorter.contains(where: { repeats[$0]![key] == 0 }) {
+                    // A loop asks for this key's letter doubled: a twin otherwise the same, with it once.
+                    let doublesATwin = own[key] == 1 && shorter.contains { other in
+                        repeats[other]!.indices.allSatisfy { $0 == key ? repeats[other]![$0] == 0 : repeats[other]![$0] == own[$0] }
+                    }
+                    if flags[key], doublesATwin {
                         loops[longer, default: 0] += 1
                     } else if shorter.contains(where: { isMisspelling($0, of: longer) == false }) {
                         unlooped[longer, default: 0] += 1

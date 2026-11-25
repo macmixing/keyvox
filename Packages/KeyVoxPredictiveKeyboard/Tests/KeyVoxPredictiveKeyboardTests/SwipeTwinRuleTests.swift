@@ -2,7 +2,7 @@ import XCTest
 @testable import KeyVoxPredictiveKeyboard
 
 /// Every doubled-letter twin decodes as the circle asks: twins are words on one key path whose
-/// letters differ by one doubled run, found from the bundled swipe lexicon itself, plus a user's
+/// letters differ by one letter doubled, found from the bundled swipe lexicon itself, plus a user's
 /// word doubling a letter of a dictionary word. Swiped without a loop, the single word comes out,
 /// unless it is a misspelling of a twin, written `misspellingRatio` times less often in the context
 /// model (`SwipeTwinFacts`), when one of those twins does, names and the user's words alike; swiped
@@ -55,7 +55,7 @@ final class SwipeTwinRuleTests: XCTestCase {
             for (single, singleRuns) in forms where singleRuns.allSatisfy({ $0 == 1 }) {
                 for (doubled, doubledRuns) in forms {
                     let differing = singleRuns.indices.filter { singleRuns[$0] != doubledRuns[$0] }
-                    guard differing.count == 1, let key = differing.first else { continue }
+                    guard differing.count == 1, let key = differing.first, doubledRuns[key] == 2 else { continue }
                     twins.append(Twin(letters: Self.letters(of: path, settings: decoder.settings), single: single, doubled: doubled, key: key))
                 }
             }
