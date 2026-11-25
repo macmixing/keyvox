@@ -51,7 +51,8 @@ final class SwipeModelParityTests: XCTestCase {
             let candidates = decoder.candidates(
                 emissions: decoder.emissions(forResampled: swipe.xy, keyCenters: centers),
                 personal: nil,
-                contextLift: nil
+                contextLift: nil,
+                hasWordsBefore: false
             )
             var scoreByForm: [String: Double] = [:]
             var forms: [String] = []

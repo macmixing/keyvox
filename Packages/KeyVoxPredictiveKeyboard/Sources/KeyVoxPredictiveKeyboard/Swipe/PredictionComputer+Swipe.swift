@@ -45,9 +45,12 @@ extension PredictionComputer {
             decoder: decoder
         )
         let language = ContextLanguageScorer(engine: engine, vocabulary: state.vocabulary)
-        return try decoder.candidates(emissions: emissions, personal: personal) { spelling in
-            try language.contextLift(of: spelling, previousWords: previousWords)
-        }
+        return try decoder.candidates(
+            emissions: emissions,
+            personal: personal,
+            contextLift: { spelling in try language.contextLift(of: spelling, previousWords: previousWords) },
+            hasWordsBefore: previousWords.isEmpty == false
+        )
     }
 
     /// The user's words a swipe can reach that the bundled lexicon may lack, as typing searches

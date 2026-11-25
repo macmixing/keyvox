@@ -24,6 +24,9 @@ public struct SwipeModelSettings: Decodable, Sendable, Equatable {
         /// The weight of how much likelier the words before make the word than it is on its own,
         /// as a natural log.
         public let contextWeight: Double
+        /// The weight of that among words whose key paths are the same, which the swipe cannot
+        /// tell apart (`SwipeWordDecoder`).
+        public let samePathContextWeight: Double
         /// How many of the best words, by everything but context, are weighed in context.
         public let contextCandidates: Int
         /// The dictionary probability the user's own words, which the dictionary lacks, are
