@@ -109,6 +109,49 @@ final class SwipeTwinRuleTests: XCTestCase {
         }
     }
 
+    /// Every dictionary word with two or more doubled letters, each exactly twice, swiped circling
+    /// every one, decodes as itself whenever the decoder weighs it: a circle credits each letter it
+    /// finds exactly doubled, so no word loses a doubled letter its circle asked for.
+    func testCirclingEveryDoubledLetterOfAWordGivesTheWord() throws {
+        try XCTSkipUnless(ProcessInfo.processInfo.environment["SWIPE_TWIN_PROOF"] == "1", "set SWIPE_TWIN_PROOF=1 to run")
+        engine = try PredictiveEngine(language: .english)
+        decoder = try SwipeWordDecoder(language: .english)
+        let keyIndex = decoder.settings.keyIndex
+        let words = Set(try engine.dictionaryWords().filter(\.isOfferable).map { SwipeLetterForm.form(of: $0.spelling) }).filter { word in
+            guard let runs = Self.runs(of: word) else { return false }
+            return runs.allSatisfy { $0 <= 2 } && runs.filter { $0 == 2 }.count >= 2
+        }
+        var weighed = 0, misread = 0, anotherPath = 0
+        var wrong: [String] = []
+        for word in words.sorted() {
+            guard let runs = Self.runs(of: word), let path = SwipeLetterForm.keyPath(of: word, keyIndex: keyIndex, keepsDoubleLetters: false) else { continue }
+            let loops = Set(runs.indices.filter { runs[$0] == 2 })
+            let letters = Self.letters(of: path, settings: decoder.settings)
+            let swipe = SwipePath.through(letters, loopingAt: loops)
+            guard let emissions = decoder.emissions(for: swipe, keys: keys) else { continue }
+            let language = ContextLanguageScorer(engine: engine, vocabulary: PersonalVocabulary(words: [], textReplacements: []))
+            let candidates = try decoder.candidates(
+                emissions: emissions,
+                personal: nil,
+                contextLift: { try language.contextLift(of: $0, previousWords: []) },
+                hasWordsBefore: false,
+                loopedKeys: { [decoder, keys] keyPath in decoder!.loopedKeys(path: swipe, keyPath: keyPath, keys: keys) },
+                twinFacts: { [engine] spelling in SwipeTwinFacts(spelling: spelling, engine: engine!) }
+            )
+            // The circles only order the words the search found.
+            guard candidates.contains(where: { SwipeLetterForm.form(of: $0.spelling) == word }) else { continue }
+            let detected = decoder.loopedKeys(path: swipe, keyPath: path, keys: keys).map { flags in Set(flags.indices.filter { flags[$0] }) }
+            guard detected == loops else { misread += 1; continue }
+            weighed += 1
+            let top = candidates.first.map { SwipeLetterForm.form(of: $0.spelling) } ?? ""
+            // A word on another key path wins on the model's score, which the circles do not order.
+            guard SwipeLetterForm.keyPath(of: top, keyIndex: keyIndex, keepsDoubleLetters: false) == path else { anotherPath += 1; continue }
+            if top != word { wrong.append("\(word): \(top)") }
+        }
+        print("TWIN_PROOF circling every doubled letter: words \(words.count), weighed with their circles read \(weighed), circles misread \(misread), a word on another key path \(anotherPath), a twin instead \(wrong.count)")
+        XCTAssertEqual(wrong, [], "a word with every doubled letter circled lost to a twin")
+    }
+
     private struct Results {
         var plainSingle = 0, plainDoubled = 0, loopedDoubled = 0, otherWord = 0
         var withoutDetection = (plainSingle: 0, loopedDoubled: 0)

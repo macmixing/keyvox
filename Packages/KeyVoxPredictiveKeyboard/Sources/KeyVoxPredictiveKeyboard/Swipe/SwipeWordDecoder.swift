@@ -181,18 +181,21 @@ final class SwipeWordDecoder: @unchecked Sendable {
     /// does the order of a word's own spellings, such as its case and apostrophe variants.
     ///
     /// Between twins, words whose letters differ only in how many times letters repeat at their
-    /// keys, the circle decides, whatever the words before or their frequencies. At each key where
-    /// a word repeats the letter more than its twins there and no letter fewer times, a loop around
-    /// the key puts it first when it has the letter exactly twice there and a twin otherwise the
-    /// same has it once, as a loop asks for that letter doubled, not tripled and not other letters
-    /// added. With no loop, or no such twin, its twins win unless every one
-    /// is a misspelling of it, written `misspellingRatio` times less often in the context model, the
-    /// rule the language data's swipe vocabulary build leaves misspellings out by; then it wins over
-    /// them. Names and the user's own words are weighed the same way. So "been" beats "Ben", "hello"
-    /// beats "helo", and "see" beats "se", while "Mary" beats "marry", "Paris" beats "Parris", and a
-    /// contact's "Mann" never beats "man". Words without a twin are untouched. Among words alike in
-    /// both, its score with the context counted `samePathContextWeight` times when `usesContext`
-    /// ranks it, then its spelling.
+    /// keys, the circles decide, whatever the words before or their frequencies, key by key. A loop
+    /// around a key where a word has the letter exactly twice credits the word, whether or not a
+    /// twin has it once; a word with it three times or more gets nothing from the loop, as a loop
+    /// asks for the letter doubled, not tripled. Where a word repeats a letter with no loop credit,
+    /// its twins repeating it fewer times and no letter more win unless every one is a misspelling
+    /// of it, written `misspellingRatio` times less often in the context model, the rule the
+    /// language data's swipe vocabulary build leaves misspellings out by; then it wins over them.
+    /// Names and the user's own words are weighed the same way. A word losing to a twin at any key
+    /// comes after the words that lose at fewer, whatever its loops, so a loop never brings in
+    /// letters added at other keys; among the rest, the word with more loop credits comes first.
+    /// So "been" beats "Ben", "hello" beats "helo", and "see" beats "se", while "Mary" beats
+    /// "marry", "Paris" beats "Parris", and a contact's "Mann" never beats "man", and "yes" circled
+    /// at its "e" stays "yes" rather than "yeesss". Words without a twin are untouched. Among words
+    /// alike in both, its score with the context counted `samePathContextWeight` times when
+    /// `usesContext` ranks it, then its spelling.
     private func rankingSamePaths(
         _ candidates: inout [SwipeCandidate],
         usesContext: Bool,
@@ -226,19 +229,18 @@ final class SwipeWordDecoder: @unchecked Sendable {
             for (longer, own) in repeats {
                 let flags = looped.flatMap { $0.count == own.count ? $0 : nil } ?? own.map { _ in false }
                 for key in own.indices where own[key] > 0 {
+                    // A loop asks for this key's letter doubled, not tripled.
+                    if flags[key], own[key] == 1 {
+                        loops[longer, default: 0] += 1
+                        continue
+                    }
                     // Its twins at this key: words repeating this key's letter fewer times and no letter more.
                     let shorter = repeats.filter { other in
                         other.value.count == own.count && other.value[key] < own[key]
                             && other.value.indices.allSatisfy { other.value[$0] <= own[$0] }
                     }.map(\.key)
                     guard shorter.isEmpty == false else { continue }
-                    // A loop asks for this key's letter doubled: a twin otherwise the same, with it once.
-                    let doublesATwin = own[key] == 1 && shorter.contains { other in
-                        repeats[other]!.indices.allSatisfy { $0 == key ? repeats[other]![$0] == 0 : repeats[other]![$0] == own[$0] }
-                    }
-                    if flags[key], doublesATwin {
-                        loops[longer, default: 0] += 1
-                    } else if shorter.contains(where: { isMisspelling($0, of: longer) == false }) {
+                    if shorter.contains(where: { isMisspelling($0, of: longer) == false }) {
                         unlooped[longer, default: 0] += 1
                     } else {
                         for word in shorter { unlooped[word, default: 0] += 1 }
@@ -251,8 +253,8 @@ final class SwipeWordDecoder: @unchecked Sendable {
             }
             let places = entries.map(\.best.score).sorted(by: >)
             let order = entries.sorted {
-                if $0.loops != $1.loops { return $0.loops > $1.loops }
                 if $0.unlooped != $1.unlooped { return $0.unlooped < $1.unlooped }
+                if $0.loops != $1.loops { return $0.loops > $1.loops }
                 if $0.rank != $1.rank { return $0.rank > $1.rank }
                 return $0.best.score != $1.best.score ? $0.best.score > $1.best.score : $0.word < $1.word
             }
