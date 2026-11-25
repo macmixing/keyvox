@@ -85,12 +85,15 @@ final class SwipeWordDecoder: @unchecked Sendable {
     ///   - hasWordsBefore: Whether any words come before, rather than the sentence starting.
     ///   - loopedKeys: For each key of a key path, whether the swipe looped around it
     ///     (`SwipeKeyLoop`); nil when the swipe's path is not at hand.
+    ///   - twinFacts: What the language's data says about a spelling, for weighing twins; nil
+    ///     treats every twin as an everyday word.
     func candidates(
         emissions: [Float],
         personal: SwipeLexicon?,
         contextLift: ((String) throws -> Double)?,
         hasWordsBefore: Bool,
-        loopedKeys: (([Int]) -> [Bool]?)?
+        loopedKeys: (([Int]) -> [Bool]?)?,
+        twinFacts: ((String) -> SwipeTwinFacts)? = nil
     ) rethrows -> [SwipeCandidate] {
         let scoring = SwipeCandidateScoring(settings: settings.scoring)
         let symbols = settings.letters.unicodeScalars.count + 1
@@ -144,7 +147,7 @@ final class SwipeWordDecoder: @unchecked Sendable {
         }
         let usesContext = contextLift != nil && hasWordsBefore
         if usesContext || loopedKeys != nil {
-            rankingSamePaths(&candidates, usesContext: usesContext, loopedKeys: loopedKeys)
+            rankingSamePaths(&candidates, usesContext: usesContext, loopedKeys: loopedKeys, twinFacts: twinFacts)
         }
         return candidates.sorted { $0.score > $1.score }
     }
@@ -177,14 +180,31 @@ final class SwipeWordDecoder: @unchecked Sendable {
     /// The scores the set holds stay the same, so every ranking outside it stays as scored, and so
     /// does the order of a word's own spellings, such as its case and apostrophe variants.
     ///
-    /// A word comes first for each key the finger looped around where it doubles the letter, as
-    /// looping asks for the letter doubled, whatever the words before; among words with as many,
-    /// its score with the context counted `samePathContextWeight` times when `usesContext` ranks it.
+    /// Between twins, words whose letters differ only in how many times letters repeat at their
+    /// keys, the circle decides, whatever the words before or their frequencies. At each key where
+    /// a word repeats the letter more than its twins there and no letter fewer times, a loop around
+    /// the key puts it first, and no loop puts it after them. With no loop, its twins win whenever
+    /// one is a word people mean: a word typing takes, not a name the dictionary spells only with
+    /// capitals or a word only the user has, and not a misspelling of it, written
+    /// `misspellingRatio` times less often in the context model, the rule the language data's swipe
+    /// vocabulary build leaves misspellings out by. Otherwise it wins over them, unless it is a
+    /// name itself. So "been" beats "Ben", "hello" beats "helo", "see" beats "se", and a contact's
+    /// "Mann" never beats "man". Words without a twin are untouched. Among words alike in both,
+    /// its score with the context counted `samePathContextWeight` times when `usesContext` ranks
+    /// it, then its spelling.
     private func rankingSamePaths(
         _ candidates: inout [SwipeCandidate],
         usesContext: Bool,
-        loopedKeys: (([Int]) -> [Bool]?)?
+        loopedKeys: (([Int]) -> [Bool]?)?,
+        twinFacts: ((String) -> SwipeTwinFacts)?
     ) {
+        var facts: [String: SwipeTwinFacts] = [:]
+        func factsOf(_ spelling: String) -> SwipeTwinFacts {
+            if let known = facts[spelling] { return known }
+            let found = twinFacts?(spelling) ?? SwipeTwinFacts(isNameOnly: false, isValid: true, logFrequency: 0)
+            facts[spelling] = found
+            return found
+        }
         let extraWeight = usesContext ? settings.scoring.samePathContextWeight - settings.scoring.contextWeight : 0
         let keyIndex = settings.keyIndex
         let words = Dictionary(grouping: candidates.indices) { SwipeLetterForm.form(of: candidates[$0].spelling) }
@@ -193,21 +213,52 @@ final class SwipeWordDecoder: @unchecked Sendable {
         }
         for (path, set) in sets where set.count > 1 && path.isEmpty == false {
             let looped = settings.keepsDoubleLetters ? nil : loopedKeys?(path)
-            let entries = set.map { word -> (word: String, best: SwipeCandidate, loops: Int, rank: Double) in
-                let best = words[word]!.map { candidates[$0] }.max { $0.score < $1.score }!
-                var loops = 0
-                if let looped, let doubled = SwipeLetterForm.doubledKeys(of: word, keyIndex: keyIndex),
-                   doubled.count == looped.count {
-                    loops = zip(doubled, looped).filter { $0 && $1 }.count
+            let repeats = Dictionary(uniqueKeysWithValues: set.compactMap { word in Self.repeats(of: word, keyIndex: keyIndex).map { (word, $0) } })
+            let isUsersOnly = Dictionary(uniqueKeysWithValues: set.map { word in (word, words[word]!.allSatisfy { candidates[$0].isPersonal }) })
+            func spellingFacts(_ word: String) -> [SwipeTwinFacts] { words[word]!.map { factsOf(candidates[$0].spelling) } }
+            // A name: a word only the user has, or one the dictionary spells only with capitals.
+            func isNamed(_ word: String) -> Bool { isUsersOnly[word]! || spellingFacts(word).allSatisfy(\.isNameOnly) }
+            func logFrequency(_ word: String) -> Double { spellingFacts(word).map(\.logFrequency).max()! }
+            func isMeant(_ shorter: String, against longer: String) -> Bool {
+                isNamed(shorter) == false && spellingFacts(shorter).contains(where: \.isValid)
+                    && logFrequency(longer) - logFrequency(shorter) < log(settings.scoring.misspellingRatio)
+            }
+            var loops: [String: Int] = [:]
+            var unlooped: [String: Int] = [:]
+            for (longer, own) in repeats {
+                let flags = looped.flatMap { $0.count == own.count ? $0 : nil } ?? own.map { _ in false }
+                for key in own.indices where own[key] > 0 {
+                    // Its twins at this key: words repeating this key's letter fewer times and no letter more.
+                    let shorter = repeats.filter { other in
+                        other.value.count == own.count && other.value[key] < own[key]
+                            && other.value.indices.allSatisfy { other.value[$0] <= own[$0] }
+                    }.map(\.key)
+                    guard shorter.isEmpty == false else { continue }
+                    if flags[key] {
+                        loops[longer, default: 0] += 1
+                    } else if isNamed(longer) || shorter.contains(where: { isMeant($0, against: longer) }) {
+                        unlooped[longer, default: 0] += 1
+                    } else {
+                        for word in shorter { unlooped[word, default: 0] += 1 }
+                    }
                 }
-                return (word, best, loops, best.score + extraWeight * best.contextLift)
+            }
+            let entries = set.map { word -> (word: String, best: SwipeCandidate, loops: Int, unlooped: Int, rank: Double) in
+                let best = words[word]!.map { candidates[$0] }.max { $0.score < $1.score }!
+                return (word, best, loops[word] ?? 0, unlooped[word] ?? 0, best.score + extraWeight * best.contextLift)
             }
             let places = entries.map(\.best.score).sorted(by: >)
             let order = entries.sorted {
                 if $0.loops != $1.loops { return $0.loops > $1.loops }
-                return $0.rank != $1.rank ? $0.rank > $1.rank : $0.best.score > $1.best.score
+                if $0.unlooped != $1.unlooped { return $0.unlooped < $1.unlooped }
+                if $0.rank != $1.rank { return $0.rank > $1.rank }
+                return $0.best.score != $1.best.score ? $0.best.score > $1.best.score : $0.word < $1.word
             }
-            for (entry, place) in zip(order, places) {
+            var previous = Double.infinity
+            for (entry, sortedPlace) in zip(order, places) {
+                // Equal scores would leave the order to the final sort; each place is below the last.
+                let place = min(sortedPlace, previous.nextDown)
+                previous = place
                 let shift = place - entry.best.score
                 for index in words[entry.word]! {
                     let candidate = candidates[index]
@@ -220,5 +271,18 @@ final class SwipeWordDecoder: @unchecked Sendable {
                 }
             }
         }
+    }
+
+    /// For each key of `form`'s key path with repeats counted once, how many more times its letter
+    /// follows itself there; nil when one of its letters has no key.
+    private static func repeats(of form: String, keyIndex: [Unicode.Scalar: Int]) -> [Int]? {
+        var last: Int?
+        var repeats: [Int] = []
+        for scalar in form.unicodeScalars {
+            guard let key = keyIndex[scalar] else { return nil }
+            if key == last { repeats[repeats.count - 1] += 1 } else { repeats.append(0) }
+            last = key
+        }
+        return repeats
     }
 }

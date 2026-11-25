@@ -29,8 +29,10 @@ enum SwipePath {
         let position: (Double) -> CGPoint
     }
 
-    /// - Parameter loops: The indices of the letters of `word` whose keys the finger loops around.
-    static func through(_ word: String, loopingAt loops: Set<Int> = []) -> [SwipeTouchSample] {
+    /// - Parameters:
+    ///   - loops: The indices of the letters of `word` whose keys the finger loops around.
+    ///   - circles: How many times it circles each, taking as much longer: 2 is a double circle.
+    static func through(_ word: String, loopingAt loops: Set<Int> = [], circles: Double = 1) -> [SwipeTouchSample] {
         let keys = KeyCenterMap(geometry: TypingLanguage.english.letterLayout.defaultGeometry)
         let centers = word.lowercased().compactMap { keys.center(of: $0) }
         let pitch = Double(keys.pitch.width)
@@ -49,7 +51,7 @@ enum SwipePath {
             let k = loopDrift * pitch
             // A prolate cycloid: one loop centered on the key, drifting `2πk` along the way in.
             func point(_ tau: Double) -> CGPoint {
-                let theta = 2 * Double.pi * (1 + loopOvershoot) * tau
+                let theta = 2 * Double.pi * (circles + loopOvershoot) * tau
                 let u = k * (theta - Double.pi) + a * sin(theta)
                 let v = a * (1 - cos(theta)) - a
                 return CGPoint(
@@ -63,8 +65,8 @@ enum SwipePath {
         var time = 0.0
         for index in ends.indices {
             if let loop = ends[index].loop {
-                segments.append(Segment(start: time, duration: loopDuration, position: loop))
-                time += loopDuration
+                segments.append(Segment(start: time, duration: loopDuration * circles, position: loop))
+                time += loopDuration * circles
             }
             guard index + 1 < ends.count else { break }
             let from = ends[index].leave

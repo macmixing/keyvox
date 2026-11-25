@@ -27,6 +27,11 @@ public struct SwipeModelSettings: Decodable, Sendable, Equatable {
         /// The weight of that among words whose key paths are the same, which the swipe cannot
         /// tell apart (`SwipeWordDecoder`).
         public let samePathContextWeight: Double
+        /// How many times as often a word repeating a letter more must be written as its twin for
+        /// the twin to count as its misspelling, which never wins a swipe without a loop
+        /// (`SwipeWordDecoder`): the ratio `Tools/KeyVoxLanguageModel/write_swipe_vocabulary.py`
+        /// leaves misspellings out of the swipe vocabulary by.
+        public let misspellingRatio: Double
         /// How many of the best words, by everything but context, are weighed in context.
         public let contextCandidates: Int
         /// The dictionary probability the user's own words, which the dictionary lacks, are
