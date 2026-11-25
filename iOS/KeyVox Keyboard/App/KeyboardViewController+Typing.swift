@@ -8,7 +8,9 @@ extension KeyboardViewController {
     /// Reads the focused field's traits and starts it on the right page with a fresh
     /// typing session.
     func prepareTypingForCurrentField() {
+        finishPendingSwipe()
         typingTraits = KeyboardTypingTraits(proxy: textDocumentProxy, settings: appSettingsStore)
+        updateSwipeTyping()
         fieldHasLetters = fieldHoldsLetters()
         isReturnKeyEnabled = fieldAllowsReturn()
         applyOpeningLayout(
@@ -112,6 +114,7 @@ extension KeyboardViewController {
     /// Deletes whole words for a held delete key, from the emoji search while searching. Returns
     /// false when no word could be deleted.
     func handleDeleteWords(_ count: Int) -> Bool {
+        finishPendingSwipe()
         if emojiPanel == .searching {
             return deleteEmojiSearchWords(count)
         }
@@ -172,6 +175,7 @@ extension KeyboardViewController {
     }
 
     func handleSuggestionSelected(_ item: SuggestionBar.Item) {
+        finishPendingSwipe()
         interactionHaptics.emitLightIfEnabled()
         textInputController.apply(
             predictionCoordinator.choiceEdit(item, allowsAutocorrection: typingTraits.allowsAutocorrection)

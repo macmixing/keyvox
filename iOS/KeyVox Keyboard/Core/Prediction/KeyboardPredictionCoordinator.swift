@@ -12,7 +12,9 @@ import KeyVoxPredictiveKeyboard
 /// yet, so a fast space never skips an autocorrection. The typo check of the word before
 /// the current one is worked out in the background after each result in the same way.
 /// Checks of taps close to a letter key run on an engine of their own, so a key that needs
-/// one, such as delete, never waits for suggestions still being worked out.
+/// one, such as delete, never waits for suggestions still being worked out. A swipe is decoded on
+/// the suggestion engine's queue; anything typed before its word arrives waits for it first, so
+/// words and keys go in the order they were made.
 final class KeyboardPredictionCoordinator {
     var onBarChange: ((SuggestionBar) -> Void)?
     /// The emoji the suggestion bar shows for a word, in the order to show them.
@@ -37,6 +39,15 @@ final class KeyboardPredictionCoordinator {
     private var barRequest: PredictionRequest?
     private var newestEmojiWord: String?
     private var publishedBar = SuggestionBar.empty
+    /// The swipe being decoded, which `finishPendingSwipe` hands over at once when something
+    /// else is typed before it arrives.
+    private var pendingSwipe: (number: Int, deliver: ([String]) -> Void)?
+    private var swipeNumber = 0
+    // Owned by `engine.queue`.
+    /// Decoded swipes not yet handed over, by number.
+    private var decodedSwipes: [Int: [String]] = [:]
+    /// How many words a swipe offers: the one it types and the ones the bar offers in its place.
+    private static let swipeWordCount = 1 + 3
 
     // Owned by `engine.queue`.
     /// The newest typo check of the word before the current one, worked out ahead of the
@@ -150,6 +161,10 @@ final class KeyboardPredictionCoordinator {
         let request = session.request(textBeforeCursor: text, selectedText: selected, textAfterCursor: after)
         newestEmojiWord = session.emojiWord(textBeforeCursor: text, selectedText: selected, textAfterCursor: after)
         newestRequest = request
+        if selected?.isEmpty ?? true, let swipeBar = session.swipeAlternativesBar(textBeforeCursor: text) {
+            publish(swipeBar, for: request)
+            return
+        }
         if let latestResult, latestResult.request == request {
             publish(Self.bar(for: latestResult, allowsAutocorrection: allowsAutocorrection), for: request)
             return
@@ -355,6 +370,58 @@ final class KeyboardPredictionCoordinator {
             leading: result.bar.leading,
             trailing: result.bar.trailing
         )
+    }
+
+    /// Decodes a swipe's path off the main thread and hands its words, best first, to `deliver`
+    /// on the main thread, unless `finishPendingSwipe` handed them over first.
+    func decodeSwipe(_ path: [SwipeTouchSample], wordCase: SwipeWordCase, deliver: @escaping ([String]) -> Void) {
+        finishPendingSwipe()
+        swipeNumber += 1
+        let number = swipeNumber
+        let previousWords = session.request(textBeforeCursor: textBeforeCursor()).previousWords
+        pendingSwipe = (number, deliver)
+        engine.queue.async { [weak self] in
+            guard let self else { return }
+            let words = (try? self.engine.resolvedComputer()?.swipeWords(
+                for: path,
+                previousWords: previousWords,
+                wordCase: wordCase,
+                limit: Self.swipeWordCount
+            )) ?? []
+            self.decodedSwipes[number] = words
+            DispatchQueue.main.async { [weak self] in
+                self?.handOverSwipe(number)
+            }
+        }
+    }
+
+    /// Hands over the swipe being decoded now, waiting for it, so what is typed next follows its
+    /// word.
+    func finishPendingSwipe() {
+        guard let pending = pendingSwipe else { return }
+        handOverSwipe(pending.number)
+    }
+
+    /// Whether letters of a word come right before the cursor.
+    func hasWordInProgress() -> Bool {
+        session.request(textBeforeCursor: textBeforeCursor()).currentWord.isEmpty == false
+    }
+
+    /// What inserting a swiped word does, with the other words it may have been on the bar.
+    func swipeEdit(words: [String]) -> TextEdit? {
+        session.swipeEdit(
+            words: words,
+            textBeforeCursor: textBeforeCursor(),
+            selectedText: selectedText(),
+            textAfterCursor: textAfterCursor()
+        )
+    }
+
+    private func handOverSwipe(_ number: Int) {
+        guard let pending = pendingSwipe, pending.number == number else { return }
+        let words = engine.queue.sync { decodedSwipes.removeValue(forKey: number) } ?? []
+        pendingSwipe = nil
+        pending.deliver(words)
     }
 
     // MARK: - Engine queue

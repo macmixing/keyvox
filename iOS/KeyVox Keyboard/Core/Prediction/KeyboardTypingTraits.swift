@@ -11,6 +11,8 @@ struct KeyboardTypingTraits: Equatable {
     let allowsPredictions: Bool
     /// Suggestions are shown in the suggestion bar.
     let showsSuggestions: Bool
+    /// A finger sliding across the letter keys types the word it traces.
+    let allowsSwipeTyping: Bool
     let allowsAutocorrection: Bool
     let autocapitalization: UITextAutocapitalizationType
     /// A quick second tap on shift locks caps.
@@ -25,6 +27,7 @@ struct KeyboardTypingTraits: Equatable {
         prefersNumberPage: false,
         allowsPredictions: true,
         showsSuggestions: true,
+        allowsSwipeTyping: true,
         allowsAutocorrection: true,
         autocapitalization: .sentences,
         allowsCapsLock: true,
@@ -36,6 +39,7 @@ struct KeyboardTypingTraits: Equatable {
         prefersNumberPage: Bool,
         allowsPredictions: Bool,
         showsSuggestions: Bool,
+        allowsSwipeTyping: Bool,
         allowsAutocorrection: Bool,
         autocapitalization: UITextAutocapitalizationType,
         allowsCapsLock: Bool,
@@ -45,6 +49,7 @@ struct KeyboardTypingTraits: Equatable {
         self.prefersNumberPage = prefersNumberPage
         self.allowsPredictions = allowsPredictions
         self.showsSuggestions = showsSuggestions
+        self.allowsSwipeTyping = allowsSwipeTyping
         self.allowsAutocorrection = allowsAutocorrection
         self.autocapitalization = autocapitalization
         self.allowsCapsLock = allowsCapsLock
@@ -81,6 +86,7 @@ struct KeyboardTypingTraits: Equatable {
             || settings.opensOnNumberPage
         allowsPredictions = isNumericOnly == false && isCredential == false && dropsSuggestions == false
         showsSuggestions = allowsPredictions && settings.isPredictiveTextEnabled
+        allowsSwipeTyping = allowsPredictions && settings.isSwipeTypingEnabled
         allowsAutocorrection = allowsPredictions
             && isAddressLike == false
             && proxy.autocorrectionType != .no

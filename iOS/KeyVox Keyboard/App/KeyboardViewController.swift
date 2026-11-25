@@ -741,6 +741,7 @@ final class KeyboardViewController: UIInputViewController {
 
     @discardableResult
     func handleKeyActivation(_ keyActivation: KeyboardKeyActivation) -> Bool {
+        finishPendingSwipe()
         if emojiPanel == .searching, let handled = handleEmojiSearchActivation(keyActivation) {
             return handled
         }

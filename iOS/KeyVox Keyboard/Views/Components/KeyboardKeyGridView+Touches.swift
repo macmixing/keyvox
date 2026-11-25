@@ -28,6 +28,7 @@ extension KeyboardKeyGridView {
     }
 
     func cancelAllTouches() {
+        cancelSwipeTracking()
         let hadTrackpad = spaceTrackpadController.cancel()
         trackpadOriginKeyView = nil
         compactKeysHoldController.cancel()
@@ -45,6 +46,8 @@ extension KeyboardKeyGridView {
         guard isKeyboardEnabled else { return }
         for touch in touches.sorted(by: { $0.timestamp < $1.timestamp }) {
             let location = touch.location(in: self)
+            // A finger landing ends a swipe under way, so its word goes in before this key.
+            endSwipes()
             typePendingCharacters()
 
             // A greyed-out return key takes no taps, as the system keyboard's does, and while the
@@ -58,6 +61,7 @@ extension KeyboardKeyGridView {
                 timestamp: touch.timestamp
             )
             touchSessions[ObjectIdentifier(touch)] = session
+            beginSwipeTracking(session, for: touch, onKey: hitKey)
             guard let hitKey else { continue }
             setVisualState(.pressed, for: hitKey)
             onKeyTouchDown?(activation(hitKey.model.kind, from: session))
@@ -100,6 +104,9 @@ extension KeyboardKeyGridView {
             guard let session = touchSessions[ObjectIdentifier(touch)] else { continue }
             let location = touch.location(in: self)
             session.location = location
+            if followSwipe(session, for: touch, event: event) {
+                continue
+            }
             switch session.kind {
             case .delete:
                 continue
@@ -157,6 +164,11 @@ extension KeyboardKeyGridView {
             guard let session = touchSessions.removeValue(forKey: ObjectIdentifier(touch)) else {
                 continue
             }
+            swipeGate.touchEnded(ObjectIdentifier(touch))
+            if session.isSwipe {
+                endSwipe(session)
+                continue
+            }
             if let keyView = session.keyView, isStillPressed(keyView) == false {
                 setVisualState(.normal, for: keyView)
             }
@@ -197,6 +209,11 @@ extension KeyboardKeyGridView {
     private func handleTouchesCancelled(_ touches: Set<UITouch>, event: UIEvent) {
         for touch in touches {
             guard let session = touchSessions.removeValue(forKey: ObjectIdentifier(touch)) else {
+                continue
+            }
+            swipeGate.touchEnded(ObjectIdentifier(touch))
+            if session.isSwipe {
+                swipeTrailView.cancel()
                 continue
             }
             if let keyView = session.keyView, isStillPressed(keyView) == false {
@@ -251,6 +268,9 @@ extension KeyboardKeyGridView {
     ) -> Bool {
         if case .character = kind {
             onCharacterKeyTyped?()
+        }
+        if allowsSwipeTyping, kind.editsText {
+            swipeGate.recordTap(at: ProcessInfo.processInfo.systemUptime)
         }
         return onKeyActivated?(activation(kind, from: session, isRepeat: isRepeat, isHeldKeyChoice: isHeldKeyChoice)) ?? false
     }
@@ -373,7 +393,7 @@ extension KeyboardKeyGridView {
         }
     }
 
-    private func showPopup(for keyView: KeyboardKeyView) {
+    func showPopup(for keyView: KeyboardKeyView) {
         guard keyView.model.allowsPopup, let text = keyView.model.popupText else {
             dismissPopup(ownedBy: popupOwnerKeyView)
             return
@@ -382,7 +402,7 @@ extension KeyboardKeyGridView {
         popupView.present(text: text, from: keyView, in: popupContainerView ?? self)
     }
 
-    private func dismissPopup(ownedBy keyView: KeyboardKeyView?) {
+    func dismissPopup(ownedBy keyView: KeyboardKeyView?) {
         guard let keyView, keyView === popupOwnerKeyView else { return }
         popupOwnerKeyView = nil
         popupView.dismiss()
