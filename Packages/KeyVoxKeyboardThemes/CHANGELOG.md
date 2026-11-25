@@ -6,6 +6,21 @@ The format loosely follows Keep a Changelog, and the package uses semantic versi
 
 ---
 
+## [1.1.0] - 2026-11-24
+
+Swipe trail styles for each theme.
+
+### Includes
+
+- `KeyboardThemePalette.swipeTrail` (`KeyboardThemeSwipeTrail`): the trail a swipe leaves across the letter keys, with its stroke and glow colors for the light and dark appearances, its width at the finger, how far it tapers, how wide its glow is, how long each point lasts behind the finger, and how long it fades once the finger lifts.
+- The KeyVox theme draws it in its indigo in light and lavender in dark; the Classic theme in neutral black in light and white in dark.
+
+### Notes
+
+- `1.1.0` adds public API; key colors are unchanged.
+
+---
+
 ## [1.0.0] - 2026-10-24
 
 Initial shared keyboard themes for KeyVox keyboards.
