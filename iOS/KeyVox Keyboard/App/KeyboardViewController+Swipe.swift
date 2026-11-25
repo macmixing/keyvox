@@ -18,7 +18,7 @@ extension KeyboardViewController {
     func handleSwipe(_ path: [SwipeTouchSample], heldSince heldPlace: KeyboardSwipePlace?) {
         guard typingTraits.allowsSwipeTyping else { return }
         predictionCoordinator.finishPendingSwipe()
-        if let heldPlace, heldPlace != predictionCoordinator.swipePlace() { return }
+        if let heldPlace, heldPlace != predictionCoordinator.swipePlace { return }
         characterKeyHaptics.emitKeypressIfEnabled()
         dismissRescuedDictation()
         if predictionCoordinator.hasWordInProgress() {
@@ -28,16 +28,16 @@ extension KeyboardViewController {
             ))
             handleTypingContextChange()
         }
-        predictionCoordinator.decodeSwipe(path, wordCase: swipeWordCase) { [weak self] word in
-            self?.insertSwipedWord(word)
+        predictionCoordinator.decodeSwipe(path, wordCase: swipeWordCase) { [weak self] edit in
+            self?.insertSwipedWord(edit)
         }
     }
 
     /// Where a swipe the key grid holds undecided would put its word: after the word of the swipe
     /// before it, which goes in now.
-    func heldSwipePlace() -> KeyboardSwipePlace {
+    func heldSwipePlace() -> KeyboardSwipePlace? {
         predictionCoordinator.finishPendingSwipe()
-        return predictionCoordinator.swipePlace()
+        return predictionCoordinator.recordSwipePlace()
     }
 
     /// Forgets the swipes held undecided or being decoded, whose words then go nowhere, as when
@@ -64,9 +64,8 @@ extension KeyboardViewController {
         }
     }
 
-    private func insertSwipedWord(_ word: String?) {
-        guard let word else { return }
-        textInputController.apply(predictionCoordinator.swipeEdit(word: word))
+    private func insertSwipedWord(_ edit: TextEdit) {
+        textInputController.apply(edit)
         letterCaseController.consumeTypedLetter()
         handleTypingContextChange()
     }

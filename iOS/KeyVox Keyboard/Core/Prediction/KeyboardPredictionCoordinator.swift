@@ -14,8 +14,13 @@ import KeyVoxPredictiveKeyboard
 /// Checks of taps close to a letter key run on an engine of their own, so a key that needs
 /// one, such as delete, never waits for suggestions still being worked out. A swipe is decoded on
 /// the suggestion engine's queue; anything typed before its word arrives waits for it first, so
-/// words and keys go in the order they were made. The bar does not change while a swipe is under
-/// way; once its word goes in, the bar shows what follows that word, as after any word.
+/// words and keys go in the order they were made. A decoded word is checked against where it was
+/// swiped without reading the text: the field and the text around the cursor read when the swipe
+/// ended, against those read at the last change to the text or cursor and the fields counted since
+/// on the main thread. A word whose place moved goes nowhere, so the document is never touched for
+/// it; one still in place goes in as the text read when the swipe ended places it. The bar does not
+/// change while a swipe is under way; once its word goes in, the bar shows what follows that word,
+/// as after any word.
 final class KeyboardPredictionCoordinator {
     var onBarChange: ((SuggestionBar) -> Void)?
     /// The emoji the suggestion bar shows for a word, in the order to show them.
@@ -30,6 +35,12 @@ final class KeyboardPredictionCoordinator {
     private let textBeforeCursor: () -> String?
     private let selectedText: () -> String?
     private let textAfterCursor: () -> String?
+    private let documentIdentifier: () -> UUID?
+    /// Counts the fields the keyboard has typed in, on the main thread.
+    private var field = 0
+    /// Where a swiped word would go, read at the last change to the text or cursor; nil while the
+    /// field's document state is not to be read.
+    private var currentPlace: KeyboardSwipePlace?
     private let contestedTapPolicy = ContestedTapPolicy()
     private var letterKeys: KeyCenterMap?
     private var latestResult: PredictionResult?
@@ -42,7 +53,7 @@ final class KeyboardPredictionCoordinator {
     private var publishedBar = SuggestionBar.empty
     /// The swipe being decoded and where it ended, which `finishPendingSwipe` hands over at once
     /// when something else is typed before it arrives.
-    private var pendingSwipe: (number: Int, place: KeyboardSwipePlace, deliver: (String?) -> Void)?
+    private var pendingSwipe: (number: Int, place: KeyboardSwipePlace, deliver: (TextEdit) -> Void)?
     private var swipeNumber = 0
     // Owned by `engine.queue`.
     /// Decoded swipes not yet handed over, by number.
@@ -71,12 +82,14 @@ final class KeyboardPredictionCoordinator {
         memory: TypingMemory,
         textBeforeCursor: @escaping () -> String?,
         selectedText: @escaping () -> String?,
-        textAfterCursor: @escaping () -> String?
+        textAfterCursor: @escaping () -> String?,
+        documentIdentifier: @escaping () -> UUID?
     ) {
         session = PredictiveTypingSession(language: KeyboardTypingLanguage.current, memory: memory)
         self.textBeforeCursor = textBeforeCursor
         self.selectedText = selectedText
         self.textAfterCursor = textAfterCursor
+        self.documentIdentifier = documentIdentifier
     }
 
     /// Starts loading the engines so the first word does not wait for them.
@@ -132,9 +145,15 @@ final class KeyboardPredictionCoordinator {
 
     func textDidChange() {
         session.textDidChange(textBeforeCursor: textBeforeCursor(), textAfterCursor: textAfterCursor())
+        if currentPlace != nil {
+            currentPlace = readPlace()
+        }
     }
 
+    /// Starts typing in the focused field, which counts as a new one.
     func reset() {
+        field += 1
+        currentPlace = readPlace()
         session.reset()
         latestResult = nil
         engine.queue.async { [weak self] in
@@ -367,16 +386,17 @@ final class KeyboardPredictionCoordinator {
         )
     }
 
-    /// Decodes a swipe's path off the main thread and hands the word it was swiped as, if any, to
-    /// `deliver` on the main thread, unless `finishPendingSwipe` handed it over first. Nothing is
-    /// handed over once the swipe's place has changed (`KeyboardSwipePlace`) or the swipe was
-    /// dropped (`dropPendingSwipe`).
-    func decodeSwipe(_ path: [SwipeTouchSample], wordCase: SwipeWordCase, deliver: @escaping (String?) -> Void) {
+    /// Decodes a swipe's path off the main thread and hands the edit typing the word it was swiped
+    /// as to `deliver` on the main thread, unless `finishPendingSwipe` handed it over first.
+    /// Nothing is handed over for a swipe decoded as no word, whose place has changed by then
+    /// (`KeyboardSwipePlace`), or that was dropped (`dropPendingSwipe`).
+    func decodeSwipe(_ path: [SwipeTouchSample], wordCase: SwipeWordCase, deliver: @escaping (TextEdit) -> Void) {
         finishPendingSwipe()
+        guard let place = recordSwipePlace() else { return }
         swipeNumber += 1
         let number = swipeNumber
         let previousWords = session.request(textBeforeCursor: textBeforeCursor()).previousWords
-        pendingSwipe = (number, swipePlace(), deliver)
+        pendingSwipe = (number, place, deliver)
         engine.queue.async { [weak self] in
             guard let self else { return }
             let word = (try? self.engine.resolvedComputer()?.swipeWords(
@@ -409,9 +429,33 @@ final class KeyboardPredictionCoordinator {
         }
     }
 
-    /// Where a swiped word would go now.
-    func swipePlace() -> KeyboardSwipePlace {
-        KeyboardSwipePlace(textBeforeCursor: textBeforeCursor(), selectedText: selectedText(), textAfterCursor: textAfterCursor())
+    /// Stops reading the field until `reset` starts the next one, and drops the swipe being decoded,
+    /// as when the keyboard appears or goes away: the host may be replacing the field's document
+    /// state, which a read then can find freed.
+    func leaveField() {
+        field += 1
+        currentPlace = nil
+        dropPendingSwipe()
+    }
+
+    /// Where a swiped word would go, as read at the last change to the text or cursor.
+    var swipePlace: KeyboardSwipePlace? { currentPlace }
+
+    /// Reads where a swiped word would go now, as a swipe ends; nil while the field is not to be read.
+    func recordSwipePlace() -> KeyboardSwipePlace? {
+        guard currentPlace != nil else { return nil }
+        currentPlace = readPlace()
+        return currentPlace
+    }
+
+    private func readPlace() -> KeyboardSwipePlace {
+        KeyboardSwipePlace(
+            field: field,
+            document: documentIdentifier(),
+            textBeforeCursor: textBeforeCursor(),
+            selectedText: selectedText(),
+            textAfterCursor: textAfterCursor()
+        )
     }
 
     /// Whether letters of a word come right before the cursor.
@@ -419,23 +463,19 @@ final class KeyboardPredictionCoordinator {
         session.request(textBeforeCursor: textBeforeCursor()).currentWord.isEmpty == false
     }
 
-    /// What inserting a swiped word does.
-    func swipeEdit(word: String) -> TextEdit {
-        session.swipeEdit(
-            word: word,
-            textBeforeCursor: textBeforeCursor(),
-            selectedText: selectedText(),
-            textAfterCursor: textAfterCursor()
-        )
-    }
-
     private func handOverSwipe(_ number: Int) {
         guard let pending = pendingSwipe, pending.number == number else { return }
         let word = engine.queue.sync { decodedSwipes.removeValue(forKey: number) } ?? nil
         pendingSwipe = nil
-        // The cursor or the field moved since the swipe ended, so its word has nowhere to go.
-        guard swipePlace() == pending.place else { return }
-        pending.deliver(word)
+        // The cursor or the field moved since the swipe ended, so its word has nowhere to go; the
+        // check reads only what the main thread recorded, never the document.
+        guard let word, currentPlace == pending.place else { return }
+        pending.deliver(session.swipeEdit(
+            word: word,
+            textBeforeCursor: pending.place.textBeforeCursor,
+            selectedText: pending.place.selectedText,
+            textAfterCursor: pending.place.textAfterCursor
+        ))
     }
 
     // MARK: - Engine queue

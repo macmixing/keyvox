@@ -111,7 +111,8 @@ final class KeyboardViewController: UIInputViewController {
         memory: KeyboardTypingMemory.shared.memory,
         textBeforeCursor: { [weak self] in self?.textDocumentProxy.documentContextBeforeInput },
         selectedText: { [weak self] in self?.textDocumentProxy.selectedText },
-        textAfterCursor: { [weak self] in self?.textDocumentProxy.documentContextAfterInput }
+        textAfterCursor: { [weak self] in self?.textDocumentProxy.documentContextAfterInput },
+        documentIdentifier: { [weak self] in self?.textDocumentProxy.documentIdentifier }
     )
     var typingTraits = KeyboardTypingTraits.standard
     /// Whether the keyboard appeared and has yet to read the field, which waits for the system to
@@ -310,6 +311,7 @@ final class KeyboardViewController: UIInputViewController {
         // new one, so a read before then, even on a later main-thread turn, can reach freed
         // memory.
         awaitsFieldState = true
+        predictionCoordinator.leaveField()
         preparePresentationIfNeeded()
         installedModels = KeyboardInstalledModels.check()
         KeyVoxIPCBridge.reportKeyboardOnboardingState(hasFullAccess: hasFullAccess)
@@ -348,6 +350,8 @@ final class KeyboardViewController: UIInputViewController {
         // The system keyboard ends its emoji search when it goes away.
         leaveEmojiSearch()
         guard extensionHostIsActive else { return }
+        // The field is read again only once the next appearance's field state is handed over.
+        predictionCoordinator.leaveField()
         deactivatePresentationBindings()
     }
 
