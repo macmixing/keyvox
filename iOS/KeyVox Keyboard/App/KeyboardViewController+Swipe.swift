@@ -10,11 +10,13 @@ extension KeyboardViewController {
         rootContainerView?.keyGridView.allowsSwipeTyping = typingTraits.allowsSwipeTyping
     }
 
-    /// Types the word `path` was swiped as. A word in progress ends first, as a space would end
-    /// it; the shift state applies to the swiped word as to typed letters. The swipe ending plays
-    /// a letter key's press haptic, as a typed letter does.
+    /// Types the word `path` was swiped as. The word of the swipe before goes in first, then a word
+    /// in progress ends, as a space would end it, so the shift state applies to the swiped word as
+    /// to typed letters, in the order they were swiped. The swipe ending plays a letter key's
+    /// press haptic, as a typed letter does.
     func handleSwipe(_ path: [SwipeTouchSample]) {
         guard typingTraits.allowsSwipeTyping else { return }
+        predictionCoordinator.finishPendingSwipe()
         characterKeyHaptics.emitKeypressIfEnabled()
         dismissRescuedDictation()
         if predictionCoordinator.hasWordInProgress() {
