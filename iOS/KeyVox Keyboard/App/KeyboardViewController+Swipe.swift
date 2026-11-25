@@ -12,13 +12,15 @@ extension KeyboardViewController {
 
     /// Types the word `path` was swiped as. The word of the swipe before goes in first, then a word
     /// in progress ends, as a space would end it, so the shift state applies to the swiped word as
-    /// to typed letters, in the order they were swiped. A swipe the key grid held undecided since
-    /// `heldPlace` goes nowhere once the cursor or the field has moved from there. The swipe
-    /// ending plays a letter key's press haptic, as a typed letter does.
+    /// to typed letters, in the order they were swiped. A swipe goes nowhere, doing nothing at all,
+    /// while the field is not to be read, and one the key grid held undecided since `heldPlace`
+    /// once the cursor or the field has moved from there. The swipe ending plays a letter key's
+    /// press haptic, as a typed letter does.
     func handleSwipe(_ path: [SwipeTouchSample], heldSince heldPlace: KeyboardSwipePlace?) {
         guard typingTraits.allowsSwipeTyping else { return }
         predictionCoordinator.finishPendingSwipe()
-        if let heldPlace, heldPlace != predictionCoordinator.swipePlace { return }
+        guard let place = predictionCoordinator.swipePlace else { return }
+        if let heldPlace, heldPlace != place { return }
         characterKeyHaptics.emitKeypressIfEnabled()
         dismissRescuedDictation()
         if predictionCoordinator.hasWordInProgress() {

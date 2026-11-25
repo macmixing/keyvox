@@ -117,8 +117,14 @@ extension KeyboardKeyGridView {
             if session === heldKeyTouchSession {
                 cancelHeldKey()
             }
+            // With nowhere for its word to go, as while the field is not to be read, it goes nowhere.
+            guard let place = swipePlace?() else {
+                swipeGate.touchCancelled(id)
+                swipeTrailView.cancel()
+                return true
+            }
             swipeTrailView.lift()
-            session.heldPlace = swipePlace?()
+            session.heldPlace = place
             undecidedSwipeSessions[id] = session
             let window = swipeGate.parameters.undecidedWindow
             DispatchQueue.main.asyncAfter(deadline: .now() + window) { [weak self] in
