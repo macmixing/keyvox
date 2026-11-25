@@ -113,7 +113,8 @@ final class SwipeTwinRuleTests: XCTestCase {
     /// some of them: whatever twin of the word wins keeps every circled letter doubled, and drops an
     /// uncircled double only for a word that is not the word's misspelling, as no circle adds a
     /// letter but none drops one for a misspelling. So circling either "ss" of "possess" gives
-    /// "possess", never "posses" or "poses".
+    /// "possess", never "posses" or "poses". A word doubling another letter, written 50 times as
+    /// often as the circled word, wins over it instead.
     func testCirclingSomeDoubledLettersOfAWordWeighsTheOthersByTheirOwnTwins() throws {
         try XCTSkipUnless(ProcessInfo.processInfo.environment["SWIPE_TWIN_PROOF"] == "1", "set SWIPE_TWIN_PROOF=1 to run")
         engine = try PredictiveEngine(language: .english)
@@ -127,7 +128,7 @@ final class SwipeTwinRuleTests: XCTestCase {
             spellingsOf[form]!.map { SwipeTwinFacts(spelling: $0, engine: engine).logFrequency }.max()!
         }
         let ratio = log(decoder.settings.scoring.misspellingRatio)
-        var cases = 0, weighed = 0, misread = 0, anotherPath = 0
+        var cases = 0, weighed = 0, misread = 0, anotherPath = 0, toACommonerWord = 0
         var wrong: [String] = []
         for word in spellingsOf.keys.sorted() {
             guard let runs = Self.runs(of: word), runs.allSatisfy({ $0 <= 2 }),
@@ -153,7 +154,20 @@ final class SwipeTwinRuleTests: XCTestCase {
                 let detected = decoder.loopedKeys(path: swipe, keyPath: path, keys: keys).map { flags in Set(flags.indices.filter { flags[$0] }) }
                 guard detected == circled else { misread += 1; continue }
                 weighed += 1
-                let top = candidates.first.map { SwipeLetterForm.form(of: $0.spelling) } ?? ""
+                let forms = candidates.map { SwipeLetterForm.form(of: $0.spelling) }
+                let top = forms.first ?? ""
+                // A word keeping the circled doubles loses to a word doubling another letter written 50
+                // times as often, as the circles' own twins may in turn.
+                let beaten = Set(forms.filter { form in
+                    guard SwipeLetterForm.keyPath(of: form, keyIndex: keyIndex, keepsDoubleLetters: false) == path,
+                          let formRuns = Self.runs(of: form), circled.allSatisfy({ formRuns[$0] == 2 }) else { return false }
+                    return commonerWords(than: form, circled: circled, among: forms, logFrequency: logFrequency).isEmpty == false
+                })
+                if beaten.isEmpty == false {
+                    toACommonerWord += 1
+                    if beaten.contains(top) { wrong.append("\(word) circled \(circled.sorted()): \(top) kept over a commoner word") }
+                    continue
+                }
                 guard SwipeLetterForm.keyPath(of: top, keyIndex: keyIndex, keepsDoubleLetters: false) == path,
                       let topRuns = Self.runs(of: top) else { anotherPath += 1; continue }
                 // A word on the path that is no twin of this one, repeating some letter more, is ranked by its score.
@@ -163,14 +177,15 @@ final class SwipeTwinRuleTests: XCTestCase {
                 if keepsCircles == false || dropsForAMisspelling { wrong.append("\(word) circled \(circled.sorted()): \(top)") }
             }
         }
-        print("TWIN_PROOF circling some doubled letters: cases \(cases), weighed with their circles read \(weighed), circles misread \(misread), a word on another key path \(anotherPath), a circle lost or a double dropped for a misspelling \(wrong.count)")
+        print("TWIN_PROOF circling some doubled letters: cases \(cases), weighed with their circles read \(weighed), circles misread \(misread), lost to a word doubling another letter written 50 times as often \(toACommonerWord), a word on another key path \(anotherPath), a circle lost or a double dropped for a misspelling \(wrong.count)")
         XCTAssertGreaterThan(weighed, 0)
         XCTAssertEqual(wrong, [], "a circled double lost, or an uncircled one dropped for a misspelling")
     }
 
     /// Every dictionary word with two or more doubled letters, each exactly twice, swiped circling
     /// every one, decodes as itself whenever the decoder weighs it: a circle credits each letter it
-    /// finds exactly doubled, so no word loses a doubled letter its circle asked for.
+    /// finds exactly doubled, so no word loses a doubled letter its circle asked for, except to a
+    /// word doubling another letter written 50 times as often, which it must then lose to.
     func testCirclingEveryDoubledLetterOfAWordGivesTheWord() throws {
         try XCTSkipUnless(ProcessInfo.processInfo.environment["SWIPE_TWIN_PROOF"] == "1", "set SWIPE_TWIN_PROOF=1 to run")
         engine = try PredictiveEngine(language: .english)
@@ -180,8 +195,14 @@ final class SwipeTwinRuleTests: XCTestCase {
             guard let runs = Self.runs(of: word) else { return false }
             return runs.allSatisfy { $0 <= 2 } && runs.filter { $0 == 2 }.count >= 2
         }
-        var weighed = 0, misread = 0, anotherPath = 0
+        var weighed = 0, misread = 0, anotherPath = 0, toACommonerWord = 0
         var wrong: [String] = []
+        func logFrequency(_ form: String) -> Double {
+            (spellings[form] ?? [form]).map { SwipeTwinFacts(spelling: $0, engine: engine).logFrequency }.max()!
+        }
+        if spellings.isEmpty {
+            for word in try SwipeVocabulary.lexiconWords(of: engine) { spellings[SwipeLetterForm.form(of: word.spelling), default: []].append(word.spelling) }
+        }
         for word in words.sorted() {
             guard let runs = Self.runs(of: word), let path = SwipeLetterForm.keyPath(of: word, keyIndex: keyIndex, keepsDoubleLetters: false) else { continue }
             let loops = Set(runs.indices.filter { runs[$0] == 2 })
@@ -202,29 +223,37 @@ final class SwipeTwinRuleTests: XCTestCase {
             let detected = decoder.loopedKeys(path: swipe, keyPath: path, keys: keys).map { flags in Set(flags.indices.filter { flags[$0] }) }
             guard detected == loops else { misread += 1; continue }
             weighed += 1
-            let top = candidates.first.map { SwipeLetterForm.form(of: $0.spelling) } ?? ""
+            let forms = candidates.map { SwipeLetterForm.form(of: $0.spelling) }
+            let top = forms.first ?? ""
+            // A word doubling another letter written 50 times as often wins over the circled word.
+            if commonerWords(than: word, circled: loops, among: forms, logFrequency: logFrequency).isEmpty == false {
+                toACommonerWord += 1
+                if top == word { wrong.append("\(word): kept over a commoner word") }
+                continue
+            }
             // A word on another key path wins on the model's score, which the circles do not order.
             guard SwipeLetterForm.keyPath(of: top, keyIndex: keyIndex, keepsDoubleLetters: false) == path else { anotherPath += 1; continue }
             if top != word { wrong.append("\(word): \(top)") }
         }
-        print("TWIN_PROOF circling every doubled letter: words \(words.count), weighed with their circles read \(weighed), circles misread \(misread), a word on another key path \(anotherPath), a twin instead \(wrong.count)")
-        XCTAssertEqual(wrong, [], "a word with every doubled letter circled lost to a twin")
+        print("TWIN_PROOF circling every doubled letter: words \(words.count), weighed with their circles read \(weighed), circles misread \(misread), lost to a word doubling another letter written 50 times as often \(toACommonerWord), a word on another key path \(anotherPath), not as the rule asks \(wrong.count)")
+        XCTAssertEqual(wrong, [], "a word with every doubled letter circled decoded against the rule")
     }
 
     private struct Results {
-        var plainSingle = 0, plainDoubled = 0, loopedDoubled = 0, otherWord = 0
+        var plainSingle = 0, plainDoubled = 0, loopedDoubled = 0, loopedToACommonerWord = 0, otherWord = 0
         var withoutDetection = (plainSingle: 0, loopedDoubled: 0)
         var wrongTwin: [String] = []
         var detectorMissed: [String] = []
         var summary: String {
-            "no loop -> single \(plainSingle), no loop -> doubled as the single misspells it \(plainDoubled), loop -> doubled \(loopedDoubled), an unrelated word \(otherWord), against the circle \(wrongTwin.count), swipes whose loops the detector read wrong \(detectorMissed.count); "
+            "no loop -> single \(plainSingle), no loop -> doubled as the single misspells it \(plainDoubled), loop -> doubled \(loopedDoubled), loop -> a word doubling another letter written 50 times as often \(loopedToACommonerWord), an unrelated word \(otherWord), against the circle \(wrongTwin.count), swipes whose loops the detector read wrong \(detectorMissed.count); "
                 + "with loop detection off: no loop -> single \(withoutDetection.plainSingle), loop -> doubled \(withoutDetection.loopedDoubled)"
         }
     }
 
     /// Each twin's swipe without a loop must decode to a word on its key path doubling no letter,
     /// or, when the single word misspells some of its twins, to one of those; with a loop at the
-    /// doubled key, to one doubling that key's letter alone.
+    /// doubled key, to one doubling that key's letter alone, unless a word doubling another letter
+    /// is written 50 times as often, which the doubled twin must then lose to.
     private func check(_ twins: [Twin], personal: SwipeLexicon?, vocabulary: PersonalVocabulary) throws -> Results {
         var results = Results()
         let ratio = log(decoder.settings.scoring.misspellingRatio)
@@ -249,12 +278,25 @@ final class SwipeTwinRuleTests: XCTestCase {
             // Without a loop, a single beaten by twins must give one of them, whichever keys it doubles.
             let plain: Set<Int> = winners.isEmpty ? [] : [-1]
             for (loops, expected) in [(Set<Int>(), plain), (Set([twin.key]), Set([twin.key]))] {
-                let top = try decode(twin.letters, loopingAt: loops, personal: personal, vocabulary: vocabulary, detectsLoops: true)
+                let weighed = try decodeAll(twin.letters, loopingAt: loops, personal: personal, vocabulary: vocabulary, detectsLoops: true)
+                let top = weighed.first
                 let doubles = loops.isEmpty && winners.contains(top ?? "") ? Self.doubledKeys(top, on: path) ?? expected : expected
                 let swipe = SwipePath.through(twin.letters, loopingAt: loops)
                 let detected = decoder.loopedKeys(path: swipe, keyPath: path ?? [], keys: keys).map { flags in Set(flags.indices.filter { flags[$0] }) }
                 let undetected = try decode(twin.letters, loopingAt: loops, personal: personal, vocabulary: vocabulary, detectsLoops: false)
                 if detected != loops { results.detectorMissed.append("\(twin.letters) drawn \(loops.sorted()) detected \(detected.map { $0.sorted() } ?? [])") }
+                // A circled twin loses to a word doubling another letter written 50 times as often.
+                let commoner = commonerWords(than: twin.doubled, circled: loops, among: weighed) {
+                    logFrequency($0, personal: personal != nil && $0 == twin.doubled)
+                }
+                if detected == loops, commoner.isEmpty == false, weighed.contains(twin.doubled) {
+                    if top == twin.doubled {
+                        results.wrongTwin.append("LOOPED \(twin.letters): \(twin.doubled) over \(commoner), detected \(loops.sorted())")
+                    } else {
+                        results.loopedToACommonerWord += 1
+                    }
+                    continue
+                }
                 if Self.doubledKeys(top, on: path) == doubles {
                     if loops.isEmpty == false { results.loopedDoubled += 1 } else if doubles.isEmpty { results.plainSingle += 1 } else { results.plainDoubled += 1 }
                 } else if Self.doubledKeys(top, on: path) != nil {
@@ -270,11 +312,53 @@ final class SwipeTwinRuleTests: XCTestCase {
         return results
     }
 
+    /// The words among `weighed`, on `form`'s key path, that `form`, with loops credited at
+    /// `circled`, loses to: each repeats a letter where no loop was read more than `form` does, has
+    /// a circled letter fewer times, and is written `misspellingRatio` times as often
+    /// (`SwipeWordDecoder`), as "dropped" beats "drooped" with a loop read at its "o".
+    private func commonerWords(than form: String, circled: Set<Int>, among weighed: [String], logFrequency: (String) -> Double) -> [String] {
+        guard circled.isEmpty == false, let runs = Self.runs(of: form) else { return [] }
+        let keyIndex = decoder.settings.keyIndex
+        let path = SwipeLetterForm.keyPath(of: form, keyIndex: keyIndex, keepsDoubleLetters: false)
+        let ratio = log(decoder.settings.scoring.misspellingRatio)
+        return Set(weighed).filter { other in
+            guard other != form, SwipeLetterForm.keyPath(of: other, keyIndex: keyIndex, keepsDoubleLetters: false) == path,
+                  let otherRuns = Self.runs(of: other), otherRuns.count == runs.count else { return false }
+            return otherRuns.indices.contains { otherRuns[$0] > runs[$0] && circled.contains($0) == false }
+                && circled.contains { otherRuns[$0] < runs[$0] }
+                && logFrequency(other) - logFrequency(form) >= ratio
+        }.sorted()
+    }
+
     /// The keys of `path` whose letter `form` doubles, or nil when `form` is not on `path`.
     private static func doubledKeys(_ form: String?, on path: [Int]?) -> Set<Int>? {
         guard let form, let path, let runs = runs(of: form),
               SwipeLetterForm.keyPath(of: form, keyIndex: SwipeModelSettings.englishKeyIndex, keepsDoubleLetters: false) == path else { return nil }
         return Set(runs.indices.filter { runs[$0] > 1 })
+    }
+
+    /// The letter forms of the words weighed for a swipe through `letters`, looping at `loops`, at a
+    /// sentence start, best first, with the keyboard's scoring and, unless `detectsLoops` is false,
+    /// its loops.
+    private func decodeAll(
+        _ letters: String,
+        loopingAt loops: Set<Int>,
+        personal: SwipeLexicon?,
+        vocabulary: PersonalVocabulary,
+        detectsLoops: Bool
+    ) throws -> [String] {
+        let path = SwipePath.through(letters, loopingAt: loops)
+        guard let emissions = decoder.emissions(for: path, keys: keys) else { return [] }
+        let language = ContextLanguageScorer(engine: engine, vocabulary: vocabulary)
+        let candidates = try decoder.candidates(
+            emissions: emissions,
+            personal: personal,
+            contextLift: { try language.contextLift(of: $0, previousWords: []) },
+            hasWordsBefore: false,
+            loopedKeys: detectsLoops ? { [decoder, keys] keyPath in decoder!.loopedKeys(path: path, keyPath: keyPath, keys: keys) } : nil,
+            twinFacts: { [engine] spelling in SwipeTwinFacts(spelling: spelling, engine: engine!) }
+        )
+        return candidates.map { SwipeLetterForm.form(of: $0.spelling) }
     }
 
     /// The letter form of the best spelling for a swipe through `letters`, looping at `loops`, at a

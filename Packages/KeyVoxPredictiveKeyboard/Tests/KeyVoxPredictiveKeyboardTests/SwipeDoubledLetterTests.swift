@@ -132,6 +132,18 @@ final class SwipeDoubledLetterTests: XCTestCase {
         XCTAssertLessThan(try place(doubled), try place(single))
     }
 
+    /// A loop read at a letter asks for a rare word doubling it; a word on the same keys doubling
+    /// another letter, where no loop was read, wins when it is written 50 times as often.
+    func testALoopLosesToAWordDoublingAnotherLetterWrittenFiftyTimesAsOften() throws {
+        let cases: [(keys: String, looped: Int, word: String)] = [("droped", 2, "dropped"), ("rom", 2, "room")]
+        for (keys, looped, word) in cases {
+            let swiped = try computer.swipeWords(
+                for: SwipePath.through(keys, loopingAt: [looped]), previousWords: [], wordCase: .asSpelled, limit: 1
+            ).first
+            XCTAssertEqual(swiped, word, "a loop at \(Array(keys)[looped]) in \(keys)")
+        }
+    }
+
     func testWithoutACircleANameKeepsItsLettersOverACommonerTwin() throws {
         for word in ["mary", "paris", "anderson", "mr"] {
             XCTAssertEqual(try best(swipingKeysOf: word, previousWords: [])?.lowercased(), word, "no circle")

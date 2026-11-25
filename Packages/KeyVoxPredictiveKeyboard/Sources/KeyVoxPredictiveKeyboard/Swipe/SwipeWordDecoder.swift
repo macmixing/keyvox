@@ -189,7 +189,12 @@ final class SwipeWordDecoder: @unchecked Sendable {
     /// credits the word, win unless every one is a misspelling of it, written `misspellingRatio`
     /// times less often in the context model, the rule the language data's swipe vocabulary build
     /// leaves misspellings out by; then it wins over them, except a twin a loop credits at that key.
-    /// So circling either "ss" of "possess" gives "possess".
+    /// So circling either "ss" of "possess" gives "possess". A word a loop credits also loses to
+    /// any word on its path that doubles a letter where no loop was read and lacks a credited
+    /// double, when that word is written `misspellingRatio` times as often, as a loop read where the
+    /// finger only turned on its way is likelier than the rare word it would ask for: "dropped" with
+    /// a loop read at its "o" stays "dropped", not "drooped", and "rom" circled at its "m" gives
+    /// "room".
     /// Names and the user's own words are weighed the same way. A word losing to a twin at any key
     /// comes after the words that lose at fewer, whatever its loops, so a loop never brings in
     /// letters added at other keys; among the rest, the word with more loop credits comes first.
@@ -255,6 +260,20 @@ final class SwipeWordDecoder: @unchecked Sendable {
                         }
                     }
                 }
+            }
+            // A word a loop credits loses to a word on its path that doubles a letter where no loop was
+            // read and lacks a credited double, when that word is written `misspellingRatio` times as
+            // often: a loop read where the finger merely turned does not make "dropped" "drooped".
+            for (word, circles) in credited where circles.isEmpty == false {
+                let own = repeats[word]!
+                let flags = looped ?? own.map { _ in false }
+                let commoner = repeats.contains { other, runs in
+                    other != word && runs.count == own.count
+                        && runs.indices.contains { runs[$0] > own[$0] && flags[$0] == false }
+                        && circles.contains { runs[$0] < own[$0] }
+                        && logFrequency(other) - logFrequency(word) >= log(settings.scoring.misspellingRatio)
+                }
+                if commoner { unlooped[word, default: 0] += 1 }
             }
             let entries = set.map { word -> (word: String, best: SwipeCandidate, loops: Int, unlooped: Int, rank: Double) in
                 let best = words[word]!.map { candidates[$0] }.max { $0.score < $1.score }!
