@@ -30,6 +30,11 @@ _WORD = re.compile(r"[^\W\d_]+(?:'[^\W\d_]+)*")
 # exclamation marks followed by a space or the end of the text, so "example.com" and "3.5"
 # do not end one, or a line break.
 _ENDING = re.compile(r"[.!?]+(?=\s|$)|\n+")
+_MARKDOWN_CODE = re.compile(r"```.*?(?:```|\Z)|`[^`\n]*`", re.DOTALL)
+# A run of text without spaces that holds something other than letters: punctuation, digits,
+# or a connector such as "_". A run of letters alone is a single word.
+_MIXED_RUN = re.compile(r"\S*(?:[^\w\s]|[\d_])\S*")
+_RUN_EDGES = re.compile(r"^\W+|\W+$")
 
 
 @dataclass(frozen=True)
@@ -59,6 +64,30 @@ def _prepared(text: str, rules: TextRules) -> str:
 def is_word(text: str) -> bool:
     """Whether `text`, as written, is one word the keyboard reads."""
     return _WORD.fullmatch(text) is not None
+
+
+def words(text: str) -> list[str]:
+    """The words of `text` as the keyboard reads them, lowercased, sentence ends aside."""
+    return _WORD.findall(text.lower())
+
+
+def prose(text: str) -> str:
+    """`text` without what is no prose: HTML character references such as "&nbsp;" decoded, as
+    `sentences_with_endings` decodes them, Markdown code (fenced blocks and inline spans)
+    taken out, and bracketed transcript tags dropped."""
+    return _BRACKETED.sub(" ", html.unescape(_MARKDOWN_CODE.sub(" ", text))).replace("’", "'")
+
+
+def joined_words(text: str) -> list[str]:
+    """The words, lowercased, that `text` writes joined to other letters or digits in one run
+    without spaces ("https://www", "pre-order", "ipv6", "__init__"); punctuation around a run,
+    such as a comma or brackets, does not join."""
+    joined: list[str] = []
+    for run in _MIXED_RUN.findall(text):
+        core = _RUN_EDGES.sub("", run)
+        if core and _WORD.fullmatch(core) is None:
+            joined += _WORD.findall(core.lower())
+    return joined
 
 
 def sentences(text: str, rules: TextRules = DEFAULT_RULES) -> Iterator[list[str]]:

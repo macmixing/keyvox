@@ -39,7 +39,7 @@ def candidate_features(record, candidate, score, suggestion_type, rank, context)
     ]
 
 
-def candidate_groups(records, outputs, context, label, buckets=None):
+def candidate_groups(records, outputs, context, label):
     """For each record with candidates: the record, its candidates, their feature rows, and
     which candidate is the intended word.
 
@@ -48,8 +48,6 @@ def candidate_groups(records, outputs, context, label, buckets=None):
     groups = []
     considered = never_asked = no_candidates = 0
     for record in records:
-        if buckets is not None and record["bucket"] not in buckets:
-            continue
         considered += 1
         choices = candidate_items(record, outputs)
         if not choices:

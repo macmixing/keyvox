@@ -68,6 +68,26 @@ class DataPaths:
     def feature_context_model(self) -> Path:
         return self.work / "feature_context_800k.bin"
 
+    # The typo simulator's measurements, fitted touch spread, and simulated records.
+    @property
+    def simulation(self) -> Path:
+        return self.work / "simulation"
+
+    @property
+    def typing_measurements(self) -> Path:
+        return self.simulation / "ite_typing.json"
+
+    @property
+    def touch_spread(self) -> Path:
+        return self.simulation / "touch_spread.json"
+
+    @property
+    def typo_calibration(self) -> Path:
+        return self.simulation / "typo_calibration.json"
+
+    def simulated_records(self, name: str) -> Path:
+        return self.simulation / f"{name}.tsv"
+
     # Trained models before export.
     @property
     def correction_ranker_model(self) -> Path:

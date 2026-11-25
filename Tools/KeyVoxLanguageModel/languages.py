@@ -110,6 +110,12 @@ class Language:
             return ()
         return tuple(json.loads(path.read_text(encoding="utf-8"))["alwaysCapitalizedWords"])
 
+    def letter_keys(self) -> str:
+        """The letters of the keyboard's letter keys, row by row, from the language's
+        language.json in the package; the language must ship there."""
+        path = PREDICTIVE_DATA / self.identifier / "language.json"
+        return "".join(row["letters"] for row in json.loads(path.read_text(encoding="utf-8"))["letterRows"])
+
 
 # Speech has no typed sentence openers, and the written sources outweigh the chat ones the
 # way the bundled English openers were tuned.

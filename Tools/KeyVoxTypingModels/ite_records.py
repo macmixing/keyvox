@@ -64,6 +64,23 @@ def plausible_corrections(records):
     return plausible
 
 
+def correction_records(paths):
+    """The ITE typos the correction ranker and action model learn from and are measured on: a
+    fifth of the calibration typists' autocorrections and all of the held-out typists', the
+    right ones and the wrong ones, each kept when its typed letters are a plausible typo of the
+    intended word."""
+    return plausible_corrections(
+        sample_calibration(read_records(paths.ite_split("ac_success_calibration")))
+        + read_records(paths.ite_split("ac_success_holdout"))
+        + read_records(paths.ite_split("ac_harm_holdout"), harm=True))
+
+
+def preserve_records(paths):
+    """Every typist's words in the logged autocorrection events that were typed as meant."""
+    return (read_records(paths.ite_split("preserve_calibration"))
+            + read_records(paths.ite_split("preserve_holdout")))
+
+
 def clean_sentence_records(data_dir):
     """Every word of the sentences ITE typists copied, typed correctly, with the words before it."""
     preserve = []
@@ -116,6 +133,12 @@ def annotate(records, section_sentences):
     return result
 
 
+def completes(typed, word):
+    """Whether the typed letters are the start of the word, or close enough to it, for picking
+    the word to complete them."""
+    return word.startswith(typed) or edit_distance(typed, word) <= max(1, len(word) // 3)
+
+
 def completion_records(data_dir):
     """Every typist's accepted word completions: typed letters, the picked word, and the
     words before it."""
@@ -132,12 +155,7 @@ def completion_records(data_dir):
                 continue
             raw_current_input = ((row["CURRENT_INPUT"] or "").replace("\x92", "'")
                                  .replace("’", "'"))
-            is_completion = (
-                not raw_current_input.endswith((" ", "\t", "\n"))
-                and (predicted.startswith(typed)
-                     or edit_distance(typed, predicted) <= max(1, len(predicted) // 3))
-            )
-            if not is_completion:
+            if raw_current_input.endswith((" ", "\t", "\n")) or not completes(typed, predicted):
                 continue
             current_input = clean(raw_current_input)
             completed_tail = predicted if current_input.casefold().endswith(predicted) else ""
