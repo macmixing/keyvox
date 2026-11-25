@@ -17,13 +17,27 @@ Swipe typing: a finger sliding across the letter keys types the word it traces.
 - The bundled English swipe model (`swipe_encoder.kvsw`, `swipe_decoder.kvsd`, and `swipe.json`) runs from its memory-mapped fp16 weights with Accelerate, and with plain Swift where Accelerate is missing, such as Android; it matches the swipe model tools' reference decoding on swipe.futo.org validation swipes.
 - Candidates rank by the model tools' tuned score plus how much likelier the words before make them (`ContextLanguageScorer`); words a swipe cannot tell apart because their key paths are the same, such as "to" and "too", are ordered among themselves: a loop around a key puts first the words that double its letter, whatever the words before (`SwipeKeyLoop`, `loops` in `swipe.json`), and otherwise the words before count more among them (`samePathContextWeight`), so a word with a doubled letter wins where they call for it.
 - `SwipeGate` decides which fingers are swiping rather than tapping, so fast taps, rolls, and overlapping two-thumb taps stay taps: a finger meeting the swipe threshold is a swipe once it stays down a moment longer or slows into its lift, and one lifting at speed right after the threshold is a tap when another finger lands soon after; `isTraveling` tells a host when a finger that may still swipe has moved far enough to show a swipe beginning.
-- `PredictiveData/en/swipe_vocabulary.txt` holds 22,456 words people write that the English dictionary lacks, such as "haha", "hahaha", "omg", "lmao", "cuz", and "anyways", British spellings, and names, each with the probability the dictionary gives its words written about as often, built by `Tools/KeyVoxLanguageModel` from YouTube-Commons, OASST2, and Tatoeba; swipes decode to them, and typing never offers them.
+- Swipes decode to the swipe vocabulary (`PredictiveData/en/swipe_vocabulary.txt`, bundled in 2.0.2), such as "haha", "hahaha", "omg", and "lmao"; typing never offers its words.
 - `PredictiveTypingSession.swipeEdit(word:textBeforeCursor:selectedText:textAfterCursor:)` inserts a swiped word as a picked word goes in.
 - `PredictiveKeyboardError.invalidSwipeModel` reports a damaged or mismatched swipe model file.
 
 ### Notes
 
 - `2.1.0` adds public API; typing without swiping is unchanged.
+
+---
+
+## [2.0.2] - 2026-11-25
+
+The English typing language bundles a swipe vocabulary: 22,465 words people write that the English dictionary lacks, so a swipe can decode to them.
+
+### Includes
+
+- `PredictiveData/en/swipe_vocabulary.txt`, one word per line with its probability on the dictionary's 0-255 scale, likeliest first, built by `Tools/KeyVoxLanguageModel` from YouTube-Commons, OASST2, and Tatoeba: words such as "haha", "hahaha", "omg", "lmao", "cuz", and "anyways", British spellings, and names, none of them a dictionary word.
+
+### Notes
+
+- `2.0.2` changes no API or behavior: nothing in the package reads the new file yet, and the dictionary, rankers, and other bundled files are unchanged.
 
 ---
 

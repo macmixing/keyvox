@@ -76,8 +76,8 @@ PYTHON=.venv/bin/python ./build_language_data.sh <language> <data-dir> <output-d
 
 `<language>` is `en`, `de`, `de-bundestag` (German with the Bundestag speeches), `es`, or `fr`.
 Give each build its own data directory, with the shared sources linked in as
-`<data-dir>/sources`, since a build writes its sentences and counts there. The script runs, in
-order:
+`<data-dir>/sources`, since a build writes its sentences and counts there. The script runs these
+steps:
 
 ```bash
 .venv/bin/python download_sources.py --language <language> <data-dir>
@@ -102,6 +102,18 @@ and a probability a line), it then builds the swipe vocabulary:
 ./scowl_words.sh 80 <output-dir>/spelling_list.txt A,B,Z,C,D
 .venv/bin/python write_swipe_vocabulary.py --language <language> <data-dir> <dictionary-words> <output-dir>/spelling_list.txt <output-dir>/swipe_vocabulary.txt
 ```
+
+Steps that read none of each other's files run side by side: after `download_sources.py`, the
+vocabulary and the words spelled with capitals (`write_vocabulary.py`,
+`write_capitalized_spellings.py`) and the swipe vocabulary's counts (`count_swipe_words.py`, the
+spelling list) run beside `extract_sentences.py`; then the context model (`count_ngrams.py`,
+`write_context_model.py`) beside the sentence openers (`write_word_kinds.py`,
+`count_sentence_openers.py`, `write_sentence_openers.py`); then the two follower lists and the
+grammar words, once the counts, the vocabulary, and the word kinds are written; and last
+`write_swipe_vocabulary.py`. Each step reads the same files it would read run alone, so the files
+are the same; the memory of the steps running together adds up. Each step runs in a process group
+of its own, and when one fails the build stops every step still running, with every program they
+started, and fails at once, in the bash 3.2 macOS ships as in later ones.
 
 `<identifier>` is the build's typing language (`de` for `de-bundestag`). The tools need Python
 3.14 or later (for `compression.zstd`), Xcode's `swiftc` for Apple's tagger, and for Spanish the
@@ -359,36 +371,40 @@ also counts how often each word is joined to other letters or digits in one run 
 the middle of a sentence. `write_swipe_vocabulary.py` reads the counts by swipe form (letters
 only, case and accents folded, as a swipe draws them). Each form no dictionary word spells is a
 candidate, and these rules, in order, leave one out. The counts are from the build of November
-24, 2026:
+25, 2026:
 
 | Rule | Leaves out | Forms |
 | --- | --- | --- |
 | Letters | A letter that is no letter key of the keyboard (`language.json`) | 6,262 |
 | One source | Fewer than two of the three sources write it as a word on its own | 693,651 |
 | Joined | Written joined to other letters or digits more than half the time: URLs, hyphenated words, code | 125 |
-| Misspelling | A dictionary form one edit away (a letter left out, added, or changed, or two neighbors swapped) is written at least 50 times as often | 4,197 |
-| Kept | | 22,456 of 726,691 |
+| Misspelling | A dictionary form one edit away (a letter left out, added, or changed, or two neighbors swapped) is written on its own at least 50 times as often as it is | 4,188 |
+| Kept | | 22,465 of 726,691 |
 
 - Decoding HTML references and skipping Markdown code leaves 416 forms in a single source that
   were in two before, the largest "nbsp" (980,367 times before, 44 after); the others' only other
   source was code or HTML references in OASST2.
 - The misspelling rule never leaves out a form SCOWL's size 80 lists in any spelling (American,
-  British, Canadian, or Australian), which keeps 1,751 forms such as "colour", "yay", and
+  British, Canadian, or Australian), which keeps 1,748 forms such as "colour", "yay", and
   "cafe", or one the written sources write with capitals more often than in lowercase, as a
-  name or an acronym (a misspelling of a lowercase word is lowercase), which keeps 2,841.
+  name or an acronym (a misspelling of a lowercase word is lowercase), which keeps 2,830.
+- Both sides of the misspelling rule count only the times a form is written on its own, so a
+  fragment of longer tokens neither makes its neighbors misspellings nor is spared by its
+  fragments: "th", written 145,719 times but 2,989 on its own, mostly in "5th" and the like,
+  leaves "tbh" in.
 - It still leaves out short chat words one edit from a much more common word: "idk" ("id"),
-  "tbh" ("th"), "smh" ("sh"), "brb" ("bro"), "ngl" ("nfl"), "homie" ("home"), "hella" ("hell"),
-  and "ebook" ("book"). How much more common the word is does not tell them from misspellings:
-  "homie" is 89 times rarer than "home", "occured" 409 times rarer than "occurred".
+  "smh" ("sh"), "brb" ("bro"), "ngl" ("nfl"), "homie" ("home"), "hella" ("hell"), and "ebook"
+  ("book"). How much more common the word is does not tell them from misspellings: "homie" is
+  88 times rarer than "home", "occured" 409 times rarer than "occurred".
 - Tatoeba's texts that mention its recurring invented characters are left out of the counts, as
   from the rest of the language data, or the characters' names would be kept.
 
 Each kept form is written in its most common spelling ("tonight's", "i'mma"), with its likeliest
 capitals when the written sources write it as a name (`names.is_written_as_name`), unless they
 are capitals in a row, which stay lowercase as in the capitalized spellings ("json"). Its
-probability is the median the dictionary gives its words that the sources write about as often
-(within a quarter of an octave), so an added word ranks as a dictionary word as common would.
-`<data-dir>/swipe_vocabulary_report.tsv` lists every candidate with its counts, its outcome and
+probability is the median the dictionary gives its words that the sources write on their own
+about as often (within a quarter of an octave), so an added word ranks as a dictionary word as
+common would. `<data-dir>/swipe_vocabulary_report.tsv` lists every candidate with its counts, its outcome and
 the rule or exception behind it, and a kept form's rank, spelling, and probability.
 
 ### Measured accuracy
@@ -405,13 +421,15 @@ with the dictionary alone and with the first words of the swipe vocabulary added
 | 10,000 | 96.38% | 91.71% | 95.23% | 95.96% |
 | 15,000 | 96.45% | 91.74% | 95.28% | 96.01% |
 | 20,000 | 96.50% | 91.77% | 95.31% | 96.05% |
-| 22,456 (all) | 96.51% | 91.79% | 95.33% | 96.07% |
+| 22,465 (all) | 96.51% | 91.79% | 95.33% | 96.07% |
 
 Top-1 rises with every size, so every kept form is in the list. With all of them, 325 swipes
-decode to their word first that did not, and 55 that did no longer do, 44 of them to an added
-word, the most common kind a British spelling of an American one ("center" to "centre",
-"organized" to "organised"). The split's one swipe of "haha" decoded as "has" before and as "haha" now. The test
-split was not decoded.
+decode to their word first that did not, and 55 that did no longer do: 44 of those to an added
+word, 11 of them a British spelling of the American word ("center" to "centre", "organized" to
+"organised") and the rest look-alikes ("it" to "itu", "this" to "theos"). The split's one swipe of
+"haha" decoded as "has" before and as "haha" now. The test split was not decoded. The measurement,
+every row above with each swipe gained and lost and the SHA-256 of the list it measured, is kept
+with KeyVox's language data as `swipe/vocabulary-build/swipe_accuracy_val-22465.json`.
 
 ### Why a list of its own
 
