@@ -46,8 +46,11 @@ rm -rf "$DATA_DIR/built/dictionary"
 # Rankers and the action model.
 "$PYTHON" split_ite_events.py "$DATA_DIR"
 "$PYTHON" write_feature_context_model.py "$DATA_DIR"
-"$PYTHON" cache_correction_candidates.py "$DATA_DIR"
-"$PYTHON" cache_completion_candidates.py "$DATA_DIR"
+# The caches ask the queries the bundled rankers learned from, as they asked them, so the
+# rankers rebuild byte for byte; without --as-bundled they ask for every record the trainers
+# read, for training new rankers.
+"$PYTHON" cache_correction_candidates.py "$DATA_DIR" --as-bundled
+"$PYTHON" cache_completion_candidates.py "$DATA_DIR" --as-bundled
 "$PYTHON" train_correction_models.py "$DATA_DIR" >/dev/null
 "$PYTHON" train_completion_ranker.py "$DATA_DIR" >/dev/null
 "$PYTHON" export_tree_models.py "$DATA_DIR"
