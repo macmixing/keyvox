@@ -55,6 +55,31 @@ enum HarnessCommand {
         var knownNames: [String] = []
     }
 
+    struct SwipeLexiconOptions {
+        var languageIdentifier = "en"
+        var outputPath = ""
+        /// Where to write the dictionary's words as a unigram list, if anywhere.
+        var wordsPath: String?
+    }
+
+    struct SwipeAccuracyOptions {
+        var swipesPath = ""
+        var layoutPath = ""
+        var limit: Int?
+        /// Context weights to rank with; none ranks with the bundled one.
+        var contextWeights: [Double] = []
+        var usesContext = true
+        var calibratesPersonalWords = false
+    }
+
+    struct SwipeGateOptions {
+        /// The typing plan whose sentences the simulated fingers tap.
+        var planPath: String?
+        var minimumTaps = 1_000_000
+        var swipesPath: String?
+        var layoutPath: String?
+    }
+
     struct ExplainOptions {
         var typedWord = ""
         var touches: [CGPoint] = []
@@ -73,6 +98,9 @@ enum HarnessCommand {
     case bars(BarsOptions)
     case tune(TuneOptions)
     case explain(ExplainOptions)
+    case swipeLexicon(SwipeLexiconOptions)
+    case swipeAccuracy(SwipeAccuracyOptions)
+    case swipeGate(SwipeGateOptions)
 
     static let usage = """
     usage:
@@ -92,6 +120,10 @@ enum HarnessCommand {
       KeyVoxTypingHarness explain [--word <typed>] [--touches "x,y x,y ..."] [--previous <newest,older,...>]
                                   [--following <next word>] [--personal <word or phrase,...>]
                                   [--param <name>=<value>...]
+      KeyVoxTypingHarness swipe-lexicon --output <kvsl-path> [--words <tsv-path>] [--language <id>]
+      KeyVoxTypingHarness swipe-accuracy --swipes <jsonl-path> --layout <layout-json> [--limit <count>]
+                                         [--context-weights <w,w,...>] [--no-context] [--calibrate-personal]
+      KeyVoxTypingHarness swipe-gate [--plan <path> [--taps <count>]] [--swipes <jsonl-path> --layout <layout-json>]
     """
 
     init(arguments: [String]) throws {
@@ -220,6 +252,61 @@ enum HarnessCommand {
                 throw HarnessError.usage
             }
             self = .explain(options)
+        case "swipe-lexicon":
+            var options = SwipeLexiconOptions()
+            while let flag = remaining.popFirst() {
+                switch flag {
+                case "--output": options.outputPath = try Self.value(after: flag, in: &remaining)
+                case "--words": options.wordsPath = try Self.value(after: flag, in: &remaining)
+                case "--language": options.languageIdentifier = try Self.value(after: flag, in: &remaining)
+                default: throw HarnessError.unknownFlag(flag)
+                }
+            }
+            guard options.outputPath.isEmpty == false else { throw HarnessError.usage }
+            self = .swipeLexicon(options)
+        case "swipe-accuracy":
+            var options = SwipeAccuracyOptions()
+            while let flag = remaining.popFirst() {
+                switch flag {
+                case "--swipes": options.swipesPath = try Self.value(after: flag, in: &remaining)
+                case "--layout": options.layoutPath = try Self.value(after: flag, in: &remaining)
+                case "--limit":
+                    guard let limit = Int(try Self.value(after: flag, in: &remaining)), limit > 0 else {
+                        throw HarnessError.invalidValue(flag)
+                    }
+                    options.limit = limit
+                case "--context-weights":
+                    options.contextWeights = try Self.value(after: flag, in: &remaining)
+                        .split(separator: ",").map { value in
+                            guard let weight = Double(value) else { throw HarnessError.invalidValue(flag) }
+                            return weight
+                        }
+                case "--no-context": options.usesContext = false
+                case "--calibrate-personal": options.calibratesPersonalWords = true
+                default: throw HarnessError.unknownFlag(flag)
+                }
+            }
+            guard options.swipesPath.isEmpty == false, options.layoutPath.isEmpty == false else { throw HarnessError.usage }
+            self = .swipeAccuracy(options)
+        case "swipe-gate":
+            var options = SwipeGateOptions()
+            while let flag = remaining.popFirst() {
+                switch flag {
+                case "--plan": options.planPath = try Self.value(after: flag, in: &remaining)
+                case "--taps":
+                    guard let taps = Int(try Self.value(after: flag, in: &remaining)), taps > 0 else {
+                        throw HarnessError.invalidValue(flag)
+                    }
+                    options.minimumTaps = taps
+                case "--swipes": options.swipesPath = try Self.value(after: flag, in: &remaining)
+                case "--layout": options.layoutPath = try Self.value(after: flag, in: &remaining)
+                default: throw HarnessError.unknownFlag(flag)
+                }
+            }
+            guard options.planPath != nil || (options.swipesPath != nil && options.layoutPath != nil) else {
+                throw HarnessError.usage
+            }
+            self = .swipeGate(options)
         default:
             throw HarnessError.usage
         }
