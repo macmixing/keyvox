@@ -49,7 +49,8 @@ extension PredictionComputer {
             emissions: emissions,
             personal: personal,
             contextLift: { spelling in try language.contextLift(of: spelling, previousWords: previousWords) },
-            hasWordsBefore: previousWords.isEmpty == false
+            hasWordsBefore: previousWords.isEmpty == false,
+            loopedKeys: { keyPath in decoder.loopedKeys(path: path, keyPath: keyPath, keys: state.keys) }
         )
     }
 

@@ -14,5 +14,14 @@
     "samePathContextWeight": 0.8,
     "contextCandidates": 20,
     "personalWordFrequency": 143
+  },
+  "loops": {
+    "sampleRate": 60,
+    "nearRadius": 1.2,
+    "movingStep": 0.02,
+    "loopTurns": 0.75,
+    "smallestLoopRadius": 0.15,
+    "loopRadius": 0.8,
+    "loopCenterDistance": 0.8
   }
 }

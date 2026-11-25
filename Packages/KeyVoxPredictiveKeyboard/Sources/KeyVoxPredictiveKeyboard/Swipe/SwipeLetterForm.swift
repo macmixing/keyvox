@@ -34,6 +34,23 @@ public enum SwipeLetterForm {
         return path
     }
 
+    /// For each key of `form`'s key path with doubled letters counted once, whether `form` doubles
+    /// that key's letter there; nil when one of its letters has no key.
+    static func doubledKeys(of form: String, keyIndex: [Unicode.Scalar: Int]) -> [Bool]? {
+        var path: [Int] = []
+        var doubled: [Bool] = []
+        for scalar in form.unicodeScalars {
+            guard let key = keyIndex[scalar] else { return nil }
+            if path.last == key {
+                doubled[doubled.count - 1] = true
+            } else {
+                path.append(key)
+                doubled.append(false)
+            }
+        }
+        return doubled
+    }
+
     private static func isLetter(_ scalar: Unicode.Scalar) -> Bool {
         switch scalar.properties.generalCategory {
         case .uppercaseLetter, .lowercaseLetter, .titlecaseLetter, .modifierLetter, .otherLetter:

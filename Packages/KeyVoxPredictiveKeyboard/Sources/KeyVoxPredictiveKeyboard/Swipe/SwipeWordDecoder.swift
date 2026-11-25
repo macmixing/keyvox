@@ -1,4 +1,7 @@
 import Foundation
+#if canImport(CoreGraphics)
+import CoreGraphics
+#endif
 
 /// Turns a swipe into ranked spellings: a typing language's bundled swipe model reads the path
 /// in the frame of the keys on screen, and a beam search walks the language's swipe lexicon and
@@ -72,19 +75,22 @@ final class SwipeWordDecoder: @unchecked Sendable {
     /// The best spellings for `emissions`, best first, from the bundled lexicon and `personal`.
     ///
     /// Words whose key paths are the same, such as a word and its doubled-letter twin ("to" and
-    /// "too", once a repeated letter is one key), look the same to the swipe, so their scores
-    /// differ only by frequency and context; when there are words before, the context counts
-    /// `samePathContextWeight` rather than `contextWeight` among them in deciding which takes which
-    /// of their places (`rankingSamePathsByContext`).
+    /// "too", once a repeated letter is one key), look the same to the model, so their scores differ
+    /// only by frequency and context; among them, a loop the finger made around a key and, when
+    /// there are words before, the context counted `samePathContextWeight` rather than
+    /// `contextWeight` decide which takes which of their places (`rankingSamePaths`).
     /// - Parameters:
     ///   - contextLift: How much likelier the words before make a spelling, as a natural log; nil
     ///     ranks without context.
     ///   - hasWordsBefore: Whether any words come before, rather than the sentence starting.
+    ///   - loopedKeys: For each key of a key path, whether the swipe looped around it
+    ///     (`SwipeKeyLoop`); nil when the swipe's path is not at hand.
     func candidates(
         emissions: [Float],
         personal: SwipeLexicon?,
         contextLift: ((String) throws -> Double)?,
-        hasWordsBefore: Bool
+        hasWordsBefore: Bool,
+        loopedKeys: (([Int]) -> [Bool]?)?
     ) rethrows -> [SwipeCandidate] {
         let scoring = SwipeCandidateScoring(settings: settings.scoring)
         let symbols = settings.letters.unicodeScalars.count + 1
@@ -112,8 +118,14 @@ final class SwipeWordDecoder: @unchecked Sendable {
             }
         }
         forms.sort { $0.base > $1.base }
+        var weighed = Array(forms.prefix(settings.scoring.contextCandidates))
+        if loopedKeys != nil {
+            // Every twin of a weighed word is weighed too, so a loop can pick it.
+            let paths = Set(weighed.compactMap { keyPath(of: $0.spellings.first?.spelling) })
+            weighed += forms.dropFirst(weighed.count).filter { paths.contains(keyPath(of: $0.spellings.first?.spelling) ?? []) }
+        }
         var candidates: [SwipeCandidate] = []
-        for form in forms.prefix(settings.scoring.contextCandidates) {
+        for form in weighed {
             let formFrequency = form.spellings.map(\.frequency).max() ?? 0
             for spelling in form.spellings {
                 let lift = try contextLift?(spelling.spelling) ?? 0
@@ -130,37 +142,70 @@ final class SwipeWordDecoder: @unchecked Sendable {
                 ))
             }
         }
-        if contextLift != nil, hasWordsBefore {
-            rankingSamePathsByContext(&candidates)
+        let usesContext = contextLift != nil && hasWordsBefore
+        if usesContext || loopedKeys != nil {
+            rankingSamePaths(&candidates, usesContext: usesContext, loopedKeys: loopedKeys)
         }
         return candidates.sorted { $0.score > $1.score }
     }
 
-    /// Reorders the words of each set sharing a key path by their scores with the context counted
-    /// `samePathContextWeight` times: the first takes the best of the set's words' best scores, the
-    /// next the next best, and so on, each word's spellings moving with it. The scores the set holds
-    /// stay the same, so every ranking outside it stays as scored, and so does the order of a word's
-    /// own spellings, such as its case and apostrophe variants.
-    private func rankingSamePathsByContext(_ candidates: inout [SwipeCandidate]) {
-        let extraWeight = settings.scoring.samePathContextWeight - settings.scoring.contextWeight
-        let words = Dictionary(grouping: candidates.indices) { SwipeLetterForm.form(of: candidates[$0].spelling) }
-        let sets = Dictionary(grouping: words.keys) { word in
+    /// For each key of `keyPath`, on the keys `keys` lays out, whether `path` loops around it; nil
+    /// when the model has no loop settings or the keys lack one of its letters.
+    func loopedKeys(path: [SwipeTouchSample], keyPath: [Int], keys: KeyCenterMap) -> [Bool]? {
+        guard let loops = settings.loops, settings.keepsDoubleLetters == false else { return nil }
+        let letters = Array(settings.letters.unicodeScalars)
+        var centers: [CGPoint] = []
+        for key in keyPath {
+            guard let center = keys.center(of: Character(letters[key])) else { return nil }
+            centers.append(center)
+        }
+        return SwipeKeyLoop.loopedKeys(path: path, centers: centers, pitch: Double(keys.pitch.width), settings: loops)
+    }
+
+    private func keyPath(of spelling: String?) -> [Int]? {
+        spelling.flatMap {
             SwipeLetterForm.keyPath(
-                of: word,
+                of: SwipeLetterForm.form(of: $0),
                 keyIndex: settings.keyIndex,
                 keepsDoubleLetters: settings.keepsDoubleLetters
-            ) ?? []
+            )
         }
-        for set in sets.values where set.count > 1 {
-            let bests = set.map { word -> (word: String, best: SwipeCandidate) in
+    }
+
+    /// Reorders the words of each set sharing a key path: the first takes the best of the set's
+    /// words' best scores, the next the next best, and so on, each word's spellings moving with it.
+    /// The scores the set holds stay the same, so every ranking outside it stays as scored, and so
+    /// does the order of a word's own spellings, such as its case and apostrophe variants.
+    ///
+    /// A word comes first for each key the finger looped around where it doubles the letter, as
+    /// looping asks for the letter doubled, whatever the words before; among words with as many,
+    /// its score with the context counted `samePathContextWeight` times when `usesContext` ranks it.
+    private func rankingSamePaths(
+        _ candidates: inout [SwipeCandidate],
+        usesContext: Bool,
+        loopedKeys: (([Int]) -> [Bool]?)?
+    ) {
+        let extraWeight = usesContext ? settings.scoring.samePathContextWeight - settings.scoring.contextWeight : 0
+        let keyIndex = settings.keyIndex
+        let words = Dictionary(grouping: candidates.indices) { SwipeLetterForm.form(of: candidates[$0].spelling) }
+        let sets = Dictionary(grouping: words.keys) { word in
+            SwipeLetterForm.keyPath(of: word, keyIndex: keyIndex, keepsDoubleLetters: settings.keepsDoubleLetters) ?? []
+        }
+        for (path, set) in sets where set.count > 1 && path.isEmpty == false {
+            let looped = settings.keepsDoubleLetters ? nil : loopedKeys?(path)
+            let entries = set.map { word -> (word: String, best: SwipeCandidate, loops: Int, rank: Double) in
                 let best = words[word]!.map { candidates[$0] }.max { $0.score < $1.score }!
-                return (word, best)
+                var loops = 0
+                if let looped, let doubled = SwipeLetterForm.doubledKeys(of: word, keyIndex: keyIndex),
+                   doubled.count == looped.count {
+                    loops = zip(doubled, looped).filter { $0 && $1 }.count
+                }
+                return (word, best, loops, best.score + extraWeight * best.contextLift)
             }
-            let places = bests.map(\.best.score).sorted(by: >)
-            let order = bests.sorted {
-                let left = $0.best.score + extraWeight * $0.best.contextLift
-                let right = $1.best.score + extraWeight * $1.best.contextLift
-                return left != right ? left > right : $0.best.score > $1.best.score
+            let places = entries.map(\.best.score).sorted(by: >)
+            let order = entries.sorted {
+                if $0.loops != $1.loops { return $0.loops > $1.loops }
+                return $0.rank != $1.rank ? $0.rank > $1.rank : $0.best.score > $1.best.score
             }
             for (entry, place) in zip(order, places) {
                 let shift = place - entry.best.score
