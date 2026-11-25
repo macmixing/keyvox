@@ -6,7 +6,7 @@ The format loosely follows Keep a Changelog, and the package uses semantic versi
 
 ---
 
-## [2.1.0] - 2026-11-24
+## [2.1.0] - 2026-11-25
 
 Swipe typing: a finger sliding across the letter keys types the word it traces.
 
