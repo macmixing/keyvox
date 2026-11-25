@@ -13,7 +13,7 @@ dictionary word spells is a candidate, and these rules, in this order, leave one
    URL, a hyphenated word, or code.
 4. misspelling: a dictionary form one edit away (a letter left out, added, changed, or two
    neighbors swapped) is written on its own at least MISSPELLING_RATIO times as often as the
-   candidate is written, unless the language's spelling list (for English, SCOWL's size 80 in
+   candidate is, unless the language's spelling list (for English, SCOWL's size 80 in
    every spelling) lists it, or the written sources write it with capitals more often than in
    lowercase in the middle of a sentence, as a name or an acronym, while a misspelling of a
    lowercase word is lowercase.
@@ -136,7 +136,7 @@ def is_written_with_capitals(candidate: Candidate) -> bool:
 
 def misspelled_word(candidate: Candidate, letters: str, dictionary_counts: Counter[str]) -> str | None:
     count, form = max((dictionary_counts[edit], edit) for edit in one_edit_forms(candidate.form, letters))
-    return form if count >= MISSPELLING_RATIO * candidate.written else None
+    return form if count >= MISSPELLING_RATIO * candidate.on_its_own else None
 
 
 def outcome_of(candidate, letters, dictionary_counts, spelling_forms) -> str:

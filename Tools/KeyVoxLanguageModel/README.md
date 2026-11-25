@@ -376,19 +376,20 @@ candidate, and these rules, in order, leave one out. The counts are from the bui
 | Letters | A letter that is no letter key of the keyboard (`language.json`) | 6,262 |
 | One source | Fewer than two of the three sources write it as a word on its own | 693,651 |
 | Joined | Written joined to other letters or digits more than half the time: URLs, hyphenated words, code | 125 |
-| Misspelling | A dictionary form one edit away (a letter left out, added, or changed, or two neighbors swapped) is written on its own at least 50 times as often | 4,181 |
-| Kept | | 22,472 of 726,691 |
+| Misspelling | A dictionary form one edit away (a letter left out, added, or changed, or two neighbors swapped) is written on its own at least 50 times as often as it is | 4,188 |
+| Kept | | 22,465 of 726,691 |
 
 - Decoding HTML references and skipping Markdown code leaves 416 forms in a single source that
   were in two before, the largest "nbsp" (980,367 times before, 44 after); the others' only other
   source was code or HTML references in OASST2.
 - The misspelling rule never leaves out a form SCOWL's size 80 lists in any spelling (American,
-  British, Canadian, or Australian), which keeps 1,744 forms such as "colour", "yay", and
+  British, Canadian, or Australian), which keeps 1,748 forms such as "colour", "yay", and
   "cafe", or one the written sources write with capitals more often than in lowercase, as a
-  name or an acronym (a misspelling of a lowercase word is lowercase), which keeps 2,816.
-- A dictionary form counts only the times it is written on its own, as a candidate's count
-  does, so a fragment of longer tokens does not make its neighbors misspellings: "th", written
-  145,719 times but 2,989 on its own, mostly in "5th" and the like, leaves "tbh" in.
+  name or an acronym (a misspelling of a lowercase word is lowercase), which keeps 2,830.
+- Both sides of the misspelling rule count only the times a form is written on its own, so a
+  fragment of longer tokens neither makes its neighbors misspellings nor is spared by its
+  fragments: "th", written 145,719 times but 2,989 on its own, mostly in "5th" and the like,
+  leaves "tbh" in.
 - It still leaves out short chat words one edit from a much more common word: "idk" ("id"),
   "smh" ("sh"), "brb" ("bro"), "ngl" ("nfl"), "homie" ("home"), "hella" ("hell"), and "ebook"
   ("book"). How much more common the word is does not tell them from misspellings: "homie" is
@@ -415,10 +416,10 @@ with the dictionary alone and with the first words of the swipe vocabulary added
 | None | 95.73% | 91.29% | 94.67% | 95.36% |
 | 2,500 | 96.08% | 91.50% | 94.96% | 95.68% |
 | 5,000 | 96.22% | 91.60% | 95.09% | 95.81% |
-| 10,000 | 96.38% | 91.71% | 95.22% | 95.96% |
+| 10,000 | 96.38% | 91.71% | 95.23% | 95.96% |
 | 15,000 | 96.45% | 91.74% | 95.28% | 96.01% |
 | 20,000 | 96.50% | 91.77% | 95.31% | 96.05% |
-| 22,472 (all) | 96.51% | 91.79% | 95.33% | 96.07% |
+| 22,465 (all) | 96.51% | 91.79% | 95.33% | 96.07% |
 
 Top-1 rises with every size, so every kept form is in the list. With all of them, 325 swipes
 decode to their word first that did not, and 55 that did no longer do, 44 of them to an added
