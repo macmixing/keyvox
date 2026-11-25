@@ -124,6 +124,9 @@ public final class PredictiveTypingSession {
     private var replacedCorrections: [Correction] = []
     /// What the last suggestion-bar tap inserted, ending in the space punctuation replaces.
     private var chosenText: String?
+    /// The word the last swipe inserted with no space after it, while the text before the cursor
+    /// still ends with it and nothing has been typed since (`endsWithSwipedWord`).
+    private var swipedWord: String?
     /// The words the user picked from the suggestion bar in a row, as their taps inserted them;
     /// they count while the text before the cursor still ends with them (`RepeatedPicks`).
     private var pickedText = ""
@@ -158,6 +161,7 @@ public final class PredictiveTypingSession {
         lastAutocorrection = nil
         revertibleAutocorrection = nil
         chosenText = nil
+        swipedWord = nil
         let context = TypingTextContext(textBeforeCursor: textBeforeCursor)
         if context.currentWord.isEmpty {
             wordTouches.reset()
@@ -183,6 +187,9 @@ public final class PredictiveTypingSession {
         }
         if let chosenText, textBeforeCursor?.hasSuffix(chosenText) != true {
             self.chosenText = nil
+        }
+        if endsWithSwipedWord(textBeforeCursor: textBeforeCursor) == false {
+            swipedWord = nil
         }
         let text = textBeforeCursor ?? ""
         // Only a deletion reaches back into a change; emptying the text, as clearing it or
@@ -246,7 +253,16 @@ public final class PredictiveTypingSession {
         textBeforeReplacedWord = nil
         replacedCorrections = []
         chosenText = nil
+        swipedWord = nil
         pickedText = ""
+    }
+
+    /// Whether the text before the cursor ends with the word the last swipe inserted, with no space
+    /// after it and nothing typed since. Space ends that word as it was swiped, never correcting
+    /// it, and the next swiped word goes in after a space.
+    public func endsWithSwipedWord(textBeforeCursor: String?) -> Bool {
+        guard let swipedWord else { return false }
+        return textBeforeCursor?.hasSuffix(swipedWord) == true
     }
 
     /// What to suggest for the text around the cursor. A selected word, or one the cursor
@@ -345,7 +361,8 @@ public final class PredictiveTypingSession {
     /// from it keeps as typed (`WatchedCorrection`). Punctuation right after a
     /// suggestion-bar tap replaces the space the tap added. A word left as typed teaches the
     /// keyboard (see `recordKeptWord`), also where `allowsAutocorrection` is false and `result`
-    /// is only read to tell.
+    /// is only read to tell. A word just swiped in (`endsWithSwipedWord`) ends as it was swiped:
+    /// only the separator goes in, nothing is corrected or revised, and it teaches nothing.
     public func wordBoundaryEdit(
         separator: String,
         textBeforeCursor: String?,
@@ -353,6 +370,17 @@ public final class PredictiveTypingSession {
         revision: String? = nil,
         allowsAutocorrection: Bool = true
     ) -> TextEdit {
+        if endsWithSwipedWord(textBeforeCursor: textBeforeCursor) {
+            swipedWord = nil
+            textBeforeReplacedWord = nil
+            replacedCorrections = []
+            wordTouches.reset()
+            lastAutocorrection = nil
+            revertibleAutocorrection = nil
+            revisableWord = nil
+            chosenText = nil
+            return TextEdit(deleteCount: 0, insertText: separator)
+        }
         let context = TypingTextContext(textBeforeCursor: textBeforeCursor)
         let currentWord = context.currentWord
         let touches = wordTouches.touches(for: currentWord)
@@ -534,6 +562,7 @@ public final class PredictiveTypingSession {
         let leadingSpace = isAfterSpacedMark ? " " : ""
         lastAutocorrection = nil
         revisableWord = nil
+        swipedWord = nil
         wordTouches.reset()
         let textAfterWord = context.followingText.dropFirst(word.charactersAfterCursor)
         let isSeparated = textAfterWord.first.map { TypingTextContext.isWordCharacter($0) == false } ?? false
@@ -571,10 +600,12 @@ public final class PredictiveTypingSession {
         )
     }
 
-    /// What inserting a swiped word does: `word` goes in as a word picked from the suggestion bar
-    /// would, followed by a space unless a space or punctuation already follows, and after a space
-    /// when it comes right after a mark a picked word is spaced away from, such as a comma; a
-    /// selection is replaced. End a word in progress before swiping the next.
+    /// What inserting a swiped word does: `word` goes in with no space after it, as on the system
+    /// keyboard, so the space the user taps next is a plain one; only a word right after the cursor
+    /// gets a space between them. It goes in after a space right after the word of the swipe before
+    /// it (`endsWithSwipedWord`) or a mark a picked word is spaced away from, such as a comma, and
+    /// never at the start of the text or after a space; a selection is replaced. End a typed word in
+    /// progress before swiping the next.
     public func swipeEdit(
         word: String,
         textBeforeCursor: String?,
@@ -586,19 +617,34 @@ public final class PredictiveTypingSession {
             selectedText: selectedText,
             textAfterCursor: textAfterCursor
         )
-        let replacesSelection = selectedText?.isEmpty == false
-        let leadingSpace = replacesSelection == false && (context.currentWord.isEmpty == false
-            || textBeforeCursor?.last.map { spacedFromPickedWordCharacters?.contains(String($0)) == true } == true)
-            ? " " : ""
-        let isSeparated = context.followingText.first.map { TypingTextContext.isWordCharacter($0) == false } ?? false
-        let space = isSeparated ? "" : " "
+        let leadingSpace = swipeLeadingSpace(textBeforeCursor: textBeforeCursor, selectedText: selectedText)
+        let isFollowedByWord = context.followingText.first.map(TypingTextContext.isWordCharacter) ?? false
+        let space = isFollowedByWord ? " " : ""
         lastAutocorrection = nil
         revertibleAutocorrection = nil
         revisableWord = nil
         wordTouches.reset()
         pickedText = ""
-        chosenText = context.followingText.isEmpty ? word + space : nil
+        chosenText = nil
+        swipedWord = isFollowedByWord ? nil : word
         return TextEdit(deleteCount: 0, insertText: leadingSpace + word + space)
+    }
+
+    /// The earlier words in the sentence a swiped word joins, newest first, as `swipeEdit` spaces
+    /// it from the text before the cursor.
+    public func previousWords(beforeSwipeAfter textBeforeCursor: String?, selectedText: String? = nil) -> [String] {
+        let leadingSpace = swipeLeadingSpace(textBeforeCursor: textBeforeCursor, selectedText: selectedText)
+        return TypingTextContext(textBeforeCursor: textBeforeCursor.map { $0 + leadingSpace }).previousWords
+    }
+
+    /// The space a swiped word goes in after: one right after the word of the swipe before it or a
+    /// mark a picked word is spaced away from, and none in place of a selection.
+    private func swipeLeadingSpace(textBeforeCursor: String?, selectedText: String?) -> String {
+        guard selectedText?.isEmpty != false else { return "" }
+        let followsSpacedMark = textBeforeCursor?.last.map {
+            spacedFromPickedWordCharacters?.contains(String($0)) == true
+        } == true
+        return endsWithSwipedWord(textBeforeCursor: textBeforeCursor) || followsSpacedMark ? " " : ""
     }
 
     /// Puts back the words `reverted` replaced, followed by a space like any pick, and holds its
@@ -607,6 +653,7 @@ public final class PredictiveTypingSession {
         revertibleAutocorrection = nil
         lastAutocorrection = nil
         revisableWord = nil
+        swipedWord = nil
         wordTouches.reset()
         pickedText = ""
         for correction in reverted.corrections {
