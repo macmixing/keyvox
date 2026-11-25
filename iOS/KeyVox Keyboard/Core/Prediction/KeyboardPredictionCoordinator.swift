@@ -41,6 +41,9 @@ final class KeyboardPredictionCoordinator {
     /// Where a swiped word would go, read at the last change to the text or cursor; nil while the
     /// field's document state is not to be read.
     private var currentPlace: KeyboardSwipePlace?
+    /// Where a swiped word would go right after the word just swiped in went in; the cursor or the
+    /// field moving from there ends that word's record.
+    private var placeAfterSwipedWord: KeyboardSwipePlace?
     private let contestedTapPolicy = ContestedTapPolicy()
     private var letterKeys: KeyCenterMap?
     private var latestResult: PredictionResult?
@@ -148,6 +151,7 @@ final class KeyboardPredictionCoordinator {
         if currentPlace != nil {
             currentPlace = readPlace()
         }
+        endSwipedWordIfMoved()
     }
 
     /// Reads where a swiped word would go again after the keyboard's own edit.
@@ -155,12 +159,22 @@ final class KeyboardPredictionCoordinator {
         if currentPlace != nil {
             currentPlace = readPlace()
         }
+        endSwipedWordIfMoved()
+    }
+
+    /// Ends the record of the word just swiped in once the cursor or the field has moved from where
+    /// that word left it, even when the text before the cursor still ends with the word.
+    private func endSwipedWordIfMoved() {
+        guard let placeAfterSwipedWord, currentPlace != placeAfterSwipedWord else { return }
+        self.placeAfterSwipedWord = nil
+        session.forgetSwipedWord()
     }
 
     /// Starts typing in the focused field, which counts as a new one.
     func reset() {
         field += 1
         currentPlace = readPlace()
+        placeAfterSwipedWord = nil
         session.reset()
         latestResult = nil
         engine.queue.async { [weak self] in
@@ -269,6 +283,16 @@ final class KeyboardPredictionCoordinator {
             result: result,
             revision: revision
         )
+    }
+
+    /// The edit the keyboard applies itself when `separator` ends the current word: an
+    /// autocorrection, or the separator ending a word just swiped in, which goes in as it is so the
+    /// first space after a swiped word never types the double-space period; nil when the key's
+    /// regular path types the separator.
+    func appliedWordBoundaryEdit(separator: String, allowsAutocorrection: Bool) -> TextEdit? {
+        let endsSwipedWord = session.endsWithSwipedWord(textBeforeCursor: textBeforeCursor())
+        let edit = wordBoundaryEdit(separator: separator, allowsAutocorrection: allowsAutocorrection)
+        return edit.deleteCount > 0 || endsSwipedWord ? edit : nil
     }
 
     /// The letter a tap on another key was meant for, or nil to keep that key. Only taps
@@ -447,6 +471,8 @@ final class KeyboardPredictionCoordinator {
     func leaveField() {
         field += 1
         currentPlace = nil
+        placeAfterSwipedWord = nil
+        session.forgetSwipedWord()
         dropPendingSwipe()
     }
 
@@ -457,6 +483,7 @@ final class KeyboardPredictionCoordinator {
     func recordSwipePlace() -> KeyboardSwipePlace? {
         guard currentPlace != nil else { return nil }
         currentPlace = readPlace()
+        endSwipedWordIfMoved()
         return currentPlace
     }
 
@@ -485,12 +512,15 @@ final class KeyboardPredictionCoordinator {
         // The cursor or the field moved since the swipe ended, so its word has nowhere to go; the
         // check reads only what the main thread recorded, never the document.
         guard let word, currentPlace == pending.place else { return }
-        pending.deliver(session.swipeEdit(
+        let edit = session.swipeEdit(
             word: word,
             textBeforeCursor: pending.place.textBeforeCursor,
             selectedText: pending.place.selectedText,
             textAfterCursor: pending.place.textAfterCursor
-        ))
+        )
+        placeAfterSwipedWord = nil
+        pending.deliver(edit)
+        placeAfterSwipedWord = currentPlace
     }
 
     // MARK: - Engine queue
