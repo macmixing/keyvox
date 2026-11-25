@@ -2105,12 +2105,13 @@ Field preparation:
 
 A finger sliding across the letter keys types the word it traces, as a word picked from the suggestion bar would go in. The package owns deciding and decoding; the keyboard owns following fingers, drawing the trail, threading, and applying the `TextEdit`.
 
-The gate (`SwipeGate`, from `~/KeyVoxLanguageData/swipe/tap-vs-swipe/README.md`, section 5):
+The gate (`SwipeGate`, from `~/KeyVoxLanguageData/swipe/tap-vs-swipe/README.md`, section 5, with the hold and lift evidence `KeyVoxTypingHarness swipe-gate` measures):
 
 - a finger may become a swipe only when it lands on a single letter key of the full letter page, outside the emoji search, with no held key's popup or space trackpad under way, VoiceOver off, and no other finger on the keys; another finger landing before it qualifies ends that for good, and that finger cannot swipe either, so overlapping two-thumb taps never swipe
-- it becomes a swipe on the first sample whose straight-line distance from where it landed reaches one key pitch while its mean speed since landing is at least 1.5 pitches a second; landing within 400 ms of the last tap that typed or deleted (rollover included, a swipe's word not), the distance starts at two pitches and falls to one over that window
+- it meets the swipe threshold on the first sample whose straight-line distance from where it landed reaches one key pitch while its mean speed since landing is at least 1.5 pitches a second; landing within 400 ms of the last tap that typed or deleted (rollover included, a swipe's word not), the distance starts at two pitches and falls to one over that window
+- meeting the threshold is not yet a swipe, since a tap rolling toward the next key meets it just before lifting: still down 25 ms later, the finger is a swipe; lifting sooner while moving at most half its fastest speed over 30 ms, as a finger slowing into a swipe's last key does, it is a swipe; lifting sooner at speed, it is undecided, and another finger landing on the keys within 500 ms of its lift makes it a tap, typed before that finger's key, while no finger landing, or the user acting anywhere but on the keys, makes it a swipe
 - distances are in the live letter keys' horizontal pitch, times are `UITouch` timestamps, and every coalesced sample is checked
-- a finger that never qualifies is exactly today's key press, slide to correct included; once it qualifies its key lets go and types nothing
+- a finger that never meets the threshold is exactly today's key press, slide to correct included, and an undecided finger made a tap types the key it would have typed at its lift; once a finger is a swipe its key lets go and types nothing, and the trail shows only from then
 - with Swipe Typing off, or in a field whose typing traits turn predictions off (`KeyboardTypingTraits.allowsSwipeTyping`), the gate never runs and no path is kept
 
 Decoding and insertion:

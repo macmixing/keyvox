@@ -1874,7 +1874,7 @@ Packages/
 - `KeyVox Keyboard/Views/Components/KeyboardKeyGridView+Touches.swift`
   - Multi-finger key handling: each finger is followed separately, characters type on lift or as soon as another finger lands, delete repeats while held, a held space bar becomes the cursor trackpad, holding `#+=` requests Compact Keys, holding a key with held-key characters opens its popup, and the globe's touches go to the system input-mode list.
 - `KeyVox Keyboard/Views/Components/KeyboardKeyGridView+Swipe.swift`
-  - Swipe typing on the key grid: follows an eligible letter-key finger through the package's `SwipeGate` with every coalesced sample, lets go of its key once the gate makes it a swipe, draws its trail, and hands its path on when it lifts or another finger lands; the gate never runs while swipe typing is off.
+  - Swipe typing on the key grid: follows an eligible letter-key finger through the package's `SwipeGate` with every coalesced sample, lets go of its key once the gate makes it a swipe, draws its trail, and hands its path on when it lifts or another finger lands; holds a finger the gate leaves undecided at its lift until the next finger lands, typing its key first, or the gate's window passes, handing it on as a word; the gate never runs while swipe typing is off.
 - `KeyVox Keyboard/Views/Components/KeyboardSwipeTrailView.swift`
   - Draws a swipe's trail in the theme's `KeyboardThemeSwipeTrail` style: a ribbon tapering with each point's age, cut by age into reused shape layers over a glow, refreshed each screen frame while it shows and faded out after the finger lifts.
 - `KeyVox Keyboard/Views/Components/KeyboardKeyGridPage.swift`
