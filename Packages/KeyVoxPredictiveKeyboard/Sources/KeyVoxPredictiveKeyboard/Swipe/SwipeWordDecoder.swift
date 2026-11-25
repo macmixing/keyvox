@@ -185,9 +185,11 @@ final class SwipeWordDecoder: @unchecked Sendable {
     /// around a key where a word has the letter exactly twice credits the word, whether or not a
     /// twin has it once; a word with it three times or more gets nothing from the loop, as a loop
     /// asks for the letter doubled, not tripled. Where a word repeats a letter with no loop credit,
-    /// its twins repeating it fewer times and no letter more win unless every one is a misspelling
-    /// of it, written `misspellingRatio` times less often in the context model, the rule the
-    /// language data's swipe vocabulary build leaves misspellings out by; then it wins over them.
+    /// its twins repeating it fewer times and no letter more, and the same at every key a loop
+    /// credits the word, win unless every one is a misspelling of it, written `misspellingRatio`
+    /// times less often in the context model, the rule the language data's swipe vocabulary build
+    /// leaves misspellings out by; then it wins over them.
+    /// So circling either "ss" of "possess" gives "possess".
     /// Names and the user's own words are weighed the same way. A word losing to a twin at any key
     /// comes after the words that lose at fewer, whatever its loops, so a loop never brings in
     /// letters added at other keys; among the rest, the word with more loop credits comes first.
@@ -226,24 +228,30 @@ final class SwipeWordDecoder: @unchecked Sendable {
             }
             var loops: [String: Int] = [:]
             var unlooped: [String: Int] = [:]
+            // A loop asks for a key's letter doubled, not tripled: the keys whose loop credits each word.
+            let credited = repeats.mapValues { own -> Set<Int> in
+                guard let flags = looped, flags.count == own.count else { return [] }
+                return Set(own.indices.filter { flags[$0] && own[$0] == 1 })
+            }
             for (longer, own) in repeats {
-                let flags = looped.flatMap { $0.count == own.count ? $0 : nil } ?? own.map { _ in false }
-                for key in own.indices where own[key] > 0 {
-                    // A loop asks for this key's letter doubled, not tripled.
-                    if flags[key], own[key] == 1 {
-                        loops[longer, default: 0] += 1
-                        continue
-                    }
-                    // Its twins at this key: words repeating this key's letter fewer times and no letter more.
+                let circled = credited[longer]!
+                loops[longer] = circled.count
+                for key in own.indices where own[key] > 0 && circled.contains(key) == false {
+                    // Its twins at this key: words repeating this key's letter fewer times and no letter
+                    // more, the same at every key a loop credits it, so a circled letter never counts
+                    // against it.
                     let shorter = repeats.filter { other in
                         other.value.count == own.count && other.value[key] < own[key]
                             && other.value.indices.allSatisfy { other.value[$0] <= own[$0] }
+                            && circled.allSatisfy { other.value[$0] == own[$0] }
                     }.map(\.key)
                     guard shorter.isEmpty == false else { continue }
                     if shorter.contains(where: { isMisspelling($0, of: longer) == false }) {
                         unlooped[longer, default: 0] += 1
                     } else {
-                        for word in shorter { unlooped[word, default: 0] += 1 }
+                        for word in shorter {
+                            unlooped[word, default: 0] += 1
+                        }
                     }
                 }
             }

@@ -90,6 +90,23 @@ final class SwipeDoubledLetterTests: XCTestCase {
         XCTAssertGreaterThan(onTheirKeyPath, 0)
     }
 
+    func testCirclingEitherDoubledLetterOfAWordWithTwoKeepsBoth() throws {
+        let word = "possess"
+        let doubles = Set(word.indices.dropFirst().filter { word[word.index(before: $0)] == word[$0] }.map { word.distance(from: word.startIndex, to: $0) })
+        var letters = ""
+        var keyOfLetter: [Int] = []
+        for letter in word {
+            if letters.last != letter { letters.append(letter) }
+            keyOfLetter.append(letters.count - 1)
+        }
+        for circled in doubles.map({ keyOfLetter[$0] }) {
+            let swiped = try computer.swipeWords(
+                for: SwipePath.through(letters, loopingAt: [circled]), previousWords: [], wordCase: .asSpelled, limit: 1
+            ).first
+            XCTAssertEqual(swiped, word, "circled at key \(circled) only")
+        }
+    }
+
     func testWithoutACircleANameKeepsItsLettersOverACommonerTwin() throws {
         for word in ["mary", "paris", "anderson", "mr"] {
             XCTAssertEqual(try best(swipingKeysOf: word, previousWords: [])?.lowercased(), word, "no circle")

@@ -109,6 +109,65 @@ final class SwipeTwinRuleTests: XCTestCase {
         }
     }
 
+    /// Every lexicon word with two or three doubled letters, each exactly twice, swiped circling only
+    /// some of them: whatever twin of the word wins keeps every circled letter doubled, and drops an
+    /// uncircled double only for a word that is not the word's misspelling, as no circle adds a
+    /// letter but none drops one for a misspelling. So circling either "ss" of "possess" gives
+    /// "possess", never "posses" or "poses".
+    func testCirclingSomeDoubledLettersOfAWordWeighsTheOthersByTheirOwnTwins() throws {
+        try XCTSkipUnless(ProcessInfo.processInfo.environment["SWIPE_TWIN_PROOF"] == "1", "set SWIPE_TWIN_PROOF=1 to run")
+        engine = try PredictiveEngine(language: .english)
+        decoder = try SwipeWordDecoder(language: .english)
+        let keyIndex = decoder.settings.keyIndex
+        var spellingsOf: [String: [String]] = [:]
+        for word in try SwipeVocabulary.lexiconWords(of: engine) {
+            spellingsOf[SwipeLetterForm.form(of: word.spelling), default: []].append(word.spelling)
+        }
+        func logFrequency(_ form: String) -> Double {
+            spellingsOf[form]!.map { SwipeTwinFacts(spelling: $0, engine: engine).logFrequency }.max()!
+        }
+        let ratio = log(decoder.settings.scoring.misspellingRatio)
+        var cases = 0, weighed = 0, misread = 0, anotherPath = 0
+        var wrong: [String] = []
+        for word in spellingsOf.keys.sorted() {
+            guard let runs = Self.runs(of: word), runs.allSatisfy({ $0 <= 2 }),
+                  let path = SwipeLetterForm.keyPath(of: word, keyIndex: keyIndex, keepsDoubleLetters: false) else { continue }
+            let doubles = runs.indices.filter { runs[$0] == 2 }
+            guard (2...3).contains(doubles.count) else { continue }
+            let letters = Array(Self.letters(of: path, settings: decoder.settings))
+            for mask in 1..<((1 << doubles.count) - 1) {
+                let circled = Set(doubles.indices.filter { mask & (1 << $0) != 0 }.map { doubles[$0] })
+                cases += 1
+                let swipe = SwipePath.through(String(letters), loopingAt: circled)
+                guard let emissions = decoder.emissions(for: swipe, keys: keys) else { continue }
+                let language = ContextLanguageScorer(engine: engine, vocabulary: PersonalVocabulary(words: [], textReplacements: []))
+                let candidates = try decoder.candidates(
+                    emissions: emissions,
+                    personal: nil,
+                    contextLift: { try language.contextLift(of: $0, previousWords: []) },
+                    hasWordsBefore: false,
+                    loopedKeys: { [decoder, keys] keyPath in decoder!.loopedKeys(path: swipe, keyPath: keyPath, keys: keys) },
+                    twinFacts: { [engine] spelling in SwipeTwinFacts(spelling: spelling, engine: engine!) }
+                )
+                guard candidates.contains(where: { SwipeLetterForm.form(of: $0.spelling) == word }) else { continue }
+                let detected = decoder.loopedKeys(path: swipe, keyPath: path, keys: keys).map { flags in Set(flags.indices.filter { flags[$0] }) }
+                guard detected == circled else { misread += 1; continue }
+                weighed += 1
+                let top = candidates.first.map { SwipeLetterForm.form(of: $0.spelling) } ?? ""
+                guard SwipeLetterForm.keyPath(of: top, keyIndex: keyIndex, keepsDoubleLetters: false) == path,
+                      let topRuns = Self.runs(of: top) else { anotherPath += 1; continue }
+                // A word on the path that is no twin of this one, repeating some letter more, is ranked by its score.
+                guard topRuns.indices.allSatisfy({ topRuns[$0] <= runs[$0] }) else { continue }
+                let keepsCircles = circled.allSatisfy { topRuns[$0] == 2 }
+                let dropsForAMisspelling = top != word && logFrequency(word) - logFrequency(top) >= ratio
+                if keepsCircles == false || dropsForAMisspelling { wrong.append("\(word) circled \(circled.sorted()): \(top)") }
+            }
+        }
+        print("TWIN_PROOF circling some doubled letters: cases \(cases), weighed with their circles read \(weighed), circles misread \(misread), a word on another key path \(anotherPath), a circle lost or a double dropped for a misspelling \(wrong.count)")
+        XCTAssertGreaterThan(weighed, 0)
+        XCTAssertEqual(wrong, [], "a circled double lost, or an uncircled one dropped for a misspelling")
+    }
+
     /// Every dictionary word with two or more doubled letters, each exactly twice, swiped circling
     /// every one, decodes as itself whenever the decoder weighs it: a circle credits each letter it
     /// finds exactly doubled, so no word loses a doubled letter its circle asked for.
