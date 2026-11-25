@@ -47,39 +47,78 @@ swipe_counts() {
   "$PYTHON" count_swipe_words.py --language "$LANGUAGE" "$DATA_DIR"
   ./scowl_words.sh 80 "$OUTPUT_DIR/spelling_list.txt" A,B,Z,C,D
 }
-trap 'kill $(jobs -p) 2>/dev/null || true' EXIT
 
-"$PYTHON" download_sources.py --language "$LANGUAGE" "$DATA_DIR"
+# Every step runs in the background in a process group of its own (job control, `set -m`), so
+# stopping a step stops every program it started. A step that fails signals the build (USR1),
+# whose `wait` the signal interrupts at once, and the build stops every step still running. This
+# works in the bash 3.2 macOS ships, which has no `wait -n`.
+set -m
+STEP_GROUPS=""
+stop_steps() {
+  local group
+  for group in $STEP_GROUPS; do
+    kill -TERM -- "-$group" 2>/dev/null || true
+  done
+}
+step_failed() {
+  trap - EXIT USR1
+  stop_steps
+  echo "$0: a step failed; every step still running was stopped" >&2
+  exit 1
+}
+trap step_failed USR1
+trap stop_steps EXIT
+
+# Starts a step, a function or a command with its arguments; STEP is its process ID. Errors stop
+# the step as `set -e` does, which a step run inside `||` would not.
+start() {
+  (
+    set +e
+    (set -e; "$@")
+    [[ $? -eq 0 ]] || kill -USR1 $$
+  ) &
+  STEP=$!
+  STEP_GROUPS="$STEP_GROUPS $STEP"
+}
+# Waits for the steps with these process IDs.
+finish() {
+  local step
+  for step in "$@"; do
+    wait "$step"
+  done
+}
+
+start "$PYTHON" download_sources.py --language "$LANGUAGE" "$DATA_DIR"
+finish "$STEP"
 
 # The vocabulary and the words spelled with capitals, and the swipe vocabulary's counts, read
 # only the sources.
-capitalized_spellings & CAPITALIZED=$!
+start capitalized_spellings; CAPITALIZED=$STEP
 SWIPE=""
 if [[ -n "$DICTIONARY_WORDS" ]]; then
-  swipe_counts & SWIPE=$!
+  start swipe_counts; SWIPE=$STEP
 fi
 
 # The context model and the sentence openers read the sentences.
-"$PYTHON" extract_sentences.py --language "$LANGUAGE" "$DATA_DIR"
-context_model & CONTEXT=$!
-sentence_openers & OPENERS=$!
-wait "$CONTEXT"
-wait "$OPENERS"
-wait "$CAPITALIZED"
+start "$PYTHON" extract_sentences.py --language "$LANGUAGE" "$DATA_DIR"
+finish "$STEP"
+start context_model; CONTEXT=$STEP
+start sentence_openers; OPENERS=$STEP
+finish "$CONTEXT" "$OPENERS" "$CAPITALIZED"
 
 # Words that follow an unknown word, and a common word, and the grammar words: the counts, the
 # vocabulary, and the word kinds.
-"$PYTHON" write_unknown_word_followers.py "$DATA_DIR" "$OUTPUT_DIR/vocabulary.txt" "$OUTPUT_DIR/unknown_word_followers.txt" &
-UNKNOWN=$!
-"$PYTHON" write_word_followers.py "$DATA_DIR" "$OUTPUT_DIR/vocabulary.txt" "$OUTPUT_DIR/word_followers.txt" &
-FOLLOWERS=$!
-"$PYTHON" write_grammar_words.py "$DATA_DIR" "$OUTPUT_DIR/grammar_words.txt"
-wait "$UNKNOWN"
-wait "$FOLLOWERS"
+start "$PYTHON" write_unknown_word_followers.py "$DATA_DIR" "$OUTPUT_DIR/vocabulary.txt" "$OUTPUT_DIR/unknown_word_followers.txt"
+UNKNOWN=$STEP
+start "$PYTHON" write_word_followers.py "$DATA_DIR" "$OUTPUT_DIR/vocabulary.txt" "$OUTPUT_DIR/word_followers.txt"
+FOLLOWERS=$STEP
+start "$PYTHON" write_grammar_words.py "$DATA_DIR" "$OUTPUT_DIR/grammar_words.txt"
+finish "$UNKNOWN" "$FOLLOWERS" "$STEP"
 
 # The swipe vocabulary: the words people write that the dictionary lacks.
 if [[ -n "$SWIPE" ]]; then
-  wait "$SWIPE"
-  "$PYTHON" write_swipe_vocabulary.py --language "$LANGUAGE" "$DATA_DIR" "$DICTIONARY_WORDS" \
+  finish "$SWIPE"
+  start "$PYTHON" write_swipe_vocabulary.py --language "$LANGUAGE" "$DATA_DIR" "$DICTIONARY_WORDS" \
     "$OUTPUT_DIR/spelling_list.txt" "$OUTPUT_DIR/swipe_vocabulary.txt"
+  finish "$STEP"
 fi

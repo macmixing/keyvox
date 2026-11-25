@@ -111,7 +111,9 @@ spelling list) run beside `extract_sentences.py`; then the context model (`count
 `count_sentence_openers.py`, `write_sentence_openers.py`); then the two follower lists and the
 grammar words, once the counts, the vocabulary, and the word kinds are written; and last
 `write_swipe_vocabulary.py`. Each step reads the same files it would read run alone, so the files
-are the same; the memory of the steps running together adds up.
+are the same; the memory of the steps running together adds up. Each step runs in a process group
+of its own, and when one fails the build stops every step still running, with every program they
+started, and fails at once, in the bash 3.2 macOS ships as in later ones.
 
 `<identifier>` is the build's typing language (`de` for `de-bundestag`). The tools need Python
 3.14 or later (for `compression.zstd`), Xcode's `swiftc` for Apple's tagger, and for Spanish the
