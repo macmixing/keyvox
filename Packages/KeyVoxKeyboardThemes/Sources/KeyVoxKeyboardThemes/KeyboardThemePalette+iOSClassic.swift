@@ -58,22 +58,25 @@ extension KeyboardThemePalette {
             ),
             dark: KeyboardThemeRGBA(red: 0, green: 0, blue: 0, alpha: 0.82)
         ),
-        // Neutral like the keys: the popup characters' black in light and white in dark, over a
-        // faint glow of the same shade.
+        // The platform's system blue in light and white in dark, over three nested glow layers of
+        // the same shade, fainter in dark.
         swipeTrail: KeyboardThemeSwipeTrail(
-            color: .appearance(
-                light: KeyboardThemeRGBA(red: 0, green: 0, blue: 0, alpha: 0.55),
-                dark: KeyboardThemeRGBA(red: 1, green: 1, blue: 1, alpha: 0.85)
-            ),
-            glowColor: .appearance(
-                light: KeyboardThemeRGBA(red: 0, green: 0, blue: 0, alpha: 0.08),
-                dark: KeyboardThemeRGBA(red: 1, green: 1, blue: 1, alpha: 0.16)
-            ),
-            width: 6,
-            tailWidthScale: 0.3,
-            glowWidthScale: 2.4,
-            fadeDuration: 0.3,
-            liftFadeDuration: 0.22
+            color: KeyboardThemeColor(light: .system(.blue, alpha: 0.8), dark: .rgba(KeyboardThemeRGBA(red: 1, green: 1, blue: 1, alpha: 0.7))),
+            headColor: KeyboardThemeColor(light: .system(.blue, alpha: 0.8), dark: .rgba(KeyboardThemeRGBA(red: 1, green: 1, blue: 1, alpha: 0.7))),
+            glowColor: KeyboardThemeColor(light: .system(.blue), dark: .rgba(KeyboardThemeRGBA(red: 1, green: 1, blue: 1))),
+            glows: [
+                KeyboardThemeSwipeTrail.Glow(widthScale: 1.5, opacity: KeyboardThemeSwipeTrail.Measure(light: 0.14, dark: 0.10)),
+                KeyboardThemeSwipeTrail.Glow(widthScale: 2.2, opacity: KeyboardThemeSwipeTrail.Measure(light: 0.08, dark: 0.06)),
+                KeyboardThemeSwipeTrail.Glow(widthScale: 3, opacity: KeyboardThemeSwipeTrail.Measure(light: 0.04, dark: 0.03)),
+            ],
+            width: KeyboardThemeSwipeTrail.Measure(light: 5.5, dark: 6),
+            tailWidthScale: KeyboardThemeSwipeTrail.standardTailWidthScale,
+            tailDuration: KeyboardThemeSwipeTrail.standardTailDuration,
+            opacityFalloffExponent: KeyboardThemeSwipeTrail.standardOpacityFalloffExponent,
+            headScale: KeyboardThemeSwipeTrail.standardHeadScale,
+            liftDuration: KeyboardThemeSwipeTrail.standardLiftDuration,
+            bloomScale: KeyboardThemeSwipeTrail.standardBloomScale,
+            bloomDuration: KeyboardThemeSwipeTrail.standardBloomDuration
         )
     )
 

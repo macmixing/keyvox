@@ -26,6 +26,8 @@ extension KeyboardThemeColor {
 private extension KeyboardThemeSystemColor {
     var uiColor: UIColor {
         switch self {
+        case .blue:
+            return .systemBlue
         case .indigo:
             return .systemIndigo
         case .gray:
