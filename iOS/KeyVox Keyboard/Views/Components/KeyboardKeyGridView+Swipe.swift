@@ -174,8 +174,13 @@ extension KeyboardKeyGridView {
         }
     }
 
-    /// Hands on `session`'s path as a word and lets its trail fade.
+    /// Hands on `session`'s path as a word and lets its trail fade, or, with nowhere for its word
+    /// to go, as while the field is not to be read, ends its trail at once.
     func endSwipe(_ session: KeyboardKeyTouchSession) {
+        guard swipePlace?() != nil else {
+            swipeTrailView.cancel()
+            return
+        }
         swipeTrailView.lift()
         onSwipeEnded?(session.swipePath, nil)
     }
