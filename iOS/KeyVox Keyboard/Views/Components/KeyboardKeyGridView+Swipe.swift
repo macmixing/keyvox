@@ -154,11 +154,13 @@ extension KeyboardKeyGridView {
     }
 
     /// Types the keys of the undecided fingers a landing finger makes taps, in the order they
-    /// lifted.
+    /// lifted, ending the trail each lifted.
     func typeUndecidedTouches() {
         guard allowsSwipeTyping else { return }
         for id in swipeGate.settleUndecidedAsTaps() {
-            guard let session = undecidedSwipeSessions.removeValue(forKey: id), let kind = session.kind else { continue }
+            guard let session = undecidedSwipeSessions.removeValue(forKey: id) else { continue }
+            swipeTrailView.cancel()
+            guard let kind = session.kind else { continue }
             deliver(kind, from: session)
         }
     }
