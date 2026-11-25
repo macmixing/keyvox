@@ -7,9 +7,9 @@
     "beta": 1.139
   },
   "scoring": {
-    "gamma": 0.0125,
-    "frequencyWeight": 0.048550594563907035,
-    "lengthBonus": 2.404468606569386,
+    "gamma": 0.4416782860196686,
+    "frequencyWeight": 0.029198906788676683,
+    "lengthBonus": 0.9808640269387409,
     "contextWeight": 0.425,
     "samePathContextWeight": 0.8,
     "misspellingRatio": 50,
