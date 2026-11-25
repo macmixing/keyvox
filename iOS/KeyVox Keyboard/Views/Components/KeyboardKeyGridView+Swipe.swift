@@ -42,6 +42,10 @@ extension KeyboardKeyGridView {
         // A held key's open popup has the finger now, choosing a character.
         if session === heldKeyTouchSession, heldKeyController.hasOpened {
             session.swipePath = []
+            if session.showsTrail {
+                session.showsTrail = false
+                swipeTrailView.cancel()
+            }
             return false
         }
         let samples = (event.coalescedTouches(for: touch) ?? [touch]).map {
