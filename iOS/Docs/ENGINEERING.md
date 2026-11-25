@@ -2132,6 +2132,7 @@ The model (`PredictiveData/<language>/`):
 - the files live in the language's folder because the decoder reads one fixed key layout; the encoder alone scores any layout from its key centers, which come from the live keys mapped onto the language's default letter rows
 - every size the networks run at comes from the weight files' headers and every setting from `swipe.json`, so a better model is a change of these files alone
 - scoring is the model tools' tuned score (path log-probability over its length, dictionary frequency, length bonus) plus a context weight times how much likelier the words before make the word (`ContextLanguageScorer`), tuned on swipe.futo.org's validation swipes with their sentences; the user's own words rank with the dictionary frequency of words seen as often as typing takes the user's words to be
+- words whose key paths are the same, such as a word and its doubled-letter twin ("to" and "too", since a repeated letter is one key), look the same to a swipe and differ only by frequency and context, so when words come before, the context counts `samePathContextWeight` among them rather than the context weight: they are reordered by that score, each taking one of their places, which keeps every other ranking and the order of a word's own case and apostrophe spellings as scored; with no words before, they rank as scored. The weight is tuned on the validation swipes that have words before, since the split's swipes without any include words from the middle of sentences whose earlier words it does not give
 
 ### Field Keys
 
