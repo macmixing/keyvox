@@ -12,11 +12,11 @@ import argparse
 import json
 from pathlib import Path
 
-from calibrate_typo_simulator import mistyped_shares, shares
 from ite_copied_typing import copied_sentences
 from letter_layout import LetterLayout
 from paths import DataPaths
 from typo_kinds import TypoCounts
+from typo_shares import mistyped_shares, shares
 from typo_simulator import TypoSimulator
 
 SEED = 20261124
