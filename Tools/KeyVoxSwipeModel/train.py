@@ -20,6 +20,7 @@ from augment import AugmentConfig, augment_geometry, reverse_choice, reverse_swi
 from layouts import load_layout
 from model import EncoderConfig, SwipeEncoder, key_basis, log_emissions
 from prepare_swipes import POINTS
+from run_settings import KEEP_DOUBLES
 from swipe_data import load_swipes, trainable
 
 EMISSION_PENALTY = 0.05
@@ -68,6 +69,7 @@ def main() -> None:
     parser.add_argument("--expansion", type=int, default=EncoderConfig.expansion)
     parser.add_argument("--dilations", default=",".join(map(str, EncoderConfig.dilations)))
     parser.add_argument("--dropout", type=float, default=EncoderConfig.dropout)
+    parser.add_argument("--keep-doubles", action="store_true", help="keep repeated keys in CTC targets")
     parser.add_argument("--resume", action="store_true")
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--device", default="mps" if torch.backends.mps.is_available() else "cpu")
@@ -90,8 +92,8 @@ def main() -> None:
     frames = output_frames(POINTS)
     prepared = arguments.data_dir / "prepared"
     train_paths = [prepared / "train.npz"] + ([prepared / "extra.npz"] if arguments.extra else [])
-    train = trainable(load_swipes(train_paths, layout, frames))
-    val = trainable(load_swipes([prepared / "val.npz"], layout, frames))
+    train = trainable(load_swipes(train_paths, layout, frames, arguments.keep_doubles))
+    val = trainable(load_swipes([prepared / "val.npz"], layout, frames, arguments.keep_doubles))
     print(f"train {len(train.lengths)} swipes, val {len(val.lengths)} swipes", flush=True)
 
     def to_device(swipes):
@@ -118,7 +120,7 @@ def main() -> None:
         start_epoch, best = state["epoch"] + 1, state["best"]
         torch.set_rng_state(state["rng"].cpu())
     settings = {**vars(arguments), "data_dir": str(arguments.data_dir), "config": config.to_dict(),
-                "augment": augment_config.__dict__, "parameters": sum(p.numel() for p in model.parameters())}
+                "augment": augment_config.__dict__, KEEP_DOUBLES: arguments.keep_doubles, "parameters": sum(p.numel() for p in model.parameters())}
     (run_dir / "settings.json").write_text(json.dumps(settings, indent=2) + "\n")
     print(f"{settings['parameters']} parameters", flush=True)
 

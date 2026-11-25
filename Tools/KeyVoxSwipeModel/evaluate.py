@@ -21,6 +21,7 @@ from decode import Pruning, beam_search, save_candidates
 from layouts import load_layout
 from lexicon import build_trie, load_lexicon
 from run_emissions import is_decoder_run, run_emissions
+from run_settings import encoder_settings, keeps_doubles
 from scoring import Scoring, candidate_scores, target_ranks, top_k_accuracy
 
 
@@ -57,6 +58,7 @@ def main() -> None:
     layout_names = sorted(set(split["layout"].tolist()))
     if len(layout_names) > 1 and is_decoder_run(run_dir):
         parser.error(f"the {arguments.split} split spans several layouts and needs an encoder run")
+    keep_doubles = keeps_doubles(encoder_settings(arguments.data_dir / "models", arguments.run))
     pruning = Pruning(beam=arguments.beam, gamma=arguments.prune_gamma, beta=arguments.prune_beta)
     scoring_path = run_dir / "scoring.json"
     scoring = Scoring.load(scoring_path) if scoring_path.exists() else Scoring()
@@ -70,7 +72,7 @@ def main() -> None:
         emissions = run_emissions(arguments.data_dir / "models", arguments.run, split["xy"][rows], layout, device,
                                   arguments.exported, arguments.checkpoint)
         candidates, ranks[rows], accuracy = decode_accuracy(
-            arguments.data_dir, emissions, build_trie(lexicon, layout), lexicon, scoring, targets[rows], pruning)
+            arguments.data_dir, emissions, build_trie(lexicon, layout, keep_doubles), lexicon, scoring, targets[rows], pruning)
         per_layout[name] = {"swipes": int(len(rows)), **accuracy}
         if len(layout_names) == 1:
             save_candidates(run_dir / f"candidates-{arguments.split}.npz", candidates, pruning)

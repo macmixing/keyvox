@@ -10,20 +10,21 @@ from torch.nn import functional as F
 
 from lexicon import Lexicon
 from scoring import Scoring
-from words import key_path
+from words import ctc_frames_needed, key_path
 
 NEGATIVES = 16
 CTC_WEIGHT = 0.3
 
 
-def lexicon_paths(lexicon: Lexicon, key_index: dict[str, int], frames: int) -> tuple[np.ndarray, np.ndarray]:
+def lexicon_paths(lexicon: Lexicon, key_index: dict[str, int], frames: int, keep_doubles: bool = False
+                  ) -> tuple[np.ndarray, np.ndarray]:
     """Every form's key path as CTC labels (key + 1), zero padded, and its length (0 when
     the form cannot be decoded in `frames` frames)."""
     paths = np.zeros((len(lexicon.forms), frames), dtype=np.int64)
     lengths = np.zeros(len(lexicon.forms), dtype=np.int64)
     for number, form in enumerate(lexicon.forms):
-        path = key_path(form, key_index)
-        if path and len(path) <= frames:
+        path = key_path(form, key_index, keep_doubles)
+        if path and ctc_frames_needed(path) <= frames:
             paths[number, : len(path)] = np.array(path) + 1
             lengths[number] = len(path)
     return paths, lengths

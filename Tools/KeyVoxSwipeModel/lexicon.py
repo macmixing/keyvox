@@ -61,7 +61,7 @@ class KeyTrie:
     form_path_length: np.ndarray  # [F] int32, key-path length per lexicon form, 0 if not typeable
 
 
-def build_trie(lexicon: Lexicon, layout: Layout) -> KeyTrie:
+def build_trie(lexicon: Lexicon, layout: Layout, keep_doubles: bool = False) -> KeyTrie:
     key_index = layout.key_index
     children: list[dict[int, int]] = [{}]
     keys = [-1]
@@ -69,7 +69,7 @@ def build_trie(lexicon: Lexicon, layout: Layout) -> KeyTrie:
     endings: list[list[int]] = [[]]
     path_lengths = np.zeros(len(lexicon.forms), dtype=np.int32)
     for form_number, form in enumerate(lexicon.forms):
-        path = key_path(form, key_index)
+        path = key_path(form, key_index, keep_doubles)
         if not path:
             continue
         path_lengths[form_number] = len(path)

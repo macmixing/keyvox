@@ -15,6 +15,7 @@ from decode import load_candidates
 from evaluate import target_forms
 from layouts import load_layout
 from lexicon import build_trie, load_lexicon
+from run_settings import encoder_settings, keeps_doubles
 from scoring import Scoring, candidate_scores, target_ranks, top_k_accuracy
 
 RANGES = {"gamma": (0.0, 1.0), "frequency_weight": (0.0, 0.2), "length_bonus": (0.0, 6.0)}
@@ -33,7 +34,8 @@ def main() -> None:
 
     run_dir = arguments.data_dir / "models" / arguments.run
     lexicon = load_lexicon(arguments.lexicon)
-    trie = build_trie(lexicon, load_layout(arguments.data_dir, arguments.layout))
+    keep_doubles = keeps_doubles(encoder_settings(arguments.data_dir / "models", arguments.run))
+    trie = build_trie(lexicon, load_layout(arguments.data_dir, arguments.layout), keep_doubles)
     candidates, _ = load_candidates(run_dir / "candidates-val.npz")
     targets = target_forms(np.load(arguments.data_dir / "prepared" / "val.npz")["form"], lexicon.forms)
 

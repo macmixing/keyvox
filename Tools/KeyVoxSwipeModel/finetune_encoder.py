@@ -25,6 +25,7 @@ from lexicon import build_trie, load_lexicon
 from model import key_basis, log_emissions
 from prepare_swipes import POINTS
 from ranking import lexicon_paths, ranking_loss, ranking_options
+from run_settings import KEEP_DOUBLES, keeps_doubles
 from scoring import Scoring, candidate_scores
 from train import output_frames
 
@@ -43,6 +44,7 @@ def main() -> None:
     parser.add_argument("--batch", type=int, default=1024)
     parser.add_argument("--learning-rate", type=float, default=1e-4)
     parser.add_argument("--limit", type=int, default=0, help="train on only the first N swipes")
+    parser.add_argument("--keep-doubles", action="store_true", help="switch the run to key paths that keep repeated keys")
     parser.add_argument("--device", default="mps" if torch.backends.mps.is_available() else "cpu")
     parser.add_argument("--seed", type=int, default=0)
     arguments = parser.parse_args()
@@ -59,7 +61,8 @@ def main() -> None:
     pruning = Pruning()
     layout = load_layout(arguments.data_dir, base_settings["layout"])
     lexicon = load_lexicon(arguments.lexicon)
-    trie = build_trie(lexicon, layout)
+    keep_doubles = keeps_doubles(base_settings) or arguments.keep_doubles
+    trie = build_trie(lexicon, layout, keep_doubles)
     model = load_encoder(base_dir / "best.pt", device)
 
     prepared = arguments.data_dir / "prepared"
@@ -71,7 +74,7 @@ def main() -> None:
     targets = target_forms(forms, lexicon.forms)
     candidates = beam_search(arguments.data_dir, compute_emissions(model, xy, layout, device), trie, pruning)
     scores = candidate_scores(candidates, lexicon.frequency, trie.form_path_length, scoring)
-    paths, path_lengths = lexicon_paths(lexicon, layout.key_index, output_frames(POINTS))
+    paths, path_lengths = lexicon_paths(lexicon, layout.key_index, output_frames(POINTS), keep_doubles)
     options, keep = ranking_options(candidates, scores, targets, path_lengths)
     del candidates, scores
     print(f"fine-tuning swipes: {keep.sum()} of {len(keep)}", flush=True)
@@ -88,7 +91,7 @@ def main() -> None:
     steps_per_epoch = len(train_xy) // arguments.batch
     total = steps_per_epoch * arguments.epochs
     warmup = max(1, int(total * WARMUP_FRACTION))
-    settings = {**base_settings, "finetune": {**vars(arguments), "data_dir": str(arguments.data_dir),
+    settings = {**base_settings, KEEP_DOUBLES: keep_doubles, "finetune": {**vars(arguments), "data_dir": str(arguments.data_dir),
                                               "lexicon": str(arguments.lexicon), "scoring": scoring.__dict__}}
     (run_dir / "settings.json").write_text(json.dumps(settings, indent=2) + "\n")
 

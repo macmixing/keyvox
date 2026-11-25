@@ -29,6 +29,7 @@ from layouts import load_layout
 from lexicon import build_trie, load_lexicon
 from ranking import lexicon_paths, ranking_loss, ranking_options
 from run_emissions import DECODER_CHECKPOINT
+from run_settings import keeps_doubles
 from scoring import Scoring, candidate_scores
 
 WEIGHT_DECAY = 1e-2
@@ -54,7 +55,7 @@ def prepare_inputs(arguments, encoder_dir, encoder_settings, scoring, pruning, l
     symbols = len(layout.letters) + 1
     candidates = beam_search(arguments.data_dir, frames[..., :symbols].astype(np.float32), trie, pruning)
     scores = candidate_scores(candidates, lexicon.frequency, trie.form_path_length, scoring)
-    _, path_lengths = lexicon_paths(lexicon, layout.key_index, frames.shape[1])
+    _, path_lengths = lexicon_paths(lexicon, layout.key_index, frames.shape[1], keeps_doubles(encoder_settings))
     options, keep = ranking_options(candidates, scores, targets, path_lengths)
     val = np.load(prepared / "val.npz")
     np.savez(path, train_frames=frames[keep], train_options=options[keep],
@@ -89,7 +90,8 @@ def main() -> None:
     pruning = Pruning()
     layout = load_layout(arguments.data_dir, encoder_settings["layout"])
     lexicon = load_lexicon(arguments.lexicon)
-    trie = build_trie(lexicon, layout)
+    keep_doubles = keeps_doubles(encoder_settings)
+    trie = build_trie(lexicon, layout, keep_doubles)
     inputs_path = run_dir / INPUTS_FILE
     if not inputs_path.exists():
         prepare_inputs(arguments, encoder_dir, encoder_settings, scoring, pruning, layout, lexicon, trie, device,
@@ -102,7 +104,7 @@ def main() -> None:
     train_options = torch.from_numpy(inputs["train_options"]).to(device)
     val_frames = inputs["val_frames"].astype(np.float32)
     val_targets = inputs["val_targets"]
-    paths, path_lengths = lexicon_paths(lexicon, layout.key_index, val_frames.shape[1])
+    paths, path_lengths = lexicon_paths(lexicon, layout.key_index, val_frames.shape[1], keep_doubles)
     paths_t, lengths_t = torch.from_numpy(paths), torch.from_numpy(path_lengths)
     frequency = torch.from_numpy(lexicon.frequency).to(device)
     symbols = len(layout.letters) + 1
