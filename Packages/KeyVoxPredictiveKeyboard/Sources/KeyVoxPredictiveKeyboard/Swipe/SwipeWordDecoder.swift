@@ -188,7 +188,7 @@ final class SwipeWordDecoder: @unchecked Sendable {
     /// its twins repeating it fewer times and no letter more, and the same at every key a loop
     /// credits the word, win unless every one is a misspelling of it, written `misspellingRatio`
     /// times less often in the context model, the rule the language data's swipe vocabulary build
-    /// leaves misspellings out by; then it wins over them.
+    /// leaves misspellings out by; then it wins over them, except a twin a loop credits at that key.
     /// So circling either "ss" of "possess" gives "possess".
     /// Names and the user's own words are weighed the same way. A word losing to a twin at any key
     /// comes after the words that lose at fewer, whatever its loops, so a loop never brings in
@@ -249,7 +249,8 @@ final class SwipeWordDecoder: @unchecked Sendable {
                     if shorter.contains(where: { isMisspelling($0, of: longer) == false }) {
                         unlooped[longer, default: 0] += 1
                     } else {
-                        for word in shorter {
+                        // A twin a loop credits at this key is what the loop asked for.
+                        for word in shorter where credited[word]!.contains(key) == false {
                             unlooped[word, default: 0] += 1
                         }
                     }

@@ -107,6 +107,31 @@ final class SwipeDoubledLetterTests: XCTestCase {
         }
     }
 
+    /// A word whose letter a loop asks for doubled keeps that credit against a twin with it tripled,
+    /// however much more often the tripled one is written.
+    func testACircledDoubleOutranksACommonerTripledTwin() throws {
+        let engine = try PredictiveEngine(language: .english)
+        let decoder = try SwipeWordDecoder(language: .english)
+        let keys = KeyCenterMap(geometry: TypingLanguage.english.letterLayout.defaultGeometry)
+        // A made-up word with its last letter once, twice, and three times, the tripled one written
+        // far more often than the misspelling ratio asks.
+        let single = "zqx", doubled = "zqxx", tripled = "zqxxx"
+        let frequency: [String: Double] = [single: -20, doubled: -10, tripled: 0]
+        let path = SwipePath.through(single, loopingAt: [2])
+        let emissions = try XCTUnwrap(decoder.emissions(for: path, keys: keys))
+        let candidates = try decoder.candidates(
+            emissions: emissions,
+            personal: decoder.personalLexicon([single, doubled, tripled]),
+            contextLift: nil,
+            hasWordsBefore: false,
+            loopedKeys: { keyPath in decoder.loopedKeys(path: path, keyPath: keyPath, keys: keys) },
+            twinFacts: { spelling in frequency[spelling].map { SwipeTwinFacts(logFrequency: $0) } ?? SwipeTwinFacts(spelling: spelling, engine: engine) }
+        ).map(\.spelling)
+        let place = { (word: String) in try XCTUnwrap(candidates.firstIndex(of: word), "\(word) was weighed") }
+        XCTAssertLessThan(try place(doubled), try place(tripled))
+        XCTAssertLessThan(try place(doubled), try place(single))
+    }
+
     func testWithoutACircleANameKeepsItsLettersOverACommonerTwin() throws {
         for word in ["mary", "paris", "anderson", "mr"] {
             XCTAssertEqual(try best(swipingKeysOf: word, previousWords: [])?.lowercased(), word, "no circle")
