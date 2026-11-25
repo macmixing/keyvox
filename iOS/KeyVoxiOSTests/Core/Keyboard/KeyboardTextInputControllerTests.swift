@@ -4,13 +4,13 @@ import Testing
 @testable import KeyVox_iOS
 
 struct KeyboardTextInputControllerTests {
-    @Test func everyEditCallsItsHooksBeforeTouchingTheTextAndOnceItIsDone() {
+    @Test func everyEditCallsItsHooksBeforeReadingOrChangingTheTextAndOnceItIsDone() {
         let documentProxy = KeyboardTextDocumentProxySpy()
         documentProxy.documentContextBeforeInput = "Hello world"
         documentProxy.selectedText = "world"
         var events: [String] = []
         func record(_ event: String) -> () -> Void {
-            { events.append("\(event) \(documentProxy.insertedTexts.count) \(documentProxy.deleteBackwardCallCount) \(documentProxy.adjustedOffsets.count)") }
+            { events.append("\(event) reads \(documentProxy.readCount) writes \(documentProxy.writeCount)") }
         }
         let controller = KeyboardTextInputController(
             documentProxy: documentProxy,
@@ -19,29 +19,40 @@ struct KeyboardTextInputControllerTests {
             didEdit: record("did")
         )
         var symbolPage = KeyboardSymbolPage.primary
+        func check(_ edit: String, reads: Bool, _ perform: () -> Void) {
+            events = []
+            let readsBefore = documentProxy.readCount
+            let writesBefore = documentProxy.writeCount
+            perform()
+            #expect(events.count == 2, "\(edit): one call of each hook")
+            #expect(events.first == "will reads \(readsBefore) writes \(writesBefore)", "\(edit): before reading or changing the text")
+            #expect(events.last == "did reads \(documentProxy.readCount) writes \(documentProxy.writeCount)", "\(edit): once done")
+            #expect(documentProxy.writeCount > writesBefore, "\(edit) changed the text")
+            #expect((documentProxy.readCount > readsBefore) == reads, "\(edit) read the text")
+        }
 
-        #expect(controller.replaceUntouchedInsertion("world", with: "World", documentContextBeforeInsertion: "Hello "))
-        #expect(events == ["will 0 0 0", "did 1 5 0"], "a dictation change")
-        events = []
-        _ = controller.handleKeyActivation(.character("a"), symbolPage: &symbolPage)
-        #expect(events == ["will 1 5 0", "did 2 5 0"], "a key")
-        events = []
-        controller.apply(TextEdit(deleteCount: 1, insertText: "b"))
-        #expect(events.first == "will 2 5 0" && events.last == "did 3 6 0", "a typing session edit")
-        events = []
-        #expect(controller.replaceSelectedText("world", with: "there"))
-        #expect(events == ["will 3 6 0", "did 4 6 0"], "a selection replaced")
-        events = []
-        controller.adjustCursorPosition(by: -2)
-        #expect(events == ["will 4 6 0", "did 4 6 2"], "the cursor moved")
-        events = []
-        #expect(controller.insertTranscriptionWithResult("dictated") != nil)
-        #expect(events.count == 2 && events.first == "will 4 6 2" && events.last?.hasPrefix("did") == true, "a dictation")
-        events = []
+        check("a dictation change", reads: true) {
+            #expect(controller.replaceUntouchedInsertion("world", with: "World", documentContextBeforeInsertion: "Hello "))
+        }
+        check("a key", reads: true) {
+            _ = controller.handleKeyActivation(.character("a"), symbolPage: &symbolPage)
+        }
+        check("a typing session edit", reads: true) {
+            controller.apply(TextEdit(deleteCount: 1, insertText: "b"))
+        }
+        check("a selection replaced", reads: true) {
+            #expect(controller.replaceSelectedText("world", with: "there"))
+        }
+        check("the cursor moved", reads: false) {
+            controller.adjustCursorPosition(by: -2)
+        }
+        check("a dictation", reads: true) {
+            #expect(controller.insertTranscriptionWithResult("dictated") != nil)
+        }
         documentProxy.selectedText = nil
-        let inserted = documentProxy.insertedTexts.count
-        #expect(controller.deleteWordsBackward(1) {})
-        #expect(events == ["will \(inserted) 6 2", "did \(inserted) 11 2"], "a held delete's words")
+        check("a held delete's words", reads: true) {
+            #expect(controller.deleteWordsBackward(1) {})
+        }
     }
 
     @Test func characterKeyInsertsTextWithoutKeypressHapticsOfItsOwn() {
@@ -775,13 +786,29 @@ struct KeyboardTextInputControllerTests {
 }
 
 private final class KeyboardTextDocumentProxySpy: KeyboardTextDocumentProxying {
-    var documentContextBeforeInput: String?
-    var documentContextAfterInput: String?
+    /// How many times the text before or after the cursor or the selection was read.
+    private(set) var readCount = 0
+    private var before: String?
+    private var after: String?
+    private var selected: String?
+    var documentContextBeforeInput: String? {
+        get { readCount += 1; return before }
+        set { before = newValue }
+    }
+    var documentContextAfterInput: String? {
+        get { readCount += 1; return after }
+        set { after = newValue }
+    }
     var hasText = false
-    var selectedText: String?
+    var selectedText: String? {
+        get { readCount += 1; return selected }
+        set { selected = newValue }
+    }
     var insertedTexts: [String] = []
     var deleteBackwardCallCount = 0
     var adjustedOffsets: [Int] = []
+    /// How many inserts, deletes, and cursor moves were made.
+    var writeCount: Int { insertedTexts.count + deleteBackwardCallCount + adjustedOffsets.count }
 
     func insertText(_ text: String) {
         insertedTexts.append(text)
