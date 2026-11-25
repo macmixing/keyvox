@@ -93,16 +93,6 @@ public final class PredictiveTypingSession {
         let corrections: [Correction]
     }
 
-    /// The word the last swipe inserted, with the space after it, and the other words the swipe
-    /// may have been, which the bar offers while the text still ends with it.
-    private struct SwipedWord {
-        let word: String
-        let space: String
-        let alternatives: [String]
-
-        var insertedText: String { word + space }
-    }
-
     /// A word space finished as typed, which the word after it may still revise.
     private struct RevisableWord {
         let word: String
@@ -121,7 +111,6 @@ public final class PredictiveTypingSession {
     /// bar offers to undo while the text still ends with the corrected words.
     private var revertibleAutocorrection: AppliedAutocorrection?
     private var revisableWord: RevisableWord?
-    private var swipedWord: SwipedWord?
     private var watchedCorrections: [WatchedCorrection] = []
     private var replacementWords: [ReplacementWord] = []
     /// How long the text before the cursor was when last told, which tells a deletion.
@@ -169,7 +158,6 @@ public final class PredictiveTypingSession {
         lastAutocorrection = nil
         revertibleAutocorrection = nil
         chosenText = nil
-        swipedWord = nil
         let context = TypingTextContext(textBeforeCursor: textBeforeCursor)
         if context.currentWord.isEmpty {
             wordTouches.reset()
@@ -195,9 +183,6 @@ public final class PredictiveTypingSession {
         }
         if let chosenText, textBeforeCursor?.hasSuffix(chosenText) != true {
             self.chosenText = nil
-        }
-        if let swipedWord, textBeforeCursor?.hasSuffix(swipedWord.insertedText) != true {
-            self.swipedWord = nil
         }
         let text = textBeforeCursor ?? ""
         // Only a deletion reaches back into a change; emptying the text, as clearing it or
@@ -262,7 +247,6 @@ public final class PredictiveTypingSession {
         replacedCorrections = []
         chosenText = nil
         pickedText = ""
-        swipedWord = nil
     }
 
     /// What to suggest for the text around the cursor. A selected word, or one the cursor
@@ -533,11 +517,6 @@ public final class PredictiveTypingSession {
             selectedText: selectedText,
             textAfterCursor: textAfterCursor
         )
-        if item.kind == .swipeAlternative, let swipedWord,
-           textBeforeCursor?.hasSuffix(swipedWord.insertedText) == true {
-            return swipeAlternativeEdit(item.text, replacing: swipedWord)
-        }
-        swipedWord = nil
         let word = suggestedWord(in: context)
         if item.kind == .revert, word.endsAtCursor,
            let reverted = revertibleAutocorrection(endingAt: textBeforeCursor) {
@@ -592,18 +571,16 @@ public final class PredictiveTypingSession {
         )
     }
 
-    /// What inserting a swiped word does: `words[0]` goes in as a word picked from the suggestion
-    /// bar would, followed by a space unless a space or punctuation already follows, and after a
-    /// space when it comes right after a mark a picked word is spaced away from, such as a comma;
-    /// a selection is replaced. The rest of `words` are what the bar offers in its place while the
-    /// text still ends with it. End a word in progress before swiping the next. Nil without words.
+    /// What inserting a swiped word does: `word` goes in as a word picked from the suggestion bar
+    /// would, followed by a space unless a space or punctuation already follows, and after a space
+    /// when it comes right after a mark a picked word is spaced away from, such as a comma; a
+    /// selection is replaced. End a word in progress before swiping the next.
     public func swipeEdit(
-        words: [String],
+        word: String,
         textBeforeCursor: String?,
         selectedText: String? = nil,
         textAfterCursor: String? = nil
-    ) -> TextEdit? {
-        guard let word = words.first else { return nil }
+    ) -> TextEdit {
         let context = TypingTextContext(
             textBeforeCursor: textBeforeCursor,
             selectedText: selectedText,
@@ -621,36 +598,7 @@ public final class PredictiveTypingSession {
         wordTouches.reset()
         pickedText = ""
         chosenText = context.followingText.isEmpty ? word + space : nil
-        swipedWord = SwipedWord(word: word, space: space, alternatives: Array(words.dropFirst()))
         return TextEdit(deleteCount: 0, insertText: leadingSpace + word + space)
-    }
-
-    /// What the bar offers right after a swipe, while the text still ends with the swiped word:
-    /// the other words the swipe may have been, likeliest in the middle; nil otherwise.
-    public func swipeAlternativesBar(textBeforeCursor: String?) -> SuggestionBar? {
-        guard let swipedWord, swipedWord.alternatives.isEmpty == false,
-              textBeforeCursor?.hasSuffix(swipedWord.insertedText) == true else {
-            return nil
-        }
-        let items = swipedWord.alternatives.prefix(SuggestionBar.slotCount).map {
-            SuggestionBar.Item(text: $0, kind: .swipeAlternative)
-        }
-        return SuggestionBar(
-            primary: items.first,
-            leading: items.dropFirst().first,
-            trailing: items.dropFirst(2).first
-        )
-    }
-
-    /// Puts `alternative` in place of the swiped word, which the bar then offers back.
-    private func swipeAlternativeEdit(_ alternative: String, replacing swiped: SwipedWord) -> TextEdit {
-        swipedWord = SwipedWord(
-            word: alternative,
-            space: swiped.space,
-            alternatives: [swiped.word] + swiped.alternatives.filter { $0 != alternative }
-        )
-        chosenText = chosenText.map { _ in alternative + swiped.space }
-        return TextEdit(deleteCount: swiped.insertedText.count, insertText: alternative + swiped.space)
     }
 
     /// Puts back the words `reverted` replaced, followed by a space like any pick, and holds its

@@ -2,8 +2,8 @@ import KeyVoxPredictiveKeyboard
 import UIKit
 
 /// Swipe typing: a word swiped across the letter keys goes in as a word picked from the
-/// suggestion bar would, written as typing writes it, with the other words it may have been on
-/// the bar.
+/// suggestion bar would, written as typing writes it. The bar keeps what it showed while the
+/// finger swipes, then shows what follows the word, as after any word.
 extension KeyboardViewController {
     /// Lets the keys swipe words where the focused field and the user's settings allow it.
     func updateSwipeTyping() {
@@ -22,14 +22,8 @@ extension KeyboardViewController {
             ))
             handleTypingContextChange()
         }
-        let wordCase: SwipeWordCase
-        switch letterCaseController.letterCase {
-        case .lowercase: wordCase = .asSpelled
-        case .shifted: wordCase = .capitalized
-        case .capsLocked: wordCase = .allCapitals
-        }
-        predictionCoordinator.decodeSwipe(path, wordCase: wordCase) { [weak self] words in
-            self?.insertSwipedWords(words)
+        predictionCoordinator.decodeSwipe(path, wordCase: swipeWordCase) { [weak self] word in
+            self?.insertSwipedWord(word)
         }
     }
 
@@ -41,9 +35,18 @@ extension KeyboardViewController {
         predictionCoordinator.finishPendingSwipe()
     }
 
-    private func insertSwipedWords(_ words: [String]) {
-        guard let edit = predictionCoordinator.swipeEdit(words: words) else { return }
-        textInputController.apply(edit)
+    /// The capitals the shift state gives a swiped word.
+    private var swipeWordCase: SwipeWordCase {
+        switch letterCaseController.letterCase {
+        case .lowercase: .asSpelled
+        case .shifted: .capitalized
+        case .capsLocked: .allCapitals
+        }
+    }
+
+    private func insertSwipedWord(_ word: String?) {
+        guard let word else { return }
+        textInputController.apply(predictionCoordinator.swipeEdit(word: word))
         letterCaseController.consumeTypedLetter()
         handleTypingContextChange()
     }
