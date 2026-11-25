@@ -104,6 +104,7 @@ extension KeyboardKeyGridView {
                 cancelHeldKey()
             }
             swipeTrailView.lift()
+            session.heldPlace = swipePlace?()
             undecidedSwipeSessions[id] = session
             let window = swipeGate.parameters.undecidedWindow
             DispatchQueue.main.asyncAfter(deadline: .now() + window) { [weak self] in
@@ -119,8 +120,17 @@ extension KeyboardKeyGridView {
         guard undecidedSwipeSessions.isEmpty == false else { return }
         for id in swipeGate.settleUndecided(at: time) {
             guard let session = undecidedSwipeSessions.removeValue(forKey: id) else { continue }
-            onSwipeEnded?(session.swipePath)
+            onSwipeEnded?(session.swipePath, session.heldPlace)
         }
+    }
+
+    /// Forgets the undecided fingers, typing nothing and handing on no word, as when another field
+    /// takes the keyboard.
+    func dropUndecidedSwipes() {
+        for id in undecidedSwipeSessions.keys {
+            swipeGate.touchCancelled(id)
+        }
+        undecidedSwipeSessions.removeAll()
     }
 
     /// Types the keys of the undecided fingers a landing finger makes taps, in the order they
@@ -145,7 +155,7 @@ extension KeyboardKeyGridView {
     /// Hands on `session`'s path as a word and lets its trail fade.
     func endSwipe(_ session: KeyboardKeyTouchSession) {
         swipeTrailView.lift()
-        onSwipeEnded?(session.swipePath)
+        onSwipeEnded?(session.swipePath, nil)
     }
 
     /// Forgets every finger the gate follows, undecided ones included, and any swipe under way,

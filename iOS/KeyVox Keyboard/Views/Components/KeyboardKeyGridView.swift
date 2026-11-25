@@ -35,8 +35,11 @@ final class KeyboardKeyGridView: UIView {
     /// Letter key frames whenever the letter page lays out differently.
     var onCharacterGeometryChange: (([KeyboardCharacterKeyGeometry], CGSize) -> Void)?
     /// Called with a swipe's path, in this view's coordinates, the moment its finger lifts or
-    /// another finger lands.
-    var onSwipeEnded: (([SwipeTouchSample]) -> Void)?
+    /// another finger lands, and, for a finger held undecided, where its word would have gone when
+    /// it lifted (`swipePlace`).
+    var onSwipeEnded: (([SwipeTouchSample], KeyboardSwipePlace?) -> Void)?
+    /// Where a swiped word would go now, read when a finger lifts undecided.
+    var swipePlace: (() -> KeyboardSwipePlace?)?
     /// Whether a finger sliding across the letter keys may swipe a word; while false, the swipe
     /// gate never runs and every touch is a key press.
     var allowsSwipeTyping = false {

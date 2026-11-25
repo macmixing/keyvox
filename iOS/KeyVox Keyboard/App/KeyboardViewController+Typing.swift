@@ -8,7 +8,7 @@ extension KeyboardViewController {
     /// Reads the focused field's traits and starts it on the right page with a fresh
     /// typing session.
     func prepareTypingForCurrentField() {
-        finishPendingSwipe()
+        dropPendingSwipes()
         typingTraits = KeyboardTypingTraits(proxy: textDocumentProxy, settings: appSettingsStore)
         updateSwipeTyping()
         fieldHasLetters = fieldHoldsLetters()

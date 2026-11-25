@@ -1,3 +1,4 @@
+import CoreGraphics
 import KeyVoxPredictiveKeyboard
 import Testing
 @testable import KeyVox_iOS
@@ -43,5 +44,34 @@ struct KeyboardPredictionCoordinatorTests {
 
         #expect(documentReads == readsBeforeEmojiLoad)
         #expect(bar == SuggestionBar.empty)
+    }
+
+    @Test func aSwipedWordGoesOnlyWhereItWasSwiped() {
+        var textBeforeCursor = "I am "
+        let coordinator = KeyboardPredictionCoordinator(
+            memory: TypingMemory(),
+            textBeforeCursor: { textBeforeCursor },
+            selectedText: { nil },
+            textAfterCursor: { nil }
+        )
+        let path = [
+            SwipeTouchSample(location: .zero, timestamp: 0),
+            SwipeTouchSample(location: CGPoint(x: 40, y: 0), timestamp: 0.2),
+        ]
+        var handedOver = 0
+
+        coordinator.decodeSwipe(path, wordCase: .asSpelled) { _ in handedOver += 1 }
+        coordinator.finishPendingSwipe()
+        #expect(handedOver == 1, "the cursor stayed where the swipe ended")
+
+        coordinator.decodeSwipe(path, wordCase: .asSpelled) { _ in handedOver += 1 }
+        textBeforeCursor += "there. "
+        coordinator.finishPendingSwipe()
+        #expect(handedOver == 1, "the cursor moved before the word arrived")
+
+        coordinator.decodeSwipe(path, wordCase: .asSpelled) { _ in handedOver += 1 }
+        coordinator.dropPendingSwipe()
+        coordinator.finishPendingSwipe()
+        #expect(handedOver == 1, "another field took the keyboard")
     }
 }

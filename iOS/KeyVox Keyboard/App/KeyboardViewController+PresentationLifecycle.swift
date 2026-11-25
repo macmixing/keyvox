@@ -111,8 +111,11 @@ extension KeyboardViewController {
         rootContainerView.keyGridView.onCharacterGeometryChange = { [weak self] geometry, size in
             self?.predictionCoordinator.updateGeometry(geometry, keyboardSize: size)
         }
-        rootContainerView.keyGridView.onSwipeEnded = { [weak self] path in
-            self?.handleSwipe(path)
+        rootContainerView.keyGridView.onSwipeEnded = { [weak self] path, heldPlace in
+            self?.handleSwipe(path, heldSince: heldPlace)
+        }
+        rootContainerView.keyGridView.swipePlace = { [weak self] in
+            self?.heldSwipePlace()
         }
         updateSwipeTyping()
         rootContainerView.suggestionBarView.onItemSelected = { [weak self] item in
@@ -197,6 +200,7 @@ extension KeyboardViewController {
             rootContainerView.keyGridView.onNextKeyboardTouch = nil
             rootContainerView.keyGridView.onCharacterGeometryChange = nil
             rootContainerView.keyGridView.onSwipeEnded = nil
+            rootContainerView.keyGridView.swipePlace = nil
             rootContainerView.suggestionBarView.onItemSelected = nil
             rootContainerView.suggestionBarView.onItemLongPressed = nil
             rootContainerView.suggestionBarView.onRescuedDictationSelected = nil

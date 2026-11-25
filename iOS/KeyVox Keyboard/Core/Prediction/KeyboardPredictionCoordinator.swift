@@ -40,9 +40,9 @@ final class KeyboardPredictionCoordinator {
     private var barRequest: PredictionRequest?
     private var newestEmojiWord: String?
     private var publishedBar = SuggestionBar.empty
-    /// The swipe being decoded, which `finishPendingSwipe` hands over at once when something
-    /// else is typed before it arrives.
-    private var pendingSwipe: (number: Int, deliver: (String?) -> Void)?
+    /// The swipe being decoded and where it ended, which `finishPendingSwipe` hands over at once
+    /// when something else is typed before it arrives.
+    private var pendingSwipe: (number: Int, place: KeyboardSwipePlace, deliver: (String?) -> Void)?
     private var swipeNumber = 0
     // Owned by `engine.queue`.
     /// Decoded swipes not yet handed over, by number.
@@ -368,13 +368,15 @@ final class KeyboardPredictionCoordinator {
     }
 
     /// Decodes a swipe's path off the main thread and hands the word it was swiped as, if any, to
-    /// `deliver` on the main thread, unless `finishPendingSwipe` handed it over first.
+    /// `deliver` on the main thread, unless `finishPendingSwipe` handed it over first. Nothing is
+    /// handed over once the swipe's place has changed (`KeyboardSwipePlace`) or the swipe was
+    /// dropped (`dropPendingSwipe`).
     func decodeSwipe(_ path: [SwipeTouchSample], wordCase: SwipeWordCase, deliver: @escaping (String?) -> Void) {
         finishPendingSwipe()
         swipeNumber += 1
         let number = swipeNumber
         let previousWords = session.request(textBeforeCursor: textBeforeCursor()).previousWords
-        pendingSwipe = (number, deliver)
+        pendingSwipe = (number, swipePlace(), deliver)
         engine.queue.async { [weak self] in
             guard let self else { return }
             let word = (try? self.engine.resolvedComputer()?.swipeWords(
@@ -397,6 +399,21 @@ final class KeyboardPredictionCoordinator {
         handOverSwipe(pending.number)
     }
 
+    /// Forgets the swipe being decoded, whose word then goes nowhere, as when another field takes
+    /// the keyboard.
+    func dropPendingSwipe() {
+        guard let pending = pendingSwipe else { return }
+        pendingSwipe = nil
+        engine.queue.async { [weak self] in
+            self?.decodedSwipes[pending.number] = nil
+        }
+    }
+
+    /// Where a swiped word would go now.
+    func swipePlace() -> KeyboardSwipePlace {
+        KeyboardSwipePlace(textBeforeCursor: textBeforeCursor(), selectedText: selectedText(), textAfterCursor: textAfterCursor())
+    }
+
     /// Whether letters of a word come right before the cursor.
     func hasWordInProgress() -> Bool {
         session.request(textBeforeCursor: textBeforeCursor()).currentWord.isEmpty == false
@@ -416,6 +433,8 @@ final class KeyboardPredictionCoordinator {
         guard let pending = pendingSwipe, pending.number == number else { return }
         let word = engine.queue.sync { decodedSwipes.removeValue(forKey: number) } ?? nil
         pendingSwipe = nil
+        // The cursor or the field moved since the swipe ended, so its word has nowhere to go.
+        guard swipePlace() == pending.place else { return }
         pending.deliver(word)
     }
 

@@ -19,6 +19,8 @@ final class KeyboardKeyTouchSession {
     /// The trail shows for the finger: it has traveled far enough to look like a swipe beginning,
     /// and its key shows no popup.
     var showsTrail = false
+    /// Where the swipe's word would have gone when its finger lifted undecided.
+    var heldPlace: KeyboardSwipePlace?
 
     init(keyView: KeyboardKeyView?, location: CGPoint, timestamp: TimeInterval) {
         self.keyView = keyView
