@@ -60,6 +60,10 @@ extension KeyboardKeyGridView {
             // Another finger landed, so this one can no longer swipe.
             if swipeGate.isSwipe(id) == false, touchSessions.count > 1 {
                 session.swipePath = []
+                if session.showsTrail {
+                    session.showsTrail = false
+                    swipeTrailView.cancel()
+                }
             }
             return false
         }
@@ -68,8 +72,9 @@ extension KeyboardKeyGridView {
     }
 
     /// Ends `session`'s chance of swiping, as when its held key's popup opens: the popup has the
-    /// finger now, choosing a character, so its trail goes, the gate lets go of it, and its moves
-    /// and lift are the popup's.
+    /// finger now, choosing a character, so its trail goes and its moves and lift are the popup's.
+    /// The gate keeps it as a finger down that cannot swipe until it lifts, so a finger landing
+    /// meanwhile cannot swipe either.
     func endSwipeCandidacy(of session: KeyboardKeyTouchSession) {
         guard session.swipePath.isEmpty == false else { return }
         session.swipePath = []
@@ -78,7 +83,7 @@ extension KeyboardKeyGridView {
             swipeTrailView.cancel()
         }
         if let id = touchSessions.first(where: { $0.value === session })?.key {
-            swipeGate.touchCancelled(id)
+            swipeGate.touchStopsSwiping(id)
         }
     }
 
@@ -89,6 +94,9 @@ extension KeyboardKeyGridView {
         let id = ObjectIdentifier(touch)
         guard session.swipePath.isEmpty == false else {
             swipeGate.touchCancelled(id)
+            if session.showsTrail {
+                swipeTrailView.cancel()
+            }
             return false
         }
         let lift = SwipeTouchSample(location: touch.location(in: self), timestamp: touch.timestamp)
