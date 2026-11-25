@@ -268,19 +268,20 @@ final class SwipeTwinRuleTests: XCTestCase {
     }
 
     private struct Results {
-        var plainSingle = 0, plainDoubled = 0, plainTripled = 0, loopedDoubled = 0, loopedAlsoDoubled = 0, loopedToACommonerWord = 0, otherWord = 0
+        var plainSingle = 0, plainDoubled = 0, plainTripled = 0, plainFarCommoner = 0, loopedDoubled = 0, loopedAlsoDoubled = 0, loopedToACommonerWord = 0, otherWord = 0
         var withoutDetection = (plainSingle: 0, loopedDoubled: 0)
         var wrongTwin: [String] = []
         var detectorMissed: [String] = []
         var summary: String {
-            "no loop -> single as scored \(plainSingle), no loop -> doubled as scored \(plainDoubled), no loop -> a tripled word's twin weighed by the misspelling rule \(plainTripled), loop -> doubled \(loopedDoubled), loop -> doubled and another letter doubled as scored \(loopedAlsoDoubled), loop -> a word doubling another letter written 50 times as often \(loopedToACommonerWord), an unrelated word \(otherWord), against the rule \(wrongTwin.count), swipes whose loops the detector read wrong \(detectorMissed.count); "
+            "no loop -> single as scored \(plainSingle), no loop -> doubled as scored \(plainDoubled), no loop -> a tripled word's twin weighed by the misspelling rule \(plainTripled), no loop -> a twin written 50 times as often as the one scored first \(plainFarCommoner), loop -> doubled \(loopedDoubled), loop -> doubled and another letter doubled as scored \(loopedAlsoDoubled), loop -> a word doubling another letter written 50 times as often \(loopedToACommonerWord), an unrelated word \(otherWord), against the rule \(wrongTwin.count), swipes whose loops the detector read wrong \(detectorMissed.count); "
                 + "with loop detection off: no loop -> single \(withoutDetection.plainSingle), loop -> doubled \(withoutDetection.loopedDoubled)"
         }
     }
 
     /// Each twin's swipe without a loop must decode as its scores rank it, as it does with loop
-    /// detection off, since between lexicon words no circle leaves the choice to them, unless that
-    /// top word repeats a letter three times, which the misspelling rule weighs; with a user's word
+    /// detection off, since between lexicon words no circle leaves the choice to them, unless a twin
+    /// is written 50 times as often as the one scored first, which then wins, or that top word
+    /// repeats a letter three times, which the misspelling rule weighs; with a user's word
     /// as the doubled twin, never to it, as a letter only the user's words double is never added.
     /// With a loop at the doubled key, it must decode to one with that key's letter exactly twice,
     /// its other letters as scored, unless a word doubling another letter is written 50 times as
@@ -291,6 +292,7 @@ final class SwipeTwinRuleTests: XCTestCase {
             (personal ? [form] : spellings[form] ?? [form]).map { SwipeTwinFacts(spelling: $0, engine: engine) }
         }
         func logFrequency(_ form: String, personal: Bool) -> Double { facts(form, personal: personal).map(\.logFrequency).max()! }
+        let ratio = log(decoder.settings.scoring.misspellingRatio)
         for twin in twins {
             let path = SwipeLetterForm.keyPath(of: twin.single, keyIndex: decoder.settings.keyIndex, keepsDoubleLetters: false)
             for loops in [Set<Int>(), Set([twin.key])] {
@@ -311,6 +313,9 @@ final class SwipeTwinRuleTests: XCTestCase {
                     } else if personal == nil, top != undetected {
                         if let runs = undetected.flatMap(Self.runs(of:)), runs.contains(where: { $0 > 2 }) {
                             results.plainTripled += 1
+                        } else if let top, let undetected, Self.doubledKeys(undetected, on: path) != nil,
+                                  logFrequency(top, personal: false) - logFrequency(undetected, personal: false) >= ratio {
+                            results.plainFarCommoner += 1
                         } else {
                             results.wrongTwin.append("PLAIN \(twin.letters): \(top ?? "-") over \(undetected ?? "-") as scored, detected \(detected.map { $0.sorted() } ?? [])")
                         }

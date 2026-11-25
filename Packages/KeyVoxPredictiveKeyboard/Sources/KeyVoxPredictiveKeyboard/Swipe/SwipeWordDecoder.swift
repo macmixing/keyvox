@@ -186,9 +186,11 @@ final class SwipeWordDecoder: @unchecked Sendable {
     /// twin has it once; a word with it three times or more gets nothing from the loop, as a loop
     /// asks for the letter doubled, not tripled. Where a word doubles a letter with no loop credit,
     /// its twins with the letter once, no letter more, and the same at every key a loop credits the
-    /// word are left to the scores and the words before when the bundled lexicon has them all, so
-    /// "as soon" gives "soon" and "my son" gives "son"; a word only the user's own words spell loses
-    /// to them there, so no letter only they double is added without a loop. Where a word repeats a
+    /// word are left to the scores and the words before when the bundled lexicon has them all,
+    /// unless one of the two is written `misspellingRatio` times as often as the other, which then
+    /// wins: "as soon" gives "soon" and "my son" gives "son", while "is" never gives "iss" and "se"
+    /// gives "see"; a word only the user's own words spell loses to them there, so no letter only
+    /// they double is added without a loop. Where a word repeats a
     /// letter three times or more with no loop credit, against every twin with it fewer times and no
     /// letter more, whatever its circles elsewhere, or doubles it against twins only the user's
     /// words spell, those twins win unless every one is a misspelling of it, written
@@ -265,7 +267,15 @@ final class SwipeWordDecoder: @unchecked Sendable {
                             unlooped[longer, default: 0] += 1
                             continue
                         }
-                        // Between lexicon words the scores and the words before decide.
+                        // Between lexicon words, one written `misspellingRatio` times as often as its twin
+                        // wins, either way; otherwise the scores and the words before decide.
+                        let lexical = shorter.filter { isPersonalOnly($0) == false }
+                        if lexical.contains(where: { isMisspelling(longer, of: $0) }) {
+                            unlooped[longer, default: 0] += 1
+                        }
+                        for word in lexical where isMisspelling(word, of: longer) && credited[word]!.contains(key) == false {
+                            unlooped[word, default: 0] += 1
+                        }
                         shorter = shorter.filter(isPersonalOnly)
                         guard shorter.isEmpty == false else { continue }
                     }

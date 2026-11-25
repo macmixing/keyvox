@@ -156,6 +156,13 @@ final class SwipeDoubledLetterTests: XCTestCase {
         }
     }
 
+    /// Without a circle, a twin written 50 times as often as the other wins whatever the words
+    /// before, so a sentence that suits the rarer one never adds a letter people do not mean.
+    func testWithoutACircleAFarCommonerTwinWinsWhateverTheWordsBefore() throws {
+        XCTAssertEqual(try best(swipingKeysOf: "is", previousWords: ["station", "the"]), "is")
+        XCTAssertEqual(try best(swipingKeysOf: "is", previousWords: ["station"]), "is")
+    }
+
     func testWithoutACircleANameKeepsItsLettersOverACommonerTwin() throws {
         for word in ["mary", "paris", "anderson", "mr"] {
             XCTAssertEqual(try best(swipingKeysOf: word, previousWords: [])?.lowercased(), word, "no circle")
