@@ -51,6 +51,12 @@ final class SwipeDoubledLetterTests: XCTestCase {
         }
     }
 
+    func testACircleAtALetterAWordAlreadyDoublesKeepsItDoubled() throws {
+        for word in ["class", "actress"] {
+            XCTAssertEqual(try best(swipingKeysOf: word, previousWords: [], loopingAtDoubles: true)?.lowercased(), word)
+        }
+    }
+
     func testWithoutACircleANameKeepsItsLettersOverACommonerTwin() throws {
         for word in ["mary", "paris", "anderson", "mr"] {
             XCTAssertEqual(try best(swipingKeysOf: word, previousWords: [])?.lowercased(), word, "no circle")

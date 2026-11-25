@@ -183,9 +183,11 @@ final class SwipeWordDecoder: @unchecked Sendable {
     /// Between twins, words whose letters differ only in how many times letters repeat at their
     /// keys, the circle decides, whatever the words before or their frequencies. At each key where
     /// a word repeats the letter more than its twins there and no letter fewer times, a loop around
-    /// the key puts it first, and no loop puts it after them unless every one is a misspelling of it,
-    /// written `misspellingRatio` times less often in the context model, the rule the language
-    /// data's swipe vocabulary build leaves misspellings out by; then it wins over them. Names and the user's own words are weighed the same way. So "been" beats "Ben", "hello"
+    /// the key puts it first when one of them has the letter once there, as a loop asks for the
+    /// letter doubled, not tripled. With no loop, or no such twin, its twins win unless every one
+    /// is a misspelling of it, written `misspellingRatio` times less often in the context model, the
+    /// rule the language data's swipe vocabulary build leaves misspellings out by; then it wins over
+    /// them. Names and the user's own words are weighed the same way. So "been" beats "Ben", "hello"
     /// beats "helo", and "see" beats "se", while "Mary" beats "marry", "Paris" beats "Parris", and a
     /// contact's "Mann" never beats "man". Words without a twin are untouched. Among words alike in
     /// both, its score with the context counted `samePathContextWeight` times when `usesContext`
@@ -229,7 +231,7 @@ final class SwipeWordDecoder: @unchecked Sendable {
                             && other.value.indices.allSatisfy { other.value[$0] <= own[$0] }
                     }.map(\.key)
                     guard shorter.isEmpty == false else { continue }
-                    if flags[key] {
+                    if flags[key], shorter.contains(where: { repeats[$0]![key] == 0 }) {
                         loops[longer, default: 0] += 1
                     } else if shorter.contains(where: { isMisspelling($0, of: longer) == false }) {
                         unlooped[longer, default: 0] += 1
