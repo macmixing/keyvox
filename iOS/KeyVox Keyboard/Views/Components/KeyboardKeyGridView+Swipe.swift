@@ -39,15 +39,6 @@ extension KeyboardKeyGridView {
     /// finger is swiping, so the move is the swipe's and not a key press's.
     func followSwipe(_ session: KeyboardKeyTouchSession, for touch: UITouch, event: UIEvent) -> Bool {
         guard allowsSwipeTyping, session.swipePath.isEmpty == false else { return false }
-        // A held key's open popup has the finger now, choosing a character.
-        if session === heldKeyTouchSession, heldKeyController.hasOpened {
-            session.swipePath = []
-            if session.showsTrail {
-                session.showsTrail = false
-                swipeTrailView.cancel()
-            }
-            return false
-        }
         let samples = (event.coalescedTouches(for: touch) ?? [touch]).map {
             SwipeTouchSample(location: $0.location(in: self), timestamp: $0.timestamp)
         }
@@ -74,6 +65,21 @@ extension KeyboardKeyGridView {
         }
         promoteToSwipe(session)
         return true
+    }
+
+    /// Ends `session`'s chance of swiping, as when its held key's popup opens: the popup has the
+    /// finger now, choosing a character, so its trail goes, the gate lets go of it, and its moves
+    /// and lift are the popup's.
+    func endSwipeCandidacy(of session: KeyboardKeyTouchSession) {
+        guard session.swipePath.isEmpty == false else { return }
+        session.swipePath = []
+        if session.showsTrail {
+            session.showsTrail = false
+            swipeTrailView.cancel()
+        }
+        if let id = touchSessions.first(where: { $0.value === session })?.key {
+            swipeGate.touchCancelled(id)
+        }
     }
 
     /// Settles a lifting finger the gate follows. Returns true when it is not a key press: a swipe,
