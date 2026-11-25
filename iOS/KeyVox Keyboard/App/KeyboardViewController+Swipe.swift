@@ -1,18 +1,19 @@
 import KeyVoxPredictiveKeyboard
 import UIKit
 
-/// Swipe typing: a word swiped across the letter keys goes in as a word picked from the
-/// suggestion bar would, written as typing writes it. The bar keeps what it showed while the
-/// finger swipes, then shows what follows the word, as after any word.
+/// Swipe typing: a word swiped across the letter keys goes in written as typing writes it, with no
+/// space after it, as on the system keyboard; the next swiped word goes in after a space. The bar
+/// keeps what it showed while the finger swipes, then shows suggestions for the word.
 extension KeyboardViewController {
     /// Lets the keys swipe words where the focused field and the user's settings allow it.
     func updateSwipeTyping() {
         rootContainerView?.keyGridView.allowsSwipeTyping = typingTraits.allowsSwipeTyping
     }
 
-    /// Types the word `path` was swiped as. The word of the swipe before goes in first, then a word
-    /// in progress ends, as a space would end it, so the shift state applies to the swiped word as
-    /// to typed letters, in the order they were swiped. A swipe goes nowhere, doing nothing at all,
+    /// Types the word `path` was swiped as. The word of the swipe before goes in first, then a typed
+    /// word in progress ends, as a space would end it, so the shift state applies to the swiped word
+    /// as to typed letters, in the order they were swiped; a word just swiped in stays as it is, and
+    /// the swiped word goes in after a space. A swipe goes nowhere, doing nothing at all,
     /// while the field is not to be read, and one the key grid held undecided since `heldPlace`
     /// once the cursor or the field has moved from there. The swipe ending plays a letter key's
     /// press haptic, as a typed letter does.
@@ -23,7 +24,7 @@ extension KeyboardViewController {
         if let heldPlace, heldPlace != place { return }
         characterKeyHaptics.emitKeypressIfEnabled()
         dismissRescuedDictation()
-        if predictionCoordinator.hasWordInProgress() {
+        if predictionCoordinator.hasTypedWordInProgress() {
             textInputController.apply(predictionCoordinator.wordBoundaryEdit(
                 separator: " ",
                 allowsAutocorrection: typingTraits.allowsAutocorrection

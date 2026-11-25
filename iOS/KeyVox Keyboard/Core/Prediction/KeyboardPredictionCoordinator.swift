@@ -19,8 +19,8 @@ import KeyVoxPredictiveKeyboard
 /// ended, against those read at the last change to the text or cursor and the fields counted since
 /// on the main thread. A word whose place moved goes nowhere, so the document is never touched for
 /// it; one still in place goes in as the text read when the swipe ended places it. The bar does not
-/// change while a swipe is under way; once its word goes in, the bar shows what follows that word,
-/// as after any word.
+/// change while a swipe is under way; once its word goes in, the bar shows suggestions for that
+/// word with no autocorrection, since space ends a word just swiped in as it was swiped.
 final class KeyboardPredictionCoordinator {
     var onBarChange: ((SuggestionBar) -> Void)?
     /// The emoji the suggestion bar shows for a word, in the order to show them.
@@ -178,11 +178,13 @@ final class KeyboardPredictionCoordinator {
         publish(.empty, for: nil)
     }
 
-    /// Requests suggestions for the text as it is now.
+    /// Requests suggestions for the text as it is now. The bar offers no autocorrection for a word
+    /// just swiped in, which space ends as it was swiped.
     func refresh(allowsAutocorrection: Bool) {
         let text = textBeforeCursor()
         let selected = selectedText()
         let after = textAfterCursor()
+        let allowsAutocorrection = allowsAutocorrection && session.endsWithSwipedWord(textBeforeCursor: text) == false
         let request = session.request(textBeforeCursor: text, selectedText: selected, textAfterCursor: after)
         newestEmojiWord = session.emojiWord(textBeforeCursor: text, selectedText: selected, textAfterCursor: after)
         newestRequest = request
@@ -239,11 +241,12 @@ final class KeyboardPredictionCoordinator {
     /// What typing `separator` after the current word inserts, applying any
     /// autocorrection first, and revising the word before it when the current word shows
     /// it was a typo. A separator that takes the place of a suggestion tap's space, right after
-    /// the tap, replaces that space.
+    /// the tap, replaces that space. A word just swiped in ends as it was swiped, waiting for nothing.
     func wordBoundaryEdit(separator: String, allowsAutocorrection: Bool) -> TextEdit {
         let text = textBeforeCursor()
         let request = session.request(textBeforeCursor: text)
-        guard request.currentWord.isEmpty == false else {
+        guard request.currentWord.isEmpty == false,
+              session.endsWithSwipedWord(textBeforeCursor: text) == false else {
             return session.wordBoundaryEdit(separator: separator, textBeforeCursor: text, result: nil)
         }
         guard allowsAutocorrection, let result = currentResult(for: request) else {
@@ -339,11 +342,13 @@ final class KeyboardPredictionCoordinator {
     }
 
     /// What tapping `item` inserts. Tapping the typed word while the bar shows a correction
-    /// turns that correction down; `allowsAutocorrection` says whether the bar showed one.
+    /// turns that correction down; `allowsAutocorrection` says whether the field lets the bar show
+    /// one, which it never does for a word just swiped in.
     func choiceEdit(_ item: SuggestionBar.Item, allowsAutocorrection: Bool) -> TextEdit {
         let text = textBeforeCursor()
         let selected = selectedText()
         let after = textAfterCursor()
+        let allowsAutocorrection = allowsAutocorrection && session.endsWithSwipedWord(textBeforeCursor: text) == false
         let request = session.request(textBeforeCursor: text, selectedText: selected, textAfterCursor: after)
         return session.choiceEdit(
             item,
@@ -402,7 +407,7 @@ final class KeyboardPredictionCoordinator {
         guard let place = recordSwipePlace() else { return }
         swipeNumber += 1
         let number = swipeNumber
-        let previousWords = session.request(textBeforeCursor: textBeforeCursor()).previousWords
+        let previousWords = session.previousWords(beforeSwipeAfter: place.textBeforeCursor, selectedText: place.selectedText)
         pendingSwipe = (number, place, deliver)
         engine.queue.async { [weak self] in
             guard let self else { return }
@@ -465,9 +470,12 @@ final class KeyboardPredictionCoordinator {
         )
     }
 
-    /// Whether letters of a word come right before the cursor.
-    func hasWordInProgress() -> Bool {
-        session.request(textBeforeCursor: textBeforeCursor()).currentWord.isEmpty == false
+    /// Whether letters of a word the user typed come right before the cursor; a word just swiped in
+    /// is not one, since the next swiped word goes in after a space instead.
+    func hasTypedWordInProgress() -> Bool {
+        let text = textBeforeCursor()
+        return session.request(textBeforeCursor: text).currentWord.isEmpty == false
+            && session.endsWithSwipedWord(textBeforeCursor: text) == false
     }
 
     private func handOverSwipe(_ number: Int) {
