@@ -6,6 +6,26 @@ The format loosely follows Keep a Changelog, and the package uses semantic versi
 
 ---
 
+## [2.1.0] - 2026-11-24
+
+Swipe typing: a finger sliding across the letter keys types the word it traces.
+
+### Includes
+
+- `PredictionComputer.swipeWords(for:previousWords:wordCase:limit:)` decodes a swipe's `SwipeTouchSample` path into ranked words, written as typing writes them: text replacement shortcuts expand, the user's words take their entry's form, learned words and learned capitals apply, and `SwipeWordCase` carries the shift state; `swipeCandidates(for:previousWords:)` returns the ranked spellings with their scores.
+- The search covers the typing language's dictionary through a memory-mapped key-path trie (`PredictiveData/en/swipe_lexicon.kvsl`, built by `SwipeLexiconBuilder` from `PredictiveEngine.dictionaryWords()`) and the user's own words beside it: KeyVox Dictionary entries with contact names among them, text replacement shortcuts, and offered learned words.
+- The bundled English swipe model (`swipe_encoder.kvsw`, `swipe_decoder.kvsd`, and `swipe.json`) runs from its memory-mapped fp16 weights with Accelerate, and with plain Swift where Accelerate is missing, such as Android; it matches the swipe model tools' reference decoding on swipe.futo.org validation swipes.
+- Candidates rank by the model tools' tuned score plus how much likelier the words before make them (`ContextLanguageScorer`).
+- `SwipeGate` decides which fingers are swiping rather than tapping, so fast taps, rolls, and overlapping two-thumb taps stay taps.
+- `PredictiveTypingSession.swipeEdit(words:textBeforeCursor:selectedText:textAfterCursor:)` inserts a swiped word as a picked word goes in, and `swipeAlternativesBar(textBeforeCursor:)` offers the other words it may have been as `SuggestionBar.Kind.swipeAlternative` items, which a suggestion tap puts in its place.
+- `PredictiveKeyboardError.invalidSwipeModel` reports a damaged or mismatched swipe model file.
+
+### Notes
+
+- `2.1.0` adds public API; typing without swiping is unchanged.
+
+---
+
 ## [2.0.1] - 2026-11-24
 
 The bundled English dictionary is the one `Tools/KeyVoxTypingModels` builds, with the same words, word pairs, and three-word sequences at the same probabilities.
