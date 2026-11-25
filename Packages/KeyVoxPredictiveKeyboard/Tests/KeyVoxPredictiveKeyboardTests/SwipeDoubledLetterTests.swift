@@ -60,10 +60,12 @@ final class SwipeDoubledLetterTests: XCTestCase {
     func testACircleDoublesALetterButNeverTriplesItWhereAllThreeAreWords() throws {
         let engine = try PredictiveEngine(language: .english)
         let forms = Set(try SwipeVocabulary.lexiconWords(of: engine).map { SwipeLetterForm.form(of: $0.spelling) })
-        // Every word doubled at a letter it has once, whose tripled form is a word too.
+        // Every word doubled at a letter it has once, whose tripled form is a word too, among words
+        // with no letter three times already, which a circle gives nothing for.
         var families: [String: String] = [:]
         for single in forms {
             let letters = Array(single)
+            guard letters.indices.dropFirst(2).allSatisfy({ letters[$0] != letters[$0 - 1] || letters[$0] != letters[$0 - 2] }) else { continue }
             for index in letters.indices
             where (index == 0 || letters[index - 1] != letters[index])
                 && (index == letters.count - 1 || letters[index + 1] != letters[index]) {
