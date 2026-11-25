@@ -1785,6 +1785,7 @@ Packages/
   - Owns the cancellable half-second `#+=` hold gesture that requests compact-mode activation without turning the eventual touch-up into a normal symbol-page keypress.
 - `KeyVox Keyboard/Core/Input/KeyboardTextInputController.swift`
   - Host-app text insertion, key dispatch, double-space period behavior, cursor movement, and document-proxy execution of adjacent punctuation replacement after selected-text insertion.
+  - Every edit the keyboard makes goes through it and calls its `willEdit` hook before reading or changing the text and its `didEdit` hook once done, which the controller uses to hand over a pending swipe first and record where a swiped word would go afterwards.
   - Captures the first character after the insertion or selected span once, then applies shared terminal-punctuation and trailing-separator composition before inserting the finalized text.
   - Applies typing-session `TextEdit` values by deleting and retyping only the changed end of the replaced text, deletes whole words for a held delete key, types smart quotes unless a character was picked from a held key's popup, gates the double-space period on the period-shortcut setting and an empty selection, and switches between the letter, number, and alternate symbol pages.
   - In a field that deletes smartly, deletes a selection by typing a space over it and deleting that space, then removes the neighboring space, if any, that `KeyboardSmartDeletion` names, so the text read around the cursor stays in step with the field.
@@ -1921,11 +1922,11 @@ Packages/
   - Where each letter of the word before the cursor was tapped, kept only while the taps line up with its letters; tells a word the user tapped out apart from one the cursor was moved into.
 - `KeyVox Keyboard/Core/Prediction/KeyboardPredictionCoordinator.swift`
   - Runs the shared typing session on the main thread and suggestion work on a serial background engine, publishing a result only when no newer request was made; at a word boundary it uses the current result or computes it on the spot so a fast space never skips an autocorrection. Contested-tap checks run on a second engine so keys such as delete never wait for suggestions. Swipes decode on the suggestion engine's queue; anything typed before a swipe's word arrives waits for it, a word whose place moved meanwhile goes nowhere, and the bar shows what follows the word once it goes in.
-  - Never rereads the document proxy when background work finishes: a swipe's word is checked against the place recorded on the main thread at the last change to the text or cursor and typed from the text read when the swipe ended.
+  - Never rereads the document proxy when background work finishes: a swipe's word is checked against the place recorded on the main thread after every change to the text or cursor, the host's and the keyboard's own, and typed from the text read when the swipe ended.
 - `KeyVox Keyboard/Core/Prediction/KeyboardPredictionEngine.swift`
   - Serial-queue owner of one lazily created `PredictionComputer`, holding geometry, vocabulary, and learned words until the engine exists and remembering when the engine cannot load.
 - `KeyVox Keyboard/Core/Prediction/KeyboardSwipePlace.swift`
-  - Where a swiped word goes: the field, counted on the main thread and named by its document identifier, and the text around the cursor when its swipe ended, so a word whose cursor or field moved goes nowhere.
+  - Where a swiped word goes: the field, counted on the main thread and named by its document identifier, which is new each time a field takes focus, and the text around the cursor when its swipe ended, so a word whose cursor or field moved goes nowhere.
 - `KeyVox Keyboard/Core/Prediction/KeyboardTypingLanguage.swift`
   - The bundled typing language the keyboard types in, shared by its engines, typing session, held keys, word-ending characters, and quote keys.
 - `KeyVox Keyboard/Core/Prediction/KeyboardTypingTraits.swift`
