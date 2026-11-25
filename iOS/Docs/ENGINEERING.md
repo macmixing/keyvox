@@ -2117,7 +2117,8 @@ The gate (`SwipeGate`, from `~/KeyVoxLanguageData/swipe/tap-vs-swipe/README.md`,
 Decoding and insertion:
 
 - the path goes to `KeyboardPredictionCoordinator.decodeSwipe`, which runs `PredictionComputer.swipeWords` on the suggestion engine's queue with the words before the cursor and the shift state (`SwipeWordCase`); anything typed, picked, or deleted before the word arrives first waits for it, so words and keys go in the order they were made, and a finger landing during a swipe ends it first
-- a word in progress when a swipe ends is ended first as space would end it, autocorrection included
+- a word in progress when a swipe ends is ended first as space would end it, autocorrection included; the word of a swipe before it goes in first, so the shift state reaches the swiped words in the order they were swiped
+- a swiped word goes only where it was swiped (`KeyboardSwipePlace`, the text around the cursor when the swipe ended, or, for a finger held undecided, when it lifted): once the cursor has moved from there, the word goes nowhere, and another field taking the keyboard drops every swipe held undecided or being decoded
 - the word goes in through `PredictiveTypingSession.swipeEdit`: a space after it unless one or punctuation follows, a space before it right after a mark a picked word is spaced away from, and punctuation typed right after it takes the place of its space, as after a pick
 - the suggestion bar does not change while a finger swipes; once the swiped word goes in, it shows what follows that word, as after any word
 

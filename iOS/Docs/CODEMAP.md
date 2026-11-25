@@ -498,6 +498,7 @@ iOS/
 │   │   │   ├── KeyboardPersonalVocabularyBuilder.swift
 │   │   │   ├── KeyboardPredictionCoordinator.swift
 │   │   │   ├── KeyboardPredictionEngine.swift
+│   │   │   ├── KeyboardSwipePlace.swift
 │   │   │   ├── KeyboardTypingLanguage.swift
 │   │   │   ├── KeyboardTypingMemory.swift
 │   │   │   └── KeyboardTypingTraits.swift
@@ -1880,7 +1881,7 @@ Packages/
 - `KeyVox Keyboard/Views/Components/KeyboardKeyGridPage.swift`
   - One built-and-kept page of key rows per symbol page, keys mode, emoji-search row, emoji key, globe, and field keys combination, with its row-geometry helpers, so switching pages never rebuilds a page already shown.
 - `KeyVox Keyboard/Views/Components/KeyboardKeyTouchSession.swift`
-  - One finger's key, typed location, current location, timestamp, rollover state, and, while it may become or is a swipe, its path.
+  - One finger's key, typed location, current location, timestamp, rollover state, and, while it may become or is a swipe, its path, its trail, and, once it lifts undecided, where its word would have gone.
 - `KeyVox Keyboard/Views/Components/KeyboardKeyView.swift`
   - Renders one key with two alternating labels so case switches only show and hide labels, a number pad digit's letters under it on keys tall enough as shown on screen, judging a key under Display Zoom by its size before the zoom shrinks it, and the blue action look; draws no per-key blur and gives its shadow an explicit rounded path.
 - `KeyVox Keyboard/Views/Components/KeyboardHeldKeyPopupView.swift`
@@ -1919,10 +1920,12 @@ Packages/
 - `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/TypedWordTouches.swift`
   - Where each letter of the word before the cursor was tapped, kept only while the taps line up with its letters; tells a word the user tapped out apart from one the cursor was moved into.
 - `KeyVox Keyboard/Core/Prediction/KeyboardPredictionCoordinator.swift`
-  - Runs the shared typing session on the main thread and suggestion work on a serial background engine, publishing a result only when no newer request was made; at a word boundary it uses the current result or computes it on the spot so a fast space never skips an autocorrection. Contested-tap checks run on a second engine so keys such as delete never wait for suggestions. Swipes decode on the suggestion engine's queue; anything typed before a swipe's word arrives waits for it, and the bar shows what follows the word once it goes in.
+  - Runs the shared typing session on the main thread and suggestion work on a serial background engine, publishing a result only when no newer request was made; at a word boundary it uses the current result or computes it on the spot so a fast space never skips an autocorrection. Contested-tap checks run on a second engine so keys such as delete never wait for suggestions. Swipes decode on the suggestion engine's queue; anything typed before a swipe's word arrives waits for it, a word whose place moved meanwhile goes nowhere, and the bar shows what follows the word once it goes in.
   - Never rereads the document proxy when background work finishes.
 - `KeyVox Keyboard/Core/Prediction/KeyboardPredictionEngine.swift`
   - Serial-queue owner of one lazily created `PredictionComputer`, holding geometry, vocabulary, and learned words until the engine exists and remembering when the engine cannot load.
+- `KeyVox Keyboard/Core/Prediction/KeyboardSwipePlace.swift`
+  - Where a swiped word goes: the text around the cursor when its swipe ended, so a word whose cursor or field moved goes nowhere.
 - `KeyVox Keyboard/Core/Prediction/KeyboardTypingLanguage.swift`
   - The bundled typing language the keyboard types in, shared by its engines, typing session, held keys, word-ending characters, and quote keys.
 - `KeyVox Keyboard/Core/Prediction/KeyboardTypingTraits.swift`
