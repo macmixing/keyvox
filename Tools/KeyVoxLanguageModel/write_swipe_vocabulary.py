@@ -12,18 +12,20 @@ dictionary word spells is a candidate, and these rules, in this order, leave one
    without spaces (`normalize.joined_words`), so it is a piece of a longer token, such as a
    URL, a hyphenated word, or code.
 4. misspelling: a dictionary form one edit away (a letter left out, added, changed, or two
-   neighbors swapped) is written at least MISSPELLING_RATIO times as often, unless the
-   language's spelling list (for English, SCOWL's size 80 in every spelling) lists it, or the
-   written sources write it with capitals more often than in lowercase in the middle of a
-   sentence, as a name or an acronym, while a misspelling of a lowercase word is lowercase.
+   neighbors swapped) is written on its own at least MISSPELLING_RATIO times as often as the
+   candidate is written, unless the language's spelling list (for English, SCOWL's size 80 in
+   every spelling) lists it, or the written sources write it with capitals more often than in
+   lowercase in the middle of a sentence, as a name or an acronym, while a misspelling of a
+   lowercase word is lowercase.
 
 Every form left is kept, ranked by how often the sources write it on their own. Each is
 written in its most common spelling, with its likeliest capitals when the written sources
 write that spelling as a name (`names.is_written_as_name`: often enough, nearly always with a
 capital in the middle of a sentence), unless those capitals are in a row and not a measured
 spelling, as `write_capitalized_spellings.py` leaves acronyms lowercase. Its probability is
-the median the dictionary gives its words that the sources write about as often (within
-PROBABILITY_BAND of the count), so an added word ranks as a dictionary word as common would.
+the median the dictionary gives its words that the sources write on their own about as often
+(within PROBABILITY_BAND of the count), so an added word ranks as a dictionary word as common
+would.
 
 Every candidate is written to `<data_dir>/swipe_vocabulary_report.tsv` with its counts and
 the rule that left it out, or its rank, spelling, and probability, and for a form the
@@ -83,7 +85,8 @@ class Candidate:
 
 
 def read_counts(path: Path, dictionary_forms: set[str]):
-    """The candidates by form, the sources' names, and each dictionary form's count."""
+    """The candidates by form, the sources' names, and how often the sources write each
+    dictionary form on its own, counted as a candidate's count is."""
     candidates: dict[str, Candidate] = {}
     dictionary_counts: Counter[str] = Counter()
     with open(path, encoding="utf-8") as rows:
@@ -97,7 +100,7 @@ def read_counts(path: Path, dictionary_forms: set[str]):
                 continue
             counts, joined = numbers[0::2], numbers[1::2]
             if form in dictionary_forms:
-                dictionary_counts[form] += sum(counts)
+                dictionary_counts[form] += sum(counts) - sum(joined)
                 continue
             candidate = candidates.setdefault(form, Candidate(form, [0] * len(sources)))
             for index, (count, together) in enumerate(zip(counts, joined)):

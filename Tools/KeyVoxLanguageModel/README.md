@@ -359,36 +359,39 @@ also counts how often each word is joined to other letters or digits in one run 
 the middle of a sentence. `write_swipe_vocabulary.py` reads the counts by swipe form (letters
 only, case and accents folded, as a swipe draws them). Each form no dictionary word spells is a
 candidate, and these rules, in order, leave one out. The counts are from the build of November
-24, 2026:
+25, 2026:
 
 | Rule | Leaves out | Forms |
 | --- | --- | --- |
 | Letters | A letter that is no letter key of the keyboard (`language.json`) | 6,262 |
 | One source | Fewer than two of the three sources write it as a word on its own | 693,651 |
 | Joined | Written joined to other letters or digits more than half the time: URLs, hyphenated words, code | 125 |
-| Misspelling | A dictionary form one edit away (a letter left out, added, or changed, or two neighbors swapped) is written at least 50 times as often | 4,197 |
-| Kept | | 22,456 of 726,691 |
+| Misspelling | A dictionary form one edit away (a letter left out, added, or changed, or two neighbors swapped) is written on its own at least 50 times as often | 4,181 |
+| Kept | | 22,472 of 726,691 |
 
 - Decoding HTML references and skipping Markdown code leaves 416 forms in a single source that
   were in two before, the largest "nbsp" (980,367 times before, 44 after); the others' only other
   source was code or HTML references in OASST2.
 - The misspelling rule never leaves out a form SCOWL's size 80 lists in any spelling (American,
-  British, Canadian, or Australian), which keeps 1,751 forms such as "colour", "yay", and
+  British, Canadian, or Australian), which keeps 1,744 forms such as "colour", "yay", and
   "cafe", or one the written sources write with capitals more often than in lowercase, as a
-  name or an acronym (a misspelling of a lowercase word is lowercase), which keeps 2,841.
+  name or an acronym (a misspelling of a lowercase word is lowercase), which keeps 2,816.
+- A dictionary form counts only the times it is written on its own, as a candidate's count
+  does, so a fragment of longer tokens does not make its neighbors misspellings: "th", written
+  145,719 times but 2,989 on its own, mostly in "5th" and the like, leaves "tbh" in.
 - It still leaves out short chat words one edit from a much more common word: "idk" ("id"),
-  "tbh" ("th"), "smh" ("sh"), "brb" ("bro"), "ngl" ("nfl"), "homie" ("home"), "hella" ("hell"),
-  and "ebook" ("book"). How much more common the word is does not tell them from misspellings:
-  "homie" is 89 times rarer than "home", "occured" 409 times rarer than "occurred".
+  "smh" ("sh"), "brb" ("bro"), "ngl" ("nfl"), "homie" ("home"), "hella" ("hell"), and "ebook"
+  ("book"). How much more common the word is does not tell them from misspellings: "homie" is
+  88 times rarer than "home", "occured" 409 times rarer than "occurred".
 - Tatoeba's texts that mention its recurring invented characters are left out of the counts, as
   from the rest of the language data, or the characters' names would be kept.
 
 Each kept form is written in its most common spelling ("tonight's", "i'mma"), with its likeliest
 capitals when the written sources write it as a name (`names.is_written_as_name`), unless they
 are capitals in a row, which stay lowercase as in the capitalized spellings ("json"). Its
-probability is the median the dictionary gives its words that the sources write about as often
-(within a quarter of an octave), so an added word ranks as a dictionary word as common would.
-`<data-dir>/swipe_vocabulary_report.tsv` lists every candidate with its counts, its outcome and
+probability is the median the dictionary gives its words that the sources write on their own
+about as often (within a quarter of an octave), so an added word ranks as a dictionary word as
+common would. `<data-dir>/swipe_vocabulary_report.tsv` lists every candidate with its counts, its outcome and
 the rule or exception behind it, and a kept form's rank, spelling, and probability.
 
 ### Measured accuracy
@@ -402,16 +405,16 @@ with the dictionary alone and with the first words of the swipe vocabulary added
 | None | 95.73% | 91.29% | 94.67% | 95.36% |
 | 2,500 | 96.08% | 91.50% | 94.96% | 95.68% |
 | 5,000 | 96.22% | 91.60% | 95.09% | 95.81% |
-| 10,000 | 96.38% | 91.71% | 95.23% | 95.96% |
+| 10,000 | 96.38% | 91.71% | 95.22% | 95.96% |
 | 15,000 | 96.45% | 91.74% | 95.28% | 96.01% |
 | 20,000 | 96.50% | 91.77% | 95.31% | 96.05% |
-| 22,456 (all) | 96.51% | 91.79% | 95.33% | 96.07% |
+| 22,472 (all) | 96.51% | 91.79% | 95.33% | 96.07% |
 
 Top-1 rises with every size, so every kept form is in the list. With all of them, 325 swipes
 decode to their word first that did not, and 55 that did no longer do, 44 of them to an added
 word, the most common kind a British spelling of an American one ("center" to "centre",
-"organized" to "organised"). The split's one swipe of "haha" decoded as "has" before and as "haha" now. The test
-split was not decoded.
+"organized" to "organised"). The split's one swipe of "haha" decoded as "has" before and as
+"haha" now. The test split was not decoded.
 
 ### Why a list of its own
 
