@@ -25,31 +25,40 @@ final class SwipeTypingSessionTests: XCTestCase {
 
     func testASwipeAfterATypedWordGetsNoSpaceOfItsOwn() {
         session.textDidChange(textBeforeCursor: "hello")
-        XCTAssertFalse(session.endsWithSwipedWord(textBeforeCursor: "hello"))
         XCTAssertEqual(session.swipeEdit(word: "there", textBeforeCursor: "hello"), TextEdit(deleteCount: 0, insertText: "there"))
     }
 
-    func testASpaceAfterASwipedWordIsPlainAndCorrectsNothing() {
+    func testASpaceAfterASwipedWordIsPlainCorrectsNothingAndEndsTheRecord() {
         _ = session.swipeEdit(word: "helo", textBeforeCursor: "")
         session.textDidChange(textBeforeCursor: "helo")
-        let request = session.request(textBeforeCursor: "helo")
-        let result = PredictionResult(
-            request: request,
-            bar: SuggestionBarComposer.compose(typedWord: request.currentWord, autocorrection: "hello", rankedWords: []),
-            autocorrection: "hello"
-        )
         XCTAssertEqual(
-            session.wordBoundaryEdit(separator: " ", textBeforeCursor: "helo", result: result),
+            session.wordBoundaryEdit(separator: " ", textBeforeCursor: "helo", result: correctingResult(for: "helo", to: "hello")),
             TextEdit(deleteCount: 0, insertText: " ")
         )
-        XCTAssertFalse(session.endsWithSwipedWord(textBeforeCursor: "helo "))
+        XCTAssertFalse(session.endsWithSwipedWord(textBeforeCursor: "helo"))
     }
 
+    func testPunctuationRightAfterASwipedWordCorrectsNothing() {
+        _ = session.swipeEdit(word: "helo", textBeforeCursor: "")
+        session.textDidChange(textBeforeCursor: "helo")
+        XCTAssertEqual(
+            session.wordBoundaryEdit(separator: ".", textBeforeCursor: "helo", result: correctingResult(for: "helo", to: "hello")),
+            TextEdit(deleteCount: 0, insertText: ".")
+        )
+    }
+
+    /// The letter a word repeats, typed after it, leaves the text ending with that word.
     func testTypingALetterAfterASwipedWordEndsItsRecord() {
+        _ = session.swipeEdit(word: "mm", textBeforeCursor: "")
+        session.textDidChange(textBeforeCursor: "mmm")
+        session.recordTap(at: .zero, textBeforeCursor: "mmm")
+        XCTAssertFalse(session.endsWithSwipedWord(textBeforeCursor: "mmm"))
+    }
+
+    func testForgettingTheSwipedWordEndsItsRecord() {
         _ = session.swipeEdit(word: "hello", textBeforeCursor: "")
-        session.textDidChange(textBeforeCursor: "hellos")
-        session.recordTap(at: .zero, textBeforeCursor: "hellos")
-        XCTAssertFalse(session.endsWithSwipedWord(textBeforeCursor: "hellos"))
+        session.forgetSwipedWord()
+        XCTAssertFalse(session.endsWithSwipedWord(textBeforeCursor: "hello"))
     }
 
     func testASwipeAfterAMarkAPickIsSpacedFromGetsASpaceFirst() {
@@ -63,16 +72,26 @@ final class SwipeTypingSessionTests: XCTestCase {
         )
     }
 
-    func testAWordThatFollowsTheCursorIsSpacedFromTheSwipedWord() {
+    func testASpaceAfterASwipedWordSpacedFromTheWordThatFollowsIsPlain() {
         XCTAssertEqual(
             session.swipeEdit(word: "big", textBeforeCursor: "a ", textAfterCursor: "dog"),
             TextEdit(deleteCount: 0, insertText: "big ")
         )
-        XCTAssertFalse(session.endsWithSwipedWord(textBeforeCursor: "a big "))
+        session.textDidChange(textBeforeCursor: "a big ", textAfterCursor: "dog")
+        XCTAssertTrue(session.endsWithSwipedWord(textBeforeCursor: "a big "))
+        XCTAssertEqual(
+            session.swipeEdit(word: "red", textBeforeCursor: "a big ", textAfterCursor: "dog"),
+            TextEdit(deleteCount: 0, insertText: "red ")
+        )
     }
 
-    func testPunctuationRightAfterASwipedWordFollowsIt() {
-        _ = session.swipeEdit(word: "hello", textBeforeCursor: "")
-        XCTAssertNil(session.pickedWordSpaceEdit(character: "'", typesExactly: true, textBeforeCursor: "hello"))
+    /// A result that autocorrects `word` to `correction`.
+    private func correctingResult(for word: String, to correction: String) -> PredictionResult {
+        let request = session.request(textBeforeCursor: word)
+        return PredictionResult(
+            request: request,
+            bar: SuggestionBarComposer.compose(typedWord: request.currentWord, autocorrection: correction, rankedWords: []),
+            autocorrection: correction
+        )
     }
 }
