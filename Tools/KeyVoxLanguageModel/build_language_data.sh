@@ -26,34 +26,60 @@ TOOLS_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$TOOLS_DIR"
 IDENTIFIER="$("$PYTHON" languages.py "$LANGUAGE")"
 
-"$PYTHON" download_sources.py --language "$LANGUAGE" "$DATA_DIR"
-"$PYTHON" extract_sentences.py --language "$LANGUAGE" "$DATA_DIR"
-
-# Context model.
-"$PYTHON" count_ngrams.py "$DATA_DIR"
-"$PYTHON" write_context_model.py "$DATA_DIR" "$OUTPUT_DIR/context_model.bin"
-
-# Sentence openers.
-"$PYTHON" write_word_kinds.py --language "$LANGUAGE" "$DATA_DIR"
-"$PYTHON" count_sentence_openers.py --language "$LANGUAGE" "$DATA_DIR"
-"$PYTHON" write_sentence_openers.py --language "$LANGUAGE" "$DATA_DIR" --output "$OUTPUT_DIR/sentence_openers.txt"
-
-# The vocabulary, and the words spelled with capitals.
-"$PYTHON" write_vocabulary.py --language "$LANGUAGE" "$DATA_DIR" "$OUTPUT_DIR/vocabulary.txt" "$OUTPUT_DIR/common_vocabulary.txt"
-"$PYTHON" write_capitalized_spellings.py --language "$LANGUAGE" "$DATA_DIR" \
-  "$OUTPUT_DIR/vocabulary.txt" "$OUTPUT_DIR/common_vocabulary.txt" "$OUTPUT_DIR/capitalized_spellings_$IDENTIFIER.txt"
-
-# Words that follow an unknown word, and a common word.
-"$PYTHON" write_unknown_word_followers.py "$DATA_DIR" "$OUTPUT_DIR/vocabulary.txt" "$OUTPUT_DIR/unknown_word_followers.txt"
-"$PYTHON" write_word_followers.py "$DATA_DIR" "$OUTPUT_DIR/vocabulary.txt" "$OUTPUT_DIR/word_followers.txt"
-
-# Grammar words.
-"$PYTHON" write_grammar_words.py "$DATA_DIR" "$OUTPUT_DIR/grammar_words.txt"
-
-# The swipe vocabulary: the words people write that the dictionary lacks.
-if [[ -n "$DICTIONARY_WORDS" ]]; then
+# Each group of steps reads only the sources, the sentences, or its own files, and writes files
+# no other group running beside it reads, so the groups run side by side; the steps that read
+# several groups' files run once those groups are done.
+context_model() {
+  "$PYTHON" count_ngrams.py "$DATA_DIR"
+  "$PYTHON" write_context_model.py "$DATA_DIR" "$OUTPUT_DIR/context_model.bin"
+}
+sentence_openers() {
+  "$PYTHON" write_word_kinds.py --language "$LANGUAGE" "$DATA_DIR"
+  "$PYTHON" count_sentence_openers.py --language "$LANGUAGE" "$DATA_DIR"
+  "$PYTHON" write_sentence_openers.py --language "$LANGUAGE" "$DATA_DIR" --output "$OUTPUT_DIR/sentence_openers.txt"
+}
+capitalized_spellings() {
+  "$PYTHON" write_vocabulary.py --language "$LANGUAGE" "$DATA_DIR" "$OUTPUT_DIR/vocabulary.txt" "$OUTPUT_DIR/common_vocabulary.txt"
+  "$PYTHON" write_capitalized_spellings.py --language "$LANGUAGE" "$DATA_DIR" \
+    "$OUTPUT_DIR/vocabulary.txt" "$OUTPUT_DIR/common_vocabulary.txt" "$OUTPUT_DIR/capitalized_spellings_$IDENTIFIER.txt"
+}
+swipe_counts() {
   "$PYTHON" count_swipe_words.py --language "$LANGUAGE" "$DATA_DIR"
   ./scowl_words.sh 80 "$OUTPUT_DIR/spelling_list.txt" A,B,Z,C,D
+}
+trap 'kill $(jobs -p) 2>/dev/null || true' EXIT
+
+"$PYTHON" download_sources.py --language "$LANGUAGE" "$DATA_DIR"
+
+# The vocabulary and the words spelled with capitals, and the swipe vocabulary's counts, read
+# only the sources.
+capitalized_spellings & CAPITALIZED=$!
+SWIPE=""
+if [[ -n "$DICTIONARY_WORDS" ]]; then
+  swipe_counts & SWIPE=$!
+fi
+
+# The context model and the sentence openers read the sentences.
+"$PYTHON" extract_sentences.py --language "$LANGUAGE" "$DATA_DIR"
+context_model & CONTEXT=$!
+sentence_openers & OPENERS=$!
+wait "$CONTEXT"
+wait "$OPENERS"
+wait "$CAPITALIZED"
+
+# Words that follow an unknown word, and a common word, and the grammar words: the counts, the
+# vocabulary, and the word kinds.
+"$PYTHON" write_unknown_word_followers.py "$DATA_DIR" "$OUTPUT_DIR/vocabulary.txt" "$OUTPUT_DIR/unknown_word_followers.txt" &
+UNKNOWN=$!
+"$PYTHON" write_word_followers.py "$DATA_DIR" "$OUTPUT_DIR/vocabulary.txt" "$OUTPUT_DIR/word_followers.txt" &
+FOLLOWERS=$!
+"$PYTHON" write_grammar_words.py "$DATA_DIR" "$OUTPUT_DIR/grammar_words.txt"
+wait "$UNKNOWN"
+wait "$FOLLOWERS"
+
+# The swipe vocabulary: the words people write that the dictionary lacks.
+if [[ -n "$SWIPE" ]]; then
+  wait "$SWIPE"
   "$PYTHON" write_swipe_vocabulary.py --language "$LANGUAGE" "$DATA_DIR" "$DICTIONARY_WORDS" \
     "$OUTPUT_DIR/spelling_list.txt" "$OUTPUT_DIR/swipe_vocabulary.txt"
 fi

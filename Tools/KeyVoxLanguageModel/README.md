@@ -76,8 +76,8 @@ PYTHON=.venv/bin/python ./build_language_data.sh <language> <data-dir> <output-d
 
 `<language>` is `en`, `de`, `de-bundestag` (German with the Bundestag speeches), `es`, or `fr`.
 Give each build its own data directory, with the shared sources linked in as
-`<data-dir>/sources`, since a build writes its sentences and counts there. The script runs, in
-order:
+`<data-dir>/sources`, since a build writes its sentences and counts there. The script runs these
+steps:
 
 ```bash
 .venv/bin/python download_sources.py --language <language> <data-dir>
@@ -102,6 +102,16 @@ and a probability a line), it then builds the swipe vocabulary:
 ./scowl_words.sh 80 <output-dir>/spelling_list.txt A,B,Z,C,D
 .venv/bin/python write_swipe_vocabulary.py --language <language> <data-dir> <dictionary-words> <output-dir>/spelling_list.txt <output-dir>/swipe_vocabulary.txt
 ```
+
+Steps that read none of each other's files run side by side: after `download_sources.py`, the
+vocabulary and the words spelled with capitals (`write_vocabulary.py`,
+`write_capitalized_spellings.py`) and the swipe vocabulary's counts (`count_swipe_words.py`, the
+spelling list) run beside `extract_sentences.py`; then the context model (`count_ngrams.py`,
+`write_context_model.py`) beside the sentence openers (`write_word_kinds.py`,
+`count_sentence_openers.py`, `write_sentence_openers.py`); then the two follower lists and the
+grammar words, once the counts, the vocabulary, and the word kinds are written; and last
+`write_swipe_vocabulary.py`. Each step reads the same files it would read run alone, so the files
+are the same; the memory of the steps running together adds up.
 
 `<identifier>` is the build's typing language (`de` for `de-bundestag`). The tools need Python
 3.14 or later (for `compression.zstd`), Xcode's `swiftc` for Apple's tagger, and for Spanish the
