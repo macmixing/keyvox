@@ -53,15 +53,28 @@ swipe_counts() {
 # whose `wait` the signal interrupts at once, and the build stops every step still running. This
 # works in the bash 3.2 macOS ships, which has no `wait -n`.
 set -m
+# The process groups of the steps not yet waited for.
 STEP_GROUPS=""
-stop_steps() {
-  local group
+forget_step() {
+  local group kept=""
   for group in $STEP_GROUPS; do
-    kill -TERM -- "-$group" 2>/dev/null || true
+    [[ "$group" == "$1" ]] || kept="$kept $group"
+  done
+  STEP_GROUPS="$kept"
+}
+# Stops the steps not yet waited for that are still running; a finished step's process group ID
+# may already belong to another program.
+stop_steps() {
+  local group running
+  running=" $(jobs -pr | tr '\n' ' ') "
+  for group in $STEP_GROUPS; do
+    [[ "$running" == *" $group "* ]] && kill -TERM -- "-$group" 2>/dev/null || true
   done
 }
 step_failed() {
-  trap - EXIT USR1
+  # Another step failing meanwhile must not end the build with USR1's default action.
+  trap '' USR1
+  trap - EXIT
   stop_steps
   echo "$0: a step failed; every step still running was stopped" >&2
   exit 1
@@ -85,6 +98,7 @@ finish() {
   local step
   for step in "$@"; do
     wait "$step"
+    forget_step "$step"
   done
 }
 
