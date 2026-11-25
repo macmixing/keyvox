@@ -12,8 +12,9 @@ Swipe trail styles for each theme.
 
 ### Includes
 
-- `KeyboardThemePalette.swipeTrail` (`KeyboardThemeSwipeTrail`): the trail a swipe leaves across the letter keys, with its stroke and glow colors for the light and dark appearances, its width at the finger, how far it tapers, how wide its glow is, how long each point lasts behind the finger, and how long it fades once the finger lifts.
-- The KeyVox theme draws it in its indigo in light and lavender in dark; the Classic theme in neutral black in light and white in dark.
+- `KeyboardThemePalette.swipeTrail` (`KeyboardThemeSwipeTrail`): the trail a swipe leaves across the letter keys, with its stroke, head-dot, and glow colors and its width for the light and dark appearances, its nested glow layers, how long its tail lasts, how far it tapers and how its opacity falls off, the head dot's size, how long the tail retracts once the finger lifts, and the head dot's bloom.
+- The KeyVox theme draws it in indigo in light and lavender with a lighter head in dark; the Classic theme in the platform's system blue in light and white in dark.
+- `KeyboardThemeSystemColor.blue`.
 
 ### Notes
 
