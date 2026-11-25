@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 # Rebuilds every file the predictive keyboard bundles for English from the sources in <data-dir>,
 # with build_language_data.sh: the context model, the sentence openers, the words spelled with
-# capitals, the words that follow an unknown word or a common word, and the grammar words.
+# capitals, the words that follow an unknown word or a common word, the grammar words, and the
+# swipe vocabulary, which reads the dictionary's words and probabilities from
+# <typing-data-dir>/work/dictionary_unigrams.tsv, written by Tools/KeyVoxTypingModels's build.
 # The builders share the source readers and the normalizing code, so a change made for one can
 # change another's output; run this after changing any tool here, never a single builder alone.
 #
@@ -11,15 +13,17 @@
 set -euo pipefail
 
 usage() {
-  echo "usage: $0 <data-dir> [--check]" >&2
+  echo "usage: $0 <data-dir> <typing-data-dir> [--check]" >&2
   exit 1
 }
 
-[[ $# -eq 1 || $# -eq 2 ]] || usage
+[[ $# -eq 2 || $# -eq 3 ]] || usage
 DATA_DIR="$(cd "$1" && pwd)"
+DICTIONARY_WORDS="$(cd "$2" && pwd)/work/dictionary_unigrams.tsv"
+[[ -f "$DICTIONARY_WORDS" ]] || { echo "$DICTIONARY_WORDS: missing; build Tools/KeyVoxTypingModels first" >&2; exit 1; }
 CHECK=0
-if [[ $# -eq 2 ]]; then
-  [[ "$2" == "--check" ]] || usage
+if [[ $# -eq 3 ]]; then
+  [[ "$3" == "--check" ]] || usage
   CHECK=1
 fi
 TOOLS_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -27,11 +31,11 @@ BUNDLED_DIR="$TOOLS_DIR/../../Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPr
 LINGUISTICS_DIR="$TOOLS_DIR/../../Packages/KeyVoxLinguistics/Sources/KeyVoxLinguistics/Resources"
 BUILT_DIR="$DATA_DIR/bundled"
 
-"$TOOLS_DIR/build_language_data.sh" en "$DATA_DIR" "$BUILT_DIR"
+"$TOOLS_DIR/build_language_data.sh" en "$DATA_DIR" "$BUILT_DIR" "$DICTIONARY_WORDS"
 
 differ=0
 for file in context_model.bin sentence_openers.txt capitalized_spellings_en.txt unknown_word_followers.txt \
-  word_followers.txt grammar_words.txt; do
+  word_followers.txt grammar_words.txt swipe_vocabulary.txt; do
   destination="$BUNDLED_DIR"
   [[ "$file" == capitalized_spellings_en.txt ]] && destination="$LINGUISTICS_DIR"
   if cmp -s "$BUILT_DIR/$file" "$destination/$file"; then

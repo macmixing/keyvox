@@ -6,6 +6,20 @@ The format loosely follows Keep a Changelog, and the package uses semantic versi
 
 ---
 
+## [2.0.2] - 2026-11-25
+
+The English typing language bundles a swipe vocabulary: 22,465 words people write that the English dictionary lacks, so a swipe can decode to them.
+
+### Includes
+
+- `PredictiveData/en/swipe_vocabulary.txt`, one word per line with its probability on the dictionary's 0-255 scale, likeliest first, built by `Tools/KeyVoxLanguageModel` from YouTube-Commons, OASST2, and Tatoeba: words such as "haha", "hahaha", "omg", "lmao", "cuz", and "anyways", British spellings, and names, none of them a dictionary word.
+
+### Notes
+
+- `2.0.2` changes no API or behavior: nothing in the package reads the new file yet, and the dictionary, rankers, and other bundled files are unchanged.
+
+---
+
 ## [2.0.1] - 2026-11-24
 
 The bundled English dictionary is the one `Tools/KeyVoxTypingModels` builds, with the same words, word pairs, and three-word sequences at the same probabilities.

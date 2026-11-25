@@ -17,6 +17,12 @@ _CAPITALIZED_SHARE = 0.9
 _APOSTROPHES = "'’"
 
 
+def is_written_as_name(seen: int, capitalized: int) -> bool:
+    """Whether a word written `seen` times in the middle of a sentence, `capitalized` of them
+    with a capital, is written as a name."""
+    return seen >= _MINIMUM_OCCURRENCES and capitalized / seen >= _CAPITALIZED_SHARE
+
+
 def is_always_capitalized(word: str, always_capitalized: Iterable[str]) -> bool:
     """The keyboard's rule in WordCasing.writingAlwaysCapitalized, from the always-capitalized
     words in a typing language's language.json: each such word and its contractions."""
@@ -44,8 +50,7 @@ def capitalized_names(texts: Iterable[str], rules: TextRules = DEFAULT_RULES,
     return {
         word
         for word, count in seen.items()
-        if count >= _MINIMUM_OCCURRENCES
-        and capitalized[word] / count >= _CAPITALIZED_SHARE
+        if is_written_as_name(count, capitalized[word])
         and not is_always_capitalized(word, always_capitalized)
         and word not in capitalized_common_words
     }

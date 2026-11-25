@@ -13,6 +13,10 @@ and the same files for German, Spanish, and French, which are built but not bund
 | `unknown_word_followers.txt` | `write_vocabulary.py`, `write_unknown_word_followers.py` | The vocabulary, `count_ngrams.py`'s counts, and OASST2 and Tatoeba's sentences |
 | `word_followers.txt` | `write_vocabulary.py`, `write_word_followers.py` | The vocabulary, `count_ngrams.py`'s counts, and OASST2 and Tatoeba's sentences |
 | `grammar_words.txt` | `write_word_kinds.py`, `write_grammar_words.py` | `count_ngrams.py`'s vocabulary and the word kinds |
+| `swipe_vocabulary.txt` | `count_swipe_words.py`, `write_swipe_vocabulary.py` | Every source, through `source_texts.py`, the dictionary's words and probabilities, and SCOWL's size 80 in every spelling |
+
+The swipe vocabulary is built only for a language with a dictionary, so for English alone
+today (see "Swipe vocabulary").
 
 English's dictionary, rankers, and accent overlay, bundled beside these files, are built by
 `Tools/KeyVoxTypingModels`.
@@ -27,8 +31,12 @@ The builders share the source readers (`readers.py`, `source_texts.py`, `names.p
 here, rebuild every language, and for English see which bundled files change:
 
 ```bash
-PYTHON=.venv/bin/python ./rebuild_bundled_data.sh <english-data-dir> --check
+PYTHON=.venv/bin/python ./rebuild_bundled_data.sh <english-data-dir> <typing-data-dir> --check
 ```
+
+`<typing-data-dir>` is a `Tools/KeyVoxTypingModels` data directory after its build, whose
+`work/dictionary_unigrams.tsv` holds the words and probabilities the bundled dictionary is
+compiled from; the swipe vocabulary reads them.
 
 `--check` leaves the package alone and fails if a rebuilt file differs from the bundled one;
 without it, the files that differ replace the bundled ones. Measure a changed context model
@@ -63,13 +71,13 @@ built. The Leipzig corpora (news and web text) are formal writing and are not re
 ```bash
 python3.14 -m venv .venv
 .venv/bin/pip install -r requirements.txt
-PYTHON=.venv/bin/python ./build_language_data.sh <language> <data-dir> <output-dir>
+PYTHON=.venv/bin/python ./build_language_data.sh <language> <data-dir> <output-dir> [dictionary-words]
 ```
 
 `<language>` is `en`, `de`, `de-bundestag` (German with the Bundestag speeches), `es`, or `fr`.
 Give each build its own data directory, with the shared sources linked in as
-`<data-dir>/sources`, since a build writes its sentences and counts there. The script runs, in
-order:
+`<data-dir>/sources`, since a build writes its sentences and counts there. The script runs these
+steps:
 
 ```bash
 .venv/bin/python download_sources.py --language <language> <data-dir>
@@ -85,6 +93,27 @@ order:
 .venv/bin/python write_word_followers.py <data-dir> <output-dir>/vocabulary.txt <output-dir>/word_followers.txt
 .venv/bin/python write_grammar_words.py <data-dir> <output-dir>/grammar_words.txt
 ```
+
+Given `[dictionary-words]`, the language's dictionary words and probabilities (a word, a tab,
+and a probability a line), it then builds the swipe vocabulary:
+
+```bash
+.venv/bin/python count_swipe_words.py --language <language> <data-dir>
+./scowl_words.sh 80 <output-dir>/spelling_list.txt A,B,Z,C,D
+.venv/bin/python write_swipe_vocabulary.py --language <language> <data-dir> <dictionary-words> <output-dir>/spelling_list.txt <output-dir>/swipe_vocabulary.txt
+```
+
+Steps that read none of each other's files run side by side: after `download_sources.py`, the
+vocabulary and the words spelled with capitals (`write_vocabulary.py`,
+`write_capitalized_spellings.py`) and the swipe vocabulary's counts (`count_swipe_words.py`, the
+spelling list) run beside `extract_sentences.py`; then the context model (`count_ngrams.py`,
+`write_context_model.py`) beside the sentence openers (`write_word_kinds.py`,
+`count_sentence_openers.py`, `write_sentence_openers.py`); then the two follower lists and the
+grammar words, once the counts, the vocabulary, and the word kinds are written; and last
+`write_swipe_vocabulary.py`. Each step reads the same files it would read run alone, so the files
+are the same; the memory of the steps running together adds up. Each step runs in a process group
+of its own, and when one fails the build stops every step still running, with every program they
+started, and fails at once, in the bash 3.2 macOS ships as in later ones.
 
 `<identifier>` is the build's typing language (`de` for `de-bundestag`). The tools need Python
 3.14 or later (for `compression.zstd`), Xcode's `swiftc` for Apple's tagger, and for Spanish the
@@ -325,3 +354,99 @@ suggestion bar adds to the dictionary's few next words while the user picks its 
 `grammar_words.txt` holds the determiners, pronouns, prepositions, conjunctions, and particles
 among the most common words, which the suggestion bar lets come back while the user picks its
 words in a row.
+
+## Swipe vocabulary
+
+`swipe_vocabulary.txt` holds the words people write that the English dictionary lacks, so a
+swipe can decode to them: "haha", "hahaha", "omg", "lmao", "cuz", "anyways", British spellings
+such as "centre", and names such as "Minecraft". One word per line, its spelling, a tab, and its
+probability on the dictionary's 0-255 scale, likeliest first. It holds no dictionary word, so the
+dictionary stays the one source of every word it has, and the swipe lexicon is the dictionary's
+words and these.
+
+`count_swipe_words.py` counts each source's words, read from the texts the language data reads,
+after decoding HTML character references and skipping Markdown code (`normalize.prose`). It
+also counts how often each word is joined to other letters or digits in one run without spaces
+(`normalize.joined_words`), and, in OASST2 and Tatoeba, how often it is written with capitals in
+the middle of a sentence. `write_swipe_vocabulary.py` reads the counts by swipe form (letters
+only, case and accents folded, as a swipe draws them). Each form no dictionary word spells is a
+candidate, and these rules, in order, leave one out. The counts are from the build of November
+25, 2026:
+
+| Rule | Leaves out | Forms |
+| --- | --- | --- |
+| Letters | A letter that is no letter key of the keyboard (`language.json`) | 6,262 |
+| One source | Fewer than two of the three sources write it as a word on its own | 693,651 |
+| Joined | Written joined to other letters or digits more than half the time: URLs, hyphenated words, code | 125 |
+| Misspelling | A dictionary form one edit away (a letter left out, added, or changed, or two neighbors swapped) is written on its own at least 50 times as often as it is | 4,188 |
+| Kept | | 22,465 of 726,691 |
+
+- Decoding HTML references and skipping Markdown code leaves 416 forms in a single source that
+  were in two before, the largest "nbsp" (980,367 times before, 44 after); the others' only other
+  source was code or HTML references in OASST2.
+- The misspelling rule never leaves out a form SCOWL's size 80 lists in any spelling (American,
+  British, Canadian, or Australian), which keeps 1,748 forms such as "colour", "yay", and
+  "cafe", or one the written sources write with capitals more often than in lowercase, as a
+  name or an acronym (a misspelling of a lowercase word is lowercase), which keeps 2,830.
+- Both sides of the misspelling rule count only the times a form is written on its own, so a
+  fragment of longer tokens neither makes its neighbors misspellings nor is spared by its
+  fragments: "th", written 145,719 times but 2,989 on its own, mostly in "5th" and the like,
+  leaves "tbh" in.
+- It still leaves out short chat words one edit from a much more common word: "idk" ("id"),
+  "smh" ("sh"), "brb" ("bro"), "ngl" ("nfl"), "homie" ("home"), "hella" ("hell"), and "ebook"
+  ("book"). How much more common the word is does not tell them from misspellings: "homie" is
+  88 times rarer than "home", "occured" 409 times rarer than "occurred".
+- Tatoeba's texts that mention its recurring invented characters are left out of the counts, as
+  from the rest of the language data, or the characters' names would be kept.
+
+Each kept form is written in its most common spelling ("tonight's", "i'mma"), with its likeliest
+capitals when the written sources write it as a name (`names.is_written_as_name`), unless they
+are capitals in a row, which stay lowercase as in the capitalized spellings ("json"). Its
+probability is the median the dictionary gives its words that the sources write on their own
+about as often (within a quarter of an octave), so an added word ranks as a dictionary word as
+common would. `<data-dir>/swipe_vocabulary_report.tsv` lists every candidate with its counts, its outcome and
+the rule or exception behind it, and a kept form's rank, spelling, and probability.
+
+### Measured accuracy
+
+`Tools/KeyVoxSwipeModel` (`feat/swipe-model`) decoded the 54,269 swipes of swipe.futo.org's
+validation split with its best run, `r1-ft-dec6`, and that run's tuned scoring (`scoring.json`),
+with the dictionary alone and with the first words of the swipe vocabulary added, by rank:
+
+| Words added | Swipes whose word can be decoded | Top-1 | Top-3 | Top-10 |
+| --- | --- | --- | --- | --- |
+| None | 95.73% | 91.29% | 94.67% | 95.36% |
+| 2,500 | 96.08% | 91.50% | 94.96% | 95.68% |
+| 5,000 | 96.22% | 91.60% | 95.09% | 95.81% |
+| 10,000 | 96.38% | 91.71% | 95.23% | 95.96% |
+| 15,000 | 96.45% | 91.74% | 95.28% | 96.01% |
+| 20,000 | 96.50% | 91.77% | 95.31% | 96.05% |
+| 22,465 (all) | 96.51% | 91.79% | 95.33% | 96.07% |
+
+Top-1 rises with every size, so every kept form is in the list. With all of them, 325 swipes
+decode to their word first that did not, and 55 that did no longer do: 44 of those to an added
+word, 11 of them a British spelling of the American word ("center" to "centre", "organized" to
+"organised") and the rest look-alikes ("it" to "itu", "this" to "theos"). The split's one swipe of
+"haha" decoded as "has" before and as "haha" now. The test split was not decoded. The measurement,
+every row above with each swipe gained and lost and the SHA-256 of the list it measured, is kept
+with KeyVox's language data as `swipe/vocabulary-build/swipe_accuracy_val-22465.json`.
+
+### Why a list of its own
+
+Added to the typing dictionary instead, the same words with the same probabilities change typing.
+`Tools/KeyVoxTypingHarness` scored the dictionary with them against the bundled one, with the
+bundled rankers:
+
+| Measure | Plan | Bundled | With the swipe vocabulary |
+| --- | --- | --- | --- |
+| Final words correct | 80 sentences, noise 0.3 (`compare`) | 909/946 | 910 |
+| Mistyped words fixed | 400 sentences, noise 0.25 (`evaluate`) | 1,165/1,230 | 1,173 |
+| Completion offered within 2 letters | 400 | 50.5% | 49.9% |
+| Final words correct | ITE held-out typists, 3,000 sentences (`compare`) | 21,651/22,034 | 21,650 |
+| Mistyped words fixed | ITE | 326/583 | 325 |
+| Completion offered within 2 letters | ITE | 51.6% | 51.3% |
+| Correction call, 95th percentile | 400 | 4.18 ms | 8.23 ms |
+
+Typing gets worse on some measures of every plan but the 80-sentence one, and a correction takes
+up to twice as long, so the words stay out of the typing dictionary, and the swipe lexicon adds
+them to the dictionary's words.
