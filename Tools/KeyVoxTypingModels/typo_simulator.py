@@ -16,7 +16,8 @@ For a word, in order:
    by a farther key at the far-substitution rate.
 3. After each letter, the letter typed is typed again at the doubled rate, and an extra key
    beside it and an extra farther letter are typed at their rates.
-4. A word's apostrophe is left out at its rate, which no sloppiness changes.
+4. A word's apostrophe is left out at its rate, which no sloppiness changes; otherwise it is
+   typed after everything typed for the letters before it.
 Farther substitutions and extra letters are drawn from the ones ITE typists made at the same
 letter, or from all of them for a letter they never made one at."""
 
@@ -109,7 +110,10 @@ class TypoSimulator:
 
         scales = {position: self.spread_scale(position, sloppiness) for position in POSITIONS}
         typed = []
+        apostrophe_at = None
         for index, letter in enumerate(letters):
+            if index == apostrophe:
+                apostrophe_at = len(typed)
             position = position_of(index, len(letters))
             if happens("undoubled") if index > 0 and letters[index - 1] == letter \
                     else happens(f"omission/{position}"):
@@ -129,5 +133,5 @@ class TypoSimulator:
                 typed.append(self.choices["insertion_far"].draw(letter, rng))
 
         if apostrophe >= 0 and rng.random() >= self.rates["apostrophe_dropped"]:
-            typed.insert(min(apostrophe, len(typed)), "'")
+            typed.insert(len(typed) if apostrophe_at is None else apostrophe_at, "'")
         return "".join(typed)
