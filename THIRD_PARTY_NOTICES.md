@@ -299,7 +299,17 @@ Attribution: Based on UD Spanish AnCora (Taulé, Martí, and Recasens; Universal
 
 Attribution: Based on Leino, Laine, Kurimo, and Oulasvirta, *Mobile Typing with Intelligent Text Entry: A Large-Scale Dataset and Results* (2024).
 
-### MIT License (applies to `whisper.cpp`, OpenAI Whisper, `llama.cpp`, and Hex above)
+### swipe.futo.org (derived swipe-typing model and test data)
+- Source: <https://huggingface.co/datasets/futo-org/swipe.futo.org> (revision `d71bf5fd7f45b3e7c2ed2d76a21b0dbd3b4ba566`)
+- License: MIT
+- License URL: <https://huggingface.co/datasets/futo-org/swipe.futo.org/blob/main/LICENSE>
+- Note: KeyVox trained and tuned the English swipe-typing model bundled in `Packages/KeyVoxPredictiveKeyboard` (`PredictiveData/en/swipe_encoder.kvsw`, `swipe_decoder.kvsd`, and `swipe.json`) on the dataset's swipes; the model files do not contain the recordings. The package's swipe decoding test fixture holds 300 of the dataset's validation swipes, resampled.
+
+Attribution: Based on the swipe.futo.org dataset collected by FUTO.
+
+Copyright (c) 2025 FUTO
+
+### MIT License (applies to `whisper.cpp`, OpenAI Whisper, `llama.cpp`, Hex, and swipe.futo.org above)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

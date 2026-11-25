@@ -43,7 +43,8 @@ let package = Package(
         .testTarget(
             name: "KeyVoxPredictiveKeyboardTests",
             dependencies: ["KeyVoxPredictiveKeyboard"],
-            path: "Tests/KeyVoxPredictiveKeyboardTests"
+            path: "Tests/KeyVoxPredictiveKeyboardTests",
+            resources: [.copy("Fixtures")]
         ),
     ],
     cxxLanguageStandard: .cxx17

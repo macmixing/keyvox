@@ -25,6 +25,12 @@ public struct TypingLanguageResources: Sendable {
         return url
     }
 
+    /// The language's file named `name` when it has one, such as a swipe model's optional decoder.
+    func optionalURL(_ name: String) -> URL? {
+        let url = directory.appendingPathComponent(name, isDirectory: false)
+        return Self.exists(url, isDirectory: false) ? url : nil
+    }
+
     /// The language's folder named `name`, such as its dictionary.
     func directory(_ name: String) throws -> URL {
         let url = directory.appendingPathComponent(name, isDirectory: true)

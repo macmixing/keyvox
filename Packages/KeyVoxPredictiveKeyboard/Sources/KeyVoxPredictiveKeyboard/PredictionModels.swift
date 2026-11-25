@@ -101,4 +101,6 @@ public enum PredictiveKeyboardError: Error, Equatable {
     case invalidAccentOverlay
     case invalidHeldKeyCharacters
     case invalidCharacterList
+    /// A bundled swipe model file is damaged or does not match the model's settings.
+    case invalidSwipeModel(String)
 }

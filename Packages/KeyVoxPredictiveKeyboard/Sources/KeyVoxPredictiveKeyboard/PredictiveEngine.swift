@@ -197,6 +197,32 @@ public final class PredictiveEngine: @unchecked Sendable {
         return result.suggestionValues.map(\.word)
     }
 
+    /// Every word of the bundled dictionary, in the order it stores them, with its probability
+    /// and whether it may be offered.
+    public func dictionaryWords() throws -> [SwipeLexiconBuilder.Word] {
+        final class Collector {
+            var words: [SwipeLexiconBuilder.Word] = []
+        }
+        let collector = Collector()
+        let succeeded = withExtendedLifetime(collector) {
+            KVPKEngineForEachDictionaryWord(nativeEngine, Unmanaged.passUnretained(collector).toOpaque()) {
+                context, word, probability, isOfferable in
+                guard let context, let word else { return }
+                Unmanaged<Collector>.fromOpaque(context).takeUnretainedValue().words.append(
+                    SwipeLexiconBuilder.Word(
+                        spelling: String(cString: word),
+                        probability: Int(probability),
+                        isOfferable: isOfferable
+                    )
+                )
+            }
+        }
+        guard succeeded else {
+            throw PredictiveKeyboardError.nativePredictionFailed(Self.nativeLastError)
+        }
+        return collector.words
+    }
+
     /// The user's own words that the typed letters and touches could be heading for,
     /// completions and near misses alike, found the way the bundled dictionary's words are.
     public func personalSuggestions(

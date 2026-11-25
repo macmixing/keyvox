@@ -136,6 +136,24 @@ bool KVPKEnginePredictPersonal(
     KVPKPredictionResult *result
 );
 
+/// Receives one word of the bundled dictionary: its spelling as UTF-8, its probability (0 to
+/// 255, already log-scaled), and whether it may be offered (not marked as not a word or as
+/// blocked).
+typedef void (*KVPKDictionaryWordVisitor)(
+    void *context,
+    const char *word,
+    int32_t probability,
+    bool isOfferable
+);
+
+/// Calls `visit` with `context` for every word of the bundled dictionary, in the order the
+/// dictionary stores them.
+bool KVPKEngineForEachDictionaryWord(
+    KVPKEngineRef engine,
+    void *context,
+    KVPKDictionaryWordVisitor visit
+);
+
 #ifdef __cplusplus
 }
 #endif
