@@ -6,7 +6,7 @@ The format loosely follows Keep a Changelog, and the package uses semantic versi
 
 ---
 
-## [1.1.0] - 2026-11-24
+## [2.0.0] - 2026-11-24
 
 Swipe trail styles for each theme.
 
@@ -18,7 +18,7 @@ Swipe trail styles for each theme.
 
 ### Notes
 
-- `1.1.0` adds public API; key colors are unchanged.
+- `2.0.0` changes public API: `KeyboardThemePalette`'s initializer takes the required `swipeTrail:`, and `KeyboardThemeSystemColor` gains `.blue`, so palettes built and exhaustive switches written for `1.0.0` need updating; key colors are unchanged.
 
 ---
 
