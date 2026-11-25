@@ -94,10 +94,13 @@ swipes typed.
 
 ## Swiped words
 
-`SwipeWordsValidationTests` checks what swipes type on the KeyVox keyboard. Each case clears the
-text, types its words before by tapping the keys, and swipes its keys the same way
-(`SwipeGesturePath`), looping around the keys it names: the finger curls once around the key's
-center and goes a tenth of a turn past where the loop crosses, as people loop at a doubled letter.
+`SwipeWordsValidationTests` checks what swipes type on the KeyVox keyboard, or on the system
+keyboard with `TEST_RUNNER_SWIPE_SYSTEM_KEYBOARD=1` (picked from the globe's menu where there is
+one). Each case clears the text, types its words before by tapping the keys, and swipes its keys
+the same way (`SwipeGesturePath`), looping around the keys it names: by default the finger curls
+once around the key's center and goes a tenth of a turn past where the loop crosses, as people
+loop at a doubled letter; a case's `loop` (`SwipeGesturePath.Loop`: `radius` and `drift` in key
+pitches, `duration` and `pause` in seconds, `turns`) shapes it otherwise.
 
 ```sh
 TEST_RUNNER_SWIPE_KEYBOARD_MARKER=Shift \
@@ -111,4 +114,8 @@ xcodebuild test -project AppleKeyboardBaseline.xcodeproj -scheme BaselineUITests
 
 `before` is the words before, space separated (empty for a sentence start), `keys` the keys to
 swipe through, and `loops` the indices of the keys to loop around. The output holds each case
-with where its swipe started and the text it left.
+with where its swipe started, `path` (the points sent, as screen x, y and seconds), the text it
+left, and `bar`, the suggestion bar's entries then; each case's result is also printed as a
+`SWIPE_CASE_RESULT` line, for a device, whose output file stays on the device. Each case's
+screenshot is kept in the test's results, and in `TEST_RUNNER_SWIPE_SCREENSHOTS`, when set, as a
+PNG.

@@ -8,23 +8,32 @@ import XCTest
 /// way it came, crossing its own path and going on a tenth of a turn past it, as swipe.futo.org's
 /// swipers loop at a doubled letter: a loop 0.3 key pitches out from its middle over 500 ms.
 enum SwipeGesturePath {
+    /// How the finger loops at a key: it rests `pause` seconds where it arrives, then curls
+    /// `turns` times round a loop `radius` key pitches out from its middle over `duration` seconds,
+    /// drifting `drift` key pitches a turn the way it came. The standard loop is the one described
+    /// above; `turns` of 0 is a rest alone.
+    struct Loop: Codable {
+        var radius = 0.3
+        var drift = 0.04
+        var duration = 0.5
+        var turns = 1.1
+        var pause = 0.0
+    }
+
     /// The Simulator plays a synthesized path at the times it gives only when its points are
     /// this sparse; denser paths arrive all at once. The keyboard still sees the screen's own
     /// samples in between.
     static let samplesPerSecond = 20.0
     private static let strokeBase = 0.12
     private static let strokePerPitch = 0.045
-    private static let loopRadius = 0.3
-    private static let loopDrift = 0.04
-    /// How far past one full loop the finger goes on before leaving the key, in turns, as
-    /// swipers' loops go on past where they cross.
-    private static let loopOvershoot = 0.1
-    private static let loopDuration = 0.5
 
-    /// - Parameter loops: The indices of `keys`' letters whose keys the finger loops around.
+    /// - Parameters:
+    ///   - loops: The indices of `keys`' letters whose keys the finger loops around.
+    ///   - loop: How it loops there.
     static func samples(
         through keys: String,
         loopingAt loops: Set<Int> = [],
+        loop: Loop = Loop(),
         on map: KeyboardKeyMap
     ) throws -> [(point: CGPoint, offset: TimeInterval)] {
         let centers = try keys.lowercased().map { letter in
@@ -36,24 +45,33 @@ enum SwipeGesturePath {
         var position = centers[0]
         for (index, center) in centers.enumerated() {
             if index > 0 {
-                let arrival = loops.contains(index) ? loopPoint(0, around: center, from: centers[index - 1], pitch: pitch) : center
+                let arrival = loops.contains(index) ? loopPoint(0, of: loop, around: center, from: centers[index - 1], pitch: pitch) : center
                 time = stroke(from: position, to: arrival, pitch: pitch, startingAt: time, into: &samples)
                 position = arrival
             } else if loops.contains(index) {
-                position = loopPoint(0, around: center, from: CGPoint(x: center.x - 1, y: center.y), pitch: pitch)
+                position = loopPoint(0, of: loop, around: center, from: CGPoint(x: center.x - 1, y: center.y), pitch: pitch)
                 samples.append((position, 0))
             } else {
                 samples.append((center, 0))
             }
             if loops.contains(index) {
                 let from = index > 0 ? centers[index - 1] : CGPoint(x: center.x - 1, y: center.y)
-                let steps = Int((loopDuration * samplesPerSecond).rounded(.up))
-                for step in 1...steps {
-                    let tau = Double(step) / Double(steps)
-                    samples.append((loopPoint(tau, around: center, from: from, pitch: pitch), time + loopDuration * tau))
+                if loop.pause > 0 {
+                    let steps = Int((loop.pause * samplesPerSecond).rounded(.up))
+                    for step in 1...steps {
+                        samples.append((position, time + loop.pause * Double(step) / Double(steps)))
+                    }
+                    time += loop.pause
                 }
-                time += loopDuration
-                position = loopPoint(1, around: center, from: from, pitch: pitch)
+                if loop.turns > 0 {
+                    let steps = Int((loop.duration * samplesPerSecond).rounded(.up))
+                    for step in 1...steps {
+                        let tau = Double(step) / Double(steps)
+                        samples.append((loopPoint(tau, of: loop, around: center, from: from, pitch: pitch), time + loop.duration * tau))
+                    }
+                    time += loop.duration
+                    position = loopPoint(1, of: loop, around: center, from: from, pitch: pitch)
+                }
             }
         }
         return samples
@@ -80,15 +98,15 @@ enum SwipeGesturePath {
         return time + duration
     }
 
-    /// A point `tau` of the way along one loop of a prolate cycloid centered on `center`, drifting
-    /// the way from `from` to `center`.
-    private static func loopPoint(_ tau: Double, around center: CGPoint, from: CGPoint, pitch: Double) -> CGPoint {
+    /// A point `tau` of the way along `loop`, a prolate cycloid centered on `center`, drifting the
+    /// way from `from` to `center`.
+    private static func loopPoint(_ tau: Double, of loop: Loop, around center: CGPoint, from: CGPoint, pitch: Double) -> CGPoint {
         let length = max(hypot(center.x - from.x, center.y - from.y), 1e-9)
         let along = CGVector(dx: (center.x - from.x) / length, dy: (center.y - from.y) / length)
         let across = CGVector(dx: -along.dy, dy: along.dx)
-        let a = loopRadius * pitch
-        let k = loopDrift * pitch
-        let theta = 2 * Double.pi * (1 + loopOvershoot) * tau
+        let a = loop.radius * pitch
+        let k = loop.drift * pitch
+        let theta = 2 * Double.pi * loop.turns * tau
         let u = k * (theta - Double.pi) + a * sin(theta)
         let v = a * (1 - cos(theta)) - a
         return CGPoint(x: center.x + u * along.dx + v * across.dx, y: center.y + u * along.dy + v * across.dy)
