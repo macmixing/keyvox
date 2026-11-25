@@ -40,6 +40,13 @@ final class KeyboardViewController: UIInputViewController {
         },
         isPeriodShortcutEnabled: { [weak self] in
             self?.typingTraits.allowsPeriodShortcut ?? true
+        },
+        // A swipe's word goes in before anything typed after it, and where it goes stays known.
+        willEdit: { [weak self] in
+            self?.finishPendingSwipe()
+        },
+        didEdit: { [weak self] in
+            self?.predictionCoordinator.textWasEdited()
         }
     )
     /// The one connection to the Transcription AU extension, shared by dictation and by restyles

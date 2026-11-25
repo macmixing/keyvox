@@ -81,6 +81,8 @@ final class KeyboardTextDocumentProxyAdapter: KeyboardTextDocumentProxying {
     }
 }
 
+/// Every edit the keyboard makes to the field goes through here. Each one calls `willEdit` before
+/// it reads or changes the text and `didEdit` once the text is as it leaves it.
 final class KeyboardTextInputController {
     private struct PendingSelectionDeletion {
         let documentContextBeforeInput: String
@@ -90,6 +92,8 @@ final class KeyboardTextInputController {
     private let emitKeypress: () -> Void
     private let shouldPreserveLeadingCapitalization: (String) -> Bool
     private let isPeriodShortcutEnabled: () -> Bool
+    private let willEdit: () -> Void
+    private let didEdit: () -> Void
 
     private var emptyContextDeleteAttempts = 0
     private var lastDeleteTimestamp: TimeInterval = 0
@@ -99,18 +103,23 @@ final class KeyboardTextInputController {
         documentProxy: any KeyboardTextDocumentProxying,
         emitKeypress: @escaping () -> Void,
         shouldPreserveLeadingCapitalization: @escaping (String) -> Bool = { _ in false },
-        isPeriodShortcutEnabled: @escaping () -> Bool = { true }
+        isPeriodShortcutEnabled: @escaping () -> Bool = { true },
+        willEdit: @escaping () -> Void = {},
+        didEdit: @escaping () -> Void = {}
     ) {
         self.documentProxy = documentProxy
         self.emitKeypress = emitKeypress
         self.shouldPreserveLeadingCapitalization = shouldPreserveLeadingCapitalization
         self.isPeriodShortcutEnabled = isPeriodShortcutEnabled
+        self.willEdit = willEdit
+        self.didEdit = didEdit
     }
 
     /// Deletes `words` whole words before the cursor, each with the spaces after it, for a held
     /// delete key, and calls `onFinish` once they are gone. Returns false, without calling it,
     /// when there is a selection or no text in view before the cursor.
     func deleteWordsBackward(_ words: Int, onFinish: @escaping () -> Void) -> Bool {
+        willEdit()
         guard documentProxy.selectedText?.isEmpty ?? true,
               let context = documentProxy.documentContextBeforeInput,
               context.isEmpty == false else {
@@ -118,7 +127,10 @@ final class KeyboardTextInputController {
         }
         pendingSelectionDeletion = nil
         emitKeypress()
-        deleteWords(words, endingText: context, onFinish: onFinish)
+        deleteWords(words, endingText: context) { [weak self] in
+            self?.didEdit()
+            onFinish()
+        }
         return true
     }
 
@@ -172,6 +184,8 @@ final class KeyboardTextInputController {
         emitsKeypress: Bool = true,
         symbolPage: inout KeyboardSymbolPage
     ) -> Bool {
+        willEdit()
+        defer { didEdit() }
         switch kind {
         case let .character(value):
             pendingSelectionDeletion = nil
@@ -280,6 +294,8 @@ final class KeyboardTextInputController {
 
     /// Applies a typing-session edit at the cursor: deletes around it, then inserts.
     func apply(_ edit: TextEdit) {
+        willEdit()
+        defer { didEdit() }
         pendingSelectionDeletion = nil
         if edit.deleteAfterCount > 0 {
             let following = (documentProxy.documentContextAfterInput ?? "").prefix(edit.deleteAfterCount)
@@ -307,6 +323,8 @@ final class KeyboardTextInputController {
     }
 
     func insertTranscriptionWithResult(_ text: String) -> KeyboardTextInsertionResult? {
+        willEdit()
+        defer { didEdit() }
         let cleanedText = text.replacingOccurrences(
             of: #"[\r\n]+$"#,
             with: "",
@@ -429,6 +447,8 @@ final class KeyboardTextInputController {
     }
 
     func replaceSelectedText(_ selectedText: String, with text: String) -> Bool {
+        willEdit()
+        defer { didEdit() }
         guard selectedText.isEmpty == false,
               let currentSelectedText = documentProxy.selectedText,
               currentSelectedText == selectedText else {
@@ -445,6 +465,8 @@ final class KeyboardTextInputController {
         with replacementText: String,
         documentContextBeforeInsertion: String?
     ) -> Bool {
+        willEdit()
+        defer { didEdit() }
         guard currentTextMatchesUntouchedInsertion(
             currentText,
             documentContextBeforeInsertion: documentContextBeforeInsertion
@@ -462,6 +484,8 @@ final class KeyboardTextInputController {
 
     func adjustCursorPosition(by offset: Int) {
         guard offset != 0 else { return }
+        willEdit()
+        defer { didEdit() }
 
         pendingSelectionDeletion = nil
         let step = offset > 0 ? 1 : -1

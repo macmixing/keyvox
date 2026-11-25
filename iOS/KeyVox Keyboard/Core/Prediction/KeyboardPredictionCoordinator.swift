@@ -150,6 +150,13 @@ final class KeyboardPredictionCoordinator {
         }
     }
 
+    /// Reads where a swiped word would go again after the keyboard's own edit.
+    func textWasEdited() {
+        if currentPlace != nil {
+            currentPlace = readPlace()
+        }
+    }
+
     /// Starts typing in the focused field, which counts as a new one.
     func reset() {
         field += 1

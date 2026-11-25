@@ -4,6 +4,46 @@ import Testing
 @testable import KeyVox_iOS
 
 struct KeyboardTextInputControllerTests {
+    @Test func everyEditCallsItsHooksBeforeTouchingTheTextAndOnceItIsDone() {
+        let documentProxy = KeyboardTextDocumentProxySpy()
+        documentProxy.documentContextBeforeInput = "Hello world"
+        documentProxy.selectedText = "world"
+        var events: [String] = []
+        func record(_ event: String) -> () -> Void {
+            { events.append("\(event) \(documentProxy.insertedTexts.count) \(documentProxy.deleteBackwardCallCount) \(documentProxy.adjustedOffsets.count)") }
+        }
+        let controller = KeyboardTextInputController(
+            documentProxy: documentProxy,
+            emitKeypress: {},
+            willEdit: record("will"),
+            didEdit: record("did")
+        )
+        var symbolPage = KeyboardSymbolPage.primary
+
+        #expect(controller.replaceUntouchedInsertion("world", with: "World", documentContextBeforeInsertion: "Hello "))
+        #expect(events == ["will 0 0 0", "did 1 5 0"], "a dictation change")
+        events = []
+        _ = controller.handleKeyActivation(.character("a"), symbolPage: &symbolPage)
+        #expect(events == ["will 1 5 0", "did 2 5 0"], "a key")
+        events = []
+        controller.apply(TextEdit(deleteCount: 1, insertText: "b"))
+        #expect(events.first == "will 2 5 0" && events.last == "did 3 6 0", "a typing session edit")
+        events = []
+        #expect(controller.replaceSelectedText("world", with: "there"))
+        #expect(events == ["will 3 6 0", "did 4 6 0"], "a selection replaced")
+        events = []
+        controller.adjustCursorPosition(by: -2)
+        #expect(events == ["will 4 6 0", "did 4 6 2"], "the cursor moved")
+        events = []
+        #expect(controller.insertTranscriptionWithResult("dictated") != nil)
+        #expect(events.count == 2 && events.first == "will 4 6 2" && events.last?.hasPrefix("did") == true, "a dictation")
+        events = []
+        documentProxy.selectedText = nil
+        let inserted = documentProxy.insertedTexts.count
+        #expect(controller.deleteWordsBackward(1) {})
+        #expect(events == ["will \(inserted) 6 2", "did \(inserted) 11 2"], "a held delete's words")
+    }
+
     @Test func characterKeyInsertsTextWithoutKeypressHapticsOfItsOwn() {
         let documentProxy = KeyboardTextDocumentProxySpy()
         let haptics = KeyboardKeypressHapticsSpy()
