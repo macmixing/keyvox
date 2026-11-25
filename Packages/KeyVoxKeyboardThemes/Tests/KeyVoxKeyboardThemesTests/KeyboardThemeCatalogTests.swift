@@ -48,8 +48,11 @@ final class KeyboardThemeCatalogTests: XCTestCase {
                 XCTAssertGreaterThan(trail.opacityFalloffExponent, 0, context)
                 XCTAssertGreaterThanOrEqual(trail.headScale, 1, context)
                 XCTAssertGreaterThan(trail.liftDuration, 0, context)
+                XCTAssertGreaterThanOrEqual(trail.bandOverlap, 0, context)
+                XCTAssertEqual(trail.liftTiming.count, 4, context)
                 XCTAssertGreaterThanOrEqual(trail.bloomScale, 1, context)
                 XCTAssertGreaterThan(trail.bloomDuration, 0, context)
+                XCTAssertGreaterThan(trail.bloomFadeDuration, 0, context)
             }
         }
     }

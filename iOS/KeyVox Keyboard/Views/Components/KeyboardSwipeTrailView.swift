@@ -5,16 +5,18 @@ import UIKit
 
 /// The trail a swipe leaves across the letter keys, drawn as the keyboard's theme draws it
 /// (`KeyboardThemeSwipeTrail`): a stroke with a round head and a head dot at the finger, tapering
-/// to a point and fading along the theme's tail of time behind it over nested glow layers, that
-/// retracts into its head while the dot blooms once the finger lifts.
+/// to a point and fading along the path drawn within the theme's tail of time behind it over
+/// nested glow layers, that retracts into its head, keeping its taper, while the dot blooms once
+/// the finger lifts.
 ///
 /// The path runs through the finger's samples as a centripetal Catmull-Rom curve. The stroke and
-/// each glow layer are ribbons whose width follows each point's age, cut by age into a fixed set
-/// of shape layers whose opacities step finely down the tail; neighboring bands share their edge
-/// exactly, so each ribbon reads as one smooth gradient. Each screen refresh while a trail shows
-/// only replaces the layers' paths and the head dot's position, with implicit animations off; the
-/// bloom is a Core Animation animation. Layers are made only when a theme's glow layer count
-/// changes, never per frame.
+/// each glow layer are ribbons whose width and opacity follow the distance back along the path
+/// from the finger, so they stay even where the finger lingers; each is cut by distance into a
+/// fixed set of shape layers whose opacities step finely down the tail, each band running a little
+/// under the next so no seam shows. Each screen refresh while a trail shows only replaces the
+/// layers' paths and the head dot's position, with implicit animations off; the bloom is a Core
+/// Animation animation. Layers are made only when a theme's glow layer count changes, never per
+/// frame.
 final class KeyboardSwipeTrailView: UIView {
     private struct Point {
         let location: CGPoint
@@ -27,7 +29,16 @@ final class KeyboardSwipeTrailView: UIView {
         let width: CGFloat
     }
 
-    /// How many age bands the stroke and each glow layer are drawn in.
+    /// The tail as drawn this frame: the curve's points within the tail, oldest first, each with
+    /// its distance back along the path from the finger and its normal.
+    private struct Tail {
+        let locations: [CGPoint]
+        let distances: [CGFloat]
+        let normals: [CGVector]
+        let length: CGFloat
+    }
+
+    /// How many bands the stroke and each glow layer are drawn in.
     private static let strokeBands = 32
     private static let glowBands = 8
     /// Samples closer than this to the last kept one add nothing to the drawn path, in points.
@@ -43,6 +54,9 @@ final class KeyboardSwipeTrailView: UIView {
     private var displayLink: CADisplayLink?
     private var liftTime: TimeInterval?
     private var style: Style?
+
+    /// Whether a trail is showing or fading.
+    var isShowing: Bool { style != nil }
 
     override init(frame: CGRect) {
         strokeLayers = (0..<Self.strokeBands).map { _ in Self.bandLayer() }
@@ -108,26 +122,29 @@ final class KeyboardSwipeTrailView: UIView {
         }
     }
 
-    /// The finger lifted: the tail retracts into the head while the head dot blooms and fades.
+    /// The finger lifted: the tail retracts into the head, keeping its taper, while the head dot
+    /// grows at full opacity and then fades.
     func lift() {
         guard let style, liftTime == nil else { return }
         liftTime = ProcessInfo.processInfo.systemUptime
-        let bloom = CABasicAnimation(keyPath: "transform.scale")
-        bloom.fromValue = 1
-        bloom.toValue = style.trail.bloomScale
-        bloom.duration = style.trail.bloomDuration
-        bloom.timingFunction = CAMediaTimingFunction(name: .easeOut)
+        let trail = style.trail
+        let total = trail.bloomDuration + trail.bloomFadeDuration
+        let grow = CABasicAnimation(keyPath: "transform.scale")
+        grow.fromValue = 1
+        grow.toValue = trail.bloomScale
+        grow.duration = trail.bloomDuration
+        grow.timingFunction = CAMediaTimingFunction(name: .easeOut)
+        grow.fillMode = .forwards
+        let fade = CAKeyframeAnimation(keyPath: "opacity")
+        fade.values = [1, 1, 0]
+        fade.keyTimes = [0, NSNumber(value: trail.bloomDuration / total), 1]
+        fade.duration = total
+        let bloom = CAAnimationGroup()
+        bloom.animations = [grow, fade]
+        bloom.duration = total
         bloom.fillMode = .forwards
         bloom.isRemovedOnCompletion = false
-        let fade = CABasicAnimation(keyPath: "opacity")
-        fade.fromValue = 1
-        fade.toValue = 0
-        fade.duration = style.trail.liftDuration
-        fade.timingFunction = CAMediaTimingFunction(name: .easeOut)
-        fade.fillMode = .forwards
-        fade.isRemovedOnCompletion = false
         headLayer.add(bloom, forKey: "bloom")
-        headLayer.add(fade, forKey: "fade")
     }
 
     /// Removes the trail at once.
@@ -139,13 +156,14 @@ final class KeyboardSwipeTrailView: UIView {
         clearPaths()
     }
 
-    /// Keeps one set of band layers per glow layer, under the stroke, outermost lowest.
+    /// Keeps one set of band layers per glow layer, under the stroke, outermost lowest, each band
+    /// under the next older one.
     private func makeGlowLayers(count: Int) {
         guard glowLayers.count != count else { return }
         glowLayers.joined().forEach { $0.removeFromSuperlayer() }
         glowLayers = (0..<count).map { _ in (0..<Self.glowBands).map { _ in Self.bandLayer() } }
         for layers in glowLayers {
-            for band in layers {
+            for band in layers.reversed() {
                 layer.insertSublayer(band, at: 0)
             }
         }
@@ -167,71 +185,102 @@ final class KeyboardSwipeTrailView: UIView {
         guard let style else { return cancel() }
         let trail = style.trail
         let now = ProcessInfo.processInfo.systemUptime
-        // While the finger is down the tail is the last `tailDuration` of the path; once it lifts
-        // the path stops aging and the tail retracts into the head, easing out.
+        // While the finger is down the tail is the path drawn in the last `tailDuration`; once it
+        // lifts the path stops aging and the tail's end retracts into the head on the theme's
+        // curve, the taper following the length left.
         let reference = liftTime ?? now
         var span = trail.tailDuration
         if let liftTime {
-            let progress = min((now - liftTime) / trail.liftDuration, 1)
-            guard progress < 1 else { return cancel() }
-            span *= pow(1 - progress, 3)
+            let elapsed = now - liftTime
+            guard elapsed < max(trail.liftDuration, trail.bloomDuration + trail.bloomFadeDuration) else { return cancel() }
+            span *= 1 - Self.timing(trail.liftTiming, at: min(elapsed / trail.liftDuration, 1))
         }
         if let firstKept = points.firstIndex(where: { reference - $0.time <= trail.tailDuration }), firstKept > 2 {
             points.removeFirst(firstKept - 2)
         }
         let curve = Self.curve(through: points)
         guard let head = curve.last else { return clearPaths() }
-        // The curve's points within the span, newest last, with the span's end cut exactly.
-        var visible: [Point] = []
-        for (index, point) in curve.enumerated() where reference - point.time <= span {
-            if visible.isEmpty, index > 0 {
-                let older = curve[index - 1]
-                let fraction = (reference - span - older.time) / max(point.time - older.time, 1e-6)
-                visible.append(Point(
-                    location: CGPoint(
-                        x: older.location.x + (point.location.x - older.location.x) * fraction,
-                        y: older.location.y + (point.location.y - older.location.y) * fraction
-                    ),
-                    time: reference - span
-                ))
-            }
-            visible.append(point)
-        }
-        let shares = visible.map { min(max((reference - $0.time) / trail.tailDuration, 0), 1) }
-        let widths = shares.map { style.width * CGFloat(1 - (1 - trail.tailWidthScale) * $0) }
-        let normals = Self.normals(of: visible.map(\.location))
+        let tail = Self.tail(of: curve, since: reference - span)
         CATransaction.begin()
         CATransaction.setDisableActions(true)
-        Self.draw(strokeLayers, shares: shares, visible: visible, normals: normals, radii: widths.map { $0 / 2 })
-        for (glowLayer, layers) in zip(trail.glows, glowLayers) {
-            let scale = CGFloat(glowLayer.widthScale)
-            Self.draw(layers, shares: shares, visible: visible, normals: normals, radii: widths.map { $0 * scale / 2 })
-        }
         headLayer.position = head.location
+        Self.draw(strokeLayers, tail: tail, style: style, widthScale: 1)
+        for (glowLayer, layers) in zip(trail.glows, glowLayers) {
+            Self.draw(layers, tail: tail, style: style, widthScale: CGFloat(glowLayer.widthScale))
+        }
         CATransaction.commit()
     }
 
-    /// Cuts the ribbon through `visible` into `layers` by share of the tail, each layer's band
-    /// sharing its edge with the next.
-    private static func draw(
-        _ layers: [CAShapeLayer],
-        shares: [Double],
-        visible: [Point],
-        normals: [CGVector],
-        radii: [CGFloat]
-    ) {
-        for (band, layer) in layers.enumerated() {
-            let nearest = Double(band) / Double(layers.count)
-            let farthest = Double(band + 1) / Double(layers.count)
-            var indices = visible.indices.filter { shares[$0] >= nearest && shares[$0] <= farthest }
-            if let joint = visible.indices.first(where: { shares[$0] < nearest }) {
-                indices.append(joint)
+    /// The part of `curve` drawn since `start`, with its oldest end cut exactly there.
+    private static func tail(of curve: [Point], since start: TimeInterval) -> Tail {
+        var locations: [CGPoint] = []
+        for (index, point) in curve.enumerated() where point.time >= start {
+            if locations.isEmpty, index > 0 {
+                let older = curve[index - 1]
+                let fraction = (start - older.time) / max(point.time - older.time, 1e-6)
+                locations.append(CGPoint(
+                    x: older.location.x + (point.location.x - older.location.x) * fraction,
+                    y: older.location.y + (point.location.y - older.location.y) * fraction
+                ))
             }
+            locations.append(point.location)
+        }
+        var distances = [CGFloat](repeating: 0, count: locations.count)
+        for index in stride(from: locations.count - 2, through: 0, by: -1) {
+            let a = locations[index]
+            let b = locations[index + 1]
+            distances[index] = distances[index + 1] + hypot(b.x - a.x, b.y - a.y)
+        }
+        return Tail(locations: locations, distances: distances, normals: normals(of: locations), length: distances.first ?? 0)
+    }
+
+    /// Cuts the tail's ribbon into `layers` by distance from the finger, each band running the
+    /// theme's overlap under the next older one.
+    private static func draw(_ layers: [CAShapeLayer], tail: Tail, style: Style, widthScale: CGFloat) {
+        guard tail.length > 0 else {
+            layers.forEach { $0.path = nil }
+            return
+        }
+        let overlap = CGFloat(style.trail.bandOverlap)
+        func radius(at distance: CGFloat) -> CGFloat {
+            let share = Double(min(max(distance / tail.length, 0), 1))
+            return style.width * CGFloat(1 - (1 - style.trail.tailWidthScale) * share) * widthScale / 2
+        }
+        for (band, layer) in layers.enumerated() {
+            let nearest = tail.length * CGFloat(band) / CGFloat(layers.count)
+            let farthest = min(tail.length * CGFloat(band + 1) / CGFloat(layers.count) + overlap, tail.length)
+            let slice = Self.slice(of: tail, from: farthest, to: nearest)
             layer.path = ribbon(
-                through: indices.map { (visible[$0].location, normals[$0], radii[$0]) },
+                through: slice.map { ($0.location, $0.normal, radius(at: $0.distance)) },
                 roundsNewestEnd: band == 0
             )
         }
+    }
+
+    /// The tail between `farthest` and `nearest` distances from the finger, oldest first, with both
+    /// ends cut exactly.
+    private static func slice(
+        of tail: Tail,
+        from farthest: CGFloat,
+        to nearest: CGFloat
+    ) -> [(location: CGPoint, normal: CGVector, distance: CGFloat)] {
+        func point(at distance: CGFloat) -> (location: CGPoint, normal: CGVector, distance: CGFloat) {
+            guard let index = tail.distances.indices.dropLast().first(where: { tail.distances[$0 + 1] <= distance }) else {
+                return (tail.locations[tail.locations.count - 1], tail.normals[tail.normals.count - 1], distance)
+            }
+            let span = max(tail.distances[index] - tail.distances[index + 1], 1e-6)
+            let fraction = (tail.distances[index] - distance) / span
+            let a = tail.locations[index]
+            let b = tail.locations[index + 1]
+            let normal = fraction < 0.5 ? tail.normals[index] : tail.normals[index + 1]
+            return (CGPoint(x: a.x + (b.x - a.x) * fraction, y: a.y + (b.y - a.y) * fraction), normal, distance)
+        }
+        var result = [point(at: farthest)]
+        for index in tail.locations.indices where tail.distances[index] < farthest && tail.distances[index] > nearest {
+            result.append((tail.locations[index], tail.normals[index], tail.distances[index]))
+        }
+        result.append(point(at: nearest))
+        return result
     }
 
     private func clearPaths() {
@@ -241,6 +290,24 @@ final class KeyboardSwipeTrailView: UIView {
         headLayer.removeAllAnimations()
         headLayer.opacity = 0
         CATransaction.commit()
+    }
+
+    /// The value of the cubic Bézier timing curve with control points `points` (x1, y1, x2, y2)
+    /// at progress `x`.
+    private static func timing(_ points: [Double], at x: Double) -> Double {
+        guard points.count == 4 else { return x }
+        let (x1, y1, x2, y2) = (points[0], points[1], points[2], points[3])
+        func bezier(_ t: Double, _ p1: Double, _ p2: Double) -> Double {
+            let u = 1 - t
+            return 3 * u * u * t * p1 + 3 * u * t * t * p2 + t * t * t
+        }
+        var low = 0.0
+        var high = 1.0
+        for _ in 0..<24 {
+            let middle = (low + high) / 2
+            if bezier(middle, x1, x2) < x { low = middle } else { high = middle }
+        }
+        return bezier((low + high) / 2, y1, y2)
     }
 
     /// The path through `points` as a centripetal Catmull-Rom curve, which bends through every

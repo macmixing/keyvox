@@ -31,7 +31,7 @@ extension KeyboardThemePalette {
             dark: KeyboardThemeRGBA(red: 0, green: 0, blue: 0, alpha: 0.82)
         ),
         // Indigo in light and the letter keys' lavender in dark, with a lighter head dot in dark, over
-        // three nested glow layers of the same hue.
+        // five nested glow layers of the same hue.
         swipeTrail: KeyboardThemeSwipeTrail(
             color: .appearance(
                 light: KeyboardThemeRGBA(red: 0x5B / 255, green: 0x5F / 255, blue: 0xD6 / 255, alpha: 0.85),
@@ -50,10 +50,13 @@ extension KeyboardThemePalette {
             tailWidthScale: KeyboardThemeSwipeTrail.standardTailWidthScale,
             tailDuration: KeyboardThemeSwipeTrail.standardTailDuration,
             opacityFalloffExponent: KeyboardThemeSwipeTrail.standardOpacityFalloffExponent,
+            bandOverlap: KeyboardThemeSwipeTrail.standardBandOverlap,
             headScale: KeyboardThemeSwipeTrail.standardHeadScale,
             liftDuration: KeyboardThemeSwipeTrail.standardLiftDuration,
+            liftTiming: KeyboardThemeSwipeTrail.standardLiftTiming,
             bloomScale: KeyboardThemeSwipeTrail.standardBloomScale,
-            bloomDuration: KeyboardThemeSwipeTrail.standardBloomDuration
+            bloomDuration: KeyboardThemeSwipeTrail.standardBloomDuration,
+            bloomFadeDuration: KeyboardThemeSwipeTrail.standardBloomFadeDuration
         )
     )
 
