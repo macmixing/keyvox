@@ -189,7 +189,8 @@ final class SwipeWordDecoder: @unchecked Sendable {
     /// word are left to the scores and the words before when the bundled lexicon has them all, so
     /// "as soon" gives "soon" and "my son" gives "son"; a word only the user's own words spell loses
     /// to them there, so no letter only they double is added without a loop. Where a word repeats a
-    /// letter three times or more with no loop credit, or doubles it against twins only the user's
+    /// letter three times or more with no loop credit, against every twin with it fewer times and no
+    /// letter more, whatever its circles elsewhere, or doubles it against twins only the user's
     /// words spell, those twins win unless every one is a misspelling of it, written
     /// `misspellingRatio` times less often in the context model, the rule the language data's swipe
     /// vocabulary build leaves misspellings out by; then it wins over them, except a twin a loop
@@ -249,12 +250,13 @@ final class SwipeWordDecoder: @unchecked Sendable {
                 loops[longer] = circled.count
                 for key in own.indices where own[key] > 0 && circled.contains(key) == false {
                     // Its twins at this key: words repeating this key's letter fewer times and no letter
-                    // more, the same at every key a loop credits it, so a circled letter never counts
-                    // against it.
+                    // more. Against a double, only those the same at every key a loop credits it, so a
+                    // circled letter never counts against it; a letter three times or more with no loop
+                    // is weighed against every one, so loops elsewhere never add it.
                     var shorter = repeats.filter { other in
                         other.value.count == own.count && other.value[key] < own[key]
                             && other.value.indices.allSatisfy { other.value[$0] <= own[$0] }
-                            && circled.allSatisfy { other.value[$0] == own[$0] }
+                            && (own[key] > 1 || circled.allSatisfy { other.value[$0] == own[$0] })
                     }.map(\.key)
                     guard shorter.isEmpty == false else { continue }
                     if own[key] == 1 {

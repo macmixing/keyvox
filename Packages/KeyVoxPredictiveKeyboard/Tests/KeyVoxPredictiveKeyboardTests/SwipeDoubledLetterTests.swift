@@ -147,6 +147,15 @@ final class SwipeDoubledLetterTests: XCTestCase {
         }
     }
 
+    func testACircleAtOneLetterNeverAddsAnotherTripledWithoutOne() throws {
+        for previousWords in [[], ["ok"]] as [[String]] {
+            let swiped = try computer.swipeWords(
+                for: SwipePath.through("yes", loopingAt: [1]), previousWords: previousWords, wordCase: .asSpelled, limit: 1
+            ).first
+            XCTAssertEqual(swiped?.lowercased(), "yes", "circled at e after \(previousWords)")
+        }
+    }
+
     func testWithoutACircleANameKeepsItsLettersOverACommonerTwin() throws {
         for word in ["mary", "paris", "anderson", "mr"] {
             XCTAssertEqual(try best(swipingKeysOf: word, previousWords: [])?.lowercased(), word, "no circle")

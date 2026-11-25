@@ -105,6 +105,42 @@ final class SwipeTwinRuleTests: XCTestCase {
         }
     }
 
+    /// Every key path the lexicon holds a stretched spelling on, a word with a letter three times or
+    /// more such as "yeesss" or "soooo", beside a word with no letter more than twice, swiped circling
+    /// each of its keys in turn: no stretched spelling ever comes out, as a circle asks for a letter
+    /// doubled, and a letter three times or more with no circle loses to every twin with it fewer
+    /// times that is no misspelling of it.
+    func testCirclingAnyOneLetterNeverGivesAStretchedSpelling() throws {
+        try XCTSkipUnless(ProcessInfo.processInfo.environment["SWIPE_TWIN_PROOF"] == "1", "set SWIPE_TWIN_PROOF=1 to run")
+        engine = try PredictiveEngine(language: .english)
+        decoder = try SwipeWordDecoder(language: .english)
+        let keyIndex = decoder.settings.keyIndex
+        var paths: [[Int]: (stretched: Set<String>, plain: Set<String>)] = [:]
+        for word in try SwipeVocabulary.lexiconWords(of: engine) {
+            let form = SwipeLetterForm.form(of: word.spelling)
+            guard let runs = Self.runs(of: form), let path = SwipeLetterForm.keyPath(of: form, keyIndex: keyIndex, keepsDoubleLetters: false) else { continue }
+            if runs.contains(where: { $0 >= 3 }) { paths[path, default: ([], [])].stretched.insert(form) } else { paths[path, default: ([], [])].plain.insert(form) }
+        }
+        var swipes = 0, withAStretchedCandidate = 0, anotherPath = 0
+        var stretched: [String] = []
+        for (path, forms) in paths.sorted(by: { $0.key.lexicographicallyPrecedes($1.key) }) where forms.stretched.isEmpty == false && forms.plain.isEmpty == false {
+            let letters = Self.letters(of: path, settings: decoder.settings)
+            for key in path.indices {
+                swipes += 1
+                let weighed = try decodeAll(letters, loopingAt: [key], personal: nil, vocabulary: PersonalVocabulary(words: [], textReplacements: []), detectsLoops: true)
+                guard weighed.contains(where: forms.stretched.contains) else { continue }
+                withAStretchedCandidate += 1
+                guard let top = weighed.first, SwipeLetterForm.keyPath(of: top, keyIndex: keyIndex, keepsDoubleLetters: false) == path else { anotherPath += 1; continue }
+                if Self.runs(of: top)?.contains(where: { $0 >= 3 }) == true {
+                    stretched.append("\(letters) circled at \(Array(letters)[key]): \(top) over \(weighed.filter(forms.plain.contains).prefix(3))")
+                }
+            }
+        }
+        print("TWIN_PROOF circling one letter beside stretched spellings: swipes \(swipes), with a stretched spelling weighed \(withAStretchedCandidate), a word on another key path \(anotherPath), a stretched spelling instead \(stretched.count)")
+        XCTAssertGreaterThan(withAStretchedCandidate, 0)
+        XCTAssertEqual(stretched, [], "a circle gave a stretched spelling")
+    }
+
     /// Every lexicon word with two or three doubled letters, each exactly twice, swiped circling only
     /// some of them: whatever twin of the word wins keeps every circled letter doubled, and its
     /// uncircled doubles are left to the scores and the words before. So circling either "ss" of
