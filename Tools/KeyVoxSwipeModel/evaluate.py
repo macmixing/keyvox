@@ -49,10 +49,11 @@ def main() -> None:
     parser.add_argument("--beam", type=int, default=Pruning.beam)
     parser.add_argument("--prune-gamma", type=float, default=Pruning.gamma)
     parser.add_argument("--prune-beta", type=float, default=Pruning.beta)
+    parser.add_argument("--device", default="mps" if torch.backends.mps.is_available() else "cpu")
     arguments = parser.parse_args()
 
     run_dir = arguments.data_dir / "models" / arguments.run
-    device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
+    device = torch.device(arguments.device)
     lexicon = load_lexicon(arguments.lexicon)
     split = np.load(arguments.data_dir / "prepared" / f"{arguments.split}.npz")
     layout_names = sorted(set(split["layout"].tolist()))
