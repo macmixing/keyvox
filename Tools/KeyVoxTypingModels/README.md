@@ -174,10 +174,27 @@ simulated typing mistakes. English has both, so the method is proven on English:
 trained on simulated typing alone are scored against the ones trained on ITE.
 
 The simulator is measured and calibrated against ITE, then types sentences from the pipeline's
-own sources. Its steps are not part of `build_typing_models.sh`; after a build, in the same data
-directory:
+own sources. Its steps are not part of `build_typing_models.sh`, and they and the training
+steps write into the data directory they are given, over files a build wrote there. So after
+a build, copy its data directory and run them in the copy; the build's own files are never
+replaced. For `sim+ite`, use another copy and `--source sim+ite`:
 
-| Step | Writes |
+```bash
+cp -R <data-dir> <sim-dir>
+cd Tools/KeyVoxTypingModels
+for step in measure_ite_typing.py fit_touch_spread.py calibrate_typo_simulator.py \
+    compare_simulated_typing.py write_simulated_records.py; do
+  <data-dir>/venv/bin/python "$step" <sim-dir>
+done
+<data-dir>/venv/bin/python write_feature_context_model.py <sim-dir> --leave-out-simulation-sentences
+<data-dir>/venv/bin/python cache_correction_candidates.py <sim-dir> --source sim
+<data-dir>/venv/bin/python cache_completion_candidates.py <sim-dir> --source sim
+<data-dir>/venv/bin/python train_correction_models.py <sim-dir> --source sim
+<data-dir>/venv/bin/python train_completion_ranker.py <sim-dir> --source sim
+<data-dir>/venv/bin/python export_tree_models.py <sim-dir>
+```
+
+| Step | Writes in the copy |
 | --- | --- |
 | `measure_ite_typing.py` | `work/simulation/ite_typing.json`: ITE's typing mistakes, the letters typists meant, and how far they typed before picking a completion |
 | `fit_touch_spread.py` | `work/simulation/touch_spread.json`: touch spreads that give ITE's substitutions of neighboring keys |
@@ -185,25 +202,29 @@ directory:
 | `compare_simulated_typing.py` | `work/simulation/comparison.json`: the simulator's mistakes against ITE's, with another seed |
 | `write_simulated_records.py` | `work/simulation/corrections.tsv`, `preserves.tsv`, `completions.tsv`: records in the shape `split_ite_events.py` writes |
 | `write_feature_context_model.py --leave-out-simulation-sentences` | `work/feature_context_800k.bin` without the sentences the simulator types |
+| the caches, without `--as-bundled`, and the trainers, with `--source` | `work/*_candidates.pkl.gz`, `work/*.pkl.gz`, and `work/reports/` |
+| `export_tree_models.py` | `built/*.kvtr` |
 
-Then run the candidate caches, without `--as-bundled`, the trainers, and `export_tree_models.py`
-with `--source sim` or `--source sim+ite`, in a copy of the data directory, since they write the
-same files as an ITE build.
+`python -m unittest test_typo_simulator` checks that the simulator types a word's apostrophe
+after everything it typed for the letters before it.
 
 ### What is measured
 
-- Mistakes left in text: the 2,299,794 words of 312,804 phone sections typed with
+Every measurement is from the typists the harness's ITE plan never holds out, and from
+sentences outside the buckets the rankers are measured on, 8-9, so the held-out reports never
+measure rankers on sentences the simulator was calibrated with.
+
+- Mistakes left in text: the 1,852,615 words of 252,039 phone sections typed with
   autocorrection and suggestions off, picked as `Tools/KeyVoxTypingHarness/Scripts/ite_typo_plan.py`
-  picks the harness's ITE plan but only from the 42,913 typists that plan never holds out
-  (`ite_copied_typing.py`). 2.57% of the words were typed with a letter wrong, left out, or
-  extra; 3,496 typed as a
-  different word, more than four edits or more than half the word, are not mistakes of typing
-  and are left out. Longer words get more per letter: 1.2% of two-letter words, 2.2% of
+  picks the harness's ITE plan but only from the 42,073 typists that plan never holds out
+  (`ite_copied_typing.py`). 2.55% of the words were typed with a letter wrong, left out, or
+  extra; 2,788 typed as a different word, more than four edits or more than half the word, are
+  not mistakes of typing and are left out. Longer words get more per letter: 1.2% of two-letter words, 2.2% of
   four-letter words, and 10.2% of words of twelve letters or more were mistyped.
-- Typos left for autocorrection: the 248,603 plausible autocorrections of the same typists,
+- Typos left for autocorrection: the 199,080 plausible autocorrections of the same typists,
   the typos the logged keyboards fixed or tried to fix, the ones a correction ranker learns from.
 - Completions: how many letters the same typists had typed when they picked a suggested
-  completion, for each length of word, from 161,423 picked completions.
+  completion, for each length of word, from 129,052 picked completions.
 
 `typo_kinds.py` sorts each difference between a typed and an intended word into substitutions
 of the key beside in the row, of an overlapping key in the row above or below, and of a farther
@@ -228,9 +249,8 @@ spreads are fitted to the misses ITE typists left instead: 0.166 to 0.176 key pi
 0.145 to 0.155 down, by place in the word, give exactly the measured rates of neighbor
 substitutions in text typed without autocorrection.
 
-Mistakes bunch up: in text typed without autocorrection, 11.4% of the words with a letter
-mistake have a second one, where independent mistakes at the measured rates give 1.5%, and
-18.8% of the typos left for autocorrection do. So each word gets a sloppiness, its
+Mistakes bunch up: in text typed without autocorrection, 11.5% of the words with a letter
+mistake have a second one, and 18.7% of the typos left for autocorrection do. So each word gets a sloppiness, its
 length's factor times a draw from a gamma distribution of mean one; the word's mistake rates are
 multiplied by it, and its taps spread wider by as much as makes them miss that many times more
 often (`typo_simulator.py`). The other kinds happen at their own rates per chance, and farther
@@ -241,17 +261,17 @@ substitutions and extra letters are drawn from the ones ITE typists made at the 
 from text typed without autocorrection, the only typing that shows it; and what a typo is made
 of, each kind's events per typo and the share with a second mistake, from the typos left for
 autocorrection. Typists who rely on autocorrection leave far more slips of a finger than typists
-who fix their own: neighbor-key substitutions are 66% of a typo's mistakes there, and 46% of
-the mistakes in text typed without it. Twelve rounds
-of typing the ITE words, measuring, and moving each setting by its gap give spreads of 0.187 to
-0.197 key pitches across and 0.154 to 0.169 down, a gamma shape of 0.069, and length factors of
-0.49 for two letters, 0.55 for four, 1.19 for eight, and 2.6 for twelve or more (2.8 for one
-letter). Measured with another seed, every kind seen at least 200 times among the autocorrected
-typos is within 10% of its events per typo there but three of the rarest: a first letter left
-out, 0.25 per hundred typos and 0.47 simulated; a doubled letter counted at the first letter,
-0.08 and 0.12; and an extra key beside the last letter, 0.21 and 0.18. A second mistake is in
-18.9% of the simulated typos with a letter mistake, and the share of words mistyped at each
-length is within 5% of ITE's.
+who fix their own: neighbor-key substitutions are 67% of a typo's mistakes there, and 45% of
+the mistakes in text typed without it. Twelve rounds of typing the ITE words, measuring, and
+moving each setting by its gap give spreads of 0.186 to 0.197 key pitches across and 0.153 to
+0.170 down, a gamma shape of 0.069, and length factors of 0.47 for two letters, 0.54 for four,
+1.16 for eight, and 2.83 for twelve or more (2.57 for one letter). Measured with another seed,
+every kind seen at least 200 times among the autocorrected typos is within 10% of its events per
+typo there but three of the rarest: a first letter left out, 0.24 per hundred typos and 0.42
+simulated; an extra key beside the first letter, 0.17 and 0.23; and an extra key beside the
+last letter, 0.21 and 0.19. A second mistake is in 18.4% of the simulated typos with a letter
+mistake, and the share of words mistyped at each length is within 6% of ITE's, but for
+one-letter words, 0.09% and 0.10%.
 
 A first simulator matched the kinds of mistakes in text typed without autocorrection instead.
 Its typos had 42% neighbor-key substitutions and 12% with a second mistake, and rankers trained
@@ -265,10 +285,10 @@ against 16.
 fragments the counts are made from, by a hash of their words, never one ITE typists copied:
 222,814 sentences. `write_simulated_records.py` types each three times, as three typists:
 
-- 198,715 words typed differently from the word meant, the corrections;
-- 86,936 words typed as meant that no dictionary or SCOWL size-50 word spells, which the action
+- 196,366 words typed differently from the word meant, the corrections;
+- 87,110 words typed as meant that no dictionary or SCOWL size-50 word spells, which the action
   model learns to leave alone;
-- 196,791 completions: words picked at random, typed as far as ITE typists had typed a word of
+- 196,748 completions: words picked at random, typed as far as ITE typists had typed a word of
   that length when they picked its completion, mistakes included.
 
 The counts the rankers train with leave out the sentences ITE typists copied, so a typed word's
@@ -301,21 +321,21 @@ The harness scored the bundled rankers and three trained with caches asked witho
 
 | Measure | Plan | Bundled | `ite` | `sim` | `sim+ite` |
 | --- | --- | --- | --- | --- | --- |
-| Final words correct | 80 sentences, noise 0.3 (`compare`) | 96.1% (909/946) | 96.1% (909) | 96.2% (910) | 96.1% (909) |
+| Final words correct | 80 sentences, noise 0.3 (`compare`) | 96.1% (909/946) | 96.1% (909) | 96.3% (911) | 96.1% (909) |
 | Final words correct | 400 sentences, noise 0.25 (`evaluate`) | 98.7% | 98.6% | 98.7% | 98.6% |
-| Mistyped words fixed | 400 | 94.7% (1,165/1,230) | 94.6% (1,163) | 94.8% (1,166) | 94.6% (1,164) |
-| Mistyped words changed to a different word | 400 | 1.3% (16) | 1.5% (18) | 1.2% (15) | 1.4% (17) |
+| Mistyped words fixed | 400 | 94.7% (1,165/1,230) | 94.6% (1,163) | 94.9% (1,167) | 94.6% (1,164) |
+| Mistyped words changed to a different word | 400 | 1.3% (16) | 1.5% (18) | 1.1% (14) | 1.4% (17) |
 | Correctly typed words wrongly changed | 400 | 0.0% (0/3,760) | 0.0% | 0.0% | 0.0% |
-| Completion offered within 2 letters | 400 | 50.5% | 51.5% | 57.5% | 57.8% |
-| Completion keystroke savings | 400 | 39.9% | 40.7% | 42.3% | 41.5% |
-| Suggestion bar shows the word within 3 letters | 400 | 85.3% | 85.3% | 85.6% | 85.7% |
+| Completion offered within 2 letters | 400 | 50.5% | 51.5% | 58.8% | 58.9% |
+| Completion keystroke savings | 400 | 39.9% | 40.7% | 41.9% | 41.8% |
+| Suggestion bar shows the word within 3 letters | 400 | 85.3% | 85.3% | 85.7% | 85.6% |
 | Next word first / in top 3 | 400 | 9.0% / 21.3% | same | same | same |
 | Final words correct | ITE held-out typists, 3,000 sentences (`evaluate`) | 98.2% (`compare`: 98.3%) | same | same | same |
 | Mistyped words fixed | ITE | 55.9% (326/583) | same | same | same |
 | Mistyped words changed to a different word | ITE | 10.1% (59) | same | same | same |
 | Correctly typed words wrongly changed | ITE | 0.5% (97/21,130) | same | same | same |
-| Completion offered within 2 letters | ITE | 51.6% | 51.9% | 60.5% | 61.0% |
-| Completion keystroke savings | ITE | 37.6% | 37.7% | 40.4% | 40.2% |
+| Completion offered within 2 letters | ITE | 51.6% | 51.9% | 61.4% | 60.1% |
+| Completion keystroke savings | ITE | 37.6% | 37.7% | 40.5% | 40.0% |
 | Suggestion bar shows the word within 3 letters | ITE | 84.8% | 84.8% | 84.7% | 84.8% |
 | Next word first / in top 3 | ITE | 15.5% / 26.5% | same | same | same |
 
