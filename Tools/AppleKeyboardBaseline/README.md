@@ -91,3 +91,24 @@ kill -INT %1
 `TEST_RUNNER_SWIPE_PAUSE` sets the rest after each swipe (default 1.2 s). The output holds
 each swipe's wall-clock start and end, for picking frames of the recording, and the text the
 swipes typed.
+
+## Swiped words
+
+`SwipeWordsValidationTests` checks what swipes type on the KeyVox keyboard. Each case clears the
+text, types its words before by tapping the keys, and swipes its keys the same way
+(`SwipeGesturePath`), looping around the keys it names: the finger curls once around the key's
+center and goes a tenth of a turn past where the loop crosses, as people loop at a doubled letter.
+
+```sh
+TEST_RUNNER_SWIPE_KEYBOARD_MARKER=Shift \
+TEST_RUNNER_SWIPE_CASES='[{"before":"i want","keys":"to","loops":[1]},{"before":"","keys":"to","loops":[]}]' \
+TEST_RUNNER_SWIPE_OUTPUT=/tmp/swiped-words.json \
+xcodebuild test -project AppleKeyboardBaseline.xcodeproj -scheme BaselineUITests \
+  -destination "platform=iOS Simulator,id=<simulator-udid>" \
+  -derivedDataPath /tmp/keyvox-apple-baseline -parallel-testing-enabled NO \
+  -only-testing:BaselineUITests/SwipeWordsValidationTests
+```
+
+`before` is the words before, space separated (empty for a sentence start), `keys` the keys to
+swipe through, and `loops` the indices of the keys to loop around. The output holds each case
+with where its swipe started and the text it left.
