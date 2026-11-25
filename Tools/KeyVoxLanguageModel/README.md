@@ -424,10 +424,12 @@ with the dictionary alone and with the first words of the swipe vocabulary added
 | 22,465 (all) | 96.51% | 91.79% | 95.33% | 96.07% |
 
 Top-1 rises with every size, so every kept form is in the list. With all of them, 325 swipes
-decode to their word first that did not, and 55 that did no longer do, 44 of them to an added
-word, the most common kind a British spelling of an American one ("center" to "centre",
-"organized" to "organised"). The split's one swipe of "haha" decoded as "has" before and as
-"haha" now. The test split was not decoded.
+decode to their word first that did not, and 55 that did no longer do: 44 of those to an added
+word, 11 of them a British spelling of the American word ("center" to "centre", "organized" to
+"organised") and the rest look-alikes ("it" to "itu", "this" to "theos"). The split's one swipe of
+"haha" decoded as "has" before and as "haha" now. The test split was not decoded. The measurement,
+every row above with each swipe gained and lost and the SHA-256 of the list it measured, is kept
+with KeyVox's language data as `swipe/vocabulary-build/swipe_accuracy_val-22465.json`.
 
 ### Why a list of its own
 
