@@ -149,7 +149,10 @@ extension KeyboardKeyGridView {
                 session.activationLocation = location
                 setVisualState(.pressed, for: hitKey)
                 if case .character = hitKey.model.kind {
-                    showPopup(for: hitKey)
+                    // A finger whose swipe trail shows has left its first key: no popup follows it.
+                    if session.showsTrail == false {
+                        showPopup(for: hitKey)
+                    }
                     beginHeldKey(for: session)
                 } else {
                     dismissPopup(ownedBy: popupOwnerKeyView)
@@ -217,6 +220,9 @@ extension KeyboardKeyGridView {
             if session.isSwipe {
                 swipeTrailView.cancel()
                 continue
+            }
+            if session.showsTrail {
+                swipeTrailView.cancel()
             }
             if let keyView = session.keyView, isStillPressed(keyView) == false {
                 setVisualState(.normal, for: keyView)

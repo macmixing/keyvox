@@ -16,6 +16,9 @@ final class KeyboardKeyTouchSession {
     var swipePath: [SwipeTouchSample] = []
     /// The finger is swiping: it types nothing as a key, and its path is the word.
     var isSwipe = false
+    /// The trail shows for the finger: it has traveled far enough to look like a swipe beginning,
+    /// and its key shows no popup.
+    var showsTrail = false
 
     init(keyView: KeyboardKeyView?, location: CGPoint, timestamp: TimeInterval) {
         self.keyView = keyView

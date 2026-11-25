@@ -50,6 +50,10 @@ public struct SwipeGate<TouchID: Hashable> {
         /// How long after an undecided touch lifts another finger's landing makes it a tap, in
         /// seconds.
         public var undecidedWindow: TimeInterval
+        /// How far, in key pitches, a touch that may still swipe must travel from where it landed to
+        /// count as traveling, as a host shows a swipe beginning: ten times the 2 px or so a tapping
+        /// finger drifts (Buschek et al., CHI 2015).
+        public var travelDistance: Double
 
         public init(
             restingThreshold: Double,
@@ -60,7 +64,8 @@ public struct SwipeGate<TouchID: Hashable> {
             holdAfterThreshold: TimeInterval,
             liftDecelerationRatio: Double,
             speedWindow: TimeInterval,
-            undecidedWindow: TimeInterval
+            undecidedWindow: TimeInterval,
+            travelDistance: Double
         ) {
             self.restingThreshold = restingThreshold
             self.afterTapThreshold = afterTapThreshold
@@ -71,6 +76,7 @@ public struct SwipeGate<TouchID: Hashable> {
             self.liftDecelerationRatio = liftDecelerationRatio
             self.speedWindow = speedWindow
             self.undecidedWindow = undecidedWindow
+            self.travelDistance = travelDistance
         }
     }
 
@@ -95,7 +101,8 @@ public struct SwipeGate<TouchID: Hashable> {
             holdAfterThreshold: 0.025,
             liftDecelerationRatio: 0.5,
             speedWindow: 0.03,
-            undecidedWindow: 0.5
+            undecidedWindow: 0.5,
+            travelDistance: 0.5
         )
     }
 
@@ -114,6 +121,8 @@ public struct SwipeGate<TouchID: Hashable> {
         var peakSpeed = 0.0
         /// The speed over the latest speed window, in key pitches a second.
         var latestSpeed = 0.0
+        /// The farthest the touch has been from where it landed, in key pitches.
+        var farthest = 0.0
     }
 
     public let parameters: Parameters
@@ -207,6 +216,13 @@ public struct SwipeGate<TouchID: Hashable> {
         touches[id]?.isSwipe ?? false
     }
 
+    /// Whether a touch that may still swipe, or is swiping, has traveled `travelDistance` from where
+    /// it landed.
+    public func isTraveling(_ id: TouchID) -> Bool {
+        guard let touch = touches[id], touch.canSwipe else { return false }
+        return touch.isSwipe || touch.farthest >= parameters.travelDistance
+    }
+
     /// Forgets every finger, undecided ones included, as when the keys go away.
     public mutating func reset() {
         touches.removeAll()
@@ -215,10 +231,11 @@ public struct SwipeGate<TouchID: Hashable> {
 
     /// Takes a sample: whether it meets the threshold, and the speeds over the speed window.
     private func follow(_ touch: inout Touch, to location: CGPoint, time: TimeInterval) {
+        let dx = Double(location.x - touch.origin.x)
+        let dy = Double(location.y - touch.origin.y)
+        let distance = (dx * dx + dy * dy).squareRoot() / touch.pitch
+        touch.farthest = max(touch.farthest, distance)
         if touch.metThresholdAt == nil {
-            let dx = Double(location.x - touch.origin.x)
-            let dy = Double(location.y - touch.origin.y)
-            let distance = (dx * dx + dy * dy).squareRoot() / touch.pitch
             let elapsed = time - touch.landedAt
             if distance >= touch.threshold,
                elapsed <= parameters.instantInterval || distance / elapsed >= parameters.minimumSpeed {

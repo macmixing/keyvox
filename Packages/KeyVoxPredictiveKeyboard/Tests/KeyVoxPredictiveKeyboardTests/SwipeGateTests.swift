@@ -80,6 +80,17 @@ final class SwipeGateTests: XCTestCase {
         XCTAssertFalse(gate.touchMoved(1, to: point(atPitches: 3), time: 10.3))
     }
 
+    func testATouchTravelsOnceItIsHalfAKeyPitchFromWhereItLanded() {
+        var gate = SwipeGate<Int>()
+        gate.touchBegan(0, at: origin, time: 10, pitch: pitch, isEligible: true)
+        XCTAssertFalse(gate.touchMoved(0, to: point(atPitches: 0.49), time: 10.05))
+        XCTAssertFalse(gate.isTraveling(0))
+        XCTAssertFalse(gate.touchMoved(0, to: point(atPitches: 0.5), time: 10.06))
+        XCTAssertTrue(gate.isTraveling(0))
+        gate.touchBegan(1, at: origin, time: 10.07, pitch: pitch, isEligible: true)
+        XCTAssertFalse(gate.isTraveling(0), "a finger that can no longer swipe is not traveling")
+    }
+
     func testAnIneligibleTouchNeverSwipes() {
         var gate = SwipeGate<Int>()
         gate.touchBegan(0, at: origin, time: 10, pitch: pitch, isEligible: false)

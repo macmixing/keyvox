@@ -5,9 +5,11 @@ import UIKit
 ///
 /// A finger that lands on a letter key of the full letter page, while swipe typing is on and
 /// nothing else holds the keys, is followed by the swipe gate (`SwipeGate`) with every sample
-/// the screen reports. Until the gate makes it a swipe it is an ordinary key press in every way;
-/// once it does, its key lets go, the trail follows it, and its path is handed on as a word when
-/// it lifts or another finger lands. A finger the gate leaves undecided at its lift types its key
+/// the screen reports. Until the gate makes it a swipe it is an ordinary key press, except that once
+/// it has traveled far enough to look like a swipe beginning its trail shows from where it landed
+/// and its key shows no popup; once the gate makes it a swipe, its key lets go, and its path is
+/// handed on as a word when it lifts or another finger lands. A finger that turns out to be a tap, or that another finger's landing keeps from
+/// swiping, loses its trail at once. A finger the gate leaves undecided at its lift types its key
 /// when the next finger lands within the gate's window, before that finger's key, and is handed on
 /// as a word when none does. While swipe typing is off the gate never runs.
 extension KeyboardKeyGridView {
@@ -24,6 +26,12 @@ extension KeyboardKeyGridView {
         )
         if isEligible {
             session.swipePath = [SwipeTouchSample(location: session.location, timestamp: touch.timestamp)]
+        }
+        // Another finger landing keeps a finger whose trail shows from swiping.
+        for other in touchSessions.values where other !== session && other.showsTrail && other.isSwipe == false {
+            other.showsTrail = false
+            other.swipePath = []
+            swipeTrailView.cancel()
         }
     }
 
@@ -45,7 +53,15 @@ extension KeyboardKeyGridView {
             return true
         }
         let id = ObjectIdentifier(touch)
-        guard samples.contains(where: { swipeGate.touchMoved(id, to: $0.location, time: $0.timestamp) }) else {
+        let promoted = samples.contains { swipeGate.touchMoved(id, to: $0.location, time: $0.timestamp) }
+        if session.showsTrail {
+            swipeTrailView.extend(with: samples)
+        } else if swipeGate.isTraveling(id) {
+            session.showsTrail = true
+            dismissPopup(ownedBy: session.keyView)
+            swipeTrailView.begin(with: session.swipePath)
+        }
+        guard promoted else {
             // Another finger landed, so this one can no longer swipe.
             if swipeGate.isSwipe(id) == false, touchSessions.count > 1 {
                 session.swipePath = []
@@ -69,6 +85,9 @@ extension KeyboardKeyGridView {
         session.swipePath.append(lift)
         switch swipeGate.touchEnded(id, at: lift.location, time: lift.timestamp) {
         case .tap:
+            if session.showsTrail {
+                swipeTrailView.cancel()
+            }
             return false
         case .swipe:
             if session === heldKeyTouchSession {
@@ -80,6 +99,7 @@ extension KeyboardKeyGridView {
             if session === heldKeyTouchSession {
                 cancelHeldKey()
             }
+            swipeTrailView.lift()
             undecidedSwipeSessions[id] = session
             let window = swipeGate.parameters.undecidedWindow
             DispatchQueue.main.asyncAfter(deadline: .now() + window) { [weak self] in
@@ -149,7 +169,10 @@ extension KeyboardKeyGridView {
                 setVisualState(.normal, for: keyView)
             }
         }
-        swipeTrailView.begin(with: session.swipePath)
+        if session.showsTrail == false {
+            session.showsTrail = true
+            swipeTrailView.begin(with: session.swipePath)
+        }
     }
 
     /// Whether a finger landing on `keyView` may become a swipe: a single letter key of the full
