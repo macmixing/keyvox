@@ -289,7 +289,7 @@ Rules:
 - `KeyVoxWhisper` owns low-level Whisper context, parameters and request snapshots, compute policy, encoder configuration, segments, and language metadata. It consumes the shared speech runtime rather than owning VAD resources.
 - `KeyVoxParakeet` exposes a backend contract while the iOS app continues to use its Core ML backend.
 - `KeyVoxCoreResources` centralizes access to packaged pronunciation and file-type resources. Apple app builds use the SwiftPM resource bundle by default.
-- `KeyVoxPredictiveKeyboard` owns UI-independent typing prediction and correction for each bundled typing language: the bundled AOSP LatinIME native target with KeyVox ranking, each language's bundled data and rules in its own `PredictiveData/<language>` folder, read as a `TypingLanguage`, `PredictiveTypingSession`, `PredictionComputer`, personal vocabulary, typing memory and its file format, held-key characters and popup layout, and smart quotes. The keyboard host supplies touches, key geometry, document text, and storage locations, and applies the `TextEdit` values the session returns.
+- `KeyVoxPredictiveKeyboard` owns UI-independent typing prediction and correction for each bundled typing language: the bundled AOSP LatinIME native target with KeyVox ranking, swipe typing's model inference, word search, and tap-versus-swipe gate, each language's bundled data and rules in its own `PredictiveData/<language>` folder, read as a `TypingLanguage`, `PredictiveTypingSession`, `PredictionComputer`, personal vocabulary, typing memory and its file format, held-key characters and popup layout, and smart quotes. The keyboard host supplies touches, key geometry, document text, and storage locations, and applies the `TextEdit` values the session returns.
 - `KeyVoxEmoji` owns the UI-independent emoji catalog, search, suggestion-bar emoji by word, Frequently Used ranking, and two-person skin tones, with bundled data. The keyboard host decides which emoji the system can draw and owns persistence and presentation.
 - `KeyVoxKeyboardThemes` owns the UI-independent theme identifiers, saved-value fallback to the KeyVox theme, the per-platform theme catalog, and each theme's light and dark key palette as platform-neutral color values. Hosts store the choice and turn palette colors into platform colors.
 
@@ -660,6 +660,7 @@ Keyboard onboarding detection is deliberately split across three signals:
 - `KeyVox.AutoCorrectionEnabled`
 - `KeyVox.ShiftCapsLockEnabled`
 - `KeyVox.PredictiveTextEnabled`
+- `KeyVox.SwipeTypingEnabled`
 - `KeyVox.EmojiKeyboardEnabled`
 - `KeyVox.PeriodShortcutEnabled`
 - `KeyVox.OpensOnNumberPage`
@@ -1682,7 +1683,7 @@ The restore card remains visible until both unlocks are owned.
 
 `AppSettingsStore` owns the containing-app Compact Keys availability toggle. Turning availability off must also clear `KeyVox.CompactKeysActive`, so enabling the feature again never revives a stale compact presentation.
 
-`AppSettingsStore` also owns the keyboard typing settings shown on the Keyboard settings screen: Auto-Capitalization, Auto-Correction, Enable Caps Lock, Predictive Text, Emoji Keyboard, the period shortcut, and Open on 123. They are device-local App Group values that the keyboard reads directly through `KeyboardAppSettingsStore`, including each time it resolves a field's typing traits.
+`AppSettingsStore` also owns the keyboard typing settings shown on the Keyboard settings screen: Auto-Capitalization, Auto-Correction, Enable Caps Lock, Predictive Text, Swipe Typing, Emoji Keyboard, the period shortcut, and Open on 123. Like the other typing toggles, Swipe Typing is on unless the user turns it off. They are device-local App Group values that the keyboard reads directly through `KeyboardAppSettingsStore`, including each time it resolves a field's typing traits.
 
 `AppSettingsStore.keyboardTheme` owns the keyboard theme choice, resolved through the same `KeyboardThemeID` fallback and written to `KeyVox.KeyboardTheme`. The Keyboard settings screen's Classic Theme toggle switches it between Classic and KeyVox.
 
@@ -1973,7 +1974,7 @@ That separation exists because putting the warning UI into the main root layout 
 Keyboard-specific row geometry must stay separated by responsibility:
 
 - `KeyboardRootView` owns the stable keyboard shell, toolbar stacking, the top-row accessory button containers, the suggestion bar's placement, and the emoji page, search field, and results placement
-- `KeyboardKeyGridView` owns page display and key interaction wiring; `KeyboardKeyGridPage` builds each page's rows once and keeps them, and `KeyboardKeyGridView+Touches.swift` owns multi-finger touch handling
+- `KeyboardKeyGridView` owns page display and key interaction wiring; `KeyboardKeyGridPage` builds each page's rows once and keeps them, `KeyboardKeyGridView+Touches.swift` owns multi-finger touch handling, and `KeyboardKeyGridView+Swipe.swift` owns following a finger through the swipe gate and handing on its path, with `KeyboardSwipeTrailView` drawing its trail
 - `KeyboardSymbolLayout` owns which keys each letter, number, and symbol page, Compact Keys, the emoji search row, and the globe row contain, taking a field's bottom row from `KeyboardFieldBottomRowKeys` and the number pad's rows from `KeyboardNumberPadLayout`
 - `KeyboardLayoutGeometry` owns live measurement-based row sizing, while `KeyboardTopRowAccessoryLayout` owns accessory alignment rules
 
@@ -2100,6 +2101,37 @@ Field preparation:
 - `KeyboardTypingTraits` carries the field's `KeyboardFieldKeys`, so a field asking for other keys also counts as a change of fields
 - a change of the field's typing traits while the keyboard stays up means the cursor moved to another field, which starts that field with a fresh session
 
+### Swipe Typing Rules
+
+A finger sliding across the letter keys types the word it traces, as a word picked from the suggestion bar would go in. The package owns deciding and decoding; the keyboard owns following fingers, drawing the trail, threading, and applying the `TextEdit`.
+
+The gate (`SwipeGate`, from `~/KeyVoxLanguageData/swipe/tap-vs-swipe/README.md`, section 5):
+
+- a finger may become a swipe only when it lands on a single letter key of the full letter page, outside the emoji search, with no held key's popup or space trackpad under way, VoiceOver off, and no other finger on the keys; another finger landing before it qualifies ends that for good, and that finger cannot swipe either, so overlapping two-thumb taps never swipe
+- it becomes a swipe on the first sample whose straight-line distance from where it landed reaches one key pitch while its mean speed since landing is at least 1.5 pitches a second; landing within 400 ms of the last tap that typed or deleted (rollover included, a swipe's word not), the distance starts at two pitches and falls to one over that window
+- distances are in the live letter keys' horizontal pitch, times are `UITouch` timestamps, and every coalesced sample is checked
+- a finger that never qualifies is exactly today's key press, slide to correct included; once it qualifies its key lets go and types nothing
+- with Swipe Typing off, or in a field whose typing traits turn predictions off (`KeyboardTypingTraits.allowsSwipeTyping`), the gate never runs and no path is kept
+
+Decoding and insertion:
+
+- the path goes to `KeyboardPredictionCoordinator.decodeSwipe`, which runs `PredictionComputer.swipeWords` on the suggestion engine's queue with the words before the cursor and the shift state (`SwipeWordCase`); anything typed, picked, or deleted before the word arrives first waits for it, so words and keys go in the order they were made, and a finger landing during a swipe ends it first
+- a word in progress when a swipe ends is ended first as space would end it, autocorrection included
+- the word goes in through `PredictiveTypingSession.swipeEdit`: a space after it unless one or punctuation follows, a space before it right after a mark a picked word is spaced away from, and punctuation typed right after it takes the place of its space, as after a pick
+- the bar then offers the other words the swipe may have been (`SuggestionBar.Kind.swipeAlternative`); tapping one replaces the swiped word and offers the swiped word back, until the text moves on
+
+What a swipe can decode to, and how it is written, is typing's:
+
+- the typing language's bundled swipe lexicon, built from its dictionary, and the user's own words searched beside it: KeyVox Dictionary entry words (contact names that are not everyday words among them), text replacement shortcuts, and the learned words the bar offers
+- the decoded spelling is written as typing writes a typed word: a shortcut expands, the user's words take their entry's form, a name the dictionary has as an everyday word stays as written, a learned word or a dictionary word the user gives capitals takes them, a word spelled only with capitals keeps them, and the shift state carries over as it does to typed letters
+
+The model (`PredictiveData/<language>/`):
+
+- `swipe.json` names the model's key letters in its emission order, whether key paths keep doubled letters, and the beam pruning and ranking settings; `swipe_encoder.kvsw` and the optional `swipe_decoder.kvsd` are the flat fp16 weight files `Tools/KeyVoxSwipeModel/export_weights.py` writes, memory-mapped and widened to `Float` layer by layer as each swipe runs; `swipe_lexicon.kvsl` is the memory-mapped key-path trie `KeyVoxTypingHarness swipe-lexicon` builds from the bundled dictionary for that model, which a package test keeps identical to the dictionary
+- the files live in the language's folder because the decoder reads one fixed key layout; the encoder alone scores any layout from its key centers, which come from the live keys mapped onto the language's default letter rows
+- every size the networks run at comes from the weight files' headers and every setting from `swipe.json`, so a better model is a change of these files alone
+- scoring is the model tools' tuned score (path log-probability over its length, dictionary frequency, length bonus) plus a context weight times how much likelier the words before make the word (`ContextLanguageScorer`), tuned on swipe.futo.org's validation swipes with their sentences; the user's own words rank with the dictionary frequency of words seen as often as typing takes the user's words to be
+
 ### Field Keys
 
 `KeyboardFieldKeys` turns the focused field's keyboard type and return key type into the keys it shows, matching Apple's iPhone keyboard as measured on iOS 27 with a throwaway host app that opened one text field per keyboard type and return key type:
@@ -2182,7 +2214,8 @@ Keys and characters:
 - the available themes are KeyVox, the default, and Classic, whose neutral keys follow the system keyboard in light and dark
 - a missing or unknown saved theme resolves to KeyVox in both the containing app and the keyboard
 - the controller applies the saved theme as a `KeyboardThemeTrait` trait override; themed `UIColor`s resolve from that trait together with the light or dark appearance, and themed views re-render on changes to either trait
-- the palette colors letter, special, and toolbar keys with their pressed and disabled fills, key fill opacity, and outline, a toolbar key that is on and its foreground, key popups with their outline, characters, and held-key highlight, the cancel key's border, and the microphone button's background
+- the palette colors letter, special, and toolbar keys with their pressed and disabled fills, key fill opacity, and outline, a toolbar key that is on and its foreground, key popups with their outline, characters, and held-key highlight, the cancel key's border, and the microphone button's background, and styles the swipe trail (`KeyboardThemeSwipeTrail`): its stroke and glow colors in light and dark, its width at the finger, how far it tapers, how wide its glow is, how long each point lasts behind the finger, and how long it takes to fade once the finger lifts
+- `KeyboardSwipeTrailView` reads the trail style from the active theme's palette when each swipe starts and draws nothing styled of its own
 - the trademark-protected logo bar reads its microphone background and light-appearance inner outline from the themed `KeyboardStyle` colors while its drawing stays in `KeyboardLogoBarView.swift`
 
 ### Text Insertion Rules
