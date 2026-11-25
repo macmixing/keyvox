@@ -13,6 +13,9 @@ public struct SuggestionBar: Sendable, Equatable {
         /// An emoji for the word the bar is for, which tapping types in place of that word, or
         /// after it when a space already follows it.
         case emoji
+        /// Another word the swipe right before the cursor may have been, which tapping puts in
+        /// place of the swiped word.
+        case swipeAlternative
     }
 
     public struct Item: Sendable, Equatable {
