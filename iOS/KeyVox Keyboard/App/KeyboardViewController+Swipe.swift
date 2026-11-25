@@ -11,9 +11,11 @@ extension KeyboardViewController {
     }
 
     /// Types the word `path` was swiped as. A word in progress ends first, as a space would end
-    /// it; the shift state applies to the swiped word as to typed letters.
+    /// it; the shift state applies to the swiped word as to typed letters. The swipe ending plays
+    /// a letter key's press haptic, as a typed letter does.
     func handleSwipe(_ path: [SwipeTouchSample]) {
         guard typingTraits.allowsSwipeTyping else { return }
+        characterKeyHaptics.emitKeypressIfEnabled()
         dismissRescuedDictation()
         if predictionCoordinator.hasWordInProgress() {
             textInputController.apply(predictionCoordinator.wordBoundaryEdit(
