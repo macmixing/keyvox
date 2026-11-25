@@ -3,8 +3,8 @@ import XCTest
 
 /// A repeated letter is one key to a swipe, so a word with a doubled letter and its twin without
 /// one ("too" and "to") are the same key path. Circling a letter's key doubles it whatever the words
-/// before, and no circle never adds a letter: without one, the single twin wins wherever it is a
-/// word people mean, and a word without such a twin comes out doubled as before.
+/// before; without a circle, the scores and the words before choose between lexicon words, and a
+/// letter only the user's own words double is never added.
 final class SwipeDoubledLetterTests: XCTestCase {
     private var computer: PredictionComputer!
 
@@ -13,9 +13,9 @@ final class SwipeDoubledLetterTests: XCTestCase {
     }
 
     func testTheSameSwipeIsTooOrToAsTheWordsBeforeCallForIt() throws {
-        XCTAssertEqual(try best(swipingKeysOf: "too", previousWords: ["me"]), "to", "no circle")
+        XCTAssertEqual(try best(swipingKeysOf: "too", previousWords: ["me"]), "too", "no circle")
         XCTAssertEqual(try best(swipingKeysOf: "too", previousWords: ["me"], circlingDoubles: 2), "too")
-        XCTAssertEqual(try best(swipingKeysOf: "too", previousWords: ["not"]), "to", "no circle")
+        XCTAssertEqual(try best(swipingKeysOf: "too", previousWords: ["not"]), "too", "no circle")
         XCTAssertEqual(try best(swipingKeysOf: "too", previousWords: ["not"], circlingDoubles: 2), "too")
         XCTAssertEqual(try best(swipingKeysOf: "too", previousWords: ["want", "i"]), "to")
         XCTAssertEqual(try best(swipingKeysOf: "too", previousWords: ["is", "it"]), "to")
@@ -23,20 +23,21 @@ final class SwipeDoubledLetterTests: XCTestCase {
     }
 
     func testTheSameSwipeIsOffOrOfAsTheWordsBeforeCallForIt() throws {
-        XCTAssertEqual(try best(swipingKeysOf: "off", previousWords: ["turn"]), "of", "no circle")
+        XCTAssertEqual(try best(swipingKeysOf: "off", previousWords: ["turn"]), "off", "no circle")
         XCTAssertEqual(try best(swipingKeysOf: "off", previousWords: ["turn"], circlingDoubles: 2), "off")
         XCTAssertEqual(try best(swipingKeysOf: "off", previousWords: ["one"]), "of")
     }
 
     func testTheSameSwipeIsGoodOrGodAsTheWordsBeforeCallForIt() throws {
-        XCTAssertEqual(try best(swipingKeysOf: "good", previousWords: ["very"]), "god", "no circle")
+        XCTAssertEqual(try best(swipingKeysOf: "good", previousWords: ["very"]), "good", "no circle")
         XCTAssertEqual(try best(swipingKeysOf: "good", previousWords: ["very"], circlingDoubles: 2), "good")
         XCTAssertEqual(try best(swipingKeysOf: "good", previousWords: ["my", "oh"]), "god")
     }
 
-    func testTheSameSwipeIsSonOrSoonAsTheCircleAsksForIt() throws {
-        XCTAssertEqual(try best(swipingKeysOf: "soon", previousWords: ["as"]), "son", "no circle")
+    func testTheSameSwipeIsSonOrSoonAsTheWordsBeforeCallForIt() throws {
+        XCTAssertEqual(try best(swipingKeysOf: "soon", previousWords: ["as"]), "soon", "no circle")
         XCTAssertEqual(try best(swipingKeysOf: "soon", previousWords: ["as"], circlingDoubles: 2), "soon")
+        XCTAssertEqual(try best(swipingKeysOf: "soon", previousWords: ["my"]), "son", "no circle")
     }
 
     func testADoubleCircleGivesAContactsDoubledNameAndNoCircleTheWord() throws {

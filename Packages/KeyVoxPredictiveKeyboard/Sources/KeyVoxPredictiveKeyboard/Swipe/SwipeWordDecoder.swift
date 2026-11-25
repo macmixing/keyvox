@@ -184,23 +184,27 @@ final class SwipeWordDecoder: @unchecked Sendable {
     /// keys, the circles decide, whatever the words before or their frequencies, key by key. A loop
     /// around a key where a word has the letter exactly twice credits the word, whether or not a
     /// twin has it once; a word with it three times or more gets nothing from the loop, as a loop
-    /// asks for the letter doubled, not tripled. Where a word repeats a letter with no loop credit,
-    /// its twins repeating it fewer times and no letter more, and the same at every key a loop
-    /// credits the word, win unless every one is a misspelling of it, written `misspellingRatio`
-    /// times less often in the context model, the rule the language data's swipe vocabulary build
-    /// leaves misspellings out by; then it wins over them, except a twin a loop credits at that key.
-    /// So circling either "ss" of "possess" gives "possess". A word a loop credits also loses to
+    /// asks for the letter doubled, not tripled. Where a word doubles a letter with no loop credit,
+    /// its twins with the letter once, no letter more, and the same at every key a loop credits the
+    /// word are left to the scores and the words before when the bundled lexicon has them all, so
+    /// "as soon" gives "soon" and "my son" gives "son"; a word only the user's own words spell loses
+    /// to them there, so no letter only they double is added without a loop. Where a word repeats a
+    /// letter three times or more with no loop credit, or doubles it against twins only the user's
+    /// words spell, those twins win unless every one is a misspelling of it, written
+    /// `misspellingRatio` times less often in the context model, the rule the language data's swipe
+    /// vocabulary build leaves misspellings out by; then it wins over them, except a twin a loop
+    /// credits at that key. A word in both the bundled lexicon and the user's words ranks among its
+    /// twins by the bundled lexicon's spellings, as the user's words score with a set frequency
+    /// rather than how often people write them. A word a loop credits also loses to
     /// any word on its path that doubles a letter where no loop was read and lacks a credited
     /// double, when that word is written `misspellingRatio` times as often, as a loop read where the
     /// finger only turned on its way is likelier than the rare word it would ask for: "dropped" with
     /// a loop read at its "o" stays "dropped", not "drooped", and "rom" circled at its "m" gives
     /// "room".
-    /// Names and the user's own words are weighed the same way. A word losing to a twin at any key
-    /// comes after the words that lose at fewer, whatever its loops, so a loop never brings in
-    /// letters added at other keys; among the rest, the word with more loop credits comes first.
-    /// So "been" beats "Ben", "hello" beats "helo", and "see" beats "se", while "Mary" beats
-    /// "marry", "Paris" beats "Parris", and a contact's "Mann" never beats "man", and "yes" circled
-    /// at its "e" stays "yes" rather than "yeesss". Words without a twin are untouched. Among words
+    /// A word losing to a twin at any key comes after the words that lose at fewer, whatever its
+    /// loops; among the rest, the word with more loop credits comes first. So "yes" circled at its
+    /// "e" stays "yes" rather than "yeesss", and a contact's "Mann" never beats "man" without a
+    /// loop. Words without a twin are untouched. Among words
     /// alike in both, its score with the context counted `samePathContextWeight` times when
     /// `usesContext` ranks it, then its spelling.
     private func rankingSamePaths(
@@ -231,6 +235,8 @@ final class SwipeWordDecoder: @unchecked Sendable {
             func isMisspelling(_ shorter: String, of longer: String) -> Bool {
                 logFrequency(longer) - logFrequency(shorter) >= log(settings.scoring.misspellingRatio)
             }
+            // A word only the user's own words spell, none of the bundled lexicon's.
+            func isPersonalOnly(_ word: String) -> Bool { words[word]!.allSatisfy { candidates[$0].isPersonal } }
             var loops: [String: Int] = [:]
             var unlooped: [String: Int] = [:]
             // A loop asks for a key's letter doubled, not tripled: the keys whose loop credits each word.
@@ -245,12 +251,22 @@ final class SwipeWordDecoder: @unchecked Sendable {
                     // Its twins at this key: words repeating this key's letter fewer times and no letter
                     // more, the same at every key a loop credits it, so a circled letter never counts
                     // against it.
-                    let shorter = repeats.filter { other in
+                    var shorter = repeats.filter { other in
                         other.value.count == own.count && other.value[key] < own[key]
                             && other.value.indices.allSatisfy { other.value[$0] <= own[$0] }
                             && circled.allSatisfy { other.value[$0] == own[$0] }
                     }.map(\.key)
                     guard shorter.isEmpty == false else { continue }
+                    if own[key] == 1 {
+                        // A letter doubled only by the user's own words is never added without a loop.
+                        if isPersonalOnly(longer) {
+                            unlooped[longer, default: 0] += 1
+                            continue
+                        }
+                        // Between lexicon words the scores and the words before decide.
+                        shorter = shorter.filter(isPersonalOnly)
+                        guard shorter.isEmpty == false else { continue }
+                    }
                     if shorter.contains(where: { isMisspelling($0, of: longer) == false }) {
                         unlooped[longer, default: 0] += 1
                     } else {
@@ -276,8 +292,13 @@ final class SwipeWordDecoder: @unchecked Sendable {
                 if commoner { unlooped[word, default: 0] += 1 }
             }
             let entries = set.map { word -> (word: String, best: SwipeCandidate, loops: Int, unlooped: Int, rank: Double) in
-                let best = words[word]!.map { candidates[$0] }.max { $0.score < $1.score }!
-                return (word, best, loops[word] ?? 0, unlooped[word] ?? 0, best.score + extraWeight * best.contextLift)
+                let spellings = words[word]!.map { candidates[$0] }
+                let best = spellings.max { $0.score < $1.score }!
+                // A word ranks by the lexicon's spellings when it has any: a user's word scores with a
+                // set frequency, not how often people write it.
+                let lexical = spellings.filter { $0.isPersonal == false }
+                let ranked = (lexical.isEmpty ? spellings : lexical).max { $0.score < $1.score }!
+                return (word, best, loops[word] ?? 0, unlooped[word] ?? 0, ranked.score + extraWeight * ranked.contextLift)
             }
             let places = entries.map(\.best.score).sorted(by: >)
             let order = entries.sorted {
