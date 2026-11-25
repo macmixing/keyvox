@@ -396,6 +396,13 @@ extension KeyboardKeyGridView {
         cancelHeldKey()
         deleteRepeatController.cancel()
         compactKeysHoldController.cancel()
+        for (id, session) in touchSessions where session.kind != .space && session.kind != .nextKeyboard {
+            // The swipe gate lets go of them too, or it would count them as fingers still down.
+            swipeGate.touchCancelled(id)
+            if session.showsTrail {
+                swipeTrailView.cancel()
+            }
+        }
         touchSessions = touchSessions.filter { _, session in
             session.kind == .space || session.kind == .nextKeyboard
         }
