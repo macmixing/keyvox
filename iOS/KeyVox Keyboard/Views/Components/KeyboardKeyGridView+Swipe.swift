@@ -7,7 +7,9 @@ import UIKit
 /// nothing else holds the keys, is followed by the swipe gate (`SwipeGate`) with every sample
 /// the screen reports. Until the gate makes it a swipe it is an ordinary key press in every way;
 /// once it does, its key lets go, the trail follows it, and its path is handed on as a word when
-/// it lifts or another finger lands. While swipe typing is off the gate never runs.
+/// it lifts or another finger lands. A finger the gate leaves undecided at its lift types its key
+/// when the next finger lands within the gate's window, before that finger's key, and is handed on
+/// as a word when none does. While swipe typing is off the gate never runs.
 extension KeyboardKeyGridView {
     /// Starts following `session` for the swipe gate when it may become a swipe.
     func beginSwipeTracking(_ session: KeyboardKeyTouchSession, for touch: UITouch, onKey keyView: KeyboardKeyView?) {
@@ -54,11 +56,64 @@ extension KeyboardKeyGridView {
         return true
     }
 
+    /// Settles a lifting finger the gate follows. Returns true when it is not a key press: a swipe,
+    /// handed on as a word, or undecided, waiting on the next finger.
+    func followSwipeLift(_ session: KeyboardKeyTouchSession, for touch: UITouch) -> Bool {
+        guard allowsSwipeTyping else { return false }
+        let id = ObjectIdentifier(touch)
+        guard session.swipePath.isEmpty == false else {
+            swipeGate.touchCancelled(id)
+            return false
+        }
+        let lift = SwipeTouchSample(location: touch.location(in: self), timestamp: touch.timestamp)
+        session.swipePath.append(lift)
+        switch swipeGate.touchEnded(id, at: lift.location, time: lift.timestamp) {
+        case .tap:
+            return false
+        case .swipe:
+            if session === heldKeyTouchSession {
+                cancelHeldKey()
+            }
+            endSwipe(session)
+            return true
+        case .undecided:
+            if session === heldKeyTouchSession {
+                cancelHeldKey()
+            }
+            undecidedSwipeSessions[id] = session
+            let window = swipeGate.parameters.undecidedWindow
+            DispatchQueue.main.asyncAfter(deadline: .now() + window) { [weak self] in
+                self?.settleUndecidedSwipes(at: ProcessInfo.processInfo.systemUptime)
+            }
+            return true
+        }
+    }
+
+    /// Hands on as words the undecided fingers no finger landed after within the gate's window by
+    /// `time`; `.infinity` hands them all on, as when the user moves on to the suggestion bar.
+    func settleUndecidedSwipes(at time: TimeInterval) {
+        guard undecidedSwipeSessions.isEmpty == false else { return }
+        for id in swipeGate.settleUndecided(at: time) {
+            guard let session = undecidedSwipeSessions.removeValue(forKey: id) else { continue }
+            onSwipeEnded?(session.swipePath)
+        }
+    }
+
+    /// Types the keys of the undecided fingers a landing finger makes taps, in the order they
+    /// lifted.
+    func typeUndecidedTouches() {
+        guard allowsSwipeTyping else { return }
+        for id in swipeGate.settleUndecidedAsTaps() {
+            guard let session = undecidedSwipeSessions.removeValue(forKey: id), let kind = session.kind else { continue }
+            deliver(kind, from: session)
+        }
+    }
+
     /// Hands on every swipe under way as a word, as when another finger lands.
     func endSwipes() {
         for (id, session) in touchSessions where session.isSwipe {
             touchSessions[id] = nil
-            swipeGate.touchEnded(id)
+            swipeGate.touchCancelled(id)
             endSwipe(session)
         }
     }
@@ -69,9 +124,11 @@ extension KeyboardKeyGridView {
         onSwipeEnded?(session.swipePath)
     }
 
-    /// Forgets every finger the gate follows and any swipe under way, typing nothing.
+    /// Forgets every finger the gate follows, undecided ones included, and any swipe under way,
+    /// typing nothing.
     func cancelSwipeTracking() {
         swipeGate.reset()
+        undecidedSwipeSessions.removeAll()
         swipeTrailView.cancel()
         for session in touchSessions.values {
             session.swipePath = []

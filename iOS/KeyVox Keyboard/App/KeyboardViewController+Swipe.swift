@@ -33,8 +33,11 @@ extension KeyboardViewController {
         }
     }
 
-    /// Hands over a swipe still being decoded, so what the user does next follows its word.
+    /// Hands over a swipe still being decided or decoded, so what the user does next follows its
+    /// word. A finger the key grid holds undecided is a swipe once the user acts anywhere but on
+    /// the keys.
     func finishPendingSwipe() {
+        rootContainerView?.keyGridView.settleUndecidedSwipes(at: .infinity)
         predictionCoordinator.finishPendingSwipe()
     }
 

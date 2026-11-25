@@ -8,6 +8,9 @@ import KeyVoxPredictiveKeyboard
 struct FutoSwipes {
     struct Swipe {
         let word: String
+        /// The recording session and the word's number in it, for swipe.futo.org's own records.
+        let session: String?
+        let number: Int?
         /// Newest first.
         let previousWords: [String]
         let canvas: CGSize
@@ -39,8 +42,8 @@ struct FutoSwipes {
     private let keys: [LayoutFile.Key]
 
     /// - Parameter path: JSON lines of `word`, `previous`, `w`, `h`, and `points` ([t ms, x, y]
-    ///   with x and y normalized), or swipe.futo.org's own records, which have `canvas_width`,
-    ///   `canvas_height`, and `data`.
+    ///   with x and y normalized), or swipe.futo.org's own records, which have `session`, `id`,
+    ///   `canvas_width`, `canvas_height`, and `data`.
     init(path: String, layoutPath: String, limit: Int?) throws {
         let decoder = JSONDecoder()
         keys = try decoder.decode(LayoutFile.self, from: Data(contentsOf: URL(fileURLWithPath: layoutPath))).keys
@@ -52,6 +55,8 @@ struct FutoSwipes {
             if let limit, swipes.count >= limit { break }
             let data = Data(line.utf8)
             let parsed: Line
+            var session: String?
+            var number: Int?
             if let line = try? decoder.decode(Line.self, from: data) {
                 parsed = line
             } else if let record = try? decoder.decode(FutoRecord.self, from: data), let points = record.data {
@@ -59,12 +64,16 @@ struct FutoSwipes {
                     word: record.word, previous: nil, w: record.canvas_width, h: record.canvas_height,
                     points: points.map { [$0.t, $0.x, $0.y] }
                 )
+                session = record.session
+                number = record.id
             } else {
                 continue
             }
             guard parsed.points.isEmpty == false else { continue }
             swipes.append(Swipe(
                 word: parsed.word,
+                session: session,
+                number: number,
                 previousWords: parsed.previous ?? [],
                 canvas: CGSize(width: parsed.w, height: parsed.h),
                 samples: parsed.points.map {
@@ -99,6 +108,8 @@ struct FutoSwipes {
         }
 
         let word: String
+        let session: String?
+        let id: Int?
         let canvas_width: Double
         let canvas_height: Double
         let data: [Point]?

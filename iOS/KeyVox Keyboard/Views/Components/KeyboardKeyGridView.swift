@@ -47,6 +47,9 @@ final class KeyboardKeyGridView: UIView {
     }
     /// Decides which fingers on the letter keys are swiping (`SwipeGate`).
     var swipeGate = SwipeGate<ObjectIdentifier>()
+    /// Fingers that lifted right after meeting the swipe threshold at speed: taps when another
+    /// finger lands soon, swipes otherwise.
+    var undecidedSwipeSessions: [ObjectIdentifier: KeyboardKeyTouchSession] = [:]
     /// The distance between neighboring letter key centers across a row, in points.
     private(set) var letterKeyPitch: CGFloat = 0
     let swipeTrailView = KeyboardSwipeTrailView()

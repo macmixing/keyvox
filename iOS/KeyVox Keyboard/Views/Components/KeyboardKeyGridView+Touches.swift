@@ -46,7 +46,9 @@ extension KeyboardKeyGridView {
         guard isKeyboardEnabled else { return }
         for touch in touches.sorted(by: { $0.timestamp < $1.timestamp }) {
             let location = touch.location(in: self)
-            // A finger landing ends a swipe under way, so its word goes in before this key.
+            // A finger landing types the taps it settles and ends a swipe under way, so their
+            // letters and word go in before this key.
+            typeUndecidedTouches()
             endSwipes()
             typePendingCharacters()
 
@@ -164,15 +166,13 @@ extension KeyboardKeyGridView {
             guard let session = touchSessions.removeValue(forKey: ObjectIdentifier(touch)) else {
                 continue
             }
-            swipeGate.touchEnded(ObjectIdentifier(touch))
-            if session.isSwipe {
-                endSwipe(session)
-                continue
-            }
             if let keyView = session.keyView, isStillPressed(keyView) == false {
                 setVisualState(.normal, for: keyView)
             }
             dismissPopup(ownedBy: session.keyView)
+            if followSwipeLift(session, for: touch) {
+                continue
+            }
             if session === heldKeyTouchSession {
                 deliverHeldKey(from: session)
                 continue
@@ -211,7 +211,9 @@ extension KeyboardKeyGridView {
             guard let session = touchSessions.removeValue(forKey: ObjectIdentifier(touch)) else {
                 continue
             }
-            swipeGate.touchEnded(ObjectIdentifier(touch))
+            if allowsSwipeTyping {
+                swipeGate.touchCancelled(ObjectIdentifier(touch))
+            }
             if session.isSwipe {
                 swipeTrailView.cancel()
                 continue
@@ -260,7 +262,7 @@ extension KeyboardKeyGridView {
     }
 
     @discardableResult
-    private func deliver(
+    func deliver(
         _ kind: KeyboardKeyKind,
         from session: KeyboardKeyTouchSession,
         isRepeat: Bool = false,
