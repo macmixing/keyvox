@@ -27,9 +27,32 @@ the median the dictionary gives its words that the sources write on their own ab
 (within PROBABILITY_BAND of the count), so an added word ranks as a dictionary word as common
 would.
 
+Then come the words the language's swipe dataset had people swipe (`count_swiped_words.py`),
+from sentences written with care, which the sources write too rarely for the rules above. Each
+form of them that no dictionary word spells and the list does not already hold is a candidate,
+and these rules, in this order, leave one out:
+
+1. letters: as above.
+2. one swipe: fewer than MINIMUM_SWIPES records swipe it.
+3. misspelling: as above, counting how often the sources write the form on their own (none for
+   most of them, so a dictionary form one edit away that the sources write at all leaves it out),
+   with the same exceptions, the capitals being the dataset's sentences' in the middle of a
+   sentence.
+
+The rules above for one source and for joined words count the sources' texts, which do not
+hold these words, and a word the dataset writes joined, such as "alt-right", is the whole word
+a person swipes. Every form left is kept, after the sources' words, ranked by how many records
+swipe it. Each is written in its most common spelling without the punctuation around it, with
+its likeliest capitals when the dataset's sentences write that spelling with capitals more often
+than in lowercase in the middle of a sentence, unless those capitals are in a row and not a
+measured spelling, as above. Its probability is the lowest the sources' words get, the
+dictionary's for the words written about as rarely as the rarest of them.
+
 Every candidate is written to `<data_dir>/swipe_vocabulary_report.tsv` with its counts and
 the rule that left it out, or its rank, spelling, and probability, and for a form the
-misspelling rule would leave out, which exception kept it."""
+misspelling rule would leave out, which exception kept it; a form the swipe dataset swipes
+also has how many records swipe it and the outcome of the rules for its words, and a form only
+the swipe dataset has is listed with no source."""
 
 import argparse
 import statistics
@@ -39,6 +62,7 @@ from collections import Counter
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from count_swiped_words import OUTPUT_NAME as SWIPED_NAME
 from count_swipe_words import OUTPUT_NAME as COUNTS_NAME
 from languages import LANGUAGES, language_argument
 from names import is_written_as_name
@@ -49,6 +73,7 @@ from write_capitalized_spellings import (
 )
 
 MINIMUM_SOURCES = 2
+MINIMUM_SWIPES = 2
 MISSPELLING_RATIO = 50
 PROBABILITY_BAND = 2 ** 0.25
 REPORT_NAME = "swipe_vocabulary_report.tsv"
@@ -84,6 +109,21 @@ class Candidate:
         return self.on_its_own + self.joined
 
 
+@dataclass
+class SwipedForm:
+    form: str
+    # Its lowercase spellings by how many records swipe them.
+    spellings: Counter = field(default_factory=Counter)
+    # In the middle of a sentence: each lowercase spelling written in lowercase, and each
+    # spelling with capitals.
+    lowercase: Counter = field(default_factory=Counter)
+    capitalized: Counter = field(default_factory=Counter)
+
+    @property
+    def swiped(self) -> int:
+        return self.spellings.total()
+
+
 def read_counts(path: Path, dictionary_forms: set[str]):
     """The candidates by form, the sources' names, and how often the sources write each
     dictionary form on its own, counted as a candidate's count is."""
@@ -114,6 +154,26 @@ def read_counts(path: Path, dictionary_forms: set[str]):
     return candidates, sources, dictionary_counts
 
 
+def read_swiped(path: Path, dictionary_forms: set[str]) -> dict[str, SwipedForm]:
+    """The swipe dataset's forms that no dictionary word spells."""
+    swiped: dict[str, SwipedForm] = {}
+    with open(path, encoding="utf-8") as rows:
+        rows.readline()
+        for row in rows:
+            spelling, records, in_the_middle = row.rstrip("\n").split("\t")
+            form = swipe_form(spelling)
+            if not form or form in dictionary_forms:
+                continue
+            item = swiped.setdefault(form, SwipedForm(form))
+            lowered = spelling.lower()
+            item.spellings[lowered] += int(records)
+            if spelling == lowered:
+                item.lowercase[lowered] += int(in_the_middle)
+            else:
+                item.capitalized[spelling] += int(in_the_middle)
+    return swiped
+
+
 def one_edit_forms(form: str, letters: str):
     splits = [(form[:index], form[index:]) for index in range(len(form) + 1)]
     for left, right in splits:
@@ -128,15 +188,30 @@ def one_edit_forms(form: str, letters: str):
             yield left + letter + right
 
 
-def is_written_with_capitals(candidate: Candidate) -> bool:
+def is_written_with_capitals(candidate: Candidate | SwipedForm) -> bool:
     """Whether the written sources write it with capitals more often than in lowercase in the
     middle of a sentence; a misspelling of a lowercase word is written in lowercase."""
     return candidate.capitalized.total() > candidate.lowercase.total()
 
 
-def misspelled_word(candidate: Candidate, letters: str, dictionary_counts: Counter[str]) -> str | None:
-    count, form = max((dictionary_counts[edit], edit) for edit in one_edit_forms(candidate.form, letters))
-    return form if count >= MISSPELLING_RATIO * candidate.on_its_own else None
+def misspelled_word(form: str, on_its_own: int, letters: str, dictionary_counts: Counter[str]) -> str | None:
+    """The dictionary form one edit away written on its own at least MISSPELLING_RATIO times as
+    often as `form`, which the sources write on its own `on_its_own` times, if one is."""
+    count, word = max((dictionary_counts[edit], edit) for edit in one_edit_forms(form, letters))
+    return word if count > 0 and count >= MISSPELLING_RATIO * on_its_own else None
+
+
+def misspelling_outcome(form, on_its_own, written, letters, dictionary_counts, spelling_forms) -> str:
+    """KEPT, with the exception that kept the form from the misspelling rule, if one did, or
+    the dictionary word it misspells; `written` holds how it is written with capitals."""
+    word = misspelled_word(form, on_its_own, letters, dictionary_counts)
+    if word is None:
+        return KEPT
+    if form in spelling_forms:
+        return f"{KEPT}, in the spelling list"
+    if is_written_with_capitals(written):
+        return f"{KEPT}, written with capitals"
+    return f"misspelling of {word}"
 
 
 def outcome_of(candidate, letters, dictionary_counts, spelling_forms) -> str:
@@ -148,14 +223,18 @@ def outcome_of(candidate, letters, dictionary_counts, spelling_forms) -> str:
         return "one source"
     if candidate.joined * 2 > candidate.written:
         return "joined"
-    word = misspelled_word(candidate, letters, dictionary_counts)
-    if word is None:
-        return KEPT
-    if candidate.form in spelling_forms:
-        return f"{KEPT}, in the spelling list"
-    if is_written_with_capitals(candidate):
-        return f"{KEPT}, written with capitals"
-    return f"misspelling of {word}"
+    return misspelling_outcome(candidate.form, candidate.on_its_own, candidate, letters, dictionary_counts,
+                               spelling_forms)
+
+
+def swiped_outcome_of(swiped: SwipedForm, on_its_own, letters, dictionary_counts, spelling_forms) -> str:
+    """The rule that leaves a form of the swipe dataset out, or KEPT, as `outcome_of`; the
+    sources write it on its own `on_its_own` times."""
+    if any(letter not in letters for letter in swiped.form):
+        return "letters"
+    if swiped.swiped < MINIMUM_SWIPES:
+        return "one swipe"
+    return misspelling_outcome(swiped.form, on_its_own, swiped, letters, dictionary_counts, spelling_forms)
 
 
 def written_spelling(candidate: Candidate, measured: set[str]) -> str:
@@ -163,6 +242,16 @@ def written_spelling(candidate: Candidate, measured: set[str]) -> str:
     capitals = {written: count for written, count in candidate.capitalized.items() if written.lower() == spelling}
     written_with_capitals = sum(capitals.values())
     if capitals and is_written_as_name(written_with_capitals + candidate.lowercase[spelling], written_with_capitals):
+        written = min(capitals, key=lambda word: (-capitals[word], word))
+        if not has_capitals_in_a_row(written) or keeps_capitals_in_a_row(written, measured):
+            return written
+    return spelling
+
+
+def swiped_spelling(swiped: SwipedForm, measured: set[str]) -> str:
+    spelling = min(swiped.spellings, key=lambda word: (-swiped.spellings[word], word))
+    capitals = {written: count for written, count in swiped.capitalized.items() if written.lower() == spelling}
+    if sum(capitals.values()) > swiped.lowercase[spelling]:
         written = min(capitals, key=lambda word: (-capitals[word], word))
         if not has_capitals_in_a_row(written) or keeps_capitals_in_a_row(written, measured):
             return written
@@ -220,6 +309,7 @@ def main() -> None:
 
     probabilities = read_dictionary(arguments.dictionary)
     candidates, sources, dictionary_counts = read_counts(arguments.data_dir / COUNTS_NAME, set(probabilities))
+    swiped = read_swiped(arguments.data_dir / SWIPED_NAME, set(probabilities))
     spelling_forms = read_spelling_forms(arguments.spelling_list)
     scale = DictionaryScale(probabilities, dictionary_counts)
 
@@ -231,6 +321,17 @@ def main() -> None:
     entries = {form: (written_spelling(candidates[form], measured), scale.probability(candidates[form].on_its_own))
                for form in ranked}
     rows = [entries[form] for form in ranked]
+
+    swiped_outcome = {form: swiped_outcome_of(item, candidates[form].on_its_own if form in candidates else 0,
+                                              letters, dictionary_counts, spelling_forms)
+                      for form, item in swiped.items() if not outcome.get(form, "").startswith(KEPT)}
+    swiped_ranked = sorted((form for form, rule in swiped_outcome.items() if rule.startswith(KEPT)),
+                           key=lambda form: (-swiped[form].swiped, form))
+    lowest = min(probability for _, probability in rows)
+    for form in swiped_ranked:
+        rank[form] = len(rank) + 1
+        entries[form] = (swiped_spelling(swiped[form], measured), lowest)
+    rows += [entries[form] for form in swiped_ranked]
     arguments.output.write_text("".join(f"{spelling}\t{probability}\n" for spelling, probability in rows),
                                 encoding="utf-8")
 
@@ -238,18 +339,26 @@ def main() -> None:
     with open(report_path, "w", encoding="utf-8") as report:
         report.write("\t".join(["form", "outcome", "rank", "spelling", "probability", "written on its own",
                                 *sources, "joined", "written lowercase", "written with capitals",
-                                "spellings"]) + "\n")
-        for form in sorted(candidates, key=lambda form: (-candidates[form].written, form)):
-            candidate = candidates[form]
+                                "spellings", "swiped", "swiped outcome", "swiped spellings"]) + "\n")
+        listed = {**candidates, **{form: Candidate(form, [0] * len(sources)) for form in swiped
+                                   if form not in candidates}}
+        for form in sorted(listed, key=lambda form: (-listed[form].written, form)):
+            candidate = listed[form]
+            item = swiped.get(form, SwipedForm(form))
             report.write("\t".join([
-                form, outcome[form], str(rank.get(form, "")), *map(str, entries.get(form, ("", ""))),
+                form, outcome.get(form, "no source"), str(rank.get(form, "")), *map(str, entries.get(form, ("", ""))),
                 str(candidate.on_its_own), *map(str, candidate.counts), str(candidate.joined),
                 str(candidate.lowercase.total()), str(candidate.capitalized.total()),
                 ",".join(f"{word}:{count}" for word, count in candidate.spellings.most_common(3)),
+                str(item.swiped), swiped_outcome.get(form, ""),
+                ",".join(f"{word}:{count}" for word, count in item.spellings.most_common(3)),
             ]) + "\n")
 
     removed = Counter(rule.split(" of ")[0] for rule in outcome.values())
-    print(f"{arguments.output}: {len(rows)} words of {len(candidates)} candidate forms; "
+    print(f"{arguments.output}: {len(rows)} words; {len(ranked)} of {len(candidates)} candidate forms; "
+          + ", ".join(f"{rule}: {count}" for rule, count in sorted(removed.items())))
+    removed = Counter(rule.split(" of ")[0] for rule in swiped_outcome.values())
+    print(f"{len(swiped_ranked)} of {len(swiped_outcome)} swiped forms; "
           + ", ".join(f"{rule}: {count}" for rule, count in sorted(removed.items())))
 
 

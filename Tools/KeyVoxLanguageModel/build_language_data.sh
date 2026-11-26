@@ -4,7 +4,8 @@
 # that follow an unknown word or a common word, and the grammar words, with the vocabulary the
 # lists were built from, and, given the language's dictionary words and probabilities (a word, a
 # tab, and a probability a line; Tools/KeyVoxTypingModels writes English's as
-# work/dictionary_unigrams.tsv), the swipe vocabulary of the words that dictionary lacks.
+# work/dictionary_unigrams.tsv), the swipe vocabulary of the words that dictionary lacks, with
+# the words of the language's swipe dataset.
 # <language> names a build in languages.py (en, de, de-bundestag, es, fr).
 # The builders share the source readers and the normalizing code, so a change made for one can
 # change another's output; rebuild every language after changing any tool here.
@@ -45,6 +46,7 @@ capitalized_spellings() {
 }
 swipe_counts() {
   "$PYTHON" count_swipe_words.py --language "$LANGUAGE" "$DATA_DIR"
+  "$PYTHON" count_swiped_words.py --language "$LANGUAGE" "$DATA_DIR"
   ./scowl_words.sh 80 "$OUTPUT_DIR/spelling_list.txt" A,B,Z,C,D
 }
 

@@ -33,6 +33,8 @@ def main() -> None:
             sources.append(language.vocabulary.spelling_dictionary)
     if isinstance(language.word_kinds, TreebankKinds):
         sources.append(language.word_kinds.treebank)
+    if language.swiped_words:
+        sources.append(language.swiped_words)
 
     for source in sources:
         directory = arguments.data_dir / "sources" / source.name

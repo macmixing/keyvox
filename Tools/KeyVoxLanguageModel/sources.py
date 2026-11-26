@@ -36,6 +36,7 @@ _WILDCHAT_REVISION = "c827c6df8fcf008219ffaffa4d1dd77491099367"
 _YODAS2_REVISION = "631fc446cb1a41ee93a1d390a167c6e08c2597a3"
 _LATINIME_REVISION = "127336e9f29d69607eab55982324b210279ae8c5"
 _ANCORA_TAG = "r2.19"
+_FUTO_SWIPE_REVISION = "d71bf5fd7f45b3e7c2ed2d76a21b0dbd3b4ba566"
 # Each YouTube-Commons file holds about 13 million words of native English transcripts.
 _YOUTUBE_FILE_COUNT = 40
 
@@ -249,6 +250,26 @@ RLA_ES = Source(
     license="Mozilla Public License 1.1 or later (chosen from GPL 3+ / LGPL 3+ / MPL 1.1+)",
     license_url="https://www.mozilla.org/en-US/MPL/1.1/",
     attribution="Based on the RLA-ES Spanish spelling dictionaries v2.9 by Santiago Bosio and contributors.",
+)
+
+# Swipes of the words of sentences, one record a swipe, each with its word and sentence. Only the
+# training split is read: the validation and test splits measure the swipe decoder.
+FUTO_SWIPE = Source(
+    name="futo-swipe",
+    files=(
+        SourceFile(
+            url=(
+                "https://huggingface.co/datasets/futo-org/swipe.futo.org/resolve/"
+                f"{_FUTO_SWIPE_REVISION}/train.jsonl"
+            ),
+            name="train.jsonl",
+            sha256="6e12f113459857e08f235ad7007af5519e6b3f01e0fdaaff39b988827e588365",
+        ),
+    ),
+    code="en",
+    license="MIT",
+    license_url="https://huggingface.co/datasets/futo-org/swipe.futo.org/blob/main/LICENSE",
+    attribution="Based on the swipe.futo.org dataset collected by FUTO.",
 )
 
 UD_SPANISH_ANCORA = Source(
