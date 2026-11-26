@@ -1,5 +1,6 @@
 {
   "identifier": "QWERTZ",
+  "shiftAndDeleteFillPadding": false,
   "rows": [
     [{"characters": "qwertzuiop"}],
     [{"padding": 0.5}, {"characters": "asdfghjkl"}, {"padding": 0.5}],

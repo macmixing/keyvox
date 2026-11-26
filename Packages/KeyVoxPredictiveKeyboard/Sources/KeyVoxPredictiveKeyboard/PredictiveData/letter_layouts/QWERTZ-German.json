@@ -1,5 +1,6 @@
 {
   "identifier": "QWERTZ-German",
+  "shiftAndDeleteFillPadding": false,
   "rows": [
     [{"characters": "qwertzuiopü"}],
     [{"characters": "asdfghjklöä"}],

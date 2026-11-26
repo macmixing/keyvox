@@ -1,5 +1,6 @@
 {
   "identifier": "QWERTY-Spanish",
+  "shiftAndDeleteFillPadding": false,
   "rows": [
     [{"characters": "qwertyuiop"}],
     [{"characters": "asdfghjklñ"}],

@@ -1,5 +1,6 @@
 {
   "identifier": "QWERTY-Accents",
+  "shiftAndDeleteFillPadding": false,
   "rows": [
     [{"characters": "qwertyuiop"}],
     [{"characters": "asdfghjkl´"}],

@@ -1,5 +1,6 @@
 {
   "identifier": "AZERTY-French",
+  "shiftAndDeleteFillPadding": false,
   "rows": [
     [{"characters": "azertyuiop"}],
     [{"characters": "qsdfghjklm"}],

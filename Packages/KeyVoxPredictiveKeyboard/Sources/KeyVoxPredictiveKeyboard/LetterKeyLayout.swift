@@ -14,6 +14,10 @@ public struct LetterKeyLayout: Sendable {
     public let rows: [LetterKeyRow]
     /// How wide each row is, in letter keys.
     public let width: Double
+    /// Whether a keyboard draws shift and delete across the padding beside them, reaching the
+    /// row's letters, rather than at their own widths with the padding left empty as Apple's
+    /// keyboard does.
+    public let shiftAndDeleteFillPadding: Bool
     /// Every letter key on a grid of 100-point keys, rows top to bottom.
     public let defaultGeometry: [PredictionKeyGeometry]
 
@@ -22,7 +26,11 @@ public struct LetterKeyLayout: Sendable {
         let layout: LetterKeyLayout
         do {
             let file = try JSONDecoder().decode(File.self, from: Data(contentsOf: url(identifier: identifier)))
-            layout = try LetterKeyLayout(identifier: file.identifier, rows: file.rows)
+            layout = try LetterKeyLayout(
+                identifier: file.identifier,
+                rows: file.rows,
+                shiftAndDeleteFillPadding: file.shiftAndDeleteFillPadding
+            )
         } catch let error as PredictiveKeyboardError {
             throw error
         } catch {
@@ -34,7 +42,7 @@ public struct LetterKeyLayout: Sendable {
         return layout
     }
 
-    private init(identifier: String, rows: [LetterKeyRow]) throws {
+    private init(identifier: String, rows: [LetterKeyRow], shiftAndDeleteFillPadding: Bool) throws {
         // Apple's rows are equally wide; their widths are stored to two decimals, so they add
         // up to the same width only to within rounding.
         guard let firstRow = rows.first,
@@ -43,6 +51,7 @@ public struct LetterKeyLayout: Sendable {
         }
         self.identifier = identifier
         self.rows = rows
+        self.shiftAndDeleteFillPadding = shiftAndDeleteFillPadding
         width = (firstRow.width * Self.widthPrecision).rounded() / Self.widthPrecision
         defaultGeometry = rows.enumerated().flatMap { rowIndex, row in
             var x = 0.0
@@ -78,6 +87,7 @@ public struct LetterKeyLayout: Sendable {
 
     private struct File: Decodable {
         let identifier: String
+        let shiftAndDeleteFillPadding: Bool
         let rows: [LetterKeyRow]
     }
 }

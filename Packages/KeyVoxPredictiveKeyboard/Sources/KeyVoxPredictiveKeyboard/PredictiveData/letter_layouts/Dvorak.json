@@ -1,5 +1,6 @@
 {
   "identifier": "Dvorak",
+  "shiftAndDeleteFillPadding": false,
   "rows": [
     [{"padding": 1.8}, {"characters": "pyfgcrl"}, {"delete": 1.5}],
     [{"characters": "aoeuidhtns"}, {"padding": 0.3}],
