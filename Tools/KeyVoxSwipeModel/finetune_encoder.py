@@ -63,6 +63,8 @@ def main() -> None:
     parser.add_argument("--learning-rate", type=float, default=1e-4)
     parser.add_argument("--limit", type=int, default=0, help="train on only the first N swipes")
     parser.add_argument("--keep-doubles", action="store_true", help="switch the run to key paths that keep repeated keys")
+    parser.add_argument("--augment-probability", type=float,
+                        help="geometric augmentation probability, instead of the base run's")
     parser.add_argument("--decoder", help="a decoder run over the base encoder, fine-tuned together with it")
     parser.add_argument("--device", default="mps" if torch.backends.mps.is_available() else "cpu")
     parser.add_argument("--seed", type=int, default=0)
@@ -84,6 +86,8 @@ def main() -> None:
     scoring = Scoring.load((models / arguments.decoder if decoder else base_dir) / "scoring.json")
     augment_config = AugmentConfig(**{**base_settings["augment"], "y_scale": tuple(base_settings["augment"]["y_scale"]),
                                       "x_scale": tuple(base_settings["augment"]["x_scale"])})
+    if arguments.augment_probability is not None:
+        augment_config = AugmentConfig(**{**augment_config.__dict__, "probability": arguments.augment_probability})
     pruning = Pruning()
     layout = load_layout(arguments.data_dir, base_settings["layout"])
     lexicon = load_lexicon(arguments.lexicon)
@@ -121,7 +125,7 @@ def main() -> None:
     steps_per_epoch = len(train_xy) // arguments.batch
     total = steps_per_epoch * arguments.epochs
     warmup = max(1, int(total * WARMUP_FRACTION))
-    settings = {**base_settings, KEEP_DOUBLES: keep_doubles, "finetune": {**vars(arguments), "data_dir": str(arguments.data_dir),
+    settings = {**base_settings, "augment": augment_config.__dict__, KEEP_DOUBLES: keep_doubles, "finetune": {**vars(arguments), "data_dir": str(arguments.data_dir),
                                               "lexicon": str(arguments.lexicon), "scoring": scoring.__dict__}}
     (run_dir / "settings.json").write_text(json.dumps(settings, indent=2) + "\n")
 
