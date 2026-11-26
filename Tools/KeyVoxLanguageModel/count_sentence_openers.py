@@ -1,6 +1,6 @@
-"""Counts, for each source, the words that open sentences: every sentence's first word, and
-the first word of a sentence after a given previous sentence, for the suggestion bar where
-a sentence begins.
+"""Counts, for each of a language's sources, the words that open sentences: every sentence's
+first word, and the first word of a sentence after a given previous sentence, for the suggestion
+bar where a sentence begins.
 
 A previous sentence is told apart by how it ended (".", "?", "!", or a line break), by its
 first and last words, and by every word in it: `word_pairs` counts how often a word in the
@@ -22,9 +22,9 @@ import zlib
 from collections import Counter, defaultdict
 from pathlib import Path
 
-from extract_sentences import READERS
+from languages import LANGUAGES, language_argument
 from normalize import LINE_BREAK, sentences_with_endings
-from sources import SOURCES
+from source_texts import source_texts
 
 QUESTION = "?"
 # One text in this many is held out for measuring.
@@ -39,12 +39,14 @@ def is_held_out(text: str) -> bool:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
+    language_argument(parser)
     parser.add_argument("data_dir", type=Path)
     arguments = parser.parse_args()
+    language = LANGUAGES[arguments.language]
 
     output_directory = arguments.data_dir / "openers"
     output_directory.mkdir(parents=True, exist_ok=True)
-    for source in SOURCES:
+    for source, texts in source_texts(language, arguments.data_dir):
         openers: Counter[str] = Counter()
         # (ending, previous first word, previous last word) -> next sentence's first word
         contexts: defaultdict[tuple[str, str, str], Counter[str]] = defaultdict(Counter)
@@ -54,10 +56,10 @@ def main() -> None:
         word_sentences: Counter[tuple[str, str]] = Counter()
         # (ending, previous first word, previous last word, previous words, next first word)
         held_out: list[tuple[str, str, str, tuple[str, ...], str]] = []
-        for text in READERS[source.name](arguments.data_dir / "sources" / source.name):
+        for text in texts:
             hold = is_held_out(text)
             previous = None
-            for words, ending in sentences_with_endings(text):
+            for words, ending in sentences_with_endings(text, language.text_rules):
                 if previous is not None and not (previous[1] == QUESTION and ending == QUESTION):
                     previous_words, previous_ending = previous
                     context = (previous_ending, previous_words[0], previous_words[-1])

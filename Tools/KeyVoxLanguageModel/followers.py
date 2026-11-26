@@ -38,9 +38,13 @@ def written_sentence_ends(paths: list[Path]) -> tuple[Counter, Counter, Counter]
 
 def followers_line(context: str, follower_ids: np.ndarray, follower_counts: np.ndarray, total: float,
                    opener_shares: np.ndarray, ending_share: float, vocabulary: list[str], limit: int) -> str:
-    """Followers after taking off the sentence starts `total` uses would bring in transcripts."""
+    """Followers after taking off the sentence starts `total` uses would bring in transcripts.
+    A context the written sources show only where a sentence ends gets none: all that follows it
+    in transcripts is the next sentence."""
     adjusted = follower_counts - ending_share * total * opener_shares[follower_ids]
     kept_total = total * (1 - ending_share)
+    if kept_total <= 0:
+        return f"{context}\t\n"
     order = [index for index in np.argsort(-adjusted, kind="stable") if adjusted[index] > 0][:limit]
     pairs = " ".join(f"{vocabulary[follower_ids[index]]}:{math.log(adjusted[index] / kept_total):.3f}" for index in order)
     return f"{context}\t{pairs}\n"
