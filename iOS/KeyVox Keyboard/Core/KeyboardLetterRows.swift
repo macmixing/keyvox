@@ -3,8 +3,9 @@ import UIKit
 
 /// The letter page's letter rows, drawn from the typing language's letter layout
 /// (`TypingLanguage.letterLayout`), with every width in letter keys: the layout's keys at Apple's
-/// widths, shift and delete taking in the padding beside them so they reach the row's letters, and
-/// any other padding left empty, at the row's edges or between its keys.
+/// widths and its padding left empty, at the row's edges or between its keys, except that in a
+/// layout whose shift and delete fill the padding beside them (`shiftAndDeleteFillPadding`) they
+/// take it in and reach the row's letters.
 struct KeyboardLetterRows {
     struct Row {
         /// The row's keys, left to right, each `widthUnits` letter keys wide.
@@ -35,11 +36,11 @@ struct KeyboardLetterRows {
     let width: CGFloat
 
     init(layout: LetterKeyLayout) {
-        rows = layout.rows.map(Self.row)
+        rows = layout.rows.map { Self.row($0, shiftAndDeleteFillPadding: layout.shiftAndDeleteFillPadding) }
         width = CGFloat(layout.width)
     }
 
-    private static func row(_ row: LetterKeyRow) -> Row {
+    private static func row(_ row: LetterKeyRow, shiftAndDeleteFillPadding: Bool) -> Row {
         var keys: [KeyboardKeyModel] = []
         var extraSpacing: [CGFloat] = []
         var leadingInset: CGFloat = 0
@@ -57,9 +58,9 @@ struct KeyboardLetterRows {
                 kind = .delete
             case .padding:
                 let next = row.items.dropFirst(index + 1).first
-                if let last = keys.last, last.isSideKey {
+                if shiftAndDeleteFillPadding, let last = keys.last, last.isSideKey {
                     keys[keys.count - 1] = KeyboardSymbolLayout.key(last.kind, width: last.widthUnits + width)
-                } else if let next, isSideKey(next) {
+                } else if shiftAndDeleteFillPadding, let next, isSideKey(next) {
                     paddingBeforeSideKey += width
                 } else if keys.isEmpty {
                     leadingInset += width
@@ -93,7 +94,8 @@ struct KeyboardLetterRows {
 }
 
 private extension KeyboardKeyModel {
-    /// Whether the key is shift or delete, which take in the padding beside them.
+    /// Whether the key is shift or delete, which take in the padding beside them in a layout whose
+    /// shift and delete fill it.
     var isSideKey: Bool {
         kind == .shift || kind == .delete
     }
