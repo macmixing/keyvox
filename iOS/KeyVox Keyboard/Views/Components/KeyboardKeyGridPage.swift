@@ -19,8 +19,7 @@ final class KeyboardKeyGridPage {
     private var baseModels: [ObjectIdentifier: KeyboardKeyModel] = [:]
     private var letterCase: KeyboardLetterCase
     private let isNumberPad: Bool
-    private var letterSecondRowLayoutGeometry: KeyboardLayoutGeometry.LetterSecondRowLayout?
-    private var letterThirdRowLayoutGeometry: KeyboardLayoutGeometry.LetterThirdRowLayout?
+    private var letterRowLayoutGeometries: [KeyboardLayoutGeometry.LetterRowLayout] = []
     private var thirdRowLayoutGeometry: KeyboardLayoutGeometry.ThirdRowLayout?
     private var bottomRowLayoutGeometry: KeyboardLayoutGeometry.BottomRowLayout?
     private var numberPadBottomRowLayoutGeometry: KeyboardLayoutGeometry.NumberPadBottomRowLayout?
@@ -35,6 +34,7 @@ final class KeyboardKeyGridPage {
         view.spacing = KeyboardStyle.keyboardRowSpacing
         view.clipsToBounds = false
 
+        let letterRows = KeyboardLetterRows.current
         let rows = KeyboardSymbolLayout.rows(
             for: layout.symbolPage,
             keysMode: layout.keysMode,
@@ -70,23 +70,22 @@ final class KeyboardKeyGridPage {
                         rowStack: rowStack
                     )
                 }
-            } else if layout.symbolPage == .letters, layout.keysMode == .full, rowIndex == 1 {
-                letterSecondRowLayoutGeometry = KeyboardLayoutGeometry.LetterSecondRowLayout(
+            } else if layout.symbolPage == .letters, layout.keysMode == .full,
+                      letterRows.rows.indices.contains(rowIndex) {
+                let letterRow = letterRows.rows[rowIndex]
+                if letterRow.fillsEvenly(layoutWidth: letterRows.width) == false {
+                    letterRowLayoutGeometries.append(KeyboardLayoutGeometry.LetterRowLayout(
+                        keyGridView: keyGridView,
+                        rowStack: rowStack,
+                        row: letterRow,
+                        layoutWidth: letterRows.width
+                    ))
+                }
+            } else if rowModels.contains(where: { $0.kind == .delete }) {
+                thirdRowLayoutGeometry = KeyboardLayoutGeometry.ThirdRowLayout(
                     keyGridView: keyGridView,
                     rowStack: rowStack
                 )
-            } else if rowModels.contains(where: { $0.kind == .delete }) {
-                if layout.symbolPage == .letters {
-                    letterThirdRowLayoutGeometry = KeyboardLayoutGeometry.LetterThirdRowLayout(
-                        keyGridView: keyGridView,
-                        rowStack: rowStack
-                    )
-                } else {
-                    thirdRowLayoutGeometry = KeyboardLayoutGeometry.ThirdRowLayout(
-                        keyGridView: keyGridView,
-                        rowStack: rowStack
-                    )
-                }
             } else if isBottomRow {
                 bottomRowLayoutGeometry = KeyboardLayoutGeometry.BottomRowLayout(
                     keyGridView: keyGridView,
@@ -134,8 +133,7 @@ final class KeyboardKeyGridPage {
                 trailing: sideInset
             )
         }
-        letterSecondRowLayoutGeometry?.update(isLandscape: isLandscape)
-        letterThirdRowLayoutGeometry?.update(isLandscape: isLandscape)
+        letterRowLayoutGeometries.forEach { $0.update() }
         thirdRowLayoutGeometry?.update(isLandscape: isLandscape)
         bottomRowLayoutGeometry?.update(isLandscape: isLandscape)
         numberPadBottomRowLayoutGeometry?.update(padWidth: numberPadWidth)

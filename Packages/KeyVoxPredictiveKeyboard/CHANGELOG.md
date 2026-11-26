@@ -6,7 +6,7 @@ The format loosely follows Keep a Changelog, and the package uses semantic versi
 
 ---
 
-## [2.1.0] - 2026-11-25
+## [2.2.0] - 2026-11-25
 
 Swipe typing: a finger sliding across the letter keys types the word it traces.
 
@@ -23,7 +23,24 @@ Swipe typing: a finger sliding across the letter keys types the word it traces.
 
 ### Notes
 
-- `2.1.0` adds public API; typing without swiping is unchanged.
+- `2.2.0` adds public API; typing without swiping is unchanged.
+
+---
+
+## [2.1.0] - 2026-11-25
+
+Letter layouts: each of Apple's letter layouts is bundled as data, and each typing language names the one its keyboard shows and the others Apple's keyboard offers.
+
+### Includes
+
+- `PredictiveData/letter_layouts` holds one file per Apple layout name, with the letter rows of Apple's iOS 27.2 iPhone keyboard: QWERTY, QWERTZ, QWERTZ-German, AZERTY, AZERTY-French, QWERTY-Spanish, QWERTY-Accents, QWERTZ-Accents, and Dvorak. Each row lists its character keys, shift and delete keys, and padding, with their widths in letter keys, and each file says whether a keyboard draws shift and delete across the padding beside them (`shiftAndDeleteFillPadding`): QWERTY does, as English's keyboard always has; the others leave Apple's gap.
+- `LetterKeyLayout.bundled(identifier:)` reads one; `LetterKeyLayout` gains its `identifier`, its `rows` (`LetterKeyRow`), its `width` in letter keys, and `shiftAndDeleteFillPadding`, and its `defaultGeometry` places the layout's letters where Apple's keyboard draws them.
+- A language's `language.json` names its `defaultLetterLayout` and Apple's `alternativeLetterLayouts` in Apple's order in place of its own letter rows; `TypingLanguage.letterLayout` is the default layout and `TypingLanguage.alternativeLetterLayouts` names the others. English shows QWERTY and lists AZERTY, QWERTZ, and Dvorak.
+- `PredictiveKeyboardError.invalidLetterLayout` reports a layout file that does not decode, names another layout, or has rows of different widths.
+
+### Notes
+
+- `2.1.0` adds public API; English typing is unchanged, its letters sitting where they did.
 
 ---
 

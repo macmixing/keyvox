@@ -375,7 +375,7 @@ candidate, and these rules, in order, leave one out. The counts are from the bui
 
 | Rule | Leaves out | Forms |
 | --- | --- | --- |
-| Letters | A letter that is no letter key of the keyboard (`language.json`) | 6,262 |
+| Letters | A letter that is no letter key of the keyboard (the default letter layout `language.json` names, `letter_layouts/<layout>.json`) | 6,262 |
 | One source | Fewer than two of the three sources write it as a word on its own | 693,651 |
 | Joined | Written joined to other letters or digits more than half the time: URLs, hyphenated words, code | 125 |
 | Misspelling | A dictionary form one edit away (a letter left out, added, or changed, or two neighbors swapped) is written on its own at least 50 times as often as it is | 4,188 |

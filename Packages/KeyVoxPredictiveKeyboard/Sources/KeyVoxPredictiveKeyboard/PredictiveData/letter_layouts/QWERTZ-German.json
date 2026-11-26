@@ -1,0 +1,9 @@
+{
+  "identifier": "QWERTZ-German",
+  "shiftAndDeleteFillPadding": false,
+  "rows": [
+    [{"characters": "qwertzuiopü"}],
+    [{"characters": "asdfghjklöä"}],
+    [{"shift": 1.43}, {"padding": 0.57}, {"characters": "yxcvbnm"}, {"padding": 0.57}, {"delete": 1.43}]
+  ]
+}

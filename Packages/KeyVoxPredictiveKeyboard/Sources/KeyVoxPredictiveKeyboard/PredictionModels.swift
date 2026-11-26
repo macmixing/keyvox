@@ -96,6 +96,9 @@ public enum PredictiveKeyboardError: Error, Equatable {
     case missingArtifact(String)
     /// The bundled typing language's `language.json` is missing a rule or names another language.
     case invalidTypingLanguage(String)
+    /// A bundled letter layout's file does not decode, names another layout, or has rows of
+    /// different widths.
+    case invalidLetterLayout(String)
     case nativeEngineInitializationFailed(String)
     case nativePredictionFailed(String)
     case invalidAccentOverlay
