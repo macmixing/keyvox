@@ -4,7 +4,7 @@ the swipe vocabulary (write_swipe_vocabulary.py), and writes them to
 
 Each record of the dataset's training split is one swipe of a word of a sentence, with the word
 as the sentence writes it and its place among the sentence's words split at spaces. The word is
-counted as written, without the punctuation around it ("Spencer's", "alt-right"), a curly
+counted as written, without the punctuation around it, a curly
 apostrophe read as a straight one, and, apart, the times it is in the middle of a sentence:
 neither where a sentence or quotation can begin nor right after (`normalize.begins_written_run`),
 so that its capitals are its own.

@@ -40,7 +40,7 @@ and these rules, in this order, leave one out:
    sentence.
 
 The rules above for one source and for joined words count the sources' texts, which do not
-hold these words, and a word the dataset writes joined, such as "alt-right", is the whole word
+hold these words, and a word the dataset writes joined is the whole word
 a person swipes. Every form left is kept, after the sources' words, ranked by how many records
 swipe it. Each is written in its most common spelling without the punctuation around it, with
 its likeliest capitals when the dataset's sentences write that spelling with capitals more often
