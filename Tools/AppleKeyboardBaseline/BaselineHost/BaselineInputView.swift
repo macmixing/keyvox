@@ -1,8 +1,8 @@
 import SwiftUI
 
 /// One autocorrecting text area, a clear button the baseline runner taps between sentences,
-/// and fill buttons that fill it with text to hold delete over. No button takes focus, so
-/// the keyboard stays up.
+/// fill buttons that fill it with text to hold delete over, and hide and show buttons that
+/// dismiss the keyboard and bring it back. No other button takes focus, so the keyboard stays up.
 struct BaselineInputView: View {
     @State private var text = ""
 
@@ -11,6 +11,12 @@ struct BaselineInputView: View {
             HStack {
                 Button("Clear") { text = "" }
                     .accessibilityIdentifier("clear")
+                Button("Hide") {
+                    UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                }
+                .accessibilityIdentifier("hide")
+                Button("Show") { NotificationCenter.default.post(name: TypingTextView.showKeyboard, object: nil) }
+                    .accessibilityIdentifier("show")
                 Spacer()
                 fillButton("Lines", text: DeletionSampleText.lines())
                 fillButton("Long", text: DeletionSampleText.longWords())

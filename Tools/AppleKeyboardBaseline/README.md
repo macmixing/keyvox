@@ -57,6 +57,12 @@ Replay the same plan with `TEST_RUNNER_BASELINE_KEYBOARD_MARKER=Shift` (a key la
 the KeyVox keyboard has) and `TEST_RUNNER_BASELINE_KEYBOARD_NAME=KeyVox`. Add
 `TEST_RUNNER_BASELINE_DISABLE_AUTOCORRECT=1` to record the raw typed letters instead.
 
+## Dismissing the keyboard
+
+The host app's Hide button dismisses the keyboard and Show brings it back to the text view, for
+steps that need the keyboard to go away and appear again (`button:Hide`, then `button:Show`, in
+`EmojiFrequentlyUsedProbeTests`).
+
 ## Delete key timeline
 
 The host app records every change to its text, with the time since it was filled, to

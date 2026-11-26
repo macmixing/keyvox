@@ -7,6 +7,9 @@ import UIKit
 /// smart quotes on and `AUTOCAPITALIZE=1` capitalizes sentences, as most apps' text fields
 /// do.
 struct TypingTextView: UIViewRepresentable {
+    /// Posted to give the text view focus again, bringing the keyboard back.
+    static let showKeyboard = Notification.Name("TypingTextView.showKeyboard")
+
     @Binding var text: String
 
     func makeUIView(context: Context) -> UITextView {
@@ -26,6 +29,9 @@ struct TypingTextView: UIViewRepresentable {
             DispatchQueue.main.async {
                 SmartDeleteCharacterProbe.run(in: view)
             }
+        }
+        NotificationCenter.default.addObserver(forName: Self.showKeyboard, object: nil, queue: .main) { [weak view] _ in
+            view?.becomeFirstResponder()
         }
         return view
     }
