@@ -6,54 +6,9 @@ The format loosely follows Keep a Changelog, and the package uses semantic versi
 
 ---
 
-## [2.1.0] - 2026-11-25
+## [2.0.0] - 2026-11-25
 
-Letter layouts: each of Apple's letter layouts is bundled as data, and each typing language names the one its keyboard shows and the others Apple's keyboard offers.
-
-### Includes
-
-- `PredictiveData/letter_layouts` holds one file per Apple layout name, with the letter rows of Apple's iOS 27.2 iPhone keyboard: QWERTY, QWERTZ, QWERTZ-German, AZERTY, AZERTY-French, QWERTY-Spanish, QWERTY-Accents, QWERTZ-Accents, and Dvorak. Each row lists its character keys, shift and delete keys, and padding, with their widths in letter keys, and each file says whether a keyboard draws shift and delete across the padding beside them (`shiftAndDeleteFillPadding`): QWERTY does, as English's keyboard always has; the others leave Apple's gap.
-- `LetterKeyLayout.bundled(identifier:)` reads one; `LetterKeyLayout` gains its `identifier`, its `rows` (`LetterKeyRow`), its `width` in letter keys, and `shiftAndDeleteFillPadding`, and its `defaultGeometry` places the layout's letters where Apple's keyboard draws them.
-- A language's `language.json` names its `defaultLetterLayout` and Apple's `alternativeLetterLayouts` in Apple's order in place of its own letter rows; `TypingLanguage.letterLayout` is the default layout and `TypingLanguage.alternativeLetterLayouts` names the others. English shows QWERTY and lists AZERTY, QWERTZ, and Dvorak.
-- `PredictiveKeyboardError.invalidLetterLayout` reports a layout file that does not decode, names another layout, or has rows of different widths.
-
-### Notes
-
-- `2.1.0` adds public API; English typing is unchanged, its letters sitting where they did.
-
----
-
-## [2.0.2] - 2026-11-25
-
-The English typing language bundles a swipe vocabulary: 22,465 words people write that the English dictionary lacks, so a swipe can decode to them.
-
-### Includes
-
-- `PredictiveData/en/swipe_vocabulary.txt`, one word per line with its probability on the dictionary's 0-255 scale, likeliest first, built by `Tools/KeyVoxLanguageModel` from YouTube-Commons, OASST2, and Tatoeba: words such as "haha", "hahaha", "omg", "lmao", "cuz", and "anyways", British spellings, and names, none of them a dictionary word.
-
-### Notes
-
-- `2.0.2` changes no API or behavior: nothing in the package reads the new file yet, and the dictionary, rankers, and other bundled files are unchanged.
-
----
-
-## [2.0.1] - 2026-11-24
-
-The bundled English dictionary is the one `Tools/KeyVoxTypingModels` builds, with the same words, word pairs, and three-word sequences at the same probabilities.
-
-### Includes
-
-- `PredictiveData/en/dictionary` is rebuilt from SCOWL and OASST1 at pinned revisions and from Tatoeba's English sentences as of its 2026-07-18 export, checked against their recorded SHA-256; only the order its entries were written in and the write times in its header change.
-
-### Notes
-
-- `2.0.1` changes no API or behavior; the correction and completion rankers, the autocorrect decision model, and the accent overlay the pipeline builds are the same bytes as the bundled ones, so they are unchanged.
-
----
-
-## [2.0.0] - 2026-11-24
-
-Typing languages: each language the keyboard types in is read from its own folder, and English is the first.
+Typing languages and Apple's letter layouts: each language the keyboard types in is read from its own folder, English first; each of Apple's letter layouts is bundled as data; and English bundles a swipe vocabulary of 22,465 words people write that its dictionary lacks.
 
 ### Includes
 
@@ -63,12 +18,17 @@ Typing languages: each language the keyboard types in is read from its own folde
 - The words spelled only with capitals come from the language's `KeyVoxLinguistics` list (`CapitalizedSpellings(languageCode:)`).
 - `KeyVoxPredictiveKeyboardResources.configure(bundleURL:)` lets a host outside an app bundle, such as the Android engine, point the package at its unchanged resource bundle, as `KeyVoxCoreResources` and `KeyVoxLinguisticsResources` do.
 - The English files move to `PredictiveData/en` under plain names: `dictionary/`, `context_model.bin`, `correction_ranker.kvtr`, `completion_ranker.kvtr`, and `autocorrect_decision.kvtr`.
+- `PredictiveData/en/dictionary` is rebuilt from SCOWL and OASST1 at pinned revisions and from Tatoeba's English sentences as of its 2026-07-18 export, checked against their recorded SHA-256; only the order its entries were written in and the write times in its header change.
+- `PredictiveData/letter_layouts` holds one file per Apple layout name, with the letter rows of Apple's iOS 27.2 iPhone keyboard: QWERTY, QWERTZ, QWERTZ-German, AZERTY, AZERTY-French, QWERTY-Spanish, QWERTY-Accents, QWERTZ-Accents, and Dvorak. Each row lists its character keys, shift and delete keys, and padding, with their widths in letter keys, and each file says whether a keyboard draws shift and delete across the padding beside them (`shiftAndDeleteFillPadding`): QWERTY does, as English's keyboard always has; the others leave Apple's gap.
+- `LetterKeyLayout.bundled(identifier:)` reads one; `LetterKeyLayout` gains its `identifier`, its `rows` (`LetterKeyRow`), its `width` in letter keys, and `shiftAndDeleteFillPadding`, and its `defaultGeometry` places the layout's letters where Apple's keyboard draws them.
+- A language's `language.json` names its `defaultLetterLayout` and Apple's `alternativeLetterLayouts` in Apple's order in place of its own letter rows; `TypingLanguage.letterLayout` is the default layout and `TypingLanguage.alternativeLetterLayouts` names the others. English shows QWERTY and lists AZERTY, QWERTZ, and Dvorak.
+- `PredictiveKeyboardError.invalidLetterLayout` reports a layout file that does not decode, names another layout, or has rows of different widths.
+- `PredictiveData/en/swipe_vocabulary.txt`, one word per line with its probability on the dictionary's 0-255 scale, likeliest first, built by `Tools/KeyVoxLanguageModel` from YouTube-Commons, OASST2, and Tatoeba: words such as "haha", "hahaha", "omg", "lmao", "cuz", and "anyways", British spellings, and names, none of them a dictionary word.
 
 ### Notes
 
-- `2.0.0` changes public API: hosts create the engine and the typing session with a `TypingLanguage`, and call `WordCasing` and `SmartQuotes` through it. English typing is unchanged.
-
----
+- `2.0.0` changes public API: hosts create the engine and the typing session with a `TypingLanguage`, and call `WordCasing` and `SmartQuotes` through it. English typing is unchanged: its dictionary has the same words, word pairs, and three-word sequences at the same probabilities, the correction and completion rankers, the autocorrect decision model, and the accent overlay are the same bytes, and its letters sit where they did.
+- Nothing in the package reads the swipe vocabulary yet.
 
 ## [1.1.0] - 2026-11-14
 
