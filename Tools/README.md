@@ -151,3 +151,22 @@ useful for CI step summaries.
 ```bash
 Tools/Quality/coverage_summary.sh /tmp/keyvox-tests.xcresult
 ```
+
+## Swipe Model
+
+### `KeyVoxSwipeModel/`
+
+Python tools that train, tune, export, and measure KeyVox's swipe typing model: a
+layout-agnostic neural encoder trained on the MIT-licensed swipe.futo.org recordings, decoded
+against the keyboard's swipe lexicon (its dictionary and swipe vocabulary), and exported as
+the flat fp16 weights the predictive keyboard package bundles. Data and trained weights stay
+outside the repository. [`KeyVoxSwipeModel/README.md`](KeyVoxSwipeModel/README.md) documents
+the data, the bundled model's training and tuning, how accuracy is measured with
+`KeyVoxTypingHarness swipe-accuracy`, the experiments and their results, and the weight file
+format.
+
+```bash
+cd Tools/KeyVoxSwipeModel
+<data-dir>/venv/bin/python train.py <data-dir> <run> --extra
+<data-dir>/venv/bin/python evaluate.py <data-dir> <run> <unigrams.tsv> --split val
+```
