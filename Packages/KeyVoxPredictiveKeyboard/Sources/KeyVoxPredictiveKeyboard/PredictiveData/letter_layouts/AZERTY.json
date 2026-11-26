@@ -1,0 +1,9 @@
+{
+  "identifier": "AZERTY",
+  "shiftAndDeleteFillPadding": false,
+  "rows": [
+    [{"characters": "azertyuiop"}],
+    [{"characters": "qsdfghjklm"}],
+    [{"shift": 1.3}, {"padding": 0.7}, {"characters": "wxcvbn"}, {"padding": 0.7}, {"delete": 1.3}]
+  ]
+}

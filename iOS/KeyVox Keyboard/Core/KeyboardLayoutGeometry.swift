@@ -66,43 +66,44 @@ enum KeyboardLayoutGeometry {
         }
     }
 
-    /// The letter page's middle row: nine top-row-width keys inset half a key on each side.
-    final class LetterSecondRowLayout: RowLayout {
-        func update(isLandscape _: Bool) {
+    /// A letter row of the letter page (`KeyboardLetterRows`): a letter key is as wide as the
+    /// grid's width split among `layoutWidth` letter keys, and every other key, inset, and extra
+    /// gap is that many letter keys wide, gaps included.
+    final class LetterRowLayout: RowLayout {
+        private let row: KeyboardLetterRows.Row
+        private let layoutWidth: CGFloat
+
+        init(keyGridView: KeyboardKeyGridView, rowStack: UIStackView, row: KeyboardLetterRows.Row, layoutWidth: CGFloat) {
+            self.row = row
+            self.layoutWidth = layoutWidth
+            super.init(keyGridView: keyGridView, rowStack: rowStack)
+        }
+
+        func update() {
             guard let keyGridView, let rowStack else { return }
 
             let spacing = KeyboardStyle.keySpacing
             let rowWidth = keyGridView.bounds.width
-            let topRowKeyWidth = (rowWidth - (spacing * 9)) / 10
-            let horizontalInset = (topRowKeyWidth + spacing) / 2
-            guard topRowKeyWidth > 0 else { return }
+            let letterKeyWidth = (rowWidth - (spacing * (layoutWidth - 1))) / layoutWidth
+            guard letterKeyWidth > 0 else { return }
+            let keyPitch = letterKeyWidth + spacing
 
-            rowStack.isLayoutMarginsRelativeArrangement = true
-            rowStack.directionalLayoutMargins = NSDirectionalEdgeInsets(
-                top: 0,
-                leading: horizontalInset,
-                bottom: 0,
-                trailing: horizontalInset
-            )
-            applyLayout(expectedKeyCount: 9, targetWidths: Array(repeating: topRowKeyWidth, count: 9))
-        }
-    }
-
-    /// The letter page's shift row: shift and delete flank seven top-row-width letters.
-    final class LetterThirdRowLayout: RowLayout {
-        func update(isLandscape _: Bool) {
-            guard let keyGridView else { return }
-
-            let spacing = KeyboardStyle.keySpacing
-            let rowWidth = keyGridView.bounds.width
-            let topRowKeyWidth = (rowWidth - (spacing * 9)) / 10
-            let specialKeyWidth = (topRowKeyWidth * 1.5) + (spacing * 0.5)
-            guard topRowKeyWidth > 0 else { return }
-
-            let targetWidths = [specialKeyWidth]
-                + Array(repeating: topRowKeyWidth, count: 7)
-                + [specialKeyWidth]
-            applyLayout(expectedKeyCount: 9, targetWidths: targetWidths)
+            if row.leadingInset > 0 || row.trailingInset > 0 {
+                rowStack.isLayoutMarginsRelativeArrangement = true
+                rowStack.directionalLayoutMargins = NSDirectionalEdgeInsets(
+                    top: 0,
+                    leading: keyPitch * row.leadingInset,
+                    bottom: 0,
+                    trailing: keyPitch * row.trailingInset
+                )
+            }
+            for (keyView, extraSpacing) in zip(rowStack.arrangedSubviews, row.extraSpacing) where extraSpacing > 0 {
+                rowStack.setCustomSpacing(spacing + (keyPitch * extraSpacing), after: keyView)
+            }
+            let targetWidths = row.keys.map { key in
+                (letterKeyWidth * key.widthUnits) + (spacing * (key.widthUnits - 1))
+            }
+            applyLayout(expectedKeyCount: row.keys.count, targetWidths: targetWidths)
         }
     }
 

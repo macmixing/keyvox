@@ -6,7 +6,11 @@ public struct TypingLanguage: Sendable {
     /// The language's folder name, such as `en`.
     public let identifier: String
     public let resources: TypingLanguageResources
+    /// The letter layout the keyboard shows.
     public let letterLayout: LetterKeyLayout
+    /// The names of the other letter layouts Apple's keyboard offers for the language, in Apple's
+    /// order, each loadable with `LetterKeyLayout.bundled(identifier:)`.
+    public let alternativeLetterLayouts: [String]
     public let casing: WordCasing
     public let quotes: SmartQuotes
     /// The letters single-letter edits of a typed word try, in the order they are tried.
@@ -31,13 +35,15 @@ public struct TypingLanguage: Sendable {
         guard manifest.identifier == identifier else {
             throw PredictiveKeyboardError.invalidTypingLanguage(identifier)
         }
-        return TypingLanguage(manifest: manifest, resources: resources)
+        let letterLayout = try LetterKeyLayout.bundled(identifier: manifest.defaultLetterLayout)
+        return TypingLanguage(manifest: manifest, resources: resources, letterLayout: letterLayout)
     }
 
-    private init(manifest: TypingLanguageManifest, resources: TypingLanguageResources) {
+    private init(manifest: TypingLanguageManifest, resources: TypingLanguageResources, letterLayout: LetterKeyLayout) {
         identifier = manifest.identifier
         self.resources = resources
-        letterLayout = LetterKeyLayout(rows: manifest.letterRows)
+        self.letterLayout = letterLayout
+        alternativeLetterLayouts = manifest.alternativeLetterLayouts
         casing = WordCasing(alwaysCapitalizedWords: manifest.alwaysCapitalizedWords)
         quotes = SmartQuotes(marks: manifest.quotationMarks)
         editLetters = manifest.editLetters

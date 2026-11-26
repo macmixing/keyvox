@@ -111,10 +111,14 @@ class Language:
         return tuple(json.loads(path.read_text(encoding="utf-8"))["alwaysCapitalizedWords"])
 
     def letter_keys(self) -> str:
-        """The letters of the keyboard's letter keys, row by row, from the language's
-        language.json in the package; the language must ship there."""
-        path = PREDICTIVE_DATA / self.identifier / "language.json"
-        return "".join(row["letters"] for row in json.loads(path.read_text(encoding="utf-8"))["letterRows"])
+        """The letters of the keyboard's letter keys, row by row, from the default letter layout
+        the language's language.json in the package names (letter_layouts/<layout>.json); the
+        language must ship there."""
+        manifest = json.loads((PREDICTIVE_DATA / self.identifier / "language.json").read_text(encoding="utf-8"))
+        layout_path = PREDICTIVE_DATA / "letter_layouts" / f"{manifest['defaultLetterLayout']}.json"
+        rows = json.loads(layout_path.read_text(encoding="utf-8"))["rows"]
+        return "".join(character for items in rows for item in items
+                       for character in item.get("characters", "") if character.isalpha())
 
 
 # Speech has no typed sentence openers, and the written sources outweigh the chat ones the
