@@ -273,6 +273,20 @@ public final class PredictiveTypingSession {
         swipedText = nil
     }
 
+    /// What tapping `letter` right after a word just swiped in does (`endsWithSwipedWord`): a space
+    /// goes in first, then the letter, in the case the host gives it, as on the system keyboard;
+    /// nil when the text before the cursor does not end with a swiped word, or the swipe already
+    /// put a space after its word, for the host to type the letter as it is. Recording the letter's
+    /// tap ends the swiped word's record, as any typed letter does.
+    public func swipedWordLetterEdit(letter: String, textBeforeCursor: String?) -> TextEdit? {
+        guard letter.count == 1, letter.first?.isLetter == true,
+              endsWithSwipedWord(textBeforeCursor: textBeforeCursor),
+              swipedText?.last?.isWhitespace == false else {
+            return nil
+        }
+        return TextEdit(deleteCount: 0, insertText: " " + letter)
+    }
+
     /// What to suggest for the text around the cursor. A selected word, or one the cursor
     /// was moved into, is suggested for as a whole, such as a misspelled word the user tapped;
     /// space never autocorrects it.

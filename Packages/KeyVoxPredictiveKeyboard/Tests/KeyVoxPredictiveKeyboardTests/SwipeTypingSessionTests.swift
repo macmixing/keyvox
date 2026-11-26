@@ -47,12 +47,24 @@ final class SwipeTypingSessionTests: XCTestCase {
         )
     }
 
-    /// The letter a word repeats, typed after it, leaves the text ending with that word.
+    /// A letter tapped after a swiped word goes in after a space, and starts a typed word that,
+    /// spelled like the swiped one, leaves the text ending with that word again.
     func testTypingALetterAfterASwipedWordEndsItsRecord() {
         _ = session.swipeEdit(word: "mm", textBeforeCursor: "")
-        session.textDidChange(textBeforeCursor: "mmm")
-        session.recordTap(at: .zero, textBeforeCursor: "mmm")
-        XCTAssertFalse(session.endsWithSwipedWord(textBeforeCursor: "mmm"))
+        session.textDidChange(textBeforeCursor: "mm")
+        XCTAssertEqual(session.swipedWordLetterEdit(letter: "m", textBeforeCursor: "mm"), TextEdit(deleteCount: 0, insertText: " m"))
+        session.recordTap(at: .zero, textBeforeCursor: "mm m")
+        session.textDidChange(textBeforeCursor: "mm mm")
+        XCTAssertFalse(session.endsWithSwipedWord(textBeforeCursor: "mm mm"))
+        XCTAssertNil(session.swipedWordLetterEdit(letter: "m", textBeforeCursor: "mm mm"))
+    }
+
+    func testALetterAfterATypedWordOrASwipeSpacedFromTheWordThatFollowsGetsNoSpace() {
+        session.textDidChange(textBeforeCursor: "If")
+        XCTAssertNil(session.swipedWordLetterEdit(letter: "i", textBeforeCursor: "If"))
+        _ = session.swipeEdit(word: "big", textBeforeCursor: "a ", textAfterCursor: "dog")
+        session.textDidChange(textBeforeCursor: "a big ", textAfterCursor: "dog")
+        XCTAssertNil(session.swipedWordLetterEdit(letter: "r", textBeforeCursor: "a big "))
     }
 
     func testForgettingTheSwipedWordEndsItsRecord() {
