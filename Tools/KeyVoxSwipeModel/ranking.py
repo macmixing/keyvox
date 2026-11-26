@@ -71,10 +71,10 @@ def ranking_loss(emissions, options, paths, lengths, frequency, scoring: Scoring
     return rank + CTC_WEIGHT * (nll[:, 0] / length[:, 0]).mean()
 
 
-def ranking_options(candidates, scores: np.ndarray, targets: np.ndarray, path_lengths: np.ndarray
-                    ) -> tuple[np.ndarray, np.ndarray]:
-    """Per swipe, the true word then its hard negatives [N, 1 + NEGATIVES], and which swipes
+def ranking_options(candidates, scores: np.ndarray, targets: np.ndarray, path_lengths: np.ndarray,
+                    negatives: int = NEGATIVES) -> tuple[np.ndarray, np.ndarray]:
+    """Per swipe, the true word then its hard negatives [N, 1 + negatives], and which swipes
     can be trained (true word in the lexicon with a decodable key path)."""
-    negatives = hard_negatives(candidates, scores, targets, NEGATIVES)
+    negatives = hard_negatives(candidates, scores, targets, negatives)
     keep = (targets >= 0) & (path_lengths[np.maximum(targets, 0)] > 0)
     return np.concatenate([targets[:, None], negatives], axis=1).astype(np.int64), keep

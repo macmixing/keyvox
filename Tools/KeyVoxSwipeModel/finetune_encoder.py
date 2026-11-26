@@ -30,7 +30,7 @@ from layouts import load_layout
 from lexicon import build_trie, load_lexicon
 from model import key_basis, log_emissions
 from prepare_swipes import POINTS
-from ranking import lexicon_paths, ranking_loss, ranking_options
+from ranking import NEGATIVES, lexicon_paths, ranking_loss, ranking_options
 from run_emissions import DECODER_CHECKPOINT
 from run_settings import KEEP_DOUBLES, keeps_doubles
 from scoring import Scoring, candidate_scores
@@ -63,6 +63,7 @@ def main() -> None:
     parser.add_argument("--learning-rate", type=float, default=1e-4)
     parser.add_argument("--limit", type=int, default=0, help="train on only the first N swipes")
     parser.add_argument("--keep-doubles", action="store_true", help="switch the run to key paths that keep repeated keys")
+    parser.add_argument("--negatives", type=int, default=NEGATIVES, help="hard negatives per swipe")
     parser.add_argument("--augment-probability", type=float,
                         help="geometric augmentation probability, instead of the base run's")
     parser.add_argument("--decoder", help="a decoder run over the base encoder, fine-tuned together with it")
@@ -108,7 +109,7 @@ def main() -> None:
     candidates = beam_search(arguments.data_dir, pipeline_emissions(model, decoder, xy, layout, device), trie, pruning)
     scores = candidate_scores(candidates, lexicon.frequency, trie.form_path_length, scoring)
     paths, path_lengths = lexicon_paths(lexicon, layout.key_index, output_frames(POINTS), keep_doubles)
-    options, keep = ranking_options(candidates, scores, targets, path_lengths)
+    options, keep = ranking_options(candidates, scores, targets, path_lengths, arguments.negatives)
     del candidates, scores
     print(f"fine-tuning swipes: {keep.sum()} of {len(keep)}", flush=True)
 
