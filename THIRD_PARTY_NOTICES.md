@@ -299,11 +299,11 @@ Attribution: Based on UD Spanish AnCora (Taulé, Martí, and Recasens; Universal
 
 Attribution: Based on Leino, Laine, Kurimo, and Oulasvirta, *Mobile Typing with Intelligent Text Entry: A Large-Scale Dataset and Results* (2024).
 
-### swipe.futo.org (derived swipe-typing model and test data)
+### swipe.futo.org (derived swipe-typing model, swipe vocabulary words, and test data)
 - Source: <https://huggingface.co/datasets/futo-org/swipe.futo.org> (revision `d71bf5fd7f45b3e7c2ed2d76a21b0dbd3b4ba566`)
 - License: MIT
 - License URL: <https://huggingface.co/datasets/futo-org/swipe.futo.org/blob/main/LICENSE>
-- Note: KeyVox trained and tuned the English swipe-typing model bundled in `Packages/KeyVoxPredictiveKeyboard` (`PredictiveData/en/swipe_encoder.kvsw` and `swipe.json`) on the dataset's swipes; the model files do not contain the recordings. The package's swipe test fixtures hold two sets of 300 of the dataset's validation swipes: one resampled, for decoding (`Tests/KeyVoxPredictiveKeyboardTests/Fixtures/swipe_parity.json`), and one as recorded, with its touch points, key centers, and the loop found at each key, for loop finding (`Tests/KeyVoxPredictiveKeyboardTests/Fixtures/swipe_key_loops.json`).
+- Note: KeyVox trained and tuned the English swipe-typing model bundled in `Packages/KeyVoxPredictiveKeyboard` (`PredictiveData/en/swipe_encoder.kvsw` and `swipe.json`) on the dataset's swipes; the model files do not contain the recordings. The English swipe vocabulary (`PredictiveData/en/swipe_vocabulary.txt`, built by `Tools/KeyVoxLanguageModel`) draws on the words of the training split's sentences, adding words of them that the dictionary and the vocabulary's other words lack; it holds the words alone, without the recordings. The package's swipe test fixtures hold two sets of 300 of the dataset's validation swipes: one resampled, for decoding (`Tests/KeyVoxPredictiveKeyboardTests/Fixtures/swipe_parity.json`), and one as recorded, with its touch points, key centers, and the loop found at each key, for loop finding (`Tests/KeyVoxPredictiveKeyboardTests/Fixtures/swipe_key_loops.json`).
 
 Attribution: Based on the swipe.futo.org dataset collected by FUTO.
 
