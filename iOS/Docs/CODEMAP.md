@@ -483,6 +483,7 @@ iOS/
 │   │   │   ├── KeyboardCompactKeysHoldController.swift
 │   │   │   ├── KeyboardCursorTrackpadSupport.swift
 │   │   │   ├── KeyboardDeleteRepeatSchedule.swift
+│   │   │   ├── KeyboardDocumentIdentifier.swift
 │   │   │   ├── KeyboardHeldKeyController.swift
 │   │   │   ├── KeyboardKeyActivation.swift
 │   │   │   ├── KeyboardLetterCaseController.swift
@@ -651,6 +652,7 @@ iOS/
 │   │   │   ├── KeyboardDeterministicDictationFormatterTests.swift
 │   │   │   ├── KeyboardDictationChangeControllerTests.swift
 │   │   │   ├── KeyboardDictationControllerTests.swift
+│   │   │   ├── KeyboardDocumentIdentifierTests.swift
 │   │   │   ├── KeyboardEmojiCategoryMemoryTests.swift
 │   │   │   ├── KeyboardEmojiCategoryStyleTests.swift
 │   │   │   ├── KeyboardEmojiGridGeometryTests.swift
@@ -1806,6 +1808,8 @@ Packages/
   - Times a finger on a key that offers held-key characters, opens the popup through the bundled `HeldKeyCharacters`, follows the finger across its cells, and reports whether the touch chose a character, closed the popup, or never opened it; in the web endings popup the selection follows the finger's movement from where it was when the popup opened.
 - `KeyVox Keyboard/Core/Input/KeyboardDeleteRepeatSchedule.swift`
   - Single source of truth for the held delete key's repeat timing and its switch from single characters to whole words; `KeyboardDeleteRepeatController` in `KeyboardSpecialKeyInteractionSupport.swift` runs it.
+- `KeyVox Keyboard/Core/Input/KeyboardDocumentIdentifier.swift`
+  - Reads the host's identifier for the focused field's document through Objective-C, so a host that hands over none reads as nil instead of stopping the keyboard, as reading it as a Swift `UUID` does.
 - `KeyVox Keyboard/Core/Input/KeyboardWordDeletion.swift`
   - Measures how many characters a number of whole words takes at the end of the text, each word with its trailing whitespace and attached punctuation.
 - `KeyVox Keyboard/Core/Input/KeyboardKeyActivation.swift`
