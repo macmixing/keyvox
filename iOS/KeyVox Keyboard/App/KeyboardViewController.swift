@@ -119,7 +119,9 @@ final class KeyboardViewController: UIInputViewController {
         textBeforeCursor: { [weak self] in self?.textDocumentProxy.documentContextBeforeInput },
         selectedText: { [weak self] in self?.textDocumentProxy.selectedText },
         textAfterCursor: { [weak self] in self?.textDocumentProxy.documentContextAfterInput },
-        documentIdentifier: { [weak self] in self?.textDocumentProxy.documentIdentifier }
+        documentIdentifier: { [weak self] in
+            self.flatMap { KeyboardDocumentIdentifier.read(from: $0.textDocumentProxy) }
+        }
     )
     var typingTraits = KeyboardTypingTraits.standard
     /// Whether the keyboard appeared and has yet to read the field, which waits for the system to
