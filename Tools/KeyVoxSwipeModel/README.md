@@ -242,66 +242,73 @@ scoring, and its numbers are not the keyboard's.
 
 ## Results
 
+Every figure in this section comes from `KeyVoxTypingHarness swipe-accuracy` with the words
+before each swipe included, on the input `write_harness_swipes.py` writes, unless it names
+`evaluate.py`.
+
 ### The bundled model
 
-`KeyVoxTypingHarness swipe-accuracy`, words before included, at `feat/swipe-typing` 5c779878
-(133,299-word lexicon):
+At `feat/swipe-typing` 22ea8f14 (133,299-word lexicon):
 
 | Split | Swipes | Top-1 | Top-3 | Top-10 |
 | --- | --- | --- | --- | --- |
 | Validation | 54,269 | 92.83% | 95.87% | 96.51% |
 | Test | 49,970 | 92.62% | 95.82% | 96.53% |
 
-At dd9e5a03, before the 3,861 added words, the same model measured 92.16% validation and
-91.93% test top-1. The model bundled before it, `r1-ft-dec6` (width 128, full augmentation,
-with a 6-block decoder), measured 91.81% validation and 91.73% test top-1 at 1defd3ba with the
-129,438-word lexicon.
+At dd9e5a03, before the 3,861 added words (129,438-word lexicon), the same model measured
+92.49% validation and 92.26% test top-1. At that commit the model bundled before it,
+`r1-ft-dec6` (width 128, full augmentation, with a 6-block decoder), measured 92.35%
+validation and 92.32% test top-1; `r3-ft` replaced it on validation, where it decodes 0.14
+points more swipes first, while on test it decodes 0.06 points fewer.
 
 ### Experiments
 
-Validation top-1 and top-3, `KeyVoxTypingHarness swipe-accuracy` at dd9e5a03, words before
-included, 129,438-word lexicon, each run with its own tuned scoring. Every base run trains on
-the same swipes with the recipe above apart from what the row names.
+Validation top-1 and top-3 at dd9e5a03, 129,438-word lexicon, each run with its own tuned
+scoring. Every base run trains on the same swipes with the recipe above apart from what the
+row names.
 
 | Run | What changed | Top-1 | Top-3 |
 | --- | --- | --- | --- |
 | `r3-w144-aug50-extra` | base: width 144, augmentation 0.5 | 92.07% | 95.24% |
-| `r4-w160-aug25-extra` | base: width 160, augmentation 0.25 | 91.74% | 95.05% |
-| `r5-w168-aug25-extra` | base: width 168, augmentation 0.25 | 91.61% | 95.00% |
-| `r6-w168-aug25-extra-240` | base: as r5, 240 epochs | 91.60% | 95.05% |
+| `r4-w160-aug25-extra` | base: width 160, augmentation 0.25 | 92.11% | 95.17% |
+| `r5-w168-aug25-extra` | base: width 168, augmentation 0.25 | 92.01% | 95.15% |
+| `r6-w168-aug25-extra-240` | base: as r5, 240 epochs | 91.93% | 95.18% |
 | `t1-w224-aug25-extra` | base: width 224, augmentation 0.25, best through epoch 51 of 120 | 91.97% | 95.08% |
 | `t2-w256-aug25-extra` | base: width 256, augmentation 0.25, best through epoch 34 of 120 | 92.03% | 95.20% |
-| `r3-ft` (bundled) | r3 fine-tuned 3 epochs, 16 negatives, learning rate 1e-4 | 92.16% | 95.35% |
-| `r3-ft2` | r3-ft fine-tuned 4 more epochs, fresh negatives, 5e-5 | 92.24% | 95.42% |
-| `r3-ft2-neg32` | r3-ft2 fine-tuned 2 epochs, 32 negatives, 5e-5 | 92.27% | 95.44% |
-| `r3-ft2-neg64` | r3-ft2-neg32 fine-tuned 2 epochs, 64 negatives, 5e-5 | 92.27% | 95.44% |
-| `r3-ft2-aug100` | r3-ft2 fine-tuned 3 epochs at augmentation 1.0, 5e-5 | 92.24% | 95.42% |
+| `r3-ft` (bundled) | r3 fine-tuned 3 epochs, 16 negatives, learning rate 1e-4 | 92.49% | 95.48% |
+| `r3-ft2` | r3-ft fine-tuned 4 more epochs, fresh negatives, 5e-5 | 92.49% | 95.50% |
+| `r3-ft2-neg32` | r3-ft2 fine-tuned 2 epochs, 32 negatives, 5e-5 | 92.52% | 95.53% |
+| `r3-ft2-neg64` | r3-ft2-neg32 fine-tuned 2 epochs, 64 negatives, 5e-5 | 92.52% | 95.53% |
+| `r3-ft2-aug100` | r3-ft2 fine-tuned 3 epochs at augmentation 1.0, 5e-5 | 92.49% | 95.50% |
 | `r3-noaug` | r3-ft2-neg32 fine-tuned 3 epochs with no augmentation, 16 negatives, 5e-5 | 92.59% | 95.52% |
-| `r4-ft` | r4 fine-tuned 3 epochs, 16 negatives, 1e-4 | 92.12% | 95.22% |
-| `r4-ft2-neg32` | r4-ft fine-tuned 4 epochs, 32 negatives, 5e-5 | 92.12% | 95.22% |
-| `r5-ft` | r5 fine-tuned 3 epochs, 16 negatives, 1e-4 | 92.01% | 95.26% |
-| `r5-ft2-neg32` | r5-ft fine-tuned 4 epochs, 32 negatives, 5e-5 | 92.01% | 95.26% |
+| `r4-ft` | r4 fine-tuned 3 epochs, 16 negatives, 1e-4 | 92.45% | 95.38% |
+| `r4-ft2-neg32` | r4-ft fine-tuned 4 epochs, 32 negatives, 5e-5 | 92.45% | 95.38% |
+| `r5-ft` | r5 fine-tuned 3 epochs, 16 negatives, 1e-4 | 92.33% | 95.40% |
+| `r5-ft2-neg32` | r5-ft fine-tuned 4 epochs, 32 negatives, 5e-5 | 92.33% | 95.40% |
 
-- **Width.** Wider base encoders did not decode better: 160 and 168 scored below 144, and the
-  224 and 256 runs, still training when measured, had not passed it. Fine-tuned the same way,
-  `r4-ft` and `r5-ft` stayed below `r3-ft`.
-- **Longer training.** 240 epochs (r6) matched 120 (r5).
-- **Augmentation.** Less augmentation in base training (0.25, r4 and r5) did not help; a run at
-  0.1 (`r7-w168-aug10-extra`) was still training and is not measured here. In fine-tuning, no
-  augmentation (`r3-noaug`) gave the best English accuracy of every run, and full augmentation
+- **Width.** The base encoders land within 0.18 points of each other: width 160 (r4) 0.04
+  above width 144 (r3), width 168 (r5) 0.06 below it, and the 224 and 256 runs, still training
+  when measured, 0.10 and 0.04 below it. Fine-tuned the same way, `r4-ft` and `r5-ft` stayed
+  below `r3-ft`, by 0.04 and 0.16 points.
+- **Longer training.** 240 epochs (r6) decoded 0.08 points fewer swipes first than 120 (r5).
+- **Augmentation.** Base runs at 0.25 (r4, r5) and 0.5 (r3) decoded within 0.10 points of each
+  other, with width differing too; a run at 0.1 (`r7-w168-aug10-extra`) was still training and
+  is not measured here. In fine-tuning, no augmentation (`r3-noaug`) gave the best validation
+  top-1 in the table, 0.07 points above its starting point `r3-ft2-neg32`; full augmentation
   (`r3-ft2-aug100`) lowered validation top-1 in every epoch (91.80%, 91.80%, 91.84% in
   `evaluate.py`), so that run kept its starting weights.
-- **Fine-tune variants.** More epochs and more negatives gave small gains that stop at 32
-  negatives: `r3-ft2-neg64`, `r4-ft2-neg32`, and `r5-ft2-neg32` never beat their starting
-  point and kept its weights.
-- **Decoder.** A 6-block decoder over `r3-ft` (`r3-ft-dec6`) measured 91.97% validation top-1
-  against the encoder alone's 91.99% (harness at 1defd3ba), so the bundled model has none.
+- **Fine-tune variants.** Four more epochs (`r3-ft2`) left top-1 unchanged, and 32 negatives
+  (`r3-ft2-neg32`) added 0.03 points; `r3-ft2-neg64`, `r4-ft2-neg32`, and `r5-ft2-neg32` never
+  beat their starting point and kept its weights.
+- **Decoder.** A 6-block decoder over `r3-ft` (`r3-ft-dec6`) measured 92.43% validation top-1
+  (95.44% top-3) against the encoder alone's 92.49%, so the bundled model has none.
 - **Ensembling.** Averaging `r3-ft2-neg32`'s and `r4-ft`'s per-frame probabilities decoded
   91.97% to 92.01% of validation swipes first in `evaluate.py`, against 92.06% for
   `r3-ft2-neg32` alone, so neither ensembling nor distilling from it was pursued.
 - **Context weight.** For `r3-ft2-neg32`, context weights of 0.3, 0.425, 0.55, 0.7, and 0.85
-  gave 92.24%, 92.27%, 92.28%, 92.24%, and 92.19% validation top-1; the bundled 0.425 stays.
-- **`r3-noaug` is not bundled.** At 5c779878 it measures 92.93% validation top-1 against the
+  gave 92.45%, 92.52%, 92.59%, 92.62%, and 92.61% validation top-1; the bundled `swipe.json`
+  uses 0.425.
+- **`r3-noaug` is not bundled.** At 22ea8f14 it measures 92.93% validation top-1 against the
   bundled model's 92.83%, but with it the keyboard loses two doubled-letter behaviors its tests
   pin: `SwipeDoubledLetterTests.testTheSameSwipeIsTooOrToAsTheWordsBeforeCallForIt` gives "to"
   where the words before call for "too", and
@@ -320,10 +327,10 @@ the same swipes with the recipe above apart from what the row names.
 
 | System | Measured on | Top-1 |
 | --- | --- | --- |
-| KeyVox, bundled model | swipe.futo.org English test split, all 49,970 swipes, `KeyVoxTypingHarness`, words before included | 92.62% |
+| KeyVox, bundled model | swipe.futo.org English test split, all 49,970 swipes, `KeyVoxTypingHarness` at 22ea8f14, words before included | 92.62% |
 | FUTO Swipe, encoder only | swipe.futo.org English test split, paper's Table 3 | 92.54% |
 | FUTO Swipe, encoder plus decoder | swipe.futo.org English test split, paper's Table 3 | 93.30% |
-| FUTO Swipe (FUTO Keyboard v0.1.29) | FUTO's public test set, first 20k non-single-letter swipes, in an emulator | 92.62% |
+| FUTO Swipe (FUTO Keyboard v0.1.29) | "our public test set (filtered to first 20k non-single-letter swipes) in-emulator" | 92.62% |
 | Gboard | same | 88.95% |
 | iOS | same | 89.18% |
 | Heliboard w/ Google library | same | 86.88% |
@@ -345,9 +352,10 @@ The setups differ, so these numbers are not a ranking:
 - KeyVox counts all 49,970 test swipes, single letters included, and gives each swipe the words
   before it. The paper reports its English test split's size as 49,970 when it describes the
   splits and as 48,538 in a later table, and does not use context.
-- The release notes count the first 20,000 test swipes of words with more than one letter,
-  typed into each keyboard in an emulator, so they also measure each keyboard's own handling of
-  the touches.
+- The release notes measure on "our public test set (filtered to first 20k non-single-letter
+  swipes) in-emulator", whose link points to the swipe.futo.org dataset on Hugging Face, and do
+  not say which of its runs or splits that set is. Run in an emulator, they also measure each keyboard's own
+  handling of the touches.
 - The paper extends its decoding word list with the test split's words; KeyVox decodes only
   to its bundled lexicon, which lacks the words of 3.06% of test swipes, so those count as
   misses. KeyVox's lexicon includes words of the training split's sentences, which are
