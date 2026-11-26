@@ -4,11 +4,17 @@
 The loss is CTC plus a one-sided penalty when the gates emit fewer keys than the word has:
 0.05 * max(0, keys - sum of gate probabilities)^2. Each epoch logs the training loss and the
 validation loss on unaugmented validation swipes to `models/<run>/log.jsonl`, and saves
-`checkpoint.pt` (latest) and `best.pt` (lowest validation loss)."""
+`checkpoint.pt` (latest) and `best.pt` (lowest validation loss).
+
+`checkpoint.pt` is also written every `--checkpoint-every` steps within an epoch. Every
+step reseeds all random number generators from the seed, epoch, and step, and each epoch's
+order comes from its own seeded generator, so `--resume` continues from the last
+checkpoint with the same batches, augmentation, and dropout as an uninterrupted run."""
 
 import argparse
 import json
 import math
+import os
 import time
 from pathlib import Path
 
@@ -29,6 +35,24 @@ FINAL_LEARNING_RATE = 2e-5
 WEIGHT_DECAY = 1e-4
 GRADIENT_CLIP = 1.0
 VALIDATION_BATCH = 4096
+_SEED_STRIDE = 1_000_003
+
+
+def epoch_order(count: int, seed: int, epoch: int) -> torch.Tensor:
+    """The epoch's shuffled order, a function of the seed and epoch only."""
+    return torch.randperm(count, generator=torch.Generator().manual_seed(seed * _SEED_STRIDE + epoch))
+
+
+def seed_step(seed: int, epoch: int, step: int) -> None:
+    """Seeds every generator (CPU and GPU) for one step, so augmentation and dropout
+    depend only on the seed, epoch, and step."""
+    torch.manual_seed(((seed * _SEED_STRIDE + epoch) * _SEED_STRIDE + step) % (1 << 63))
+
+
+def save_atomically(value: dict, path: Path) -> None:
+    partial = path.with_suffix(path.suffix + ".part")
+    torch.save(value, partial)
+    os.replace(partial, path)
 
 
 def output_frames(points: int) -> int:
@@ -39,9 +63,7 @@ def loss_terms(model, xy, keys, key_mask, targets, lengths, basis_size):
     coefficients, gate = model(xy)
     emissions = log_emissions(coefficients, gate, key_basis(keys, basis_size), key_mask)
     frames = torch.full((xy.shape[0],), emissions.shape[1], dtype=torch.long, device=xy.device)
-    # CTC runs on the CPU: as fast as the GPU here, and not every PyTorch build has it there.
-    ctc = F.ctc_loss(emissions.transpose(0, 1).cpu(), targets.cpu(), frames.cpu(), lengths.cpu(),
-                     blank=0, zero_infinity=True).to(xy.device)
+    ctc = F.ctc_loss(emissions.transpose(0, 1), targets, frames, lengths, blank=0, zero_infinity=True)
     shortfall = F.relu(lengths.to(gate.dtype) - torch.sigmoid(gate).sum(dim=1))
     return ctc, EMISSION_PENALTY * shortfall.square().mean()
 
@@ -71,6 +93,8 @@ def main() -> None:
     parser.add_argument("--dropout", type=float, default=EncoderConfig.dropout)
     parser.add_argument("--keep-doubles", action="store_true", help="keep repeated keys in CTC targets")
     parser.add_argument("--resume", action="store_true")
+    parser.add_argument("--checkpoint-every", type=int, default=200, help="steps between mid-epoch checkpoints")
+    parser.add_argument("--limit", type=int, default=0, help="train on only the first N trainable swipes")
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--device", default="mps" if torch.backends.mps.is_available() else "cpu")
     arguments = parser.parse_args()
@@ -93,6 +117,9 @@ def main() -> None:
     prepared = arguments.data_dir / "prepared"
     train_paths = [prepared / "train.npz"] + ([prepared / "extra.npz"] if arguments.extra else [])
     train = trainable(load_swipes(train_paths, layout, frames, arguments.keep_doubles))
+    if arguments.limit:
+        train = type(train)(xy=train.xy[: arguments.limit], forms=train.forms[: arguments.limit],
+                            targets=train.targets[: arguments.limit], lengths=train.lengths[: arguments.limit])
     val = trainable(load_swipes([prepared / "val.npz"], layout, frames, arguments.keep_doubles))
     print(f"train {len(train.lengths)} swipes, val {len(val.lengths)} swipes", flush=True)
 
@@ -111,14 +138,21 @@ def main() -> None:
     optimizer = torch.optim.AdamW(model.parameters(), lr=arguments.learning_rate, weight_decay=WEIGHT_DECAY)
     steps_per_epoch = len(train.lengths) // arguments.batch
     total_steps = steps_per_epoch * arguments.epochs
-    start_epoch, best = 0, math.inf
+    # A checkpoint's "epoch" is the last completed epoch; "step" counts the steps already
+    # taken in the epoch after it.
+    start_epoch, start_step, best = 0, 0, math.inf
+    resumed_totals = None
     checkpoint_path = run_dir / "checkpoint.pt"
     if arguments.resume and checkpoint_path.exists():
-        state = torch.load(checkpoint_path, map_location=device)
+        # Loaded on the CPU: the model and optimizer move their tensors to the GPU themselves,
+        # and the optimizer's step counts stay on the CPU, as in a run that never stopped
+        # (on the GPU, every optimizer step would wait on the GPU once per parameter).
+        state = torch.load(checkpoint_path, map_location="cpu")
         model.load_state_dict(state["model"])
         optimizer.load_state_dict(state["optimizer"])
-        start_epoch, best = state["epoch"] + 1, state["best"]
-        torch.set_rng_state(state["rng"].cpu())
+        start_epoch, start_step, best = state["epoch"] + 1, state.get("step", 0), state["best"]
+        resumed_totals = state.get("totals")
+        print(f"resuming at epoch {start_epoch}, step {start_step}", flush=True)
     settings = {**vars(arguments), "data_dir": str(arguments.data_dir), "config": config.to_dict(),
                 "augment": augment_config.__dict__, KEEP_DOUBLES: arguments.keep_doubles, "parameters": sum(p.numel() for p in model.parameters())}
     (run_dir / "settings.json").write_text(json.dumps(settings, indent=2) + "\n")
@@ -127,10 +161,14 @@ def main() -> None:
     for epoch in range(start_epoch, arguments.epochs):
         model.train()
         started = time.time()
-        order = torch.randperm(len(train.lengths), device=device)
+        order = epoch_order(len(train.lengths), arguments.seed, epoch).to(device)
+        first_step = start_step if epoch == start_epoch else 0
         totals = torch.zeros(2, device=device)
-        for batch_number in range(steps_per_epoch):
+        if first_step and resumed_totals is not None:
+            totals = resumed_totals.to(device)
+        for batch_number in range(first_step, steps_per_epoch):
             step = epoch * steps_per_epoch + batch_number
+            seed_step(arguments.seed, epoch, batch_number)
             for group in optimizer.param_groups:
                 group["lr"] = learning_rate(step, total_steps, arguments.learning_rate)
             index = order[batch_number * arguments.batch:(batch_number + 1) * arguments.batch]
@@ -146,6 +184,11 @@ def main() -> None:
             torch.nn.utils.clip_grad_norm_(model.parameters(), GRADIENT_CLIP)
             optimizer.step()
             totals += torch.stack([ctc.detach(), penalty.detach()])
+            taken = batch_number + 1
+            if arguments.checkpoint_every and taken % arguments.checkpoint_every == 0 and taken < steps_per_epoch:
+                save_atomically({"model": model.state_dict(), "config": config.to_dict(), "layout": layout.name,
+                                 "optimizer": optimizer.state_dict(), "epoch": epoch - 1, "step": taken,
+                                 "best": best, "totals": totals.cpu()}, checkpoint_path)
 
         model.eval()
         val_total, val_count = 0.0, 0
@@ -162,7 +205,8 @@ def main() -> None:
         train_ctc, train_penalty = (totals / steps_per_epoch).tolist()
         val_ctc = val_total / val_count
         record = {"epoch": epoch, "train_ctc": train_ctc, "train_penalty": train_penalty, "val_ctc": val_ctc,
-                  "learning_rate": optimizer.param_groups[0]["lr"], "seconds": time.time() - started}
+                  "learning_rate": optimizer.param_groups[0]["lr"], "seconds": time.time() - started,
+                  **({"resumed_at_step": first_step} if first_step else {})}
         with open(run_dir / "log.jsonl", "a") as log:
             log.write(json.dumps(record) + "\n")
         print(json.dumps(record), flush=True)
@@ -170,9 +214,9 @@ def main() -> None:
         state = {"model": model.state_dict(), "config": config.to_dict(), "layout": layout.name}
         if val_ctc < best:
             best = val_ctc
-            torch.save(state, run_dir / "best.pt")
-        torch.save({**state, "optimizer": optimizer.state_dict(), "epoch": epoch, "best": best,
-                    "rng": torch.get_rng_state()}, checkpoint_path)
+            save_atomically(state, run_dir / "best.pt")
+        save_atomically({**state, "optimizer": optimizer.state_dict(), "epoch": epoch, "step": 0, "best": best},
+                        checkpoint_path)
 
 
 if __name__ == "__main__":
