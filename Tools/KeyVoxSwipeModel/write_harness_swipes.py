@@ -4,13 +4,13 @@ the words swiped before it in its recording session:
     {"word": ..., "previous": [newest first], "w": canvas width, "h": canvas height,
      "points": [[t ms, x, y], ...]}  (x and y normalized to the canvas)
 
-A session's words are put in recording order by their record number, merged across all
-three splits, since a session's sentence can span them. Record numbers are one counter
-shared by every session, so sessions recorded at the same time interleave and a missing
-number says nothing about the session; a word the person skipped leaves no record. A
-swipe's previous words are the session's records right before it in that order, back to a
-word that ends a sentence, at most `PREVIOUS_WORDS`. Each previous word keeps only its word
-characters, apostrophes, and inner hyphens. Records without points are left out.
+The records of all three splits are read, and a session's words are put in recording order
+by their record number. Record numbers are one counter shared by every session, so sessions
+recorded at the same time interleave and a missing number says nothing about the session; a
+word the person skipped leaves no record. A swipe's previous words are the session's records
+right before it in that order, back to a word that ends a sentence, at most
+`PREVIOUS_WORDS`. Each previous word keeps only its word characters, apostrophes, and inner
+hyphens. Records without points are left out.
 
     python write_harness_swipes.py <data-dir> dev <out.jsonl>
     python write_harness_swipes.py <data-dir> test <out.jsonl>"""
