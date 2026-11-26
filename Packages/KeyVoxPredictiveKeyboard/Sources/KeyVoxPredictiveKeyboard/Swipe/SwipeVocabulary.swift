@@ -1,8 +1,10 @@
 import Foundation
 
 /// A typing language's swipe vocabulary (`PredictiveData/<language>/swipe_vocabulary.txt`): the
-/// words people write that its dictionary lacks, for swipes to decode to, each with the
-/// probability the dictionary gives its words written about as often. Typing never offers them;
+/// words people write that its dictionary lacks, then the words its swipe dataset had people swipe
+/// that the dictionary and those words lack, for swipes to decode to, each with the probability the
+/// dictionary gives its words written about as often, the dataset's words the lowest of those.
+/// Typing never offers them;
 /// the swipe lexicon is the dictionary's words and these (`Tools/KeyVoxLanguageModel/README.md`,
 /// "Swipe vocabulary").
 public enum SwipeVocabulary {
