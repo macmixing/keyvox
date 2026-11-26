@@ -24,12 +24,12 @@ enum SwipeMath {
             CblasRowMajor,
             transposingA ? CblasTrans : CblasNoTrans,
             transposingB ? CblasTrans : CblasNoTrans,
-            Int32(m), Int32(n), Int32(k),
+            __LAPACK_int(m), __LAPACK_int(n), __LAPACK_int(k),
             1,
-            a, Int32(transposingA ? m : k),
-            b, Int32(transposingB ? k : n),
+            a, __LAPACK_int(transposingA ? m : k),
+            b, __LAPACK_int(transposingB ? k : n),
             accumulating ? 1 : 0,
-            c, Int32(n)
+            c, __LAPACK_int(n)
         )
         #else
         multiplyPortably(a, transposingA: transposingA, b, transposingB: transposingB, into: c, m: m, n: n, k: k, accumulating: accumulating)
