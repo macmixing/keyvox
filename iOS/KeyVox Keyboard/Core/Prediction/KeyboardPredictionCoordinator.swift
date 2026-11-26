@@ -252,6 +252,12 @@ final class KeyboardPredictionCoordinator {
         session.pickedWordSpaceEdit(character: character, typesExactly: typesExactly, textBeforeCursor: textBeforeCursor())
     }
 
+    /// What tapping `letter` right after a word just swiped in does: a space, then the letter;
+    /// nil when no swiped word ends right before the cursor or the swipe put a space after it.
+    func swipedWordLetterEdit(letter: String) -> TextEdit? {
+        session.swipedWordLetterEdit(letter: letter, textBeforeCursor: textBeforeCursor())
+    }
+
     /// What typing `separator` after the current word inserts, applying any
     /// autocorrection first, and revising the word before it when the current word shows
     /// it was a typo. A separator that takes the place of a suggestion tap's space, right after

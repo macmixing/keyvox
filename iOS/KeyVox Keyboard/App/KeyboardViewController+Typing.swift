@@ -106,6 +106,7 @@ extension KeyboardViewController {
             return applyWordBoundary(separator: separator, emitsKeypress: false)
         case let .character(value):
             return applyPickedWordSpace(value, typesExactly: activation.isHeldKeyChoice)
+                ?? applySwipedWordSpace(activation)
         default:
             return nil
         }
@@ -313,6 +314,21 @@ extension KeyboardViewController {
             return nil
         }
         textInputController.apply(edit)
+        handleTypingContextChange()
+        return true
+    }
+
+    /// Puts a space between a word just swiped in and a letter tapped right after it, then the
+    /// letter, which starts a typed word, as on the system keyboard. Returns nil otherwise, for the
+    /// regular path to type the letter.
+    private func applySwipedWordSpace(_ activation: KeyboardKeyActivation) -> Bool? {
+        guard typingTraits.allowsPredictions,
+              case let .character(letter) = activation.kind,
+              let edit = predictionCoordinator.swipedWordLetterEdit(letter: letter) else {
+            return nil
+        }
+        textInputController.apply(edit)
+        recordTypedCharacter(activation)
         handleTypingContextChange()
         return true
     }

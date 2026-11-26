@@ -1,12 +1,13 @@
+import CoreGraphics
 import Foundation
 import KeyVoxPredictiveKeyboard
 import Testing
 @testable import KeyVox_iOS
 
 /// Spacing around swiped words, as measured on the system keyboard
-/// (`~/KeyVoxLanguageData/swipe/apple-swipe-spacing/`): a swiped word goes in with no space after
-/// it, one space tapped after it is a plain space, and a word swiped right after it goes in after a
-/// space.
+/// (`~/KeyVoxLanguageData/swipe/apple-swipe-spacing/` and `apple-letter-after-swipe/`): a swiped
+/// word goes in with no space after it, one space tapped after it is a plain space, and a word
+/// swiped or a letter tapped right after it goes in after a space.
 @MainActor
 struct KeyboardSwipeSpacingTests {
     @Test func aSwipedWordGoesInWithNoSpaceAfterIt() throws {
@@ -55,6 +56,39 @@ struct KeyboardSwipeSpacingTests {
         keyboard.tapSpace()
         keyboard.tapSpace()
         #expect(keyboard.text == "hello. ")
+    }
+
+    @Test func aLetterTappedAfterASwipedWordGoesInAfterASpaceInItsOwnCase() throws {
+        let keyboard = SwipeSpacingKeyboard()
+        try keyboard.swipe("there", wordCase: .capitalized)
+        #expect(keyboard.text == "There")
+        keyboard.tapLetter("i")
+        #expect(keyboard.text == "There i")
+        #expect(keyboard.hasTypedWordInProgress)
+    }
+
+    @Test func aLetterTappedAfterATypedWordGoesInWithNoSpace() {
+        let keyboard = SwipeSpacingKeyboard()
+        keyboard.tapLetter("I")
+        keyboard.tapLetter("f")
+        keyboard.tapLetter("i")
+        #expect(keyboard.text == "Ifi")
+    }
+
+    @Test func aLetterTappedAfterASwipedWordStartsTheNextWord() throws {
+        let keyboard = SwipeSpacingKeyboard()
+        try keyboard.swipe("hello", wordCase: .capitalized)
+        keyboard.tapLetter("t")
+        #expect(keyboard.text == "Hello t")
+        keyboard.tapLetter("h")
+        #expect(keyboard.text == "Hello th")
+    }
+
+    @Test func aLetterTappedAfterAWordSwipedBeforeAnotherWordGetsNoSecondSpace() throws {
+        let keyboard = SwipeSpacingKeyboard(text: "a dog", cursorBefore: "dog")
+        try keyboard.swipe("big")
+        keyboard.tapLetter("r")
+        #expect(keyboard.text == "a big rdog")
     }
 
     @Test func movingTheCursorToTheSameWordEndsTheSwipedWord() throws {
@@ -109,12 +143,12 @@ private final class SwipeSpacingKeyboard {
         )
     }
 
-    func swipe(_ word: String) throws {
+    func swipe(_ word: String, wordCase: SwipeWordCase = .asSpelled) throws {
         if coordinator.hasTypedWordInProgress() {
             input.apply(coordinator.wordBoundaryEdit(separator: " ", allowsAutocorrection: true))
             coordinator.textDidChange()
         }
-        coordinator.decodeSwipe(try KeyboardSwipeTestPath.through(word), wordCase: .asSpelled) { [input, coordinator] edit in
+        coordinator.decodeSwipe(try KeyboardSwipeTestPath.through(word), wordCase: wordCase) { [input, coordinator] edit in
             input.apply(edit)
             coordinator.textDidChange()
         }
@@ -128,6 +162,19 @@ private final class SwipeSpacingKeyboard {
             var symbolPage = KeyboardSymbolPage.letters
             input.handleKeyActivation(.space, symbolPage: &symbolPage)
         }
+        coordinator.textDidChange()
+    }
+
+    /// Taps a letter key: after a word just swiped in, the space and letter the coordinator gives,
+    /// otherwise the text input controller's letter key; then its tap is recorded.
+    func tapLetter(_ letter: String) {
+        if let edit = coordinator.swipedWordLetterEdit(letter: letter) {
+            input.apply(edit)
+        } else {
+            var symbolPage = KeyboardSymbolPage.letters
+            input.handleKeyActivation(.character(letter), symbolPage: &symbolPage)
+        }
+        coordinator.recordTap(at: .zero)
         coordinator.textDidChange()
     }
 
