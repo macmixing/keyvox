@@ -76,15 +76,16 @@ final class SwipeWordDecoder: @unchecked Sendable {
     ///
     /// Words whose key paths are the same, such as a word and its doubled-letter twin ("to" and
     /// "too", once a repeated letter is one key), look the same to the model, so their scores differ
-    /// only by frequency and context; among them, a loop the finger made around a key and, when
+    /// only by frequency and context; among them, a loop or a squiggle the finger made at a key and, when
     /// there are words before, the context counted `samePathContextWeight` rather than
     /// `contextWeight` decide which takes which of their places (`rankingSamePaths`).
     /// - Parameters:
     ///   - contextLift: How much likelier the words before make a spelling, as a natural log; nil
     ///     ranks without context.
     ///   - hasWordsBefore: Whether any words come before, rather than the sentence starting.
-    ///   - loopedKeys: For each key of a key path, whether the swipe looped around it
-    ///     (`SwipeKeyLoop`); nil when the swipe's path is not at hand.
+    ///   - doublingKeys: For each key of a key path, whether the swipe looped around it
+    ///     (`SwipeKeyLoop`) or squiggled over it (`SwipeKeySquiggle`); nil when the swipe's path is
+    ///     not at hand.
     ///   - twinFacts: What the language's data says about a spelling, for weighing twins; nil
     ///     treats every twin as an everyday word.
     func candidates(
@@ -92,7 +93,7 @@ final class SwipeWordDecoder: @unchecked Sendable {
         personal: SwipeLexicon?,
         contextLift: ((String) throws -> Double)?,
         hasWordsBefore: Bool,
-        loopedKeys: (([Int]) -> [Bool]?)?,
+        doublingKeys: (([Int]) -> [Bool]?)?,
         twinFacts: ((String) -> SwipeTwinFacts)? = nil
     ) rethrows -> [SwipeCandidate] {
         let scoring = SwipeCandidateScoring(settings: settings.scoring)
@@ -122,8 +123,8 @@ final class SwipeWordDecoder: @unchecked Sendable {
         }
         forms.sort { $0.base > $1.base }
         var weighed = Array(forms.prefix(settings.scoring.contextCandidates))
-        if loopedKeys != nil {
-            // Every twin of a weighed word is weighed too, so a loop can pick it.
+        if doublingKeys != nil {
+            // Every twin of a weighed word is weighed too, so a loop or a squiggle can pick it.
             let paths = Set(weighed.compactMap { keyPath(of: $0.spellings.first?.spelling) })
             weighed += forms.dropFirst(weighed.count).filter { paths.contains(keyPath(of: $0.spellings.first?.spelling) ?? []) }
         }
@@ -146,15 +147,16 @@ final class SwipeWordDecoder: @unchecked Sendable {
             }
         }
         let usesContext = contextLift != nil && hasWordsBefore
-        if usesContext || loopedKeys != nil {
-            rankingSamePaths(&candidates, usesContext: usesContext, loopedKeys: loopedKeys, twinFacts: twinFacts)
+        if usesContext || doublingKeys != nil {
+            rankingSamePaths(&candidates, usesContext: usesContext, doublingKeys: doublingKeys, twinFacts: twinFacts)
         }
         return candidates.sorted { $0.score > $1.score }
     }
 
-    /// For each key of `keyPath`, on the keys `keys` lays out, whether `path` loops around it; nil
-    /// when the model has no loop settings or the keys lack one of its letters.
-    func loopedKeys(path: [SwipeTouchSample], keyPath: [Int], keys: KeyCenterMap) -> [Bool]? {
+    /// For each key of `keyPath`, on the keys `keys` lays out, whether `path` loops around it or,
+    /// when the model has squiggle settings, squiggles over it, either of which asks for the key's
+    /// letter doubled; nil when the model has no loop settings or the keys lack one of its letters.
+    func doublingKeys(path: [SwipeTouchSample], keyPath: [Int], keys: KeyCenterMap) -> [Bool]? {
         guard let loops = settings.loops, settings.keepsDoubleLetters == false else { return nil }
         let letters = Array(settings.letters.unicodeScalars)
         var centers: [CGPoint] = []
@@ -162,7 +164,13 @@ final class SwipeWordDecoder: @unchecked Sendable {
             guard let center = keys.center(of: Character(letters[key])) else { return nil }
             centers.append(center)
         }
-        return SwipeKeyLoop.loopedKeys(path: path, centers: centers, pitch: Double(keys.pitch.width), settings: loops)
+        let pitch = Double(keys.pitch.width)
+        guard let looped = SwipeKeyLoop.loopedKeys(path: path, centers: centers, pitch: pitch, settings: loops) else { return nil }
+        guard let squiggles = settings.squiggles,
+              let squiggled = SwipeKeySquiggle.squiggledKeys(
+                  path: path, centers: centers, pitch: pitch, sampleRate: loops.sampleRate, settings: squiggles
+              ) else { return looped }
+        return zip(looped, squiggled).map { $0 || $1 }
     }
 
     private func keyPath(of spelling: String?) -> [Int]? {
@@ -179,6 +187,9 @@ final class SwipeWordDecoder: @unchecked Sendable {
     /// words' best scores, the next the next best, and so on, each word's spellings moving with it.
     /// The scores the set holds stay the same, so every ranking outside it stays as scored, and so
     /// does the order of a word's own spellings, such as its case and apostrophe variants.
+    ///
+    /// A squiggle over a key (`SwipeKeySquiggle`) is a loop there to every rule below, as both ask
+    /// for the key's letter doubled.
     ///
     /// Between twins, words whose letters differ only in how many times letters repeat at their
     /// keys, the circles decide, whatever the words before or their frequencies, key by key. A loop
@@ -213,7 +224,7 @@ final class SwipeWordDecoder: @unchecked Sendable {
     private func rankingSamePaths(
         _ candidates: inout [SwipeCandidate],
         usesContext: Bool,
-        loopedKeys: (([Int]) -> [Bool]?)?,
+        doublingKeys: (([Int]) -> [Bool]?)?,
         twinFacts: ((String) -> SwipeTwinFacts)?
     ) {
         var facts: [String: SwipeTwinFacts] = [:]
@@ -230,7 +241,7 @@ final class SwipeWordDecoder: @unchecked Sendable {
             SwipeLetterForm.keyPath(of: word, keyIndex: keyIndex, keepsDoubleLetters: settings.keepsDoubleLetters) ?? []
         }
         for (path, set) in sets where set.count > 1 && path.isEmpty == false {
-            let looped = settings.keepsDoubleLetters ? nil : loopedKeys?(path)
+            let looped = settings.keepsDoubleLetters ? nil : doublingKeys?(path)
             let repeats = Dictionary(uniqueKeysWithValues: set.compactMap { word in Self.repeats(of: word, keyIndex: keyIndex).map { (word, $0) } })
             func logFrequency(_ word: String) -> Double { words[word]!.map { factsOf(candidates[$0].spelling).logFrequency }.max()! }
             // A twin repeating letters fewer times is a misspelling of the word only when the word is

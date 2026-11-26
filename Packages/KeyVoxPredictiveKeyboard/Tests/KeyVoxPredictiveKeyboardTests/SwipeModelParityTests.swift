@@ -53,7 +53,7 @@ final class SwipeModelParityTests: XCTestCase {
                 personal: nil,
                 contextLift: nil,
                 hasWordsBefore: false,
-                loopedKeys: nil
+                doublingKeys: nil
             )
             var scoreByForm: [String: Double] = [:]
             var forms: [String] = []

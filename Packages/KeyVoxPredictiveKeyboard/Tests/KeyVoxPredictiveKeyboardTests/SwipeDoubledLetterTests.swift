@@ -2,8 +2,8 @@ import XCTest
 @testable import KeyVoxPredictiveKeyboard
 
 /// A repeated letter is one key to a swipe, so a word with a doubled letter and its twin without
-/// one ("too" and "to") are the same key path. Circling a letter's key doubles it whatever the words
-/// before; without a circle, the scores and the words before choose between lexicon words, and a
+/// one ("too" and "to") are the same key path. Circling a letter's key, or squiggling over it,
+/// doubles it whatever the words before; without a circle, the scores and the words before choose between lexicon words, and a
 /// letter only the user's own words double is never added.
 final class SwipeDoubledLetterTests: XCTestCase {
     private var computer: PredictionComputer!
@@ -127,7 +127,7 @@ final class SwipeDoubledLetterTests: XCTestCase {
             personal: decoder.personalLexicon([single, doubled, tripled]),
             contextLift: nil,
             hasWordsBefore: false,
-            loopedKeys: { keyPath in decoder.loopedKeys(path: path, keyPath: keyPath, keys: keys) },
+            doublingKeys: { keyPath in decoder.doublingKeys(path: path, keyPath: keyPath, keys: keys) },
             twinFacts: { spelling in frequency[spelling].map { SwipeTwinFacts(logFrequency: $0) } ?? SwipeTwinFacts(spelling: spelling, engine: engine) }
         ).map(\.spelling)
         let place = { (word: String) in try XCTUnwrap(candidates.firstIndex(of: word), "\(word) was weighed") }
@@ -199,6 +199,19 @@ final class SwipeDoubledLetterTests: XCTestCase {
         }
     }
 
+    func testSquigglingOverTheDoubledLetterGivesTheWordWhateverTheWordsBefore() throws {
+        let contexts: [[String]] = [[], ["want", "i"], ["is", "it"], ["one"], ["my", "oh"]]
+        for word in ["too", "soon", "off", "all", "good", "see", "been", "will", "still", "little"] {
+            for previousWords in contexts {
+                XCTAssertEqual(
+                    try best(swipingKeysOf: word, previousWords: previousWords, squigglingAtDoubles: true),
+                    word,
+                    "after \(previousWords)"
+                )
+            }
+        }
+    }
+
     func testALoopAroundAKeyIsDetectedThere() throws {
         XCTAssertEqual(try loopedKeys(swiping: "to", loopingAt: [1]), [false, true])
         XCTAssertEqual(try loopedKeys(swiping: "son", loopingAt: [1]), [false, true, false])
@@ -213,24 +226,27 @@ final class SwipeDoubledLetterTests: XCTestCase {
 
     /// The best word for a swipe through `word`'s keys, each repeated letter's key once, as a
     /// finger swipes it, looping around each doubled letter's key when `loopingAtDoubles`, or
-    /// circling it `circlingDoubles` times.
+    /// circling it `circlingDoubles` times, or squiggling over it when `squigglingAtDoubles`.
     private func best(
         swipingKeysOf word: String,
         previousWords: [String],
         loopingAtDoubles: Bool = false,
-        circlingDoubles: Double? = nil
+        circlingDoubles: Double? = nil,
+        squigglingAtDoubles: Bool = false
     ) throws -> String? {
         var keys = ""
         var loops: Set<Int> = []
+        var squiggles: Set<Int> = []
         for letter in word {
             if keys.last == letter {
                 if loopingAtDoubles || circlingDoubles != nil { loops.insert(keys.count - 1) }
+                if squigglingAtDoubles { squiggles.insert(keys.count - 1) }
             } else {
                 keys.append(letter)
             }
         }
         return try computer.swipeWords(
-            for: SwipePath.through(keys, loopingAt: loops, circles: circlingDoubles ?? 1),
+            for: SwipePath.through(keys, loopingAt: loops, circles: circlingDoubles ?? 1, squigglingAt: squiggles),
             previousWords: previousWords,
             wordCase: .asSpelled,
             limit: 4
