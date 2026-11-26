@@ -13,6 +13,7 @@ Index 0 of the emissions is the blank and index k + 1 is the layout's key k."""
 
 import math
 from dataclasses import asdict, dataclass
+from functools import lru_cache
 
 import torch
 from torch import nn
@@ -48,16 +49,22 @@ _TURN_LIMIT = 2.0
 _SPEED_FLOOR = 1e-6
 
 
+@lru_cache(maxsize=None)
+def _derivative_taps(device: torch.device, dtype: torch.dtype) -> torch.Tensor:
+    """The first and second derivative taps, [2, 1, 7], built once per device: building
+    them on every call would copy them to the GPU and wait for it on every step."""
+    taps = torch.tensor([[_FIRST_DERIVATIVE], [_SECOND_DERIVATIVE]], dtype=dtype)
+    scales = torch.tensor([[[_FIRST_DERIVATIVE_SCALE]], [[_SECOND_DERIVATIVE_SCALE]]], dtype=dtype)
+    return (taps / scales).to(device)
+
+
 def swipe_features(xy: torch.Tensor) -> torch.Tensor:
     """[B, T, 2] positions to [B, 8, T]: x, y, velocity, acceleration, speed, turn rate.
 
     Derivatives are per resampled point."""
     positions = xy.transpose(1, 2)
     padded = F.pad(positions, (_SMOOTHING_TAPS // 2, _SMOOTHING_TAPS // 2), mode="replicate")
-    taps = positions.new_tensor([
-        [_FIRST_DERIVATIVE],
-        [_SECOND_DERIVATIVE],
-    ]) / positions.new_tensor([[[_FIRST_DERIVATIVE_SCALE]], [[_SECOND_DERIVATIVE_SCALE]]])
+    taps = _derivative_taps(positions.device, positions.dtype)
     batch, _, length = positions.shape
     filtered = F.conv1d(padded.reshape(batch * 2, 1, -1), taps).reshape(batch, 2, 2, length)
     velocity, acceleration = filtered[:, :, 0], filtered[:, :, 1]
