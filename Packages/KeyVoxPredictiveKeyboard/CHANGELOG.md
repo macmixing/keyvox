@@ -6,77 +6,9 @@ The format loosely follows Keep a Changelog, and the package uses semantic versi
 
 ---
 
-## [2.2.0] - 2026-11-25
+## [2.0.0] - 2026-11-26
 
-Swipe typing: a finger sliding across the letter keys types the word it traces.
-
-### Includes
-
-- `PredictionComputer.swipeWords(for:previousWords:wordCase:limit:)` decodes a swipe's `SwipeTouchSample` path into ranked words, written as typing writes them: text replacement shortcuts expand, the user's words take their entry's form, learned words and learned capitals apply, and `SwipeWordCase` carries the shift state; `swipeCandidates(for:previousWords:)` returns the ranked spellings with their scores.
-- The search covers the typing language's dictionary and swipe vocabulary through a memory-mapped key-path trie (`PredictiveData/en/swipe_lexicon.kvsl`, built by `SwipeLexiconBuilder` from `SwipeVocabulary.lexiconWords(of:)`) and the user's own words beside it: KeyVox Dictionary entries with contact names among them, text replacement shortcuts, and offered learned words.
-- The bundled English swipe model (`swipe_encoder.kvsw` and `swipe.json`; a model may add an optional `swipe_decoder.kvsd`, which the English one runs without) runs from its memory-mapped fp16 weights with Accelerate's current BLAS interface, and with plain Swift where Accelerate is missing, such as Android; it matches the swipe model tools' reference decoding on swipe.futo.org validation swipes.
-- Candidates rank by the model tools' tuned score plus how much likelier the words before make them (`ContextLanguageScorer`); words a swipe cannot tell apart because their key paths are the same, such as "to" and "too", are ordered among themselves: a loop around a key credits each word that has its letter exactly twice there, never one with it three times, and a word adding letters where no loop was read comes after its twins whatever its loops, weighed there, for a doubled letter, only against twins with the same circled letters, and for a tripled one against every twin with it fewer times, whatever the words before (`SwipeKeyLoop`, `loops` in `swipe.json`), and a squiggle over a key, a quick back-and-forth zigzag across it, counts as a loop there in every one of these rules, read only where no plain swipe of the measured ones reads as one (`SwipeKeySquiggle`, `squiggles` in `swipe.json`); a word a loop credits loses to a word on the same keys that doubles a letter where no loop was read and lacks a circled double, when that word is written `misspellingRatio` times as often, so a loop read where the finger merely turned keeps "dropped" rather than "drooped", at the cost of rare circled words such as "fess" giving "fees"; without one, twins the dictionary or swipe vocabulary has are left to their scores and the words before, counted `samePathContextWeight` times among them, unless one is written `misspellingRatio` times as often as the other, which then wins whatever the words before, so "is" never gives "iss", so "as soon" gives "soon", "my son" gives "son", "very good" gives "good", "me too" gives "too", and "turn off" gives "off", while a letter only the user's own words double is never added, so a contact's "Mann" stays "man" whatever the words before, and a word the bundled lexicon and the user's words both have ranks among its twins by the lexicon's spellings; a letter three times or more, or a double against a twin only the user's words have, is added only when that twin is a misspelling written `misspellingRatio` times less often (`SwipeTwinFacts`, `swipe.json`).
-- `SwipeGate` decides which fingers are swiping rather than tapping, so fast taps, rolls, and overlapping two-thumb taps stay taps: a finger meeting the swipe threshold is a swipe once it stays down a moment longer or slows into its lift, and one lifting at speed right after the threshold is a tap when another finger lands soon after; `isTraveling` tells a host when a finger that may still swipe has moved far enough to show a swipe beginning, and `touchStopsSwiping` keeps a finger something else took, such as a held key's popup, from swiping while it stays down, so a finger landing beside it never swipes.
-- Swipes decode to the swipe vocabulary (`PredictiveData/en/swipe_vocabulary.txt`, bundled in 2.0.2), such as "haha", "hahaha", "omg", and "lmao"; typing never offers its words.
-- The English swipe vocabulary adds 3,861 words of the sentences in swipe.futo.org's training split that the dictionary and its other words lack, after them at their lowest probability: names such as "Derbyshire" and hyphenated words such as "well-known", written as the sentences write them. The swipe lexicon holds 133,299 words, and on swipe.futo.org's test split, with the words before each swipe, 92.62% of swipes decode to their word first, from 92.26%.
-- `PredictiveTypingSession.swipeEdit(word:textBeforeCursor:selectedText:textAfterCursor:)` inserts a swiped word with no space after it, as the system keyboard does, unless a word follows the cursor; a word swiped right after it, or right after a mark a picked word is spaced away from, goes in after a space, and none goes in at the start of the text or after a space. `endsWithSwipedWord(textBeforeCursor:)` tells whether the text before the cursor still ends with what the swipe inserted, the space before a following word included, which a word boundary ends as swiped, inserting only the separator with no autocorrection, revision, or learning; `swipedWordLetterEdit(letter:textBeforeCursor:)` puts a space before a letter tapped right after it, as the system keyboard does, unless the swipe put a space after its word; `forgetSwipedWord()` ends that record, as when the cursor or the field moves; and `previousWords(beforeSwipeAfter:selectedText:)` gives a swipe the words before it, that word among them.
-- `PredictiveKeyboardError.invalidSwipeModel` reports a damaged or mismatched swipe model file.
-
-### Notes
-
-- `2.2.0` adds public API; typing without swiping is unchanged.
-- The package requires macOS 13.3, the first release with Accelerate's current BLAS interface; the iOS minimum is unchanged.
-
----
-
-## [2.1.0] - 2026-11-25
-
-Letter layouts: each of Apple's letter layouts is bundled as data, and each typing language names the one its keyboard shows and the others Apple's keyboard offers.
-
-### Includes
-
-- `PredictiveData/letter_layouts` holds one file per Apple layout name, with the letter rows of Apple's iOS 27.2 iPhone keyboard: QWERTY, QWERTZ, QWERTZ-German, AZERTY, AZERTY-French, QWERTY-Spanish, QWERTY-Accents, QWERTZ-Accents, and Dvorak. Each row lists its character keys, shift and delete keys, and padding, with their widths in letter keys, and each file says whether a keyboard draws shift and delete across the padding beside them (`shiftAndDeleteFillPadding`): QWERTY does, as English's keyboard always has; the others leave Apple's gap.
-- `LetterKeyLayout.bundled(identifier:)` reads one; `LetterKeyLayout` gains its `identifier`, its `rows` (`LetterKeyRow`), its `width` in letter keys, and `shiftAndDeleteFillPadding`, and its `defaultGeometry` places the layout's letters where Apple's keyboard draws them.
-- A language's `language.json` names its `defaultLetterLayout` and Apple's `alternativeLetterLayouts` in Apple's order in place of its own letter rows; `TypingLanguage.letterLayout` is the default layout and `TypingLanguage.alternativeLetterLayouts` names the others. English shows QWERTY and lists AZERTY, QWERTZ, and Dvorak.
-- `PredictiveKeyboardError.invalidLetterLayout` reports a layout file that does not decode, names another layout, or has rows of different widths.
-
-### Notes
-
-- `2.1.0` adds public API; English typing is unchanged, its letters sitting where they did.
-
----
-
-## [2.0.2] - 2026-11-25
-
-The English typing language bundles a swipe vocabulary: 22,465 words people write that the English dictionary lacks, so a swipe can decode to them.
-
-### Includes
-
-- `PredictiveData/en/swipe_vocabulary.txt`, one word per line with its probability on the dictionary's 0-255 scale, likeliest first, built by `Tools/KeyVoxLanguageModel` from YouTube-Commons, OASST2, and Tatoeba: words such as "haha", "hahaha", "omg", "lmao", "cuz", and "anyways", British spellings, and names, none of them a dictionary word.
-
-### Notes
-
-- `2.0.2` changes no API or behavior: nothing in the package reads the new file yet, and the dictionary, rankers, and other bundled files are unchanged.
-
----
-
-## [2.0.1] - 2026-11-24
-
-The bundled English dictionary is the one `Tools/KeyVoxTypingModels` builds, with the same words, word pairs, and three-word sequences at the same probabilities.
-
-### Includes
-
-- `PredictiveData/en/dictionary` is rebuilt from SCOWL and OASST1 at pinned revisions and from Tatoeba's English sentences as of its 2026-07-18 export, checked against their recorded SHA-256; only the order its entries were written in and the write times in its header change.
-
-### Notes
-
-- `2.0.1` changes no API or behavior; the correction and completion rankers, the autocorrect decision model, and the accent overlay the pipeline builds are the same bytes as the bundled ones, so they are unchanged.
-
----
-
-## [2.0.0] - 2026-11-24
-
-Typing languages: each language the keyboard types in is read from its own folder, and English is the first.
+Typing languages, Apple's letter layouts, and swipe typing: each language the keyboard types in is read from its own folder, English first; each of Apple's letter layouts is bundled as data; and a finger sliding across the letter keys types the word it traces.
 
 ### Includes
 
@@ -86,12 +18,25 @@ Typing languages: each language the keyboard types in is read from its own folde
 - The words spelled only with capitals come from the language's `KeyVoxLinguistics` list (`CapitalizedSpellings(languageCode:)`).
 - `KeyVoxPredictiveKeyboardResources.configure(bundleURL:)` lets a host outside an app bundle, such as the Android engine, point the package at its unchanged resource bundle, as `KeyVoxCoreResources` and `KeyVoxLinguisticsResources` do.
 - The English files move to `PredictiveData/en` under plain names: `dictionary/`, `context_model.bin`, `correction_ranker.kvtr`, `completion_ranker.kvtr`, and `autocorrect_decision.kvtr`.
+- `PredictiveData/en/dictionary` is rebuilt from SCOWL and OASST1 at pinned revisions and from Tatoeba's English sentences as of its 2026-07-18 export, checked against their recorded SHA-256; only the order its entries were written in and the write times in its header change.
+- `PredictiveData/letter_layouts` holds one file per Apple layout name, with the letter rows of Apple's iOS 27.2 iPhone keyboard: QWERTY, QWERTZ, QWERTZ-German, AZERTY, AZERTY-French, QWERTY-Spanish, QWERTY-Accents, QWERTZ-Accents, and Dvorak. Each row lists its character keys, shift and delete keys, and padding, with their widths in letter keys, and each file says whether a keyboard draws shift and delete across the padding beside them (`shiftAndDeleteFillPadding`): QWERTY does, as English's keyboard always has; the others leave Apple's gap.
+- `LetterKeyLayout.bundled(identifier:)` reads one; `LetterKeyLayout` gains its `identifier`, its `rows` (`LetterKeyRow`), its `width` in letter keys, and `shiftAndDeleteFillPadding`, and its `defaultGeometry` places the layout's letters where Apple's keyboard draws them.
+- A language's `language.json` names its `defaultLetterLayout` and Apple's `alternativeLetterLayouts` in Apple's order in place of its own letter rows; `TypingLanguage.letterLayout` is the default layout and `TypingLanguage.alternativeLetterLayouts` names the others. English shows QWERTY and lists AZERTY, QWERTZ, and Dvorak.
+- `PredictiveKeyboardError.invalidLetterLayout` reports a layout file that does not decode, names another layout, or has rows of different widths.
+- `PredictionComputer.swipeWords(for:previousWords:wordCase:limit:)` decodes a swipe's `SwipeTouchSample` path into ranked words, written as typing writes them: text replacement shortcuts expand, the user's words take their entry's form, learned words and learned capitals apply, and `SwipeWordCase` carries the shift state; `swipeCandidates(for:previousWords:)` returns the ranked spellings with their scores.
+- The search covers the typing language's dictionary and swipe vocabulary through a memory-mapped key-path trie (`PredictiveData/en/swipe_lexicon.kvsl`, built by `SwipeLexiconBuilder` from `SwipeVocabulary.lexiconWords(of:)`) and the user's own words beside it: KeyVox Dictionary entries with contact names among them, text replacement shortcuts, and offered learned words.
+- The bundled English swipe model (`swipe_encoder.kvsw` and `swipe.json`; a model may add an optional `swipe_decoder.kvsd`, which the English one runs without) runs from its memory-mapped fp16 weights with Accelerate's current BLAS interface, and with plain Swift where Accelerate is missing, such as Android; it matches the swipe model tools' reference decoding on swipe.futo.org validation swipes.
+- Candidates rank by the model tools' tuned score plus how much likelier the words before make them (`ContextLanguageScorer`); words a swipe cannot tell apart because their key paths are the same, such as "to" and "too", are ordered among themselves: a loop around a key credits each word that has its letter exactly twice there, never one with it three times, and a word adding letters where no loop was read comes after its twins whatever its loops, weighed there, for a doubled letter, only against twins with the same circled letters, and for a tripled one against every twin with it fewer times, whatever the words before (`SwipeKeyLoop`, `loops` in `swipe.json`), and a squiggle over a key, a quick back-and-forth zigzag across it, counts as a loop there in every one of these rules, read only where no plain swipe of the measured ones reads as one (`SwipeKeySquiggle`, `squiggles` in `swipe.json`); a word a loop credits loses to a word on the same keys that doubles a letter where no loop was read and lacks a circled double, when that word is written `misspellingRatio` times as often, so a loop read where the finger merely turned keeps "dropped" rather than "drooped", at the cost of rare circled words such as "fess" giving "fees"; without one, twins the dictionary or swipe vocabulary has are left to their scores and the words before, counted `samePathContextWeight` times among them, unless one is written `misspellingRatio` times as often as the other, which then wins whatever the words before, so "is" never gives "iss", so "as soon" gives "soon", "my son" gives "son", "very good" gives "good", "me too" gives "too", and "turn off" gives "off", while a letter only the user's own words double is never added, so a contact's "Mann" stays "man" whatever the words before, and a word the bundled lexicon and the user's words both have ranks among its twins by the lexicon's spellings; a letter three times or more, or a double against a twin only the user's words have, is added only when that twin is a misspelling written `misspellingRatio` times less often (`SwipeTwinFacts`, `swipe.json`).
+- `SwipeGate` decides which fingers are swiping rather than tapping, so fast taps, rolls, and overlapping two-thumb taps stay taps: a finger meeting the swipe threshold is a swipe once it stays down a moment longer or slows into its lift, and one lifting at speed right after the threshold is a tap when another finger lands soon after; `isTraveling` tells a host when a finger that may still swipe has moved far enough to show a swipe beginning, and `touchStopsSwiping` keeps a finger something else took, such as a held key's popup, from swiping while it stays down, so a finger landing beside it never swipes.
+- Swipes decode to the English swipe vocabulary (`PredictiveData/en/swipe_vocabulary.txt`), one word per line with its probability on the dictionary's 0-255 scale, likeliest first, built by `Tools/KeyVoxLanguageModel`: 22,465 words people write that the dictionary lacks, from YouTube-Commons, OASST2, and Tatoeba, such as "haha", "hahaha", "omg", "lmao", "cuz", and "anyways", British spellings, and names; typing never offers its words.
+- The English swipe vocabulary adds 3,861 words of the sentences in swipe.futo.org's training split that the dictionary and its other words lack, after them at their lowest probability: names such as "Derbyshire" and hyphenated words such as "well-known", written as the sentences write them. The swipe lexicon holds 133,299 words, and on swipe.futo.org's test split, with the words before each swipe, 92.62% of swipes decode to their word first, from 92.26%.
+- `PredictiveTypingSession.swipeEdit(word:textBeforeCursor:selectedText:textAfterCursor:)` inserts a swiped word with no space after it, as the system keyboard does, unless a word follows the cursor; a word swiped right after it, or right after a mark a picked word is spaced away from, goes in after a space, and none goes in at the start of the text or after a space. `endsWithSwipedWord(textBeforeCursor:)` tells whether the text before the cursor still ends with what the swipe inserted, the space before a following word included, which a word boundary ends as swiped, inserting only the separator with no autocorrection, revision, or learning; `swipedWordLetterEdit(letter:textBeforeCursor:)` puts a space before a letter tapped right after it, as the system keyboard does, unless the swipe put a space after its word; `forgetSwipedWord()` ends that record, as when the cursor or the field moves; and `previousWords(beforeSwipeAfter:selectedText:)` gives a swipe the words before it, that word among them.
+- `PredictiveKeyboardError.invalidSwipeModel` reports a damaged or mismatched swipe model file.
 
 ### Notes
 
-- `2.0.0` changes public API: hosts create the engine and the typing session with a `TypingLanguage`, and call `WordCasing` and `SmartQuotes` through it. English typing is unchanged.
-
----
+- `2.0.0` changes public API: hosts create the engine and the typing session with a `TypingLanguage`, and call `WordCasing` and `SmartQuotes` through it. English typing is unchanged: its dictionary has the same words, word pairs, and three-word sequences at the same probabilities, the correction and completion rankers, the autocorrect decision model, and the accent overlay are the same bytes, and its letters sit where they did.
+- The package requires macOS 13.3, the first release with Accelerate's current BLAS interface; the iOS minimum is unchanged.
 
 ## [1.1.0] - 2026-11-14
 
