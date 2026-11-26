@@ -234,9 +234,11 @@ kinds by place in the word, first, middle, or last.
 
 ### The simulator
 
-`letter_layout.py` reads a typing language's letter keys from its letter rows through one
-function, `letter_rows`, today from the package's `language.json`: each key a square one key
-pitch across and down, as `LetterKeyLayout` lays them out.
+`letter_layout.py` reads a typing language's letter keys from its default letter layout through
+one function, `letter_rows`: the layout the package's `language.json` names (`defaultLetterLayout`),
+read from `letter_layouts/<layout>.json`, each row's letters starting after the widths of the keys
+and padding before them, each key a square one key pitch across and down, as `LetterKeyLayout`
+lays them out.
 
 Each letter is tapped with a two-dimensional Gaussian around its key's center, and the key the
 tap lands on is the letter typed; a tap outside every letter key is drawn again

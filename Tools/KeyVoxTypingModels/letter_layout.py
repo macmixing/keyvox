@@ -1,10 +1,13 @@
 """Where a typing language's letter keys sit, in key pitches: one pitch is the distance between
 neighboring key centers across a row, and between rows.
 
-The rows come from the language's letter rows, which `letter_rows` reads; it is the one place
-the typo simulator reads key geometry from. Each key is a one-pitch square, as the keyboard's
-`LetterKeyLayout` lays them out: row `r` spans `r` to `r + 1` down, and a row's `i`th key spans
-its offset plus `i` to its offset plus `i + 1` across."""
+The rows come from the language's default letter layout, which `letter_rows` reads; it is the one
+place the typo simulator reads key geometry from. The language's `language.json` names the layout
+(`defaultLetterLayout`), and `letter_layouts/<layout>.json` in the package holds its rows: each
+row's character keys, shift and delete keys, and padding, with their widths in letter keys. Each
+letter key is a one-pitch square, as the keyboard's `LetterKeyLayout` lays them out: row `r` spans
+`r` to `r + 1` down, and a row's `i`th letter spans its offset plus `i` to its offset plus `i + 1`
+across, the offset being the widths of the keys and padding before the row's first letter."""
 
 import json
 from pathlib import Path
@@ -14,9 +17,32 @@ PREDICTIVE_DATA = (Path(__file__).resolve().parent / "../../Packages/KeyVoxPredi
 
 
 def letter_rows(language):
-    """The language's letter rows, top to bottom, as (letters, offset in key pitches)."""
+    """The letter rows of the language's default letter layout, top to bottom, as (letters, offset
+    in key pitches). A row's letters sit side by side, one pitch each; keys that type no letter,
+    such as an accent key after them, are not letters."""
     manifest = json.loads((PREDICTIVE_DATA / language / "language.json").read_text(encoding="utf-8"))
-    return [(row["letters"], float(row["offset"])) for row in manifest["letterRows"]]
+    layout_path = PREDICTIVE_DATA / "letter_layouts" / f"{manifest['defaultLetterLayout']}.json"
+    layout = json.loads(layout_path.read_text(encoding="utf-8"))
+    rows = []
+    for items in layout["rows"]:
+        x = 0.0
+        letters = ""
+        offset = None
+        for item in items:
+            (kind, value), = item.items()
+            if kind != "characters":
+                x += float(value)
+                continue
+            for character in value:
+                if character.isalpha():
+                    if offset is None:
+                        offset = x
+                    elif x != offset + len(letters):
+                        raise ValueError(f"{layout_path.name}: the letters of a row are not side by side")
+                    letters += character
+                x += 1.0
+        rows.append((letters, offset if offset is not None else 0.0))
+    return rows
 
 
 class LetterLayout:
