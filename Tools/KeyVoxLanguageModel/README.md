@@ -468,8 +468,8 @@ not, every one of them to an added word, and 4 that did no longer do, 3 of them 
 
 The measurement below was made before the swiped words were added.
 
-`Tools/KeyVoxSwipeModel` (`feat/swipe-model`) decoded the 54,269 swipes of swipe.futo.org's
-validation split with its best run, `r1-ft-dec6`, and that run's tuned scoring (`scoring.json`),
+`Tools/KeyVoxSwipeModel` decoded the 54,269 swipes of swipe.futo.org's validation split with
+`r1-ft-dec6`, the model bundled at the time, and that run's tuned scoring (`scoring.json`),
 with the dictionary alone and with the first words of the swipe vocabulary added, by rank:
 
 | Words added | Swipes whose word can be decoded | Top-1 | Top-3 | Top-10 |
