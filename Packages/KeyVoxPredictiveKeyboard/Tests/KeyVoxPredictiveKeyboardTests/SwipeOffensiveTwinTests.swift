@@ -36,10 +36,14 @@ final class SwipeOffensiveTwinTests: XCTestCase {
         let environment = ProcessInfo.processInfo.environment
         guard let listPath = environment["SWIPE_OFFENSIVE_WORDS"] else { throw XCTSkip("set SWIPE_OFFENSIVE_WORDS to run") }
         let entries = try JSONDecoder().decode([Entry].self, from: Data(contentsOf: URL(fileURLWithPath: listPath)))
-        let patterns = try entries.filter(\.isSlurClass)
+        let terms: [String] = entries.filter(\.isSlurClass)
             .flatMap { $0.match.split(separator: "|") }
+            .map(String.init)
             .filter { $0.contains(" ") == false }
-            .map { term in try NSRegularExpression(pattern: "^" + NSRegularExpression.escapedPattern(for: String(term)).replacingOccurrences(of: "\\*", with: "+") + "$") }
+        let patterns: [NSRegularExpression] = try terms.map { term in
+            let escaped: String = NSRegularExpression.escapedPattern(for: term).replacingOccurrences(of: "\\*", with: "+")
+            return try NSRegularExpression(pattern: "^\(escaped)$")
+        }
         engine = try PredictiveEngine(language: .english)
         decoder = try SwipeWordDecoder(language: .english)
         let keyIndex = decoder.settings.keyIndex
