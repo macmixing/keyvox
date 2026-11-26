@@ -6,7 +6,7 @@ let package = Package(
     name: "KeyVoxPredictiveKeyboard",
     platforms: [
         .iOS("18.0"),
-        .macOS(.v13),
+        .macOS("13.3"),
     ],
     products: [
         .library(
@@ -38,7 +38,11 @@ let package = Package(
                 .product(name: "KeyVoxLinguistics", package: "KeyVoxLinguistics"),
             ],
             path: "Sources/KeyVoxPredictiveKeyboard",
-            resources: [.copy("PredictiveData")]
+            resources: [.copy("PredictiveData")],
+            cSettings: [
+                // Accelerate's current BLAS interface, as Apple documents for Swift.
+                .define("ACCELERATE_NEW_LAPACK"),
+            ]
         ),
         .testTarget(
             name: "KeyVoxPredictiveKeyboardTests",
