@@ -1,7 +1,7 @@
 /// The colors a theme gives the keyboard's keys: letter, special, and toolbar keys with their
 /// disabled look and outline, a toolbar key that is on and its symbol, the keys' popups with their
 /// outline, characters, and highlight, the cancel key's border, the microphone button's
-/// background, and the trail a swipe leaves.
+/// background and microphone, and the trail a swipe leaves.
 public struct KeyboardThemePalette: Equatable, Sendable {
     /// Letter keys, and the toolbar keys drawn like them.
     public let keyFill: KeyboardThemeColor
@@ -29,6 +29,8 @@ public struct KeyboardThemePalette: Equatable, Sendable {
     public let cancelKeyBorder: KeyboardThemeColor
     /// The circle behind the microphone in the dictation button.
     public let microphoneBackground: KeyboardThemeColor
+    /// The microphone in the dictation button.
+    public let microphoneForeground: KeyboardThemeColor
     /// The trail a swipe across the letter keys leaves behind the finger.
     public let swipeTrail: KeyboardThemeSwipeTrail
 
@@ -49,6 +51,7 @@ public struct KeyboardThemePalette: Equatable, Sendable {
         activeKeyForeground: KeyboardThemeColor,
         cancelKeyBorder: KeyboardThemeColor,
         microphoneBackground: KeyboardThemeColor,
+        microphoneForeground: KeyboardThemeColor,
         swipeTrail: KeyboardThemeSwipeTrail
     ) {
         self.keyFill = keyFill
@@ -67,6 +70,7 @@ public struct KeyboardThemePalette: Equatable, Sendable {
         self.activeKeyForeground = activeKeyForeground
         self.cancelKeyBorder = cancelKeyBorder
         self.microphoneBackground = microphoneBackground
+        self.microphoneForeground = microphoneForeground
         self.swipeTrail = swipeTrail
     }
 }

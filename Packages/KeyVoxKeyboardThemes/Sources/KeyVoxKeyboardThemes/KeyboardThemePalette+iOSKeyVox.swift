@@ -30,6 +30,7 @@ extension KeyboardThemePalette {
             light: KeyboardThemeRGBA(red: 0.901, green: 0.901, blue: 0.976),
             dark: KeyboardThemeRGBA(red: 0, green: 0, blue: 0, alpha: 0.82)
         ),
+        microphoneForeground: .iOSMicrophone,
         // Indigo in light and the letter keys' lavender in dark, with a lighter head dot in dark, over
         // five nested glow layers of the same hue.
         swipeTrail: KeyboardThemeSwipeTrail(
