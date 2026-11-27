@@ -754,6 +754,7 @@ Packages/
 │   │   │   ├── PredictionResult.swift
 │   │   │   ├── PredictiveData/
 │   │   │   │   ├── en/
+│   │   │   │   ├── es/
 │   │   │   │   └── letter_layouts/
 │   │   │   ├── PredictiveEngine.swift
 │   │   │   ├── PredictiveTypingSession.swift
@@ -1840,7 +1841,7 @@ Packages/
   - In a field that deletes smartly, deletes a selection by typing a space over it and deleting that space, then removes the neighboring space, if any, that `KeyboardSmartDeletion` names, so the text read around the cursor stays in step with the field.
 - `KeyVox Keyboard/Core/Input/KeyboardLetterCaseController.swift`
   - Owns the letter page's shift state: a tap shifts the next letter, a quick second tap locks caps when allowed, and the field's auto-capitalization type decides when the keyboard shifts by itself.
-  - Shifts at sentence starts, as `TypingTextContext.startsSentence(after:)` reads the full text before the cursor, for both sentence and every-letter fields, and skips attachment placeholders in that text.
+  - Shifts at sentence starts, as the typing language's `startsSentence(after:)` reads the full text before the cursor, so Spanish "¿" and "¡" typed where a sentence starts keep the shift, for both sentence and every-letter fields, and skips attachment placeholders in that text.
 - `KeyVox Keyboard/Core/Input/KeyboardSmartDeletion.swift`
   - Decides which plain space, before or after a deleted selection, a smart-deleting field removes with it, from the bundled `smart_delete_before_word_characters.txt` and `smart_delete_after_word_characters.txt` character lists.
 - `KeyVox Keyboard/Core/Input/KeyboardSymbolPageReturnTracker.swift`
@@ -1956,7 +1957,7 @@ Packages/
 - `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/PredictionComputer.swift`
   - Computes the suggestion bar and space-bar autocorrection for a `PredictionRequest`, revisions for a `RevisionRequest`, and the intended letter for a contested tap; takes the keyboard geometry, personal vocabulary, and learned vocabulary from the host.
 - `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/TypingLanguage.swift`, `TypingLanguageManifest.swift`, and `TypingLanguageResources.swift`
-  - One bundled typing language read from its `PredictiveData/<language>` folder: its files, and from its `language.json` its default letter layout and the alternatives Apple's keyboard offers in Apple's order, edit letters, vowels, always-capitalized words (`WordCasing`), and quotation marks (`SmartQuotes`).
+  - One bundled typing language read from its `PredictiveData/<language>` folder: its files, and from its `language.json` its default letter layout and the alternatives Apple's keyboard offers in Apple's order, edit letters, vowels, always-capitalized words (`WordCasing`), quotation marks (`SmartQuotes`), and the marks that open a sentence before its first word (`startsSentence(after:)`); `offersSwipeTyping` tells whether it bundles a swipe model.
 - `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxTypingLanguageCatalog/`
   - The `KeyVoxTypingLanguageCatalog` product: `TypingLanguageCatalog` lists every folder in a copy of `PredictiveData` that has a `language.json`, reading only that file, and finds the copy inside another bundle by the typing package's resource bundle name; `TypingLanguageLetterLayouts` decodes a language's identifier, default layout, and alternatives from it, the single reader of those fields, which `TypingLanguage` uses too. `TypingLanguageCatalog+Bundled.swift` in the main target reads the package's own copy.
 - `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/LetterKeyLayout.swift` and `LetterKeyRow.swift`
@@ -1991,7 +1992,7 @@ Packages/
 - `KeyVox Keyboard/Core/Prediction/KeyboardTypingLanguage.swift`
   - The typing language the keyboard types in, shared by its engines, typing session, letter rows, held keys, word-ending characters, and quote keys: one of the user's selected languages (`KeyboardTypingLanguageSelection`, read through `KeyboardAppSettingsStore`) in the layout chosen for it, the one last typed in or the first selected when that one was removed, reread by `adoptSettings(_:)`; holds the bundled `TypingLanguageCatalog` and loads only the active language.
 - `KeyVox Keyboard/Core/Prediction/KeyboardTypingTraits.swift`
-  - Resolves what the letter keyboard may do in the focused field from its keyboard type, content type, secure entry, autocorrection, and autocapitalization traits, narrowed by the shared keyboard typing settings; a feature the field turns off stays off. Carries the field's `KeyboardFieldKeys`.
+  - Resolves what the letter keyboard may do in the focused field from its keyboard type, content type, secure entry, autocorrection, and autocapitalization traits, narrowed by the shared keyboard typing settings; a feature the field turns off stays off. Swiping also stays off in a typing language without a swipe model (`TypingLanguage.offersSwipeTyping`). Carries the field's `KeyboardFieldKeys`.
 - `KeyVox Keyboard/Core/Prediction/KeyboardPersonalVocabularyBuilder.swift`
   - Builds `PersonalVocabulary` from KeyVox Dictionary phrases and the system supplementary lexicon, treating lexicon entries whose input matches their text, ignoring case, as known names and the rest as text replacements.
 - `KeyVox Keyboard/Core/Prediction/KeyboardTypingMemory.swift`
