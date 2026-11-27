@@ -44,14 +44,14 @@ def rank_groups(groups, ranker):
     return ranked
 
 
-def fit_action_model(correction_groups, preserve_groups, ranker, valid_words):
+def fit_action_model(correction_groups, preserve_groups, ranker, valid_words, vowels):
     """Trains on the ranker's best candidate for typos and for words typed as meant, where
-    replacing the typed letters would be allowed at all."""
+    replacing the typed letters would be allowed at all, with the language's `vowels`."""
     rows = []
     labels = []
     for ranked in rank_groups(correction_groups + preserve_groups, ranker):
         features, candidate = action_features(ranked)
-        if not candidate_is_actionable(ranked[0], candidate, valid_words):
+        if not candidate_is_actionable(ranked[0], candidate, valid_words, vowels):
             continue
         rows.append(features)
         labels.append(int(candidate == ranked[0]["expected"]))

@@ -1,5 +1,6 @@
-"""Compares each file in `<data_dir>/built` with the one the package bundles in
-`PredictiveData/en`, and exits with status 1 if any differ.
+"""Compares each file in `<data_dir>/built` with the one the package bundles in the language's
+folder, `PredictiveData/<language>`, and exits with status 1 if any differ or the package does not
+bundle the language.
 
 A dictionary header holds the times it was written, so headers are compared without them."""
 
@@ -7,10 +8,10 @@ import argparse
 import sys
 from pathlib import Path
 
+from letter_layout import PREDICTIVE_DATA
 from paths import DataPaths
+from typing_languages import add_language_arguments
 
-BUNDLED_DIR = (Path(__file__).resolve().parent / "../../Packages/KeyVoxPredictiveKeyboard/Sources/"
-               "KeyVoxPredictiveKeyboard/PredictiveData/en").resolve()
 # The header's attributes follow a 12-byte prefix (magic, version, flags, header size); each
 # key and value ends with this byte.
 HEADER_PREFIX = 12
@@ -36,12 +37,18 @@ def same(built, bundled):
 def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("data_dir", type=Path)
-    paths = DataPaths(parser.parse_args().data_dir)
+    add_language_arguments(parser)
+    arguments = parser.parse_args()
+    paths = DataPaths(arguments.data_dir)
+    bundled_dir = PREDICTIVE_DATA / arguments.language
+    if not (bundled_dir / "dictionary").is_dir():
+        print(f"the package does not bundle {arguments.language}'s typing models")
+        sys.exit(1)
 
     differ = False
     for built in paths.bundled_files:
         name = built.relative_to(paths.built)
-        bundled = BUNDLED_DIR / name
+        bundled = bundled_dir / name
         if not bundled.exists():
             print(f"{name}: not bundled")
             differ = True

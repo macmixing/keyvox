@@ -2,9 +2,10 @@
 neighboring key centers across a row, and between rows.
 
 The rows come from the language's default letter layout, which `letter_rows` reads; it is the one
-place the typo simulator reads key geometry from. The language's `language.json` names the layout
-(`defaultLetterLayout`), and `letter_layouts/<layout>.json` in the package holds its rows: each
-row's character keys, shift and delete keys, and padding, with their widths in letter keys. Each
+place the typo simulator and the suggestion reader read key geometry from. The language's
+`language.json` names the layout (`defaultLetterLayout`), and `letter_layouts/<layout>.json` in
+the package holds its rows: each row's character keys, shift and delete keys, and padding, with
+their widths in letter keys. Each
 letter key is a one-pitch square, as the keyboard's `LetterKeyLayout` lays them out: row `r` spans
 `r` to `r + 1` down, and a row's `i`th letter spans its offset plus `i` to its offset plus `i + 1`
 across, the offset being the widths of the keys and padding before the row's first letter."""
@@ -16,11 +17,17 @@ PREDICTIVE_DATA = (Path(__file__).resolve().parent / "../../Packages/KeyVoxPredi
                    "Sources/KeyVoxPredictiveKeyboard/PredictiveData").resolve()
 
 
-def letter_rows(language):
-    """The letter rows of the language's default letter layout, top to bottom, as (letters, offset
-    in key pitches). A row's letters sit side by side, one pitch each; keys that type no letter,
-    such as an accent key after them, are not letters."""
-    manifest = json.loads((PREDICTIVE_DATA / language / "language.json").read_text(encoding="utf-8"))
+def manifest_path(language):
+    """The package's `language.json` of the language."""
+    return PREDICTIVE_DATA / language / "language.json"
+
+
+def letter_rows(manifest):
+    """The letter rows of the default letter layout the `language.json` at `manifest` names, top to
+    bottom, as (letters, offset in key pitches). A row's letters sit side by side, one pitch each;
+    keys that type no letter, such as an accent key after them, are not letters. The layout is
+    read from the package's `letter_layouts`."""
+    manifest = json.loads(Path(manifest).read_text(encoding="utf-8"))
     layout_path = PREDICTIVE_DATA / "letter_layouts" / f"{manifest['defaultLetterLayout']}.json"
     layout = json.loads(layout_path.read_text(encoding="utf-8"))
     rows = []
@@ -54,8 +61,9 @@ class LetterLayout:
         self.letters = tuple(self.keys)
 
     @classmethod
-    def for_language(cls, language):
-        return cls(letter_rows(language))
+    def for_language(cls, language, manifest=None):
+        """The layout of the language, read from `manifest` or the package's `language.json`."""
+        return cls(letter_rows(manifest or manifest_path(language)))
 
     def bounds(self, letter):
         """The key's left, right, top, and bottom edges."""
