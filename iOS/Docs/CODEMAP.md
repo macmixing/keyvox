@@ -500,6 +500,7 @@ iOS/
 │   │   │   ├── KeyboardKeyActivation.swift
 │   │   │   ├── KeyboardLetterCaseController.swift
 │   │   │   ├── KeyboardSmartDeletion.swift
+│   │   │   ├── KeyboardSpaceLanguageSlide.swift
 │   │   │   ├── KeyboardSpecialKeyInteractionSupport.swift
 │   │   │   ├── KeyboardSymbolPageReturnTracker.swift
 │   │   │   ├── KeyboardTextInputController.swift
@@ -573,6 +574,7 @@ iOS/
 │       │   ├── KeyboardKeyPopupView.swift
 │       │   ├── KeyboardKeyTouchSession.swift
 │       │   ├── KeyboardKeyView.swift
+│       │   ├── KeyboardLanguageCodeLabel.swift
 │       │   ├── KeyboardLogoBarView.swift
 │       │   ├── KeyboardRoundedBorderRenderer.swift
 │       │   ├── KeyboardSettingsToggleButton.swift
@@ -679,6 +681,7 @@ iOS/
 │   │   │   ├── KeyboardMicrophoneSelectionTests.swift
 │   │   │   ├── KeyboardPredictionCoordinatorTests.swift
 │   │   │   ├── KeyboardRescuedDictationStoreTests.swift
+│   │   │   ├── KeyboardSpaceLanguageSlideTests.swift
 │   │   │   ├── KeyboardSwipeSpacingTests.swift
 │   │   │   ├── KeyboardSwipeTestPath.swift
 │   │   │   ├── KeyboardToolbarModeTests.swift
@@ -1728,7 +1731,7 @@ Packages/
 - `KeyVox Keyboard/App/KeyboardViewController+Typing.swift`
   - Letter-page typing: field preparation, opening layout, shift and caps-lock handling, word-boundary autocorrection, picked-word spacing, suggestion taps and long-press forgetting, contested taps near letter keys, held-delete word deletion, return to letters after symbols, and personal, learned, and emoji vocabulary hand-off to the prediction coordinator.
 - `KeyVox Keyboard/App/KeyboardViewController+TypingLanguage.swift`
-  - Adopts the user's typing languages each time the keyboard appears and its host becomes active, and `applyTypingLanguage()`, the one place a change of language reaches the keyboard: it drops a swipe being decoded, hands the prediction coordinator the new language with that language's typing memory and learned words, shows the letter page in its layout, and, once the field may be read, starts its typing over.
+  - Adopts the user's typing languages each time the keyboard appears and its host becomes active, letting a slide across the space bar switch them while there are more than one; `switchTypingLanguage(by:)` switches on a slide with a light haptic and shows the new language's code on the space bar; and `applyTypingLanguage()`, the one place a change of language reaches the keyboard: it drops a swipe being decoded, hands the prediction coordinator the new language with that language's typing memory and learned words, shows the letter page in its layout, and, once the field may be read, starts its typing over.
 - `KeyVox Keyboard/App/KeyboardViewController+Emoji.swift`
   - Emoji page binding, opening and closing, typing an emoji with the character-key haptic, recording Frequently Used and skin-tone choices, the page's delete repeat, and the suggestion-bar emoji for a word, offered once the saved Frequently Used ranking holds a typed emoji.
 - `KeyVox Keyboard/App/KeyboardViewController+EmojiSearch.swift`
@@ -1858,6 +1861,8 @@ Packages/
   - Core Haptics player and pattern for the tap felt on letter and character keys, held-key popups, and emoji; the engine runs on its own queue and stops after an idle delay.
 - `KeyVox Keyboard/Core/Input/KeyboardCursorTrackpadSupport.swift`
   - Velocity-sensitive cursor-trackpad delta handling used by the space-bar trackpad interaction.
+- `KeyVox Keyboard/Core/Input/KeyboardSpaceLanguageSlide.swift`
+  - Decides whether a finger lifting off the space bar slid sideways to switch the typing language: at least 30 points, more sideways than up or down, and never once the cursor trackpad took it; right is the next language, left the previous.
 - `KeyVox Keyboard/Core/Text/KeyboardInsertionSpacingCoordinator.swift`
   - Converts the iOS preceding-text snapshot into shared composition context and delegates leading-spacing policy to `KeyVoxTextComposition`.
 - `KeyVox Keyboard/Core/Text/KeyboardInsertionCapitalizationCoordinator.swift`
@@ -1924,7 +1929,7 @@ Packages/
 - `KeyVox Keyboard/Views/Components/KeyboardKeyGridView.swift`
   - Shows the page for the current layout through cached `KeyboardKeyGridPage` instances, the letter page kept per letter layout, shows the letter page in the layout the keyboard types in now and reports its key frames again (`showCurrentLetterLayout()`), applies the letter case, the current row spacing, and the Display Zoom's size scale to the page showing and every page shown after it, reports letter-key frames for predictions, resolves a touch to the containing key or the nearest key within its hit slop, greys out a return key the field has not turned on yet, and exposes the key, held-key, delete, globe, touch-down, and swipe callbacks; holds the swipe gate, the letter key pitch it measures in, and the swipe trail above the keys.
 - `KeyVox Keyboard/Views/Components/KeyboardKeyGridView+Touches.swift`
-  - Multi-finger key handling: each finger is followed separately, characters type on lift or as soon as another finger lands, delete repeats while held, a held space bar becomes the cursor trackpad, holding `#+=` requests Compact Keys, holding a key with held-key characters opens its popup, and the globe's touches go to the system input-mode list.
+  - Multi-finger key handling: each finger is followed separately, characters type on lift or as soon as another finger lands, delete repeats while held, a held space bar becomes the cursor trackpad, a finger sliding sideways across the space bar switches the typing language in place of typing a space while the keyboard has more than one and the emoji search is closed, holding `#+=` requests Compact Keys, holding a key with held-key characters opens its popup, and the globe's touches go to the system input-mode list.
 - `KeyVox Keyboard/Views/Components/KeyboardKeyGridView+Swipe.swift`
   - Swipe typing on the key grid: follows an eligible letter-key finger through the package's `SwipeGate` with every coalesced sample, lets go of its key once the gate makes it a swipe, draws its trail, and hands its path on when it lifts or another finger lands; holds a finger the gate leaves undecided at its lift until the next finger lands, typing its key first, or the gate's window passes, handing it on as a word; the gate never runs while swipe typing is off.
 - `KeyVox Keyboard/Views/Components/KeyboardSwipeTrailView.swift`
@@ -1934,7 +1939,9 @@ Packages/
 - `KeyVox Keyboard/Views/Components/KeyboardKeyTouchSession.swift`
   - One finger's key, typed location, current location, timestamp, rollover state, and, while it may become or is a swipe, its path, its trail, and, once it lifts undecided, where its word would have gone.
 - `KeyVox Keyboard/Views/Components/KeyboardKeyView.swift`
-  - Renders one key with two alternating labels so case switches only show and hide labels, a number pad digit's letters under it on keys tall enough as shown on screen, judging a key under Display Zoom by its size before the zoom shrinks it, and the blue action look; draws no per-key blur and gives its shadow an explicit rounded path.
+  - Renders one key with two alternating labels so case switches only show and hide labels, the space bar's code of the language it just switched to (`KeyboardLanguageCodeLabel`) at its bottom right in the key's label color, a number pad digit's letters under it on keys tall enough as shown on screen, judging a key under Display Zoom by its size before the zoom shrinks it, and the blue action look; draws no per-key blur and gives its shadow an explicit rounded path.
+- `KeyVox Keyboard/Views/Components/KeyboardLanguageCodeLabel.swift`
+  - The short code of the language the keyboard switched to, shown faintly and fading out about two seconds later, read by VoiceOver as the language's full name.
 - `KeyVox Keyboard/Views/Components/KeyboardHeldKeyPopupView.swift`
   - Renders a held key's popup cells from the package's `HeldKeyPopupLayout`, highlighting the cell under the finger.
 - `KeyVox Keyboard/Views/Components/KeyboardSuggestionBarView.swift`
@@ -2055,7 +2062,7 @@ Packages/
 - `KeyVoxiOSTests/Core/Audio/`
   - Audio input preference resolution and stop-time capture processing.
 - `KeyVoxiOSTests/Core/Keyboard/`
-  - Keyboard dictation control, latest-insertion change behavior, deterministic paragraph/list/Caps formatting, controller presentation lifecycle coverage, toolbar warning precedence, interaction haptics, text insertion behavior, letter-case shift state, the letter rows each of the typing language's letter layouts draws, held-delete word deletion, typing-memory reset and per-language typing memory, an existing English memory file loading unchanged, emoji category memory and styles, emoji grid, search, and picker geometry, emoji drawability, and cursor-trackpad helpers.
+  - Keyboard dictation control, latest-insertion change behavior, deterministic paragraph/list/Caps formatting, controller presentation lifecycle coverage, toolbar warning precedence, interaction haptics, text insertion behavior, letter-case shift state, the letter rows each of the typing language's letter layouts draws, held-delete word deletion, typing-memory reset and per-language typing memory, an existing English memory file loading unchanged, emoji category memory and styles, emoji grid, search, and picker geometry, emoji drawability, and cursor-trackpad helpers, and the space-bar slide that switches typing languages.
   - The test target compiles every keyboard source except the keyboard's `Info.plist`, its `InfoPlist.xcstrings`, and privacy manifest.
 - `KeyVoxiOSTests/Core/TTS/`
   - Deterministic copied-text playback coverage for PocketTTS engine runtime lifecycle, TTS manager lifecycle handoff rules, system playback integration, and buffering policy behavior.
