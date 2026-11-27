@@ -31,7 +31,7 @@ in it.
 
 The shared modules: `words.py` (letters and key paths), `layouts.py`, `lexicon.py` (word
 list and key-path trie), `swipe_data.py`, `model.py`, `augment.py`, `ranking.py`,
-`first_key_neighbors.py`, `decode.py` with `beam_search.c`, `scoring.py`, `emissions.py`, `run_emissions.py`,
+`decode.py` with `beam_search.c`, `scoring.py`, `emissions.py`, `run_emissions.py`,
 `run_settings.py`, `decoder_model.py`, `weights_format.py`, and `exported_model.py`.
 
 ## Data
@@ -192,14 +192,6 @@ negatives mined afresh from `r3-ft` with `r3-ft`'s tuned scoring, 4 epochs at le
 ```bash
 python finetune_encoder.py <data-dir> r3-ft r3-ft2 <unigrams.tsv> --epochs 4 --learning-rate 5e-5
 ```
-
-`finetune_encoder.py` can also fine-tune on words that differ only in their first key
-(`--first-key-neighbors`, `first_key_neighbors.py`): the swipes of words with a neighbor that
-starts on the key beside theirs in its row and has the same keys after, at most
-`--swipes-per-word` of any one word, with as many swipes drawn from the rest, each swipe's hard
-negatives starting with its word's neighbors. `--steps` ends a run after that many steps and
-`--validate-every` decodes validation every that many steps, keeping each state as
-`step-<n>.pt`. No bundled model was trained this way (see "Experiments").
 
 **Scoring** (`tune_scoring.py`). On the validation split's cached candidates, a seeded random
 search of 400 weight sets, then coordinate refinement, maximizes top-1 (top-3 breaks ties) for
@@ -372,12 +364,13 @@ row names.
   there for "aas", and one asks that a circled word lose to a word on its keys written 50 times
   as often that doubles another letter, here "ass". `r3-ft` and `r3-ft2` read that swipe as
   "was", which neither test judges. `r3-ft2-neg32` reads it as "as" too.
-- **Fine-tuning on first-key neighbors.** `r3-ft-fk`, `r3-ft` fine-tuned with
-  `--first-key-neighbors` (79,649 swipes of words with such a neighbor, at most 200 of a word,
-  and as many others; learning rate 1e-4), measured with the landing rule 92.50% validation
+- **Fine-tuning on first-key neighbors.** `r3-ft-fk`, `r3-ft` fine-tuned on the swipes of
+  words with a neighbor that starts on the key beside theirs and has the same keys after
+  (79,649 swipes, at most 200 of a word, and as many others, each swipe's hard negatives
+  starting with its word's neighbors; learning rate 1e-4), measured with the landing rule 92.50% validation
   top-1 after 80 steps and 92.40% after 240, against `r3-ft`'s 92.67%, and without it 92.71%
   and 92.63% against 92.83%: it gives up swipes of common words as fast as the landing rule
-  does, so it is not bundled.
+  does, so it is not bundled and the fine-tune option was not kept.
 - **Other rankings.** On validation candidates, letting words that differ only in their last
   key trade places by where the swipe lifts won 51 swipes and lost 143, and weighing the words
   before more among words differing in their last key, in one middle key, or by one key at the
