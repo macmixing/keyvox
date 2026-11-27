@@ -87,10 +87,12 @@ KeyVoxTypingHarness swipe-lexicon --output <swipe_lexicon.kvsl> --words <unigram
 
 The bundled model was fine-tuned and its scoring tuned with the 129,438-word lexicon (106,973
 dictionary words and 22,465 swipe-vocabulary words; 121,643 forms), which covers 96.51% of
-validation swipes and 96.48% of test swipes. The bundled lexicon now has 133,299 words (125,504
-forms), after 3,861 words of swipe.futo.org's training sentences that the dictionary and the
-other vocabulary words lacked (`Tools/KeyVoxLanguageModel/README.md`, "Swipe vocabulary"). It
-covers 96.93% of validation swipes and 96.94% of test swipes. Every one of those 3,861 words is
+validation swipes and 96.48% of test swipes. The bundled lexicon now has 133,261 words (125,468
+forms): 3,861 words of swipe.futo.org's training sentences that the dictionary and the other
+vocabulary words lacked were added (`Tools/KeyVoxLanguageModel/README.md`, "Swipe vocabulary"),
+and the 38 words the dictionary and the swipe vocabulary leave out as offensive
+(`Tools/KeyVoxTypingModels/offensive_words.py`) were taken out, the swiped word of no validation
+swipe and of 1 test swipe. It covers 96.93% of validation swipes and 96.94% of test swipes. Every one of those 3,861 words is
 a word of the training split's swipes; none comes from validation or test alone. They are the
 swiped word of 227 validation swipes (0.42%) and 227 test swipes (0.45%), all words the
 training split also has. The rest can never be decoded and count as misses.
@@ -284,6 +286,9 @@ At `fix/swipe-landing-key` 75a6339a (133,299-word lexicon), `r3-ft2` with the se
 | Validation | 54,269 | 92.87% | 95.92% | 96.60% |
 | Test | 49,970 | 92.56% | 95.84% | 96.59% |
 
+With the 133,261-word lexicon, without the words left out as offensive, every figure of the table
+measures the same.
+
 Of swipe.futo.org's training and validation swipes of "us", a word whose commoner neighbor
 "is" starts a key over, 59 of 67 decode to it, and all 3 of "yo"; 591 of the first 600 of
 "is" and 595 of the first 600 of "to" keep their word.
@@ -303,8 +308,7 @@ Real swipes that start on the key beside their word's first key are far more oft
 word swiped loosely than the word on the landing key, so a rule that gives "us" from the "u"
 key costs swipe.futo.org accuracy; `r3-ft2`, its scoring, and the weights above make that up.
 Two earlier forms of the first landing rule were measured on both splits and not kept (92.70%
-and 92.79% validation, 92.43% and 92.55% test). Every figure is on record in
-`~/KeyVoxLanguageData/swipe/logs/landing-key-results.md`. At dd9e5a03, before the 3,861 added words (129,438-word lexicon), the same model measured
+and 92.79% validation, 92.43% and 92.55% test). At dd9e5a03, before the 3,861 added words (129,438-word lexicon), the same model measured
 92.49% validation and 92.26% test top-1. At that commit the model bundled before it,
 `r1-ft-dec6` (width 128, full augmentation, with a 6-block decoder), measured 92.35%
 validation and 92.32% test top-1; `r3-ft` replaced it on validation, where it decodes 0.14
