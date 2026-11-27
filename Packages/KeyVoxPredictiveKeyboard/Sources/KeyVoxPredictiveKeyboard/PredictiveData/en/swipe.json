@@ -16,6 +16,12 @@
     "contextCandidates": 20,
     "personalWordFrequency": 143
   },
+  "landing": {
+    "weight": 7,
+    "reach": 0.9,
+    "careReach": 0.38,
+    "softness": 0.04
+  },
   "loops": {
     "sampleRate": 60,
     "nearRadius": 1.2,

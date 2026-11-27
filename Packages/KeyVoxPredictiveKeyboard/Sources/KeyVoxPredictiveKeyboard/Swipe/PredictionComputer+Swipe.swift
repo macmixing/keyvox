@@ -51,7 +51,8 @@ extension PredictionComputer {
             contextLift: { spelling in try language.contextLift(of: spelling, previousWords: previousWords) },
             hasWordsBefore: previousWords.isEmpty == false,
             doublingKeys: { keyPath in decoder.doublingKeys(path: path, keyPath: keyPath, keys: state.keys) },
-            twinFacts: { [engine] spelling in SwipeTwinFacts(spelling: spelling, engine: engine) }
+            twinFacts: { [engine] spelling in SwipeTwinFacts(spelling: spelling, engine: engine) },
+            landingLosses: decoder.landingLosses(path: path, keys: state.keys)
         )
     }
 

@@ -52,6 +52,8 @@ public struct SwipeModelSettings: Decodable, Sendable, Equatable {
     /// How a squiggle over a key is told from the rest of a swipe, read on the path lined up as
     /// for loops, which it counts the same as (`SwipeKeySquiggle`).
     let squiggles: SwipeKeySquiggle.Settings?
+    /// How the point a swipe lands on weighs words by their first key (`SwipeLandingKey`).
+    let landing: SwipeLandingKey.Settings?
 
     /// The settings of `language`'s bundled swipe model.
     public static func bundled(for language: TypingLanguage) throws -> SwipeModelSettings {

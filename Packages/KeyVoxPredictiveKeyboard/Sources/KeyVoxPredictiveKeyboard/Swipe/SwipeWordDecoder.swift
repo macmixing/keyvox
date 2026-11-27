@@ -88,17 +88,22 @@ final class SwipeWordDecoder: @unchecked Sendable {
     ///     not at hand.
     ///   - twinFacts: What the language's data says about a spelling, for weighing twins; nil
     ///     treats every twin as an everyday word.
+    ///   - landingLosses: For each of the model's keys, what a word starting on it loses for where
+    ///     the swipe landed (`landingLosses(path:keys:)`), counted between words whose key paths
+    ///     differ only in their first key; nil ranks without the landing.
     func candidates(
         emissions: [Float],
         personal: SwipeLexicon?,
         contextLift: ((String) throws -> Double)?,
         hasWordsBefore: Bool,
         doublingKeys: (([Int]) -> [Bool]?)?,
-        twinFacts: ((String) -> SwipeTwinFacts)? = nil
+        twinFacts: ((String) -> SwipeTwinFacts)? = nil,
+        landingLosses: [Double]? = nil
     ) rethrows -> [SwipeCandidate] {
         let scoring = SwipeCandidateScoring(settings: settings.scoring)
         let symbols = settings.letters.unicodeScalars.count + 1
         var forms: [(base: Double, spellings: [(spelling: String, frequency: Double)], isPersonal: Bool)] = []
+        var paths: [[Int]?] = []
         for (source, isPersonal) in [(lexicon, false)] + (personal.map { [($0, true)] } ?? []) {
             source.withTables { tables in
                 for ending in SwipeBeamSearch.endings(
@@ -108,17 +113,32 @@ final class SwipeWordDecoder: @unchecked Sendable {
                         let frequency = isPersonal
                             ? settings.scoring.personalWordFrequency
                             : Double(tables.formFrequency[form])
+                        let spellings = tables.spellings(of: form).map {
+                            ($0.spelling, isPersonal ? frequency : Double($0.probability))
+                        }
                         let base = scoring.formScore(
                             logProbability: Double(ending.logProbability),
                             pathLength: Int(tables.formPathLength[form]),
                             frequency: frequency
                         )
-                        let spellings = tables.spellings(of: form).map {
-                            ($0.spelling, isPersonal ? frequency : Double($0.probability))
+                        if landingLosses != nil {
+                            paths.append(keyPath(of: spellings.first?.0))
                         }
                         forms.append((base, spellings, isPersonal))
                     }
                 }
+            }
+        }
+        if let landingLosses {
+            // Among words with the same keys after the first, each loses what the landing costs its
+            // first key beyond the least any of them loses, so only where they start ranks them.
+            var least: [ArraySlice<Int>: Double] = [:]
+            for case let path? in paths where path.isEmpty == false {
+                least[path.dropFirst()] = min(least[path.dropFirst()] ?? .infinity, landingLosses[path[0]])
+            }
+            for (index, path) in paths.enumerated() {
+                guard let path, path.isEmpty == false, let least = least[path.dropFirst()] else { continue }
+                forms[index].base -= landingLosses[path[0]] - least
             }
         }
         forms.sort { $0.base > $1.base }
@@ -171,6 +191,15 @@ final class SwipeWordDecoder: @unchecked Sendable {
                   path: path, centers: centers, pitch: pitch, sampleRate: loops.sampleRate, settings: squiggles
               ) else { return looped }
         return zip(looped, squiggled).map { $0 || $1 }
+    }
+
+    /// For each of the model's keys, what a word starting on it loses for where `path` lands on
+    /// the keys `keys` lays out (`SwipeLandingKey`); nil when the model has no landing settings or
+    /// the keys lack one of its letters.
+    func landingLosses(path: [SwipeTouchSample], keys: KeyCenterMap) -> [Double]? {
+        settings.landing.flatMap {
+            SwipeLandingKey.losses(path: path, keys: keys, letters: settings.letters, settings: $0)
+        }
     }
 
     private func keyPath(of spelling: String?) -> [Int]? {
