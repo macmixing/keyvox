@@ -43,6 +43,76 @@
       "comment" : "Approximate voice download size shown right after the install status sentence on the KeyVox Speak setup card; keep the leading space.",
       "shouldTranslate" : false
     },
+    "Reset Learned Words in %@?" : {
+      "comment" : "Title of the confirmation shown before clearing the words the KeyVox keyboard has learned in one language. The placeholder is the language's name, such as English.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Gelernte Wörter zurücksetzen (%@)?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "¿Restablecer palabras aprendidas (%@)?"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "¿Restablecer palabras aprendidas (%@)?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Réinitialiser les mots appris (%@) ?"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Réinitialiser les mots appris (%@)?"
+          }
+        }
+      }
+    },
+    "Reset Learned Words in All Languages?" : {
+      "comment" : "Title of the confirmation shown before clearing the words the KeyVox keyboard has learned in every language it types in.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Gelernte Wörter in allen Sprachen zurücksetzen?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "¿Restablecer palabras aprendidas en todos los idiomas?"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "¿Restablecer palabras aprendidas en todos los idiomas?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Réinitialiser les mots appris dans toutes les langues ?"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Réinitialiser les mots appris dans toutes les langues?"
+          }
+        }
+      }
+    },
     "Selected" : {
       "comment" : "Heading over the checked languages at the top of the keyboard language list, in the order the keyboard switches through them.",
       "localizations" : {
@@ -1340,6 +1410,41 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Les voix IA fonctionnent entièrement sur l’appareil. Rien ne quitte votre iPhone."
+          }
+        }
+      }
+    },
+    "All Languages" : {
+      "comment" : "Choice in the Reset Learned Words menu of keyboard settings that clears what the keyboard learned in every language.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Alle Sprachen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Todos los idiomas"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Todos los idiomas"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Toutes les langues"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Toutes les langues"
           }
         }
       }
@@ -7463,6 +7568,76 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "KeyVox oubliera les mots appris à partir de votre saisie et les corrections que vous avez annulées. Votre dictionnaire KeyVox n’est pas affecté."
+          }
+        }
+      }
+    },
+    "KeyVox will forget the words it learned from your typing in %@ and the corrections you undid. Your other languages and your KeyVox Dictionary aren't affected." : {
+      "comment" : "Message in the confirmation shown before resetting the keyboard's learned words in one language. The placeholder is the language's name, such as English. KeyVox is a brand name and stays in English; Dictionary refers to the app's Dictionary tab.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox vergisst die Wörter, die es aus deinen Eingaben (%@) gelernt hat, und die Korrekturen, die du widerrufen hast. Deine anderen Sprachen und dein KeyVox-Wörterbuch sind davon nicht betroffen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox olvidará las palabras que ha aprendido de lo que escribes (%@) y las correcciones que has deshecho. Tus otros idiomas y tu Diccionario de KeyVox no se verán afectados."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox olvidará las palabras que ha aprendido de lo que escribes (%@) y las correcciones que has deshecho. Tus otros idiomas y tu Diccionario de KeyVox no se verán afectados."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox oubliera les mots appris à partir de votre saisie (%@) et les corrections que vous avez annulées. Vos autres langues et votre dictionnaire KeyVox ne sont pas affectés."
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox oubliera les mots appris à partir de votre saisie (%@) et les corrections que vous avez annulées. Vos autres langues et votre dictionnaire KeyVox ne sont pas affectés."
+          }
+        }
+      }
+    },
+    "KeyVox will forget the words it learned from your typing in every language and the corrections you undid. Your KeyVox Dictionary isn't affected." : {
+      "comment" : "Message in the confirmation shown before resetting the keyboard's learned words in every language it types in. KeyVox is a brand name and stays in English; Dictionary refers to the app's Dictionary tab.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox vergisst die Wörter, die es aus deinen Eingaben in allen Sprachen gelernt hat, und die Korrekturen, die du widerrufen hast. Dein KeyVox-Wörterbuch ist davon nicht betroffen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox olvidará las palabras que ha aprendido de lo que escribes en todos los idiomas y las correcciones que has deshecho. Tu Diccionario de KeyVox no se verá afectado."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox olvidará las palabras que ha aprendido de lo que escribes en todos los idiomas y las correcciones que has deshecho. Tu Diccionario de KeyVox no se verá afectado."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox oubliera les mots appris à partir de votre saisie dans toutes les langues et les corrections que vous avez annulées. Votre dictionnaire KeyVox n’est pas affecté."
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox oubliera les mots appris à partir de votre saisie dans toutes les langues et les corrections que vous avez annulées. Votre dictionnaire KeyVox n’est pas affecté."
           }
         }
       }

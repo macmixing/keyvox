@@ -157,16 +157,30 @@ struct KeyboardSettingsView: View {
         }
     }
 
+    /// With one typing language the button asks to reset at once; with several it opens a menu of
+    /// the languages and all of them, and the choice is what the confirmation resets.
     private var resetLearnedWordsSection: some View {
         VStack(spacing: 8) {
-            AppActionButton(
-                title: KeyboardSettingsCopy.resetLearnedWordsTitle,
-                style: .secondary,
-                fillsWidth: true,
-                size: .regular,
-                fontSize: 16,
-                action: { pendingDeletionConfirmation = .learnedWords }
-            )
+            let languages = typingLanguageSelection.languages
+            if languages.count > 1 {
+                Menu {
+                    ForEach(languages, id: \.identifier) { language in
+                        Button(KeyboardTypingLanguageName.displayName(for: language.identifier)) {
+                            pendingDeletionConfirmation = .learnedWords(.language(language.identifier))
+                        }
+                    }
+                    Button(KeyboardSettingsCopy.resetLearnedWordsAllLanguagesTitle) {
+                        pendingDeletionConfirmation = .learnedWords(.allLanguages)
+                    }
+                } label: {
+                    resetLearnedWordsButton {}
+                        .allowsHitTesting(false)
+                }
+                .menuStyle(.button)
+                .buttonStyle(.plain)
+            } else {
+                resetLearnedWordsButton { pendingDeletionConfirmation = .learnedWords(.keyboard) }
+            }
 
             Text(KeyboardSettingsCopy.resetLearnedWordsHint)
                 .font(.appFont(15, variant: .light))
@@ -174,6 +188,17 @@ struct KeyboardSettingsView: View {
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: .infinity, alignment: .center)
         }
+    }
+
+    private func resetLearnedWordsButton(action: @escaping () -> Void) -> some View {
+        AppActionButton(
+            title: KeyboardSettingsCopy.resetLearnedWordsTitle,
+            style: .secondary,
+            fillsWidth: true,
+            size: .regular,
+            fontSize: 16,
+            action: action
+        )
     }
 
     private var englishOnlyNote: some View {

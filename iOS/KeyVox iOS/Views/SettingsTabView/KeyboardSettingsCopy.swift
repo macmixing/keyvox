@@ -23,6 +23,7 @@ enum KeyboardSettingsCopy {
     static let openOnNumberPageTitle = String(localized: "Open on 123", comment: "Keyboard settings toggle. 123 is the keyboard's numbers key label and stays as written.")
     static let openOnNumberPageDescription = String(localized: "Show numbers and symbols when the keyboard opens. Tap ABC for letters.", comment: "Description under the Open on 123 toggle. ABC is the keyboard's letters key label and stays as written.")
     static let resetLearnedWordsTitle = String(localized: "Reset Learned Words", comment: "Keyboard settings button that clears words the keyboard has learned.")
+    static let resetLearnedWordsAllLanguagesTitle = String(localized: "All Languages", comment: "Choice in the Reset Learned Words menu of keyboard settings that clears what the keyboard learned in every language.")
     static let resetLearnedWordsHint = String(localized: "To forget a single word, press and hold it in the suggestion bar.", comment: "Hint under the Reset Learned Words button.")
     static let languagesTitle = String(localized: "Languages", comment: "Title of the keyboard settings row showing the languages the keyboard types in.")
     static let changeLanguagesTitle = String(localized: "Change", comment: "Button on the keyboard Languages setting that opens the list of keyboard languages.")
