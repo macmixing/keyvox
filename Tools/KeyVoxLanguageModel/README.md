@@ -3,7 +3,8 @@
 Builds the language data of each typing language: the files the predictive keyboard bundles
 for English in `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/PredictiveData/en`,
 the capitalized spellings shared with dictation in `Packages/KeyVoxLinguistics/Sources/KeyVoxLinguistics/Resources`,
-and the same files for German, Spanish, and French, which are built but not bundled yet:
+and the same files for German, bundled in `PredictiveData/de` (all but the swipe vocabulary, which
+needs German swipe typing), and for Spanish and French, which are built but not bundled yet:
 
 | File | Built by | Reads |
 | --- | --- | --- |
@@ -132,13 +133,16 @@ bundled one before replacing it.
 
 ### Built data
 
-The builds of November 24, 2026. Every context model fills the default limits (107,000 words,
+The builds of November 24, 2026, and German's of November 27, rebuilt with its `language.json`,
+whose apostrophe and ordinal periods (see "Text in each language") leave 65,402 fewer sentences
+than November 24's and 198 fewer words, and with the written lexicon words its vocabulary adds (see
+"Vocabulary"); German's bundled files are this build's. Every context model fills the default limits (107,000 words,
 800,000 pairs, 600,000 sequences), so each is 14,963,028 bytes, as English's is.
 
 | Build | Words of text | Vocabulary | Capitalized spellings | Grammar words |
 | --- | --- | --- | --- | --- |
 | en | 528,779,799 | 109,172 (SCOWL size 60) | 18,144 | 152 |
-| de | 118,350,701 | 209,470 | 146,689 | 220 |
+| de | 118,350,503 | 222,148 | 152,972 | 220 |
 | de-bundestag | 138,467,367 | 209,470 | 146,689 | 222 |
 | es | 281,865,056 | 236,307 | 2,955 | 156 |
 | fr | 393,698,831 | 165,093 | 19,021 | 195 |
@@ -147,11 +151,11 @@ Texts, sentences, and words each source gave after deduplication:
 
 | Build | Source | Texts | Sentences | Words |
 | --- | --- | --- | --- | --- |
-| de | Tatoeba | 627,288 | 666,250 | 4,813,532 |
-| de | OASST2 | 6,086 | 36,718 | 412,098 |
-| de | WildChat | 29,581 | 52,602 | 386,654 |
-| de | YODAS2 | 19,250 | 1,353,933 | 23,715,021 |
-| de | YouTube-Commons | 41,435 | 175,889 | 89,023,396 |
+| de | Tatoeba | 627,288 | 665,043 | 4,813,527 |
+| de | OASST2 | 6,086 | 36,146 | 412,098 |
+| de | WildChat | 29,581 | 51,497 | 386,653 |
+| de | YODAS2 | 19,250 | 1,314,138 | 23,714,836 |
+| de | YouTube-Commons | 41,435 | 153,166 | 89,023,389 |
 | de-bundestag | Open Discourse (besides de's) | 69,394 | 1,314,524 | 20,116,666 |
 | es | Tatoeba | 378,560 | 391,930 | 2,695,083 |
 | es | OASST2 | 27,962 | 198,026 | 2,674,964 |
@@ -344,9 +348,21 @@ with a split word keeps all its words.
 
 `sentence_openers.txt` holds the words the suggestion bar offers where a sentence begins.
 Each language's source weights are in `languages.py`: English's were tuned against Apple's English
-suggestion bars (youtube-commons 0, oasst2 0.3, tatoeba 10). German, Spanish, and French give the
-same weights by kind of source, speech 0, chat and text messages 0.3, and Tatoeba 10, with no
-captures of Apple's bars in those languages to tune them against yet.
+suggestion bars (youtube-commons 0, oasst2 0.3, tatoeba 10). German and French give the same
+weights by kind of source, speech 0, chat and text messages 0.3, and Tatoeba 10.
+
+German's were measured against Apple's German (Germany) bars after 53 sentences
+(`apple-languages/sentence-openers/de_DE.json` in KeyVox's language data, read with `--apple`), over a
+grid of 24 weightings (Tatoeba 1, 10, 30; OASST2 and WildChat 0, 0.3, 1, 3; speech 0, 0.1), and keep
+those weights: no weighting with Tatoeba at 10 or 30 shares more words with Apple's bars, and the
+few that share more, with Tatoeba at 1, show far fewer different bars than Apple's:
+
+| Weights (Tatoeba, OASST2, WildChat, speech) | Words shared with Apple's bar | Different bars (Apple: 36) | Held out: Tatoeba | OASST2 | WildChat | YODAS2 | YouTube-Commons |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 10, 0.3, 0.3, 0 (German) | 1.26 of 3 | 17 | 29.3% | 8.6% | 5.0% | 17.6% | 15.8% |
+| 10, 0.3, 0.3, 0.1 | 1.21 of 3 | 13 | 28.5% | 8.8% | 5.9% | 20.5% | 18.4% |
+| 1, 0.3, 0.3, 0.1 | 1.30 of 3 | 8 | 27.8% | 8.9% | 6.4% | 21.5% | 20.2% |
+| 30, 0.3, 0.3, 0 | 1.23 of 3 | 22 | 29.3% | 8.0% | 4.8% | 17.2% | 15.7% |
 
 ## Words spelled with capitals
 
