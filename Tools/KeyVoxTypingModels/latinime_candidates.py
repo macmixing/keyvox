@@ -5,13 +5,13 @@ import gzip
 import pickle
 import subprocess
 
-from words import clean
+from words import normalized
 
 MAX_CANDIDATES = 8
 
 
 def query_key(typed, previous):
-    return clean(typed), tuple(clean(word) for word in previous[:3] if clean(word))
+    return normalized(typed), tuple(normalized(word) for word in previous[:3] if normalized(word))
 
 
 def unique_queries(collections):
@@ -60,7 +60,7 @@ def run_suggestions(reader, dictionary, keys, query_path, letter_rows, shared_se
             fields = line.rstrip("\n").split("\t")
             results = []
             for position in range(1, len(fields) - 2, 3):
-                results.append((clean(fields[position]), int(fields[position + 1]),
+                results.append((normalized(fields[position]), int(fields[position + 1]),
                                 int(fields[position + 2])))
             deduped = []
             observed = set()

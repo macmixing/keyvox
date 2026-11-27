@@ -53,6 +53,9 @@ class TypingLanguage:
     simulation_sources: tuple[str, ...] = ()
     # One in this many of their sentences is typed.
     simulation_share: int = 10
+    # The language build's sentence file whose writers' accents are measured
+    # (`measure_accent_typing.py`): text people typed.
+    accent_source: str | None = None
     # The language.json to read instead of the package's.
     language_file: Path | None = None
 
@@ -96,7 +99,10 @@ class TypingLanguage:
 _WRITTEN_SOURCES = ("tatoeba", "oasst2")
 # The share of their sentences that types about as many as English's simulation does.
 _LANGUAGE_BUILD_SHARE = 3
-_LANGUAGE_BUILD = dict(simulation_sources=_WRITTEN_SOURCES, simulation_share=_LANGUAGE_BUILD_SHARE)
+# WildChat's turns are what people typed to a chat assistant, the one typed source of every
+# language build.
+_LANGUAGE_BUILD = dict(simulation_sources=_WRITTEN_SOURCES, simulation_share=_LANGUAGE_BUILD_SHARE,
+                       accent_source="wildchat")
 
 # Each language build's locale is its AOSP word list's (`locale=` in the list's header). The pinned
 # profanity list has English terms alone.
