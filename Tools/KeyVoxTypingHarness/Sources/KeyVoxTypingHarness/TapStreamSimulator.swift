@@ -2,8 +2,7 @@ import CoreGraphics
 import Foundation
 import KeyVoxPredictiveKeyboard
 
-/// Seeded streams of tapping fingers for the swipe gate (`swipe-gate`), the touch models of
-/// `~/KeyVoxLanguageData/swipe/tap-vs-swipe/README.md`, section 7: every letter of a typing
+/// Seeded streams of tapping fingers for the swipe gate (`swipe-gate`): every letter of a typing
 /// plan, then the space bar, tapped where the plan aims it, held 60 to 200 ms, sampled at the
 /// model's rate, with the time between key presses of Jiang et al. ("How We Type", CHI 2020,
 /// Table 1) and the finger motion of the model.
