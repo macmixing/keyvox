@@ -3,7 +3,8 @@
 # with build_language_data.sh: the context model, the sentence openers, the words spelled with
 # capitals, the words that follow an unknown word or a common word, the grammar words, and the
 # swipe vocabulary, which reads the dictionary's words and probabilities from
-# <typing-data-dir>/work/dictionary_unigrams.tsv, written by Tools/KeyVoxTypingModels's build.
+# <typing-data-dir>/work/dictionary_unigrams.tsv and leaves out the words the patterns of
+# <typing-data-dir>/work/offensive_words.txt match, both written by Tools/KeyVoxTypingModels's build.
 # The builders share the source readers and the normalizing code, so a change made for one can
 # change another's output; run this after changing any tool here, never a single builder alone.
 #
@@ -21,6 +22,8 @@ usage() {
 DATA_DIR="$(cd "$1" && pwd)"
 DICTIONARY_WORDS="$(cd "$2" && pwd)/work/dictionary_unigrams.tsv"
 [[ -f "$DICTIONARY_WORDS" ]] || { echo "$DICTIONARY_WORDS: missing; build Tools/KeyVoxTypingModels first" >&2; exit 1; }
+LEFT_OUT_WORDS="$(cd "$2" && pwd)/work/offensive_words.txt"
+[[ -f "$LEFT_OUT_WORDS" ]] || { echo "$LEFT_OUT_WORDS: missing; build Tools/KeyVoxTypingModels first" >&2; exit 1; }
 CHECK=0
 if [[ $# -eq 3 ]]; then
   [[ "$3" == "--check" ]] || usage
@@ -31,7 +34,7 @@ BUNDLED_DIR="$TOOLS_DIR/../../Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPr
 LINGUISTICS_DIR="$TOOLS_DIR/../../Packages/KeyVoxLinguistics/Sources/KeyVoxLinguistics/Resources"
 BUILT_DIR="$DATA_DIR/bundled"
 
-"$TOOLS_DIR/build_language_data.sh" en "$DATA_DIR" "$BUILT_DIR" "$DICTIONARY_WORDS"
+"$TOOLS_DIR/build_language_data.sh" en "$DATA_DIR" "$BUILT_DIR" "$DICTIONARY_WORDS" "$LEFT_OUT_WORDS"
 
 differ=0
 for file in context_model.bin sentence_openers.txt capitalized_spellings_en.txt unknown_word_followers.txt \

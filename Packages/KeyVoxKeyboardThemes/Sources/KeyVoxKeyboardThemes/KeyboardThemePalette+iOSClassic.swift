@@ -57,6 +57,32 @@ extension KeyboardThemePalette {
                 alpha: iOSClassicKeyFillOpacity.light
             ),
             dark: KeyboardThemeRGBA(red: 0, green: 0, blue: 0, alpha: 0.82)
+        ),
+        // The platform's system blue in light and white in dark, with a nearly solid white head dot in
+        // dark so no ring shows over the letters, over five nested glow layers of the same shade,
+        // fainter in dark.
+        swipeTrail: KeyboardThemeSwipeTrail(
+            color: KeyboardThemeColor(light: .system(.blue, alpha: 0.8), dark: .rgba(KeyboardThemeRGBA(red: 1, green: 1, blue: 1, alpha: 0.7))),
+            headColor: KeyboardThemeColor(light: .system(.blue, alpha: 0.8), dark: .rgba(KeyboardThemeRGBA(red: 1, green: 1, blue: 1, alpha: 0.95))),
+            glowColor: KeyboardThemeColor(light: .system(.blue), dark: .rgba(KeyboardThemeRGBA(red: 1, green: 1, blue: 1))),
+            glows: [
+                KeyboardThemeSwipeTrail.Glow(widthScale: 1.3, opacity: KeyboardThemeSwipeTrail.Measure(light: 0.10, dark: 0.07)),
+                KeyboardThemeSwipeTrail.Glow(widthScale: 1.7, opacity: KeyboardThemeSwipeTrail.Measure(light: 0.07, dark: 0.05)),
+                KeyboardThemeSwipeTrail.Glow(widthScale: 2.2, opacity: KeyboardThemeSwipeTrail.Measure(light: 0.05, dark: 0.04)),
+                KeyboardThemeSwipeTrail.Glow(widthScale: 2.8, opacity: KeyboardThemeSwipeTrail.Measure(light: 0.03, dark: 0.02)),
+                KeyboardThemeSwipeTrail.Glow(widthScale: 3.5, opacity: KeyboardThemeSwipeTrail.Measure(light: 0.02, dark: 0.01)),
+            ],
+            width: KeyboardThemeSwipeTrail.Measure(light: 5.5, dark: 6),
+            tailWidthScale: KeyboardThemeSwipeTrail.standardTailWidthScale,
+            tailDuration: KeyboardThemeSwipeTrail.standardTailDuration,
+            opacityFalloffExponent: KeyboardThemeSwipeTrail.standardOpacityFalloffExponent,
+            bandOverlap: KeyboardThemeSwipeTrail.standardBandOverlap,
+            headScale: KeyboardThemeSwipeTrail.standardHeadScale,
+            liftDuration: KeyboardThemeSwipeTrail.standardLiftDuration,
+            liftTiming: KeyboardThemeSwipeTrail.standardLiftTiming,
+            bloomScale: KeyboardThemeSwipeTrail.standardBloomScale,
+            bloomDuration: KeyboardThemeSwipeTrail.standardBloomDuration,
+            bloomFadeDuration: KeyboardThemeSwipeTrail.standardBloomFadeDuration
         )
     )
 

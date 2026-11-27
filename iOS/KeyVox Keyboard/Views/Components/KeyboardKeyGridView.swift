@@ -1,3 +1,4 @@
+import KeyVoxPredictiveKeyboard
 import UIKit
 
 enum KeyboardTopRowAccessorySlot: Int, CaseIterable {
@@ -33,6 +34,28 @@ final class KeyboardKeyGridView: UIView {
     var onSpaceTrackpadEvent: ((KeyboardSpaceTrackpadEvent) -> Void)?
     /// Letter key frames whenever the letter page lays out differently.
     var onCharacterGeometryChange: (([KeyboardCharacterKeyGeometry], CGSize) -> Void)?
+    /// Called with a swipe's path, in this view's coordinates, the moment its finger lifts or
+    /// another finger lands, and, for a finger held undecided, where its word would have gone when
+    /// it lifted (`swipePlace`).
+    var onSwipeEnded: (([SwipeTouchSample], KeyboardSwipePlace?) -> Void)?
+    /// Where a swiped word would go now, read when a finger lifts undecided.
+    var swipePlace: (() -> KeyboardSwipePlace?)?
+    /// Whether a finger sliding across the letter keys may swipe a word; while false, the swipe
+    /// gate never runs and every touch is a key press.
+    var allowsSwipeTyping = false {
+        didSet {
+            guard allowsSwipeTyping != oldValue, allowsSwipeTyping == false else { return }
+            cancelSwipeTracking()
+        }
+    }
+    /// Decides which fingers on the letter keys are swiping (`SwipeGate`).
+    var swipeGate = SwipeGate<ObjectIdentifier>()
+    /// Fingers that lifted right after meeting the swipe threshold at speed: taps when another
+    /// finger lands soon, swipes otherwise.
+    var undecidedSwipeSessions: [ObjectIdentifier: KeyboardKeyTouchSession] = [:]
+    /// The distance between neighboring letter key centers across a row, in points.
+    private(set) var letterKeyPitch: CGFloat = 0
+    let swipeTrailView = KeyboardSwipeTrailView()
 
     /// Every page shown so far, kept so showing it again does not build it again.
     private var pages: [KeyboardKeyGridPage.Layout: KeyboardKeyGridPage] = [:]
@@ -154,6 +177,7 @@ final class KeyboardKeyGridView: UIView {
     }
 
     func resetInteractionState() {
+        cancelSwipeTracking()
         touchSessions.removeAll()
         trackpadOriginKeyView = nil
         popupOwnerKeyView = nil
@@ -323,6 +347,9 @@ final class KeyboardKeyGridView: UIView {
             referenceHeightConstraint,
         ])
 
+        swipeTrailView.frame = bounds
+        swipeTrailView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        addSubview(swipeTrailView)
         configureTouchRouter()
     }
 
@@ -354,6 +381,7 @@ final class KeyboardKeyGridView: UIView {
         let page = KeyboardKeyGridPage(layout: layout, letterCase: letterCase, keyGridView: self)
         page.view.isHidden = true
         insertSubview(page.view, belowSubview: topRowAccessoryReferenceStack)
+        bringSubviewToFront(swipeTrailView)
         NSLayoutConstraint.activate([
             page.view.leadingAnchor.constraint(equalTo: leadingAnchor),
             page.view.trailingAnchor.constraint(equalTo: trailingAnchor),
@@ -386,6 +414,9 @@ final class KeyboardKeyGridView: UIView {
               geometry.allSatisfy({ $0.frame.width > 0 && $0.frame.height > 0 }),
               geometry != lastReportedCharacterGeometry else { return }
         lastReportedCharacterGeometry = geometry
+        letterKeyPitch = KeyCenterMap(
+            geometry: geometry.map { PredictionKeyGeometry(character: $0.character, frame: $0.frame) }
+        ).pitch.width
         onCharacterGeometryChange?(geometry, bounds.size)
     }
 }

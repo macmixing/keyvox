@@ -248,6 +248,12 @@ final class AppSettingsStore: ObservableObject {
         }
     }
 
+    @Published var swipeTypingEnabled: Bool {
+        didSet {
+            defaults.set(swipeTypingEnabled, forKey: UserDefaultsKeys.swipeTypingEnabled)
+        }
+    }
+
     @Published var emojiKeyboardEnabled: Bool {
         didSet {
             defaults.set(emojiKeyboardEnabled, forKey: UserDefaultsKeys.emojiKeyboardEnabled)
@@ -360,6 +366,7 @@ final class AppSettingsStore: ObservableObject {
         autoCorrectionEnabled = defaults.object(forKey: UserDefaultsKeys.autoCorrectionEnabled) as? Bool ?? true
         shiftCapsLockEnabled = defaults.object(forKey: UserDefaultsKeys.shiftCapsLockEnabled) as? Bool ?? true
         predictiveTextEnabled = defaults.object(forKey: UserDefaultsKeys.predictiveTextEnabled) as? Bool ?? true
+        swipeTypingEnabled = defaults.object(forKey: UserDefaultsKeys.swipeTypingEnabled) as? Bool ?? true
         emojiKeyboardEnabled = defaults.object(forKey: UserDefaultsKeys.emojiKeyboardEnabled) as? Bool ?? true
         periodShortcutEnabled = defaults.object(forKey: UserDefaultsKeys.periodShortcutEnabled) as? Bool ?? true
         opensOnNumberPage = defaults.object(forKey: UserDefaultsKeys.opensOnNumberPage) as? Bool ?? false

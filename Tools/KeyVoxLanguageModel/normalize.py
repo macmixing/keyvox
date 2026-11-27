@@ -126,6 +126,13 @@ def sentences_with_endings(text: str, rules: TextRules = DEFAULT_RULES) -> Itera
         yield words, None
 
 
+def begins_written_run(before: str, rules: TextRules = DEFAULT_RULES) -> bool:
+    """Whether a word written right after `before` begins a run of `written_runs`: no word
+    comes before it since where a sentence or quotation can begin, so it may be capitalized
+    for that reason alone."""
+    return _WORD.search(_possible_start(rules).split(_prepared(before, rules))[-1]) is None
+
+
 def written_runs(text: str, rules: TextRules = DEFAULT_RULES) -> Iterator[list[str]]:
     """Words as written, in runs that each begin where a sentence or quotation can begin,
     so a word after the first of a run is capitalized, or not, for its own sake."""

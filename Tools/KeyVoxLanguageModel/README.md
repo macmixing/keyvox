@@ -13,7 +13,7 @@ and the same files for German, Spanish, and French, which are built but not bund
 | `unknown_word_followers.txt` | `write_vocabulary.py`, `write_unknown_word_followers.py` | The vocabulary, `count_ngrams.py`'s counts, and OASST2 and Tatoeba's sentences |
 | `word_followers.txt` | `write_vocabulary.py`, `write_word_followers.py` | The vocabulary, `count_ngrams.py`'s counts, and OASST2 and Tatoeba's sentences |
 | `grammar_words.txt` | `write_word_kinds.py`, `write_grammar_words.py` | `count_ngrams.py`'s vocabulary and the word kinds |
-| `swipe_vocabulary.txt` | `count_swipe_words.py`, `write_swipe_vocabulary.py` | Every source, through `source_texts.py`, the dictionary's words and probabilities, and SCOWL's size 80 in every spelling |
+| `swipe_vocabulary.txt` | `count_swipe_words.py`, `count_swiped_words.py`, `write_swipe_vocabulary.py` | Every source, through `source_texts.py`, the words swipe.futo.org's training split had people swipe, the dictionary's words and probabilities, and SCOWL's size 80 in every spelling |
 
 The swipe vocabulary is built only for a language with a dictionary, so for English alone
 today (see "Swipe vocabulary").
@@ -59,6 +59,7 @@ credited in `THIRD_PARTY_NOTICES.md`.
 | [Tatoeba](https://tatoeba.org/en/downloads) | Sentences | en, de, es, fr | CC BY 2.0 FR |
 | [88milSMS](https://hdl.handle.net/11403/comere/cmr-88milsms/cmr-88milsms-tei-v1) | Text messages written in France in 2011 | fr | CC BY 4.0 |
 | [Open Discourse](https://doi.org/10.7910/DVN/FIKIBO) | Bundestag speeches from 2000 on, the year its record took up the reformed spelling; a quarter of them | de-bundestag | CC0 1.0 |
+| [swipe.futo.org](https://huggingface.co/datasets/futo-org/swipe.futo.org) | The words of the sentences people swiped in its training split, read by the swipe vocabulary alone (see "Swipe vocabulary"); its validation and test splits measure the swipe decoder and are never read | en | MIT |
 
 A German, Spanish, or French build leaves out a text another source, or the same one, already
 gave (compared in lowercase with its spacing evened out), reading Tatoeba, OASST2, WildChat,
@@ -95,18 +96,21 @@ steps:
 ```
 
 Given `[dictionary-words]`, the language's dictionary words and probabilities (a word, a tab,
-and a probability a line), it then builds the swipe vocabulary:
+and a probability a line), it then builds the swipe vocabulary, leaving out the words that
+`[left-out-words]`, a regular expression a line, matches (`Tools/KeyVoxTypingModels` writes
+English's as `work/offensive_words.txt`):
 
 ```bash
 .venv/bin/python count_swipe_words.py --language <language> <data-dir>
+.venv/bin/python count_swiped_words.py --language <language> <data-dir>
 ./scowl_words.sh 80 <output-dir>/spelling_list.txt A,B,Z,C,D
-.venv/bin/python write_swipe_vocabulary.py --language <language> <data-dir> <dictionary-words> <output-dir>/spelling_list.txt <output-dir>/swipe_vocabulary.txt
+.venv/bin/python write_swipe_vocabulary.py --language <language> <data-dir> <dictionary-words> <output-dir>/spelling_list.txt <output-dir>/swipe_vocabulary.txt --leave-out <left-out-words>
 ```
 
 Steps that read none of each other's files run side by side: after `download_sources.py`, the
 vocabulary and the words spelled with capitals (`write_vocabulary.py`,
-`write_capitalized_spellings.py`) and the swipe vocabulary's counts (`count_swipe_words.py`, the
-spelling list) run beside `extract_sentences.py`; then the context model (`count_ngrams.py`,
+`write_capitalized_spellings.py`) and the swipe vocabulary's counts (`count_swipe_words.py`,
+`count_swiped_words.py`, the spelling list) run beside `extract_sentences.py`; then the context model (`count_ngrams.py`,
 `write_context_model.py`) beside the sentence openers (`write_word_kinds.py`,
 `count_sentence_openers.py`, `write_sentence_openers.py`); then the two follower lists and the
 grammar words, once the counts, the vocabulary, and the word kinds are written; and last
@@ -359,8 +363,10 @@ words in a row.
 
 `swipe_vocabulary.txt` holds the words people write that the English dictionary lacks, so a
 swipe can decode to them: "haha", "hahaha", "omg", "lmao", "cuz", "anyways", British spellings
-such as "centre", and names such as "Minecraft". One word per line, its spelling, a tab, and its
-probability on the dictionary's 0-255 scale, likeliest first. It holds no dictionary word, so the
+such as "centre", and names such as "Minecraft", then the words swipe.futo.org's training split
+had people swipe that the dictionary and those words lack, such as "well-known" and
+"Derbyshire" (see "Swiped words"). One word per line, its spelling, a tab, and its probability
+on the dictionary's 0-255 scale, likeliest first. It holds no dictionary word, so the
 dictionary stays the one source of every word it has, and the swipe lexicon is the dictionary's
 words and these.
 
@@ -371,21 +377,26 @@ also counts how often each word is joined to other letters or digits in one run 
 the middle of a sentence. `write_swipe_vocabulary.py` reads the counts by swipe form (letters
 only, case and accents folded, as a swipe draws them). Each form no dictionary word spells is a
 candidate, and these rules, in order, leave one out. The counts are from the build of November
-25, 2026:
+27, 2026:
 
 | Rule | Leaves out | Forms |
 | --- | --- | --- |
+| Offensive | A word the dictionary leaves out too: a pattern of `--leave-out` matches it whole (`Tools/KeyVoxTypingModels/offensive_words.py`) | 61 |
 | Letters | A letter that is no letter key of the keyboard (the default letter layout `language.json` names, `letter_layouts/<layout>.json`) | 6,262 |
-| One source | Fewer than two of the three sources write it as a word on its own | 693,651 |
+| One source | Fewer than two of the three sources write it as a word on its own | 693,597 |
 | Joined | Written joined to other letters or digits more than half the time: URLs, hyphenated words, code | 125 |
-| Misspelling | A dictionary form one edit away (a letter left out, added, or changed, or two neighbors swapped) is written on its own at least 50 times as often as it is | 4,188 |
-| Kept | | 22,465 of 726,691 |
+| Misspelling | A dictionary form one edit away (a letter left out, added, or changed, or two neighbors swapped) is written on its own at least 50 times as often as it is | 4,187 |
+| Kept | | 22,459 of 726,691 |
+
+The dictionary's words that `--leave-out` matches still count as dictionary words here, as
+`work/dictionary_unigrams.tsv` holds them, so they are never candidates and every other rule
+and probability is as it would be with them in the dictionary.
 
 - Decoding HTML references and skipping Markdown code leaves 416 forms in a single source that
   were in two before, the largest "nbsp" (980,367 times before, 44 after); the others' only other
   source was code or HTML references in OASST2.
 - The misspelling rule never leaves out a form SCOWL's size 80 lists in any spelling (American,
-  British, Canadian, or Australian), which keeps 1,748 forms such as "colour", "yay", and
+  British, Canadian, or Australian), which keeps 1,747 forms such as "colour", "yay", and
   "cafe", or one the written sources write with capitals more often than in lowercase, as a
   name or an acronym (a misspelling of a lowercase word is lowercase), which keeps 2,830.
 - Both sides of the misspelling rule count only the times a form is written on its own, so a
@@ -405,12 +416,67 @@ are capitals in a row, which stay lowercase as in the capitalized spellings ("js
 probability is the median the dictionary gives its words that the sources write on their own
 about as often (within a quarter of an octave), so an added word ranks as a dictionary word as
 common would. `<data-dir>/swipe_vocabulary_report.tsv` lists every candidate with its counts, its outcome and
-the rule or exception behind it, and a kept form's rank, spelling, and probability.
+the rule or exception behind it, and a kept form's rank, spelling, and probability; a form the
+swipe dataset swipes also has how many records swipe it, the outcome of the rules below, and its
+spellings there, and a form only the dataset has is listed with the outcome "no source".
+
+### Swiped words
+
+swipe.futo.org's training split (`FUTO_SWIPE` in `sources.py`, `swiped_words` in `languages.py`)
+is 939,550 swipes of the words of sentences taken from Wikipedia, each record with its word as
+the sentence writes it and its place in the sentence. `count_swiped_words.py` counts each word
+without the punctuation around it ("well-known", "Ed.D"), and apart, the times it is in the
+middle of a sentence, neither first in the sentence nor right after where a sentence or quotation
+can begin (`normalize.begins_written_run`). The dataset's validation and test splits are never
+read.
+
+The sources write most of these words too rarely for the rules above, so the words of the
+dataset come after the sources' words, with rules of their own. Each form no dictionary word
+spells and the list does not already hold is a candidate, and these rules, in order, leave one
+out. The counts are from the build of November 27, 2026:
+
+| Rule | Leaves out | Forms |
+| --- | --- | --- |
+| Offensive | As above | 1 |
+| Letters | A letter that is no letter key of the keyboard, as above | 0 |
+| One swipe | Fewer than two records swipe it | 21,721 |
+| Misspelling | As above, counting how often the sources write the form on its own (none for most), so a dictionary form one edit away that the sources write at all leaves it out | 129 |
+| Kept | | 3,860 of 25,711 |
+
+- The misspelling rule keeps its exceptions: a form SCOWL's size 80 lists, which keeps 201, or
+  one the dataset's sentences write with capitals more often than in lowercase in the middle of
+  a sentence, which keeps 558. It leaves out the dataset's own misspellings, such as "adpressed",
+  "buildink", and "portraint", and words that would take a common word's swipes, such as
+  "two-day" ("today"), and "ebook" and "focussed" as from the sources' words.
+- The rules for one source and joined words count the sources' texts, which hardly write these
+  words; a word the dataset writes joined, such as "well-known", is the whole word a person
+  swipes, and 584 of the words kept are hyphenated.
+
+Each kept form is written in its most common spelling, with its likeliest capitals when the
+dataset's sentences write that spelling with capitals more often than in lowercase in the middle
+of a sentence (2,856 of them), unless they are capitals in a row, which stay lowercase as above.
+The forms are ranked by how many records swipe them, each with the lowest probability the
+sources' words get, 41.
 
 ### Measured accuracy
 
-`Tools/KeyVoxSwipeModel` (`feat/swipe-model`) decoded the 54,269 swipes of swipe.futo.org's
-validation split with its best run, `r1-ft-dec6`, and that run's tuned scoring (`scoring.json`),
+`Tools/KeyVoxTypingHarness swipe-accuracy` decoded swipe.futo.org's test and validation splits,
+with the words before each swipe, through the keyboard's swipe path and the bundled swipe model,
+before and after the swiped words were added (top-1, context weight 0.425):
+
+| Split | Swipes | Without the swiped words | With them |
+| --- | --- | --- | --- |
+| Test | 49,970 | 92.26% | 92.62% |
+| Validation | 54,269 | 92.49% | 92.83% |
+| Validation, no words before | 54,269 | 91.84% | 92.18% |
+
+On the validation split without the words before, 193 swipes decode to their word first that did
+not, every one of them to an added word, and 4 that did no longer do, 3 of them to an added word.
+
+The measurement below was made before the swiped words were added.
+
+`Tools/KeyVoxSwipeModel` decoded the 54,269 swipes of swipe.futo.org's validation split with
+`r1-ft-dec6`, the model bundled at the time, and that run's tuned scoring (`scoring.json`),
 with the dictionary alone and with the first words of the swipe vocabulary added, by rank:
 
 | Words added | Swipes whose word can be decoded | Top-1 | Top-3 | Top-10 |

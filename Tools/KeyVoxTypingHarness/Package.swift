@@ -3,7 +3,7 @@ import PackageDescription
 
 let package = Package(
     name: "KeyVoxTypingHarness",
-    platforms: [.macOS(.v13)],
+    platforms: [.macOS("13.3")],
     dependencies: [
         .package(path: "../../Packages/KeyVoxPredictiveKeyboard"),
     ],

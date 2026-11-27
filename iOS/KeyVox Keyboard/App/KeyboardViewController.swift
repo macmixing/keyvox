@@ -40,6 +40,13 @@ final class KeyboardViewController: UIInputViewController {
         },
         isPeriodShortcutEnabled: { [weak self] in
             self?.typingTraits.allowsPeriodShortcut ?? true
+        },
+        // A swipe's word goes in before anything typed after it, and where it goes stays known.
+        willEdit: { [weak self] in
+            self?.finishPendingSwipe()
+        },
+        didEdit: { [weak self] in
+            self?.predictionCoordinator.textWasEdited()
         }
     )
     /// The one connection to the Transcription AU extension, shared by dictation and by restyles
@@ -111,7 +118,10 @@ final class KeyboardViewController: UIInputViewController {
         memory: KeyboardTypingMemory.shared.memory,
         textBeforeCursor: { [weak self] in self?.textDocumentProxy.documentContextBeforeInput },
         selectedText: { [weak self] in self?.textDocumentProxy.selectedText },
-        textAfterCursor: { [weak self] in self?.textDocumentProxy.documentContextAfterInput }
+        textAfterCursor: { [weak self] in self?.textDocumentProxy.documentContextAfterInput },
+        documentIdentifier: { [weak self] in
+            self.flatMap { KeyboardDocumentIdentifier.read(from: $0.textDocumentProxy) }
+        }
     )
     var typingTraits = KeyboardTypingTraits.standard
     /// Whether the keyboard appeared and has yet to read the field, which waits for the system to
@@ -310,6 +320,7 @@ final class KeyboardViewController: UIInputViewController {
         // new one, so a read before then, even on a later main-thread turn, can reach freed
         // memory.
         awaitsFieldState = true
+        predictionCoordinator.leaveField()
         preparePresentationIfNeeded()
         installedModels = KeyboardInstalledModels.check()
         KeyVoxIPCBridge.reportKeyboardOnboardingState(hasFullAccess: hasFullAccess)
@@ -348,6 +359,8 @@ final class KeyboardViewController: UIInputViewController {
         // The system keyboard ends its emoji search when it goes away.
         leaveEmojiSearch()
         guard extensionHostIsActive else { return }
+        // The field is read again only once the next appearance's field state is handed over.
+        predictionCoordinator.leaveField()
         deactivatePresentationBindings()
     }
 
@@ -741,6 +754,7 @@ final class KeyboardViewController: UIInputViewController {
 
     @discardableResult
     func handleKeyActivation(_ keyActivation: KeyboardKeyActivation) -> Bool {
+        finishPendingSwipe()
         if emojiPanel == .searching, let handled = handleEmojiSearchActivation(keyActivation) {
             return handled
         }

@@ -1,0 +1,446 @@
+import Foundation
+#if canImport(CoreGraphics)
+import CoreGraphics
+#endif
+
+/// Turns a swipe into ranked spellings: a typing language's bundled swipe model reads the path
+/// in the frame of the keys on screen, and a beam search walks the language's swipe lexicon and
+/// the user's own words with what the model says, each candidate ranked by
+/// `SwipeCandidateScoring`.
+///
+/// The files are the language's own (`PredictiveData/<language>/`): `swipe.json`, the encoder,
+/// the swipe lexicon built for that model, and the decoder when the model has one. The decoder
+/// reads one fixed key layout, so a model with one is bundled per language; the encoder alone
+/// reads any layout from its key centers.
+final class SwipeWordDecoder: @unchecked Sendable {
+    let settings: SwipeModelSettings
+    private let layout: LetterKeyLayout
+    private let encoder: SwipeEncoderNetwork
+    private let decoder: SwipeDecoderNetwork?
+    private let lexicon: SwipeLexicon
+
+    init(language: TypingLanguage) throws {
+        let resources = language.resources
+        settings = try SwipeModelSettings(contentsOf: resources.url("swipe.json"))
+        layout = language.letterLayout
+        encoder = try SwipeEncoderNetwork(contentsOf: resources.url(SwipeEncoderNetwork.fileName))
+        decoder = try resources.optionalURL(SwipeDecoderNetwork.fileName).map(SwipeDecoderNetwork.init(contentsOf:))
+        lexicon = try SwipeLexicon(contentsOf: resources.url(SwipeLexiconFormat.fileName))
+        let symbols = settings.letters.unicodeScalars.count + 1
+        let frameWidth = symbols + encoder.coefficientCount + 1
+        guard lexicon.letters == settings.letters,
+              lexicon.keepsDoubleLetters == settings.keepsDoubleLetters,
+              decoder.map({ $0.symbols == symbols && $0.inputs == frameWidth }) ?? true else {
+            throw PredictiveKeyboardError.invalidSwipeModel("swipe.json")
+        }
+    }
+
+    /// A lexicon of `words` built for this model, searched beside the bundled one.
+    func personalLexicon(_ words: [String]) throws -> SwipeLexicon {
+        try SwipeLexicon(data: SwipeLexiconBuilder.fileData(
+            words: words.map { SwipeLexiconBuilder.Word(spelling: $0, probability: 0, isOfferable: true) },
+            settings: settings
+        ))
+    }
+
+    /// The model's per-frame log-probabilities for `path` on the keys `keys` lays out, blank
+    /// first, or nil when those keys lack one of the model's letters.
+    func emissions(for path: [SwipeTouchSample], keys: KeyCenterMap) -> [Float]? {
+        guard path.isEmpty == false,
+              let frame = SwipeKeyboardFrame(keys: keys, layout: layout, letters: settings.letters) else {
+            return nil
+        }
+        let points = SwipePathResampler.resample(
+            path.map { sample in
+                let point = frame.normalized(sample.location)
+                return (sample.timestamp, point.x, point.y)
+            },
+            points: encoder.points
+        )
+        return emissions(forResampled: points, keyCenters: frame.keyCenters)
+    }
+
+    /// The per-frame log-probabilities for a path already resampled into the model's frame.
+    func emissions(forResampled points: [Float], keyCenters: [(x: Float, y: Float)]) -> [Float] {
+        let frames = encoder.frames(path: points, keyCenters: keyCenters)
+        if let decoder {
+            return decoder.logProbabilities(for: frames)
+        }
+        let symbols = keyCenters.count + 1
+        return (0..<frames.count).flatMap { frame in
+            frames.values[frame * frames.width..<frame * frames.width + symbols]
+        }
+    }
+
+    /// The best spellings for `emissions`, best first, from the bundled lexicon and `personal`.
+    ///
+    /// Words whose key paths are the same, such as a word and its doubled-letter twin ("to" and
+    /// "too", once a repeated letter is one key), look the same to the model, so their scores differ
+    /// only by frequency and context; among them, a loop or a squiggle the finger made at a key and, when
+    /// there are words before, the context counted `samePathContextWeight` rather than
+    /// `contextWeight` decide which takes which of their places (`rankingSamePaths`).
+    /// - Parameters:
+    ///   - contextLift: How much likelier the words before make a spelling, as a natural log; nil
+    ///     ranks without context.
+    ///   - hasWordsBefore: Whether any words come before, rather than the sentence starting.
+    ///   - doublingKeys: For each key of a key path, whether the swipe looped around it
+    ///     (`SwipeKeyLoop`) or squiggled over it (`SwipeKeySquiggle`); nil when the swipe's path is
+    ///     not at hand.
+    ///   - twinFacts: What the language's data says about a spelling, for weighing twins; nil
+    ///     treats every twin as an everyday word.
+    ///   - landingLosses: For each of the model's keys, what a word starting on it loses for where
+    ///     the swipe landed (`landingLosses(path:keys:)`), by which words whose key paths differ
+    ///     only in their first key trade places among themselves (`rankingFirstKeys`); nil ranks
+    ///     without the landing.
+    func candidates(
+        emissions: [Float],
+        personal: SwipeLexicon?,
+        contextLift: ((String) throws -> Double)?,
+        hasWordsBefore: Bool,
+        doublingKeys: (([Int]) -> [Bool]?)?,
+        twinFacts: ((String) -> SwipeTwinFacts)? = nil,
+        landingLosses: [Double]? = nil
+    ) rethrows -> [SwipeCandidate] {
+        let scoring = SwipeCandidateScoring(settings: settings.scoring)
+        let symbols = settings.letters.unicodeScalars.count + 1
+        var forms: [(base: Double, spellings: [(spelling: String, frequency: Double)], isPersonal: Bool)] = []
+        for (source, isPersonal) in [(lexicon, false)] + (personal.map { [($0, true)] } ?? []) {
+            source.withTables { tables in
+                for ending in SwipeBeamSearch.endings(
+                    emissions: emissions, symbols: symbols, lexicon: tables, pruning: settings.pruning
+                ) {
+                    for form in Int(tables.formStart[ending.node])..<Int(tables.formStart[ending.node + 1]) {
+                        let frequency = isPersonal
+                            ? settings.scoring.personalWordFrequency
+                            : Double(tables.formFrequency[form])
+                        let spellings = tables.spellings(of: form).map {
+                            ($0.spelling, isPersonal ? frequency : Double($0.probability))
+                        }
+                        let base = scoring.formScore(
+                            logProbability: Double(ending.logProbability),
+                            pathLength: Int(tables.formPathLength[form]),
+                            frequency: frequency
+                        )
+                        forms.append((base, spellings, isPersonal))
+                    }
+                }
+            }
+        }
+        forms.sort { $0.base > $1.base }
+        var weighed = Array(forms.prefix(settings.scoring.contextCandidates))
+        if doublingKeys != nil || landingLosses != nil {
+            let paths = weighed.compactMap { keyPath(of: $0.spellings.first?.spelling) }
+            // Every twin of a weighed word is weighed too, so a loop or a squiggle can pick it.
+            let twins = doublingKeys == nil ? [] : Set(paths)
+            // So is every word that differs from a weighed word only in its first key and loses
+            // less than it for where the swipe landed, so the landing can pick it.
+            var leastLoss: [ArraySlice<Int>: Double] = [:]
+            if let landingLosses {
+                for path in paths where path.isEmpty == false {
+                    leastLoss[path.dropFirst()] = min(leastLoss[path.dropFirst()] ?? .infinity, landingLosses[path[0]])
+                }
+            }
+            weighed += forms.dropFirst(weighed.count).filter { form in
+                guard let path = keyPath(of: form.spellings.first?.spelling) else { return twins.contains([]) }
+                if twins.contains(path) { return true }
+                guard let landingLosses, path.isEmpty == false, let least = leastLoss[path.dropFirst()] else { return false }
+                return landingLosses[path[0]] < least
+            }
+        }
+        var candidates: [SwipeCandidate] = []
+        for form in weighed {
+            let formFrequency = form.spellings.map(\.frequency).max() ?? 0
+            for spelling in form.spellings {
+                let lift = try contextLift?(spelling.spelling) ?? 0
+                candidates.append(SwipeCandidate(
+                    spelling: spelling.spelling,
+                    isPersonal: form.isPersonal,
+                    score: scoring.spellingScore(
+                        formScore: form.base,
+                        formFrequency: formFrequency,
+                        spellingFrequency: spelling.frequency,
+                        contextLift: lift
+                    ),
+                    contextLift: lift
+                ))
+            }
+        }
+        let usesContext = contextLift != nil && hasWordsBefore
+        if usesContext || doublingKeys != nil {
+            rankingSamePaths(&candidates, usesContext: usesContext, doublingKeys: doublingKeys, twinFacts: twinFacts)
+        }
+        if let landingLosses {
+            rankingFirstKeys(&candidates, landingLosses: landingLosses, usesContext: usesContext)
+        }
+        return candidates.sorted { $0.score > $1.score }
+    }
+
+    /// For each key of `keyPath`, on the keys `keys` lays out, whether `path` loops around it or,
+    /// when the model has squiggle settings, squiggles over it, either of which asks for the key's
+    /// letter doubled; nil when the model has no loop settings or the keys lack one of its letters.
+    func doublingKeys(path: [SwipeTouchSample], keyPath: [Int], keys: KeyCenterMap) -> [Bool]? {
+        guard let loops = settings.loops, settings.keepsDoubleLetters == false else { return nil }
+        let letters = Array(settings.letters.unicodeScalars)
+        var centers: [CGPoint] = []
+        for key in keyPath {
+            guard let center = keys.center(of: Character(letters[key])) else { return nil }
+            centers.append(center)
+        }
+        let pitch = Double(keys.pitch.width)
+        guard let looped = SwipeKeyLoop.loopedKeys(path: path, centers: centers, pitch: pitch, settings: loops) else { return nil }
+        guard let squiggles = settings.squiggles,
+              let squiggled = SwipeKeySquiggle.squiggledKeys(
+                  path: path, centers: centers, pitch: pitch, sampleRate: loops.sampleRate, settings: squiggles
+              ) else { return looped }
+        return zip(looped, squiggled).map { $0 || $1 }
+    }
+
+    /// For each of the model's keys, what a word starting on it loses for where `path` lands on
+    /// the keys `keys` lays out (`SwipeLandingKey`); nil when the model has no landing settings or
+    /// the keys lack one of its letters.
+    func landingLosses(path: [SwipeTouchSample], keys: KeyCenterMap) -> [Double]? {
+        settings.landing.flatMap {
+            SwipeLandingKey.losses(path: path, keys: keys, letters: settings.letters, settings: $0)
+        }
+    }
+
+    private func keyPath(of spelling: String?) -> [Int]? {
+        spelling.flatMap {
+            SwipeLetterForm.keyPath(
+                of: SwipeLetterForm.form(of: $0),
+                keyIndex: settings.keyIndex,
+                keepsDoubleLetters: settings.keepsDoubleLetters
+            )
+        }
+    }
+
+    /// Reorders the words of each set whose key paths differ only in their first key, by where the
+    /// swipe landed (`SwipeLandingKey`): the first takes the best of the set's words' best scores,
+    /// the next the next best, and so on, in the order of each word's best score less what the
+    /// landing costs its first key, a natural log taken from the score as it is, each word's
+    /// spellings moving with it. When words come before, the context counts
+    /// `firstKeyContextWeight` rather than `contextWeight` in that order, as the landing and the
+    /// words before are all that tell such words apart: each first key's words are weighed by the
+    /// context of the best of them. The scores the set holds stay the same, so every ranking
+    /// outside it stays as scored; words on one key path lose the same, so they keep the order
+    /// `rankingSamePaths` gave them.
+    private func rankingFirstKeys(_ candidates: inout [SwipeCandidate], landingLosses: [Double], usesContext: Bool) {
+        let extraWeight = usesContext ? settings.scoring.firstKeyContextWeight - settings.scoring.contextWeight : 0
+        let words = Dictionary(grouping: candidates.indices) { SwipeLetterForm.form(of: candidates[$0].spelling) }
+        var sets: [ArraySlice<Int>: [(word: String, firstKey: Int)]] = [:]
+        for word in words.keys {
+            guard let path = keyPath(of: word), path.isEmpty == false else { continue }
+            sets[path.dropFirst(), default: []].append((word, path[0]))
+        }
+        for set in sets.values where Set(set.map(\.firstKey)).count > 1 {
+            // Each first key's best word, by whose context every word on that key is weighed, so
+            // words on one key path lose the same.
+            var leaders: [Int: SwipeCandidate] = [:]
+            for member in set {
+                let best = words[member.word]!.map { candidates[$0] }.max { $0.score < $1.score }!
+                if best.score > (leaders[member.firstKey]?.score ?? -.infinity) { leaders[member.firstKey] = best }
+            }
+            let entries = set.map { member in
+                (
+                    word: member.word,
+                    best: words[member.word]!.map { candidates[$0].score }.max()!,
+                    loss: landingLosses[member.firstKey] - extraWeight * leaders[member.firstKey]!.contextLift
+                )
+            }
+            let places = entries.map(\.best).sorted(by: >)
+            let order = entries.sorted {
+                ($0.best - $0.loss, $0.best, $1.word) > ($1.best - $1.loss, $1.best, $0.word)
+            }
+            for (entry, place) in zip(order, places) where place != entry.best {
+                for index in words[entry.word]! {
+                    let candidate = candidates[index]
+                    candidates[index] = SwipeCandidate(
+                        spelling: candidate.spelling,
+                        isPersonal: candidate.isPersonal,
+                        score: place + (candidate.score - entry.best),
+                        contextLift: candidate.contextLift
+                    )
+                }
+            }
+        }
+    }
+
+    /// Reorders the words of each set sharing a key path: the first takes the best of the set's
+    /// words' best scores, the next the next best, and so on, each word's spellings moving with it.
+    /// The scores the set holds stay the same, so every ranking outside it stays as scored, and so
+    /// does the order of a word's own spellings, such as its case and apostrophe variants.
+    ///
+    /// A squiggle over a key (`SwipeKeySquiggle`) is a loop there to every rule below, as both ask
+    /// for the key's letter doubled.
+    ///
+    /// Between twins, words whose letters differ only in how many times letters repeat at their
+    /// keys, the circles decide, whatever the words before or their frequencies, key by key. A loop
+    /// around a key where a word has the letter exactly twice credits the word, whether or not a
+    /// twin has it once; a word with it three times or more gets nothing from the loop, as a loop
+    /// asks for the letter doubled, not tripled. Where a word doubles a letter with no loop credit,
+    /// its twins with the letter once, no letter more, and the same at every key a loop credits the
+    /// word are left to the scores and the words before when the bundled lexicon has them all,
+    /// unless one of the two is written `misspellingRatio` times as often as the other, which then
+    /// wins: "as soon" gives "soon" and "my son" gives "son", while "is" never gives "iss" and "se"
+    /// gives "see"; a word only the user's own words spell loses to them there, so no letter only
+    /// they double is added without a loop. Where a word repeats a
+    /// letter three times or more with no loop credit, against every twin with it fewer times and no
+    /// letter more, whatever its circles elsewhere, or doubles it against twins only the user's
+    /// words spell, those twins win unless every one is a misspelling of it, written
+    /// `misspellingRatio` times less often in the context model, the rule the language data's swipe
+    /// vocabulary build leaves misspellings out by; then it wins over them, except a twin a loop
+    /// credits at that key. A word in both the bundled lexicon and the user's words ranks among its
+    /// twins by the bundled lexicon's spellings, as the user's words score with a set frequency
+    /// rather than how often people write them. A word a loop credits also loses to
+    /// any word on its path that doubles a letter where no loop was read and lacks a credited
+    /// double, when that word is written `misspellingRatio` times as often, as a loop read where the
+    /// finger only turned on its way is likelier than the rare word it would ask for: "dropped" with
+    /// a loop read at its "o" stays "dropped", not "drooped", and "rom" circled at its "m" gives
+    /// "room".
+    /// A word losing to a twin at any key comes after the words that lose at fewer, whatever its
+    /// loops; among the rest, the word with more loop credits comes first. So "yes" circled at its
+    /// "e" stays "yes" rather than "yeesss", and a contact's "Mann" never beats "man" without a
+    /// loop. Words without a twin are untouched. Among words
+    /// alike in both, its score with the context counted `samePathContextWeight` times when
+    /// `usesContext` ranks it, then its spelling.
+    private func rankingSamePaths(
+        _ candidates: inout [SwipeCandidate],
+        usesContext: Bool,
+        doublingKeys: (([Int]) -> [Bool]?)?,
+        twinFacts: ((String) -> SwipeTwinFacts)?
+    ) {
+        var facts: [String: SwipeTwinFacts] = [:]
+        func factsOf(_ spelling: String) -> SwipeTwinFacts {
+            if let known = facts[spelling] { return known }
+            let found = twinFacts?(spelling) ?? SwipeTwinFacts(logFrequency: 0)
+            facts[spelling] = found
+            return found
+        }
+        let extraWeight = usesContext ? settings.scoring.samePathContextWeight - settings.scoring.contextWeight : 0
+        let keyIndex = settings.keyIndex
+        let words = Dictionary(grouping: candidates.indices) { SwipeLetterForm.form(of: candidates[$0].spelling) }
+        let sets = Dictionary(grouping: words.keys) { word in
+            SwipeLetterForm.keyPath(of: word, keyIndex: keyIndex, keepsDoubleLetters: settings.keepsDoubleLetters) ?? []
+        }
+        for (path, set) in sets where set.count > 1 && path.isEmpty == false {
+            let looped = settings.keepsDoubleLetters ? nil : doublingKeys?(path)
+            let repeats = Dictionary(uniqueKeysWithValues: set.compactMap { word in Self.repeats(of: word, keyIndex: keyIndex).map { (word, $0) } })
+            func logFrequency(_ word: String) -> Double { words[word]!.map { factsOf(candidates[$0].spelling).logFrequency }.max()! }
+            // A twin repeating letters fewer times is a misspelling of the word only when the word is
+            // written `misspellingRatio` times as often.
+            func isMisspelling(_ shorter: String, of longer: String) -> Bool {
+                logFrequency(longer) - logFrequency(shorter) >= log(settings.scoring.misspellingRatio)
+            }
+            // A word only the user's own words spell, none of the bundled lexicon's.
+            func isPersonalOnly(_ word: String) -> Bool { words[word]!.allSatisfy { candidates[$0].isPersonal } }
+            var loops: [String: Int] = [:]
+            var unlooped: [String: Int] = [:]
+            // A loop asks for a key's letter doubled, not tripled: the keys whose loop credits each word.
+            let credited = repeats.mapValues { own -> Set<Int> in
+                guard let flags = looped, flags.count == own.count else { return [] }
+                return Set(own.indices.filter { flags[$0] && own[$0] == 1 })
+            }
+            for (longer, own) in repeats {
+                let circled = credited[longer]!
+                loops[longer] = circled.count
+                for key in own.indices where own[key] > 0 && circled.contains(key) == false {
+                    // Its twins at this key: words repeating this key's letter fewer times and no letter
+                    // more. Against a double, only those the same at every key a loop credits it, so a
+                    // circled letter never counts against it; a letter three times or more with no loop
+                    // is weighed against every one, so loops elsewhere never add it.
+                    var shorter = repeats.filter { other in
+                        other.value.count == own.count && other.value[key] < own[key]
+                            && other.value.indices.allSatisfy { other.value[$0] <= own[$0] }
+                            && (own[key] > 1 || circled.allSatisfy { other.value[$0] == own[$0] })
+                    }.map(\.key)
+                    guard shorter.isEmpty == false else { continue }
+                    if own[key] == 1 {
+                        // A letter doubled only by the user's own words is never added without a loop.
+                        if isPersonalOnly(longer) {
+                            unlooped[longer, default: 0] += 1
+                            continue
+                        }
+                        // Between lexicon words, one written `misspellingRatio` times as often as its twin
+                        // wins, either way; otherwise the scores and the words before decide.
+                        let lexical = shorter.filter { isPersonalOnly($0) == false }
+                        if lexical.contains(where: { isMisspelling(longer, of: $0) }) {
+                            unlooped[longer, default: 0] += 1
+                        }
+                        for word in lexical where isMisspelling(word, of: longer) && credited[word]!.contains(key) == false {
+                            unlooped[word, default: 0] += 1
+                        }
+                        shorter = shorter.filter(isPersonalOnly)
+                        guard shorter.isEmpty == false else { continue }
+                    }
+                    if shorter.contains(where: { isMisspelling($0, of: longer) == false }) {
+                        unlooped[longer, default: 0] += 1
+                    } else {
+                        // A twin a loop credits at this key is what the loop asked for.
+                        for word in shorter where credited[word]!.contains(key) == false {
+                            unlooped[word, default: 0] += 1
+                        }
+                    }
+                }
+            }
+            // A word a loop credits loses to a word on its path that doubles a letter where no loop was
+            // read and lacks a credited double, when that word is written `misspellingRatio` times as
+            // often: a loop read where the finger merely turned does not make "dropped" "drooped".
+            for (word, circles) in credited where circles.isEmpty == false {
+                let own = repeats[word]!
+                let flags = looped ?? own.map { _ in false }
+                let commoner = repeats.contains { other, runs in
+                    other != word && runs.count == own.count
+                        && runs.indices.contains { runs[$0] > own[$0] && flags[$0] == false }
+                        && circles.contains { runs[$0] < own[$0] }
+                        && logFrequency(other) - logFrequency(word) >= log(settings.scoring.misspellingRatio)
+                }
+                if commoner { unlooped[word, default: 0] += 1 }
+            }
+            let entries = set.map { word -> (word: String, best: SwipeCandidate, loops: Int, unlooped: Int, rank: Double) in
+                let spellings = words[word]!.map { candidates[$0] }
+                let best = spellings.max { $0.score < $1.score }!
+                // A word ranks by the lexicon's spellings when it has any: a user's word scores with a
+                // set frequency, not how often people write it.
+                let lexical = spellings.filter { $0.isPersonal == false }
+                let ranked = (lexical.isEmpty ? spellings : lexical).max { $0.score < $1.score }!
+                return (word, best, loops[word] ?? 0, unlooped[word] ?? 0, ranked.score + extraWeight * ranked.contextLift)
+            }
+            let places = entries.map(\.best.score).sorted(by: >)
+            let order = entries.sorted {
+                if $0.unlooped != $1.unlooped { return $0.unlooped < $1.unlooped }
+                if $0.loops != $1.loops { return $0.loops > $1.loops }
+                if $0.rank != $1.rank { return $0.rank > $1.rank }
+                return $0.best.score != $1.best.score ? $0.best.score > $1.best.score : $0.word < $1.word
+            }
+            var previous = Double.infinity
+            for (entry, sortedPlace) in zip(order, places) {
+                // Equal scores would leave the order to the final sort; each place is below the last.
+                let place = min(sortedPlace, previous.nextDown)
+                previous = place
+                let shift = place - entry.best.score
+                for index in words[entry.word]! {
+                    let candidate = candidates[index]
+                    candidates[index] = SwipeCandidate(
+                        spelling: candidate.spelling,
+                        isPersonal: candidate.isPersonal,
+                        score: candidate.score + shift,
+                        contextLift: candidate.contextLift
+                    )
+                }
+            }
+        }
+    }
+
+    /// For each key of `form`'s key path with repeats counted once, how many more times its letter
+    /// follows itself there; nil when one of its letters has no key.
+    private static func repeats(of form: String, keyIndex: [Unicode.Scalar: Int]) -> [Int]? {
+        var last: Int?
+        var repeats: [Int] = []
+        for scalar in form.unicodeScalars {
+            guard let key = keyIndex[scalar] else { return nil }
+            if key == last { repeats[repeats.count - 1] += 1 } else { repeats.append(0) }
+            last = key
+        }
+        return repeats
+    }
+}

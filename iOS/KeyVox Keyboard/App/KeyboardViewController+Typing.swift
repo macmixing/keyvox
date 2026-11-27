@@ -8,7 +8,9 @@ extension KeyboardViewController {
     /// Reads the focused field's traits and starts it on the right page with a fresh
     /// typing session.
     func prepareTypingForCurrentField() {
+        dropPendingSwipes()
         typingTraits = KeyboardTypingTraits(proxy: textDocumentProxy, settings: appSettingsStore)
+        updateSwipeTyping()
         fieldHasLetters = fieldHoldsLetters()
         isReturnKeyEnabled = fieldAllowsReturn()
         applyOpeningLayout(
@@ -104,6 +106,7 @@ extension KeyboardViewController {
             return applyWordBoundary(separator: separator, emitsKeypress: false)
         case let .character(value):
             return applyPickedWordSpace(value, typesExactly: activation.isHeldKeyChoice)
+                ?? applySwipedWordSpace(activation)
         default:
             return nil
         }
@@ -112,6 +115,7 @@ extension KeyboardViewController {
     /// Deletes whole words for a held delete key, from the emoji search while searching. Returns
     /// false when no word could be deleted.
     func handleDeleteWords(_ count: Int) -> Bool {
+        finishPendingSwipe()
         if emojiPanel == .searching {
             return deleteEmojiSearchWords(count)
         }
@@ -172,6 +176,7 @@ extension KeyboardViewController {
     }
 
     func handleSuggestionSelected(_ item: SuggestionBar.Item) {
+        finishPendingSwipe()
         interactionHaptics.emitLightIfEnabled()
         textInputController.apply(
             predictionCoordinator.choiceEdit(item, allowsAutocorrection: typingTraits.allowsAutocorrection)
@@ -313,16 +318,33 @@ extension KeyboardViewController {
         return true
     }
 
+    /// Puts a space between a word just swiped in and a letter tapped right after it, then the
+    /// letter, which starts a typed word, as on the system keyboard. Returns nil otherwise, for the
+    /// regular path to type the letter.
+    private func applySwipedWordSpace(_ activation: KeyboardKeyActivation) -> Bool? {
+        guard typingTraits.allowsPredictions,
+              case let .character(letter) = activation.kind,
+              let edit = predictionCoordinator.swipedWordLetterEdit(letter: letter) else {
+            return nil
+        }
+        textInputController.apply(edit)
+        recordTypedCharacter(activation)
+        handleTypingContextChange()
+        return true
+    }
+
     /// Applies an autocorrection, if one is due, together with the separator that ended
-    /// the word. Returns nil when there is no correction so the regular path inserts the
-    /// separator (keeping behaviors such as the double-space period).
+    /// the word, and the separator that ends a word just swiped in, so the first space after it
+    /// is a plain one. Returns nil otherwise so the regular path inserts the separator (keeping
+    /// behaviors such as the double-space period).
     private func applyWordBoundary(separator: String, emitsKeypress: Bool) -> Bool? {
-        guard typingTraits.allowsPredictions else { return nil }
-        let edit = predictionCoordinator.wordBoundaryEdit(
-            separator: separator,
-            allowsAutocorrection: typingTraits.allowsAutocorrection
-        )
-        guard edit.deleteCount > 0 else { return nil }
+        guard typingTraits.allowsPredictions,
+              let edit = predictionCoordinator.appliedWordBoundaryEdit(
+                  separator: separator,
+                  allowsAutocorrection: typingTraits.allowsAutocorrection
+              ) else {
+            return nil
+        }
         if emitsKeypress {
             keypressHaptics.emitKeypressIfEnabled()
         }

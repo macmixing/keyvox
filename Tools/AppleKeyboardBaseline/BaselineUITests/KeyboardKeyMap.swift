@@ -14,10 +14,15 @@ struct KeyboardKeyMap {
         try self.init(spaceLabel: "space") { label in keyboard.keys[label] }
     }
 
-    /// A third-party keyboard, whose keys are found by their accessibility labels.
+    /// A third-party keyboard, whose keys are found by their accessibility labels; of the elements
+    /// with a key's label, the key is the lowest, as a suggestion bar offering the same word sits
+    /// above the keys.
     init(customKeyboardIn app: XCUIApplication) throws {
         try self.init(spaceLabel: "Space") { label in
-            app.descendants(matching: .any)
+            let matches = app.descendants(matching: .any)
+                .matching(NSPredicate(format: "label == %@", label))
+                .allElementsBoundByIndex
+            return matches.max { $0.frame.midY < $1.frame.midY } ?? app.descendants(matching: .any)
                 .matching(NSPredicate(format: "label == %@", label))
                 .firstMatch
         }

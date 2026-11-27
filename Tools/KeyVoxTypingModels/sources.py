@@ -103,7 +103,22 @@ ITE = Source(
     ),
 )
 
-SOURCES = (TATOEBA, OASST1, ITE)
+_PROFANITY_LIST_REVISION = "c27924319aa9bd6f917e3782b4f4b6604a50b652"
+
+# The words the dictionary and the swipe vocabulary leave out (`offensive_words.py`).
+PROFANITY_LIST = Source(
+    name="profanity-list",
+    license="MIT License",
+    license_url=f"https://github.com/dsojevic/profanity-list/blob/{_PROFANITY_LIST_REVISION}/LICENSE",
+    files=(
+        DownloadedFile(
+            url=f"https://raw.githubusercontent.com/dsojevic/profanity-list/{_PROFANITY_LIST_REVISION}/en.json",
+            path="sources/profanity-list/en.json",
+        ),
+    ),
+)
+
+SOURCES = (TATOEBA, OASST1, ITE, PROFANITY_LIST)
 
 
 def tatoeba_export_path(data_dir: Path) -> Path:
@@ -122,6 +137,10 @@ def tatoeba_path(data_dir: Path) -> Path:
 
 def oasst1_path(data_dir: Path) -> Path:
     return data_dir / OASST1.files[0].path
+
+
+def profanity_list_path(data_dir: Path) -> Path:
+    return data_dir / PROFANITY_LIST.files[0].path
 
 
 def ite_path(data_dir: Path, member: str) -> Path:

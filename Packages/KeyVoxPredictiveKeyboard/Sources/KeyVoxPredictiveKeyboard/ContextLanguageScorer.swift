@@ -27,7 +27,7 @@ public struct ContextLanguageScorer: Sendable {
     static let sentenceStart = "<s>"
     private static let backoffLogFactor = log(0.4)
     /// About one occurrence in ten thousand words: the frequency of an everyday word.
-    private static let personalWordLogProbability = log(1e-4)
+    static let personalWordLogProbability = log(1e-4)
     /// One in ten: above all but the most common word pairs.
     private static let personalContinuationLogProbability = log(0.1)
     /// About once in ten million words: a word the dictionary lacks but the counts see this
@@ -55,6 +55,26 @@ public struct ContextLanguageScorer: Sendable {
 
     /// - Parameter previousWords: Earlier words in the sentence, newest first.
     public func score(of word: String, previousWords: [String]) throws -> Score {
+        try scoreAndAnalysis(of: word, previousWords: previousWords).score
+    }
+
+    /// How much likelier the words before make `word` than it is on its own, as a natural log:
+    /// its score after them less its overall frequency, which for the user's words is at least
+    /// an everyday word's, as their score is. Zero when the counts cannot tell.
+    /// - Parameter previousWords: Earlier words in the sentence, newest first.
+    func contextLift(of word: String, previousWords: [String]) throws -> Double {
+        let (score, analysis) = try scoreAndAnalysis(of: word, previousWords: previousWords)
+        let alone = vocabulary.contains(word)
+            ? max(analysis.unigramLogProbability, Self.personalWordLogProbability)
+            : analysis.unigramLogProbability
+        let lift = score.logProbability - alone
+        return lift.isFinite ? lift : 0
+    }
+
+    private func scoreAndAnalysis(
+        of word: String,
+        previousWords: [String]
+    ) throws -> (score: Score, analysis: WordLanguageAnalysis) {
         let context = previousWords.count < 2 ? previousWords + [Self.sentenceStart] : previousWords
         let analysis = try analyze(word.lowercased(), context)
         let logProbability: Double
@@ -70,20 +90,20 @@ public struct ContextLanguageScorer: Sendable {
         guard vocabulary.contains(word) else {
             let isEverydayWord = analysis.wordIsValid == false
                 && analysis.unigramLogProbability >= Self.everydayUseLogProbability
-            return Score(
+            return (Score(
                 logProbability: logProbability,
                 isDictionaryWord: analysis.wordIsValid || isEverydayWord,
                 isEverydayWord: isEverydayWord
-            )
+            ), analysis)
         }
         let continuesPhrase = previousWords.first.map { vocabulary.continues($0, with: word) } ?? false
-        return Score(
+        return (Score(
             logProbability: max(
                 logProbability,
                 continuesPhrase ? Self.personalContinuationLogProbability : Self.personalWordLogProbability
             ),
             isDictionaryWord: true,
             isEverydayWord: false
-        )
+        ), analysis)
     }
 }

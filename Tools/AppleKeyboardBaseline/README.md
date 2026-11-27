@@ -57,6 +57,12 @@ Replay the same plan with `TEST_RUNNER_BASELINE_KEYBOARD_MARKER=Shift` (a key la
 the KeyVox keyboard has) and `TEST_RUNNER_BASELINE_KEYBOARD_NAME=KeyVox`. Add
 `TEST_RUNNER_BASELINE_DISABLE_AUTOCORRECT=1` to record the raw typed letters instead.
 
+## Dismissing the keyboard
+
+The host app's Hide button dismisses the keyboard and Show brings it back to the text view, for
+steps that need the keyboard to go away and appear again (`button:Hide`, then `button:Show`, in
+`EmojiFrequentlyUsedProbeTests`).
+
 ## Delete key timeline
 
 The host app records every change to its text, with the time since it was filled, to
@@ -67,3 +73,55 @@ each step removed and when:
 ```sh
 python3 print_deletion_timeline.py --simulator <simulator-udid> --save <timeline.json>
 ```
+
+## Swipe trail capture
+
+`SwipeTrailCaptureTests` swipes words across the KeyVox keyboard for recording its swipe
+trail. Each word is one finger drawn through its letters' key centers with XCTest's event
+synthesis, in minimum-jerk strokes that slow into every key; the Simulator keeps a
+synthesized path's timing only when its points are sparse, so they are given at 20 Hz and the
+keyboard still sees the screen's own samples in between. Record the screen alongside:
+
+```sh
+xcrun simctl io <simulator-udid> recordVideo --codec=h264 --force swipes.mov &
+TEST_RUNNER_SWIPE_KEYBOARD_MARKER=Shift \
+TEST_RUNNER_SWIPE_WORDS=hello,world,keyboard \
+TEST_RUNNER_SWIPE_OUTPUT=/tmp/swipes.json \
+xcodebuild test -project AppleKeyboardBaseline.xcodeproj -scheme BaselineUITests \
+  -destination "platform=iOS Simulator,id=<simulator-udid>" \
+  -derivedDataPath /tmp/keyvox-apple-baseline -parallel-testing-enabled NO \
+  -only-testing:BaselineUITests/SwipeTrailCaptureTests
+kill -INT %1
+```
+
+`TEST_RUNNER_SWIPE_PAUSE` sets the rest after each swipe (default 1.2 s). The output holds
+each swipe's wall-clock start and end, for picking frames of the recording, and the text the
+swipes typed.
+
+## Swiped words
+
+`SwipeWordsValidationTests` checks what swipes type on the KeyVox keyboard, or on the system
+keyboard with `TEST_RUNNER_SWIPE_SYSTEM_KEYBOARD=1` (picked from the globe's menu where there is
+one). Each case clears the text, types its words before by tapping the keys, and swipes its keys
+the same way (`SwipeGesturePath`), looping around the keys it names: by default the finger curls
+once around the key's center and goes a tenth of a turn past where the loop crosses, as people
+loop at a doubled letter; a case's `loop` (`SwipeGesturePath.Loop`: `radius` and `drift` in key
+pitches, `duration` and `pause` in seconds, `turns`) shapes it otherwise.
+
+```sh
+TEST_RUNNER_SWIPE_KEYBOARD_MARKER=Shift \
+TEST_RUNNER_SWIPE_CASES='[{"before":"i want","keys":"to","loops":[1]},{"before":"","keys":"to","loops":[]}]' \
+TEST_RUNNER_SWIPE_OUTPUT=/tmp/swiped-words.json \
+xcodebuild test -project AppleKeyboardBaseline.xcodeproj -scheme BaselineUITests \
+  -destination "platform=iOS Simulator,id=<simulator-udid>" \
+  -derivedDataPath /tmp/keyvox-apple-baseline -parallel-testing-enabled NO \
+  -only-testing:BaselineUITests/SwipeWordsValidationTests
+```
+
+`before` is the words before, space separated (empty for a sentence start), `keys` the keys to
+swipe through, and `loops` the indices of the keys to loop around. The output holds each case
+with where its swipe started, `path` (the points sent, as screen x, y and seconds), the text it
+left, and `bar`, the suggestion bar's entries then; each case's result is also printed as a
+`SWIPE_CASE_RESULT` line, for a device, whose output file stays on the device. Each case's
+screenshot is kept in the test's results, and in `TEST_RUNNER_SWIPE_SCREENSHOTS`, when set, as a
+PNG.

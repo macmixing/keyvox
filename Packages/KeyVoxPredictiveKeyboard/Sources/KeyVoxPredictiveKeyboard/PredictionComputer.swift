@@ -6,8 +6,8 @@ import CoreGraphics
 /// Computes suggestions and the space-bar autocorrection for a prediction request.
 /// Safe to call from any thread; the engine serializes its own native work.
 public final class PredictionComputer: @unchecked Sendable {
-    private let engine: PredictiveEngine
-    private let casing: WordCasing
+    let engine: PredictiveEngine
+    let casing: WordCasing
     private let parameters: NoisyChannelCorrector.Parameters
     private let lock = NSLock()
     /// How much likelier than usual the words before must make a dictionary word for the bar to
@@ -22,6 +22,8 @@ public final class PredictionComputer: @unchecked Sendable {
     private var vocabulary = PersonalVocabulary.empty
     private var forms = PersonalWordForms.empty
     private var learned = LearnedVocabulary.empty
+    /// Swipe decoding, loaded the first time a swipe needs it.
+    let swipeDecoding = SwipeDecoding()
 
     public init(
         engine: PredictiveEngine,
@@ -43,6 +45,13 @@ public final class PredictionComputer: @unchecked Sendable {
         self.keys = keys
         self.neighborKeySlips = neighborKeySlips
         lock.unlock()
+    }
+
+    /// The letter keys and the user's words as suggestions use them right now.
+    func personalState() -> (keys: KeyCenterMap, vocabulary: PersonalVocabulary, forms: PersonalWordForms, learned: LearnedVocabulary) {
+        lock.lock()
+        defer { lock.unlock() }
+        return (keys, vocabulary, forms, learned)
     }
 
     /// Call whenever the user's dictionary, contacts, or text replacements change. Known
@@ -250,7 +259,7 @@ public final class PredictionComputer: @unchecked Sendable {
     /// How the bar writes the dictionary word `word` after `previousWords`: the user's capitals
     /// when they gave it capitals, unless the words before make the everyday word much likelier
     /// than usual ("a red rose"), as the system keyboard keeps it there.
-    private func suggestionForm(of word: String, previousWords: [String], learned: LearnedVocabulary) throws -> String {
+    func suggestionForm(of word: String, previousWords: [String], learned: LearnedVocabulary) throws -> String {
         guard let capitalForm = learned.capitalForm(of: word), word == word.lowercased() else { return word }
         let analysis = try engine.analyze(word: word, previousWords: previousWords)
         let lift = analysis.precedingPairObserved

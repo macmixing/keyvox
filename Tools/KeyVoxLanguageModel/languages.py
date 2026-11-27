@@ -1,7 +1,8 @@
 """What each typing language's data is built from, and the build rules that differ between
 languages: its sources in the order they are read, how much of each is used, how its text is
 split into words, which sources its sentence openers are weighted toward, how its words get
-their kinds, and which word lists its vocabulary comes from.
+their kinds, which word lists its vocabulary comes from, and which swipe dataset's words its
+swipe vocabulary adds.
 
 A build is named by its language (`en`) or by a language and a variant (`de-bundestag`),
 which shares its language's rules and adds sources. The rules the keyboard reads at run time,
@@ -17,6 +18,7 @@ from pathlib import Path
 from normalize import DEFAULT_RULES, TextRules
 from sources import (
     ENGLISH_YOUTUBE_COMMONS,
+    FUTO_SWIPE,
     GRAMMALECTE,
     OPEN_DISCOURSE,
     RLA_ES,
@@ -98,6 +100,8 @@ class Language:
     opener_weights: dict[str, float] = field(default_factory=dict)
     # Spellings with capitals in a row the system keyboard was measured writing as spelled.
     measured_spellings: Path | None = None
+    # A swipe dataset whose swiped words the swipe vocabulary adds (count_swiped_words.py).
+    swiped_words: Source | None = None
 
     def source(self, name: str) -> Source:
         return next(use.source for use in self.sources if use.source.name == name)
@@ -170,6 +174,7 @@ LANGUAGES = {
         word_kinds=AppleTaggerKinds(snapshot_sha256="a46077a3b030c478fe39dc19d9b96a32f0934a9ac69e4aec551fb8a923d8ee3d"),
         opener_weights={"youtube-commons": 0.0, "oasst2": 0.3, "tatoeba": 10.0},
         measured_spellings=MEASURED_SPELLINGS,
+        swiped_words=FUTO_SWIPE,
     ),
     "de": Language(sources=_GERMAN_SOURCES, **_GERMAN),
     "de-bundestag": Language(

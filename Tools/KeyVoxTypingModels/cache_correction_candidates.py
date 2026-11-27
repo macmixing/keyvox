@@ -7,7 +7,8 @@ source (`--source`, `ite` unless given): the typos and words typed as meant the 
 action model train on, ITE's held-out ones, every word of the copied sentences, and expressive
 words, in that order, each asked in a LatinIME session of its own. With `--as-bundled` they are
 instead the queries the bundled rankers learned from (`bundled_queries.py`), asked in one
-shared session, so the build rebuilds the bundled rankers."""
+shared session of the dictionary as counted, with the words `offensive_words.py` matches, as
+they learned from it, so the build rebuilds the bundled rankers."""
 
 import argparse
 from pathlib import Path
@@ -35,7 +36,7 @@ def main():
         collections = correction_sets(paths, arguments.source).all_records()
     keys = latinime_candidates.unique_queries(collections)
     outputs = latinime_candidates.run_suggestions(
-        paths.suggestion_reader, paths.dictionary, keys, paths.correction_queries,
+        paths.suggestion_reader, paths.counted_dictionary if arguments.as_bundled else paths.dictionary, keys, paths.correction_queries,
         shared_session=arguments.as_bundled)
     latinime_candidates.save(outputs, paths.correction_candidates)
     print(f"cached {len(outputs):,} queries in {paths.correction_candidates}")

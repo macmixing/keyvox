@@ -167,6 +167,10 @@ final class KeyboardAppSettingsStore {
         defaults?.object(forKey: UserDefaultsKeys.predictiveTextEnabled) as? Bool ?? true
     }
 
+    var isSwipeTypingEnabled: Bool {
+        defaults?.object(forKey: UserDefaultsKeys.swipeTypingEnabled) as? Bool ?? true
+    }
+
     var isEmojiKeyboardEnabled: Bool {
         defaults?.object(forKey: UserDefaultsKeys.emojiKeyboardEnabled) as? Bool ?? true
     }

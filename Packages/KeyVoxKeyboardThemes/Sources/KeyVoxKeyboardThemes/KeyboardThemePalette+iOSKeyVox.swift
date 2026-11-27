@@ -29,6 +29,34 @@ extension KeyboardThemePalette {
         microphoneBackground: .appearance(
             light: KeyboardThemeRGBA(red: 0.901, green: 0.901, blue: 0.976),
             dark: KeyboardThemeRGBA(red: 0, green: 0, blue: 0, alpha: 0.82)
+        ),
+        // Indigo in light and the letter keys' lavender in dark, with a lighter head dot in dark, over
+        // five nested glow layers of the same hue.
+        swipeTrail: KeyboardThemeSwipeTrail(
+            color: .appearance(
+                light: KeyboardThemeRGBA(red: 0x5B / 255, green: 0x5F / 255, blue: 0xD6 / 255, alpha: 0.85),
+                dark: KeyboardThemeRGBA(red: 0xAB / 255, green: 0xAB / 255, blue: 0xEB / 255)
+            ),
+            headColor: .appearance(
+                light: KeyboardThemeRGBA(red: 0x5B / 255, green: 0x5F / 255, blue: 0xD6 / 255, alpha: 0.85),
+                dark: KeyboardThemeRGBA(red: 0xC9 / 255, green: 0xC9 / 255, blue: 0xFF / 255)
+            ),
+            glowColor: .appearance(
+                light: KeyboardThemeRGBA(red: 0x5B / 255, green: 0x5F / 255, blue: 0xD6 / 255),
+                dark: KeyboardThemeRGBA(red: 0xAB / 255, green: 0xAB / 255, blue: 0xEB / 255)
+            ),
+            glows: KeyboardThemeSwipeTrail.standardGlows,
+            width: KeyboardThemeSwipeTrail.Measure(light: 6.5, dark: 7),
+            tailWidthScale: KeyboardThemeSwipeTrail.standardTailWidthScale,
+            tailDuration: KeyboardThemeSwipeTrail.standardTailDuration,
+            opacityFalloffExponent: KeyboardThemeSwipeTrail.standardOpacityFalloffExponent,
+            bandOverlap: KeyboardThemeSwipeTrail.standardBandOverlap,
+            headScale: KeyboardThemeSwipeTrail.standardHeadScale,
+            liftDuration: KeyboardThemeSwipeTrail.standardLiftDuration,
+            liftTiming: KeyboardThemeSwipeTrail.standardLiftTiming,
+            bloomScale: KeyboardThemeSwipeTrail.standardBloomScale,
+            bloomDuration: KeyboardThemeSwipeTrail.standardBloomDuration,
+            bloomFadeDuration: KeyboardThemeSwipeTrail.standardBloomFadeDuration
         )
     )
 

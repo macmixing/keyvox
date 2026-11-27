@@ -25,6 +25,11 @@ class DataPaths:
     def protected_words(self) -> Path:
         return self.work / "scowl-50-ABZCD.txt"
 
+    # The patterns of the words the dictionary leaves out, written by offensive_words.py.
+    @property
+    def offensive_words(self) -> Path:
+        return self.work / "offensive_words.txt"
+
     # Dictionary inputs and the dictionary itself.
     @property
     def dictionary_unigrams(self) -> Path:
@@ -34,6 +39,16 @@ class DataPaths:
     def dictionary_ngrams(self) -> Path:
         return self.work / "dictionary_ngrams.tsv"
 
+    # The dictionary's words and sequences less the ones offensive_words.py matches, which the
+    # dictionary is compiled from.
+    @property
+    def dictionary_kept_unigrams(self) -> Path:
+        return self.work / "dictionary_kept_unigrams.tsv"
+
+    @property
+    def dictionary_kept_ngrams(self) -> Path:
+        return self.work / "dictionary_kept_ngrams.tsv"
+
     @property
     def accent_unigrams(self) -> Path:
         return self.work / "accent_unigrams.tsv"
@@ -41,6 +56,12 @@ class DataPaths:
     @property
     def dictionary(self) -> Path:
         return self.built / "dictionary"
+
+    # The dictionary compiled from every word and sequence counted, with the ones
+    # offensive_words.py matches, as the bundled rankers learned from it.
+    @property
+    def counted_dictionary(self) -> Path:
+        return self.work / "counted_dictionary"
 
     # ITE typing events split by typist.
     def ite_split(self, name: str) -> Path:

@@ -23,6 +23,7 @@
 #include "latinime/dictionary/property/historical_info.h"
 #include "latinime/dictionary/property/ngram_context.h"
 #include "latinime/dictionary/property/unigram_property.h"
+#include "latinime/dictionary/property/word_property.h"
 #include "latinime/dictionary/structure/dictionary_structure_with_buffer_policy_factory.h"
 #include "latinime/dictionary/utils/format_utils.h"
 #include "latinime/suggest/core/dictionary/dictionary.h"
@@ -578,6 +579,29 @@ public:
         }
         personalDictionary_ = std::move(dictionary);
         personalSession_ = std::make_unique<DicTraverseSession>(&environment_, nullptr, false);
+        return true;
+    }
+
+    /// Visits every word of the bundled dictionary in the order it is stored, with its
+    /// probability and whether it may be offered.
+    bool forEachDictionaryWord(void *context, KVPKDictionaryWordVisitor visit) {
+        if (!visit) return false;
+        std::lock_guard<std::mutex> lock(mutex_);
+        int codePoints[MAX_WORD_LENGTH];
+        int token = 0;
+        do {
+            int length = 0;
+            token = dictionary_->getNextWordAndNextToken(token, codePoints, &length);
+            if (length <= 0) continue;
+            const WordProperty property = dictionary_->getWordProperty(
+                CodePointArrayView(codePoints, length)
+            );
+            const UnigramProperty &unigram = property.getUnigramProperty();
+            std::string word;
+            for (int index = 0; index < length; ++index) appendUtf8(codePoints[index], &word);
+            visit(context, word.c_str(), unigram.getProbability(),
+                  unigram.isNotAWord() == false && unigram.isBlacklisted() == false);
+        } while (token != 0);
         return true;
     }
 
@@ -1253,6 +1277,24 @@ bool KVPKEngineWordsWithPrefix(
         return false;
     } catch (...) {
         lastError = "unknown prefix lookup error";
+        return false;
+    }
+}
+
+bool KVPKEngineForEachDictionaryWord(
+    KVPKEngineRef engine,
+    void *context,
+    KVPKDictionaryWordVisitor visit
+) {
+    if (!engine) return false;
+    try {
+        lastError.clear();
+        return static_cast<Engine *>(engine)->forEachDictionaryWord(context, visit);
+    } catch (const std::exception &error) {
+        lastError = error.what();
+        return false;
+    } catch (...) {
+        lastError = "unknown dictionary listing error";
         return false;
     }
 }

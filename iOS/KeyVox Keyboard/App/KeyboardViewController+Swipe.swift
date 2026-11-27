@@ -1,0 +1,76 @@
+import KeyVoxPredictiveKeyboard
+import UIKit
+
+/// Swipe typing: a word swiped across the letter keys goes in written as typing writes it, with no
+/// space after it, as on the system keyboard; the next swiped word goes in after a space. The bar
+/// keeps what it showed while the finger swipes, then shows suggestions for the word.
+extension KeyboardViewController {
+    /// Lets the keys swipe words where the focused field and the user's settings allow it.
+    func updateSwipeTyping() {
+        rootContainerView?.keyGridView.allowsSwipeTyping = typingTraits.allowsSwipeTyping
+    }
+
+    /// Types the word `path` was swiped as. The word of the swipe before goes in first, then a typed
+    /// word in progress ends, as a space would end it, so the shift state applies to the swiped word
+    /// as to typed letters, in the order they were swiped; a word just swiped in stays as it is, and
+    /// the swiped word goes in after a space. A swipe goes nowhere, doing nothing at all,
+    /// while the field is not to be read, and one the key grid held undecided since `heldPlace`
+    /// once the cursor or the field has moved from there. The swipe ending plays a letter key's
+    /// press haptic, as a typed letter does.
+    func handleSwipe(_ path: [SwipeTouchSample], heldSince heldPlace: KeyboardSwipePlace?) {
+        guard typingTraits.allowsSwipeTyping else { return }
+        predictionCoordinator.finishPendingSwipe()
+        guard let place = predictionCoordinator.swipePlace else { return }
+        if let heldPlace, heldPlace != place { return }
+        characterKeyHaptics.emitKeypressIfEnabled()
+        dismissRescuedDictation()
+        if predictionCoordinator.hasTypedWordInProgress() {
+            textInputController.apply(predictionCoordinator.wordBoundaryEdit(
+                separator: " ",
+                allowsAutocorrection: typingTraits.allowsAutocorrection
+            ))
+            handleTypingContextChange()
+        }
+        predictionCoordinator.decodeSwipe(path, wordCase: swipeWordCase) { [weak self] edit in
+            self?.insertSwipedWord(edit)
+        }
+    }
+
+    /// Where a swipe the key grid holds undecided would put its word: after the word of the swipe
+    /// before it, which goes in now.
+    func heldSwipePlace() -> KeyboardSwipePlace? {
+        predictionCoordinator.finishPendingSwipe()
+        return predictionCoordinator.recordSwipePlace()
+    }
+
+    /// Forgets the swipes held undecided or being decoded, whose words then go nowhere, as when
+    /// another field takes the keyboard.
+    func dropPendingSwipes() {
+        rootContainerView?.keyGridView.dropUndecidedSwipes()
+        predictionCoordinator.dropPendingSwipe()
+    }
+
+    /// Hands over a swipe still being decided or decoded, so what the user does next follows its
+    /// word. A finger the key grid holds undecided is a swipe once the user acts anywhere but on
+    /// the keys.
+    func finishPendingSwipe() {
+        rootContainerView?.keyGridView.settleUndecidedSwipes(at: .infinity)
+        predictionCoordinator.finishPendingSwipe()
+    }
+
+    /// The capitals the shift state gives a swiped word.
+    private var swipeWordCase: SwipeWordCase {
+        switch letterCaseController.letterCase {
+        case .lowercase: .asSpelled
+        case .shifted: .capitalized
+        case .capsLocked: .allCapitals
+        }
+    }
+
+    private func insertSwipedWord(_ edit: TextEdit) {
+        textInputController.apply(edit)
+        letterCaseController.consumeTypedLetter()
+        handleTypingContextChange()
+    }
+}
+

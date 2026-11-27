@@ -17,6 +17,12 @@ struct TypingHarness {
                 try TuneCommand.run(options)
             case .explain(let options):
                 try ExplainCommand.run(options)
+            case .swipeLexicon(let options):
+                try SwipeLexiconCommand.run(options)
+            case .swipeAccuracy(let options):
+                try SwipeAccuracyCommand.run(options)
+            case .swipeGate(let options):
+                try SwipeGateCommand.run(options)
             }
         } catch {
             FileHandle.standardError.write(Data("\(error)\n".utf8))

@@ -2,8 +2,9 @@
 ranker is trained and checked on, `training_sets.completion_sets` for the training source
 (`--source`, `ite` unless given), each asked in a LatinIME session of its own, and caches the
 answers in `<data_dir>/work/completion_candidates.pkl.gz`. With `--as-bundled` it asks the
-queries the bundled ranker learned from (`bundled_queries.py`) in one shared session instead,
-so the build rebuilds the bundled ranker."""
+queries the bundled ranker learned from (`bundled_queries.py`) in one shared session of the
+dictionary as counted, with the words `offensive_words.py` matches, instead, as it learned from
+it, so the build rebuilds the bundled ranker."""
 
 import argparse
 from pathlib import Path
@@ -31,7 +32,7 @@ def main():
         collections = completion_sets(paths, arguments.source)
     keys = latinime_candidates.unique_queries(collections)
     outputs = latinime_candidates.run_suggestions(
-        paths.suggestion_reader, paths.dictionary, keys, paths.completion_queries,
+        paths.suggestion_reader, paths.counted_dictionary if arguments.as_bundled else paths.dictionary, keys, paths.completion_queries,
         shared_session=arguments.as_bundled)
     latinime_candidates.save(outputs, paths.completion_candidates)
     print(f"cached {len(outputs):,} queries in {paths.completion_candidates}")
