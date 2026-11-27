@@ -61,6 +61,10 @@ class LexiconVocabulary:
     # that accepted them (vocabulary/hunspell_snapshot.py).
     spelling_snapshot_sha256: str | None = None
     spelling_snapshot_hunspell: str | None = None
+    # Lexicon words the word list lacks join it when the language's sentences, as count_ngrams.py
+    # counted them, write them at least as often as the median word-list word they write
+    # (vocabulary/written_lexicon_words.py), for a word list that leaves out common words.
+    adds_written_lexicon_words: bool = False
 
 
 @dataclass(frozen=True)
@@ -170,6 +174,9 @@ _GERMAN = dict(
     vocabulary=LexiconVocabulary(
         word_list=latinime_word_list("de", "07ae553cd55f9901412065bad7617379908ed5f2a701d226ffde85a9b8ffd5c0"),
         lexicons=(wikidata_forms("de", "7a52e72e6da01d13ca3a75c1b7515163957a0f8c763e5ded53d147f5510de843"),),
+        # AOSP's German list lacks almost every lowercase word beginning with an umlaut, and common
+        # verb forms (README, "Vocabulary").
+        adds_written_lexicon_words=True,
     ),
     # CLDR's German quotation marks.
     text_rules=_text_rules("„“‚‘"),

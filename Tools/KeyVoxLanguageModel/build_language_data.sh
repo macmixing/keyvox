@@ -33,10 +33,6 @@ IDENTIFIER="$("$PYTHON" languages.py "$LANGUAGE")"
 # Each group of steps reads only the sources, the sentences, or its own files, and writes files
 # no other group running beside it reads, so the groups run side by side; the steps that read
 # several groups' files run once those groups are done.
-context_model() {
-  "$PYTHON" count_ngrams.py "$DATA_DIR"
-  "$PYTHON" write_context_model.py "$DATA_DIR" "$OUTPUT_DIR/context_model.bin"
-}
 sentence_openers() {
   "$PYTHON" write_word_kinds.py --language "$LANGUAGE" "$DATA_DIR"
   "$PYTHON" count_sentence_openers.py --language "$LANGUAGE" "$DATA_DIR"
@@ -110,19 +106,21 @@ finish() {
 start "$PYTHON" download_sources.py --language "$LANGUAGE" "$DATA_DIR"
 finish "$STEP"
 
-# The vocabulary and the words spelled with capitals, and the swipe vocabulary's counts, read
-# only the sources.
-start capitalized_spellings; CAPITALIZED=$STEP
+# The swipe vocabulary's counts read only the sources.
 SWIPE=""
 if [[ -n "$DICTIONARY_WORDS" ]]; then
   start swipe_counts; SWIPE=$STEP
 fi
 
-# The context model and the sentence openers read the sentences.
+# The counts and the sentence openers read the sentences; the context model and the vocabulary,
+# with the words spelled with capitals, read the counts.
 start "$PYTHON" extract_sentences.py --language "$LANGUAGE" "$DATA_DIR"
 finish "$STEP"
-start context_model; CONTEXT=$STEP
 start sentence_openers; OPENERS=$STEP
+start "$PYTHON" count_ngrams.py "$DATA_DIR"
+finish "$STEP"
+start "$PYTHON" write_context_model.py "$DATA_DIR" "$OUTPUT_DIR/context_model.bin"; CONTEXT=$STEP
+start capitalized_spellings; CAPITALIZED=$STEP
 finish "$CONTEXT" "$OPENERS" "$CAPITALIZED"
 
 # Words that follow an unknown word, and a common word, and the grammar words: the counts, the

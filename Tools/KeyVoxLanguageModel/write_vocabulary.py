@@ -4,10 +4,13 @@ Writes two lists, the vocabulary and its common part, as SCOWL's sizes 60 and 50
 
 English's vocabulary is SCOWL (scowl_words.sh). Another language's is its AOSP LatinIME word
 list, each word's capitals settled by its lexicons and, where the language has one, a spelling
-check, which never leaves a word out (vocabulary/spellings.py). Its common part is the spellings
-the word list itself writes: a spelling only the lexicons add is a rare sense, such as a rare verb
-form spelled like a common noun in lowercase. Only single words as the keyboard reads them are
-kept: letters with inner apostrophes, composed with their accents.
+check, which never leaves a word out (vocabulary/spellings.py). Where the language says so
+(`adds_written_lexicon_words`), the word list first gains the lexicon words it lacks that the
+language's sentences write as often as its own words (vocabulary/written_lexicon_words.py), which
+reads `count_ngrams.py`'s counts in the data directory. Its common part is the spellings the word
+list itself writes, those words included: a spelling only the lexicons add is a rare sense, such as
+a rare verb form spelled like a common noun in lowercase. Only single words as the keyboard reads
+them are kept: letters with inner apostrophes, composed with their accents.
 """
 
 import argparse
@@ -24,6 +27,7 @@ from vocabulary.latinime_words import latinime_words
 from vocabulary.lexicon_check import lexicon_accepted
 from vocabulary.lexicon_forms import lexicon_forms
 from vocabulary.spellings import settled_spellings
+from vocabulary.written_lexicon_words import written_lexicon_words
 
 SCOWL_SIZE = "60"
 SCOWL_COMMON_SIZE = "50"
@@ -57,6 +61,10 @@ def main() -> None:
     ]
     forms = lexicon_forms(arguments.data_dir, vocabulary.lexicons)
     lexicon = {form for form in forms if is_word(form)}
+    added = set()
+    if vocabulary.adds_written_lexicon_words:
+        added = written_lexicon_words(arguments.data_dir, {word.lower() for word in word_list}, lexicon)
+        word_list += sorted(added)
     if vocabulary.spelling_check == "hunspell":
         extension = source_paths(arguments.data_dir, vocabulary.spelling_dictionary)[0]
         snapshot = (arguments.data_dir / "sources" / "spelling-snapshots"
@@ -84,7 +92,8 @@ def main() -> None:
     arguments.common_output.write_text("".join(spelling + "\n" for spelling in common), encoding="utf-8")
     words = {spelling.lower() for spelling in spellings}
     print(f"{arguments.output}: {len(spellings)} spellings of {len(words)} words, {len(common)} common, "
-          f"from {len(listed)} word-list spellings and {len(lexicon)} lexicon forms")
+          f"from {len(listed)} word-list spellings ({len(added)} written lexicon words added) "
+          f"and {len(lexicon)} lexicon forms")
 
 
 if __name__ == "__main__":

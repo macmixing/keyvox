@@ -109,11 +109,12 @@ English's as `work/offensive_words.txt`):
 ```
 
 Steps that read none of each other's files run side by side: after `download_sources.py`, the
-vocabulary and the words spelled with capitals (`write_vocabulary.py`,
-`write_capitalized_spellings.py`) and the swipe vocabulary's counts (`count_swipe_words.py`,
-`count_swiped_words.py`, the spelling list) run beside `extract_sentences.py`; then the context model (`count_ngrams.py`,
-`write_context_model.py`) beside the sentence openers (`write_word_kinds.py`,
-`count_sentence_openers.py`, `write_sentence_openers.py`); then the two follower lists and the
+swipe vocabulary's counts (`count_swipe_words.py`, `count_swiped_words.py`, the spelling list) run
+beside `extract_sentences.py`; then `count_ngrams.py` beside the sentence openers
+(`write_word_kinds.py`, `count_sentence_openers.py`, `write_sentence_openers.py`), and once the
+counts are written, `write_context_model.py` beside the vocabulary and the words spelled with
+capitals (`write_vocabulary.py`, `write_capitalized_spellings.py`), since a vocabulary may add the
+words the counts show its word list lacks (see "Vocabulary"); then the two follower lists and the
 grammar words, once the counts, the vocabulary, and the word kinds are written; and last
 `write_swipe_vocabulary.py`. Each step reads the same files it would read run alone, so the files
 are the same; the memory of the steps running together adds up. Each step runs in a process group
@@ -248,9 +249,21 @@ common part, which SCOWL's size 50 is for English, is the spellings the word lis
 a spelling only the lexicons add is a rare sense, and does not keep the word's usual spelling with
 a capital from the capitalized spellings.
 
+AOSP's German word list leaves out common words: almost every lowercase word beginning with an
+umlaut ("überhaupt", "ändern", "öffnen", "öffentlich"; 969 of its 209,470 spellings began with
+"ä", "ö", or "ü", against 4,995 with "u"), and common forms such as "nimmst", "solltet", and
+"sowas", which German's sentences write hundreds or thousands of times. So German's vocabulary
+first adds the Wikidata Lexemes words the word list lacks that its sentences, as `count_ngrams.py`
+counted them, write at least as often as the median word-list word they write at all, 17 times
+(`adds_written_lexicon_words` in `languages.py`, `vocabulary/written_lexicon_words.py`): 12,352
+words, in every spelling the lexicons write them in, as common words. A lexicon form the sentences
+write less often, such as a rare inflection, stays out. They are 1,437 of the vocabulary's spellings
+beginning with an umlaut, and add 6,283 nouns to the capitalized spellings; no capitalized spelling
+is lost. `python -m unittest test_written_lexicon_words` checks the rule.
+
 | Language | Word list | Vocabulary | Written in lowercase by the spelling check |
 | --- | --- | --- | --- |
-| de | 205,887 words | 209,470 spellings | (no check) |
+| de | 205,887 words, and 12,352 written lexicon words | 222,148 spellings | (no check) |
 | es | 236,193 words | 236,307 spellings | 2,146 words |
 | fr | 163,631 single words | 165,093 spellings | 812 words |
 

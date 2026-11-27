@@ -252,7 +252,7 @@ Attribution: Based on Open Discourse (Richter et al.): the speeches of the Germa
 - Upstream revision: `127336e9f29d69607eab55982324b210279ae8c5`
 - License: Apache License 2.0
 - License URL: <https://www.apache.org/licenses/LICENSE-2.0>
-- Note: The German, Spanish, and French vocabularies are modified versions of the `de`, `es`, and `fr` word lists: single words only, with their capitals settled by Wikidata Lexemes, Grammalecte, and RLA-ES. The typing dictionaries `Tools/KeyVoxTypingModels` builds for those languages hold the vocabularies' words in lowercase.
+- Note: The German, Spanish, and French vocabularies are modified versions of the `de`, `es`, and `fr` word lists: single words only, with their capitals settled by Wikidata Lexemes, Grammalecte, and RLA-ES, and the German one with the Wikidata Lexemes words its sentences write as often as the list's own words, which the list lacks. The typing dictionaries `Tools/KeyVoxTypingModels` builds for those languages hold the vocabularies' words in lowercase.
 
 Copyright (c) 2008, The Android Open Source Project
 
@@ -260,7 +260,7 @@ Copyright (c) 2008, The Android Open Source Project
 - Source: <https://dumps.wikimedia.org/wikidatawiki/entities/>
 - License: CC0 1.0
 - License URL: <https://creativecommons.org/publicdomain/zero/1.0/>
-- Note: German, Spanish, and French word forms and their lexical categories settle the capitals in the vocabularies and tell German nouns from names.
+- Note: German, Spanish, and French word forms and their lexical categories settle the capitals in the vocabularies and tell German nouns from names; German forms its sentences write often fill in the words the German word list lacks.
 
 Attribution: Based on Wikidata Lexemes.
 
