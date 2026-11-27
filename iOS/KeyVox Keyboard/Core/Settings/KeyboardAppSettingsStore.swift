@@ -1,6 +1,7 @@
 import Foundation
 import KeyVoxKeyboardThemes
 import KeyVoxStyleRewrite
+import KeyVoxTypingLanguageCatalog
 
 final class KeyboardAppSettingsStore {
     private enum EnvironmentKeys {
@@ -181,6 +182,23 @@ final class KeyboardAppSettingsStore {
 
     var prefersBuiltInMicrophone: Bool {
         defaults?.object(forKey: UserDefaultsKeys.preferBuiltInMicrophone) as? Bool ?? true
+    }
+
+    /// The typing languages the user saved in the KeyVox app, kept to those in `catalog`, with the
+    /// layout chosen for each.
+    func typingLanguageSelection(catalog: TypingLanguageCatalog) -> KeyboardTypingLanguageSelection {
+        KeyboardTypingLanguageSelection(
+            savedLanguages: defaults?.stringArray(forKey: UserDefaultsKeys.keyboardTypingLanguages) ?? [],
+            savedLetterLayouts: defaults?.dictionary(forKey: UserDefaultsKeys.keyboardLetterLayouts) as? [String: String] ?? [:],
+            catalog: catalog,
+            fallbackLanguage: Bundle.main.developmentLocalization
+        )
+    }
+
+    /// The typing language the keyboard last typed in.
+    var lastTypingLanguage: String? {
+        get { defaults?.string(forKey: UserDefaultsKeys.keyboardActiveTypingLanguage) }
+        set { defaults?.set(newValue, forKey: UserDefaultsKeys.keyboardActiveTypingLanguage) }
     }
 
     var opensOnNumberPage: Bool {

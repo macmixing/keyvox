@@ -18,6 +18,8 @@ final class KeyboardKeyView: UIView {
     /// The letters under a number pad digit, laid out by hand under the raised title.
     private let subtitleLabel = UILabel()
     private var titleCenterYConstraints: [NSLayoutConstraint] = []
+    /// The language the space bar switched to, added the first time it shows.
+    private var languageCodeLabel: KeyboardLanguageCodeLabel?
     private lazy var borderRenderer = KeyboardRoundedBorderRenderer(containerView: backgroundView)
 
     private(set) var model: KeyboardKeyModel
@@ -124,6 +126,7 @@ final class KeyboardKeyView: UIView {
         borderRenderer.strokeColor = effectiveBorderColor.cgColor
         titleLabels.forEach { $0.textColor = colors.foreground }
         subtitleLabel.textColor = colors.foreground
+        languageCodeLabel?.textColor = colors.foreground
         imageView.tintColor = colors.foreground
 
         let shadow = state == .pressed ? KeyboardStyle.pressedKeyShadow : KeyboardStyle.keyShadow
@@ -240,6 +243,26 @@ final class KeyboardKeyView: UIView {
                 titleLabel.trailingAnchor.constraint(lessThanOrEqualTo: trailingAnchor, constant: -6),
             ]
         })
+    }
+
+    /// Shows the short code of the language the space bar switched to at the key's bottom right,
+    /// fading out, read as the language's full name.
+    func showLanguageCode(_ code: String, name: String) {
+        let label = languageCodeLabel ?? makeLanguageCodeLabel()
+        label.show(code: code, name: name)
+    }
+
+    private func makeLanguageCodeLabel() -> KeyboardLanguageCodeLabel {
+        let label = KeyboardLanguageCodeLabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.textColor = titleLabels[0].textColor
+        addSubview(label)
+        NSLayoutConstraint.activate([
+            label.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -KeyboardStyle.languageCodeInset),
+            label.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -KeyboardStyle.languageCodeInset),
+        ])
+        languageCodeLabel = label
+        return label
     }
 
     /// Shows `title`, in the label already holding it if one does, otherwise in the label not

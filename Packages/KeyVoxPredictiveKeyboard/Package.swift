@@ -13,6 +13,10 @@ let package = Package(
             name: "KeyVoxPredictiveKeyboard",
             targets: ["KeyVoxPredictiveKeyboard"]
         ),
+        .library(
+            name: "KeyVoxTypingLanguageCatalog",
+            targets: ["KeyVoxTypingLanguageCatalog"]
+        ),
     ],
     dependencies: [
         .package(path: "../KeyVoxLinguistics"),
@@ -32,9 +36,14 @@ let package = Package(
             ]
         ),
         .target(
+            name: "KeyVoxTypingLanguageCatalog",
+            path: "Sources/KeyVoxTypingLanguageCatalog"
+        ),
+        .target(
             name: "KeyVoxPredictiveKeyboard",
             dependencies: [
                 "KeyVoxPredictiveNative",
+                "KeyVoxTypingLanguageCatalog",
                 .product(name: "KeyVoxLinguistics", package: "KeyVoxLinguistics"),
             ],
             path: "Sources/KeyVoxPredictiveKeyboard",
@@ -46,7 +55,7 @@ let package = Package(
         ),
         .testTarget(
             name: "KeyVoxPredictiveKeyboardTests",
-            dependencies: ["KeyVoxPredictiveKeyboard"],
+            dependencies: ["KeyVoxPredictiveKeyboard", "KeyVoxTypingLanguageCatalog"],
             path: "Tests/KeyVoxPredictiveKeyboardTests",
             resources: [.copy("Fixtures")]
         ),
