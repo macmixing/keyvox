@@ -75,7 +75,8 @@ The LatinIME tools are compiled with the Xcode command line tools.
 `latinime_suggestions.cpp` orders candidates of equal score with `std::sort`, which leaves
 the order of ties to the C++ standard library. The rankers are trained on the order that Apple
 clang 21.0.0 (clang-2100.3.34.1) with libc++ 220106 (macOS 27.2 SDK) gives, and Apple clang
-21.0.0 (clang-2100.3.33.1) with the same libc++ rebuilds every bundled file the same;
+21.0.0 (clang-2100.3.33.1) and Apple clang 21.0.0 (clang-2100.4.1.1) with the same libc++ rebuild
+every bundled file the same;
 `build_native_tools.sh` checks for one of those compilers and that libc++ version and stops with
 a message naming them on any other toolchain. Apple clang 15.0.0 with libc++ 160006 (macOS 13),
 for one, orders 8,485 of the July build's 84,720 correction queries' ties differently, and the
