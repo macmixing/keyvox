@@ -1,0 +1,30 @@
+a	right	a à á â æ ã å ā
+c	right	c ç ć č
+e	right	e é è ê ë ė
+i	left	i î ï í ī ì
+n	left	n ñ ń
+o	left	o ô ò ó õ œ ø ō
+s	right	s ß ś š
+u	left	u û ù ú ū
+y	left	y ÿ
+A	right	A À Á Â Æ Ã Å Ā
+C	right	C Ç Ć Č
+E	right	E É È Ê Ë Ė
+I	left	I Î Ï Í Ī Ì
+N	left	N Ñ Ń
+O	left	O Ô Ò Ó Õ Œ Ø Ō
+S	right	S ẞ Ś Š
+U	left	U Û Ù Ú Ū
+Y	left	Y Ÿ
+0	left	0 °
+-	right	- – — •
+/	right	/ \
+$	right	$ ¢ € £ ¥ ₩ ₽
+&	right	& §
+"	strictly-left	" „ “ ” « »
+.	right	. …
+?	right	? ¿
+!	right	! ¡
+’	right	' ’ ‚ ‹ › ‘ `
+%	right	% ‰
+.com	centered	.eu .de .us .edu .com .net .org

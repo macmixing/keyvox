@@ -2,9 +2,9 @@
 
 Builds the typing models the predictive keyboard bundles for a typing language: those of its
 English typing language in
-`Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/PredictiveData/en`, and the
-same files for German, Spanish, and French, which are built but not bundled yet (see "Other typing
-languages"). English's:
+`Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/PredictiveData/en`, German's
+in `PredictiveData/de`, and the same files for Spanish and French, which are built but not bundled
+yet (see "Other typing languages"). English's:
 
 | Bundled file | What it is | Built by |
 | --- | --- | --- |
@@ -463,8 +463,8 @@ language's `vowels`.
 
 Built on November 27, 2026 from the language builds of November 24, with `language.json` files
 kept outside the package (German on `QWERTZ-German`, Spanish on `QWERTY-Spanish`, French on
-`AZERTY-French`, with their accented vowels as vowels); each build took about 13 minutes. None is
-bundled.
+`AZERTY-French`, with their accented vowels as vowels); each build took about 13 minutes. German's
+bundled files are a later build (see "German").
 
 | | de | es | fr |
 | --- | --- | --- | --- |
@@ -511,11 +511,67 @@ such as Spanish "esta" for "está":
 
 These are the trainers' measures: the keyboard corrects with `NoisyChannelCorrector`, which reads
 the rankers' choice of candidates but not the action model's probability (see "What the harness can
-tell apart"), and `Tools/KeyVoxTypingHarness` scores English only. They show the rankers learn the
+tell apart"), and `Tools/KeyVoxTypingHarness` scored English only at the time (see "German" for
+the keyboard's own scores). They show the rankers learn the
 language, ranking the intended word first more often than LatinIME alone does, and give a baseline
 to hold later builds to.
 
-The German vocabulary lacks most words that begin with "ä", "ö", or "ü", as the AOSP German word
-list it is built from does: "überhaupt" (52,006 times in the German build's counts), "ändern",
-"öffnen", and "öffentlich" are not in the dictionary, nor 51 more such words written at least 1,000
-times each, 255,706 times in all. The list holds only 44 lowercase words beginning with "ü".
+The German vocabulary of that build lacks most words that begin with "ä", "ö", or "ü", as the AOSP
+German word list it is built from does: "überhaupt" (52,006 times in the German build's counts),
+"ändern", "öffnen", and "öffentlich" are not in its dictionary, nor 51 more such words written at
+least 1,000 times each, 255,706 times in all. The list holds only 44 lowercase words beginning with
+"ü". German's vocabulary now adds the lexicon words its sentences write as often as the list's own
+words (`Tools/KeyVoxLanguageModel`, "Vocabulary").
+
+### German
+
+The bundled German files (`PredictiveData/de`) were built on November 27, 2026 from the German
+language build of that day, which reads German's `language.json` in the package and adds the
+written lexicon words, with the typo calibration of "Training on simulated typing"
+(`typo_calibration.json` of its calibrated run):
+
+| | de |
+| --- | --- |
+| Dictionary words | 218,230 |
+| Word pairs, three-word sequences | 160,000, 60,000 |
+| `dictionary.body` | 10,151,579 bytes |
+| `accent_overlay.bin` | 12 bytes, no entries |
+| Simulation sentences | 224,023 |
+| Corrections, words typed as meant, completions simulated | 184,877, 84,373, 196,849 |
+
+`Tools/KeyVoxTypingHarness` scored them through the keyboard's own typing path (`--language de`) on
+plans of German Tatoeba sentences from the held-out simulation buckets 8-9, which the dictionary and
+the rankers never counted, mapped back to their Tatoeba originals for their capitals: 39,596
+sentences, of which a plan takes 80, 400, or 3,000 at random (seed 1, or 7 for 3,000). The
+dictionary without the written lexicon words (the vocabulary of 209,470 spellings) is beside it:
+
+| Measure | Plan | Without the written lexicon words | Bundled |
+| --- | --- | --- | --- |
+| Final words correct | 80 sentences, noise 0.3 (`compare`) | 91.2% (560/614) | 93.0% (571) |
+| Final words correct | 400 sentences, noise 0.25 (`compare`) | 95.9% (2,706/2,822) | 96.7% (2,729) |
+| Final words correct | 400 (`evaluate`) | 96.5% | 97.0% |
+| Mistyped words fixed | 400 | 88.8% (660/743) | 90.8% (675) |
+| Mistyped words changed to a different word | 400 | 5.8% (43) | 3.9% (29) |
+| Correctly typed words wrongly changed | 400 | 0.6% (13/2,077) | 0.7% (14) |
+| Completion offered within 2 letters | 400 | 62.7% | 63.2% |
+| Completion keystroke savings | 400 | 42.0% | 42.8% |
+| Suggestion bar shows the word within 3 letters | 400 | 75.5% | 76.2% |
+| Next word first / in top 3 | 400 | 9.7% / 18.7% | 10.4% / 19.5% |
+| Words the corpus capitalizes after a sentence's first, written so | 400 (`compare`) | 82.7% (386/467) | 82.7% (392/474) |
+| Words the corpus writes in lowercase, capitalized | 400 (`compare`) | 0.1% (1/1,851) | 0.1% (1/1,866) |
+| Final words correct | 3,000 sentences, noise 0.25 (`compare`) | | 97.0% (21,256/21,914) |
+| Mistyped words fixed / changed to a different word | 3,000 (`evaluate`) | | 93.0% / 2.6% (of 6,365) |
+| Correctly typed words wrongly changed | 3,000 | | 0.6% (91/15,542) |
+
+The bundled column is with the touch scorer aiming a letter that has a key of its own, as German's
+umlauts do, at that key; the other column was measured before, when every umlaut was aimed at its
+plain vowel's key, which also turned a correctly tapped sentence-first "über" into "aber".
+
+On the 45 Tatoeba sentences Apple's German keyboard was measured typing on the iOS 27.2 simulator
+(`apple-languages/runs/sim17-tatoeba-de_DE` in KeyVox's language data), typed as Apple's were, at
+the keys' centers and in lowercase, both keyboards end with 308 of the 309 words right: Apple
+writes "Charkiw" as "Charlie", and KeyVox "ungekocht" as "gekocht". KeyVox writes 55 of the 61
+words capitalized after a sentence's first with their capitals, and capitalizes 1 of the 202
+written in lowercase; Apple writes 56 of its 60 such words with their capitals and capitalizes none
+of the 203 lowercase ones. Those sentences are in the language data the context model is counted
+from, so KeyVox knows their words' contexts.
