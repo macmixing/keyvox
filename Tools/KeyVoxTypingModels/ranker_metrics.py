@@ -26,7 +26,7 @@ def ranking_metrics(groups, ranker):
     }
 
 
-def action_scores(groups, ranker, action_model, valid_words):
+def action_scores(groups, ranker, action_model, valid_words, vowels):
     prepared = []
     for ranked in rank_groups(groups, ranker):
         features, candidate = action_features(ranked)
@@ -35,10 +35,39 @@ def action_scores(groups, ranker, action_model, valid_words):
         np.asarray([entry[2] for entry in prepared]))[:, 1] if prepared else [])
     results = []
     for (record, candidate, _), probability in zip(prepared, probabilities):
-        if not candidate_is_actionable(record, candidate, valid_words):
+        if not candidate_is_actionable(record, candidate, valid_words, vowels):
             probability = -1.0
         results.append((record, candidate, float(probability)))
     return results
+
+
+def typed_word_outcomes(correction_results, preserve_results, threshold, typed_words):
+    """What acting at the threshold leaves of every word typed in the held-out simulation
+    sentences (`write_simulated_records.py`'s `typed_words.json` counts): the share of words right
+    in the end, of mistyped words fixed or changed to another word, of the mistyped words not typed
+    as a word the action model never replaces fixed, and of words typed as meant changed. Only the
+    typos the action model may fix and the words typed as meant that it may replace, the ones no
+    dictionary or never-corrected word spells, are scored; every other word is left as typed."""
+    fixed = changed = 0
+    for record, candidate, probability in correction_results:
+        if probability >= threshold:
+            if candidate == record["expected"]:
+                fixed += 1
+            else:
+                changed += 1
+    wrongly_changed = sum(1 for _, _, probability in preserve_results if probability >= threshold)
+    words = typed_words["words"]
+    mistyped = typed_words["mistyped"]
+    as_a_word = typed_words["mistyped_as_a_word"]
+    typed_as_meant = words - mistyped
+    return {
+        "words": words, "mistyped": mistyped, "mistyped_as_a_word": as_a_word,
+        "final_words_correct": (typed_as_meant - wrongly_changed + fixed) / max(1, words),
+        "mistyped_fixed": fixed / max(1, mistyped),
+        "mistyped_fixed_of_those_not_typed_as_a_word": fixed / max(1, mistyped - as_a_word),
+        "mistyped_changed_to_another_word": changed / max(1, mistyped),
+        "correct_words_wrongly_changed": wrongly_changed / max(1, typed_as_meant),
+    }
 
 
 def evaluate_actions(results, threshold, total_count):

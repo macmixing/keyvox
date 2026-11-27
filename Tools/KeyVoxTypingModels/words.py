@@ -1,5 +1,7 @@
-"""How the typing-model builders read words: plain ASCII letter words with at most one inner
-apostrophe, lowercased, and the edit distances they compare words with."""
+"""How the typing-model builders read words: English's as plain ASCII letter words with at most
+one inner apostrophe, casefolded as ITE's text is read, any language's typed and suggested words
+lowercased without folding (`normalized`, which keeps German "ß"), and the edit distances they
+compare words with."""
 
 import re
 
@@ -9,6 +11,11 @@ WHOLE_WORD = re.compile(r"^[A-Za-z]+(?:['’][A-Za-z]+)?$")
 
 def clean(value):
     return (value or "").replace("’", "'").casefold().strip()
+
+
+def normalized(value):
+    """A word as the keyboard's engine compares it: lowercase, with the ASCII apostrophe."""
+    return (value or "").replace("’", "'").lower().strip()
 
 
 def tokenize(text):

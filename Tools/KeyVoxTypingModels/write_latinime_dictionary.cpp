@@ -1,10 +1,15 @@
 // Writes a LatinIME version 403 dictionary directory from a word list and an n-gram list.
 //
-// usage: write_latinime_dictionary UNIGRAMS NGRAMS OUTPUT_DIRECTORY
-//   UNIGRAMS: word<TAB>probability (0-255), one per line
-//   NGRAMS:   word<TAB>probability<TAB>previous word[<TAB>older word]
+// usage: write_latinime_dictionary --locale LOCALE [--attribute NAME=INTEGER]...
+//            UNIGRAMS NGRAMS OUTPUT_DIRECTORY
+//   LOCALE:    the locale the header names, such as en_US
+//   NAME=INTEGER: a further header attribute, such as REQUIRES_GERMAN_UMLAUT_PROCESSING=1
+//   UNIGRAMS:  word<TAB>probability (0-255), one per line
+//   NGRAMS:    word<TAB>probability<TAB>previous word[<TAB>older word]
 
 #include <algorithm>
+#include <cstdlib>
+#include <cstring>
 #include <fstream>
 #include <iostream>
 #include <memory>
@@ -66,26 +71,53 @@ static std::vector<std::string> splitTabs(const std::string &line) {
     return fields;
 }
 
-int main(int argc, char **argv) {
-    if (argc != 4) {
-        std::cerr << "usage: write_latinime_dictionary UNIGRAMS NGRAMS OUTPUT_DIRECTORY\n";
-        return 2;
-    }
+static int usage() {
+    std::cerr << "usage: write_latinime_dictionary --locale LOCALE [--attribute NAME=INTEGER]... "
+                 "UNIGRAMS NGRAMS OUTPUT_DIRECTORY\n";
+    return 2;
+}
 
+int main(int argc, char **argv) {
     DictionaryHeaderStructurePolicy::AttributeMap attributes;
     HeaderReadWriteUtils::setIntAttribute(&attributes, "MAX_UNIGRAM_ENTRY_COUNT", 150000);
     HeaderReadWriteUtils::setIntAttribute(&attributes, "MAX_BIGRAM_ENTRY_COUNT", 200000);
     HeaderReadWriteUtils::setIntAttribute(&attributes, "MAX_TRIGRAM_ENTRY_COUNT", 100000);
     HeaderReadWriteUtils::setIntAttribute(&attributes, "MAX_QUADGRAM_ENTRY_COUNT", 1000);
     HeaderReadWriteUtils::setBoolAttribute(&attributes, "USES_FORGETTING_CURVE", false);
-    const std::vector<int> locale = {'e', 'n', '_', 'U', 'S'};
+    std::vector<int> locale;
+    std::vector<const char *> paths;
+    for (int index = 1; index < argc; ++index) {
+        if (std::strcmp(argv[index], "--locale") == 0 && index + 1 < argc) {
+            const std::string value(argv[++index]);
+            locale.assign(value.begin(), value.end());
+        } else if (std::strcmp(argv[index], "--attribute") == 0 && index + 1 < argc) {
+            const std::string attribute(argv[++index]);
+            const size_t equals = attribute.find('=');
+            if (equals == std::string::npos || equals == 0) return usage();
+            char *end = nullptr;
+            const char *value = attribute.c_str() + equals + 1;
+            const long number = std::strtol(value, &end, 10);
+            if (end == value || *end != '\0') return usage();
+            HeaderReadWriteUtils::setIntAttribute(&attributes,
+                    attribute.substr(0, equals).c_str(), static_cast<int>(number));
+        } else if (argv[index][0] == '-') {
+            return usage();
+        } else {
+            paths.push_back(argv[index]);
+        }
+    }
+    if (locale.empty() || paths.size() != 3) return usage();
+    const char *const unigramPath = paths[0];
+    const char *const ngramPath = paths[1];
+    const char *const outputDirectory = paths[2];
+
     auto policy = DictionaryStructureWithBufferPolicyFactory::newPolicyForOnMemoryDict(
             403, locale, &attributes);
     if (!policy) return 3;
     JNIEnv env;
     std::unique_ptr<Dictionary> dictionary(new Dictionary(&env, std::move(policy)));
 
-    std::ifstream unigramInput(argv[1]);
+    std::ifstream unigramInput(unigramPath);
     std::string line;
     int unigramCount = 0;
     int unigramFailures = 0;
@@ -107,13 +139,13 @@ int main(int argc, char **argv) {
         }
         if (dictionary->needsToRunGC(true)) {
             std::cerr << "unigram_gc_at=" << unigramCount << "\n";
-            if (!compactAndReopen(&env, argv[3], &dictionary)) return 4;
+            if (!compactAndReopen(&env, outputDirectory, &dictionary)) return 4;
             std::cerr << "unigram_gc_complete=" << unigramCount << "\n";
         }
     }
-    if (!compactAndReopen(&env, argv[3], &dictionary)) return 5;
+    if (!compactAndReopen(&env, outputDirectory, &dictionary)) return 5;
 
-    std::ifstream ngramInput(argv[2]);
+    std::ifstream ngramInput(ngramPath);
     int ngramCount = 0;
     int ngramFailures = 0;
     while (std::getline(ngramInput, line)) {
@@ -149,11 +181,11 @@ int main(int argc, char **argv) {
         }
         if (dictionary->needsToRunGC(true)) {
             std::cerr << "ngram_gc_at=" << ngramCount << "\n";
-            if (!compactAndReopen(&env, argv[3], &dictionary)) return 6;
+            if (!compactAndReopen(&env, outputDirectory, &dictionary)) return 6;
             std::cerr << "ngram_gc_complete=" << ngramCount << "\n";
         }
     }
-    if (!dictionary->flushWithGC(argv[3])) return 7;
+    if (!dictionary->flushWithGC(outputDirectory)) return 7;
 
     std::cout << "unigrams=" << unigramCount << " unigram_failures=" << unigramFailures
               << " ngrams=" << ngramCount << " ngram_failures=" << ngramFailures << "\n";
