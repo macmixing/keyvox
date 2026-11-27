@@ -6,12 +6,14 @@ A word here is a swipe form, as a swipe draws it: its letters only, case and acc
 (the swipe model's `letter_form`). Every form `count_swipe_words.py` counted that no
 dictionary word spells is a candidate, and these rules, in this order, leave one out:
 
-1. letters: a letter of it is no letter key of the language's keyboard.
-2. one source: fewer than two sources write it as a word on its own.
-3. joined: most of the times it is written, it is joined to other letters or digits in one run
+1. offensive: a pattern of `--leave-out` matches it whole, a word the dictionary leaves out too
+   (for English, `Tools/KeyVoxTypingModels/offensive_words.py` writes them).
+2. letters: a letter of it is no letter key of the language's keyboard.
+3. one source: fewer than two sources write it as a word on its own.
+4. joined: most of the times it is written, it is joined to other letters or digits in one run
    without spaces (`normalize.joined_words`), so it is a piece of a longer token, such as a
    URL, a hyphenated word, or code.
-4. misspelling: a dictionary form one edit away (a letter left out, added, changed, or two
+5. misspelling: a dictionary form one edit away (a letter left out, added, changed, or two
    neighbors swapped) is written on its own at least MISSPELLING_RATIO times as often as the
    candidate is, unless the language's spelling list (for English, SCOWL's size 80 in
    every spelling) lists it, or the written sources write it with capitals more often than in
@@ -32,9 +34,10 @@ from sentences written with care, which the sources write too rarely for the rul
 form of them that no dictionary word spells and the list does not already hold is a candidate,
 and these rules, in this order, leave one out:
 
-1. letters: as above.
-2. one swipe: fewer than MINIMUM_SWIPES records swipe it.
-3. misspelling: as above, counting how often the sources write the form on their own (none for
+1. offensive: as above.
+2. letters: as above.
+3. one swipe: fewer than MINIMUM_SWIPES records swipe it.
+4. misspelling: as above, counting how often the sources write the form on their own (none for
    most of them, so a dictionary form one edit away that the sources write at all leaves it out),
    with the same exceptions, the capitals being the dataset's sentences' in the middle of a
    sentence.
@@ -55,6 +58,7 @@ also has how many records swipe it and the outcome of the rules for its words, a
 the swipe dataset has is listed with no source."""
 
 import argparse
+import re
 import statistics
 import unicodedata
 from bisect import bisect_left, bisect_right
@@ -79,6 +83,7 @@ PROBABILITY_BAND = 2 ** 0.25
 REPORT_NAME = "swipe_vocabulary_report.tsv"
 
 KEPT = "kept"
+OFFENSIVE = "offensive"
 
 
 def swipe_form(word: str) -> str:
@@ -302,6 +307,9 @@ def main() -> None:
     parser.add_argument("spelling_list", type=Path,
                         help="words spelled right in every spelling (for English, SCOWL's size 80, every spelling)")
     parser.add_argument("output", type=Path)
+    parser.add_argument("--leave-out", type=Path,
+                        help="the words to leave out, a regular expression a word's swipe form must match whole a line "
+                             "(Tools/KeyVoxTypingModels writes English's as work/offensive_words.txt)")
     arguments = parser.parse_args()
     language = LANGUAGES[arguments.language]
     letters = language.letter_keys()
@@ -313,7 +321,13 @@ def main() -> None:
     spelling_forms = read_spelling_forms(arguments.spelling_list)
     scale = DictionaryScale(probabilities, dictionary_counts)
 
-    outcome = {form: outcome_of(candidate, letters, dictionary_counts, spelling_forms)
+    lines = arguments.leave_out.read_text(encoding="utf-8").splitlines() if arguments.leave_out else []
+    offensive = re.compile("|".join(f"(?:{line})" for line in lines if line)) if any(lines) else None
+
+    def is_offensive(form: str) -> bool:
+        return offensive is not None and offensive.fullmatch(form) is not None
+
+    outcome = {form: OFFENSIVE if is_offensive(form) else outcome_of(candidate, letters, dictionary_counts, spelling_forms)
                for form, candidate in candidates.items()}
     ranked = sorted((form for form, rule in outcome.items() if rule.startswith(KEPT)),
                     key=lambda form: (-candidates[form].on_its_own, form))
@@ -322,7 +336,7 @@ def main() -> None:
                for form in ranked}
     rows = [entries[form] for form in ranked]
 
-    swiped_outcome = {form: swiped_outcome_of(item, candidates[form].on_its_own if form in candidates else 0,
+    swiped_outcome = {form: OFFENSIVE if is_offensive(form) else swiped_outcome_of(item, candidates[form].on_its_own if form in candidates else 0,
                                               letters, dictionary_counts, spelling_forms)
                       for form, item in swiped.items() if not outcome.get(form, "").startswith(KEPT)}
     swiped_ranked = sorted((form for form, rule in swiped_outcome.items() if rule.startswith(KEPT)),

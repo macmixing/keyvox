@@ -96,13 +96,15 @@ steps:
 ```
 
 Given `[dictionary-words]`, the language's dictionary words and probabilities (a word, a tab,
-and a probability a line), it then builds the swipe vocabulary:
+and a probability a line), it then builds the swipe vocabulary, leaving out the words that
+`[left-out-words]`, a regular expression a line, matches (`Tools/KeyVoxTypingModels` writes
+English's as `work/offensive_words.txt`):
 
 ```bash
 .venv/bin/python count_swipe_words.py --language <language> <data-dir>
 .venv/bin/python count_swiped_words.py --language <language> <data-dir>
 ./scowl_words.sh 80 <output-dir>/spelling_list.txt A,B,Z,C,D
-.venv/bin/python write_swipe_vocabulary.py --language <language> <data-dir> <dictionary-words> <output-dir>/spelling_list.txt <output-dir>/swipe_vocabulary.txt
+.venv/bin/python write_swipe_vocabulary.py --language <language> <data-dir> <dictionary-words> <output-dir>/spelling_list.txt <output-dir>/swipe_vocabulary.txt --leave-out <left-out-words>
 ```
 
 Steps that read none of each other's files run side by side: after `download_sources.py`, the
@@ -375,21 +377,26 @@ also counts how often each word is joined to other letters or digits in one run 
 the middle of a sentence. `write_swipe_vocabulary.py` reads the counts by swipe form (letters
 only, case and accents folded, as a swipe draws them). Each form no dictionary word spells is a
 candidate, and these rules, in order, leave one out. The counts are from the build of November
-25, 2026:
+27, 2026:
 
 | Rule | Leaves out | Forms |
 | --- | --- | --- |
+| Offensive | A word the dictionary leaves out too: a pattern of `--leave-out` matches it whole (`Tools/KeyVoxTypingModels/offensive_words.py`) | 40 |
 | Letters | A letter that is no letter key of the keyboard (the default letter layout `language.json` names, `letter_layouts/<layout>.json`) | 6,262 |
-| One source | Fewer than two of the three sources write it as a word on its own | 693,651 |
+| One source | Fewer than two of the three sources write it as a word on its own | 693,615 |
 | Joined | Written joined to other letters or digits more than half the time: URLs, hyphenated words, code | 125 |
-| Misspelling | A dictionary form one edit away (a letter left out, added, or changed, or two neighbors swapped) is written on its own at least 50 times as often as it is | 4,188 |
-| Kept | | 22,465 of 726,691 |
+| Misspelling | A dictionary form one edit away (a letter left out, added, or changed, or two neighbors swapped) is written on its own at least 50 times as often as it is | 4,187 |
+| Kept | | 22,462 of 726,691 |
+
+The dictionary's words that `--leave-out` matches still count as dictionary words here, as
+`work/dictionary_unigrams.tsv` holds them, so they are never candidates and every other rule
+and probability is as it would be with them in the dictionary.
 
 - Decoding HTML references and skipping Markdown code leaves 416 forms in a single source that
   were in two before, the largest "nbsp" (980,367 times before, 44 after); the others' only other
   source was code or HTML references in OASST2.
 - The misspelling rule never leaves out a form SCOWL's size 80 lists in any spelling (American,
-  British, Canadian, or Australian), which keeps 1,748 forms such as "colour", "yay", and
+  British, Canadian, or Australian), which keeps 1,747 forms such as "colour", "yay", and
   "cafe", or one the written sources write with capitals more often than in lowercase, as a
   name or an acronym (a misspelling of a lowercase word is lowercase), which keeps 2,830.
 - Both sides of the misspelling rule count only the times a form is written on its own, so a
@@ -426,10 +433,11 @@ read.
 The sources write most of these words too rarely for the rules above, so the words of the
 dataset come after the sources' words, with rules of their own. Each form no dictionary word
 spells and the list does not already hold is a candidate, and these rules, in order, leave one
-out. The counts are from the build of November 26, 2026:
+out. The counts are from the build of November 27, 2026:
 
 | Rule | Leaves out | Forms |
 | --- | --- | --- |
+| Offensive | As above | 0 |
 | Letters | A letter that is no letter key of the keyboard, as above | 0 |
 | One swipe | Fewer than two records swipe it | 21,721 |
 | Misspelling | As above, counting how often the sources write the form on its own (none for most), so a dictionary form one edit away that the sources write at all leaves it out | 129 |
@@ -443,7 +451,6 @@ out. The counts are from the build of November 26, 2026:
 - The rules for one source and joined words count the sources' texts, which hardly write these
   words; a word the dataset writes joined, such as "well-known", is the whole word a person
   swipes, and 584 of the words kept are hyphenated.
-- No word kept is on the profanity list `SwipeOffensiveTwinTests` reads.
 
 Each kept form is written in its most common spelling, with its likeliest capitals when the
 dataset's sentences write that spelling with capitals more often than in lowercase in the middle
