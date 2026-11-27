@@ -668,6 +668,8 @@ Keyboard onboarding detection is deliberately split across three signals:
   - the keyboard's typing languages by identifier, in the order its space bar switches through them, written by the containing app; missing until the user saves a choice
 - `KeyVox.KeyboardLetterLayouts`
   - the letter layout the user chose for each typing language, by language identifier, written by the containing app
+- `KeyVox.KeyboardActiveTypingLanguage`
+  - the typing language the keyboard last typed in, written by the keyboard
 - `KeyVox.KeyboardTypingMemoryResetGeneration`
   - counts the user's resets of what the keyboard learned from typing; written by the containing app and read by the keyboard
 - `KeyVox.EmojiFrequentlyUsed`
@@ -1682,6 +1684,7 @@ The restore card remains visible until both unlocks are owned.
 - reads Compact Keys availability from `KeyVox.CompactKeysEnabled`, defaulting to enabled
 - reads and writes the separate `KeyVox.CompactKeysActive` presentation preference, defaulting to the full keyboard
 - reads, but never writes, the shared keyboard typing settings and `KeyVox.LeftHandedKeyboardLayoutEnabled`, using the same defaults as `AppSettingsStore`: Open on 123 and Left-Handed Layout default off, and every other typing setting defaults on
+- reads, but never writes, the typing languages and layouts the containing app saved (`typingLanguageSelection(catalog:)`), and reads and writes the language the keyboard last typed in (`lastTypingLanguage`)
 - reads, but never writes, `KeyVox.KeyboardTheme` through `KeyboardThemeID.resolved(rawValue:)`, so a missing or unknown value resolves to the KeyVox theme
 - reads the containing app's `KeyVox.App.HasCompletedOnboarding` flag from App Group defaults
 
@@ -2097,7 +2100,8 @@ Typing languages:
 - `TypingLanguageCatalog` (the package's `KeyVoxTypingLanguageCatalog` product) lists the folders that have a `language.json` and the layouts each offers, reading only that file, so no language list is written anywhere else; `TypingLanguageCatalog.bundled()` reads the package's own copy
 - `TypingLanguage.bundled(identifier:)` reads one folder; `PredictiveEngine`, `PredictiveTypingSession`, `HeldKeyCharacters`, and `CharacterList` all take the language, so the rules that differ between languages come from it, while rules the bundled languages share, such as which marks end a sentence, stay in the shared code
 - the words a language spells only with capitals come from `KeyVoxLinguistics`, which bundles one list per language (`capitalized_spellings_<language>.txt`) shared with dictation
-- the keyboard types in `KeyboardTypingLanguage.current`, whose files are compiled into the package
+- the keyboard types in `KeyboardTypingLanguage.current`, whose files are compiled into the package: one of the languages the user selected in the KeyVox app (`KeyboardTypingLanguageSelection`), loaded in the layout chosen for it (`TypingLanguage.bundled(identifier:letterLayout:)`, which refuses a layout the language does not offer); the keyboard opens in the language it last typed in (`KeyVox.KeyboardActiveTypingLanguage`), or in the first selected one when that one is no longer selected, and rereads the user's languages each time it appears and its host becomes active
+- a change of language or layout goes through `KeyboardViewController.applyTypingLanguage()`, the one place it reaches the keyboard: the swipe being decoded is dropped, the letter page shows in the new layout (pages are kept per layout, so a layout shown before is not rebuilt), its key frames are reported again, the typing session starts over in the new language, both prediction engines let go of the previous language's files, loading the new one's when next needed, with the user's vocabulary and learned words carried over, and held-key characters, word-ending characters, and quotation marks follow the new language; only the active language's dictionary, models, and swipe model are ever loaded
 - the folders are found through `KeyVoxPredictiveKeyboardResources`, which a host outside an app bundle, such as the Android engine, configures with the package's unchanged resource bundle, as it does for Core and `KeyVoxLinguistics`
 
 `KeyVoxPredictiveKeyboard.PredictiveTypingSession` is the typing source of truth for the letter page. The keyboard reports taps, and text changes with the text on both sides of the cursor, asks the session what space, return, a word-ending character, a character after a suggestion tap, or a suggestion tap should change, and applies the returned `TextEdit` through `KeyboardTextInputController`. The keyboard must not re-implement correction, completion, next-word, sentence-opener, personal-word casing, or undo rules locally.
@@ -2192,7 +2196,7 @@ Vocabulary:
 - personal vocabulary combines KeyVox Dictionary phrases with the system supplementary lexicon's known names and text replacements; the dictionary is applied at once and the lexicon again on the main thread whenever the system answers
 - learned vocabulary from typing memory is handed to suggestions whenever it changes
 - pressing and holding a suggestion forgets a learned word or learned capitals; the user's own vocabulary is never forgotten this way
-- corrections and predictions come from the typing language the keyboard types in, `KeyboardTypingLanguage.current`; English is the only bundled language
+- corrections, predictions, and swipes come from the typing language the keyboard types in, `KeyboardTypingLanguage.current`, aimed at the keys of its layout; English is the only bundled language
 
 Shift and letter case:
 
@@ -2389,7 +2393,7 @@ Views may surface manager state, but runtime ownership stays in the managers and
 - app haptics decision rules
 - shared path construction
 - settings persistence
-- keyboard typing-language selection: saved order, languages not bundled, saved layouts, and the fallback language
+- keyboard typing-language selection: saved order, languages not bundled, saved layouts, the fallback language, and the language the keyboard opens in when the last one used was removed
 - Compact Keys availability, active-mode resolution, row selection, hold cancellation, and explicit mode heights
 - iCloud sync coordination
 - weekly stats storage and merge behavior

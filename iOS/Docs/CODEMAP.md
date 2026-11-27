@@ -444,6 +444,7 @@ iOS/
 │   │   ├── KeyboardViewController+RescuedDictation.swift
 │   │   ├── KeyboardViewController+Swipe.swift
 │   │   ├── KeyboardViewController+Typing.swift
+│   │   ├── KeyboardViewController+TypingLanguage.swift
 │   │   └── KeyboardViewController.swift
 │   ├── Core/
 │   │   ├── Dictation/
@@ -1258,7 +1259,7 @@ Packages/
 - `KeyVox iOS/App/Integration/KeyboardTypingMemoryLocation.swift`
   - Single source of truth for the App Group `Keyboard/typing-memory.json` location, compiled into the containing app, keyboard extension, and tests.
 - `KeyVox iOS/App/KeyboardLanguages/KeyboardTypingLanguageSelection.swift`
-  - Resolves the keyboard's typing languages from the saved languages and layouts and the bundled catalog: saved order kept, languages the keyboard does not bundle dropped, a saved layout used only when the language offers it, and, when nothing saved is bundled, the bundled language the app was written in (its development localization), else the first bundled language. Compiled into the containing app and tests.
+  - Resolves the keyboard's typing languages from the saved languages and layouts and the bundled catalog: saved order kept, languages the keyboard does not bundle dropped, a saved layout used only when the language offers it, and, when nothing saved is bundled, the bundled language the app was written in (its development localization), else the first bundled language; the keyboard types in the last language it used while that one is still selected, else the first (`activeLanguage(lastUsed:)`). Compiled into the containing app, the keyboard extension, and tests.
 - `KeyVox iOS/App/KeyboardLanguages/KeyboardBundledTypingLanguages.swift`
   - The containing app's copy of the keyboard's typing-language catalog, read from the typing package's resource bundle inside the keyboard extension, since the app does not bundle the typing data.
 - `KeyVox iOS/App/KeyboardLanguages/KeyboardTypingLanguageName.swift`
@@ -1722,6 +1723,8 @@ Packages/
   - Swipe typing: turns the key grid's swiping on where the field's typing traits allow it, plays a letter key's press haptic when a swipe ends, ends a typed word in progress as space would while leaving a word just swiped in as it is, hands a swipe's path and the shift state to the prediction coordinator, and inserts the decoded word through the typing session; hands over a swipe still being decoded before any key, suggestion, or held-delete word deletion acts.
 - `KeyVox Keyboard/App/KeyboardViewController+Typing.swift`
   - Letter-page typing: field preparation, opening layout, shift and caps-lock handling, word-boundary autocorrection, picked-word spacing, suggestion taps and long-press forgetting, contested taps near letter keys, held-delete word deletion, return to letters after symbols, and personal, learned, and emoji vocabulary hand-off to the prediction coordinator.
+- `KeyVox Keyboard/App/KeyboardViewController+TypingLanguage.swift`
+  - Adopts the user's typing languages each time the keyboard appears and its host becomes active, and `applyTypingLanguage()`, the one place a change of language reaches the keyboard: it drops a swipe being decoded, hands the prediction coordinator the new language, shows the letter page in its layout, and, once the field may be read, starts its typing over.
 - `KeyVox Keyboard/App/KeyboardViewController+Emoji.swift`
   - Emoji page binding, opening and closing, typing an emoji with the character-key haptic, recording Frequently Used and skin-tone choices, the page's delete repeat, and the suggestion-bar emoji for a word, offered once the saved Frequently Used ranking holds a typed emoji.
 - `KeyVox Keyboard/App/KeyboardViewController+EmojiSearch.swift`
@@ -1836,7 +1839,7 @@ Packages/
 - `KeyVox Keyboard/Core/Input/KeyboardSymbolPageReturnTracker.swift`
   - Returns to the letter page right after a character that belongs inside words (as `TypingTextContext.isWordCharacter` defines it) is typed on a symbol page, or on the space that follows any other symbol-page character.
 - `KeyVox Keyboard/Core/Input/KeyboardHeldKeyController.swift`
-  - Times a finger on a key that offers held-key characters, opens the popup through the bundled `HeldKeyCharacters`, follows the finger across its cells, and reports whether the touch chose a character, closed the popup, or never opened it; in the web endings popup the selection follows the finger's movement from where it was when the popup opened.
+  - Times a finger on a key that offers held-key characters, opens the popup through the typing language's `HeldKeyCharacters`, read again when the language changes, follows the finger across its cells, and reports whether the touch chose a character, closed the popup, or never opened it; in the web endings popup the selection follows the finger's movement from where it was when the popup opened.
 - `KeyVox Keyboard/Core/Input/KeyboardDeleteRepeatSchedule.swift`
   - Single source of truth for the held delete key's repeat timing and its switch from single characters to whole words; `KeyboardDeleteRepeatController` in `KeyboardSpecialKeyInteractionSupport.swift` runs it.
 - `KeyVox Keyboard/Core/Input/KeyboardDocumentIdentifier.swift`
@@ -1868,7 +1871,7 @@ Packages/
   - Row-geometry helper for keyboard-specific sizing rules that should not live in `KeyboardRootView` or `KeyboardKeyGridView`.
   - Owns the letter page's letter rows that are not equal keys across (`LetterRowLayout`: each key, inset, and extra gap as many letter keys wide as `KeyboardLetterRows` says, a letter key being the grid's width split among the layout's width in letter keys), the symbol pages' third row, and the bottom row's live widths, including the landscape side-key span, the paired page and emoji keys, the emoji search's three-key row, the globe row, and each field bottom row's split of the space bar's and return key's places, all driven from the measured key grid, plus the number pad's bottom row in its three columns across the pad's width from `KeyboardNumberPadGeometry`, with key widths one priority below required so a resize never forces Auto Layout to break key constraints.
 - `KeyVox Keyboard/Core/KeyboardLetterRows.swift`
-  - The letter page's letter rows drawn from the typing language's letter layout: the layout's keys at Apple's widths in letter keys and its padding left as an inset at a row's edge or a gap between keys, except that in a layout whose shift and delete fill the padding beside them (`shiftAndDeleteFillPadding`) they take it in and reach the row's letters, and whether a row is equal keys across.
+  - The letter page's letter rows drawn from the typing language's letter layout, rebuilt when the layout changes (`current`): the layout's keys at Apple's widths in letter keys and its padding left as an inset at a row's edge or a gap between keys, except that in a layout whose shift and delete fill the padding beside them (`shiftAndDeleteFillPadding`) they take it in and reach the row's letters, and whether a row is equal keys across.
 - `KeyVox Keyboard/Core/KeyboardKeysMode.swift`
   - Resolves full versus compact presentation from availability and persisted active state.
   - Takes the 286-point full or 174-point compact portrait height from `KeyboardStyle`, changes it by however much shorter or taller the keys are in landscape or on iPad, takes the toolbar's row (`KeyboardStyle.toolbarRowHeight`) off when told the row is not kept, and owns visible row count, per-orientation and per-display key height, row spacing, the top row's toolbar button height, and derived key-grid height, each scaled by `KeyboardDisplayZoom`'s size scale; under Display Zoom the height around the keys shrinks by the same scale.
@@ -1915,7 +1918,7 @@ Packages/
 - `KeyVox Keyboard/Core/Transport/KeyboardTransportDisplayState.swift`
   - Non-visual keyboard logo transport state, accessibility labels, and playback/dictation presentation inputs kept separate from the proprietary logo-bar rendering file.
 - `KeyVox Keyboard/Views/Components/KeyboardKeyGridView.swift`
-  - Shows the page for the current layout through cached `KeyboardKeyGridPage` instances, applies the letter case, the current row spacing, and the Display Zoom's size scale to the page showing and every page shown after it, reports letter-key frames for predictions, resolves a touch to the containing key or the nearest key within its hit slop, greys out a return key the field has not turned on yet, and exposes the key, held-key, delete, globe, touch-down, and swipe callbacks; holds the swipe gate, the letter key pitch it measures in, and the swipe trail above the keys.
+  - Shows the page for the current layout through cached `KeyboardKeyGridPage` instances, the letter page kept per letter layout, shows the letter page in the layout the keyboard types in now and reports its key frames again (`showCurrentLetterLayout()`), applies the letter case, the current row spacing, and the Display Zoom's size scale to the page showing and every page shown after it, reports letter-key frames for predictions, resolves a touch to the containing key or the nearest key within its hit slop, greys out a return key the field has not turned on yet, and exposes the key, held-key, delete, globe, touch-down, and swipe callbacks; holds the swipe gate, the letter key pitch it measures in, and the swipe trail above the keys.
 - `KeyVox Keyboard/Views/Components/KeyboardKeyGridView+Touches.swift`
   - Multi-finger key handling: each finger is followed separately, characters type on lift or as soon as another finger lands, delete repeats while held, a held space bar becomes the cursor trackpad, holding `#+=` requests Compact Keys, holding a key with held-key characters opens its popup, and the globe's touches go to the system input-mode list.
 - `KeyVox Keyboard/Views/Components/KeyboardKeyGridView+Swipe.swift`
@@ -1923,7 +1926,7 @@ Packages/
 - `KeyVox Keyboard/Views/Components/KeyboardSwipeTrailView.swift`
   - Draws a swipe's trail in the theme's `KeyboardThemeSwipeTrail` style: a round-headed stroke with a head dot over nested glow layers, each a ribbon through a centripetal Catmull-Rom curve of the finger's samples tapering and fading with the distance back along the path, cut by distance into overlapping reused shape layers refreshed each screen frame while it shows; once the finger lifts the tail retracts into the head, keeping its taper, while the head dot blooms.
 - `KeyVox Keyboard/Views/Components/KeyboardKeyGridPage.swift`
-  - One built-and-kept page of key rows per symbol page, keys mode, emoji-search row, emoji key, globe, and field keys combination, with its row-geometry helpers, so switching pages never rebuilds a page already shown.
+  - One built-and-kept page of key rows per symbol page, keys mode, emoji-search row, emoji key, globe, field keys, and letter layout combination, with its row-geometry helpers, so switching pages never rebuilds a page already shown.
 - `KeyVox Keyboard/Views/Components/KeyboardKeyTouchSession.swift`
   - One finger's key, typed location, current location, timestamp, rollover state, and, while it may become or is a swipe, its path, its trail, and, once it lifts undecided, where its word would have gone.
 - `KeyVox Keyboard/Views/Components/KeyboardKeyView.swift`
@@ -1971,11 +1974,11 @@ Packages/
   - Runs the shared typing session on the main thread and suggestion work on a serial background engine, publishing a result only when no newer request was made; at a word boundary it uses the current result or computes it on the spot so a fast space never skips an autocorrection. Contested-tap checks run on a second engine so keys such as delete never wait for suggestions. Swipes decode on the suggestion engine's queue; anything typed before a swipe's word arrives waits for it, a word whose place moved meanwhile goes nowhere, and once the word goes in the bar shows suggestions for it with no autocorrection, which space never applies to a word just swiped in. The separator ending a word just swiped in goes in as the keyboard's own edit, never the space key's double-space period, and that word's record ends once the cursor or the field moves from where the word left it.
   - Never rereads the document proxy when background work finishes: a swipe's word is checked against the place recorded on the main thread after every change to the text or cursor, the host's and the keyboard's own, and typed from the text read when the swipe ended.
 - `KeyVox Keyboard/Core/Prediction/KeyboardPredictionEngine.swift`
-  - Serial-queue owner of one lazily created `PredictionComputer`, holding geometry, vocabulary, and learned words until the engine exists and remembering when the engine cannot load.
+  - Serial-queue owner of one lazily created `PredictionComputer` for one typing language, holding geometry until the engine exists, keeping the vocabulary and learned words for the next engine, and remembering when the engine cannot load; a change of language lets go of the engine and its letter key frames, so only that language's files stay loaded.
 - `KeyVox Keyboard/Core/Prediction/KeyboardSwipePlace.swift`
   - Where a swiped word goes: the field, counted on the main thread and named by its document identifier, which is new each time a field takes focus, and the text around the cursor when its swipe ended, so a word whose cursor or field moved goes nowhere.
 - `KeyVox Keyboard/Core/Prediction/KeyboardTypingLanguage.swift`
-  - The bundled typing language the keyboard types in, shared by its engines, typing session, held keys, word-ending characters, and quote keys.
+  - The typing language the keyboard types in, shared by its engines, typing session, letter rows, held keys, word-ending characters, and quote keys: one of the user's selected languages (`KeyboardTypingLanguageSelection`, read through `KeyboardAppSettingsStore`) in the layout chosen for it, the one last typed in or the first selected when that one was removed, reread by `adoptSettings(_:)`; holds the bundled `TypingLanguageCatalog` and loads only the active language.
 - `KeyVox Keyboard/Core/Prediction/KeyboardTypingTraits.swift`
   - Resolves what the letter keyboard may do in the focused field from its keyboard type, content type, secure entry, autocorrection, and autocapitalization traits, narrowed by the shared keyboard typing settings; a feature the field turns off stays off. Carries the field's `KeyboardFieldKeys`.
 - `KeyVox Keyboard/Core/Prediction/KeyboardPersonalVocabularyBuilder.swift`
@@ -2042,7 +2045,7 @@ Packages/
 ### Tests
 
 - `KeyVoxiOSTests/App/`
-  - Onboarding state, Dictation Shortcut intro scheduling, onboarding keyboard-tour state, keyboard access probing, app haptics decisions, settings persistence, KeyVox Vibes latest-artifact persistence, Vibes intro/access/purchase semantics, shared paths, iCloud sync, weekly stats, Live Activity coordination, shortcut dictation coordination, URL routing, model manager behavior across rooted Whisper migration and Parakeet installs, and keyboard typing-language selection.
+  - Onboarding state, Dictation Shortcut intro scheduling, onboarding keyboard-tour state, keyboard access probing, app haptics decisions, settings persistence, KeyVox Vibes latest-artifact persistence, Vibes intro/access/purchase semantics, shared paths, iCloud sync, weekly stats, Live Activity coordination, shortcut dictation coordination, URL routing, model manager behavior across rooted Whisper migration and Parakeet installs, and keyboard typing-language selection, including the language the keyboard opens in.
 - `KeyVoxiOSTests/App/TTSPurchaseControllerTests.swift`
   - Deterministic copied-text playback monetization coverage for cached unlock state, two-free-speaks-per-day accounting, local day resets, and purchase or restore state transitions through the placeholder store abstraction.
 - `KeyVoxiOSTests/Core/Audio/`
@@ -2061,7 +2064,7 @@ Packages/
 - `Packages/KeyVoxLocalInference/Tests/KeyVoxLocalInferenceTests/`
   - Package-level coverage for local prompt formatting, adapter-aware generation behavior, and opt-in live model prompt suites for Polished, Casual, and the Polished gauntlet.
 - `Packages/KeyVoxPredictiveKeyboard/Tests/KeyVoxPredictiveKeyboardTests/`
-  - Package-level coverage for autocorrection, missing-space correction, word revision, deleted-into and remembered corrections, contact names and dictionary phrases, learned words, capitals, and suggestions, sentence endings and openers, picked-word spacing and repeated picks, emoji suggestions, smart quotes, held-key characters and popup layout, character lists, the bundled letter layouts and the layouts each language names, the typing-language catalog, and the typing-memory file.
+  - Package-level coverage for autocorrection, missing-space correction, word revision, deleted-into and remembered corrections, contact names and dictionary phrases, learned words, capitals, and suggestions, sentence endings and openers, picked-word spacing and repeated picks, emoji suggestions, smart quotes, held-key characters and popup layout, character lists, the bundled letter layouts and the layouts each language names, the typing-language catalog, loading a language in each layout it offers and swipes decoded on that layout's keys, and the typing-memory file.
 - `Packages/KeyVoxEmoji/Tests/KeyVoxEmojiTests/`
   - Package-level coverage for the catalog, keyboard sections, Frequently Used ranking, search, suggestion-bar emoji, and two-person tones.
 - `Packages/KeyVoxKeyboardThemes/Tests/KeyVoxKeyboardThemesTests/`
