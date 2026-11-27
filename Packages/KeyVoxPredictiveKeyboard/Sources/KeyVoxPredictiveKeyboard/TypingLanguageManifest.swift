@@ -17,4 +17,7 @@ struct TypingLanguageManifest: Decodable {
     /// Words always written as listed, alone or before an apostrophe.
     let alwaysCapitalizedWords: [String]
     let quotationMarks: QuotationMarks
+    /// Whether a period right after a digit writes an ordinal number rather than ending the
+    /// sentence (`TypingTextRules.ordinalPeriods`); false when left out.
+    let ordinalPeriods: Bool?
 }

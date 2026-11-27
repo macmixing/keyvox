@@ -142,7 +142,7 @@ public final class PredictionComputer: @unchecked Sendable {
             )
         }
 
-        let typed = request.currentWord.replacingOccurrences(of: "’", with: "'")
+        let typed = engine.language.textRules.straightApostrophes(in: request.currentWord)
         let engineTouches = request.touches.map(PredictionTouch.init(location:))
         let completion = try engine.predict(
             typedWord: typed,
@@ -285,7 +285,7 @@ public final class PredictionComputer: @unchecked Sendable {
         let forms = forms
         let learned = learned
         lock.unlock()
-        let typed = request.word.replacingOccurrences(of: "’", with: "'")
+        let typed = engine.language.textRules.straightApostrophes(in: request.word)
         if let phraseStart = vocabulary.phraseForm(of: typed, before: request.followingWord) {
             let written = casing.apply(of: typed, to: phraseStart)
             return written == typed ? nil : written
@@ -331,7 +331,7 @@ public final class PredictionComputer: @unchecked Sendable {
         request: PredictionRequest,
         policy: ContestedTapPolicy
     ) throws -> Character? {
-        let typed = request.currentWord.replacingOccurrences(of: "’", with: "'").lowercased()
+        let typed = engine.language.textRules.straightApostrophes(in: request.currentWord).lowercased()
         let landedOnOtherKey = otherKeyFrame.contains(touch)
         if policy.keepsOtherKey(otherKey, startsWord: typed.isEmpty, landedOnOtherKey: landedOnOtherKey) {
             return nil
