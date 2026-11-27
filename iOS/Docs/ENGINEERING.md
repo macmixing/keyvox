@@ -671,6 +671,8 @@ Keyboard onboarding detection is deliberately split across three signals:
 - `KeyVox.KeyboardActiveTypingLanguage`
   - the typing language the keyboard last typed in, written by the keyboard
 - `KeyVox.KeyboardTypingMemoryResetGeneration`
+- `KeyVox.KeyboardTypingMemoryLanguageResetGenerations`
+  - counts the user's resets of what the keyboard learned in one language, by language identifier; written by the containing app and read by the keyboard
   - counts the user's resets of what the keyboard learned from typing; written by the containing app and read by the keyboard
 - `KeyVox.EmojiFrequentlyUsed`
   - the keyboard's Frequently Used emoji ranking, written by the keyboard
@@ -736,8 +738,10 @@ Keyboard onboarding detection is deliberately split across three signals:
 - `TTS/last-replay.pcm`
   - durable replay audio payload for the last replayable copied-text playback
 - `Keyboard/typing-memory.json`
-  - durable keyboard typing memory, written by the keyboard extension under the current reset generation
-  - removed by the containing app's learned-words reset after it increments `KeyVox.KeyboardTypingMemoryResetGeneration`
+  - durable keyboard typing memory of English, the only language the keyboard typed in before it had languages (`KeyboardTypingMemoryLocation.originalFileLanguage`), in the same file and format as before, written by the keyboard extension under the current reset generation
+- `Keyboard/typing-memory-<language>.json`
+  - durable keyboard typing memory of every other typing language, beside the original file, in the same format
+- removed by the containing app's learned-words reset: every language's after it increments `KeyVox.KeyboardTypingMemoryResetGeneration`, or one language's after it increments that language's count in `KeyVox.KeyboardTypingMemoryLanguageResetGenerations`
 
 ### Transcription AU Message Contract
 
@@ -841,7 +845,7 @@ The App Group container is the stable cross-process boundary:
 - `TTS/request.json`
 - `TTS/last-replay.json`
 - `TTS/last-replay.pcm`
-- `Keyboard/typing-memory.json` for the keyboard's typing memory
+- `Keyboard/typing-memory.json` and `Keyboard/typing-memory-<language>.json` for the keyboard's typing memory, one file per typing language
 - `live-meter-state.bin` for transient keyboard indicator transport
 
 If the App Group container is unavailable:
@@ -2101,7 +2105,7 @@ Typing languages:
 - `TypingLanguage.bundled(identifier:)` reads one folder; `PredictiveEngine`, `PredictiveTypingSession`, `HeldKeyCharacters`, and `CharacterList` all take the language, so the rules that differ between languages come from it, while rules the bundled languages share, such as which marks end a sentence, stay in the shared code
 - the words a language spells only with capitals come from `KeyVoxLinguistics`, which bundles one list per language (`capitalized_spellings_<language>.txt`) shared with dictation
 - the keyboard types in `KeyboardTypingLanguage.current`, whose files are compiled into the package: one of the languages the user selected in the KeyVox app (`KeyboardTypingLanguageSelection`), loaded in the layout chosen for it (`TypingLanguage.bundled(identifier:letterLayout:)`, which refuses a layout the language does not offer); the keyboard opens in the language it last typed in (`KeyVox.KeyboardActiveTypingLanguage`), or in the first selected one when that one is no longer selected, and rereads the user's languages each time it appears and its host becomes active
-- a change of language or layout goes through `KeyboardViewController.applyTypingLanguage()`, the one place it reaches the keyboard: the swipe being decoded is dropped, the letter page shows in the new layout (pages are kept per layout, so a layout shown before is not rebuilt), its key frames are reported again, the typing session starts over in the new language, both prediction engines let go of the previous language's files, loading the new one's when next needed, with the user's vocabulary and learned words carried over, and held-key characters, word-ending characters, and quotation marks follow the new language; only the active language's dictionary, models, and swipe model are ever loaded
+- a change of language or layout goes through `KeyboardViewController.applyTypingLanguage()`, the one place it reaches the keyboard: the swipe being decoded is dropped, the letter page shows in the new layout (pages are kept per layout, so a layout shown before is not rebuilt), its key frames are reported again, the typing session starts over in the new language, learning into that language's memory, whose learned words replace the previous language's in suggestions and swipes, both prediction engines let go of the previous language's files, loading the new one's when next needed, with the user's vocabulary carried over, and held-key characters, word-ending characters, and quotation marks follow the new language; only the active language's dictionary, models, and swipe model are ever loaded
 - the folders are found through `KeyVoxPredictiveKeyboardResources`, which a host outside an app bundle, such as the Android engine, configures with the package's unchanged resource bundle, as it does for Core and `KeyVoxLinguistics`
 
 `KeyVoxPredictiveKeyboard.PredictiveTypingSession` is the typing source of truth for the letter page. The keyboard reports taps, and text changes with the text on both sides of the cursor, asks the session what space, return, a word-ending character, a character after a suggestion tap, or a suggestion tap should change, and applies the returned `TextEdit` through `KeyboardTextInputController`. The keyboard must not re-implement correction, completion, next-word, sentence-opener, personal-word casing, or undo rules locally.
@@ -2194,7 +2198,7 @@ Word around the cursor:
 Vocabulary:
 
 - personal vocabulary combines KeyVox Dictionary phrases with the system supplementary lexicon's known names and text replacements; the dictionary is applied at once and the lexicon again on the main thread whenever the system answers
-- learned vocabulary from typing memory is handed to suggestions whenever it changes
+- learned vocabulary from the active language's typing memory is handed to suggestions whenever it changes and when the language changes
 - pressing and holding a suggestion forgets a learned word or learned capitals; the user's own vocabulary is never forgotten this way
 - corrections, predictions, and swipes come from the typing language the keyboard types in, `KeyboardTypingLanguage.current`, aimed at the keys of its layout; English is the only bundled language
 
@@ -2216,11 +2220,13 @@ Keys and characters:
 
 ### Keyboard Typing Memory Rules
 
-- `KeyboardTypingMemory.shared` is one `TypingMemory` for every keyboard view while the extension runs
-- it saves the memory to `Keyboard/typing-memory.json` in the App Group a moment after each change, off the main thread, under the reset generation it was loaded with
-- `KeyboardTypingMemoryReset` in the containing app increments `KeyVox.KeyboardTypingMemoryResetGeneration` before removing the file, so a keyboard still holding the old memory never saves over the reset
-- the keyboard adopts a newer reset generation, clearing its memory, when it appears and when the extension host becomes active
-- the Keyboard settings screen's Reset Learned Words action routes through the shared Settings deletion confirmation; the KeyVox Dictionary is not affected
+- what the keyboard learns from typing (turned-down corrections, learned words, and learned capitals) is kept per typing language: `KeyboardTypingMemory.current` is the `TypingMemory` of the language the keyboard types in, for every keyboard view while the extension runs, and only that language's memory is loaded; a change of language loads the new language's memory, and the one let go still saves its last change
+- the typing session learns into the active language's memory, and suggestions, autocorrection, and swipes use only its learned words; the user's own words (KeyVox Dictionary entries, contact names, and text replacement shortcuts) are shared by every language
+- English's memory is the original `Keyboard/typing-memory.json`, read and saved where and as it always was, so what the keyboard learned before it had languages stays English's untouched; every other language's memory is `Keyboard/typing-memory-<language>.json` beside it (`KeyboardTypingMemoryLocation`)
+- each memory saves a moment after each change, off the main thread, under the reset generations it was loaded with: every language's (`KeyVox.KeyboardTypingMemoryResetGeneration`, stored in the file as before) and its own language's (`KeyVox.KeyboardTypingMemoryLanguageResetGenerations`)
+- `KeyboardTypingMemoryReset` in the containing app increments the generation before removing a file, so a keyboard still holding the old memory never saves over the reset: resetting every language increments the shared generation and removes every language's file, and resetting one language increments that language's count and removes only its file
+- the keyboard adopts a newer reset generation, clearing its memory, when it appears, when the extension host becomes active, and when it switches to a language
+- the Keyboard settings screen's Reset Learned Words action routes through the shared Settings deletion confirmation; the KeyVox Dictionary is not affected. With one typing language it resets every language's memory with the confirmation's original wording, as the button always did; with several, it opens a menu of the selected languages and All Languages, and the confirmation names the choice and resets only it (`KeyboardTypingMemoryResetScope`)
 
 ### Emoji Keyboard Rules
 
@@ -2359,7 +2365,7 @@ Current app-owned surfaces:
 - `SettingsTabView+General`: the Dictation, Keyboard, and KeyVox Speak rows that open their settings screens
 - `SettingsDestination`: the Dictation, Keyboard, and KeyVox Speak screens the Settings tab pushes onto its navigation stack
 - `DictationSettingsView`: the Dictation settings screen with the Dictation Timeout, Live Activities, and Dictation Shortcut setup-guide card, the dictation model card, and the built-in microphone preference; it owns the full-screen Dictation Shortcut reference-guide and language-picker presentations, and its copy lives in `DictationSettingsCopy`
-- `KeyboardSettingsView`: the Keyboard settings screen, with keyboard haptics (hidden on iPad) and the keyboard typing toggles, Classic Theme, Compact Keys, Open on 123, Left-Handed Layout, and Reset Learned Words; its copy lives in `KeyboardSettingsCopy`
+- `KeyboardSettingsView`: the Keyboard settings screen, with keyboard haptics (hidden on iPad) and the keyboard typing toggles, Classic Theme, Compact Keys, Open on 123, Left-Handed Layout, and Reset Learned Words, which with several typing languages opens a menu of them and All Languages; its copy lives in `KeyboardSettingsCopy`
 - `DictationSettingsView+Model`: release-facing `Dictation Model` section for provider selection, per-model install actions, uninstalled model size display, and the attached language section driven by the shared Whisper catalog or Parakeet Auto Detect guidance
 - `KeyVoxSpeakSettingsView`: the KeyVox Speak settings screen with the Speak Timeout card and the engine and voices card; its copy lives in `KeyVoxSpeakSettingsCopy`
 - `KeyVoxSpeakSettingsView+Voices`: release-facing `KeyVox Speak` section for PocketTTS runtime install state, per-voice install actions, previews, voice selection, and the `KeyVox Speak Unlimited` unlock row placed beneath the model section
@@ -2412,7 +2418,7 @@ Views may surface manager state, but runtime ownership stays in the managers and
 - keyboard text input helpers
 - keyboard letter-case shift and caps-lock state
 - keyboard held-delete word deletion
-- keyboard typing-memory reset
+- keyboard typing-memory reset, per typing language and for every language, and an existing English memory file loading unchanged
 - keyboard emoji category memory and styles, grid, search, and picker geometry, search keys, and drawability
 - keyboard cursor-trackpad support
 - transcription manager lifecycle, typed shortcut command outcomes, immediate microphone-release retry and timeout fallback, and interruption handling
