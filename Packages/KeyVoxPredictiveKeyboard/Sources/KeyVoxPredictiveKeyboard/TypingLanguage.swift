@@ -19,10 +19,19 @@ public struct TypingLanguage: Sendable {
     public let quotes: SmartQuotes
     /// The key beside the letters that puts accents on them, when the language has one.
     public let accentKey: AccentKey?
+    /// How the language's text is read: the apostrophe it types inside words, and whether a
+    /// period after a digit ends a sentence.
+    public let textRules: TypingTextRules
     /// The letters single-letter edits of a typed word try, in the order they are tried.
     let editLetters: String
     /// The letters a short typed word needs one of to be taken as an attempt at a word.
     let vowels: String
+
+    /// Whether a word typed right after `text` starts a sentence (`TypingTextContext.startsSentence`),
+    /// read by the language's text rules.
+    public func startsSentence(after text: String) -> Bool {
+        TypingTextContext.startsSentence(after: text, rules: textRules)
+    }
 
     /// The bundled language in the folder `identifier`, drawn in the layout named `letterLayout`,
     /// one of the layouts it offers (`letterLayouts`), or in its default layout when nil.
@@ -42,7 +51,8 @@ public struct TypingLanguage: Sendable {
         } catch {
             throw PredictiveKeyboardError.invalidTypingLanguage(identifier)
         }
-        guard layouts.identifier == identifier else {
+        // The closing single mark is what the apostrophe key types inside words, one character.
+        guard layouts.identifier == identifier, manifest.quotationMarks.closingSingle.count == 1 else {
             throw PredictiveKeyboardError.invalidTypingLanguage(identifier)
         }
         let chosenLayout = layoutName ?? layouts.defaultLetterLayout
@@ -69,5 +79,9 @@ public struct TypingLanguage: Sendable {
         accentKey = manifest.accentKey.map(AccentKey.init(manifest:))
         editLetters = manifest.editLetters
         vowels = manifest.vowels
+        textRules = TypingTextRules(
+            apostrophe: Character(manifest.quotationMarks.closingSingle),
+            ordinalPeriods: manifest.ordinalPeriods ?? false
+        )
     }
 }

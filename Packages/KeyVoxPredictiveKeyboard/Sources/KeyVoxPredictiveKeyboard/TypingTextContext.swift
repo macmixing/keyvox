@@ -16,60 +16,73 @@ public struct TypingTextContext: Sendable, Equatable {
     /// No earlier words in the current sentence.
     public var isAtSentenceStart: Bool { previousWords.isEmpty }
 
-    public init(textBeforeCursor: String?, selectedText: String? = nil, textAfterCursor: String? = nil) {
+    /// - Parameter rules: How the typing language's text is read (`TypingLanguage.textRules`).
+    public init(
+        textBeforeCursor: String?,
+        selectedText: String? = nil,
+        textAfterCursor: String? = nil,
+        rules: TypingTextRules = .standard
+    ) {
         let text = textBeforeCursor ?? ""
         var cursor = text.endIndex
         while cursor > text.startIndex {
             let previous = text.index(before: cursor)
-            guard Self.isWordCharacter(text[previous]) else { break }
+            guard rules.isWordCharacter(text[previous]) else { break }
             cursor = previous
         }
         currentWord = String(text[cursor...])
 
         let earlier = text[..<cursor]
-        let words = earlier[Self.sentenceStart(in: earlier)...]
-            .split { Self.isWordCharacter($0) == false }
+        let words = earlier[Self.sentenceStart(in: earlier, rules: rules)...]
+            .split { rules.isWordCharacter($0) == false }
             .map(String.init)
         previousWords = Array(words.reversed().prefix(3))
         let separators = text.reversed().prefix { character in
             (character.isWhitespace && character.isNewline == false) || character.isPunctuation
         }
         let wordBeforeSeparators = String(
-            text.dropLast(separators.count).reversed().prefix(while: Self.isWordCharacter).reversed()
+            text.dropLast(separators.count).reversed().prefix(while: rules.isWordCharacter).reversed()
         )
         self.wordBeforeSeparators = currentWord.isEmpty && wordBeforeSeparators.isEmpty == false
             ? wordBeforeSeparators
             : nil
 
         let selected = selectedText ?? ""
-        selectedWord = selected.isEmpty == false && selected.allSatisfy(Self.isWordCharacter) ? selected : nil
+        selectedWord = selected.isEmpty == false && selected.allSatisfy(rules.isWordCharacter) ? selected : nil
         followingText = textAfterCursor ?? ""
-        restOfWord = selected.isEmpty ? String(followingText.prefix(while: Self.isWordCharacter)) : ""
+        restOfWord = selected.isEmpty ? String(followingText.prefix(while: rules.isWordCharacter)) : ""
     }
 
     /// The words of `text`, across sentences, newest first.
-    public static func wordsNewestFirst(in text: String) -> [String] {
-        text.split { isWordCharacter($0) == false }.reversed().map(String.init)
+    public static func wordsNewestFirst(in text: String, rules: TypingTextRules = .standard) -> [String] {
+        text.split { rules.isWordCharacter($0) == false }.reversed().map(String.init)
     }
 
     /// Whether `character` belongs inside a word: a letter or an apostrophe.
     public static func isWordCharacter(_ character: Character) -> Bool {
-        character.isLetter || character == "'" || character == "’"
+        TypingTextRules.standard.isWordCharacter(character)
+    }
+
+    /// Whether `character` belongs inside a word as the language writes it (`rules`).
+    public static func isWordCharacter(_ character: Character, rules: TypingTextRules) -> Bool {
+        rules.isWordCharacter(character)
     }
 
     /// Whether a word typed right after `text` starts a sentence: `text` is empty or ends at
     /// a line break, or at a space after a period, question mark, or exclamation mark that is
     /// not part of an ellipsis, since an ellipsis pauses a sentence rather than ending it.
     /// Quotation marks belong to the sentence they open or close, so an opening mark after
-    /// the space and a closing mark before it leave the sentence start where it is.
-    public static func startsSentence(after text: String) -> Bool {
+    /// the space and a closing mark before it leave the sentence start where it is. Where the
+    /// language writes ordinal numbers with a period (`TypingTextRules.ordinalPeriods`), a period
+    /// right after a digit ends no sentence.
+    public static func startsSentence(after text: String, rules: TypingTextRules = .standard) -> Bool {
         let beforeOpeningMarks = trimmingEnd(of: text[...], while: isQuotationMark)
         guard let last = beforeOpeningMarks.last else { return true }
         if last.isNewline { return true }
         guard last.isWhitespace else { return false }
         let sentence = trimmingEnd(of: beforeOpeningMarks) { $0.isWhitespace && $0.isNewline == false }
         let beforeClosingMarks = trimmingEnd(of: sentence, while: isQuotationMark)
-        return sentenceStart(in: beforeClosingMarks) == beforeClosingMarks.endIndex
+        return sentenceStart(in: beforeClosingMarks, rules: rules) == beforeClosingMarks.endIndex
     }
 
     private static func isQuotationMark(_ character: Character) -> Bool {
@@ -85,20 +98,26 @@ public struct TypingTextContext: Sendable, Equatable {
     }
 
     /// Where the last sentence of `text` begins: right after its last sentence boundary.
-    static func sentenceStart(in text: Substring) -> Substring.Index {
+    static func sentenceStart(in text: Substring, rules: TypingTextRules = .standard) -> Substring.Index {
         var index = text.endIndex
         while index > text.startIndex {
             let previous = text.index(before: index)
-            if isSentenceBoundary(at: previous, in: text) { return index }
+            if isSentenceBoundary(at: previous, in: text, rules: rules) { return index }
             index = previous
         }
         return text.startIndex
     }
 
-    static func isSentenceBoundary(at index: Substring.Index, in text: Substring) -> Bool {
+    static func isSentenceBoundary(at index: Substring.Index, in text: Substring, rules: TypingTextRules = .standard) -> Bool {
         let character = text[index]
         if character.isNewline || character == "!" || character == "?" { return true }
         return character == "." && isInEllipsis(at: index, in: text) == false
+            && (rules.ordinalPeriods && isOrdinalPeriod(at: index, in: text)) == false
+    }
+
+    /// Whether the period at `index` follows a digit, as an ordinal number's does ("3. Juli").
+    private static func isOrdinalPeriod(at index: Substring.Index, in text: Substring) -> Bool {
+        index > text.startIndex && text[text.index(before: index)].isNumber
     }
 
     /// Whether the period at `index` is one of three or more in a row, the way an ellipsis is
