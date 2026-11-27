@@ -34,6 +34,9 @@
 		9B5200042FB2000100AA0001 /* KeyVoxVibesAdapters in Frameworks */ = {isa = PBXBuildFile; productRef = 9B5200032FB2000100AA0001 /* KeyVoxVibesAdapters */; };
 		A7E100032FF5000100AA0001 /* KeyVoxPredictiveKeyboard in Frameworks */ = {isa = PBXBuildFile; productRef = A7E100022FF5000100AA0001 /* KeyVoxPredictiveKeyboard */; };
 		A7E100042FF5000100AA0001 /* KeyVoxPredictiveKeyboard in Frameworks */ = {isa = PBXBuildFile; productRef = A7E100022FF5000100AA0001 /* KeyVoxPredictiveKeyboard */; };
+		A7E200022FF5000100AA0001 /* KeyVoxTypingLanguageCatalog in Frameworks */ = {isa = PBXBuildFile; productRef = A7E200012FF5000100AA0001 /* KeyVoxTypingLanguageCatalog */; };
+		A7E200032FF5000100AA0001 /* KeyVoxTypingLanguageCatalog in Frameworks */ = {isa = PBXBuildFile; productRef = A7E200012FF5000100AA0001 /* KeyVoxTypingLanguageCatalog */; };
+		A7E200042FF5000100AA0001 /* KeyVoxTypingLanguageCatalog in Frameworks */ = {isa = PBXBuildFile; productRef = A7E200012FF5000100AA0001 /* KeyVoxTypingLanguageCatalog */; };
 		AB7E00032FF7000100AA0001 /* KeyVoxKeyboardThemes in Frameworks */ = {isa = PBXBuildFile; productRef = AB7E00022FF7000100AA0001 /* KeyVoxKeyboardThemes */; };
 		AB7E00042FF7000100AA0001 /* KeyVoxKeyboardThemes in Frameworks */ = {isa = PBXBuildFile; productRef = AB7E00022FF7000100AA0001 /* KeyVoxKeyboardThemes */; };
 		AB7E00052FF7000100AA0001 /* KeyVoxKeyboardThemes in Frameworks */ = {isa = PBXBuildFile; productRef = AB7E00022FF7000100AA0001 /* KeyVoxKeyboardThemes */; };
@@ -175,6 +178,8 @@
 				App/Integration/KeyVoxIPCBridge.swift,
 				App/Integration/KeyVoxTTSRequest.swift,
 				App/Integration/TranscriptionAUContract.swift,
+				App/KeyboardLanguages/KeyboardTypingLanguageName.swift,
+				App/KeyboardLanguages/KeyboardTypingLanguageSelection.swift,
 				App/KeyVoxVibes/KeyVoxVibesTrialPolicy.swift,
 				App/LiveActivity/KeyVoxSessionLiveActivityAttributes.swift,
 				App/LiveActivity/KeyVoxSessionLiveActivityCoordinator.swift,
@@ -194,6 +199,8 @@
 				App/Integration/KeyVoxIPCBridge.swift,
 				App/Integration/KeyVoxTTSRequest.swift,
 				App/Integration/TranscriptionAUContract.swift,
+				App/KeyboardLanguages/KeyboardTypingLanguageName.swift,
+				App/KeyboardLanguages/KeyboardTypingLanguageSelection.swift,
 				App/KeyVoxVibes/KeyVoxVibesTrialPolicy.swift,
 				Resources/Assets.xcassets,
 				"Resources/Kanit-Light.ttf",
@@ -365,6 +372,7 @@
 			files = (
 				B4C200012FF2000100AA0001 /* KeyVoxTextComposition in Frameworks */,
 				A7E100032FF5000100AA0001 /* KeyVoxPredictiveKeyboard in Frameworks */,
+				A7E200032FF5000100AA0001 /* KeyVoxTypingLanguageCatalog in Frameworks */,
 				E3A100032FF6000100AA0001 /* KeyVoxEmoji in Frameworks */,
 				AB7E00032FF7000100AA0001 /* KeyVoxKeyboardThemes in Frameworks */,
 				C10000012FF0000100AA0001 /* KeyVoxCore in Frameworks */,
@@ -387,6 +395,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F41000012FF3000100AA0001 /* KeyVoxPromotions in Frameworks */,
+				A7E200022FF5000100AA0001 /* KeyVoxTypingLanguageCatalog in Frameworks */,
 				AB7E00052FF7000100AA0001 /* KeyVoxKeyboardThemes in Frameworks */,
 				9A7000012FA6000100AA0001 /* ZIPFoundation in Frameworks */,
 				8E9E38962F5BF56600EAFA72 /* KeyVoxCore in Frameworks */,
@@ -407,6 +416,7 @@
 			files = (
 				B4C200022FF2000100AA0001 /* KeyVoxTextComposition in Frameworks */,
 				A7E100042FF5000100AA0001 /* KeyVoxPredictiveKeyboard in Frameworks */,
+				A7E200042FF5000100AA0001 /* KeyVoxTypingLanguageCatalog in Frameworks */,
 				E3A100042FF6000100AA0001 /* KeyVoxEmoji in Frameworks */,
 				AB7E00042FF7000100AA0001 /* KeyVoxKeyboardThemes in Frameworks */,
 				C10000022FF0000100AA0001 /* KeyVoxCore in Frameworks */,
@@ -523,6 +533,7 @@
 			packageProductDependencies = (
 				B4C200032FF2000100AA0001 /* KeyVoxTextComposition */,
 				A7E100022FF5000100AA0001 /* KeyVoxPredictiveKeyboard */,
+				A7E200012FF5000100AA0001 /* KeyVoxTypingLanguageCatalog */,
 				E3A100022FF6000100AA0001 /* KeyVoxEmoji */,
 				AB7E00022FF7000100AA0001 /* KeyVoxKeyboardThemes */,
 				8E9E38952F5BF56600EAFA72 /* KeyVoxCore */,
@@ -580,6 +591,7 @@
 			packageProductDependencies = (
 				928D300FF612F97300000002 /* KeyVoxModels */,
 				F41000032FF3000100AA0001 /* KeyVoxPromotions */,
+				A7E200012FF5000100AA0001 /* KeyVoxTypingLanguageCatalog */,
 				AB7E00022FF7000100AA0001 /* KeyVoxKeyboardThemes */,
 				8E9E38952F5BF56600EAFA72 /* KeyVoxCore */,
 				D10000072FF4000100AA0001 /* KeyVoxWhisper */,
@@ -617,6 +629,7 @@
 				928D300FF612F97300000002 /* KeyVoxModels */,
 				B4C200032FF2000100AA0001 /* KeyVoxTextComposition */,
 				A7E100022FF5000100AA0001 /* KeyVoxPredictiveKeyboard */,
+				A7E200012FF5000100AA0001 /* KeyVoxTypingLanguageCatalog */,
 				E3A100022FF6000100AA0001 /* KeyVoxEmoji */,
 				AB7E00022FF7000100AA0001 /* KeyVoxKeyboardThemes */,
 				8E9E38952F5BF56600EAFA72 /* KeyVoxCore */,
@@ -1600,6 +1613,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = A7E100012FF5000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxPredictiveKeyboard" */;
 			productName = KeyVoxPredictiveKeyboard;
+		};
+		A7E200012FF5000100AA0001 /* KeyVoxTypingLanguageCatalog */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A7E100012FF5000100AA0001 /* XCLocalSwiftPackageReference "../Packages/KeyVoxPredictiveKeyboard" */;
+			productName = KeyVoxTypingLanguageCatalog;
 		};
 		AB7E00022FF7000100AA0001 /* KeyVoxKeyboardThemes */ = {
 			isa = XCSwiftPackageProductDependency;

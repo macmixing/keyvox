@@ -4,7 +4,8 @@ import CoreGraphics
 #endif
 @testable import KeyVoxPredictiveKeyboard
 
-/// A humanlike swipe of a word on the English default layout's keys (100-point keys), sampled
+/// A humanlike swipe of a word on a layout's keys, the English default's unless given (100-point
+/// keys), sampled
 /// at 60 Hz: each stroke from one letter's key center to the next follows a minimum-jerk
 /// profile, slowing into every key and fastest between keys as aimed hand movements are, taking
 /// 100 ms plus 50 ms per key pitch it covers.
@@ -42,13 +43,15 @@ enum SwipePath {
     ///   - loops: The indices of the letters of `word` whose keys the finger loops around.
     ///   - circles: How many times it circles each, taking as much longer: 2 is a double circle.
     ///   - squiggles: The indices of the letters of `word` whose keys the finger squiggles over.
+    ///   - layout: The layout whose keys the finger crosses.
     static func through(
         _ word: String,
         loopingAt loops: Set<Int> = [],
         circles: Double = 1,
-        squigglingAt squiggles: Set<Int> = []
+        squigglingAt squiggles: Set<Int> = [],
+        on layout: LetterKeyLayout = TypingLanguage.english.letterLayout
     ) -> [SwipeTouchSample] {
-        let keys = KeyCenterMap(geometry: TypingLanguage.english.letterLayout.defaultGeometry)
+        let keys = KeyCenterMap(geometry: layout.defaultGeometry)
         let centers = word.lowercased().compactMap { keys.center(of: $0) }
         let pitch = Double(keys.pitch.width)
         // Each key's way in and way out: its center, or a loop's two ends.

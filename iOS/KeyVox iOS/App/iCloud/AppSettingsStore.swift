@@ -209,6 +209,21 @@ final class AppSettingsStore: ObservableObject {
         }
     }
 
+    /// The languages the keyboard types in, by identifier, in space-bar order; empty until the user
+    /// saves a choice (`KeyboardTypingLanguageSelection` resolves what the keyboard uses).
+    @Published var keyboardTypingLanguages: [String] {
+        didSet {
+            defaults.set(keyboardTypingLanguages, forKey: UserDefaultsKeys.keyboardTypingLanguages)
+        }
+    }
+
+    /// The letter layout the user chose for each typing language, by language identifier.
+    @Published var keyboardLetterLayouts: [String: String] {
+        didSet {
+            defaults.set(keyboardLetterLayouts, forKey: UserDefaultsKeys.keyboardLetterLayouts)
+        }
+    }
+
     @Published var keyboardTheme: KeyboardThemeID {
         didSet {
             defaults.set(keyboardTheme.rawValue, forKey: UserDefaultsKeys.keyboardTheme)
@@ -356,6 +371,8 @@ final class AppSettingsStore: ObservableObject {
         capsLockEnabled = defaults.object(forKey: UserDefaultsKeys.capsLockEnabled) as? Bool ?? false
         keyboardHapticsEnabled = defaults.object(forKey: UserDefaultsKeys.keyboardHapticsEnabled) as? Bool ?? true
         leftHandedKeyboardLayoutEnabled = defaults.object(forKey: UserDefaultsKeys.leftHandedKeyboardLayoutEnabled) as? Bool ?? false
+        keyboardTypingLanguages = defaults.stringArray(forKey: UserDefaultsKeys.keyboardTypingLanguages) ?? []
+        keyboardLetterLayouts = defaults.dictionary(forKey: UserDefaultsKeys.keyboardLetterLayouts) as? [String: String] ?? [:]
         keyboardTheme = KeyboardThemeID.resolved(rawValue: defaults.string(forKey: UserDefaultsKeys.keyboardTheme))
         let restoredCompactKeysEnabled = defaults.object(forKey: UserDefaultsKeys.compactKeysEnabled) as? Bool ?? true
         compactKeysEnabled = restoredCompactKeysEnabled

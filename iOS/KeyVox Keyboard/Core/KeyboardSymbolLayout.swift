@@ -340,14 +340,16 @@ enum KeyboardSymbolLayout {
     }
 
     /// The typing language's letter rows (`KeyboardLetterRows`) over the bottom row.
-    private static let letterRows: [[KeyboardKeyModel]] = KeyboardLetterRows.current.rows.map(\.keys) + [
-        [
-            key(.numberSymbols, width: 1.25),
-            key(.emoji, width: 1.25),
-            key(.space, width: 5.0),
-            key(.returnKey, width: 2.5),
-        ],
-    ]
+    private static var letterRows: [[KeyboardKeyModel]] {
+        KeyboardLetterRows.current.rows.map(\.keys) + [
+            [
+                key(.numberSymbols, width: 1.25),
+                key(.emoji, width: 1.25),
+                key(.space, width: 5.0),
+                key(.returnKey, width: 2.5),
+            ],
+        ]
+    }
 
     private static let primaryRows: [[KeyboardKeyModel]] = [
         characterRow(["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"]),
