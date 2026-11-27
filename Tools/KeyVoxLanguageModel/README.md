@@ -381,12 +381,12 @@ candidate, and these rules, in order, leave one out. The counts are from the bui
 
 | Rule | Leaves out | Forms |
 | --- | --- | --- |
-| Offensive | A word the dictionary leaves out too: a pattern of `--leave-out` matches it whole (`Tools/KeyVoxTypingModels/offensive_words.py`) | 40 |
+| Offensive | A word the dictionary leaves out too: a pattern of `--leave-out` matches it whole (`Tools/KeyVoxTypingModels/offensive_words.py`) | 59 |
 | Letters | A letter that is no letter key of the keyboard (the default letter layout `language.json` names, `letter_layouts/<layout>.json`) | 6,262 |
-| One source | Fewer than two of the three sources write it as a word on its own | 693,615 |
+| One source | Fewer than two of the three sources write it as a word on its own | 693,599 |
 | Joined | Written joined to other letters or digits more than half the time: URLs, hyphenated words, code | 125 |
 | Misspelling | A dictionary form one edit away (a letter left out, added, or changed, or two neighbors swapped) is written on its own at least 50 times as often as it is | 4,187 |
-| Kept | | 22,462 of 726,691 |
+| Kept | | 22,459 of 726,691 |
 
 The dictionary's words that `--leave-out` matches still count as dictionary words here, as
 `work/dictionary_unigrams.tsv` holds them, so they are never candidates and every other rule
@@ -437,15 +437,15 @@ out. The counts are from the build of November 27, 2026:
 
 | Rule | Leaves out | Forms |
 | --- | --- | --- |
-| Offensive | As above | 0 |
+| Offensive | As above | 1 |
 | Letters | A letter that is no letter key of the keyboard, as above | 0 |
 | One swipe | Fewer than two records swipe it | 21,721 |
 | Misspelling | As above, counting how often the sources write the form on its own (none for most), so a dictionary form one edit away that the sources write at all leaves it out | 129 |
-| Kept | | 3,861 of 25,711 |
+| Kept | | 3,860 of 25,711 |
 
 - The misspelling rule keeps its exceptions: a form SCOWL's size 80 lists, which keeps 201, or
   one the dataset's sentences write with capitals more often than in lowercase in the middle of
-  a sentence, which keeps 559. It leaves out the dataset's own misspellings, such as "adpressed",
+  a sentence, which keeps 558. It leaves out the dataset's own misspellings, such as "adpressed",
   "buildink", and "portraint", and words that would take a common word's swipes, such as
   "two-day" ("today"), and "ebook" and "focussed" as from the sources' words.
 - The rules for one source and joined words count the sources' texts, which hardly write these
@@ -454,7 +454,7 @@ out. The counts are from the build of November 27, 2026:
 
 Each kept form is written in its most common spelling, with its likeliest capitals when the
 dataset's sentences write that spelling with capitals more often than in lowercase in the middle
-of a sentence (2,857 of them), unless they are capitals in a row, which stay lowercase as above.
+of a sentence (2,856 of them), unless they are capitals in a row, which stay lowercase as above.
 The forms are ranked by how many records swipe them, each with the lowest probability the
 sources' words get, 41.
 
