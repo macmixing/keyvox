@@ -1,11 +1,14 @@
 import CoreGraphics
 import KeyVoxPredictiveKeyboard
 
-/// Key frames for the KeyVox portrait letter page, in key-grid points.
+/// Key frames for the KeyVox portrait letter page of a typing language, in key-grid points.
 ///
-/// Sizes follow the KeyVox keyboard grid: 6 pt between keys, 8 pt between rows,
-/// 48 pt key height, ten top-row keys filling the grid width, shift and delete flanking
-/// the bottom letter row, and 123, space, and return below.
+/// Sizes follow the KeyVox keyboard grid: 6 pt between keys, 8 pt between rows, 48 pt key
+/// height, the language's letter rows (`TypingLanguage.letterLayout`) filling the grid width
+/// with every item at its width in letter keys, shift and delete at theirs (across the padding
+/// beside them where the layout draws them so), and 123, space, and return below. For English's
+/// QWERTY these are the frames the harness always used: ten top-row keys, the second row half a
+/// key in, and the third a key and a half in, between keys one and a half wide.
 struct KeyboardLayoutModel {
     enum Key: Equatable {
         case letter(Character)
@@ -16,55 +19,86 @@ struct KeyboardLayoutModel {
         case returnKey
     }
 
-    private static let rows: [(letters: String, offsetInKeyPitches: Double)] = [
-        ("qwertyuiop", 0),
-        ("asdfghjkl", 0.5),
-        ("zxcvbnm", 1.5),
-    ]
     private static let keySpacing = 6.0
     private static let rowSpacing = 8.0
     private static let keyHeight = 48.0
 
     let keyFrames: [Character: CGRect]
+    /// Letters no key types, each with the key whose held popup offers it, such as German "ß" on "s".
+    let popupLetters: [Character: Character]
     /// Every key on the page, letters included.
     let allKeys: [(key: Key, frame: CGRect)]
     let keyboardSize: CGSize
     /// Distance between neighboring key centers across a row and between rows.
     let keyPitch: CGSize
 
-    init(gridWidth: Double = 394) {
-        let keyWidth = (gridWidth - Self.keySpacing * 9) / 10
-        let keyPitch = keyWidth + Self.keySpacing
+    init(language: TypingLanguage, gridWidth: Double = 394) {
+        let layout = language.letterLayout
+        let keyPitch = (gridWidth + Self.keySpacing) / layout.width
+        let keyWidth = keyPitch - Self.keySpacing
         let rowPitch = Self.keyHeight + Self.rowSpacing
         self.keyPitch = CGSize(width: keyPitch, height: rowPitch)
         var frames: [Character: CGRect] = [:]
-        for (rowIndex, row) in Self.rows.enumerated() {
+        var controls: [(Key, CGRect)] = []
+        for (rowIndex, row) in layout.rows.enumerated() {
             let y = Double(rowIndex) * rowPitch
-            for (columnIndex, letter) in row.letters.enumerated() {
-                let x = (row.offsetInKeyPitches + Double(columnIndex)) * keyPitch
-                frames[letter] = CGRect(x: x, y: y, width: keyWidth, height: Self.keyHeight)
+            var x = 0.0
+            for (index, item) in row.items.enumerated() {
+                defer { x += item.width }
+                let padding = { (neighbor: Int) -> Double in
+                    guard layout.shiftAndDeleteFillPadding, row.items.indices.contains(neighbor),
+                          case let .padding(width) = row.items[neighbor] else { return 0 }
+                    return width
+                }
+                switch item {
+                case let .character(text):
+                    for letter in text {
+                        frames[letter] = CGRect(x: x * keyPitch, y: y, width: keyWidth, height: Self.keyHeight)
+                    }
+                case let .shift(width):
+                    let units = width + padding(index + 1)
+                    controls.append((.shift, CGRect(x: x * keyPitch, y: y, width: units * keyPitch - Self.keySpacing, height: Self.keyHeight)))
+                case let .delete(width):
+                    let fill = padding(index - 1)
+                    controls.append((.delete, CGRect(x: (x - fill) * keyPitch, y: y, width: (width + fill) * keyPitch - Self.keySpacing, height: Self.keyHeight)))
+                case .padding:
+                    break
+                }
             }
         }
         keyFrames = frames
 
-        let shiftRowY = 2 * rowPitch
-        let specialWidth = keyWidth * 1.5 + Self.keySpacing * 0.5
-        let bottomRowY = 3 * rowPitch
+        var popupLetters: [Character: Character] = [:]
+        if let held = try? HeldKeyCharacters.bundled(for: language) {
+            for key in frames.keys.sorted() {
+                for character in held.offer(forKey: String(key))?.characters ?? [] {
+                    guard character.count == 1, let letter = character.first, letter.isLetter,
+                          frames[letter] == nil, popupLetters[letter] == nil else { continue }
+                    popupLetters[letter] = key
+                }
+            }
+        }
+        self.popupLetters = popupLetters
+
+        let bottomRowY = Double(layout.rows.count) * rowPitch
         let sideWidth = keyWidth * 2.5 + Self.keySpacing * 1.5
         let spaceWidth = gridWidth - sideWidth * 2 - Self.keySpacing * 2
-        allKeys = frames.map { (Key.letter($0.key), $0.value) } + [
-            (.shift, CGRect(x: 0, y: shiftRowY, width: specialWidth, height: Self.keyHeight)),
-            (.delete, CGRect(x: gridWidth - specialWidth, y: shiftRowY, width: specialWidth, height: Self.keyHeight)),
+        allKeys = frames.map { (Key.letter($0.key), $0.value) } + controls + [
             (.numbers, CGRect(x: 0, y: bottomRowY, width: sideWidth, height: Self.keyHeight)),
             (.space, CGRect(x: sideWidth + Self.keySpacing, y: bottomRowY, width: spaceWidth, height: Self.keyHeight)),
             (.returnKey, CGRect(x: gridWidth - sideWidth, y: bottomRowY, width: sideWidth, height: Self.keyHeight)),
         ]
 
-        let gridRowCount = Double(Self.rows.count + 1)
+        let gridRowCount = Double(layout.rows.count + 1)
         keyboardSize = CGSize(
             width: gridWidth,
             height: gridRowCount * Self.keyHeight + (gridRowCount - 1) * Self.rowSpacing
         )
+    }
+
+    /// Whether `letter` can be typed: it has a key, or a key's held popup offers it.
+    func types(_ letter: Character) -> Bool {
+        keyFrames[letter] != nil || popupLetters[letter] != nil
     }
 
     var predictionGeometry: [PredictionKeyGeometry] {
@@ -73,8 +107,9 @@ struct KeyboardLayoutModel {
             .map { PredictionKeyGeometry(character: $0.key, frame: $0.value) }
     }
 
+    /// The center of the key that types `letter`, or of the key whose popup offers it.
     func center(of letter: Character) -> CGPoint? {
-        guard let frame = keyFrames[letter] else { return nil }
+        guard let frame = keyFrames[letter] ?? popupLetters[letter].flatMap({ keyFrames[$0] }) else { return nil }
         return CGPoint(x: frame.midX, y: frame.midY)
     }
 
