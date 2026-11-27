@@ -29,3 +29,4 @@ $	right	$ ¢ € £ ¥ ₩ ₽
 ’	left	' ’ ‘ `
 %	right	% ‰
 =	left	= ≠ ≈
+.com	centered	.fr .us .edu .com .net .org
