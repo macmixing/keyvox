@@ -398,6 +398,11 @@ iOS/
 │   │   │   ├── KeyVoxVibesSheetView.swift
 │   │   │   ├── KeyVoxVibesUnlockScene.swift
 │   │   │   └── KeyVoxVibesUnlockSheetView.swift
+│   │   ├── LanguageList/
+│   │   │   ├── LanguageListOption.swift
+│   │   │   ├── LanguageListRow.swift
+│   │   │   ├── LanguageListScreen.swift
+│   │   │   └── LanguageListSearchField.swift
 │   │   ├── Onboarding/
 │   │   │   ├── OnboardingEnableKeyboardScreen.swift
 │   │   │   ├── OnboardingFlowView.swift
@@ -1152,7 +1157,7 @@ Packages/
   - Stack-based onboarding router: welcome -> language -> setup -> Dictation Shortcut setup -> keyboard enablement -> keyboard tour.
   - Keeps earlier screens mounted so forward routes slide over them and back navigation restores their existing state.
 - `KeyVox iOS/Views/Onboarding/OnboardingLanguageScreen.swift`
-  - Searchable Whisper-language picker, including Auto Detect, before model setup.
+  - Searchable Whisper-language picker, including Auto Detect, before model setup and from Dictation settings, drawn by the shared `LanguageListScreen` with one language checked at a time.
   - Persists the selected language through `OnboardingStore` and `AppSettingsStore`, dismisses search focus before advancing, and restores interaction when the setup route returns to it.
 - `KeyVox iOS/Views/Onboarding/OnboardingSetupScreen.swift`
   - Whisper Base download and microphone-permission prerequisite screen.
@@ -1600,6 +1605,10 @@ Packages/
   - `KeyVoxVibesUnlockScene.swift` owns the unlock scene, including active-trial remaining-time copy.
   - `KeyVoxVibesIntroSheetView.swift` is the thin post-onboarding intro wrapper around the shared sheet.
   - `KeyVoxVibesUnlockSheetView.swift` is the thin unlock-mode wrapper around the same shared sheet for Style tab and keyboard locked-tap entry points, including direct unlock-scene recovery and model-gated continue behavior when an unlocked user is missing Vibes AI.
+- `KeyVox iOS/Views/LanguageList/`
+  - The shared full-screen language list the dictation language picker uses.
+  - `LanguageListScreen.swift` owns the layout (the caller's header, the search field, the card of languages, and the bottom action button, disabled until a language is checked), search filtering, and checking a language.
+  - `LanguageListRow.swift` owns one language row with its check circle; `LanguageListSearchField.swift` owns the search field; `LanguageListOption.swift` is one language's identifier and shown name.
 - `KeyVox iOS/Views/DictionaryTabView/DictionaryTabView.swift`
   - Dictionary UI plus editor flow built around the shared `AutoFocusTextField`, feature-local sort state, and the app-owned `KeyboardObserver`.
 - `KeyVox iOS/Views/StyleTabView.swift`
