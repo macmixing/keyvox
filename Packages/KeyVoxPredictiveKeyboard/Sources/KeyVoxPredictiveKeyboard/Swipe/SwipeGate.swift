@@ -4,8 +4,8 @@ import CoreGraphics
 #endif
 
 /// Decides which fingers on the letter keys are swiping rather than tapping, so fast tapping
-/// never turns into a swipe (`~/KeyVoxLanguageData/swipe/tap-vs-swipe/README.md`, section 5, with
-/// the hold and lift evidence measured in `KeyVoxTypingHarness swipe-gate`).
+/// never turns into a swipe (with the hold and lift evidence measured in
+/// `KeyVoxTypingHarness swipe-gate`).
 ///
 /// A touch can become a swipe only when it lands eligible (the host's checks: a letter key on the
 /// letter page of a field that takes words) with no other finger down, and loses that for good the

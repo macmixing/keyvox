@@ -2,7 +2,7 @@ import XCTest
 @testable import KeyVoxPredictiveKeyboard
 
 /// A swiped word goes in with no space after it, and the next swiped word goes in after a space,
-/// as on the system keyboard (`~/KeyVoxLanguageData/swipe/apple-swipe-spacing/`).
+/// as on the system keyboard.
 final class SwipeTypingSessionTests: XCTestCase {
     private let session = PredictiveTypingSession(language: .english)
 

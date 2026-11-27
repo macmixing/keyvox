@@ -8,7 +8,7 @@ import CoreGraphics
 ///
 /// On swipe.futo.org's training swipes, a loop at a key, as defined here, marks a doubled letter
 /// about 40 times as often as a single one: 6.05% of key visits whose letter the word doubles, and
-/// 0.139% of those it does not (`~/KeyVoxLanguageData/swipe/double-letters/README.md`).
+/// 0.139% of those it does not.
 ///
 /// The path near the key loops when it crosses itself, turning at least `loopTurns` between the
 /// crossing's edges along the steps the finger moves at least `movingStep` (a resting finger's

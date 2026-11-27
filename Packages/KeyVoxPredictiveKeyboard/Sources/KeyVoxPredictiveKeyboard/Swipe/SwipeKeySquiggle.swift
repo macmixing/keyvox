@@ -16,8 +16,7 @@ import CoreGraphics
 /// `shortestNearTime` to `longestNearTime` seconds and `shortestNearLength` to `longestNearLength`
 /// key pitches of path near the key. Both ranges' upper ends keep slow, careful swipes, which wander
 /// at their keys, from reading as squiggles. Set so that none of the swipes logged on a phone beside
-/// 21 deliberate squiggle swipes reads as one
-/// (`~/KeyVoxLanguageData/swipe/double-letters/squiggles/README.md`).
+/// 21 deliberate squiggle swipes reads as one.
 enum SwipeKeySquiggle {
     struct Settings: Decodable, Sendable, Equatable {
         /// How near the key's center, in key pitches, the path counts as near the key.

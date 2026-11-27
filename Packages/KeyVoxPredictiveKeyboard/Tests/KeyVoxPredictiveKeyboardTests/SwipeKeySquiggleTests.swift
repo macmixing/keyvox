@@ -6,9 +6,8 @@ import CoreGraphics
 
 /// Squiggles are found only where they were drawn: of 429 swipes logged on a phone, 21 deliberate
 /// squiggle swipes with 22 squiggled keys, 9 of which read as squiggles, and no other key of any of
-/// the 429, read at the key centers the measurement fitted from where the logged swipes start and end
-/// (`~/KeyVoxLanguageData/swipe/double-letters/squiggles/README.md`); the synthetic swipes' squiggles
-/// are found, while plain corners and turns are none.
+/// the 429, read at the key centers the measurement fitted from where the logged swipes start and end;
+/// the synthetic swipes' squiggles are found, while plain corners and turns are none.
 final class SwipeKeySquiggleTests: XCTestCase {
     /// Every key visit of the logged swipes, shuffled, each holding only what the detector reads at
     /// the key, so the fixture holds nothing of what was typed.

@@ -5,9 +5,8 @@ import CoreGraphics
 @testable import KeyVoxPredictiveKeyboard
 
 /// Loops are found as they were measured: 300 swipe.futo.org validation swipes, two thirds of
-/// words with a doubled letter, with each key's visit and loop as the measurement finds them
-/// (`~/KeyVoxLanguageData/swipe/double-letters/README.md`), on the fixture's clock and on one
-/// reading as a phone's does days after it starts.
+/// words with a doubled letter, with each key's visit and loop as the measurement finds them, on
+/// the fixture's clock and on one reading as a phone's does days after it starts.
 final class SwipeKeyLoopParityTests: XCTestCase {
     private struct Fixture: Decodable {
         struct Swipe: Decodable {
