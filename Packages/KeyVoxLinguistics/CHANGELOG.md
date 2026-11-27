@@ -14,6 +14,7 @@ The words spelled only with capitals are bundled per language, so the keyboard r
 
 - Added `CapitalizedSpellings(languageCode:)`, which loads the bundled `capitalized_spellings_<language>.txt`.
 - The English list is now `capitalized_spellings_en.txt`; `CapitalizedSpellings()` still loads it, for dictation's continuation casing.
+- Added the French list, `capitalized_spellings_fr.txt` (19,021 spellings, such as Paris, Écosse, and iPhone), built by `Tools/KeyVoxLanguageModel`; French writes days, months, and language names in lowercase, so they are not in it.
 
 ### Notes
 
