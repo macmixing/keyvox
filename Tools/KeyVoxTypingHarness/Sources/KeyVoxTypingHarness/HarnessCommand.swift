@@ -10,6 +10,8 @@ enum HarnessCommand {
         var sentenceLimit = 400
         var noiseInKeyPitches = 0.25
         var seed: UInt64 = 1
+        /// The bundled typing language a plan built from a corpus types; English when nil.
+        var languageIdentifier: String?
     }
 
     struct EvaluateOptions {
@@ -90,6 +92,8 @@ enum HarnessCommand {
         var personalWords: [String] = []
         /// The word typed after the typed word, to reconsider the typed word with it.
         var followingWord: String?
+        /// The bundled typing language to type in.
+        var languageIdentifier = "en"
     }
 
     case evaluate(EvaluateOptions)
@@ -104,10 +108,10 @@ enum HarnessCommand {
 
     static let usage = """
     usage:
-      KeyVoxTypingHarness evaluate (--corpus <path>... | --plan <path>)
+      KeyVoxTypingHarness evaluate (--corpus <path>... [--language <id>] | --plan <path>)
                                    [--sentences <count>] [--noise <key pitches>] [--seed <value>]
                                    [--no-touches] [--failures <tsv-path>] [--param <name>=<value>...]
-      KeyVoxTypingHarness plan --corpus <path>... --output <path>
+      KeyVoxTypingHarness plan --corpus <path>... --output <path> [--language <id>]
                                [--sentences <count>] [--noise <key pitches>] [--seed <value>]
       KeyVoxTypingHarness compare --plan <path> [--apple <results-json>] [--disagreements <tsv-path>]
                                   [--param <name>=<value>...]
@@ -118,7 +122,7 @@ enum HarnessCommand {
                                [--personal <word or phrase,...>] [--known-names <word,...>]
       KeyVoxTypingHarness tune --tune-plan <path>... [--holdout-plan <path>...] [--passes <count>]
       KeyVoxTypingHarness explain [--word <typed>] [--touches "x,y x,y ..."] [--previous <newest,older,...>]
-                                  [--following <next word>] [--personal <word or phrase,...>]
+                                  [--following <next word>] [--personal <word or phrase,...>] [--language <id>]
                                   [--param <name>=<value>...]
       KeyVoxTypingHarness swipe-lexicon --output <kvsl-path> [--words <tsv-path>] [--language <id>]
       KeyVoxTypingHarness swipe-accuracy --swipes <jsonl-path> --layout <layout-json> [--limit <count>]
@@ -243,6 +247,7 @@ enum HarnessCommand {
                     options.personalWords = try Self.value(after: flag, in: &remaining)
                         .split(separator: ",").map(String.init)
                 case "--following": options.followingWord = try Self.value(after: flag, in: &remaining)
+                case "--language": options.languageIdentifier = try Self.value(after: flag, in: &remaining)
                 case "--param":
                     try Self.applyParameter(try Self.value(after: flag, in: &remaining), to: &options.parameters)
                 default: throw HarnessError.unknownFlag(flag)
@@ -337,6 +342,8 @@ enum HarnessCommand {
                 throw HarnessError.invalidValue(flag)
             }
             source.seed = seed
+        case "--language":
+            source.languageIdentifier = try value(after: flag, in: &remaining)
         default:
             return false
         }
@@ -390,7 +397,8 @@ extension HarnessCommand.PlanSource {
             corpusPaths: corpusPaths,
             sentenceLimit: sentenceLimit,
             noiseInKeyPitches: noiseInKeyPitches,
-            seed: seed
+            seed: seed,
+            languageIdentifier: languageIdentifier
         )
     }
 }

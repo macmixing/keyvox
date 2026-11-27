@@ -8,7 +8,7 @@ import KeyVoxPredictiveKeyboard
 /// with a following word it shows how the typed word is reconsidered once that word is known.
 enum ExplainCommand {
     static func run(_ options: HarnessCommand.ExplainOptions) throws {
-        let setup = try EngineSetup()
+        let setup = try EngineSetup(languageIdentifier: options.languageIdentifier)
         let computer = PredictionComputer(engine: setup.engine, parameters: options.parameters)
         computer.updateKeyboardGeometry(
             setup.layout.predictionGeometry,

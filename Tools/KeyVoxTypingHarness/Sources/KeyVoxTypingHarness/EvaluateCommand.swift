@@ -6,7 +6,7 @@ import KeyVoxPredictiveKeyboard
 enum EvaluateCommand {
     static func run(_ options: HarnessCommand.EvaluateOptions) throws {
         let plan = try options.source.resolvePlan()
-        let setup = try EngineSetup()
+        let setup = try EngineSetup(languageIdentifier: plan.languageIdentifier)
         let typer = SentenceTyper(setup: setup, parameters: options.parameters, usesTouches: options.usesTouches)
         let completion = CompletionEvaluator(engine: setup.engine)
         let nextWord = NextWordEvaluator(engine: setup.engine)
