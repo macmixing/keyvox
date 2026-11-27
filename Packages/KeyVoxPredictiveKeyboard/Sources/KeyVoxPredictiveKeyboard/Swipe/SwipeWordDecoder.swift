@@ -89,8 +89,9 @@ final class SwipeWordDecoder: @unchecked Sendable {
     ///   - twinFacts: What the language's data says about a spelling, for weighing twins; nil
     ///     treats every twin as an everyday word.
     ///   - landingLosses: For each of the model's keys, what a word starting on it loses for where
-    ///     the swipe landed (`landingLosses(path:keys:)`), counted between words whose key paths
-    ///     differ only in their first key; nil ranks without the landing.
+    ///     the swipe landed (`landingLosses(path:keys:)`), by which words whose key paths differ
+    ///     only in their first key trade places among themselves (`rankingFirstKeys`); nil ranks
+    ///     without the landing.
     func candidates(
         emissions: [Float],
         personal: SwipeLexicon?,
@@ -103,7 +104,6 @@ final class SwipeWordDecoder: @unchecked Sendable {
         let scoring = SwipeCandidateScoring(settings: settings.scoring)
         let symbols = settings.letters.unicodeScalars.count + 1
         var forms: [(base: Double, spellings: [(spelling: String, frequency: Double)], isPersonal: Bool)] = []
-        var paths: [[Int]?] = []
         for (source, isPersonal) in [(lexicon, false)] + (personal.map { [($0, true)] } ?? []) {
             source.withTables { tables in
                 for ending in SwipeBeamSearch.endings(
@@ -121,32 +121,31 @@ final class SwipeWordDecoder: @unchecked Sendable {
                             pathLength: Int(tables.formPathLength[form]),
                             frequency: frequency
                         )
-                        if landingLosses != nil {
-                            paths.append(keyPath(of: spellings.first?.0))
-                        }
                         forms.append((base, spellings, isPersonal))
                     }
                 }
             }
         }
-        if let landingLosses {
-            // Among words with the same keys after the first, each loses what the landing costs its
-            // first key beyond the least any of them loses, so only where they start ranks them.
-            var least: [ArraySlice<Int>: Double] = [:]
-            for case let path? in paths where path.isEmpty == false {
-                least[path.dropFirst()] = min(least[path.dropFirst()] ?? .infinity, landingLosses[path[0]])
-            }
-            for (index, path) in paths.enumerated() {
-                guard let path, path.isEmpty == false, let least = least[path.dropFirst()] else { continue }
-                forms[index].base -= landingLosses[path[0]] - least
-            }
-        }
         forms.sort { $0.base > $1.base }
         var weighed = Array(forms.prefix(settings.scoring.contextCandidates))
-        if doublingKeys != nil {
+        if doublingKeys != nil || landingLosses != nil {
+            let paths = weighed.compactMap { keyPath(of: $0.spellings.first?.spelling) }
             // Every twin of a weighed word is weighed too, so a loop or a squiggle can pick it.
-            let paths = Set(weighed.compactMap { keyPath(of: $0.spellings.first?.spelling) })
-            weighed += forms.dropFirst(weighed.count).filter { paths.contains(keyPath(of: $0.spellings.first?.spelling) ?? []) }
+            let twins = doublingKeys == nil ? [] : Set(paths)
+            // So is every word that differs from a weighed word only in its first key and loses
+            // less than it for where the swipe landed, so the landing can pick it.
+            var leastLoss: [ArraySlice<Int>: Double] = [:]
+            if let landingLosses {
+                for path in paths where path.isEmpty == false {
+                    leastLoss[path.dropFirst()] = min(leastLoss[path.dropFirst()] ?? .infinity, landingLosses[path[0]])
+                }
+            }
+            weighed += forms.dropFirst(weighed.count).filter { form in
+                guard let path = keyPath(of: form.spellings.first?.spelling) else { return twins.contains([]) }
+                if twins.contains(path) { return true }
+                guard let landingLosses, path.isEmpty == false, let least = leastLoss[path.dropFirst()] else { return false }
+                return landingLosses[path[0]] < least
+            }
         }
         var candidates: [SwipeCandidate] = []
         for form in weighed {
@@ -169,6 +168,9 @@ final class SwipeWordDecoder: @unchecked Sendable {
         let usesContext = contextLift != nil && hasWordsBefore
         if usesContext || doublingKeys != nil {
             rankingSamePaths(&candidates, usesContext: usesContext, doublingKeys: doublingKeys, twinFacts: twinFacts)
+        }
+        if let landingLosses {
+            rankingFirstKeys(&candidates, landingLosses: landingLosses)
         }
         return candidates.sorted { $0.score > $1.score }
     }
@@ -209,6 +211,41 @@ final class SwipeWordDecoder: @unchecked Sendable {
                 keyIndex: settings.keyIndex,
                 keepsDoubleLetters: settings.keepsDoubleLetters
             )
+        }
+    }
+
+    /// Reorders the words of each set whose key paths differ only in their first key, by where the
+    /// swipe landed (`SwipeLandingKey`): the first takes the best of the set's words' best scores,
+    /// the next the next best, and so on, in the order of each word's best score less what the
+    /// landing costs its first key, each word's spellings moving with it. The scores the set holds
+    /// stay the same, so every ranking outside it stays as scored; words on one key path lose the
+    /// same, so they keep the order `rankingSamePaths` gave them.
+    private func rankingFirstKeys(_ candidates: inout [SwipeCandidate], landingLosses: [Double]) {
+        let words = Dictionary(grouping: candidates.indices) { SwipeLetterForm.form(of: candidates[$0].spelling) }
+        var sets: [ArraySlice<Int>: [(word: String, firstKey: Int)]] = [:]
+        for word in words.keys {
+            guard let path = keyPath(of: word), path.isEmpty == false else { continue }
+            sets[path.dropFirst(), default: []].append((word, path[0]))
+        }
+        for set in sets.values where Set(set.map(\.firstKey)).count > 1 {
+            let entries = set.map { member in
+                (word: member.word, best: words[member.word]!.map { candidates[$0].score }.max()!, loss: landingLosses[member.firstKey])
+            }
+            let places = entries.map(\.best).sorted(by: >)
+            let order = entries.sorted {
+                ($0.best - $0.loss, $0.best, $1.word) > ($1.best - $1.loss, $1.best, $0.word)
+            }
+            for (entry, place) in zip(order, places) where place != entry.best {
+                for index in words[entry.word]! {
+                    let candidate = candidates[index]
+                    candidates[index] = SwipeCandidate(
+                        spelling: candidate.spelling,
+                        isPersonal: candidate.isPersonal,
+                        score: place + (candidate.score - entry.best),
+                        contextLift: candidate.contextLift
+                    )
+                }
+            }
         }
     }
 

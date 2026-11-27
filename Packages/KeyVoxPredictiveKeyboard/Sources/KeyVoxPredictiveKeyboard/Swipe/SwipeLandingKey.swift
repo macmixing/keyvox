@@ -6,11 +6,12 @@ import CoreGraphics
 /// How well the point a swipe lands on fits each key as the first key of the word swiped, when
 /// the swipe is drawn with care: it lands and lifts well inside keys.
 ///
-/// It ranks only words whose key paths differ in their first key alone (`SwipeWordDecoder`), which
-/// the rest of the swipe cannot tell apart, so a swipe from one key to another gives the word on
-/// those keys rather than a likelier word that starts a key over.
+/// It ranks only words whose key paths differ in their first key alone, which the rest of the
+/// swipe cannot tell apart: they trade places among themselves (`SwipeWordDecoder`), so a swipe
+/// from one key to another gives the word on those keys rather than a likelier word that starts a
+/// key over, and no word moves against a word on other keys.
 ///
-/// A word loses up to `weight` as the landing leaves its first key behind: nothing while the
+/// Among them a word loses up to `weight` as the landing leaves its first key behind: nothing while the
 /// landing is within `reach` key pitches of the key's center, all of it beyond, rising over about
 /// `softness` to either side. `reach` is past the key's own edge, so of two words starting on
 /// neighboring keys the one whose key the finger landed on wins only when the landing is not

@@ -51,6 +51,56 @@ final class SwipeLandingKeyTests: XCTestCase {
         XCTAssertEqual(lost.sorted(), [], "a likelier word starting a key over outranked the word on the swiped keys")
     }
 
+    /// The landing trades places only among words with the same keys after the first: ranked with
+    /// and without it, the scores are the same, and each place holds the same word or one that
+    /// differs from it only in its first key.
+    func testTheLandingMovesNoWordAgainstWordsOnOtherKeys() throws {
+        let decoder = try SwipeWordDecoder(language: .english)
+        let keyIndex = decoder.settings.keyIndex
+        func keyPath(of spelling: String) -> [Int] {
+            SwipeLetterForm.keyPath(
+                of: SwipeLetterForm.form(of: spelling), keyIndex: keyIndex, keepsDoubleLetters: decoder.settings.keepsDoubleLetters
+            ) ?? []
+        }
+        let (_, row) = try topRow()
+        var moved = 0
+        for (from, to) in zip(row, row.dropFirst(3)) {
+            let path = [0.0, 0.05, 0.1, 0.15, 0.2].map { time in
+                SwipeTouchSample(
+                    location: CGPoint(
+                        x: from.center.x + (to.center.x - from.center.x) * time / 0.2,
+                        y: from.center.y + (to.center.y - from.center.y) * time / 0.2
+                    ),
+                    timestamp: time
+                )
+            }
+            let emissions = try XCTUnwrap(decoder.emissions(for: path, keys: keys))
+            let losses = try XCTUnwrap(decoder.landingLosses(path: path, keys: keys))
+            func ranked(_ landingLosses: [Double]?) -> [SwipeCandidate] {
+                decoder.candidates(
+                    emissions: emissions, personal: nil, contextLift: nil, hasWordsBefore: false,
+                    doublingKeys: nil, landingLosses: landingLosses
+                )
+            }
+            // Each word's best spelling, in rank order.
+            func words(_ candidates: [SwipeCandidate]) -> [(path: [Int], score: Double)] {
+                var seen: Set<String> = []
+                return candidates.compactMap { candidate in
+                    seen.insert(SwipeLetterForm.form(of: candidate.spelling)).inserted
+                        ? (keyPath(of: candidate.spelling), candidate.score) : nil
+                }
+            }
+            let plain = words(ranked(nil))
+            let landed = words(ranked(losses))
+            XCTAssertEqual(plain.map(\.score), landed.prefix(plain.count).map(\.score))
+            for (before, after) in zip(plain, landed) where before.path != after.path {
+                XCTAssertEqual(before.path.dropFirst(), after.path.dropFirst(), "a word moved against a word on other keys")
+                moved += 1
+            }
+        }
+        XCTAssertGreaterThan(moved, 0, "no swipe's landing reordered anything")
+    }
+
     func testALandingAtAKeysCenterCostsOnlyWordsStartingOnOtherKeys() throws {
         let (settings, row) = try topRow()
         let losses = try XCTUnwrap(losses(from: row[1].center, to: row[4].center, settings: settings))

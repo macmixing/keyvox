@@ -6,11 +6,10 @@ import Foundation
 ///
 ///     log p / L^gamma + frequencyWeight * f + lengthBonus * L
 ///
-/// as `Tools/KeyVoxSwipeModel/scoring.py` ranks it, less what it loses to a form with the same keys
-/// after the first for where the swipe landed (`SwipeLandingKey`). Each of its spellings then
-/// takes its own probability in place of the form's, and adds `contextWeight` times how much
-/// likelier the words before make it (`ContextLanguageScorer`), so with no lift the likeliest
-/// spelling of a form scores exactly the form's score.
+/// as `Tools/KeyVoxSwipeModel/scoring.py` ranks it. Each of its spellings then takes its own
+/// probability in place of the form's, and adds `contextWeight` times how much likelier the
+/// words before make it (`ContextLanguageScorer`), so with no lift the likeliest spelling of a
+/// form scores exactly the form's score.
 struct SwipeCandidateScoring {
     let settings: SwipeModelSettings.Scoring
 
