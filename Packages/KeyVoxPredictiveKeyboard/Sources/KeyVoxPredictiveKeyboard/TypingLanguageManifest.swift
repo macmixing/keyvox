@@ -13,6 +13,19 @@ struct TypingLanguageManifest: Decodable {
         let spaceInsideDouble: String?
     }
 
+    /// The key beside the letters that puts accents on them and types the apostrophe
+    /// (`AccentKey`).
+    struct AccentKey: Decodable {
+        /// The character the letter layouts draw on the key.
+        let character: String
+        /// Each mark the key or its popup puts on letters, with its Unicode combining mark.
+        let combiningMarks: [String: String]
+        /// The marks the key itself shows, in the order a tie between them is settled.
+        let keyMarks: [String]
+        /// The mark the key shows after each lowercase letter when no mark makes a known word.
+        let usualMarks: [String: String]
+    }
+
     /// The letters single-letter edits of a typed word try, in the order they are tried.
     let editLetters: String
     /// The letters a short typed word needs one of to be taken as an attempt at a word.
@@ -20,4 +33,6 @@ struct TypingLanguageManifest: Decodable {
     /// Words always written as listed, alone or before an apostrophe.
     let alwaysCapitalizedWords: [String]
     let quotationMarks: QuotationMarks
+    /// The language's accent key, when its letter layouts have one it drives.
+    let accentKey: AccentKey?
 }

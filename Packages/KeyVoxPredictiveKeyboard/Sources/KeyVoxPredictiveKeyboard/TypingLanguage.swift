@@ -17,6 +17,8 @@ public struct TypingLanguage: Sendable {
     public let letterLayouts: [String]
     public let casing: WordCasing
     public let quotes: SmartQuotes
+    /// The key beside the letters that puts accents on them, when the language has one.
+    public let accentKey: AccentKey?
     /// The letters single-letter edits of a typed word try, in the order they are tried.
     let editLetters: String
     /// The letters a short typed word needs one of to be taken as an attempt at a word.
@@ -64,6 +66,7 @@ public struct TypingLanguage: Sendable {
         letterLayouts = layouts.letterLayouts
         casing = WordCasing(alwaysCapitalizedWords: manifest.alwaysCapitalizedWords)
         quotes = SmartQuotes(marks: manifest.quotationMarks)
+        accentKey = manifest.accentKey.map(AccentKey.init(manifest:))
         editLetters = manifest.editLetters
         vowels = manifest.vowels
     }

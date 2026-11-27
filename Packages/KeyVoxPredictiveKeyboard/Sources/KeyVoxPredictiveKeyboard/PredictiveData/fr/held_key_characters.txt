@@ -15,6 +15,8 @@ O	left	O Ô Œ Ö Ò Ó Õ Ø Ō º
 U	left	U Û Ù Ü Ú Ū
 Y	left	Y Ÿ
 ´	left	´ ˋ ˆ ¨
+ˋ	left	´ ˋ ˆ ¨
+ˆ	left	´ ˆ ˋ ¨
 0	left	0 °
 -	right	- – — •
 /	right	/ \
