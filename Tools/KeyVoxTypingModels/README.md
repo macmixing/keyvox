@@ -3,8 +3,8 @@
 Builds the typing models the predictive keyboard bundles for a typing language: those of its
 English typing language in
 `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/PredictiveData/en`, and the
-same files for German, Spanish, and French, which are built but not bundled yet (see "Other typing
-languages"). English's:
+same files for German, Spanish, and French (see "Other typing languages"). Spanish's are bundled in
+`PredictiveData/es`; German's and French's are built but not bundled yet. English's:
 
 | Bundled file | What it is | Built by |
 | --- | --- | --- |
@@ -463,8 +463,12 @@ language's `vowels`.
 
 Built on November 27, 2026 from the language builds of November 24, with `language.json` files
 kept outside the package (German on `QWERTZ-German`, Spanish on `QWERTY-Spanish`, French on
-`AZERTY-French`, with their accented vowels as vowels); each build took about 13 minutes. None is
-bundled.
+`AZERTY-French`, with their accented vowels as vowels); each build took about 13 minutes.
+
+The Spanish files bundled in `PredictiveData/es` were built the same way on November 27 with the
+package's own `es/language.json`, from the Spanish language build of that day (the November 24
+build's vocabulary, counts, and sentences, unchanged) and the English calibration of "The
+simulator"; their trainers' reports give the Spanish column below.
 
 | | de | es | fr |
 | --- | --- | --- | --- |

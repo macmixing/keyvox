@@ -3,7 +3,7 @@
 Builds the language data of each typing language: the files the predictive keyboard bundles
 for English in `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/PredictiveData/en`,
 the capitalized spellings shared with dictation in `Packages/KeyVoxLinguistics/Sources/KeyVoxLinguistics/Resources`,
-and the same files for German, Spanish, and French, which are built but not bundled yet:
+and the same files for German, Spanish, and French. Spanish's are bundled in `PredictiveData/es` and its capitalized spellings in `KeyVoxLinguistics`; German's and French's are built but not bundled yet:
 
 | File | Built by | Reads |
 | --- | --- | --- |
@@ -131,7 +131,7 @@ bundled one before replacing it.
 
 ### Built data
 
-The builds of November 24, 2026. Every context model fills the default limits (107,000 words,
+The builds of November 24, 2026; Spanish was rebuilt on November 27 with its `language.json` and its tuned opener weights, which changed only its sentence openers. Every context model fills the default limits (107,000 words,
 800,000 pairs, 600,000 sequences), so each is 14,963,028 bytes, as English's is.
 
 | Build | Words of text | Vocabulary | Capitalized spellings | Grammar words |
