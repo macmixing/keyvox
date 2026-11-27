@@ -664,6 +664,10 @@ Keyboard onboarding detection is deliberately split across three signals:
 - `KeyVox.EmojiKeyboardEnabled`
 - `KeyVox.PeriodShortcutEnabled`
 - `KeyVox.OpensOnNumberPage`
+- `KeyVox.KeyboardTypingLanguages`
+  - the keyboard's typing languages by identifier, in the order its space bar switches through them, written by the containing app; missing until the user saves a choice
+- `KeyVox.KeyboardLetterLayouts`
+  - the letter layout the user chose for each typing language, by language identifier, written by the containing app
 - `KeyVox.KeyboardTypingMemoryResetGeneration`
   - counts the user's resets of what the keyboard learned from typing; written by the containing app and read by the keyboard
 - `KeyVox.EmojiFrequentlyUsed`
@@ -1685,6 +1689,12 @@ The restore card remains visible until both unlocks are owned.
 
 `AppSettingsStore` also owns the keyboard typing settings shown on the Keyboard settings screen: Auto-Capitalization, Auto-Correction, Enable Caps Lock, Predictive Text, Swipe Typing, Emoji Keyboard, the period shortcut, and Open on 123. Like the other typing toggles, Swipe Typing is on unless the user turns it off. They are device-local App Group values that the keyboard reads directly through `KeyboardAppSettingsStore`, including each time it resolves a field's typing traits.
 
+`AppSettingsStore` owns the keyboard's typing languages (`keyboardTypingLanguages`, in space-bar order) and the layout chosen for each (`keyboardLetterLayouts`), saved as the user chose them. `KeyboardTypingLanguageSelection` resolves what the keyboard types in from them and the languages the keyboard bundles: languages it does not bundle are dropped, a layout the language does not offer gives its default, and nothing saved that is bundled gives the bundled language the app was written in (`Bundle.main.developmentLocalization`), else the first bundled language. The containing app does not bundle the typing data, which is about 29 MB per language, so it reads the list of bundled languages and their layouts from the keyboard extension's copy through the typing package's `KeyVoxTypingLanguageCatalog` product (`KeyboardBundledTypingLanguages`), which reads each language's `language.json` and nothing else.
+
+The Keyboard settings screen's Languages card, between the typing toggles and Classic Theme, shows the typing languages with a Change button that opens the shared language list full screen with multiple selection (`KeyboardLanguagesScreen`), then a Layout row per language whose Change menu lists the layouts the language offers in Apple's order, default first; a language with one layout shows it without the menu. Language names come from `Locale` in the language the app shows (`KeyboardTypingLanguageName`), with the region in parentheses for a regional variant. Layouts show by Apple's layout name.
+
+The shared language list (`LanguageListScreen`) is the dictation language picker and the keyboard languages screen. With single selection, as dictation uses it, one language is checked at a time. With multiple selection the checked languages show first under "Selected", in their order, each with a handle that drags it to another place without unchecking anything; checking a language adds it at the end there, unchecking returns it to the alphabetical list below, which search filters, and Done stays disabled while nothing is checked.
+
 `AppSettingsStore.keyboardTheme` owns the keyboard theme choice, resolved through the same `KeyboardThemeID` fallback and written to `KeyVox.KeyboardTheme`. The Keyboard settings screen's Classic Theme toggle switches it between Classic and KeyVox.
 
 `KeyboardDictationChangeController` owns keyboard-side long-press changes for KeyVox insertions:
@@ -2084,6 +2094,7 @@ Typing languages:
 
 - each typing language is one folder in the package's `PredictiveData`, named by its identifier (`en`), holding its dictionary, context model, rankers, accent overlay, word lists, held-key characters, spacing character lists, and swipe vocabulary (words people write that the dictionary lacks, and words of swipe.futo.org's training sentences it lacks, which the swipe lexicon is built from beside the dictionary), plus a `language.json` with the rules that differ between languages: the letter layout the keyboard shows and the alternatives Apple's keyboard offers for the language in Apple's order (English: QWERTY, then AZERTY, QWERTZ, and Dvorak), the letters single-letter edits try, the vowels a short typed word needs, the words always written with capitals, and the quotation marks
 - each of Apple's letter layouts is one file in `PredictiveData/letter_layouts`, named by Apple's layout name, holding the letter rows of Apple's iOS 27.2 iPhone keyboard (the `Dynamic-<layout>-Small` rows the phone draws scaled to the keyboard's width, as captured on an iPhone 18 Pro Max): each row's character keys, shift and delete keys, and padding, with their widths in letter keys, every row equally wide, and whether a keyboard draws shift and delete across the padding beside them (`shiftAndDeleteFillPadding`, only QWERTY, which keeps English's keyboard as it was) or at Apple's widths beside Apple's gap; `LetterKeyLayout.bundled(identifier:)` reads one, and the engine aims touches at its letters before the keyboard reports its key frames while the keyboard draws its rows from the same layout
+- `TypingLanguageCatalog` (the package's `KeyVoxTypingLanguageCatalog` product) lists the folders that have a `language.json` and the layouts each offers, reading only that file, so no language list is written anywhere else; `TypingLanguageCatalog.bundled()` reads the package's own copy
 - `TypingLanguage.bundled(identifier:)` reads one folder; `PredictiveEngine`, `PredictiveTypingSession`, `HeldKeyCharacters`, and `CharacterList` all take the language, so the rules that differ between languages come from it, while rules the bundled languages share, such as which marks end a sentence, stay in the shared code
 - the words a language spells only with capitals come from `KeyVoxLinguistics`, which bundles one list per language (`capitalized_spellings_<language>.txt`) shared with dictation
 - the keyboard types in `KeyboardTypingLanguage.current`, whose files are compiled into the package
@@ -2378,6 +2389,7 @@ Views may surface manager state, but runtime ownership stays in the managers and
 - app haptics decision rules
 - shared path construction
 - settings persistence
+- keyboard typing-language selection: saved order, languages not bundled, saved layouts, and the fallback language
 - Compact Keys availability, active-mode resolution, row selection, hold cancellation, and explicit mode heights
 - iCloud sync coordination
 - weekly stats storage and merge behavior

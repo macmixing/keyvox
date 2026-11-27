@@ -49,7 +49,7 @@ The current default runtime flow is:
 - **`../Packages/KeyVoxState/`**: shared observable-state boundary that preserves Combine behavior on Apple platforms.
 - **`../Packages/KeyVoxPromotions/`**: campaign manifest loading, eligibility, selection, persistence, and published campaign state.
 - **`../Packages/KeyVoxVoiceActivity/`**: shared Silero model, VAD protocol/configuration, actor-isolated detector, live detector for the live meter, and speech-runtime bridge.
-- **`../Packages/KeyVoxPredictiveKeyboard/`**: UI-independent English typing prediction and correction built on a bundled AOSP LatinIME native target with KeyVox ranking: the shared `PredictiveTypingSession`, `PredictionComputer`, noisy-channel and missing-space correction, completions, next-word and sentence-opener suggestions, swipe typing (the bundled swipe model's inference, the lexicon-constrained word search over the bundled dictionary and the user's own words, and the tap-versus-swipe gate), personal vocabulary, typing memory and its file, held-key characters and popup layout, smart quotes, bundled language data, and package tests.
+- **`../Packages/KeyVoxPredictiveKeyboard/`**: UI-independent English typing prediction and correction built on a bundled AOSP LatinIME native target with KeyVox ranking: the shared `PredictiveTypingSession`, `PredictionComputer`, noisy-channel and missing-space correction, completions, next-word and sentence-opener suggestions, swipe typing (the bundled swipe model's inference, the lexicon-constrained word search over the bundled dictionary and the user's own words, and the tap-versus-swipe gate), personal vocabulary, typing memory and its file, held-key characters and popup layout, smart quotes, bundled language data, and package tests; its `KeyVoxTypingLanguageCatalog` product lists the bundled typing languages and the letter layouts each offers without loading them, for hosts that do not type, such as the containing app.
 - **`../Packages/KeyVoxEmoji/`**: UI-independent emoji catalog in the system emoji keyboard's categories and order, emoji search, Frequently Used ranking, suggestion-bar emoji by word, two-person skin tones, bundled emoji data, and package tests.
 - **`../Packages/KeyVoxKeyboardThemes/`**: UI-independent keyboard theme identifiers with their saved-value fallback, the per-platform theme catalog, each theme's light and dark key palette and swipe trail style, and package tests.
 - **`../Packages/KeyVoxTextComposition/`**: platform-neutral leading-capitalization, leading-spacing, quotation-mark context, sentence-boundary, adjacent terminal-punctuation, and trailing-separator policy used immediately before insertion.
@@ -113,6 +113,10 @@ iOS/
 │   │   │   ├── KeyboardTypingMemoryLocation.swift
 │   │   │   ├── KeyboardTypingMemoryReset.swift
 │   │   │   └── KeyboardWarmStartPolicy.swift
+│   │   ├── KeyboardLanguages/
+│   │   │   ├── KeyboardBundledTypingLanguages.swift
+│   │   │   ├── KeyboardTypingLanguageName.swift
+│   │   │   └── KeyboardTypingLanguageSelection.swift
 │   │   ├── KeyVoxSpeak/
 │   │   │   ├── KeyVoxSpeakIntroController.swift
 │   │   │   └── TTSPurchaseController.swift
@@ -402,7 +406,8 @@ iOS/
 │   │   │   ├── LanguageListOption.swift
 │   │   │   ├── LanguageListRow.swift
 │   │   │   ├── LanguageListScreen.swift
-│   │   │   └── LanguageListSearchField.swift
+│   │   │   ├── LanguageListSearchField.swift
+│   │   │   └── LanguageListSelectedCard.swift
 │   │   ├── Onboarding/
 │   │   │   ├── OnboardingEnableKeyboardScreen.swift
 │   │   │   ├── OnboardingFlowView.swift
@@ -763,12 +768,16 @@ Packages/
 │   │   │   ├── TypingMemoryFile.swift
 │   │   │   ├── TypingSlip.swift
 │   │   │   ├── TypingLanguage.swift
+│   │   │   ├── TypingLanguageCatalog+Bundled.swift
 │   │   │   ├── TypingLanguageManifest.swift
 │   │   │   ├── TypingLanguageResources.swift
 │   │   │   ├── TypingTextContext.swift
 │   │   │   ├── UnknownWordFollowers.swift
 │   │   │   ├── WordCasing.swift
 │   │   │   └── WordFollowers.swift
+│   │   ├── KeyVoxTypingLanguageCatalog/
+│   │   │   ├── TypingLanguageCatalog.swift
+│   │   │   └── TypingLanguageLetterLayouts.swift
 │   │   └── KeyVoxPredictiveNative/
 │   │       ├── KeyVoxPredictiveNative.cpp
 │   │       ├── include/KeyVoxPredictiveNative.h
@@ -1227,6 +1236,7 @@ Packages/
   - Also includes the post-onboarding KeyVox Speak intro keys for seen-state, feature-used state, the delayed eligible-open counter, and the app-owned cached update decision keys used for cold-launch reminders.
   - Also includes the KeyVox Vibes style-selection keys used by both `AppSettingsStore` and the keyboard extension's Vibes selector.
   - Also includes the shared Compact Keys availability and active-mode keys and the keyboard theme key used by the containing app and keyboard extension.
+  - Also includes the keyboard's typing languages in space-bar order and the letter layout chosen for each, written by the containing app.
   - Also includes the shared keyboard typing settings (auto-capitalization, auto-correction, shift caps lock, predictive text, emoji keyboard, period shortcut, and Open on 123), the typing-memory reset generation, the keyboard's emoji Frequently Used and per-emoji skin-tone keys, and the app-owned review-request dates and last requested version.
 - `KeyVox iOS/App/iCloud/AppSettingsStore.swift`
   - Owns the device-local active dictation provider and Whisper language selection alongside the app's other persisted settings.
@@ -1235,6 +1245,7 @@ Packages/
   - Owns the user-facing Compact Keys availability toggle, which defaults on and clears any active compact mode when disabled.
   - Owns the published keyboard typing settings shown on the Keyboard settings screen; every toggle defaults on except Open on 123, which defaults off, and each writes its shared App Group key for the keyboard extension to read.
   - Owns the keyboard theme choice, written to its shared App Group key and resolved through `KeyboardThemeID` so a missing or unknown saved value falls back to the KeyVox theme.
+  - Owns the saved keyboard typing languages, in space-bar order, and the letter layout chosen for each, written to their shared App Group keys as saved; `KeyboardTypingLanguageSelection` resolves what the keyboard uses from them.
   - Owns the dictation timeout, defined by `SessionDisableTiming` with a single shared default of 15 minutes that also supplies `SessionPolicy`'s idle timeout.
 - `KeyVox iOS/App/iCloud/KeyVoxPlaybackVoice.swift`
   - Dependency-free shared playback-voice catalog used by both `AppSettingsStore` and the share extension when resolving canonical TTS voice IDs and display names.
@@ -1246,6 +1257,12 @@ Packages/
   - Refreshes the shared heartbeat only while `KeyboardWarmStartPolicy` allows a warm start, and withdraws it otherwise; recorder-tap heartbeats stay ungated.
 - `KeyVox iOS/App/Integration/KeyboardTypingMemoryLocation.swift`
   - Single source of truth for the App Group `Keyboard/typing-memory.json` location, compiled into the containing app, keyboard extension, and tests.
+- `KeyVox iOS/App/KeyboardLanguages/KeyboardTypingLanguageSelection.swift`
+  - Resolves the keyboard's typing languages from the saved languages and layouts and the bundled catalog: saved order kept, languages the keyboard does not bundle dropped, a saved layout used only when the language offers it, and, when nothing saved is bundled, the bundled language the app was written in (its development localization), else the first bundled language. Compiled into the containing app and tests.
+- `KeyVox iOS/App/KeyboardLanguages/KeyboardBundledTypingLanguages.swift`
+  - The containing app's copy of the keyboard's typing-language catalog, read from the typing package's resource bundle inside the keyboard extension, since the app does not bundle the typing data.
+- `KeyVox iOS/App/KeyboardLanguages/KeyboardTypingLanguageName.swift`
+  - A typing language's name from `Locale` in the language the app shows, with its region in parentheses for a regional variant.
 - `KeyVox iOS/App/Integration/KeyboardWarmStartPolicy.swift`
   - Decides whether the keyboard may start dictation without opening the app: the app is active, a dictation session, in-progress dictation, or TTS is active, or Live Activities are off.
 - `KeyVox iOS/App/Integration/KeyboardTypingMemoryReset.swift`
@@ -1606,8 +1623,9 @@ Packages/
   - `KeyVoxVibesIntroSheetView.swift` is the thin post-onboarding intro wrapper around the shared sheet.
   - `KeyVoxVibesUnlockSheetView.swift` is the thin unlock-mode wrapper around the same shared sheet for Style tab and keyboard locked-tap entry points, including direct unlock-scene recovery and model-gated continue behavior when an unlocked user is missing Vibes AI.
 - `KeyVox iOS/Views/LanguageList/`
-  - The shared full-screen language list the dictation language picker uses.
-  - `LanguageListScreen.swift` owns the layout (the caller's header, the search field, the card of languages, and the bottom action button, disabled until a language is checked), search filtering, and checking a language.
+  - The shared full-screen language list the dictation language picker and the keyboard languages screen use.
+  - `LanguageListScreen.swift` owns the layout (the caller's header, the search field, the card of languages, and the bottom action button, disabled until a language is checked), search filtering, and checking a language, with single or multiple selection; with multiple selection the checked languages show first in their order and the list below holds the rest.
+  - `LanguageListSelectedCard.swift` owns the "Selected" card: each checked language with a handle that drags it to another place, VoiceOver Move Up and Move Down actions, and unchecking by tap.
   - `LanguageListRow.swift` owns one language row with its check circle; `LanguageListSearchField.swift` owns the search field; `LanguageListOption.swift` is one language's identifier and shown name.
 - `KeyVox iOS/Views/DictionaryTabView/DictionaryTabView.swift`
   - Dictionary UI plus editor flow built around the shared `AutoFocusTextField`, feature-local sort state, and the app-owned `KeyboardObserver`.
@@ -1636,8 +1654,12 @@ Packages/
 - `KeyVox iOS/Views/SettingsTabView/DictationSettingsCopy.swift`
   - Copy owner for the Dictation settings screen and the Settings row that opens it.
 - `KeyVox iOS/Views/SettingsTabView/KeyboardSettingsView.swift`
-  - Keyboard settings screen: single-line typing toggles for keyboard haptics (hidden on iPad), auto-capitalization, auto-correction, caps lock, predictive text, the emoji keyboard, and the period shortcut, then Classic Theme, Compact Keys, Open on 123, and Left-Handed Layout with descriptions, then Reset Learned Words through the shared deletion confirmation.
+  - Keyboard settings screen: single-line typing toggles for keyboard haptics (hidden on iPad), auto-capitalization, auto-correction, caps lock, predictive text, swipe typing, the emoji keyboard, and the period shortcut, then the Languages card, then Classic Theme, Compact Keys, Open on 123, and Left-Handed Layout with descriptions, then Reset Learned Words through the shared deletion confirmation.
   - The Classic Theme toggle switches the saved keyboard theme between Classic and KeyVox.
+- `KeyVox iOS/Views/SettingsTabView/KeyboardLanguagesCard.swift`
+  - The Languages card between the typing toggles and Classic Theme: the typing languages with a Change button that opens `KeyboardLanguagesScreen` full screen, then one Layout row per language with a Change menu of the layouts it offers in Apple's order, default first; a language with one layout shows it without the menu.
+- `KeyVox iOS/Views/SettingsTabView/KeyboardLanguagesScreen.swift`
+  - The shared language list with multiple selection over the bundled typing languages, alphabetical by name; Done saves the checked languages in their order.
 - `KeyVox iOS/Views/SettingsTabView/KeyboardSettingsCopy.swift`
   - Copy owner for the Keyboard settings screen and the Settings row that opens it.
 - `KeyVox iOS/Views/SettingsTabView/SettingsRow.swift`
@@ -1921,6 +1943,8 @@ Packages/
   - Computes the suggestion bar and space-bar autocorrection for a `PredictionRequest`, revisions for a `RevisionRequest`, and the intended letter for a contested tap; takes the keyboard geometry, personal vocabulary, and learned vocabulary from the host.
 - `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/TypingLanguage.swift`, `TypingLanguageManifest.swift`, and `TypingLanguageResources.swift`
   - One bundled typing language read from its `PredictiveData/<language>` folder: its files, and from its `language.json` its default letter layout and the alternatives Apple's keyboard offers in Apple's order, edit letters, vowels, always-capitalized words (`WordCasing`), and quotation marks (`SmartQuotes`).
+- `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxTypingLanguageCatalog/`
+  - The `KeyVoxTypingLanguageCatalog` product: `TypingLanguageCatalog` lists every folder in a copy of `PredictiveData` that has a `language.json`, reading only that file, and finds the copy inside another bundle by the typing package's resource bundle name; `TypingLanguageLetterLayouts` decodes a language's identifier, default layout, and alternatives from it, the single reader of those fields, which `TypingLanguage` uses too. `TypingLanguageCatalog+Bundled.swift` in the main target reads the package's own copy.
 - `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/LetterKeyLayout.swift` and `LetterKeyRow.swift`
   - One of Apple's letter layouts read from `PredictiveData/letter_layouts/<layout>.json`, one file per Apple layout name (QWERTY, QWERTZ, QWERTZ-German, AZERTY, AZERTY-French, QWERTY-Spanish, QWERTY-Accents, QWERTZ-Accents, Dvorak) holding the letter rows of Apple's iOS 27.2 iPhone keyboard: each row's character keys, shift and delete keys, and padding, with their widths in letter keys, every row equally wide, and whether shift and delete fill the padding beside them (`shiftAndDeleteFillPadding`, only QWERTY). The engine aims touches at its letters before the keyboard reports its key frames (`defaultGeometry`), and the keyboard draws its rows from the same layout.
 - `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/KeyVoxPredictiveKeyboardResources.swift`
@@ -2018,7 +2042,7 @@ Packages/
 ### Tests
 
 - `KeyVoxiOSTests/App/`
-  - Onboarding state, Dictation Shortcut intro scheduling, onboarding keyboard-tour state, keyboard access probing, app haptics decisions, settings persistence, KeyVox Vibes latest-artifact persistence, Vibes intro/access/purchase semantics, shared paths, iCloud sync, weekly stats, Live Activity coordination, shortcut dictation coordination, URL routing, and model manager behavior across rooted Whisper migration and Parakeet installs.
+  - Onboarding state, Dictation Shortcut intro scheduling, onboarding keyboard-tour state, keyboard access probing, app haptics decisions, settings persistence, KeyVox Vibes latest-artifact persistence, Vibes intro/access/purchase semantics, shared paths, iCloud sync, weekly stats, Live Activity coordination, shortcut dictation coordination, URL routing, model manager behavior across rooted Whisper migration and Parakeet installs, and keyboard typing-language selection.
 - `KeyVoxiOSTests/App/TTSPurchaseControllerTests.swift`
   - Deterministic copied-text playback monetization coverage for cached unlock state, two-free-speaks-per-day accounting, local day resets, and purchase or restore state transitions through the placeholder store abstraction.
 - `KeyVoxiOSTests/Core/Audio/`
@@ -2037,7 +2061,7 @@ Packages/
 - `Packages/KeyVoxLocalInference/Tests/KeyVoxLocalInferenceTests/`
   - Package-level coverage for local prompt formatting, adapter-aware generation behavior, and opt-in live model prompt suites for Polished, Casual, and the Polished gauntlet.
 - `Packages/KeyVoxPredictiveKeyboard/Tests/KeyVoxPredictiveKeyboardTests/`
-  - Package-level coverage for autocorrection, missing-space correction, word revision, deleted-into and remembered corrections, contact names and dictionary phrases, learned words, capitals, and suggestions, sentence endings and openers, picked-word spacing and repeated picks, emoji suggestions, smart quotes, held-key characters and popup layout, character lists, the bundled letter layouts and the layouts each language names, and the typing-memory file.
+  - Package-level coverage for autocorrection, missing-space correction, word revision, deleted-into and remembered corrections, contact names and dictionary phrases, learned words, capitals, and suggestions, sentence endings and openers, picked-word spacing and repeated picks, emoji suggestions, smart quotes, held-key characters and popup layout, character lists, the bundled letter layouts and the layouts each language names, the typing-language catalog, and the typing-memory file.
 - `Packages/KeyVoxEmoji/Tests/KeyVoxEmojiTests/`
   - Package-level coverage for the catalog, keyboard sections, Frequently Used ranking, search, suggestion-bar emoji, and two-person tones.
 - `Packages/KeyVoxKeyboardThemes/Tests/KeyVoxKeyboardThemesTests/`
