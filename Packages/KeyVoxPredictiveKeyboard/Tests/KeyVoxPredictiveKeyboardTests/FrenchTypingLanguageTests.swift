@@ -35,8 +35,11 @@ final class FrenchTypingLanguageTests: XCTestCase {
         XCTAssertEqual(context.previousWords, ["Oui"])
     }
 
-    func testFrenchHasNoSwipeModelSoItIsTypedByTappingAlone() {
+    func testFrenchHasNoSwipeModelSoItIsTypedByTappingAlone() throws {
         XCTAssertFalse(TypingLanguage.french.offersSwipeTyping)
         XCTAssertTrue(TypingLanguage.english.offersSwipeTyping)
+        let computer = PredictionComputer(engine: try PredictiveEngine(language: .french))
+        let path = SwipePath.through("bonjour", on: TypingLanguage.french.letterLayout)
+        XCTAssertEqual(try computer.swipeWords(for: path, previousWords: [], wordCase: .asSpelled, limit: 4), [])
     }
 }
