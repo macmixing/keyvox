@@ -7,7 +7,7 @@ shows the field removing anything but a plain space, or removing the space after
 space on both sides, since KeyboardSmartDeletion relies on neither happening.
 
     python3 write_smart_delete_characters.py --output "../../iOS/KeyVox Keyboard/Core/Input" \
-        ~/KeyVoxLanguageData/apple-smart-delete/*.json
+        <capture-folder>/*.json
 """
 
 import argparse

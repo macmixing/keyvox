@@ -823,6 +823,7 @@ Packages/
 │   │   ├── KeyboardThemeCatalog.swift
 │   │   ├── KeyboardThemeColor.swift
 │   │   ├── KeyboardThemeColor+iOSKeyBorder.swift
+│   │   ├── KeyboardThemeColor+iOSMicrophone.swift
 │   │   ├── KeyboardThemeID.swift
 │   │   ├── KeyboardThemeKeyOpacity.swift
 │   │   ├── KeyboardThemePalette.swift
@@ -2056,15 +2057,15 @@ Packages/
 - `Packages/KeyVoxKeyboardThemes/Sources/KeyVoxKeyboardThemes/KeyboardThemeCatalog.swift` and `KeyboardThemePlatform.swift`
   - Looks up each theme's palette per platform; iOS is the only platform defined today.
 - `Packages/KeyVoxKeyboardThemes/Sources/KeyVoxKeyboardThemes/KeyboardThemePalette.swift`, `KeyboardThemePalette+iOSKeyVox.swift`, and `KeyboardThemePalette+iOSClassic.swift`
-  - The colors a theme gives the keys: letter, special, and toolbar key fills with their pressed and disabled looks and key opacity, the key outline, a toolbar key that is on and its foreground, key popups with their outline, characters, and held-key highlight, the cancel key's border, the microphone button's background, and the swipe trail (`KeyboardThemeSwipeTrail.swift`: its stroke, head-dot, and glow colors and widths per appearance, nested glow layers, tail length, taper, opacity falloff, and band overlap, head-dot size, lift retraction and its timing curve, and bloom); the KeyVox and Classic iOS palettes.
-- `Packages/KeyVoxKeyboardThemes/Sources/KeyVoxKeyboardThemes/KeyboardThemeColor.swift`, `KeyboardThemeShade.swift`, `KeyboardThemeRGBA.swift`, `KeyboardThemeSystemColor.swift`, `KeyboardThemeKeyOpacity.swift`, and `KeyboardThemeColor+iOSKeyBorder.swift`
-  - Platform-neutral color values: light and dark shades given as explicit sRGB values or platform system colors, per-appearance key fill opacity, and the shared iOS key outline.
+  - The colors a theme gives the keys: letter, special, and toolbar key fills with their pressed and disabled looks and key opacity, the key outline, a toolbar key that is on and its foreground, key popups with their outline, characters, and held-key highlight, the cancel key's border, the microphone button's background and microphone, and the swipe trail (`KeyboardThemeSwipeTrail.swift`: its stroke, head-dot, and glow colors and widths per appearance, nested glow layers, tail length, taper, opacity falloff, and band overlap, head-dot size, lift retraction and its timing curve, and bloom); the KeyVox and Classic iOS palettes.
+- `Packages/KeyVoxKeyboardThemes/Sources/KeyVoxKeyboardThemes/KeyboardThemeColor.swift`, `KeyboardThemeShade.swift`, `KeyboardThemeRGBA.swift`, `KeyboardThemeSystemColor.swift`, `KeyboardThemeKeyOpacity.swift`, `KeyboardThemeColor+iOSKeyBorder.swift`, and `KeyboardThemeColor+iOSMicrophone.swift`
+  - Platform-neutral color values: light and dark shades given as explicit sRGB values or platform system colors, per-appearance key fill opacity, the shared iOS key outline, and the shared iOS microphone color the Classic light swipe trail also draws in.
 - `KeyVox Keyboard/Core/Theme/KeyboardThemeTrait.swift`
   - Custom UIKit trait that carries the chosen theme down the keyboard's views and resolves its iOS palette from a trait collection.
 - `KeyVox Keyboard/Core/Theme/KeyboardThemeColor+UIKit.swift`
   - Builds dynamic `UIColor`s that resolve a palette color from the theme and light or dark appearance in the traits they resolve with, mapping package system colors to UIKit system colors.
 - `KeyVox Keyboard/Core/KeyboardStyle.swift`
-  - Takes the themed key, popup, active-key, cancel-border, and microphone-background colors and the themed key tint opacity from the palette.
+  - Takes the themed key, popup, active-key, cancel-border, microphone-background, and microphone colors and the themed key tint opacity from the palette.
 
 ### Tests
 
@@ -2092,7 +2093,7 @@ Packages/
 - `Packages/KeyVoxEmoji/Tests/KeyVoxEmojiTests/`
   - Package-level coverage for the catalog, keyboard sections, Frequently Used ranking, search, suggestion-bar emoji, and two-person tones.
 - `Packages/KeyVoxKeyboardThemes/Tests/KeyVoxKeyboardThemesTests/`
-  - Package-level coverage for saved-theme resolution and fallback, a distinct palette for every theme on every platform, and key opacity bounds.
+  - Package-level coverage for saved-theme resolution and fallback, a distinct palette for every theme on every platform, key opacity bounds, every swipe trail being drawable, and the Classic light swipe trail matching the microphone's color.
 
 ## Change Tracking
 
