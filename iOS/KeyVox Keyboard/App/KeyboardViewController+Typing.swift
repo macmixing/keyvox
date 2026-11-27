@@ -305,7 +305,8 @@ extension KeyboardViewController {
         guard emojiPanel != .searching else { return }
         letterCaseController.synchronize(
             textBeforeCursor: textDocumentProxy.documentContextBeforeInput,
-            autocapitalization: typingTraits.autocapitalization
+            autocapitalization: typingTraits.autocapitalization,
+            language: KeyboardTypingLanguage.current
         )
         applyLetterCase()
     }
