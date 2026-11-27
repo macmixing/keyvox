@@ -17,4 +17,7 @@ struct TypingLanguageManifest: Decodable {
     /// Words always written as listed, alone or before an apostrophe.
     let alwaysCapitalizedWords: [String]
     let quotationMarks: QuotationMarks
+    /// The marks that open a sentence before its first word: typed where a sentence starts, the
+    /// sentence still starts after them. None when absent.
+    let sentenceOpeningMarks: String?
 }

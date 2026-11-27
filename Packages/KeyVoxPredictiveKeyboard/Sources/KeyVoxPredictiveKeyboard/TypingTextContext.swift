@@ -61,9 +61,11 @@ public struct TypingTextContext: Sendable, Equatable {
     /// a line break, or at a space after a period, question mark, or exclamation mark that is
     /// not part of an ellipsis, since an ellipsis pauses a sentence rather than ending it.
     /// Quotation marks belong to the sentence they open or close, so an opening mark after
-    /// the space and a closing mark before it leave the sentence start where it is.
-    public static func startsSentence(after text: String) -> Bool {
-        let beforeOpeningMarks = trimmingEnd(of: text[...], while: isQuotationMark)
+    /// the space and a closing mark before it leave the sentence start where it is, as do the
+    /// typing language's `openingMarks`, which open a sentence before its first word: typed where
+    /// a sentence starts, they leave it starting, and typed inside a sentence, it goes on.
+    public static func startsSentence(after text: String, openingMarks: Set<Character> = []) -> Bool {
+        let beforeOpeningMarks = trimmingEnd(of: text[...]) { isQuotationMark($0) || openingMarks.contains($0) }
         guard let last = beforeOpeningMarks.last else { return true }
         if last.isNewline { return true }
         guard last.isWhitespace else { return false }

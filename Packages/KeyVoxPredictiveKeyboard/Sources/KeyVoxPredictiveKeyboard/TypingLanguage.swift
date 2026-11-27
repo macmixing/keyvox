@@ -21,6 +21,14 @@ public struct TypingLanguage: Sendable {
     let editLetters: String
     /// The letters a short typed word needs one of to be taken as an attempt at a word.
     let vowels: String
+    /// The marks that open a sentence before its first word.
+    public let sentenceOpeningMarks: Set<Character>
+
+    /// Whether a word typed right after `text` starts a sentence (`TypingTextContext.startsSentence`),
+    /// the language's sentence opening marks after the sentence start leaving it where it is.
+    public func startsSentence(after text: String) -> Bool {
+        TypingTextContext.startsSentence(after: text, openingMarks: sentenceOpeningMarks)
+    }
 
     /// The bundled language in the folder `identifier`, drawn in the layout named `letterLayout`,
     /// one of the layouts it offers (`letterLayouts`), or in its default layout when nil.
@@ -66,5 +74,6 @@ public struct TypingLanguage: Sendable {
         quotes = SmartQuotes(marks: manifest.quotationMarks)
         editLetters = manifest.editLetters
         vowels = manifest.vowels
+        sentenceOpeningMarks = Set(manifest.sentenceOpeningMarks ?? "")
     }
 }
