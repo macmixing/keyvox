@@ -3842,7 +3842,6 @@ geelong	59
 haru	59
 hypotheticals	59
 jetson	59
-lesbos	59
 lindley	59
 middlesbrough	59
 natto	59
@@ -20798,7 +20797,6 @@ torturas	41
 toruń	41
 toshiki	41
 tottori	41
-towelheads	41
 toyshop	41
 traductor	41
 transpiles	41
@@ -21481,7 +21479,6 @@ gordes	41
 grandpops	41
 graveolens	41
 grbl	41
-greaseballs	41
 grindal	41
 grrrr	41
 grusky	41
@@ -24647,7 +24644,6 @@ Herath	41
 Herefordshire	41
 herentals	41
 Hermia	41
-Hermies	41
 Herron	41
 Herstmonceux	41
 Heuvelmans	41
