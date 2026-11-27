@@ -8,6 +8,9 @@ struct TypingLanguageManifest: Decodable {
         let closingSingle: String
         let openingDouble: String
         let closingDouble: String
+        /// The space the quote key types inside its marks, after the opening mark and before the
+        /// closing one; none when absent.
+        let spaceInsideDouble: String?
     }
 
     let identifier: String
