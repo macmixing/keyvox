@@ -34,9 +34,11 @@ extension PredictionComputer {
     }
 
     /// The spellings `path` may have been swiped as, best first, as the bundled lexicon and the
-    /// user's own words spell them, with how each ranks (`SwipeCandidateScoring`).
+    /// user's own words spell them, with how each ranks (`SwipeCandidateScoring`); none in a
+    /// language without a swipe model (`TypingLanguage.offersSwipeTyping`).
     /// - Parameter previousWords: Earlier words in the sentence, newest first.
     public func swipeCandidates(for path: [SwipeTouchSample], previousWords: [String]) throws -> [SwipeCandidate] {
+        guard engine.language.offersSwipeTyping else { return [] }
         let state = personalState()
         let decoder = try swipeDecoding.decoder(for: engine.language)
         guard let emissions = decoder.emissions(for: path, keys: state.keys) else { return [] }
