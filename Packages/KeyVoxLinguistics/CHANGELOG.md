@@ -14,6 +14,7 @@ The words spelled only with capitals are bundled per language, so the keyboard r
 
 - Added `CapitalizedSpellings(languageCode:)`, which loads the bundled `capitalized_spellings_<language>.txt`.
 - The English list is now `capitalized_spellings_en.txt`; `CapitalizedSpellings()` still loads it, for dictation's continuation casing.
+- Adds Spanish's list, `capitalized_spellings_es.txt`: the 2,955 names and other words the Spanish vocabulary spells only with capitals, such as "España", "México", and "José", built by `Tools/KeyVoxLanguageModel`.
 
 ### Notes
 
