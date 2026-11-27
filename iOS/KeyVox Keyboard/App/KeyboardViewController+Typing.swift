@@ -203,7 +203,7 @@ extension KeyboardViewController {
     /// toolbar's thump; the user's own words stay, and nothing is felt.
     func handleSuggestionLongPressed(_ item: SuggestionBar.Item) {
         guard userVocabulary.contains(item.text) == false,
-              KeyboardTypingMemory.shared.memory.forget(item.text) else {
+              KeyboardTypingMemory.current.memory.forget(item.text) else {
             return
         }
         interactionHaptics.emitMediumIfEnabled()
@@ -244,8 +244,8 @@ extension KeyboardViewController {
     }
 
     /// Hands the suggestions what the keyboard learned from the user's typing.
-    private func applyLearnedVocabulary() {
-        predictionCoordinator.updateLearnedWords(KeyboardTypingMemory.shared.memory.learnedVocabulary)
+    func applyLearnedVocabulary() {
+        predictionCoordinator.updateLearnedWords(KeyboardTypingMemory.current.memory.learnedVocabulary)
     }
 
     private func applyPersonalVocabulary(dictionaryPhrases: [String], lexicon: UILexicon?) {

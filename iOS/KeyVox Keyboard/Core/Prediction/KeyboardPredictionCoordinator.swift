@@ -27,7 +27,7 @@ final class KeyboardPredictionCoordinator {
     var emojiForWord: (String) -> [String] = { _ in [] }
 
     private var session: PredictiveTypingSession
-    private let memory: TypingMemory
+    private var memory: TypingMemory
     private let engine: KeyboardPredictionEngine
     private let tapCheckEngine: KeyboardPredictionEngine
     private let textBeforeCursor: () -> String?
@@ -101,12 +101,14 @@ final class KeyboardPredictionCoordinator {
         self.documentIdentifier = documentIdentifier
     }
 
-    /// Types in `language` from now on, without reading the field: the swipe being decoded is
-    /// dropped, the typing session starts over in the new language, the bar empties, and both
-    /// engines let go of the previous language's files, loading the new one's when next needed.
-    /// The user's vocabulary and learned words carry over.
-    func setLanguage(_ language: TypingLanguage) {
+    /// Types in `language` from now on, learning into `memory`, its own memory, without reading the
+    /// field: the swipe being decoded is dropped, the typing session starts over in the new
+    /// language, the bar empties, and both engines let go of the previous language's files, loading
+    /// the new one's when next needed. The user's vocabulary carries over; the new language's
+    /// learned words come through `updateLearnedWords(_:)`.
+    func setLanguage(_ language: TypingLanguage, memory: TypingMemory) {
         dropPendingSwipe()
+        self.memory = memory
         session = PredictiveTypingSession(language: language, memory: memory)
         placeAfterSwipedWord = nil
         letterKeys = nil

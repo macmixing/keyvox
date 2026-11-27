@@ -243,7 +243,7 @@ extension KeyboardViewController {
         ) { [weak self] _ in
             self?.extensionHostIsActive = true
             guard let self else { return }
-            KeyboardTypingMemory.shared.adoptResetIfNeeded()
+            KeyboardTypingMemory.current.adoptResetIfNeeded()
             self.preparePresentationIfNeeded()
             self.adoptTypingLanguageSettings()
             self.installedModels = KeyboardInstalledModels.check()

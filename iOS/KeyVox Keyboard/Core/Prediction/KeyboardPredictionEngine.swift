@@ -4,10 +4,11 @@ import KeyVoxPredictiveKeyboard
 
 /// A prediction engine with a serial queue of its own for one typing language. It is created the
 /// first time work on `queue` needs it and is kept up to date with the letter keys' layout, the
-/// user's vocabulary, and what the keyboard learned from the user's typing from the start. Changing
-/// the language lets go of the engine, so only one language's files stay loaded, and the next one
-/// is created for the new language with the same vocabulary and learned words. Everything other
-/// than `queue` is owned by `queue`.
+/// user's vocabulary, and what the keyboard learned from the user's typing in the language from the
+/// start. Changing the language lets go of the engine, so only one language's files stay loaded,
+/// and the next one is created for the new language with the same vocabulary and the learned words
+/// handed over last, which the host replaces with the new language's. Everything other than `queue`
+/// is owned by `queue`.
 final class KeyboardPredictionEngine {
     let queue: DispatchQueue
     private var language: TypingLanguage

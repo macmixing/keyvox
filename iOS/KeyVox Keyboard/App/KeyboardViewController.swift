@@ -115,7 +115,7 @@ final class KeyboardViewController: UIInputViewController {
     /// Checked when the keyboard comes on screen; see `KeyboardInstalledModels`.
     var installedModels = KeyboardInstalledModels.check()
     lazy var predictionCoordinator = KeyboardPredictionCoordinator(
-        memory: KeyboardTypingMemory.shared.memory,
+        memory: KeyboardTypingMemory.current.memory,
         textBeforeCursor: { [weak self] in self?.textDocumentProxy.documentContextBeforeInput },
         selectedText: { [weak self] in self?.textDocumentProxy.selectedText },
         textAfterCursor: { [weak self] in self?.textDocumentProxy.documentContextAfterInput },
@@ -289,7 +289,7 @@ final class KeyboardViewController: UIInputViewController {
         configureTraitChangeObservation()
         configureHostLifecycleObservers()
         configureControllerBindingsIfNeeded()
-        KeyboardTypingMemory.shared.onLearnedVocabularyChange = { [weak self] in
+        KeyboardTypingMemory.onCurrentLearnedVocabularyChange = { [weak self] in
             self?.learnedVocabularyDidChange()
         }
         KeyVoxIPCBridge.reportKeyboardOnboardingState(hasFullAccess: hasFullAccess)
@@ -311,7 +311,7 @@ final class KeyboardViewController: UIInputViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         extensionHostIsActive = true
-        KeyboardTypingMemory.shared.adoptResetIfNeeded()
+        KeyboardTypingMemory.current.adoptResetIfNeeded()
         // Opens as the user's settings say until the field is read, which can still ask for 123.
         applyOpeningLayout(prefersNumberPage: appSettingsStore.opensOnNumberPage)
         // The field is read once the system hands over its document state, which it ends with
