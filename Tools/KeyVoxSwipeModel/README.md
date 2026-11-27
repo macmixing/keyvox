@@ -87,12 +87,12 @@ KeyVoxTypingHarness swipe-lexicon --output <swipe_lexicon.kvsl> --words <unigram
 
 The bundled model was fine-tuned and its scoring tuned with the 129,438-word lexicon (106,973
 dictionary words and 22,465 swipe-vocabulary words; 121,643 forms), which covers 96.51% of
-validation swipes and 96.48% of test swipes. The bundled lexicon now has 133,261 words (125,468
-forms): 3,861 words of swipe.futo.org's training sentences that the dictionary and the other
+validation swipes and 96.48% of test swipes. The bundled lexicon now has 133,228 words (125,445
+forms): 3,860 words of swipe.futo.org's training sentences that the dictionary and the other
 vocabulary words lacked were added (`Tools/KeyVoxLanguageModel/README.md`, "Swipe vocabulary"),
-and the 38 words the dictionary and the swipe vocabulary leave out as offensive
+and the 71 words the dictionary and the swipe vocabulary leave out as offensive
 (`Tools/KeyVoxTypingModels/offensive_words.py`) were taken out, the swiped word of no validation
-swipe and of 1 test swipe. It covers 96.93% of validation swipes and 96.94% of test swipes. Every one of those 3,861 words is
+swipe and of 2 test swipes. It covers 96.93% of validation swipes and 96.93% of test swipes. Every one of those 3,860 words is
 a word of the training split's swipes; none comes from validation or test alone. They are the
 swiped word of 227 validation swipes (0.42%) and 227 test swipes (0.45%), all words the
 training split also has. The rest can never be decoded and count as misses.
@@ -239,7 +239,8 @@ python export_weights.py <data-dir> r3-ft2
 
 writes `models/r3-ft2/swipe_encoder.kvsw`. To bundle it, copy it to
 `PredictiveData/en/swipe_encoder.kvsw`, put the run's `scoring.json` values into
-`swipe.json`'s `scoring` (`gamma`, `frequencyWeight`, `lengthBonus`), and, for a model with no
+`swipe.json`'s `scoring` (`gamma`, `frequencyWeight`, `lengthBonus`), the frequency weight as
+"Scoring" says to measure it with the landing, and, for a model with no
 decoder, leave out `swipe_decoder.kvsd`. The context weights were tuned beside a frequency
 weight, so a model with another one needs them measured again, and the package's parity
 fixture holds the reference decoding of the bundled model with the bundled settings. The lexicon depends only on the letters and
@@ -286,7 +287,7 @@ At `fix/swipe-landing-key` 75a6339a (133,299-word lexicon), `r3-ft2` with the se
 | Validation | 54,269 | 92.87% | 95.92% | 96.60% |
 | Test | 49,970 | 92.56% | 95.84% | 96.59% |
 
-With the 133,261-word lexicon, without the words left out as offensive, every figure of the table
+With the 133,228-word lexicon, without the words left out as offensive, every figure of the table
 measures the same.
 
 Of swipe.futo.org's training and validation swipes of "us", a word whose commoner neighbor
