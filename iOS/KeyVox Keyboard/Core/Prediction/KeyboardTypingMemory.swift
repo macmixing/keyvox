@@ -9,11 +9,22 @@ import KeyVoxPredictiveKeyboard
 final class KeyboardTypingMemory {
     /// The memory of the language the keyboard types in, loaded again when the language changes.
     static var current: KeyboardTypingMemory {
-        let language = KeyboardTypingLanguage.current.identifier
+        current(language: KeyboardTypingLanguage.current.identifier)
+    }
+
+    /// The memory of `language` as the current one. A memory let go while its save is still to
+    /// come is taken back rather than loaded again from its file, which doesn't hold that change yet.
+    static func current(
+        language: String,
+        load: (String) -> KeyboardTypingMemory = { KeyboardTypingMemory(language: $0) }
+    ) -> KeyboardTypingMemory {
         if let loaded = loadedCurrent, loaded.language == language {
             return loaded
         }
-        let memory = KeyboardTypingMemory(language: language)
+        if let released = loadedCurrent, released.isSaveScheduled {
+            awaitingSave[released.language] = released
+        }
+        let memory = awaitingSave.removeValue(forKey: language) ?? load(language)
         memory.onLearnedVocabularyChange = { onCurrentLearnedVocabularyChange?() }
         loadedCurrent = memory
         return memory
@@ -23,6 +34,8 @@ final class KeyboardTypingMemory {
     static var onCurrentLearnedVocabularyChange: (() -> Void)?
 
     private static var loadedCurrent: KeyboardTypingMemory?
+    /// Memories let go while a save of theirs is still to come, by language, until it is made.
+    private static var awaitingSave: [String: KeyboardTypingMemory] = [:]
 
     /// The typing language whose memory this is.
     let language: String
@@ -94,6 +107,9 @@ final class KeyboardTypingMemory {
         // change.
         DispatchQueue.main.asyncAfter(deadline: .now() + Self.saveDelay) { [self] in
             isSaveScheduled = false
+            if Self.awaitingSave[language] === self {
+                Self.awaitingSave[language] = nil
+            }
             // A memory loaded before a reset is never saved over the reset.
             guard let file, currentResetGeneration() == resetGeneration else { return }
             let saved = memory.saved

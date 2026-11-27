@@ -84,6 +84,28 @@ struct KeyboardTypingMemoryLanguageTests {
         #expect(restarts == ["xx", "original"])
     }
 
+    @Test func aLanguageSwitchedBackToBeforeItsMemorySavesKeepsThatMemorysChange() throws {
+        let (folder, original) = try makeFolder()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let defaults = makeDefaults()
+        defaults.set(2, forKey: UserDefaultsKeys.keyboardTypingMemoryResetGeneration)
+        let language = "a\(UUID().uuidString)"
+        let otherLanguage = "b\(UUID().uuidString)"
+        try Self.storedFile.write(to: KeyboardTypingMemoryLocation.fileURL(forLanguage: language, besideOriginal: original))
+        let load = { (language: String) in
+            KeyboardTypingMemory(language: language, fileURL: original, defaults: defaults)
+        }
+
+        let memory = KeyboardTypingMemory.current(language: language, load: load)
+        #expect(memory.memory.learnedVocabulary.keys == ["zorblat"])
+        memory.memory.clear()
+        _ = KeyboardTypingMemory.current(language: otherLanguage, load: load)
+        let returned = KeyboardTypingMemory.current(language: language, load: load)
+
+        #expect(returned === memory)
+        #expect(returned.memory.learnedVocabulary.keys.isEmpty)
+    }
+
     private func makeFolder() throws -> (folder: URL, original: URL) {
         let folder = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
