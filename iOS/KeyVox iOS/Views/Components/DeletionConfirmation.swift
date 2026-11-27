@@ -6,8 +6,8 @@ enum SettingsPendingDeletionConfirmation: Identifiable, Equatable {
     case keyVoxVibesAI
     case sharedTTSModel
     case ttsVoice(AppSettingsStore.TTSVoice)
-    /// What the KeyVox keyboard learned from the user's typing.
-    case learnedWords
+    /// What the KeyVox keyboard learned from the user's typing, in every language or in one.
+    case learnedWords(KeyboardTypingMemoryResetScope)
 
     var id: String {
         switch self {
@@ -19,8 +19,12 @@ enum SettingsPendingDeletionConfirmation: Identifiable, Equatable {
             return "tts-shared"
         case .ttsVoice(let voice):
             return "tts-voice-\(voice.rawValue)"
-        case .learnedWords:
+        case .learnedWords(.keyboard):
             return "learned-words"
+        case .learnedWords(.allLanguages):
+            return "learned-words-all-languages"
+        case .learnedWords(.language(let language)):
+            return "learned-words-\(language)"
         }
     }
 
@@ -34,8 +38,13 @@ enum SettingsPendingDeletionConfirmation: Identifiable, Equatable {
             return String(localized: "Delete Speak Engine?", comment: "Title of the confirmation shown before deleting the KeyVox Speak text-to-speech engine. Speak is a brand name and stays in English.")
         case .ttsVoice:
             return String(localized: "Delete Voice?", comment: "Title of the confirmation shown before deleting a downloaded KeyVox Speak voice.")
-        case .learnedWords:
+        case .learnedWords(.keyboard):
             return String(localized: "Reset Learned Words?", comment: "Title of the confirmation shown before clearing the words the KeyVox keyboard has learned.")
+        case .learnedWords(.allLanguages):
+            return String(localized: "Reset Learned Words in All Languages?", comment: "Title of the confirmation shown before clearing the words the KeyVox keyboard has learned in every language it types in.")
+        case .learnedWords(.language(let language)):
+            let name = KeyboardTypingLanguageName.displayName(for: language)
+            return String(localized: "Reset Learned Words in \(name)?", comment: "Title of the confirmation shown before clearing the words the KeyVox keyboard has learned in one language. The placeholder is the language's name, such as English.")
         }
     }
 
@@ -49,8 +58,13 @@ enum SettingsPendingDeletionConfirmation: Identifiable, Equatable {
             return String(localized: "Delete the KeyVox Speak engine and all downloaded voices from this device?", comment: "Message in the confirmation shown before deleting the text-to-speech engine. KeyVox Speak is a brand name and stays in English.")
         case .ttsVoice(let voice):
             return String(localized: "Delete the \(voice.displayName) voice from this device?", comment: "Message in the confirmation shown before deleting a KeyVox Speak voice. The placeholder is the voice name, which stays in English.")
-        case .learnedWords:
+        case .learnedWords(.keyboard):
             return String(localized: "KeyVox will forget the words it learned from your typing and the corrections you undid. Your KeyVox Dictionary isn't affected.", comment: "Message in the confirmation shown before resetting the keyboard's learned words. KeyVox is a brand name and stays in English; Dictionary refers to the app's Dictionary tab.")
+        case .learnedWords(.allLanguages):
+            return String(localized: "KeyVox will forget the words it learned from your typing in every language and the corrections you undid. Your KeyVox Dictionary isn't affected.", comment: "Message in the confirmation shown before resetting the keyboard's learned words in every language it types in. KeyVox is a brand name and stays in English; Dictionary refers to the app's Dictionary tab.")
+        case .learnedWords(.language(let language)):
+            let name = KeyboardTypingLanguageName.displayName(for: language)
+            return String(localized: "KeyVox will forget the words it learned from your typing in \(name) and the corrections you undid. Your other languages and your KeyVox Dictionary aren't affected.", comment: "Message in the confirmation shown before resetting the keyboard's learned words in one language. The placeholder is the language's name, such as English. KeyVox is a brand name and stays in English; Dictionary refers to the app's Dictionary tab.")
         }
     }
 

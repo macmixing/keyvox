@@ -3,7 +3,17 @@ import UIKit
 
 /// Letter-page typing: shift state, predictions, and autocorrection at word boundaries.
 extension KeyboardViewController {
-    private static let wordEndingCharacters = try? CharacterList.wordEnding(for: KeyboardTypingLanguage.current)
+    /// The characters that end a word in the language the keyboard types in, read again when the
+    /// language changes.
+    private static var wordEndingCharacters: CharacterList? {
+        let language = KeyboardTypingLanguage.current
+        if latestWordEndingCharacters?.language != language.identifier {
+            latestWordEndingCharacters = (language.identifier, try? CharacterList.wordEnding(for: language))
+        }
+        return latestWordEndingCharacters?.characters
+    }
+
+    private static var latestWordEndingCharacters: (language: String, characters: CharacterList?)?
 
     /// Reads the focused field's traits and starts it on the right page with a fresh
     /// typing session.
@@ -193,7 +203,7 @@ extension KeyboardViewController {
     /// toolbar's thump; the user's own words stay, and nothing is felt.
     func handleSuggestionLongPressed(_ item: SuggestionBar.Item) {
         guard userVocabulary.contains(item.text) == false,
-              KeyboardTypingMemory.shared.memory.forget(item.text) else {
+              KeyboardTypingMemory.current.memory.forget(item.text) else {
             return
         }
         interactionHaptics.emitMediumIfEnabled()
@@ -234,8 +244,8 @@ extension KeyboardViewController {
     }
 
     /// Hands the suggestions what the keyboard learned from the user's typing.
-    private func applyLearnedVocabulary() {
-        predictionCoordinator.updateLearnedWords(KeyboardTypingMemory.shared.memory.learnedVocabulary)
+    func applyLearnedVocabulary() {
+        predictionCoordinator.updateLearnedWords(KeyboardTypingMemory.current.memory.learnedVocabulary)
     }
 
     private func applyPersonalVocabulary(dictionaryPhrases: [String], lexicon: UILexicon?) {
@@ -294,6 +304,17 @@ extension KeyboardViewController {
             autocapitalization: typingTraits.autocapitalization
         )
         applyLetterCase()
+    }
+
+    /// Starts typing in the focused field over in the language the keyboard types in now, keeping
+    /// the page showing; call only while the field's document state may be read.
+    func restartTypingInCurrentLanguage() {
+        predictionCoordinator.reset()
+        if typingTraits.allowsPredictions {
+            predictionCoordinator.prepare()
+        }
+        synchronizeLetterCase()
+        refreshPredictions()
     }
 
     /// Suggestions are only worked out while they are shown; a word boundary still works out
