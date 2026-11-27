@@ -29,8 +29,18 @@ def unique_queries(collections):
     return keys
 
 
-def run_suggestions(reader, dictionary, keys, query_path, shared_session=False):
-    """LatinIME's candidates for each query, deduplicated, best first, as (word, score, type).
+def row_arguments(letter_rows):
+    """The suggestion reader's arguments for a layout's letter rows
+    (`letter_layout.letter_rows`)."""
+    arguments = []
+    for letters, offset in letter_rows:
+        arguments += ["--row", letters, repr(float(offset))]
+    return arguments
+
+
+def run_suggestions(reader, dictionary, keys, query_path, letter_rows, shared_session=False):
+    """LatinIME's candidates for each query, deduplicated, best first, as (word, score, type), with
+    the typed letters tapped on the keys of `letter_rows`.
 
     Each query searches in a session of its own, or, with `shared_session`, all in one, as the
     caches the bundled rankers learned from did (`latinime_suggestions.cpp`)."""
@@ -41,7 +51,8 @@ def run_suggestions(reader, dictionary, keys, query_path, shared_session=False):
     outputs = {}
     with query_path.open(encoding="utf-8") as stdin:
         process = subprocess.Popen(
-            [str(reader), str(dictionary), *(["--shared-session"] if shared_session else [])],
+            [str(reader), str(dictionary), *(["--shared-session"] if shared_session else []),
+             *row_arguments(letter_rows)],
             stdin=stdin,
             stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, bufsize=1,
         )
