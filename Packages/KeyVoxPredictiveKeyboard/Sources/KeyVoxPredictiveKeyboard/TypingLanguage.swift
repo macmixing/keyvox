@@ -7,7 +7,8 @@ public struct TypingLanguage: Sendable {
     /// The language's folder name, such as `en`.
     public let identifier: String
     public let resources: TypingLanguageResources
-    /// The letter layout the keyboard shows.
+    /// The letter layout the keyboard shows: the language's default unless it was loaded in
+    /// another of `letterLayouts`.
     public let letterLayout: LetterKeyLayout
     /// The names of the other letter layouts Apple's keyboard offers for the language, in Apple's
     /// order, each loadable with `LetterKeyLayout.bundled(identifier:)`.
@@ -21,8 +22,11 @@ public struct TypingLanguage: Sendable {
     /// The letters a short typed word needs one of to be taken as an attempt at a word.
     let vowels: String
 
-    /// The bundled language in the folder `identifier`.
-    public static func bundled(identifier: String) throws -> TypingLanguage {
+    /// The bundled language in the folder `identifier`, drawn in the layout named `letterLayout`,
+    /// one of the layouts it offers (`letterLayouts`), or in its default layout when nil.
+    /// - Throws: `PredictiveKeyboardError.invalidLetterLayout` for a layout the language does not
+    ///   offer.
+    public static func bundled(identifier: String, letterLayout layoutName: String? = nil) throws -> TypingLanguage {
         let resources = try TypingLanguageResources(identifier: identifier)
         let manifest: TypingLanguageManifest
         let layouts: TypingLanguageLetterLayouts
@@ -39,7 +43,11 @@ public struct TypingLanguage: Sendable {
         guard layouts.identifier == identifier else {
             throw PredictiveKeyboardError.invalidTypingLanguage(identifier)
         }
-        let letterLayout = try LetterKeyLayout.bundled(identifier: layouts.defaultLetterLayout)
+        let chosenLayout = layoutName ?? layouts.defaultLetterLayout
+        guard layouts.letterLayouts.contains(chosenLayout) else {
+            throw PredictiveKeyboardError.invalidLetterLayout(chosenLayout)
+        }
+        let letterLayout = try LetterKeyLayout.bundled(identifier: chosenLayout)
         return TypingLanguage(manifest: manifest, layouts: layouts, resources: resources, letterLayout: letterLayout)
     }
 
