@@ -7,9 +7,10 @@ The queries are those of every record `training_sets.correction_sets` gives for 
 unless given): the typos and words typed as meant the ranker and the action model train on, the
 held-out ones, and for English every word of the copied sentences and expressive words, in that
 order, each asked in a LatinIME session of its own on the language's letter keys. With
-`--as-bundled` they are instead the queries the bundled rankers learned from (`bundled_queries.py`), asked in one
-shared session of the dictionary as counted, with the words `offensive_words.py` matches, as
-they learned from it, so the build rebuilds the bundled rankers."""
+`--as-bundled` they are instead the queries the bundled rankers learned from
+(`bundled_queries.py`), asked in one shared session of the dictionary as counted, with the words
+`offensive_words.py` matches, as they learned from it, so the build rebuilds the bundled
+rankers."""
 
 import argparse
 from pathlib import Path

@@ -114,7 +114,8 @@ class Counts:
         wanted = np.fromiter(taken.keys(), dtype=np.uint64, count=len(taken))
         amounts = np.fromiter(taken.values(), dtype=np.int64, count=len(taken))
         positions = np.searchsorted(keys, wanted)
-        if np.any(positions >= len(keys)) or np.any(keys[np.minimum(positions, len(keys) - 1)] != wanted):
+        found = keys[np.minimum(positions, len(keys) - 1)]
+        if np.any(positions >= len(keys)) or np.any(found != wanted):
             raise ValueError("a left-out sentence holds a pair or sequence the counts lack")
         counts[positions] -= amounts
         if np.any(counts[positions] < 0):

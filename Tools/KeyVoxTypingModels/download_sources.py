@@ -43,10 +43,12 @@ def language_build_files(data_dir: Path) -> list[Path]:
     build = paths.language_build
     files = [build / "vocabulary.txt", build / "counts.npz", build / "built" / "vocabulary.txt",
              build / "built" / "common_vocabulary.txt", *language_build.sentence_paths(paths)]
-    missing = [path for path in files[:4] if not path.exists()]
-    if missing or len(files) == 4:
+    missing = [str(path.relative_to(build)) for path in files[:4] if not path.exists()]
+    if len(files) == 4:
+        missing.append("sentences/")
+    if missing:
         raise SystemExit(f"{build}: link Tools/KeyVoxLanguageModel's build of the language here; "
-                         f"missing {', '.join(str(path.relative_to(build)) for path in missing) or 'sentences/'}")
+                         f"missing {', '.join(missing)}")
     return files
 
 

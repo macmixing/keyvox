@@ -30,7 +30,8 @@ def unique_queries(collections):
 
 
 def row_arguments(letter_rows):
-    """The suggestion reader's arguments for a layout's letter rows (`letter_layout.letter_rows`)."""
+    """The suggestion reader's arguments for a layout's letter rows
+    (`letter_layout.letter_rows`)."""
     arguments = []
     for letters, offset in letter_rows:
         arguments += ["--row", letters, repr(float(offset))]
