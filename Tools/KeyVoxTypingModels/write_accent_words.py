@@ -2,7 +2,9 @@
 accents, with a probability from how often Tatoeba and OASST1 use them, to
 `<data_dir>/work/accent_unigrams.tsv`.
 
-The words are SCOWL size-60 words of every spelling that contain a letter outside ASCII."""
+For English, the words are SCOWL size-60 words of every spelling that contain a letter outside
+ASCII. Any other language's dictionary holds its words with their accents, and LatinIME finds them
+from their plain letters, so the file is empty, and so is the overlay made from it."""
 
 import argparse
 import math
@@ -15,6 +17,7 @@ import regex
 from paths import DataPaths
 from sources import oasst1_path, tatoeba_path
 from text_sources import OASST1_WEIGHT, oasst1_messages, tatoeba_sentences
+from typing_languages import add_language_arguments, language_from
 
 TOKEN = regex.compile(r"\p{L}+(?:['’]\p{L}+)?")
 ENCODING_SCALER = 8.58923700372
@@ -37,8 +40,14 @@ def encode_probability(raw_probability):
 def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("data_dir", type=Path)
-    data_dir = parser.parse_args().data_dir
+    add_language_arguments(parser)
+    arguments = parser.parse_args()
+    data_dir = arguments.data_dir
     paths = DataPaths(data_dir)
+    if not language_from(arguments).uses_english_text:
+        paths.accent_unigrams.write_text("", encoding="utf-8")
+        print(f"{paths.accent_unigrams}: no words, as the dictionary holds the accented ones")
+        return
 
     accented = {
         normalize(word) for word in paths.accented_words.read_text(encoding="utf-8").splitlines()
