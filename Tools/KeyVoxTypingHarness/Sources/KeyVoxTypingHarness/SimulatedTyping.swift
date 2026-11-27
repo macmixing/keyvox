@@ -5,7 +5,9 @@ import KeyVoxPredictiveKeyboard
 /// planned offset, and the key nearest each tap becomes the typed letter.
 ///
 /// Apostrophes are not tapped, matching how people type contractions on a letter
-/// page and rely on autocorrect to restore them.
+/// page and rely on autocorrect to restore them. A letter no key types, such as German
+/// "ß", is picked from the held popup of the key that offers it, so it types exactly, its
+/// touch at that key's center.
 struct SimulatedTyping {
     let typedWord: String
     let touches: [PredictionTouch]
@@ -15,6 +17,11 @@ struct SimulatedTyping {
         var touches: [PredictionTouch] = []
         for (letter, offset) in zip(tappedWord.filter { $0 != "'" }, offsetsInKeyPitches) {
             guard let center = layout.center(of: letter) else { continue }
+            if layout.popupLetters[letter] != nil {
+                typed.append(letter)
+                touches.append(PredictionTouch(location: center))
+                continue
+            }
             let touch = CGPoint(
                 x: center.x + offset[0] * layout.keyPitch.width,
                 y: center.y + offset[1] * layout.keyPitch.height

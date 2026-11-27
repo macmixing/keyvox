@@ -14,6 +14,9 @@ struct TypingPlan: Codable {
         /// What the typist meant, when the tapped letters are a recorded human attempt
         /// rather than the intended words themselves.
         var intended: [String]? = nil
+        /// The words as the corpus writes them, with their capitals, in a plan made for a typing
+        /// language (`--language`), so `compare` can tell whether each comes out with them.
+        var written: [String]? = nil
 
         /// The words a correct result must contain.
         var truthWords: [String] { intended ?? words }
@@ -22,6 +25,11 @@ struct TypingPlan: Codable {
     let noiseInKeyPitches: Double
     let seed: UInt64
     let sentences: [Sentence]
+    /// The bundled typing language the plan types, by its folder name; English when absent.
+    var language: String? = nil
+
+    /// The typing language the plan types.
+    var languageIdentifier: String { language ?? "en" }
 
     static func load(from path: String) throws -> TypingPlan {
         let data = try Data(contentsOf: URL(fileURLWithPath: path))
