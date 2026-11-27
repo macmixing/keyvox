@@ -512,9 +512,38 @@ such as Spanish "esta" for "está":
 
 These are the trainers' measures: the keyboard corrects with `NoisyChannelCorrector`, which reads
 the rankers' choice of candidates but not the action model's probability (see "What the harness can
-tell apart"), and `Tools/KeyVoxTypingHarness` scores English only. They show the rankers learn the
-language, ranking the intended word first more often than LatinIME alone does, and give a baseline
-to hold later builds to.
+tell apart"). They show the rankers learn the language, ranking the intended word first more often
+than LatinIME alone does, and give a baseline to hold later builds to.
+
+### French through the keyboard
+
+`Tools/KeyVoxTypingHarness` typed French through the bundled French files and the typing session,
+with `--language fr`, on November 27, 2026. Its corpus is the Tatoeba texts of the French simulation
+sentences in held-out buckets 8-9, which the dictionary's counts and the rankers leave out, as Tatoeba
+writes them (41,622 sentences); its plans are 400 sentences at noise 0.25 and 80 at noise 0.3, seed 1,
+and a zero-noise plan of the 45 Tatoeba sentences Apple's French keyboard was measured typing, with
+Apple's results beside them. English's bundled measures from "Results" are beside French's; their
+sentences differ, so the columns compare the languages, not like with like.
+
+| Measure | Plan | fr | en |
+| --- | --- | --- | --- |
+| Final words correct | 80 sentences, noise 0.3 (`compare`) | 91.5% (452/494) | 96.1% (909/946) |
+| Final words correct | 400 sentences, noise 0.25 (`compare`) | 96.7% (2,723/2,817) | |
+| Final words correct | 400 (`evaluate`) | 97.6% | 98.7% |
+| Mistyped words fixed | 400 | 93.0% (612/658) | 94.7% (1,165/1,230) |
+| Mistyped words changed to a different word | 400 | 3.3% (22) | 1.3% (16) |
+| Correctly typed words wrongly changed | 400 | 0.5% (10/2,004) | 0.0% (0/3,760) |
+| Contractions typed without the apostrophe, restored | 400 | 92.3% (143/155) | |
+| Completion offered within 2 letters | 400 | 60.5% | 50.5% |
+| Completion keystroke savings | 400 | 41.3% | 39.9% |
+| Suggestion bar shows the word within 3 letters | 400 | 80.0% | 85.3% |
+| Next word first / in top 3 | 400 | 12.4% / 23.7% | 9.0% / 21.3% |
+| Final words correct, Apple / KeyVox | Apple's 45 French Tatoeba sentences, no noise (`compare --apple`) | 93.6% / 94.6% (277 / 280 of 296) | |
+
+The plan's taps near the AZERTY-French accent key, beside "n", type what the keyboard's accent key
+would. A letter picked from a popup is tapped on its base key, so "cœur" typed with the popup's "œ"
+becomes "cour" in the 400-sentence plan, the dictionary holding both spellings ("cœur" and "coeur")
+at about the same probability.
 
 The German vocabulary lacks most words that begin with "ä", "ö", or "ü", as the AOSP German word
 list it is built from does: "überhaupt" (52,006 times in the German build's counts), "ändern",
