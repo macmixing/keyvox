@@ -13,7 +13,8 @@
 // letter spans (offset + i) * 100 to (offset + i + 1) * 100 across. The keyboard is as wide as its
 // widest letter row and a row taller than its letter rows, for the space bar, five keys wide in its
 // middle; the apostrophe key follows the second row's last letter. A letter without a key of its
-// own is tapped on its base letter's key, as a long press there types it.
+// own is tapped on its base letter's key, as a long press there types it. Typed
+// letters of MAX_WORD_LENGTH code points or more get no suggestions, as in the keyboard's engine.
 //
 // Each query searches in a session of its own. A session continues its last search when the
 // new typed letters start with the last ones, keeping that search's previous words, so a shared
@@ -190,6 +191,9 @@ static std::vector<Result> suggest(Dictionary *dictionary, ProximityInfo *proxim
         const std::string &input, const std::vector<std::string> &previousWords = {}) {
     std::vector<int> xs, ys, times, pointerIds, codePoints;
     const auto inputCodePoints = utf8CodePoints(input);
+    // LatinIME searches typed letters shorter than MAX_WORD_LENGTH only; the keyboard's engine
+    // offers no candidates for longer ones, and neither does this.
+    if (inputCodePoints.size() >= MAX_WORD_LENGTH) return {};
     for (int i = 0; i < static_cast<int>(inputCodePoints.size()); ++i) {
         // A code point no key types is tapped at the origin, as the keyboard's engine does.
         const auto found = byCode.find(physicalBaseKey(inputCodePoints[i], byCode));
