@@ -309,6 +309,11 @@ extension KeyboardViewController {
     /// Starts typing in the focused field over in the language the keyboard types in now, keeping
     /// the page showing; call only while the field's document state may be read.
     func restartTypingInCurrentLanguage() {
+        // Whether the keys may swipe is the language's too, so the field's traits are read again
+        // in it; left as the last language's, the next text change would take them for another
+        // field's.
+        typingTraits = KeyboardTypingTraits(proxy: textDocumentProxy, settings: appSettingsStore)
+        updateSwipeTyping()
         predictionCoordinator.reset()
         if typingTraits.allowsPredictions {
             predictionCoordinator.prepare()
