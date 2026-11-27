@@ -10,7 +10,7 @@ The bundled English model (`Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPred
 and `swipe.json`, no decoder) is run `r3-ft`: the width-144 encoder `r3-w144-aug50-extra`
 after one ranking fine-tune. Its `swipe_encoder.kvsw` is byte for byte the file
 `export_weights.py` writes for `r3-ft` (SHA-256 `b369dfd6…2e04`). On swipe.futo.org's
-English test split it decodes 92.55% of swipes to the swiped word first (see "Results").
+English test split it decodes 92.57% of swipes to the swiped word first (see "Results").
 
 Data, trained weights, and results live in a data directory outside the repository, never
 in it.
@@ -249,21 +249,24 @@ before each swipe included, on the input `write_harness_swipes.py` writes, unles
 
 ### The bundled model
 
-At `fix/swipe-landing-key` ecfd9637 (133,299-word lexicon):
+At `fix/swipe-landing-key` dc7958e6 (133,299-word lexicon):
 
 | Split | Swipes | Top-1 | Top-3 | Top-10 |
 | --- | --- | --- | --- | --- |
-| Validation | 54,269 | 92.79% | 95.84% | 96.49% |
-| Test | 49,970 | 92.55% | 95.77% | 96.50% |
+| Validation | 54,269 | 92.80% | 95.86% | 96.50% |
+| Test | 49,970 | 92.57% | 95.78% | 96.53% |
 
 At 22ea8f14, before the keyboard ranked words that differ only in their first key by where
 the swipe landed, the same model measured 92.83% validation (95.87% top-3, 96.51% top-10)
 and 92.62% test top-1 (95.82%, 96.53%); the landing settings were chosen on validation
 together with the swipes recorded from one key to another on the simulator
-(`iOS/Docs/ENGINEERING.md`, swipe typing). A wider setting measured first, the loss counted
-among all words rather than those differing only in their first key, with `weight` 6.5 and
-`careReach` 0.42 on the lift alone, gave 92.70% validation and 92.43% test top-1 and was not
-kept. At dd9e5a03, before the 3,861 added words (129,438-word lexicon), the same model measured
+(`iOS/Docs/ENGINEERING.md`, swipe typing). Two earlier forms were measured on both splits and not kept: the loss taken
+from every word's score, with `weight` 6.5 and `careReach` 0.42 on the lift alone, gave 92.70%
+validation and 92.43% test top-1; and, with the bundled settings at ecfd9637, the loss taken
+from the scores of words differing only in their first key before the words weighed in context
+were picked, which also moved those words against words on other keys, gave 92.79% validation
+and 92.55% test top-1. The figures are on record in
+`~/KeyVoxLanguageData/swipe/logs/landing-key-results.md`. At dd9e5a03, before the 3,861 added words (129,438-word lexicon), the same model measured
 92.49% validation and 92.26% test top-1. At that commit the model bundled before it,
 `r1-ft-dec6` (width 128, full augmentation, with a 6-block decoder), measured 92.35%
 validation and 92.32% test top-1; `r3-ft` replaced it on validation, where it decodes 0.14
@@ -335,7 +338,7 @@ row names.
 
 | System | Measured on | Top-1 |
 | --- | --- | --- |
-| KeyVox, bundled model | swipe.futo.org English test split, all 49,970 swipes, `KeyVoxTypingHarness` at ecfd9637, words before included | 92.55% |
+| KeyVox, bundled model | swipe.futo.org English test split, all 49,970 swipes, `KeyVoxTypingHarness` at dc7958e6, words before included | 92.57% |
 | FUTO Swipe, encoder only | swipe.futo.org English test split, paper's Table 3 | 92.54% |
 | FUTO Swipe, encoder plus decoder | swipe.futo.org English test split, paper's Table 3 | 93.30% |
 | FUTO Swipe (FUTO Keyboard v0.1.29) | "our public test set (filtered to first 20k non-single-letter swipes) in-emulator" | 92.62% |
