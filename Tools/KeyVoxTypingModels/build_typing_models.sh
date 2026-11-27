@@ -37,15 +37,21 @@ mkdir -p "$DATA_DIR/work" "$DATA_DIR/built"
 ./scowl_word_list.sh "$DATA_DIR" 60 A,B,Z,C,D "$DATA_DIR/work/scowl-60-ABZCD.txt"
 ./scowl_word_list.sh "$DATA_DIR" 50 A,B,Z,C,D "$DATA_DIR/work/scowl-50-ABZCD.txt"
 
-# Dictionary, without the words the profanity list's patterns match.
+# Dictionary, without the words the profanity list's patterns match, with the language's locale.
 "$PYTHON" offensive_words.py "$DATA_DIR"
 "$PYTHON" write_dictionary_inputs.py "$DATA_DIR"
+DICTIONARY_OPTIONS=()
+while IFS= read -r option; do
+  DICTIONARY_OPTIONS+=("$option")
+done < <("$PYTHON" typing_languages.py dictionary-options)
 rm -rf "$DATA_DIR/built/dictionary" "$DATA_DIR/work/counted_dictionary"
-"$DATA_DIR/bin/write_latinime_dictionary" "$DATA_DIR/work/dictionary_kept_unigrams.tsv" \
-  "$DATA_DIR/work/dictionary_kept_ngrams.tsv" "$DATA_DIR/built/dictionary" 2>/dev/null
+"$DATA_DIR/bin/write_latinime_dictionary" "${DICTIONARY_OPTIONS[@]}" \
+  "$DATA_DIR/work/dictionary_kept_unigrams.tsv" "$DATA_DIR/work/dictionary_kept_ngrams.tsv" \
+  "$DATA_DIR/built/dictionary" 2>/dev/null
 # The dictionary as counted, which the caches ask as the bundled rankers learned from it.
-"$DATA_DIR/bin/write_latinime_dictionary" "$DATA_DIR/work/dictionary_unigrams.tsv" \
-  "$DATA_DIR/work/dictionary_ngrams.tsv" "$DATA_DIR/work/counted_dictionary" 2>/dev/null
+"$DATA_DIR/bin/write_latinime_dictionary" "${DICTIONARY_OPTIONS[@]}" \
+  "$DATA_DIR/work/dictionary_unigrams.tsv" "$DATA_DIR/work/dictionary_ngrams.tsv" \
+  "$DATA_DIR/work/counted_dictionary" 2>/dev/null
 
 # Rankers and the action model.
 "$PYTHON" split_ite_events.py "$DATA_DIR"
