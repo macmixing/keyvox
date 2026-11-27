@@ -97,6 +97,8 @@ struct SessionTyper {
         text: inout String
     ) throws {
         switch key {
+        case .letter(let letter) where typingLanguage.accentKey?.character == String(letter):
+            try pressAccentKey(at: touch, session: session, text: &text)
         case .letter(let letter):
             text.append(letter)
             session.recordTap(at: touch, textBeforeCursor: text)
@@ -123,6 +125,20 @@ struct SessionTyper {
             return
         }
         _ = try computer.compute(session.request(textBeforeCursor: text))
+    }
+
+    /// Types what the language's accent key shows after `text`, as the keyboard does: its mark
+    /// put on the letter before the cursor, or the apostrophe or the mark itself after it.
+    private func pressAccentKey(at touch: CGPoint, session: PredictiveTypingSession, text: inout String) throws {
+        guard let accentKey = typingLanguage.accentKey else { return }
+        let mark = computer.accentKeyMark(after: text) ?? accentKey.character
+        if let edit = accentKey.edit(placing: mark, after: text) {
+            Self.apply(edit, to: &text)
+            session.textDidChange(textBeforeCursor: text)
+        } else {
+            text.append(typingLanguage.quotes.text(for: mark, after: text))
+            session.recordTap(at: touch, textBeforeCursor: text)
+        }
     }
 
     static func apply(_ edit: TextEdit, to text: inout String) {
