@@ -1,3 +1,4 @@
+import KeyVoxPredictiveKeyboard
 import UIKit
 
 /// What the letter keyboard may do in the focused text field: what the field's text traits
@@ -57,7 +58,11 @@ struct KeyboardTypingTraits: Equatable {
         self.fieldKeys = fieldKeys
     }
 
-    init(proxy: UITextDocumentProxy, settings: KeyboardAppSettingsStore) {
+    init(
+        proxy: UITextDocumentProxy,
+        settings: KeyboardAppSettingsStore,
+        language: TypingLanguage = KeyboardTypingLanguage.current
+    ) {
         let keyboardType = proxy.keyboardType ?? .default
         let contentType = proxy.textContentType ?? nil
         let isSecure = proxy.isSecureTextEntry ?? false
@@ -86,7 +91,7 @@ struct KeyboardTypingTraits: Equatable {
             || settings.opensOnNumberPage
         allowsPredictions = isNumericOnly == false && isCredential == false && dropsSuggestions == false
         showsSuggestions = allowsPredictions && settings.isPredictiveTextEnabled
-        allowsSwipeTyping = allowsPredictions && settings.isSwipeTypingEnabled
+        allowsSwipeTyping = allowsPredictions && settings.isSwipeTypingEnabled && language.offersSwipeTyping
         allowsAutocorrection = allowsPredictions
             && isAddressLike == false
             && proxy.autocorrectionType != .no
