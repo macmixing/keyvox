@@ -35,6 +35,21 @@ final class FrenchTypingLanguageTests: XCTestCase {
         XCTAssertEqual(context.previousWords, ["Oui"])
     }
 
+    func testAPickedWordKeepsItsSpaceBeforeAQuestionMark() {
+        // `Bonj`, the bar's `Bonjour`, then `?` → `Bonjour ?`; `.` still takes the space.
+        for (separator, deleteCount) in [("?", 0), (".", 1)] {
+            let session = PredictiveTypingSession(language: .french)
+            let typed = "Bonj"
+            let edit = session.choiceEdit(SuggestionBar.Item(text: "Bonjour", kind: .suggestion), textBeforeCursor: typed)
+            let text = String(typed.dropLast(edit.deleteCount)) + edit.insertText
+            XCTAssertEqual(
+                session.wordBoundaryEdit(separator: separator, textBeforeCursor: text, result: nil).deleteCount,
+                deleteCount,
+                separator
+            )
+        }
+    }
+
     func testFrenchHasNoSwipeModelSoItIsTypedByTappingAlone() throws {
         XCTAssertFalse(TypingLanguage.french.offersSwipeTyping)
         XCTAssertTrue(TypingLanguage.english.offersSwipeTyping)
