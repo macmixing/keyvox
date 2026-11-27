@@ -7,10 +7,10 @@ follows the published description in *FUTO Swipe: Layout-Agnostic Neural Swipe D
 (Miller and Kostarevas, arXiv 2606.25247); the code is KeyVox's own.
 
 The bundled English model (`Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/PredictiveData/en/swipe_encoder.kvsw`
-and `swipe.json`, no decoder) is run `r3-ft`: the width-144 encoder `r3-w144-aug50-extra`
-after one ranking fine-tune. Its `swipe_encoder.kvsw` is byte for byte the file
-`export_weights.py` writes for `r3-ft` (SHA-256 `b369dfd6…2e04`). On swipe.futo.org's
-English test split it decodes 92.57% of swipes to the swiped word first (see "Results").
+and `swipe.json`, no decoder) is run `r3-ft2`: the width-144 encoder `r3-w144-aug50-extra`
+after two ranking fine-tunes. Its `swipe_encoder.kvsw` is byte for byte the file
+`export_weights.py` writes for `r3-ft2` (SHA-256 `6aea857c…cdc6`). On swipe.futo.org's
+English test split it decodes 92.56% of swipes to the swiped word first (see "Results").
 
 Data, trained weights, and results live in a data directory outside the repository, never
 in it.
@@ -31,7 +31,7 @@ in it.
 
 The shared modules: `words.py` (letters and key paths), `layouts.py`, `lexicon.py` (word
 list and key-path trie), `swipe_data.py`, `model.py`, `augment.py`, `ranking.py`,
-`decode.py` with `beam_search.c`, `scoring.py`, `emissions.py`, `run_emissions.py`,
+`first_key_neighbors.py`, `decode.py` with `beam_search.c`, `scoring.py`, `emissions.py`, `run_emissions.py`,
 `run_settings.py`, `decoder_model.py`, `weights_format.py`, and `exported_model.py`.
 
 ## Data
@@ -184,6 +184,23 @@ scored exactly as at decode time, plus 0.3 times the true word's CTC loss per ke
 python finetune_encoder.py <data-dir> r3-w144-aug50-extra r3-ft <unigrams.tsv> --epochs 3
 ```
 
+**Second fine-tune: `r3-ft2`**, the bundled model. The same objective from `r3-ft`, its hard
+negatives mined afresh from `r3-ft` with `r3-ft`'s tuned scoring, 4 epochs at learning rate
+5e-5, everything else as above. Kept: the epoch with the best validation top-1, the third
+(92.00%, 92.01%, 92.03%, 92.03% in `evaluate.py`).
+
+```bash
+python finetune_encoder.py <data-dir> r3-ft r3-ft2 <unigrams.tsv> --epochs 4 --learning-rate 5e-5
+```
+
+`finetune_encoder.py` can also fine-tune on words that differ only in their first key
+(`--first-key-neighbors`, `first_key_neighbors.py`): the swipes of words with a neighbor that
+starts on the key beside theirs in its row and has the same keys after, at most
+`--swipes-per-word` of any one word, with as many swipes drawn from the rest, each swipe's hard
+negatives starting with its word's neighbors. `--steps` ends a run after that many steps and
+`--validate-every` decodes validation every that many steps, keeping each state as
+`step-<n>.pt`. No bundled model was trained this way (see "Experiments").
+
 **Scoring** (`tune_scoring.py`). On the validation split's cached candidates, a seeded random
 search of 400 weight sets, then coordinate refinement, maximizes top-1 (top-3 breaks ties) for
 
@@ -191,28 +208,47 @@ search of 400 weight sets, then coordinate refinement, maximizes top-1 (top-3 br
 score = log p(word) / L^gamma + frequencyWeight * f + lengthBonus * L
 ```
 
-with `L` the key-path length and `f` the dictionary probability. `r3-ft`'s weights, as bundled
-in `swipe.json`: `gamma` 0.4416782860196686, `frequencyWeight` 0.029198906788676683,
-`lengthBonus` 0.9808640269387409. The keyboard adds context on top: `swipe.json`'s
-`contextWeight`, 0.425, times how much likelier the words before make the word, and ranks
-words whose key paths differ only in their first key by where the swipe landed, with
-`swipe.json`'s `landing` settings (`iOS/Docs/ENGINEERING.md`, swipe typing).
+with `L` the key-path length and `f` the dictionary probability. `r3-ft2`'s weights: `gamma`
+0.205, `frequency_weight` 0.05, `length_bonus` 1.86925. `swipe.json` bundles its `gamma` and
+`lengthBonus` with `frequencyWeight` 0.045, under its tuned 0.05: the heavier the frequency
+and the words before weigh, the less the landing can say, and the keyboard's tests ask that a
+swipe drawn from one key's center to another's give the word on those keys for every pair of
+keys, however much likelier a word a key over is. That holds at 0.045 with the context weight
+below, and on validation 0.045 measures the same as 0.05 (92.80% at both, with the context
+weights scaled alike, at a beam of 100).
+
+The keyboard adds on top, all in `swipe.json` and chosen on validation with
+`KeyVoxTypingHarness swipe-accuracy` (`iOS/Docs/ENGINEERING.md`, swipe typing):
+
+- `contextWeight`, 0.7, times how much likelier the words before make the word, and
+  `samePathContextWeight`, 0.8, among words on one key path. With `r3-ft2`, `contextWeight` /
+  `samePathContextWeight` of 0.655/1.233, 0.655/0.95, 0.75/0.95, 0.85/0.95, 0.75/0.8, 0.75/0.6,
+  and 0.7/0.8 measured 92.80%, 92.84%, 92.85%, 92.85%, 92.88%, 92.87%, and 92.87%; at 0.75 a
+  swipe from one key's center to another's gives the likelier word a key over for one pair,
+  and at 0.7 for none.
+- the landing: words whose key paths differ only in their first key trade places by where
+  the swipe landed (`landing`), the words before counted `firstKeyContextWeight`, 3, among
+  them (2.5, 3, and 3.5 measured 92.86%, 92.87%, and 92.86%).
+- `pruning.beam`, 200 key-path prefixes, which measured 92.80% where 100 measured 92.77%, at a
+  median decode of 5.0 ms where 100 takes 3.6 ms.
 
 ```bash
-python evaluate.py <data-dir> r3-ft <unigrams.tsv> --split val
-python tune_scoring.py <data-dir> r3-ft <unigrams.tsv>
+python evaluate.py <data-dir> r3-ft2 <unigrams.tsv> --split val
+python tune_scoring.py <data-dir> r3-ft2 <unigrams.tsv>
 ```
 
 ## Exporting
 
 ```bash
-python export_weights.py <data-dir> r3-ft
+python export_weights.py <data-dir> r3-ft2
 ```
 
-writes `models/r3-ft/swipe_encoder.kvsw`. To bundle it, copy it to
+writes `models/r3-ft2/swipe_encoder.kvsw`. To bundle it, copy it to
 `PredictiveData/en/swipe_encoder.kvsw`, put the run's `scoring.json` values into
 `swipe.json`'s `scoring` (`gamma`, `frequencyWeight`, `lengthBonus`), and, for a model with no
-decoder, leave out `swipe_decoder.kvsd`. The lexicon depends only on the letters and
+decoder, leave out `swipe_decoder.kvsd`. The context weights were tuned beside a frequency
+weight, so a model with another one needs them measured again, and the package's parity
+fixture holds the reference decoding of the bundled model with the bundled settings. The lexicon depends only on the letters and
 `keepsDoubleLetters`, not on the weights.
 
 ## Measuring accuracy
@@ -249,23 +285,33 @@ before each swipe included, on the input `write_harness_swipes.py` writes, unles
 
 ### The bundled model
 
-At `fix/swipe-landing-key` dc7958e6 (133,299-word lexicon):
+At `fix/swipe-landing-key` 75a6339a (133,299-word lexicon), `r3-ft2` with the settings above:
 
 | Split | Swipes | Top-1 | Top-3 | Top-10 |
 | --- | --- | --- | --- | --- |
-| Validation | 54,269 | 92.80% | 95.86% | 96.50% |
-| Test | 49,970 | 92.57% | 95.78% | 96.53% |
+| Validation | 54,269 | 92.87% | 95.92% | 96.60% |
+| Test | 49,970 | 92.56% | 95.84% | 96.59% |
 
-At 22ea8f14, before the keyboard ranked words that differ only in their first key by where
-the swipe landed, the same model measured 92.83% validation (95.87% top-3, 96.51% top-10)
-and 92.62% test top-1 (95.82%, 96.53%); the landing settings were chosen on validation
-together with the swipes recorded from one key to another on the simulator
-(`iOS/Docs/ENGINEERING.md`, swipe typing). Two earlier forms were measured on both splits and not kept: the loss taken
-from every word's score, with `weight` 6.5 and `careReach` 0.42 on the lift alone, gave 92.70%
-validation and 92.43% test top-1; and, with the bundled settings at ecfd9637, the loss taken
-from the scores of words differing only in their first key before the words weighed in context
-were picked, which also moved those words against words on other keys, gave 92.79% validation
-and 92.55% test top-1. The figures are on record in
+Of swipe.futo.org's training and validation swipes of "us", a word whose commoner neighbor
+"is" starts a key over, 59 of 67 decode to it, and all 3 of "yo"; 591 of the first 600 of
+"is" and 595 of the first 600 of "to" keep their word.
+
+The model bundled before it, `r3-ft` with its own tuned scoring (`gamma` 0.4416782860196686,
+`frequencyWeight` 0.029198906788676683, `lengthBonus` 0.9808640269387409), context weight
+0.425, and a beam of 100, measured:
+
+| Build | Validation top-1 | Test top-1 | "us" of 67 |
+| --- | --- | --- | --- |
+| 22ea8f14, no landing rule | 92.83% | 92.62% | not measured |
+| dc7958e6, the landing counted only for swipes landing and lifting close to keys | 92.80% | 92.57% | 35 |
+| this landing rule, its loss divided by the key-path length to the scoring `gamma`, context among first-key words at 0.8 | 92.67% | 92.39% | 55 |
+| the same with `firstKeyContextWeight` 2 | 92.73% | not measured | 59 |
+
+Real swipes that start on the key beside their word's first key are far more often a common
+word swiped loosely than the word on the landing key, so a rule that gives "us" from the "u"
+key costs swipe.futo.org accuracy; `r3-ft2`, its scoring, and the weights above make that up.
+Two earlier forms of the first landing rule were measured on both splits and not kept (92.70%
+and 92.79% validation, 92.43% and 92.55% test). Every figure is on record in
 `~/KeyVoxLanguageData/swipe/logs/landing-key-results.md`. At dd9e5a03, before the 3,861 added words (129,438-word lexicon), the same model measured
 92.49% validation and 92.26% test top-1. At that commit the model bundled before it,
 `r1-ft-dec6` (width 128, full augmentation, with a 6-block decoder), measured 92.35%
@@ -286,8 +332,8 @@ row names.
 | `r6-w168-aug25-extra-240` | base: as r5, 240 epochs | 91.93% | 95.18% |
 | `t1-w224-aug25-extra` | base: width 224, augmentation 0.25, best through epoch 51 of 120 | 91.97% | 95.08% |
 | `t2-w256-aug25-extra` | base: width 256, augmentation 0.25, best through epoch 34 of 120 | 92.03% | 95.20% |
-| `r3-ft` (bundled) | r3 fine-tuned 3 epochs, 16 negatives, learning rate 1e-4 | 92.49% | 95.48% |
-| `r3-ft2` | r3-ft fine-tuned 4 more epochs, fresh negatives, 5e-5 | 92.49% | 95.50% |
+| `r3-ft` | r3 fine-tuned 3 epochs, 16 negatives, learning rate 1e-4 | 92.49% | 95.48% |
+| `r3-ft2` (bundled) | r3-ft fine-tuned 4 more epochs, fresh negatives, 5e-5 | 92.49% | 95.50% |
 | `r3-ft2-neg32` | r3-ft2 fine-tuned 2 epochs, 32 negatives, 5e-5 | 92.52% | 95.53% |
 | `r3-ft2-neg64` | r3-ft2-neg32 fine-tuned 2 epochs, 64 negatives, 5e-5 | 92.52% | 95.53% |
 | `r3-ft2-aug100` | r3-ft2 fine-tuned 3 epochs at augmentation 1.0, 5e-5 | 92.49% | 95.50% |
@@ -318,27 +364,41 @@ row names.
   `r3-ft2-neg32` alone, so neither ensembling nor distilling from it was pursued.
 - **Context weight.** For `r3-ft2-neg32`, context weights of 0.3, 0.425, 0.55, 0.7, and 0.85
   gave 92.45%, 92.52%, 92.59%, 92.62%, and 92.61% validation top-1; the bundled `swipe.json`
-  uses 0.425.
-- **`r3-noaug` is not bundled.** At 22ea8f14 it measures 92.93% validation top-1 against the
-  bundled model's 92.83%, but with it the keyboard loses two doubled-letter behaviors its tests
-  pin: `SwipeDoubledLetterTests.testTheSameSwipeIsTooOrToAsTheWordsBeforeCallForIt` gives "to"
-  where the words before call for "too", and
-  `testACircleDoublesALetterButNeverTriplesItWhereAllThreeAreWords` gives "as" where a circle
-  asks for "aas". Both pass with the bundled model.
+  uses 0.7, chosen with `r3-ft2` ("Scoring").
+- **`r3-noaug` is not bundled.** With the landing rule, its tuned scoring at frequency weight
+  0.045, and context weights scaled to it, it measures 92.82% validation top-1, 0.05 below
+  `r3-ft2`. It also reads a swipe from "a" to "s" that circles the "a" as "as", on those two
+  keys, where the keyboard's tests pin two things that cannot both hold: one asks a circle
+  there for "aas", and one asks that a circled word lose to a word on its keys written 50 times
+  as often that doubles another letter, here "ass". `r3-ft` and `r3-ft2` read that swipe as
+  "was", which neither test judges. `r3-ft2-neg32` reads it as "as" too.
+- **Fine-tuning on first-key neighbors.** `r3-ft-fk`, `r3-ft` fine-tuned with
+  `--first-key-neighbors` (79,649 swipes of words with such a neighbor, at most 200 of a word,
+  and as many others; learning rate 1e-4), measured with the landing rule 92.50% validation
+  top-1 after 80 steps and 92.40% after 240, against `r3-ft`'s 92.67%, and without it 92.71%
+  and 92.63% against 92.83%: it gives up swipes of common words as fast as the landing rule
+  does, so it is not bundled.
+- **Other rankings.** On validation candidates, letting words that differ only in their last
+  key trade places by where the swipe lifts won 51 swipes and lost 143, and weighing the words
+  before more among words differing in their last key, in one middle key, or by one key at the
+  end won and lost about as many swipes at small weights and lost more at larger ones, so none
+  was built. With `r3-noaug`, a beam of 400 measured 0.02 points above 200 at a median decode
+  of 7.6 ms, and the pruning's `gamma` and `beta` and the number of candidates weighed in
+  context changed nothing.
 - **Other layouts.** Trained on QWERTY alone, the encoder carries over to layouts it never saw.
   On the layout check (`evaluate.py`, 129,438-word lexicon, top-1):
 
   | Run | All | ClearFlow | Dvorak | KASROZ | QWERTZ | AZERTY |
   | --- | --- | --- | --- | --- | --- | --- |
   | `r3-w144-aug50-extra` | 91.03% | 90.57% | 93.60% | 91.88% | 89.59% | 88.54% |
-  | `r3-ft` (bundled) | 92.35% | 91.88% | 95.33% | 92.36% | 90.65% | 91.67% |
-  | `r3-ft2` | 93.04% | 92.77% | 95.60% | 92.65% | 90.38% | 91.67% |
+  | `r3-ft` | 92.35% | 91.88% | 95.33% | 92.36% | 90.65% | 91.67% |
+  | `r3-ft2` (bundled) | 93.04% | 92.77% | 95.60% | 92.65% | 90.38% | 91.67% |
 
 ### Published numbers
 
 | System | Measured on | Top-1 |
 | --- | --- | --- |
-| KeyVox, bundled model | swipe.futo.org English test split, all 49,970 swipes, `KeyVoxTypingHarness` at dc7958e6, words before included | 92.57% |
+| KeyVox, bundled model | swipe.futo.org English test split, all 49,970 swipes, `KeyVoxTypingHarness` at 75a6339a, words before included | 92.56% |
 | FUTO Swipe, encoder only | swipe.futo.org English test split, paper's Table 3 | 92.54% |
 | FUTO Swipe, encoder plus decoder | swipe.futo.org English test split, paper's Table 3 | 93.30% |
 | FUTO Swipe (FUTO Keyboard v0.1.29) | "our public test set (filtered to first 20k non-single-letter swipes) in-emulator" | 92.62% |
