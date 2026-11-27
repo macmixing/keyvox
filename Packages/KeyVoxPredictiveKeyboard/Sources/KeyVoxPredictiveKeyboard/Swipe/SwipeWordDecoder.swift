@@ -170,7 +170,7 @@ final class SwipeWordDecoder: @unchecked Sendable {
             rankingSamePaths(&candidates, usesContext: usesContext, doublingKeys: doublingKeys, twinFacts: twinFacts)
         }
         if let landingLosses {
-            rankingFirstKeys(&candidates, landingLosses: landingLosses)
+            rankingFirstKeys(&candidates, landingLosses: landingLosses, usesContext: usesContext)
         }
         return candidates.sorted { $0.score > $1.score }
     }
@@ -217,10 +217,15 @@ final class SwipeWordDecoder: @unchecked Sendable {
     /// Reorders the words of each set whose key paths differ only in their first key, by where the
     /// swipe landed (`SwipeLandingKey`): the first takes the best of the set's words' best scores,
     /// the next the next best, and so on, in the order of each word's best score less what the
-    /// landing costs its first key, each word's spellings moving with it. The scores the set holds
-    /// stay the same, so every ranking outside it stays as scored; words on one key path lose the
-    /// same, so they keep the order `rankingSamePaths` gave them.
-    private func rankingFirstKeys(_ candidates: inout [SwipeCandidate], landingLosses: [Double]) {
+    /// landing costs its first key, a natural log taken from the score as it is, each word's
+    /// spellings moving with it. When words come before, the context counts
+    /// `firstKeyContextWeight` rather than `contextWeight` in that order, as the landing and the
+    /// words before are all that tell such words apart: each first key's words are weighed by the
+    /// context of the best of them. The scores the set holds stay the same, so every ranking
+    /// outside it stays as scored; words on one key path lose the same, so they keep the order
+    /// `rankingSamePaths` gave them.
+    private func rankingFirstKeys(_ candidates: inout [SwipeCandidate], landingLosses: [Double], usesContext: Bool) {
+        let extraWeight = usesContext ? settings.scoring.firstKeyContextWeight - settings.scoring.contextWeight : 0
         let words = Dictionary(grouping: candidates.indices) { SwipeLetterForm.form(of: candidates[$0].spelling) }
         var sets: [ArraySlice<Int>: [(word: String, firstKey: Int)]] = [:]
         for word in words.keys {
@@ -228,8 +233,19 @@ final class SwipeWordDecoder: @unchecked Sendable {
             sets[path.dropFirst(), default: []].append((word, path[0]))
         }
         for set in sets.values where Set(set.map(\.firstKey)).count > 1 {
+            // Each first key's best word, by whose context every word on that key is weighed, so
+            // words on one key path lose the same.
+            var leaders: [Int: SwipeCandidate] = [:]
+            for member in set {
+                let best = words[member.word]!.map { candidates[$0] }.max { $0.score < $1.score }!
+                if best.score > (leaders[member.firstKey]?.score ?? -.infinity) { leaders[member.firstKey] = best }
+            }
             let entries = set.map { member in
-                (word: member.word, best: words[member.word]!.map { candidates[$0].score }.max()!, loss: landingLosses[member.firstKey])
+                (
+                    word: member.word,
+                    best: words[member.word]!.map { candidates[$0].score }.max()!,
+                    loss: landingLosses[member.firstKey] - extraWeight * leaders[member.firstKey]!.contextLift
+                )
             }
             let places = entries.map(\.best).sorted(by: >)
             let order = entries.sorted {

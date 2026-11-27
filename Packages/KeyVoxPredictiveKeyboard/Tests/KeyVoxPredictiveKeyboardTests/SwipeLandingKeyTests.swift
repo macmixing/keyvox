@@ -6,8 +6,8 @@ import CoreGraphics
 
 /// A swipe drawn from one key's center to another's gives a word on those two keys, even when a
 /// likelier word starts on the key beside the first: the pairs are found from the bundled swipe
-/// lexicon itself. The landing says nothing when the swipe is loose about either end or lands
-/// between the two first keys (`SwipeLandingKey`).
+/// lexicon itself. The landing favors the key it is nearer, by nothing halfway between two keys,
+/// wherever the swipe lifts (`SwipeLandingKey`).
 final class SwipeLandingKeyTests: XCTestCase {
     private let keys = KeyCenterMap(geometry: TypingLanguage.english.letterLayout.defaultGeometry)
 
@@ -104,26 +104,116 @@ final class SwipeLandingKeyTests: XCTestCase {
     func testALandingAtAKeysCenterCostsOnlyWordsStartingOnOtherKeys() throws {
         let (settings, row) = try topRow()
         let losses = try XCTUnwrap(losses(from: row[1].center, to: row[4].center, settings: settings))
-        XCTAssertLessThan(losses[row[1].key], 0.05 * settings.weight)
-        XCTAssertGreaterThan(losses[row[0].key], 0.9 * settings.weight)
-        XCTAssertGreaterThan(losses[row[2].key], 0.9 * settings.weight)
+        XCTAssertEqual(losses[row[1].key], 0, accuracy: 1e-9)
+        XCTAssertGreaterThan(losses[row[0].key], 0)
+        XCTAssertEqual(losses[row[0].key], losses[row[2].key], accuracy: 1e-9)
     }
 
-    func testALandingTowardTheKeyBesideLeavesTheTwoKeysWordsToTheirScores() throws {
+    func testALandingTowardTheKeyBesideStillFavorsTheKeyLandedOn() throws {
         let (settings, row) = try topRow()
-        let toward = CGPoint(x: row[1].center.x + 0.3 * (row[2].center.x - row[1].center.x), y: row[1].center.y)
-        let losses = try XCTUnwrap(losses(from: toward, to: row[4].center, settings: settings))
-        XCTAssertLessThan(abs(losses[row[2].key] - losses[row[1].key]), 0.05 * settings.weight)
-        XCTAssertGreaterThan(losses[row[0].key], 0.5 * settings.weight, "the key on the other side is left behind")
+        for share in [0.1, 0.2, 0.3, 0.4] {
+            let toward = CGPoint(x: row[1].center.x + share * (row[2].center.x - row[1].center.x), y: row[1].center.y)
+            let losses = try XCTUnwrap(losses(from: toward, to: row[4].center, settings: settings))
+            XCTAssertLessThan(losses[row[1].key], losses[row[2].key])
+            XCTAssertLessThan(losses[row[2].key], losses[row[0].key], "the key on the other side is left behind")
+        }
     }
 
-    func testASwipeLooseAboutWhereItLiftsOrLandsCostsNothing() throws {
+    func testALandingHalfwayBetweenTwoKeysFavorsNeither() throws {
+        let (settings, row) = try topRow()
+        let halfway = CGPoint(x: (row[1].center.x + row[2].center.x) / 2, y: row[1].center.y)
+        let losses = try XCTUnwrap(losses(from: halfway, to: row[4].center, settings: settings))
+        XCTAssertEqual(losses[row[1].key], losses[row[2].key], accuracy: 1e-9)
+    }
+
+    func testWhereASwipeLiftsLeavesWhatItsLandingCostsAsItIs() throws {
         let (settings, row) = try topRow()
         let between = CGPoint(x: (row[4].center.x + row[5].center.x) / 2, y: row[4].center.y + keys.pitch.height / 2)
-        for (from, to) in [(row[1].center, between), (between, row[1].center)] {
-            let losses = try XCTUnwrap(losses(from: from, to: to, settings: settings))
-            XCTAssertLessThan(losses.max() ?? .infinity, 0.05 * settings.weight)
+        XCTAssertEqual(
+            try losses(from: row[1].center, to: row[4].center, settings: settings),
+            try losses(from: row[1].center, to: between, settings: settings)
+        )
+    }
+
+    /// A landing far from a key is a stray whichever far key it is counted against, so no key
+    /// far away loses much more than another.
+    func testAFarLandingCostsFarKeysAboutTheSame() throws {
+        let (settings, row) = try topRow()
+        let losses = try XCTUnwrap(losses(from: row[0].center, to: row[1].center, settings: settings))
+        XCTAssertGreaterThan(losses[row[4].key], losses[row[1].key])
+        XCTAssertLessThan(losses[row[row.count - 1].key] - losses[row[4].key], 0.05 * losses[row[1].key])
+    }
+
+    /// Swipes shaped as people draw them: on swipe.futo.org a rare word's swipes land a median
+    /// 0.09 key pitches off their first key's center toward the commoner neighbor's key and lift
+    /// 0.31 off their last key's. Landing and lifting that far off, bowed on the way, a swipe
+    /// puts the word on its own two keys ahead of the likelier word a key over for most such
+    /// pairs, and for none does the landing rank it lower than the swipe alone does.
+    func testASwipeLandingAndLiftingOffCenterStillGivesAWordOnItsKeys() throws {
+        let decoder = try SwipeWordDecoder(language: .english)
+        let engine = try PredictiveEngine(language: .english)
+        let settings = decoder.settings
+        let keyIndex = settings.keyIndex
+        func keyPath(of spelling: String) -> [Int]? {
+            SwipeLetterForm.keyPath(of: SwipeLetterForm.form(of: spelling), keyIndex: keyIndex, keepsDoubleLetters: settings.keepsDoubleLetters)
         }
+        var likeliest: [[Int]: Int] = [:]
+        for word in try engine.dictionaryWords() where word.isOfferable {
+            guard let path = keyPath(of: word.spelling), path.count == 2 else { continue }
+            likeliest[path] = max(likeliest[path] ?? -1, word.probability)
+        }
+        let letters = Array(settings.letters)
+        let pitch = Double(keys.pitch.width)
+        let landingMiss = 0.09
+        let liftMiss = 0.31
+        var swiped = 0
+        var won = 0
+        var wonWithoutTheLanding = 0
+        for (path, probability) in likeliest {
+            guard let first = keys.center(of: letters[path[0]]), let last = keys.center(of: letters[path[1]]) else { continue }
+            for (other, otherProbability) in likeliest where other[1] == path[1] && other[0] != path[0] && otherProbability > probability {
+                guard let beside = keys.center(of: letters[other[0]]), beside.y == first.y,
+                      abs(Double(beside.x - first.x)) <= pitch * 1.01 else { continue }
+                swiped += 1
+                let towardBeside: Double = beside.x > first.x ? 1 : -1
+                let landing = CGPoint(x: Double(first.x) + towardBeside * landingMiss * pitch, y: Double(first.y))
+                // The lift misses its key along the swipe's own line, past the key.
+                let length = hypot(Double(last.x - landing.x), Double(last.y - landing.y))
+                let lift = CGPoint(
+                    x: Double(last.x) + Double(last.x - landing.x) / length * liftMiss * pitch,
+                    y: Double(last.y) + Double(last.y - landing.y) / length * liftMiss * pitch
+                )
+                let samples = (0...12).map { step -> SwipeTouchSample in
+                    let along = Double(step) / 12
+                    let bow = sin(along * Double.pi) * 0.2 * pitch
+                    return SwipeTouchSample(
+                        location: CGPoint(
+                            x: Double(landing.x) + Double(lift.x - landing.x) * along - Double(lift.y - landing.y) / length * bow,
+                            y: Double(landing.y) + Double(lift.y - landing.y) * along + Double(lift.x - landing.x) / length * bow
+                        ),
+                        timestamp: along * 0.3
+                    )
+                }
+                let emissions = try XCTUnwrap(decoder.emissions(for: samples, keys: keys))
+                // Whether the word on the swiped keys comes before the one a key over, and its place.
+                func ranked(_ landingLosses: [Double]?) -> (wins: Bool, place: Int) {
+                    let paths = decoder.candidates(
+                        emissions: emissions, personal: nil, contextLift: nil, hasWordsBefore: false,
+                        doublingKeys: nil, landingLosses: landingLosses
+                    ).map { keyPath(of: $0.spelling) }
+                    let own = paths.firstIndex(of: path) ?? Int.max
+                    return (own < (paths.firstIndex(of: other) ?? Int.max), own)
+                }
+                let plain = ranked(nil)
+                let landed = ranked(decoder.landingLosses(path: samples, keys: keys))
+                XCTAssertLessThanOrEqual(landed.place, plain.place, "the landing ranked the word on its keys lower")
+                if plain.wins { wonWithoutTheLanding += 1 }
+                if landed.wins { won += 1 }
+            }
+        }
+        XCTAssertGreaterThan(swiped, 0)
+        XCTAssertGreaterThan(won, swiped / 2)
+        XCTAssertGreaterThan(won, wonWithoutTheLanding)
     }
 
     /// The bundled landing settings and the top letter row's keys, left to right, each with its

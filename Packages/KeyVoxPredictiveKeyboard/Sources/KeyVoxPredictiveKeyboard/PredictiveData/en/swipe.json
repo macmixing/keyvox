@@ -2,25 +2,24 @@
   "letters": "abcdefghijklmnopqrstuvwxyz",
   "keepsDoubleLetters": false,
   "pruning": {
-    "beam": 100,
+    "beam": 200,
     "gamma": 0.186,
     "beta": 1.139
   },
   "scoring": {
-    "gamma": 0.4416782860196686,
-    "frequencyWeight": 0.029198906788676683,
-    "lengthBonus": 0.9808640269387409,
-    "contextWeight": 0.425,
+    "gamma": 0.20500000000000002,
+    "frequencyWeight": 0.045,
+    "lengthBonus": 1.8692499999999999,
+    "contextWeight": 0.7,
     "samePathContextWeight": 0.8,
+    "firstKeyContextWeight": 3,
     "misspellingRatio": 50,
     "contextCandidates": 20,
     "personalWordFrequency": 143
   },
   "landing": {
-    "weight": 7,
-    "reach": 0.9,
-    "careReach": 0.38,
-    "softness": 0.04
+    "spread": 0.228,
+    "strayRate": 0.0056
   },
   "loops": {
     "sampleRate": 60,
