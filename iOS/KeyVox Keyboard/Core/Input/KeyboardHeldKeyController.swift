@@ -22,7 +22,17 @@ final class KeyboardHeldKeyController {
         case closed
     }
 
-    private static let bundledCharacters = try? HeldKeyCharacters.bundled(for: KeyboardTypingLanguage.current)
+    /// The characters the keys of the language the keyboard types in offer, read again when the
+    /// language changes.
+    private static var bundledCharacters: HeldKeyCharacters? {
+        let language = KeyboardTypingLanguage.current
+        if latestCharacters?.language != language.identifier {
+            latestCharacters = (language.identifier, try? HeldKeyCharacters.bundled(for: language))
+        }
+        return latestCharacters?.characters
+    }
+
+    private static var latestCharacters: (language: String, characters: HeldKeyCharacters?)?
 
     private let holdDuration: TimeInterval
     private var openingTimer: Timer?

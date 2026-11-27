@@ -245,6 +245,7 @@ extension KeyboardViewController {
             guard let self else { return }
             KeyboardTypingMemory.shared.adoptResetIfNeeded()
             self.preparePresentationIfNeeded()
+            self.adoptTypingLanguageSettings()
             self.installedModels = KeyboardInstalledModels.check()
             self.configurePrimaryViewHeight()
             self.syncCapsLockState()

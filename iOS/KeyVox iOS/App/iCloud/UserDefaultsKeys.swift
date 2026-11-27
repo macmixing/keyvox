@@ -23,6 +23,8 @@ nonisolated enum UserDefaultsKeys {
     static let keyboardTypingLanguages = "KeyVox.KeyboardTypingLanguages"
     /// The letter layout the user chose for each typing language, by language identifier.
     static let keyboardLetterLayouts = "KeyVox.KeyboardLetterLayouts"
+    /// The typing language the keyboard last typed in, by identifier, written by the keyboard.
+    static let keyboardActiveTypingLanguage = "KeyVox.KeyboardActiveTypingLanguage"
     /// How many times the user reset what the keyboard learned from their typing.
     static let keyboardTypingMemoryResetGeneration = "KeyVox.KeyboardTypingMemoryResetGeneration"
     /// The emoji the keyboard's Frequently Used section ranks, as the user used them.

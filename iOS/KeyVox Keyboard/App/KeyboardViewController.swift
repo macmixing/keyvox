@@ -322,6 +322,7 @@ final class KeyboardViewController: UIInputViewController {
         awaitsFieldState = true
         predictionCoordinator.leaveField()
         preparePresentationIfNeeded()
+        adoptTypingLanguageSettings()
         installedModels = KeyboardInstalledModels.check()
         KeyVoxIPCBridge.reportKeyboardOnboardingState(hasFullAccess: hasFullAccess)
         configureDictationBehavior()

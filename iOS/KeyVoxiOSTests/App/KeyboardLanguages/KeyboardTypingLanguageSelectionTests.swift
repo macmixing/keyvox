@@ -50,6 +50,19 @@ struct KeyboardTypingLanguageSelectionTests {
         #expect(fallback(nil) == ["en"])
     }
 
+    @Test func typesInTheLastLanguageUsedWhileItIsSelectedElseTheFirstSelected() {
+        let selection = KeyboardTypingLanguageSelection(
+            savedLanguages: ["fr", "en"],
+            savedLetterLayouts: [:],
+            catalog: catalog,
+            fallbackLanguage: "en"
+        )
+
+        #expect(selection.activeLanguage(lastUsed: "en")?.identifier == "en")
+        #expect(selection.activeLanguage(lastUsed: "fr-CA")?.identifier == "fr")
+        #expect(selection.activeLanguage(lastUsed: nil)?.identifier == "fr")
+    }
+
     @Test func selectsNothingWhenNothingIsBundled() {
         let selection = KeyboardTypingLanguageSelection(
             savedLanguages: ["en"],

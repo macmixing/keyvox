@@ -132,6 +132,14 @@ final class KeyboardKeyGridView: UIView {
         showPage()
     }
 
+    /// Shows the letter keys in the layout the keyboard types in now, building its page the first
+    /// time, and reports the letter key frames again, since a new language's suggestions start
+    /// without them even when its layout is the same.
+    func showCurrentLetterLayout() {
+        lastReportedCharacterGeometry = []
+        showPage()
+    }
+
     func setReturnKeyEnabled(_ enabled: Bool) {
         guard enabled != isReturnKeyEnabled else { return }
         isReturnKeyEnabled = enabled
@@ -362,7 +370,8 @@ final class KeyboardKeyGridView: UIView {
             isEmojiSearch: isEmojiSearch,
             showsEmojiKey: showsEmojiKey,
             showsNextKeyboardKey: showsNextKeyboardKey,
-            fieldKeys: fieldKeys
+            fieldKeys: fieldKeys,
+            letterLayout: KeyboardLetterRows.current.layoutIdentifier
         )
         let page = pages[layout] ?? makePage(for: layout)
         if page !== currentPage {

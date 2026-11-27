@@ -28,16 +28,30 @@ struct KeyboardLetterRows {
         }
     }
 
-    /// The rows of the language the keyboard types in.
-    static let current = KeyboardLetterRows(layout: KeyboardTypingLanguage.current.letterLayout)
+    /// The rows of the layout the keyboard types in now (`KeyboardTypingLanguage.current`). Use from
+    /// the main thread.
+    static var current: KeyboardLetterRows {
+        let layout = KeyboardTypingLanguage.current.letterLayout
+        if let latest, latest.layoutIdentifier == layout.identifier {
+            return latest
+        }
+        let rows = KeyboardLetterRows(layout: layout)
+        latest = rows
+        return rows
+    }
+
+    private static var latest: KeyboardLetterRows?
 
     let rows: [Row]
     /// How wide every row is.
     let width: CGFloat
+    /// The name of the layout the rows are drawn from.
+    let layoutIdentifier: String
 
     init(layout: LetterKeyLayout) {
         rows = layout.rows.map { Self.row($0, shiftAndDeleteFillPadding: layout.shiftAndDeleteFillPadding) }
         width = CGFloat(layout.width)
+        layoutIdentifier = layout.identifier
     }
 
     private static func row(_ row: LetterKeyRow, shiftAndDeleteFillPadding: Bool) -> Row {

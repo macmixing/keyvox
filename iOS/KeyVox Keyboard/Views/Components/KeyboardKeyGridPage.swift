@@ -1,8 +1,9 @@
 import UIKit
 
 /// One page of the key grid: the letter, number, or symbol keys in one keys mode, or the number
-/// pad, with the emoji search's bottom row or the focused field's, with or without the globe, built
-/// once and kept, so switching pages shows a page that already exists instead of building it again.
+/// pad, with the emoji search's bottom row or the focused field's, with or without the globe, and
+/// for the letter page the letter layout it draws, built once and kept, so switching pages or back
+/// to a layout shows a page that already exists instead of building it again.
 final class KeyboardKeyGridPage {
     struct Layout: Hashable {
         let symbolPage: KeyboardSymbolPage
@@ -11,6 +12,8 @@ final class KeyboardKeyGridPage {
         let showsEmojiKey: Bool
         let showsNextKeyboardKey: Bool
         let fieldKeys: KeyboardFieldKeys
+        /// The letter layout the letter page draws (`KeyboardLetterRows.current`).
+        let letterLayout: String
     }
 
     /// The page's rows, stacked top to bottom.

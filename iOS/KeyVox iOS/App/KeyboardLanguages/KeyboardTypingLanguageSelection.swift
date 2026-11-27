@@ -5,7 +5,8 @@ import KeyVoxTypingLanguageCatalog
 /// each with its letter layout: what the user saved in the KeyVox app, kept to the languages the
 /// keyboard bundles. Nothing saved, or nothing saved the keyboard still bundles, gives the bundled
 /// language the app was written in, or the first bundled language when it lacks that one. A saved
-/// layout the language does not offer gives the language's default layout.
+/// layout the language does not offer gives the language's default layout. Shared by the KeyVox app
+/// and the keyboard extension.
 nonisolated struct KeyboardTypingLanguageSelection: Equatable {
     /// One selected language.
     struct Language: Equatable {
@@ -53,6 +54,12 @@ nonisolated struct KeyboardTypingLanguageSelection: Equatable {
     /// The identifiers of the selected languages, in space-bar order.
     var identifiers: [String] {
         languages.map(\.identifier)
+    }
+
+    /// The language the keyboard types in: `lastUsed` while it is still selected, else the first
+    /// selected language.
+    func activeLanguage(lastUsed: String?) -> Language? {
+        languages.first { $0.identifier == lastUsed } ?? languages.first
     }
 
     private static func fallback(_ identifier: String?, in catalog: TypingLanguageCatalog) -> TypingLanguageLetterLayouts? {
