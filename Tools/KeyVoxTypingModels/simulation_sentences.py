@@ -3,7 +3,9 @@
 For English: one in ten of the Tatoeba sentences and OASST1 message fragments the counts are made
 from, read and split as `write_feature_context_model.py` reads them, and never a sentence ITE
 typists copied. For another language: one in `simulation_share` of the sentences of its language
-build's `simulation_sources` (`typing_languages.py`), the sources written with care.
+build's `simulation_sources` (`typing_languages.py`), the sources written with care, whose every
+word is one as the language's words are read (`TypingLanguage.valid_word`), so none is longer
+than LatinIME's longest word.
 
 The counts the rankers train with leave out the sentences ITE typists copied, so a typed word's
 context is as new to them as it is to the keyboard. Trained on simulated typing, they leave out
@@ -49,7 +51,8 @@ def simulation_sentences(paths, language):
         for tokens in language_build.sentences(paths, source):
             joined = " ".join(tokens)
             if (FEWEST_WORDS <= len(tokens) <= MOST_WORDS and joined not in seen
-                    and is_simulation_sentence(joined, language.simulation_share)):
+                    and is_simulation_sentence(joined, language.simulation_share)
+                    and all(language.valid_word(token) for token in tokens)):
                 seen.add(joined)
                 yield tokens
 

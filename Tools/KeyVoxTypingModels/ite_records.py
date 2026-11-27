@@ -9,7 +9,7 @@ import hashlib
 import re
 
 from sources import ite_path
-from words import WORD, clean, damerau_osa, edit_distance, valid_word
+from words import WORD, clean, damerau_osa, edit_distance, normalized, valid_word
 
 # Words people type on purpose that no dictionary spells this way; they must be left alone.
 EXPRESSIVE = """
@@ -27,6 +27,7 @@ nah nahh wanna gonna gotta kinda sorta lemme gimme dunno bc cuz cos tho thx pls
 
 
 def read_records(path, harm=False):
+    """The records of a file `split_ite_events.py` or `write_simulated_records.py` wrote."""
     records = []
     with path.open(encoding="utf-8") as source:
         for line in source:
@@ -36,9 +37,9 @@ def read_records(path, harm=False):
             previous = fields[3:-1] if harm else fields[3:6]
             records.append({
                 "participant": fields[0],
-                "typed": clean(fields[1]),
-                "expected": clean(fields[2]),
-                "previous": [clean(word) for word in previous[:3]],
+                "typed": normalized(fields[1]),
+                "expected": normalized(fields[2]),
+                "previous": [normalized(word) for word in previous[:3]],
             })
     return records
 

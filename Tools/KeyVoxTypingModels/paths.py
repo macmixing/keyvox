@@ -115,6 +115,16 @@ class DataPaths:
     def simulated_records(self, name: str) -> Path:
         return self.simulation / f"{name}.tsv"
 
+    # How many words each bucket's simulation sentences were typed with.
+    @property
+    def simulated_typed_words(self) -> Path:
+        return self.simulation / "typed_words.json"
+
+    # How often each letter without a key is typed plain (measure_accent_typing.py).
+    @property
+    def accent_typing(self) -> Path:
+        return self.simulation / "accent_typing.json"
+
     # Trained models before export.
     @property
     def correction_ranker_model(self) -> Path:
