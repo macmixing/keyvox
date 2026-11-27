@@ -103,10 +103,13 @@ Tools/Pronunciation/benchmarks/run_quality_gates.sh --repo-root "$(pwd)"
 
 Builds the English dictionary, correction and completion rankers, autocorrect decision model,
 and accent overlay the predictive keyboard bundles, from pinned public sources, and trains the
-rankers on simulated typing mistakes measured from ITE. See `Tools/KeyVoxTypingModels/README.md`.
+rankers on simulated typing mistakes measured from ITE. With `--language`, builds the same files
+for German, Spanish, or French from `KeyVoxLanguageModel`'s build of the language, with rankers
+trained on simulated typing. See `Tools/KeyVoxTypingModels/README.md`.
 
 ```bash
 PYTHON=<data-dir>/venv/bin/python Tools/KeyVoxTypingModels/build_typing_models.sh <data-dir>
+PYTHON=<venv>/bin/python Tools/KeyVoxTypingModels/build_typing_models.sh <data-dir> --language de --language-file <language.json>
 ```
 
 ## Update Feed
