@@ -4,9 +4,7 @@ import KeyVoxPredictiveKeyboard
 import Testing
 @testable import KeyVox_iOS
 
-/// Spacing around swiped words, as measured on the system keyboard
-/// (`~/KeyVoxLanguageData/swipe/apple-swipe-spacing/` and `apple-letter-after-swipe/`): a swiped
-/// word goes in with no space after it, one space tapped after it is a plain space, and a word
+/// Spacing around swiped words, as measured on the system keyboard: a swiped word goes in with no space after it, one space tapped after it is a plain space, and a word
 /// swiped or a letter tapped right after it goes in after a space.
 @MainActor
 struct KeyboardSwipeSpacingTests {
