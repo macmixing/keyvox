@@ -89,6 +89,8 @@ struct KeyboardTypingMemoryLanguageTests {
         defer { try? FileManager.default.removeItem(at: folder) }
         let defaults = makeDefaults()
         defaults.set(2, forKey: UserDefaultsKeys.keyboardTypingMemoryResetGeneration)
+        // A reset after the test keeps the save it leaves waiting from writing into the removed folder.
+        defer { defaults.set(3, forKey: UserDefaultsKeys.keyboardTypingMemoryResetGeneration) }
         let language = "a\(UUID().uuidString)"
         let otherLanguage = "b\(UUID().uuidString)"
         try Self.storedFile.write(to: KeyboardTypingMemoryLocation.fileURL(forLanguage: language, besideOriginal: original))
