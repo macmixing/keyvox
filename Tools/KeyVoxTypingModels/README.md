@@ -5,7 +5,7 @@ Builds the typing models the predictive keyboard bundles for its English typing 
 
 | Bundled file | What it is | Built by |
 | --- | --- | --- |
-| `dictionary/` | LatinIME version 403 dictionary, in `dictionary.header` and `dictionary.body`: 106,973 words with probabilities, 93,385 word pairs, and 60,000 three-word sequences | `write_dictionary_inputs.py`, `write_latinime_dictionary.cpp` |
+| `dictionary/` | LatinIME version 403 dictionary, in `dictionary.header` and `dictionary.body`: 106,938 words with probabilities, 93,372 word pairs, and 60,000 three-word sequences, without the words `offensive_words.py` matches | `write_dictionary_inputs.py`, `write_latinime_dictionary.cpp` |
 | `correction_ranker.kvtr` | 220 gradient-boosted trees that score each correction candidate | `train_correction_models.py`, `export_tree_models.py` |
 | `autocorrect_decision.kvtr` | 160 trees that score whether to replace the typed letters with the best correction | `train_correction_models.py`, `export_tree_models.py` |
 | `completion_ranker.kvtr` | 220 trees that score each candidate while a word is still being typed | `train_completion_ranker.py`, `export_tree_models.py` |
@@ -26,6 +26,7 @@ Every input is pinned to a revision or a recorded SHA-256 in `sources.py` or
 | [OpenAssistant OASST1](https://huggingface.co/datasets/OpenAssistant/oasst1) | Word, word-pair, and three-word counts | Revision `fdf72ae0827c1cda404aff25b6603abec9e3399b` | Apache 2.0 |
 | [Aalto ITE Typing dataset](https://doi.org/10.5281/zenodo.12528163) | The typing events the rankers learn from, and the sentences left out of the counts | Zenodo record 12528163; five files are read from the archive by byte range | CC BY 4.0 |
 | [AOSP LatinIME](https://android.googlesource.com/platform/packages/inputmethods/LatinIME/) | Writing and reading the dictionary | The native sources bundled in `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveNative/latinime`, compiled unchanged | Apache 2.0 |
+| [Profanity List](https://github.com/dsojevic/profanity-list) | The words the dictionary and the swipe vocabulary leave out: its English terms tagged racial or anti-LGBTQ, or religious at strong severity or above (`offensive_words.py`) | Commit `c27924319aa9bd6f917e3782b4f4b6604a50b652` | MIT |
 
 Tatoeba publishes only its current export, which changes every week. `rewind_tatoeba.py` turns
 it back into the export of the cutoff `sources.py` pins: every sentence the contribution log
@@ -93,7 +94,8 @@ July caches did.
 | `build_native_tools.sh` | `bin/write_latinime_dictionary`, `bin/latinime_suggestions` |
 | `rewind_tatoeba.py` | `sources/tatoeba/eng_sentences_at_cutoff.tsv.bz2`, checked against its recorded SHA-256 |
 | `scowl_word_list.sh` | `work/scowl-*.txt` |
-| `write_dictionary_inputs.py`, then `bin/write_latinime_dictionary` | `work/dictionary_*.tsv`, `built/dictionary/` |
+| `offensive_words.py` | `work/offensive_words.txt`: a pattern a line of the words the dictionary leaves out |
+| `write_dictionary_inputs.py`, then `bin/write_latinime_dictionary` | `work/dictionary_unigrams.tsv` and `work/dictionary_ngrams.tsv`, every word and sequence counted, which the later steps and `Tools/KeyVoxLanguageModel` read, and `work/counted_dictionary/`, compiled from them, which the caches ask with `--as-bundled`; `work/dictionary_kept_*.tsv`, the same less the words `offensive_words.txt` matches and every sequence holding one, and `built/dictionary/`, compiled from those |
 | `split_ite_events.py` | `work/ite/`: autocorrections, words left alone, and accepted predictions, split by typist |
 | `write_feature_context_model.py` | `work/feature_context_800k.bin`: the word and word-pair counts the rankers train with |
 | `cache_correction_candidates.py`, `cache_completion_candidates.py` | `work/*_candidates.pkl.gz`: LatinIME's candidates; with `--as-bundled`, as the build runs them, for the queries the bundled rankers learned from (`bundled_queries.py`), otherwise for every record `training_sets.py` gives the trainers |

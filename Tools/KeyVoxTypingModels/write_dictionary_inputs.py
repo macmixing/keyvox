@@ -3,7 +3,13 @@
 Every SCOWL size-60 American word is in the dictionary, with a probability from how often
 Tatoeba and OASST1 use it. Word pairs and three-word sequences seen at least twice keep the
 three likeliest next words of each context, for the most frequent contexts, up to 160,000
-pairs and 60,000 sequences. Sentences ITE typists copied are left out of the counts."""
+pairs and 60,000 sequences. Sentences ITE typists copied are left out of the counts.
+
+`dictionary_unigrams.tsv` and `dictionary_ngrams.tsv` hold every word and sequence so chosen,
+for the steps that read the dictionary's words. The dictionary is compiled from
+`dictionary_kept_unigrams.tsv` and `dictionary_kept_ngrams.tsv`: the same, less the words
+`offensive_words.py` matches and every word pair and three-word sequence holding one, so every
+other entry is as it would be with them."""
 
 import argparse
 import heapq
@@ -12,6 +18,7 @@ import re
 from collections import Counter, defaultdict
 from pathlib import Path
 
+from offensive_words import letter_form, read_matcher
 from paths import DataPaths
 from sources import ite_path, oasst1_path, tatoeba_path
 from text_sources import OASST1_WEIGHT, ite_sentences, oasst1_messages, tatoeba_sentences
@@ -121,17 +128,24 @@ def main():
     selected_bigrams = select_context_top_ngrams(bigrams, bigram_contexts, 2, MAXIMUM_BIGRAMS)
     selected_trigrams = select_context_top_ngrams(trigrams, trigram_contexts, 2, MAXIMUM_TRIGRAMS)
 
-    paths.work.mkdir(parents=True, exist_ok=True)
-    with paths.dictionary_unigrams.open("w", encoding="utf-8") as target:
-        for word, probability, _ in ranked_unigrams:
-            target.write(f"{word}\t{probability}\n")
-    with paths.dictionary_ngrams.open("w", encoding="utf-8") as target:
-        for (previous, word), probability, _ in selected_bigrams:
-            target.write(f"{word}\t{probability}\t{previous}\n")
-        for (older, previous, word), probability, _ in selected_trigrams:
-            target.write(f"{word}\t{probability}\t{previous}\t{older}\n")
+    offensive = read_matcher(paths.offensive_words)
 
-    print(f"vocabulary={len(vocabulary)} sentence_weight={totals['sentences']} "
+    def is_kept(words):
+        return not any(offensive.fullmatch(letter_form(word)) for word in words)
+
+    unigram_lines = [((word,), f"{word}\t{probability}\n") for word, probability, _ in ranked_unigrams]
+    ngram_lines = [((previous, word), f"{word}\t{probability}\t{previous}\n")
+                   for (previous, word), probability, _ in selected_bigrams]
+    ngram_lines += [((older, previous, word), f"{word}\t{probability}\t{previous}\t{older}\n")
+                    for (older, previous, word), probability, _ in selected_trigrams]
+    paths.work.mkdir(parents=True, exist_ok=True)
+    for lines, every, kept in ((unigram_lines, paths.dictionary_unigrams, paths.dictionary_kept_unigrams),
+                               (ngram_lines, paths.dictionary_ngrams, paths.dictionary_kept_ngrams)):
+        every.write_text("".join(line for _, line in lines), encoding="utf-8")
+        kept.write_text("".join(line for words, line in lines if is_kept(words)), encoding="utf-8")
+    left_out = sum(1 for words, _ in unigram_lines if not is_kept(words))
+
+    print(f"vocabulary={len(vocabulary)} left_out={left_out} sentence_weight={totals['sentences']} "
           f"token_weight={totals['tokens']} observed_unigrams={len(unigrams)} "
           f"observed_bigrams={len(bigrams)} observed_trigrams={len(trigrams)} "
           f"bigrams={len(selected_bigrams)} trigrams={len(selected_trigrams)}")
