@@ -12,7 +12,7 @@ the package once the language ships there.
 
 import json
 import sys
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 
 from normalize import DEFAULT_RULES, TextRules
@@ -102,6 +102,21 @@ class Language:
     measured_spellings: Path | None = None
     # A swipe dataset whose swiped words the swipe vocabulary adds (count_swiped_words.py).
     swiped_words: Source | None = None
+
+    def __post_init__(self) -> None:
+        # The keyboard's own reading of the language's text, from its language.json in the package:
+        # its closing single mark, which its apostrophe key types after a letter, as an apostrophe
+        # when it is none already, and `ordinalPeriods`. Before the language ships there, neither.
+        path = PREDICTIVE_DATA / self.identifier / "language.json"
+        if not path.exists():
+            return
+        manifest = json.loads(path.read_text(encoding="utf-8"))
+        closing_single = manifest["quotationMarks"]["closingSingle"]
+        object.__setattr__(self, "text_rules", replace(
+            self.text_rules,
+            apostrophes="" if closing_single in ("'", "’") else closing_single,
+            ordinal_periods=manifest.get("ordinalPeriods", False),
+        ))
 
     def source(self, name: str) -> Source:
         return next(use.source for use in self.sources if use.source.name == name)

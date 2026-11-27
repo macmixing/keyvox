@@ -209,6 +209,15 @@ quotation can begin. Sentences end only at the shared ending marks and line brea
 "¡" are not word characters and neither end nor start a sentence, so a question after a comma stays
 in its sentence, and one after a period already starts its own.
 
+Two rules come from the language's `language.json` in the package, as the keyboard reads them
+(`TypingTextRules`), and `Language` fills them in from it (`languages.py`): the language's closing
+single quotation mark is its keyboard's apostrophe after a letter, so where that is no apostrophe
+already it is read as one between two letters (German "geht‘s" is "geht's", as Apple's German
+keyboard types it); and with `ordinalPeriods`, a period right after a digit writes an ordinal
+number and ends no sentence ("Am 3. Juli" is one sentence), as on the keyboard. German has both;
+English, Spanish, and French have neither, so their text is read as before.
+`python -m unittest test_normalize` checks both rules and that English is unchanged.
+
 ## Vocabulary
 
 `write_vocabulary.py` writes a language's vocabulary, its words with their capitals, one per line:
