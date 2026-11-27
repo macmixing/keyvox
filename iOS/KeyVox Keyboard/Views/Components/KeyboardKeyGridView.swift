@@ -423,7 +423,7 @@ final class KeyboardKeyGridView: UIView {
             showsEmojiKey: showsEmojiKey,
             showsNextKeyboardKey: showsNextKeyboardKey,
             fieldKeys: fieldKeys,
-            letterLayout: KeyboardLetterRows.current.layoutIdentifier
+            letterLayout: symbolPage == .letters ? KeyboardLetterRows.current.layoutIdentifier : nil
         )
         let page = pages[layout] ?? makePage(for: layout)
         if page !== currentPage {
