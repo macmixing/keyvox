@@ -515,9 +515,32 @@ such as Spanish "esta" for "está":
 
 These are the trainers' measures: the keyboard corrects with `NoisyChannelCorrector`, which reads
 the rankers' choice of candidates but not the action model's probability (see "What the harness can
-tell apart"), and `Tools/KeyVoxTypingHarness` scores English only. They show the rankers learn the
-language, ranking the intended word first more often than LatinIME alone does, and give a baseline
-to hold later builds to.
+tell apart"). They show the rankers learn the language, ranking the intended word first more often
+than LatinIME alone does, and give a baseline to hold later builds to.
+
+`Tools/KeyVoxTypingHarness` scored the bundled Spanish files through the keyboard's engine with the
+sentence counts and noise English is scored with, typed from the Spanish simulation sentences of the held-out buckets
+8-9 (35,575 sentences, which the dictionary and the rankers leave out), beside the bundled English
+files' scores ("Results"). The sentences are written as the language build writes them, lowercase
+without punctuation; noise is the touch spread in key pitches.
+
+| Measure | Plan | es | en |
+| --- | --- | --- | --- |
+| Final words correct | 80 sentences, noise 0.3 (`compare`) | 92.1% (704/764) | 96.1% (909/946) |
+| Final words correct | 400 sentences, noise 0.25 (`evaluate`) | 97.5% | 98.7% |
+| Mistyped words fixed | 400 | 91.8% (805/877) | 94.7% (1,165/1,230) |
+| Mistyped words changed to a different word | 400 | 3.9% (34) | 1.3% (16) |
+| Correctly typed words wrongly changed | 400 | 0.7% (18/2,718) | 0.0% (0/3,760) |
+| Completion offered within 2 letters | 400 | 52.8% | 50.5% |
+| Completion keystroke savings | 400 | 40.0% | 39.9% |
+| Suggestion bar shows the word within 3 letters | 400 | 73.9% | 85.3% |
+| Next word first / in top 3 | 400 | 13.5% / 24.0% | 9.0% / 21.3% |
+
+Of the 18 Spanish words typed right and changed, 16 are words the dictionary lacks: Spanish forms
+its vocabulary does not list ("engordas", "simplicidades", "indices") and words of chat turns in
+English or code ("defeat", "soju", "tci"). The other 2 are dictionary words changed to another:
+"sueño" to "suelo" and "levantaras" to "levantarás". In the 80-sentence plan, 6 sentences come out
+with a line break inside a word, where a tap landed on return.
 
 The German vocabulary lacks most words that begin with "ä", "ö", or "ü", as the AOSP German word
 list it is built from does: "überhaupt" (52,006 times in the German build's counts), "ändern",
