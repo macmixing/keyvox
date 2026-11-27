@@ -309,7 +309,15 @@ Attribution: Based on the swipe.futo.org dataset collected by FUTO.
 
 Copyright (c) 2025 FUTO
 
-### MIT License (applies to `whisper.cpp`, OpenAI Whisper, `llama.cpp`, Hex, and swipe.futo.org above)
+### Profanity List (build-time word filter)
+- Source: <https://github.com/dsojevic/profanity-list> (revision `c27924319aa9bd6f917e3782b4f4b6604a50b652`)
+- License: MIT
+- License URL: <https://github.com/dsojevic/profanity-list/blob/c27924319aa9bd6f917e3782b4f4b6604a50b652/LICENSE>
+- Note: The predictive keyboard's English dictionary and swipe vocabulary leave out the words that the list's English terms tagged racial or anti-LGBTQ, or religious at strong severity or above, match (`Tools/KeyVoxTypingModels/offensive_words.py`); none of its files are copied into them.
+
+Copyright (c) 2021 David Sojevic
+
+### MIT License (applies to `whisper.cpp`, OpenAI Whisper, `llama.cpp`, Hex, swipe.futo.org, and the Profanity List above)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
