@@ -8868,7 +8868,7 @@
       }
     },
     "No languages found" : {
-      "comment" : "Empty state on the dictation language picker screen when the search matches nothing.",
+      "comment" : "Empty state on a language list screen when the search matches nothing.",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10769,7 +10769,7 @@
       }
     },
     "Search languages" : {
-      "comment" : "Placeholder for the search field on the dictation language picker screen.",
+      "comment" : "Placeholder for the search field on a language list screen.",
       "localizations" : {
         "de" : {
           "stringUnit" : {
