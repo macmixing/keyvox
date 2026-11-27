@@ -7,6 +7,14 @@ joint swipe-and-keyboard augmentation (geometry only: a reversed swipe would nee
 negatives). The validation split is decoded before training and after every epoch, and
 the weights with the best validation top-1 are kept as `best.pt`.
 
+With `--first-key-neighbors`, the fine-tune is about words that differ only in their first
+key (`first_key_neighbors.py`): it trains on the swipes of words that have such a neighbor,
+at most `--swipes-per-word` of any one word so a common word's swipes do not drown out its
+rarer neighbor's, together with as many swipes drawn from all the rest, and every swipe's
+hard negatives start with its word's first-key neighbors, most frequent first, at most half
+of them. `--steps` ends training after that many steps, and `--validate-every` decodes the
+validation split every that many steps, keeping each such state as `step-<n>.pt`.
+
 With `--decoder`, a decoder run over the base encoder is fine-tuned together with it: the
 ranking loss is taken on the decoder's emissions and both learn. The new run then holds
 `best.pt` and `decoder.pt` (whose encoder is the run itself), and uses the decoder run's
@@ -26,6 +34,7 @@ from decode import Pruning, beam_search
 from decoder_model import DecoderConfig, SwipeDecoder
 from emissions import compute_frames, load_encoder
 from evaluate import decode_accuracy, target_forms
+from first_key_neighbors import first_key_neighbors
 from layouts import load_layout
 from lexicon import build_trie, load_lexicon
 from model import key_basis, log_emissions
@@ -66,6 +75,13 @@ def main() -> None:
     parser.add_argument("--negatives", type=int, default=NEGATIVES, help="hard negatives per swipe")
     parser.add_argument("--augment-probability", type=float,
                         help="geometric augmentation probability, instead of the base run's")
+    parser.add_argument("--first-key-neighbors", action="store_true",
+                        help="train on words with a first-key neighbor, the neighbors among their hard negatives")
+    parser.add_argument("--swipes-per-word", type=int, default=200,
+                        help="with --first-key-neighbors, the most swipes of any one such word")
+    parser.add_argument("--steps", type=int, default=0, help="stop after this many steps instead of --epochs")
+    parser.add_argument("--validate-every", type=int, default=0,
+                        help="decode the validation split every this many steps and keep step-<n>.pt")
     parser.add_argument("--decoder", help="a decoder run over the base encoder, fine-tuned together with it")
     parser.add_argument("--device", default="mps" if torch.backends.mps.is_available() else "cpu")
     parser.add_argument("--seed", type=int, default=0)
@@ -103,13 +119,34 @@ def main() -> None:
     if arguments.limit:
         xy, forms = xy[: arguments.limit], forms[: arguments.limit]
     targets = target_forms(forms, lexicon.forms)
+    paths, path_lengths = lexicon_paths(lexicon, layout.key_index, output_frames(POINTS), keep_doubles)
+    neighbors = first_key_neighbors(paths, path_lengths, layout) if arguments.first_key_neighbors else None
+    if neighbors is not None:
+        generator = np.random.default_rng(arguments.seed)
+        has_neighbor = np.array([len(found) > 0 for found in neighbors])
+        with_neighbor = np.flatnonzero((targets >= 0) & has_neighbor[np.maximum(targets, 0)])
+        with_neighbor = generator.permutation(with_neighbor)
+        order = np.argsort(targets[with_neighbor], kind="stable")
+        ranked = with_neighbor[order]
+        starts = np.searchsorted(targets[ranked], targets[ranked])
+        chosen = ranked[np.arange(len(ranked)) - starts < arguments.swipes_per_word]
+        rest = np.setdiff1d(np.arange(len(targets)), chosen)
+        rest = generator.choice(rest, size=min(len(rest), len(chosen)), replace=False)
+        print(f"first-key neighbor swipes: {len(chosen)} of {len(with_neighbor)}, with {len(rest)} others", flush=True)
+        rows = np.concatenate([chosen, rest])
+        xy, forms, targets = xy[rows], forms[rows], targets[rows]
     model.eval()
     if decoder:
         decoder.eval()
     candidates = beam_search(arguments.data_dir, pipeline_emissions(model, decoder, xy, layout, device), trie, pruning)
     scores = candidate_scores(candidates, lexicon.frequency, trie.form_path_length, scoring)
-    paths, path_lengths = lexicon_paths(lexicon, layout.key_index, output_frames(POINTS), keep_doubles)
     options, keep = ranking_options(candidates, scores, targets, path_lengths, arguments.negatives)
+    if neighbors is not None:
+        for row in np.flatnonzero(keep):
+            near = sorted(neighbors[targets[row]], key=lambda form: -lexicon.frequency[form])[: arguments.negatives // 2]
+            if near:
+                mined = [form for form in options[row, 1:] if form not in near]
+                options[row, 1:] = (near + mined)[: arguments.negatives]
     del candidates, scores
     print(f"fine-tuning swipes: {keep.sum()} of {len(keep)}", flush=True)
 
@@ -124,7 +161,7 @@ def main() -> None:
     parameters = list(model.parameters()) + (list(decoder.parameters()) if decoder else [])
     optimizer = torch.optim.AdamW(parameters, lr=arguments.learning_rate, weight_decay=WEIGHT_DECAY)
     steps_per_epoch = len(train_xy) // arguments.batch
-    total = steps_per_epoch * arguments.epochs
+    total = arguments.steps or steps_per_epoch * arguments.epochs
     warmup = max(1, int(total * WARMUP_FRACTION))
     settings = {**base_settings, "augment": augment_config.__dict__, KEEP_DOUBLES: keep_doubles, "finetune": {**vars(arguments), "data_dir": str(arguments.data_dir),
                                               "lexicon": str(arguments.lexicon), "scoring": scoring.__dict__}}
@@ -142,7 +179,28 @@ def main() -> None:
                        run_dir / DECODER_CHECKPOINT)
 
     save()
+
+    def validate(record: dict) -> None:
+        nonlocal best
+        model.eval()
+        if decoder:
+            decoder.eval()
+        _, _, accuracy = decode_accuracy(arguments.data_dir, pipeline_emissions(model, decoder, val["xy"], layout, device),
+                                         trie, lexicon, scoring, val_targets, pruning)
+        record = {**record, **{f"val_{k}": v for k, v in accuracy.items()}}
+        with open(run_dir / "log.jsonl", "a") as log:
+            log.write(json.dumps(record) + "\n")
+        print(json.dumps(record), flush=True)
+        if accuracy["top1"] > best:
+            best = accuracy["top1"]
+            save()
+        model.train()
+        if decoder:
+            decoder.train()
+
     for epoch in range(arguments.epochs):
+        if epoch * steps_per_epoch >= total:
+            break
         model.train()
         if decoder:
             decoder.train()
@@ -169,20 +227,15 @@ def main() -> None:
             torch.nn.utils.clip_grad_norm_(parameters, GRADIENT_CLIP)
             optimizer.step()
             total_loss += loss.item()
+            done = batch_number + 1
+            if arguments.validate_every and (step + 1) % arguments.validate_every == 0:
+                torch.save({"model": model.state_dict(), "config": model.config.to_dict(), "layout": layout.name},
+                           run_dir / f"step-{step + 1}.pt")
+                validate({"step": step + 1, "loss": total_loss / done, "seconds": time.time() - started})
+            if step + 1 >= total:
+                break
 
-        model.eval()
-        if decoder:
-            decoder.eval()
-        _, _, accuracy = decode_accuracy(arguments.data_dir, pipeline_emissions(model, decoder, val["xy"], layout, device),
-                                         trie, lexicon, scoring, val_targets, pruning)
-        record = {"epoch": epoch, "loss": total_loss / steps_per_epoch,
-                  **{f"val_{k}": v for k, v in accuracy.items()}, "seconds": time.time() - started}
-        with open(run_dir / "log.jsonl", "a") as log:
-            log.write(json.dumps(record) + "\n")
-        print(json.dumps(record), flush=True)
-        if accuracy["top1"] > best:
-            best = accuracy["top1"]
-            save()
+        validate({"epoch": epoch, "loss": total_loss / done, "seconds": time.time() - started})
 
 
 if __name__ == "__main__":
