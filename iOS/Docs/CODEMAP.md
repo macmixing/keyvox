@@ -2009,7 +2009,7 @@ Packages/
 - `KeyVox Keyboard/Core/Prediction/KeyboardPersonalVocabularyBuilder.swift`
   - Builds `PersonalVocabulary` from KeyVox Dictionary phrases and the system supplementary lexicon, treating lexicon entries whose input matches their text, ignoring case, as known names and the rest as text replacements.
 - `KeyVox Keyboard/Core/Prediction/KeyboardTypingMemory.swift`
-  - One typing language's memory, loaded from and saved to its `KeyboardTypingMemoryLocation` file off the main thread after a short delay, never saved over a newer reset of every language or of its own, and cleared when the containing app's reset is adopted; `current` is the memory of the language the keyboard types in, shared by every keyboard view while the extension runs and loaded again when the language changes.
+  - One typing language's memory, loaded from and saved to its `KeyboardTypingMemoryLocation` file off the main thread after a short delay, never saved over a newer reset of every language or of its own, and cleared when the containing app's reset is adopted; `current` is the memory of the language the keyboard types in, shared by every keyboard view while the extension runs and loaded again when the language changes, unless the one let go still has a save to make or write, which is taken back instead.
 
 ### Keyboard Emoji
 
