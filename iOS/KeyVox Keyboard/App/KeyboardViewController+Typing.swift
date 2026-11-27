@@ -36,6 +36,7 @@ extension KeyboardViewController {
         }
         letterCaseController.reset()
         synchronizeLetterCase()
+        updateAccentKey()
         refreshPredictions()
     }
 
@@ -71,6 +72,7 @@ extension KeyboardViewController {
         isReturnKeyEnabled = fieldAllowsReturn()
         predictionCoordinator.textDidChange()
         synchronizeLetterCase()
+        updateAccentKey()
         refreshPredictions()
         updateActiveInsertionVisualState()
     }
@@ -109,6 +111,8 @@ extension KeyboardViewController {
             return applyWordBoundary(separator: " ", emitsKeypress: true)
         case .returnKey:
             return applyWordBoundary(separator: "\n", emitsKeypress: true)
+        case let .character(value) where KeyboardTypingLanguage.current.accentKey?.isMark(value) == true:
+            return applyAccentMark(value)
         case let .character(value) where Self.wordEndingCharacters?.contains(value) == true:
             let separator = activation.isHeldKeyChoice
                 ? value
@@ -319,6 +323,7 @@ extension KeyboardViewController {
             predictionCoordinator.prepare()
         }
         synchronizeLetterCase()
+        updateAccentKey()
         refreshPredictions()
     }
 
