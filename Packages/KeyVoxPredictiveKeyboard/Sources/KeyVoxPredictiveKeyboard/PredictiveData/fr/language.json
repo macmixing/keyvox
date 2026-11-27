@@ -1,0 +1,15 @@
+{
+  "identifier": "fr",
+  "defaultLetterLayout": "AZERTY-French",
+  "alternativeLetterLayouts": ["AZERTY", "QWERTY-Accents", "QWERTY", "QWERTZ"],
+  "editLetters": "abcdefghijklmnopqrstuvwxyzàâæçèéêëîïôùûüÿœ",
+  "vowels": "aeiouyàâæèéêëîïôùûüÿœ",
+  "alwaysCapitalizedWords": [],
+  "quotationMarks": {
+    "openingSingle": "‘",
+    "closingSingle": "’",
+    "openingDouble": "«",
+    "closingDouble": "»",
+    "spaceInsideDouble": " "
+  }
+}
