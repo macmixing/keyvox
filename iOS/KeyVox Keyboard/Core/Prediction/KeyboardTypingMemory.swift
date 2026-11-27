@@ -127,6 +127,11 @@ final class KeyboardTypingMemory {
             saveQueue.async { [self] in
                 if currentResetGeneration() == generation {
                     try? file.save(saved, resetGeneration: generation.allLanguages)
+                    // The KeyVox app counts a reset before removing the file, so a reset made while
+                    // this was written is seen here and what was written is removed too.
+                    if currentResetGeneration() != generation {
+                        try? FileManager.default.removeItem(at: file.url)
+                    }
                 }
                 DispatchQueue.main.async { [self] in
                     writesInFlight -= 1
