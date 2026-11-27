@@ -5,7 +5,7 @@ Builds the typing models the predictive keyboard bundles for its English typing 
 
 | Bundled file | What it is | Built by |
 | --- | --- | --- |
-| `dictionary/` | LatinIME version 403 dictionary, in `dictionary.header` and `dictionary.body`: 106,909 words with probabilities, 93,372 word pairs, and 60,000 three-word sequences, without the words `offensive_words.py` matches | `write_dictionary_inputs.py`, `write_latinime_dictionary.cpp` |
+| `dictionary/` | LatinIME version 403 dictionary, in `dictionary.header` and `dictionary.body`: 106,907 words with probabilities, 93,372 word pairs, and 60,000 three-word sequences, without the words `offensive_words.py` matches | `write_dictionary_inputs.py`, `write_latinime_dictionary.cpp` |
 | `correction_ranker.kvtr` | 220 gradient-boosted trees that score each correction candidate | `train_correction_models.py`, `export_tree_models.py` |
 | `autocorrect_decision.kvtr` | 160 trees that score whether to replace the typed letters with the best correction | `train_correction_models.py`, `export_tree_models.py` |
 | `completion_ranker.kvtr` | 220 trees that score each candidate while a word is still being typed | `train_completion_ranker.py`, `export_tree_models.py` |

@@ -7,8 +7,9 @@ aside, as no word is one.
 Each pattern is a regular expression a word's letter form (its letters only, case and accents
 folded, as a swipe draws it) must match whole: a term's letters, read the same way, the list's "*"
 after a letter, for that letter one or more times, becoming "+", then optionally its plural or
-possessive ending, "s", or "es" after a term ending in s, x, z, ch, sh, or o (an apostrophe is no
-letter, so "'s" reads as "s"). The list names terms, not the words built on them, and matching
+possessive ending, "s", or "es" after a term ending in s, x, z, ch, sh, or o, and, for a term
+ending in a consonant and "y", its plural with "ies" for the "y" (an apostrophe is no letter, so
+"'s" reads as "s"). The list names terms, not the words built on them, and matching
 inside words, as it allows, would take ordinary words that contain a term. The dictionary (`write_dictionary_inputs.py`) leaves out every word
 one matches, with every word pair and three-word sequence holding one, and the swipe vocabulary
 (`Tools/KeyVoxLanguageModel/write_swipe_vocabulary.py`) every candidate one matches."""
@@ -28,6 +29,9 @@ RELIGIOUS_TAG = "religious"
 STRONG_SEVERITY = 3
 # A term's plural or possessive ending, as English writes it.
 PLURAL_OR_POSSESSIVE = r"(?:s|(?<=[sxzo])es|(?<=[cs]h)es)?"
+# A term ending in a consonant and "y", which a plural writes with "ies" for the "y".
+CONSONANT_Y = re.compile(r"[^aeiou*]\*?y$")
+Y_PLURAL = "ies"
 REPEAT = "*"
 
 
@@ -50,8 +54,18 @@ def patterns(list_path: Path) -> list[str]:
     entries = json.loads(list_path.read_text(encoding="utf-8"))
     terms = sorted({term_letters(term) for entry in entries if is_left_out(entry)
                     for term in entry["match"].split("|") if " " not in term})
-    return [re.escape(term).replace(re.escape(REPEAT), "+") + PLURAL_OR_POSSESSIVE
-            for term in terms if term.strip(REPEAT)]
+    def expression(letters: str) -> str:
+        return re.escape(letters).replace(re.escape(REPEAT), "+")
+
+    written = []
+    for term in terms:
+        if not term.strip(REPEAT):
+            continue
+        pattern = expression(term) + PLURAL_OR_POSSESSIVE
+        if CONSONANT_Y.search(term):
+            pattern = f"(?:{pattern}|{expression(term[:-1])}{Y_PLURAL})"
+        written.append(pattern)
+    return written
 
 
 def read_matcher(path: Path) -> re.Pattern:
