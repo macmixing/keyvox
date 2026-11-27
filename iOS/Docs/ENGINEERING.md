@@ -2117,7 +2117,7 @@ Typing languages:
 Field preparation:
 
 - after appearing, the keyboard waits for the host's first `textDidChange(_:)` before reading the field; until then it opens as the Open on 123 setting says
-- `KeyboardTypingTraits` resolves what the field allows from its keyboard type, content type, secure entry, autocorrection type, and autocapitalization type, then narrows it by the shared keyboard typing settings; a feature the field turns off stays off whatever the settings say
+- `KeyboardTypingTraits` resolves what the field allows from its keyboard type, content type, secure entry, autocorrection type, and autocapitalization type, then narrows it by the shared keyboard typing settings; a feature the field turns off stays off whatever the settings say, and swipe typing stays off in a typing language without a swipe model
 - numeric-only keyboard types, secure entry, and password content types turn predictions off; email, URL, and username fields keep predictions but not autocorrection
 - a web address or email keyboard type whose field turns autocorrection off turns predictions off too, as Apple's keyboard drops its suggestion bar there; the toolbar accessories show in the bar's place
 - a number pad, ASCII number pad, or decimal pad field opens the full-size number pad whatever the Compact Keys and Open on 123 settings say, and keeps it, as the pad has no page keys; on the full-width iPad keyboard, which shows no number pad, it opens the number page in the user's Compact Keys mode, as a numbers-and-punctuation field does
@@ -2136,7 +2136,7 @@ The gate (`SwipeGate`, with the hold and lift evidence `KeyVoxTypingHarness swip
 - meeting the threshold is not yet a swipe, since a tap rolling toward the next key meets it just before lifting: still down 25 ms later, the finger is a swipe; lifting sooner while moving at most half its fastest speed over 30 ms, as a finger slowing into a swipe's last key does, it is a swipe; lifting sooner at speed, it is undecided, and another finger landing on the keys within 500 ms of its lift makes it a tap, typed before that finger's key, while no finger landing, or the user acting anywhere but on the keys, makes it a swipe
 - distances are in the live letter keys' horizontal pitch, times are `UITouch` timestamps, and every coalesced sample is checked
 - a finger that never meets the threshold is exactly today's key press, slide to correct included, and an undecided finger made a tap types the key it would have typed at its lift and its trail ends at once; once a finger is a swipe its key lets go and types nothing
-- with Swipe Typing off, or in a field whose typing traits turn predictions off (`KeyboardTypingTraits.allowsSwipeTyping`), the gate never runs and no path is kept
+- with Swipe Typing off, in a field whose typing traits turn predictions off, or in a typing language without a swipe model (`KeyboardTypingTraits.allowsSwipeTyping`, `TypingLanguage.offersSwipeTyping`), the gate never runs and no path is kept; the package decodes no swipe in such a language either (`PredictionComputer.swipeCandidates` gives none), and switching the typing language reads the field's traits again in the new language (`restartTypingInCurrentLanguage`)
 
 Decoding and insertion:
 
@@ -2204,7 +2204,7 @@ Vocabulary:
 - personal vocabulary combines KeyVox Dictionary phrases with the system supplementary lexicon's known names and text replacements; the dictionary is applied at once and the lexicon again on the main thread whenever the system answers
 - learned vocabulary from the active language's typing memory is handed to suggestions whenever it changes and when the language changes
 - pressing and holding a suggestion forgets a learned word or learned capitals; the user's own vocabulary is never forgotten this way
-- corrections, predictions, and swipes come from the typing language the keyboard types in, `KeyboardTypingLanguage.current`, aimed at the keys of its layout; English is the only bundled language
+- corrections, predictions, and swipes come from the typing language the keyboard types in, `KeyboardTypingLanguage.current`, aimed at the keys of its layout; English and French are bundled
 
 Shift and letter case:
 
