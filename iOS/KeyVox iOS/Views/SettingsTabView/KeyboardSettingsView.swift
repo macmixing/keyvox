@@ -2,16 +2,18 @@ import KeyVoxKeyboardThemes
 import SwiftUI
 
 /// The KeyVox keyboard's settings, opened from the Keyboard row in Settings: the typing
-/// toggles as single-line rows, then the layout options with their descriptions, then resetting
-/// what the keyboard learned from the user's typing.
+/// toggles as single-line rows, then the typing languages and their letter layouts, then the layout
+/// options with their descriptions, then resetting what the keyboard learned from the user's typing.
 struct KeyboardSettingsView: View {
     @EnvironmentObject private var settingsStore: AppSettingsStore
     @Binding var pendingDeletionConfirmation: SettingsPendingDeletionConfirmation?
+    @State private var isLanguageListPresented = false
 
     var body: some View {
         AppScrollScreen(additionalTopContentInset: AppScreenContentInset.tabPageTop) {
             VStack(alignment: .leading, spacing: AppTheme.sectionSpacing) {
                 typingSection
+                languagesSection
                 classicThemeSection
                 compactKeysSection
                 openOnNumberPageSection
@@ -22,6 +24,26 @@ struct KeyboardSettingsView: View {
         }
         .navigationTitle(KeyboardSettingsCopy.screenTitle)
         .navigationBarTitleDisplayMode(.inline)
+        .fullScreenCover(isPresented: $isLanguageListPresented) {
+            KeyboardLanguagesScreen(selection: typingLanguageSelection) {
+                isLanguageListPresented = false
+            }
+        }
+    }
+
+    private var typingLanguageSelection: KeyboardTypingLanguageSelection {
+        KeyboardTypingLanguageSelection(
+            savedLanguages: settingsStore.keyboardTypingLanguages,
+            savedLetterLayouts: settingsStore.keyboardLetterLayouts,
+            catalog: KeyboardBundledTypingLanguages.catalog,
+            fallbackLanguage: Bundle.main.developmentLocalization
+        )
+    }
+
+    private var languagesSection: some View {
+        KeyboardLanguagesCard(selection: typingLanguageSelection) {
+            isLanguageListPresented = true
+        }
     }
 
     private var typingSection: some View {

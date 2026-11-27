@@ -2,12 +2,16 @@ import SwiftUI
 
 /// A full-screen list of languages to choose from: the caller's header, a search field, the
 /// languages in a card of rows with check circles, and an action button at the bottom that stays
-/// disabled until a language is checked.
+/// disabled until a language is checked. With multiple selection the checked languages show first,
+/// in their order, under a "Selected" heading (`LanguageListSelectedCard`); checking a language
+/// adds it at the end there, unchecking returns it to the list below, which search filters.
 struct LanguageListScreen<Header: View>: View {
     /// Which languages are checked.
     enum Selection {
         /// One language at a time; checking one unchecks the one before.
         case single(Binding<String?>)
+        /// Any number of languages, in order; checking one adds it at the end.
+        case multiple(Binding<[String]>)
     }
 
     @Environment(\.appHaptics) private var appHaptics
@@ -46,9 +50,22 @@ struct LanguageListScreen<Header: View>: View {
             VStack(alignment: .leading, spacing: 20) {
                 header
 
+                if case let .multiple(selected) = selection, selected.wrappedValue.isEmpty == false {
+                    LanguageListSelectedCard(
+                        options: selected.wrappedValue.compactMap { identifier in
+                            options.first { $0.id == identifier }
+                        },
+                        order: selected,
+                        onUncheck: toggle
+                    )
+                }
+
                 LanguageListSearchField(text: $searchText, isFocused: isSearchFocused)
 
-                optionsCard(filteredOptions)
+                let shownOptions = filteredOptions
+                if shownOptions.isEmpty == false || searchText.isEmpty == false || isMultipleSelection == false {
+                    optionsCard(shownOptions)
+                }
             }
             .padding(.bottom, 92)
         }
@@ -101,15 +118,28 @@ struct LanguageListScreen<Header: View>: View {
         }
     }
 
+    /// The languages the card below lists: every language with single selection, the unchecked ones
+    /// with multiple selection, narrowed by the search.
     private var filteredOptions: [LanguageListOption] {
-        guard !searchText.isEmpty else { return options }
-        return options.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
+        var listed = options
+        if case let .multiple(selected) = selection {
+            listed = listed.filter { selected.wrappedValue.contains($0.id) == false }
+        }
+        guard !searchText.isEmpty else { return listed }
+        return listed.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
+    }
+
+    private var isMultipleSelection: Bool {
+        if case .multiple = selection { return true }
+        return false
     }
 
     private var hasSelection: Bool {
         switch selection {
         case let .single(selected):
             selected.wrappedValue != nil
+        case let .multiple(selected):
+            selected.wrappedValue.isEmpty == false
         }
     }
 
@@ -117,6 +147,8 @@ struct LanguageListScreen<Header: View>: View {
         switch selection {
         case let .single(selected):
             selected.wrappedValue == option.id
+        case let .multiple(selected):
+            selected.wrappedValue.contains(option.id)
         }
     }
 
@@ -126,6 +158,14 @@ struct LanguageListScreen<Header: View>: View {
         switch selection {
         case let .single(selected):
             selected.wrappedValue = option.id
+        case let .multiple(selected):
+            withAnimation(.easeInOut(duration: 0.2)) {
+                if let index = selected.wrappedValue.firstIndex(of: option.id) {
+                    selected.wrappedValue.remove(at: index)
+                } else {
+                    selected.wrappedValue.append(option.id)
+                }
+            }
         }
     }
 }

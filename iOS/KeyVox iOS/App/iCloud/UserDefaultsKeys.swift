@@ -18,6 +18,11 @@ nonisolated enum UserDefaultsKeys {
     static let emojiKeyboardEnabled = "KeyVox.EmojiKeyboardEnabled"
     static let periodShortcutEnabled = "KeyVox.PeriodShortcutEnabled"
     static let opensOnNumberPage = "KeyVox.OpensOnNumberPage"
+    /// The languages the keyboard types in, by identifier, in the order its space bar switches
+    /// through them.
+    static let keyboardTypingLanguages = "KeyVox.KeyboardTypingLanguages"
+    /// The letter layout the user chose for each typing language, by language identifier.
+    static let keyboardLetterLayouts = "KeyVox.KeyboardLetterLayouts"
     /// How many times the user reset what the keyboard learned from their typing.
     static let keyboardTypingMemoryResetGeneration = "KeyVox.KeyboardTypingMemoryResetGeneration"
     /// The emoji the keyboard's Frequently Used section ranks, as the user used them.
