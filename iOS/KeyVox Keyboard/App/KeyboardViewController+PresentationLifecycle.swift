@@ -136,6 +136,9 @@ extension KeyboardViewController {
         rootContainerView.keyGridView.onSpaceTrackpadEvent = { [weak self] event in
             self?.handleSpaceTrackpadEvent(event)
         }
+        rootContainerView.keyGridView.onSpaceLanguageSlide = { [weak self] offset in
+            self?.switchTypingLanguage(by: offset)
+        }
         rootContainerView.keyGridView.setPopupContainerView(popupOverlayView)
 
         indicatorDriver.sampleProvider = { [weak self] in
@@ -206,6 +209,7 @@ extension KeyboardViewController {
             rootContainerView.suggestionBarView.onRescuedDictationSelected = nil
             rootContainerView.keyGridView.onCompactKeysRequested = nil
             rootContainerView.keyGridView.onSpaceTrackpadEvent = nil
+            rootContainerView.keyGridView.onSpaceLanguageSlide = nil
             rootContainerView.keyGridView.setPopupContainerView(nil)
             rootContainerView.keyGridView.resetInteractionState()
         }

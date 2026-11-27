@@ -32,6 +32,9 @@ final class KeyboardKeyGridView: UIView {
     var onNextKeyboardTouch: ((UIView, UIEvent) -> Void)?
     var onCompactKeysRequested: (() -> Bool)?
     var onSpaceTrackpadEvent: ((KeyboardSpaceTrackpadEvent) -> Void)?
+    /// Called with one place forward or back when a finger slid sideways across the space bar
+    /// (`KeyboardSpaceLanguageSlide`), in place of typing a space.
+    var onSpaceLanguageSlide: ((Int) -> Void)?
     /// Letter key frames whenever the letter page lays out differently.
     var onCharacterGeometryChange: (([KeyboardCharacterKeyGeometry], CGSize) -> Void)?
     /// Called with a swipe's path, in this view's coordinates, the moment its finger lifts or
@@ -86,6 +89,9 @@ final class KeyboardKeyGridView: UIView {
     /// Whether holding the space bar turns the keyboard into a trackpad for the cursor; the emoji
     /// search has no cursor to move.
     var allowsSpaceTrackpad = true
+    /// Whether sliding across the space bar switches the typing language, as while the keyboard has
+    /// more than one; never in the emoji search, whose space bar types into the search.
+    var allowsSpaceLanguageSlide = false
     private(set) var letterCase: KeyboardLetterCase = .lowercase
     private(set) var isKeyboardEnabled = true
     weak var popupContainerView: UIView?
@@ -130,6 +136,12 @@ final class KeyboardKeyGridView: UIView {
         self.showsNextKeyboardKey = showsNextKeyboardKey
         self.fieldKeys = fieldKeys
         showPage()
+    }
+
+    /// Shows the short code of the language the keyboard switched to on the space bar of the page
+    /// showing, read as `name`.
+    func showLanguageCode(_ code: String, name: String) {
+        keyViews.first { $0.model.kind == .space }?.showLanguageCode(code, name: name)
     }
 
     /// Shows the letter keys in the layout the keyboard types in now, building its page the first

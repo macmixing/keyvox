@@ -62,6 +62,14 @@ nonisolated struct KeyboardTypingLanguageSelection: Equatable {
         languages.first { $0.identifier == lastUsed } ?? languages.first
     }
 
+    /// The selected language `offset` places from `identifier` in space-bar order, wrapping around
+    /// at either end, or nil when `identifier` is not selected.
+    func language(_ offset: Int, from identifier: String) -> Language? {
+        guard let index = languages.firstIndex(where: { $0.identifier == identifier }) else { return nil }
+        let count = languages.count
+        return languages[((index + offset) % count + count) % count]
+    }
+
     private static func fallback(_ identifier: String?, in catalog: TypingLanguageCatalog) -> TypingLanguageLetterLayouts? {
         if let identifier {
             if let exact = catalog.language(identifier) {

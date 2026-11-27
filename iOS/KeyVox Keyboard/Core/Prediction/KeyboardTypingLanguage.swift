@@ -39,6 +39,21 @@ enum KeyboardTypingLanguage {
         return isSame(state.language, previous) == false
     }
 
+    /// Types in the selected language `offset` places from the current one, wrapping around, and
+    /// saves it as the language last used. Returns whether the language changed, which it never does
+    /// with one language selected.
+    @discardableResult
+    static func switchLanguage(by offset: Int, settings: KeyboardAppSettingsStore) -> Bool {
+        let previous = state.language
+        guard let next = state.selection.language(offset, from: previous.identifier),
+              next.identifier != previous.identifier else {
+            return false
+        }
+        settings.lastTypingLanguage = next.identifier
+        state = resolved(settings: settings, reusing: previous)
+        return isSame(state.language, previous) == false
+    }
+
     private static func resolved(
         settings: KeyboardAppSettingsStore,
         reusing loaded: TypingLanguage? = nil

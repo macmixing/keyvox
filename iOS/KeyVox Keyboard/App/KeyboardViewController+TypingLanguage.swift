@@ -1,3 +1,4 @@
+import KeyVoxPredictiveKeyboard
 import UIKit
 
 /// The typing language: following the user's languages and layouts, and the one place a change of
@@ -6,8 +7,27 @@ extension KeyboardViewController {
     /// Rereads the user's typing languages, as each time the keyboard shows or its host comes back,
     /// and shows the language they give when it changed.
     func adoptTypingLanguageSettings() {
-        guard KeyboardTypingLanguage.adoptSettings(appSettingsStore) else { return }
+        let changed = KeyboardTypingLanguage.adoptSettings(appSettingsStore)
+        rootContainerView?.keyGridView.allowsSpaceLanguageSlide = KeyboardTypingLanguage.selection.languages.count > 1
+        guard changed else { return }
         applyTypingLanguage()
+    }
+
+    /// Switches to the selected language `offset` places from the current one, as a slide across
+    /// the space bar asks: a light haptic, the keyboard in the new language, and its short code on
+    /// the space bar for a moment.
+    func switchTypingLanguage(by offset: Int) {
+        guard KeyboardTypingLanguage.switchLanguage(by: offset, settings: appSettingsStore) else { return }
+        interactionHaptics.emitLightIfEnabled()
+        applyTypingLanguage()
+        let identifier = KeyboardTypingLanguage.current.identifier
+        rootContainerView?.keyGridView.showLanguageCode(
+            KeyboardTypingLanguageName.shortCode(
+                for: identifier,
+                among: KeyboardTypingLanguage.selection.identifiers
+            ),
+            name: KeyboardTypingLanguageName.displayName(for: identifier)
+        )
     }
 
     /// Shows the keyboard in `KeyboardTypingLanguage.current`: the letter keys in its layout, and

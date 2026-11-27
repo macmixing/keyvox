@@ -63,6 +63,39 @@ struct KeyboardTypingLanguageSelectionTests {
         #expect(selection.activeLanguage(lastUsed: nil)?.identifier == "fr")
     }
 
+    @Test func stepsThroughTheSelectedLanguagesInOrderWrappingAtEitherEnd() {
+        let selection = KeyboardTypingLanguageSelection(
+            savedLanguages: ["fr", "en", "fr-CA"],
+            savedLetterLayouts: [:],
+            catalog: catalog,
+            fallbackLanguage: "en"
+        )
+
+        #expect(selection.language(1, from: "fr")?.identifier == "en")
+        #expect(selection.language(1, from: "fr-CA")?.identifier == "fr")
+        #expect(selection.language(-1, from: "fr")?.identifier == "fr-CA")
+        #expect(selection.language(1, from: "xx") == nil)
+    }
+
+    @Test func stepsToItselfWithOneLanguage() {
+        let selection = KeyboardTypingLanguageSelection(
+            savedLanguages: ["en"],
+            savedLetterLayouts: [:],
+            catalog: catalog,
+            fallbackLanguage: "en"
+        )
+
+        #expect(selection.language(1, from: "en")?.identifier == "en")
+        #expect(selection.language(-1, from: "en")?.identifier == "en")
+    }
+
+    @Test func shortCodeAddsTheRegionOnlyWhenAnotherSelectedLanguageSharesTheCode() {
+        #expect(KeyboardTypingLanguageName.shortCode(for: "en", among: ["en", "fr"]) == "EN")
+        #expect(KeyboardTypingLanguageName.shortCode(for: "fr-CA", among: ["en", "fr-CA"]) == "FR")
+        #expect(KeyboardTypingLanguageName.shortCode(for: "fr-CA", among: ["fr", "fr-CA"]) == "FR CA")
+        #expect(KeyboardTypingLanguageName.shortCode(for: "fr", among: ["fr", "fr-CA"]) == "FR")
+    }
+
     @Test func selectsNothingWhenNothingIsBundled() {
         let selection = KeyboardTypingLanguageSelection(
             savedLanguages: ["en"],
