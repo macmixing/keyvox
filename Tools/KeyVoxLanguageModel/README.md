@@ -322,9 +322,24 @@ with a split word keeps all its words.
 
 `sentence_openers.txt` holds the words the suggestion bar offers where a sentence begins.
 Each language's source weights are in `languages.py`: English's were tuned against Apple's English
-suggestion bars (youtube-commons 0, oasst2 0.3, tatoeba 10). German, Spanish, and French give the
-same weights by kind of source, speech 0, chat and text messages 0.3, and Tatoeba 10, with no
-captures of Apple's bars in those languages to tune them against yet.
+suggestion bars (youtube-commons 0, oasst2 0.3, tatoeba 10). German and French give the same
+weights by kind of source, speech 0, chat and text messages 0.3, and Tatoeba 10.
+
+Spanish's were tuned against Apple's Spanish (Spain) bars after 53 sentences
+(`apple-languages/sentence-openers/es_ES.json` in KeyVox's language data, read with `--apple`):
+the same weights but speech at 0.1, which share more words with Apple's bars and find the next
+sentence's first word more often in every source's held-out texts:
+
+| Weights (Tatoeba, OASST2, WildChat, speech) | Words shared with Apple's bar | Different bars (Apple: 45) | Held out: Tatoeba | OASST2 | WildChat | YODAS2 | YouTube-Commons |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 10, 0.3, 0.3, 0 | 0.91 of 3 | 16 | 15.1% | 8.0% | 5.7% | 8.3% | 8.4% |
+| 10, 0.3, 0.3, 0.1 (Spanish) | 1.00 of 3 | 18 | 15.9% | 8.4% | 6.4% | 9.5% | 9.4% |
+
+A grid of 96 weightings (Tatoeba 1, 10, 30; OASST2 and WildChat 0, 0.3, 1, 3; speech 0, 0.1)
+shared at most 1.06 words (10, 0, 0.3, 0.1), at the cost of OASST2's held-out sentences (5.0%).
+Ten of the 53 sentences end in a line break with no mark, after which Apple's bar offers
+lowercase continuations rather than openers in every measured language; no weighting matches
+those.
 
 ## Words spelled with capitals
 

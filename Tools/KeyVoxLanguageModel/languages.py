@@ -202,7 +202,11 @@ LANGUAGES = {
         # CLDR's Spanish quotation marks.
         text_rules=_text_rules("«»“”"),
         deduplicate=True,
-        opener_weights=_OPENER_WEIGHTS,
+        # Tuned against Apple's Spanish (Spain) suggestion bars after 53 sentences
+        # (apple-languages/sentence-openers/es_ES.json): speech at 0.1 rather than 0 shares more
+        # words with Apple's bars and finds more held-out next sentences' first words in every
+        # source (README, "Sentence openers").
+        opener_weights={**_OPENER_WEIGHTS, "youtube-commons": 0.1, "yodas2": 0.1},
     ),
     "fr": Language(
         identifier="fr",
