@@ -573,9 +573,7 @@ final class KeyboardLogoBarView: UIControl {
         rendererFormat.opaque = false
         rendererFormat.scale = scale
 
-        let tintColor = UIColor.systemIndigo
-            .withAlphaComponent(0.85)
-            .resolvedColor(with: traitCollection)
+        let tintColor = KeyboardStyle.microphoneForegroundColor.resolvedColor(with: traitCollection)
 
         let rasterizedImage = UIGraphicsImageRenderer(size: size, format: rendererFormat).image { _ in
             let rect = CGRect(origin: .zero, size: size)

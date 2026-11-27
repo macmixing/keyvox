@@ -95,6 +95,8 @@ enum KeyboardStyle {
     static let cancelButtonIconColor = UIColor.systemRed
     /// The circle behind the microphone in the dictation button.
     static let microphoneBackgroundColor = UIColor.keyboardTheme(\.microphoneBackground)
+    /// The microphone in the dictation button.
+    static let microphoneForegroundColor = UIColor.keyboardTheme(\.microphoneForeground)
     static let cancelButtonBorderWidth: CGFloat = 0.5
     static let keyBorderWidth: CGFloat = 0.5
 
