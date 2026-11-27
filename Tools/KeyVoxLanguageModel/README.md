@@ -15,11 +15,12 @@ and the same files for German, Spanish, and French, which are built but not bund
 | `grammar_words.txt` | `write_word_kinds.py`, `write_grammar_words.py` | `count_ngrams.py`'s vocabulary and the word kinds |
 | `swipe_vocabulary.txt` | `count_swipe_words.py`, `count_swiped_words.py`, `write_swipe_vocabulary.py` | Every source, through `source_texts.py`, the words swipe.futo.org's training split had people swipe, the dictionary's words and probabilities, and SCOWL's size 80 in every spelling |
 
-The swipe vocabulary is built only for a language with a dictionary, so for English alone
-today (see "Swipe vocabulary").
+The swipe vocabulary is built only for a language whose dictionary and letter layout the package
+has, so for English alone today (see "Swipe vocabulary").
 
 English's dictionary, rankers, and accent overlay, bundled beside these files, are built by
-`Tools/KeyVoxTypingModels`.
+`Tools/KeyVoxTypingModels`, which builds German's, Spanish's, and French's from these builds'
+vocabulary, counts, and sentences too (its "Other typing languages").
 
 What differs between languages is in `languages.py`: each build's sources in the order they are
 read, how much of each is read, how its text is split into words, its sentence-opener weights,

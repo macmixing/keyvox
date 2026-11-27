@@ -139,8 +139,12 @@ def oasst1_path(data_dir: Path) -> Path:
     return data_dir / OASST1.files[0].path
 
 
-def profanity_list_path(data_dir: Path) -> Path:
-    return data_dir / PROFANITY_LIST.files[0].path
+def profanity_list_path(data_dir: Path, name: str = "en.json") -> Path:
+    """The profanity list's file of a language's terms, such as `en.json`."""
+    for file in PROFANITY_LIST.files:
+        if Path(file.path).name == name:
+            return data_dir / file.path
+    raise KeyError(name)
 
 
 def ite_path(data_dir: Path, member: str) -> Path:
