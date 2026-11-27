@@ -19,4 +19,17 @@ final class CapitalizedSpellingsTests: XCTestCase {
         XCTAssertEqual(spellings.written("MONDAY"), "MONDAY")
         XCTAssertEqual(spellings.written("how"), "how")
     }
+
+    func testFrenchListSpellsNamesButNotDaysOrLanguageNames() throws {
+        let spellings = try CapitalizedSpellings(languageCode: "fr")
+
+        XCTAssertEqual(spellings.spelling(of: "paris"), "Paris")
+        XCTAssertEqual(spellings.spelling(of: "écosse"), "Écosse")
+        XCTAssertEqual(spellings.spelling(of: "ÉCOSSE"), "Écosse")
+        XCTAssertEqual(spellings.spelling(of: "iphone"), "iPhone")
+        // French writes days, months, and language names in lowercase.
+        XCTAssertNil(spellings.spelling(of: "lundi"))
+        XCTAssertNil(spellings.spelling(of: "janvier"))
+        XCTAssertNil(spellings.spelling(of: "français"))
+    }
 }
