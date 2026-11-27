@@ -1,6 +1,6 @@
 """Where each step reads and writes inside a data directory: inputs under `sources/`,
 intermediate files under `work/`, the compiled native tools under `bin/`, and the files the
-keyboard bundles under `built/`, named as in the package's English typing language folder."""
+keyboard bundles under `built/`, named as in the package's typing language folders."""
 
 from pathlib import Path
 
@@ -11,6 +11,12 @@ class DataPaths:
         self.work = self.root / "work"
         self.built = self.root / "built"
         self.bin = self.root / "bin"
+
+    # What Tools/KeyVoxLanguageModel built for a language other than English, linked in
+    # (language_build.py).
+    @property
+    def language_build(self) -> Path:
+        return self.root / "sources" / "language-build"
 
     # SCOWL word lists, written by scowl_word_list.sh.
     @property

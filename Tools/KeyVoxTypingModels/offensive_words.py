@@ -1,8 +1,9 @@
 """Writes the patterns of the words the keyboard's word data leaves out, one a line, to
-`<data_dir>/work/offensive_words.txt`: the terms of the English profanity list
-(`sources.PROFANITY_LIST`) tagged racial or anti-LGBTQ at any severity, or religious at strong
-severity or above, which leaves out religious exclamations. Phrases, terms with a space, are left
-aside, as no word is one.
+`<data_dir>/work/offensive_words.txt`: the terms of the language's profanity list
+(`sources.PROFANITY_LIST`, `profanity_list` in `typing_languages.py`) tagged racial or anti-LGBTQ
+at any severity, or religious at strong severity or above, which leaves out religious
+exclamations. Phrases, terms with a space, are left aside, as no word is one. The pinned list has
+English terms alone, so for any other language the file is empty and no word is left out.
 
 Each pattern is a regular expression a word's letter form (its letters only, case and accents
 folded, as a swipe draws it) must match whole: a term's letters, read the same way, the list's "*"
@@ -22,6 +23,7 @@ from pathlib import Path
 
 from paths import DataPaths
 from sources import profanity_list_path
+from typing_languages import add_language_arguments, language_from
 
 LEFT_OUT_TAGS = {"racial", "lgbtq"}
 RELIGIOUS_TAG = "religious"
@@ -68,18 +70,26 @@ def patterns(list_path: Path) -> list[str]:
     return written
 
 
-def read_matcher(path: Path) -> re.Pattern:
-    """One expression matching a letter form whole when any pattern of `path` does."""
+def read_matcher(path: Path) -> re.Pattern | None:
+    """One expression matching a letter form whole when any pattern of `path` does, or None when
+    the file has none."""
     lines = [line for line in path.read_text(encoding="utf-8").splitlines() if line]
-    return re.compile("|".join(f"(?:{line})" for line in lines))
+    return re.compile("|".join(f"(?:{line})" for line in lines)) if lines else None
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("data_dir", type=Path)
-    data_dir = parser.parse_args().data_dir
+    add_language_arguments(parser)
+    arguments = parser.parse_args()
+    data_dir = arguments.data_dir
     paths = DataPaths(data_dir)
-    written = patterns(profanity_list_path(data_dir))
+    language = language_from(arguments)
+    if language.profanity_list is None:
+        written = []
+        print(f"the profanity list has no {language.identifier} terms; no word is left out")
+    else:
+        written = patterns(profanity_list_path(data_dir, language.profanity_list))
     paths.work.mkdir(parents=True, exist_ok=True)
     paths.offensive_words.write_text("".join(f"{pattern}\n" for pattern in written), encoding="utf-8")
     print(f"wrote {paths.offensive_words}: {len(written)} patterns")

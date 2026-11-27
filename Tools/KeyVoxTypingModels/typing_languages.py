@@ -1,6 +1,7 @@
 """The typing languages the typing models are built for, and the build rules that differ between
-them: where a language's words, counts, and typing come from, and its LatinIME dictionary's locale
-and header attributes.
+them: where a language's words, counts, and typing come from, its LatinIME dictionary's locale
+and header attributes, the profanity list its dictionary leaves words out by, and which sentences
+the typo simulator types for it.
 
 What the keyboard reads at run time comes from the language's `language.json`: its default letter
 layout, whose letter keys the suggestion reader and the typo simulator tap, and its vowels, which
@@ -44,6 +45,14 @@ class TypingLanguage:
     text: str = LANGUAGE_BUILD_TEXT
     # Integer attributes the dictionary's header adds, by name.
     dictionary_attributes: tuple[tuple[str, int], ...] = ()
+    # The profanity list's file of the language's terms (`offensive_words.py`), or None when the
+    # pinned list has none for the language.
+    profanity_list: str | None = None
+    # The language build's sentence files the typo simulator types, in order
+    # (`simulation_sentences.py`).
+    simulation_sources: tuple[str, ...] = ()
+    # One in this many of their sentences is typed.
+    simulation_share: int = 10
     # The language.json to read instead of the package's.
     language_file: Path | None = None
 
@@ -82,15 +91,25 @@ class TypingLanguage:
         return options
 
 
-# Each language build's locale is its AOSP word list's (`locale=` in the list's header).
+# Sentences people wrote, not speech or chat: the typo simulator types what typists mean, and these
+# are the sources written and spelled with care, as English's Tatoeba and OASST1 are.
+_WRITTEN_SOURCES = ("tatoeba", "oasst2")
+# The share of their sentences that types about as many as English's simulation does.
+_LANGUAGE_BUILD_SHARE = 3
+_LANGUAGE_BUILD = dict(simulation_sources=_WRITTEN_SOURCES, simulation_share=_LANGUAGE_BUILD_SHARE)
+
+# Each language build's locale is its AOSP word list's (`locale=` in the list's header). The pinned
+# profanity list has English terms alone.
 LANGUAGES = {
-    "en": TypingLanguage(identifier="en", locale="en_US", text=ENGLISH_TEXT),
+    "en": TypingLanguage(identifier="en", locale="en_US", text=ENGLISH_TEXT,
+                         profanity_list="en.json"),
     # The AOSP German word list's header asks for German umlaut processing, which lets an umlaut
     # be typed as its letter followed by an "e".
     "de": TypingLanguage(identifier="de", locale="de",
-                         dictionary_attributes=(("REQUIRES_GERMAN_UMLAUT_PROCESSING", 1),)),
-    "es": TypingLanguage(identifier="es", locale="es"),
-    "fr": TypingLanguage(identifier="fr", locale="fr"),
+                         dictionary_attributes=(("REQUIRES_GERMAN_UMLAUT_PROCESSING", 1),),
+                         **_LANGUAGE_BUILD),
+    "es": TypingLanguage(identifier="es", locale="es", **_LANGUAGE_BUILD),
+    "fr": TypingLanguage(identifier="fr", locale="fr", **_LANGUAGE_BUILD),
 }
 
 

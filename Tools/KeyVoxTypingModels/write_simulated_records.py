@@ -26,7 +26,8 @@ from ite_records import completes
 from letter_layout import LetterLayout
 from never_corrected_words import never_corrected_words
 from paths import DataPaths
-from simulation_sentences import simulation_sentences
+from simulation_sentences import section as sentence_section, simulation_sentences
+from typing_languages import add_language_arguments, language_from
 from typo_simulator import TypoSimulator
 from words import valid_word
 
@@ -57,7 +58,10 @@ class PrefixLengths:
 def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("data_dir", type=Path)
-    paths = DataPaths(parser.parse_args().data_dir)
+    add_language_arguments(parser)
+    arguments = parser.parse_args()
+    paths = DataPaths(arguments.data_dir)
+    language = language_from(arguments)
     measurements = json.loads(paths.typing_measurements.read_text(encoding="utf-8"))
     calibration = json.loads(paths.typo_calibration.read_text(encoding="utf-8"))
     layout = LetterLayout.for_language(measurements["language"])
@@ -66,7 +70,7 @@ def main():
     prefix_lengths = PrefixLengths(measurements["completion_prefix_lengths"])
     never_corrected = never_corrected_words(paths)
 
-    sentences = list(simulation_sentences(paths.root))
+    sentences = list(simulation_sentences(paths, language))
     words = sum(len(sentence) for sentence in sentences) * TYPISTS
     completion_share = COMPLETIONS / words
     paths.simulation.mkdir(parents=True, exist_ok=True)
@@ -79,7 +83,7 @@ def main():
         written[name] += 1
 
     for index, sentence in enumerate(sentences):
-        section = f"sim{index}"
+        section = sentence_section(index)
         for _ in range(TYPISTS):
             for position, word in enumerate(sentence):
                 previous = sentence[max(0, position - 3):position][::-1]
