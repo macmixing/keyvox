@@ -1,8 +1,10 @@
+import KeyVoxPredictiveKeyboard
 import UIKit
 
 /// What the letter keyboard may do in the focused text field: what the field's text traits
 /// allow, narrowed by the user's keyboard settings. A feature the field turns off stays off
-/// whatever the settings say.
+/// whatever the settings say, and swipe typing stays off in a typing language without a swipe
+/// model.
 struct KeyboardTypingTraits: Equatable {
     /// The field expects digits first, or the user opens the keyboard on 123, so the keyboard
     /// opens on the number page and stays there until ABC is tapped.
@@ -11,7 +13,8 @@ struct KeyboardTypingTraits: Equatable {
     let allowsPredictions: Bool
     /// Suggestions are shown in the suggestion bar.
     let showsSuggestions: Bool
-    /// A finger sliding across the letter keys types the word it traces.
+    /// A finger sliding across the letter keys types the word it traces: the field allows
+    /// predictions, the user's settings allow swiping, and the typing language has a swipe model.
     let allowsSwipeTyping: Bool
     let allowsAutocorrection: Bool
     let autocapitalization: UITextAutocapitalizationType
@@ -57,7 +60,11 @@ struct KeyboardTypingTraits: Equatable {
         self.fieldKeys = fieldKeys
     }
 
-    init(proxy: UITextDocumentProxy, settings: KeyboardAppSettingsStore) {
+    init(
+        proxy: UITextDocumentProxy,
+        settings: KeyboardAppSettingsStore,
+        language: TypingLanguage = KeyboardTypingLanguage.current
+    ) {
         let keyboardType = proxy.keyboardType ?? .default
         let contentType = proxy.textContentType ?? nil
         let isSecure = proxy.isSecureTextEntry ?? false
@@ -86,7 +93,7 @@ struct KeyboardTypingTraits: Equatable {
             || settings.opensOnNumberPage
         allowsPredictions = isNumericOnly == false && isCredential == false && dropsSuggestions == false
         showsSuggestions = allowsPredictions && settings.isPredictiveTextEnabled
-        allowsSwipeTyping = allowsPredictions && settings.isSwipeTypingEnabled
+        allowsSwipeTyping = allowsPredictions && settings.isSwipeTypingEnabled && language.offersSwipeTyping
         allowsAutocorrection = allowsPredictions
             && isAddressLike == false
             && proxy.autocorrectionType != .no
