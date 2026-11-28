@@ -1,6 +1,7 @@
 import CoreGraphics
 import Foundation
 import KeyVoxPredictiveKeyboard
+import KeyVoxTypingSimulation
 
 /// Replays touches through the keyboard's swipe gate (`SwipeGate`):
 ///
@@ -38,7 +39,8 @@ enum SwipeGateCommand {
 
     /// Returns whether any tap became a swipe.
     private static func replayTaps(plan: TypingPlan, minimumTaps: Int) throws -> Bool {
-        let layout = KeyboardLayoutModel()
+        // Typing plans type English.
+        let layout = KeyboardLayoutModel(language: try TypingLanguage.bundled(identifier: "en"))
         let simulator = TapStreamSimulator(layout: layout, gateParameters: SwipeGate<Int>.standardParameters)
         var failed = false
         print("simulated tapping, \(minimumTaps) taps or more per model, pitch \(String(format: "%.1f", layout.keyPitch.width)) pt")

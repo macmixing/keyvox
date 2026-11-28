@@ -1,5 +1,6 @@
 import CoreGraphics
 import KeyVoxPredictiveKeyboard
+import KeyVoxTypingSimulation
 
 /// One word typed by a planned finger: each letter is tapped at its key center plus the
 /// planned offset, and the key nearest each tap becomes the typed letter.

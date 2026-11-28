@@ -1,5 +1,6 @@
 import Foundation
 import KeyVoxPredictiveKeyboard
+import KeyVoxTypingSimulation
 
 /// `bars`: for each probe, types its context words and the first letters of a word through
 /// the shipping KeyVox typing session, every tap at its key's center, and records the

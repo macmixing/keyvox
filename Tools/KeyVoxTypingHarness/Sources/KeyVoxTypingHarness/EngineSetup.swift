@@ -1,5 +1,6 @@
 import Foundation
 import KeyVoxPredictiveKeyboard
+import KeyVoxTypingSimulation
 
 /// The engine, sized to the harness keyboard grid, plus how long it took to start.
 struct EngineSetup {
@@ -16,7 +17,7 @@ struct EngineSetup {
         let footprintBefore = MemoryFootprint.current()
         let started = ContinuousClock.now
         engine = try PredictiveEngine(language: TypingLanguage.bundled(identifier: languageIdentifier))
-        layout = KeyboardLayoutModel()
+        layout = KeyboardLayoutModel(language: engine.language)
         engine.updateKeyboardGeometry(layout.predictionGeometry, keyboardSize: layout.keyboardSize)
         startupMilliseconds = Self.milliseconds(since: started)
         startupFootprintBytes = MemoryFootprint.current() &- footprintBefore
