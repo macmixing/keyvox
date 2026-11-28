@@ -3,7 +3,10 @@
 Builds the language data of each typing language: the files the predictive keyboard bundles
 for English in `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/PredictiveData/en`,
 the capitalized spellings shared with dictation in `Packages/KeyVoxLinguistics/Sources/KeyVoxLinguistics/Resources`,
-and the same files for German, Spanish, and French. Spanish's are bundled in `PredictiveData/es` and its capitalized spellings in `KeyVoxLinguistics`, and Latin American Spanish (`PredictiveData/es-419`) uses them ("Latin American Spanish"); German's and French's are built but not bundled yet:
+and the same files for German, bundled in `PredictiveData/de` (all but the swipe vocabulary, which
+needs German swipe typing); for Spanish, bundled in `PredictiveData/es` (all but the swipe
+vocabulary), which Latin American Spanish (`PredictiveData/es-419`) uses too ("Latin American
+Spanish"); and for French, which is built but not bundled yet:
 
 | File | Built by | Reads |
 | --- | --- | --- |
@@ -73,7 +76,7 @@ built. The Leipzig corpora (news and web text) are formal writing and are not re
 ```bash
 python3.14 -m venv .venv
 .venv/bin/pip install -r requirements.txt
-PYTHON=.venv/bin/python ./build_language_data.sh <language> <data-dir> <output-dir> [dictionary-words]
+PYTHON=.venv/bin/python ./build_language_data.sh <language> <data-dir> <output-dir> [dictionary-words [left-out-words]]
 ```
 
 `<language>` is `en`, `de`, `de-bundestag` (German with the Bundestag speeches), `es`, or `fr`.
@@ -90,16 +93,18 @@ steps:
 .venv/bin/python count_sentence_openers.py --language <language> <data-dir>
 .venv/bin/python write_sentence_openers.py --language <language> <data-dir> --output <output-dir>/sentence_openers.txt
 .venv/bin/python write_vocabulary.py --language <language> <data-dir> <output-dir>/vocabulary.txt <output-dir>/common_vocabulary.txt
-.venv/bin/python write_capitalized_spellings.py --language <language> <data-dir> <output-dir>/vocabulary.txt <output-dir>/common_vocabulary.txt <output-dir>/capitalized_spellings_<identifier>.txt
+.venv/bin/python write_capitalized_spellings.py --language <language> <data-dir> <output-dir>/vocabulary.txt <output-dir>/common_vocabulary.txt <output-dir>/capitalized_spellings_<identifier>.txt [--leave-out <left-out-words>]
 .venv/bin/python write_unknown_word_followers.py <data-dir> <output-dir>/vocabulary.txt <output-dir>/unknown_word_followers.txt
 .venv/bin/python write_word_followers.py <data-dir> <output-dir>/vocabulary.txt <output-dir>/word_followers.txt
 .venv/bin/python write_grammar_words.py <data-dir> <output-dir>/grammar_words.txt
 ```
 
-Given `[dictionary-words]`, the language's dictionary words and probabilities (a word, a tab,
-and a probability a line), it then builds the swipe vocabulary, leaving out the words that
-`[left-out-words]`, a regular expression a line, matches (`Tools/KeyVoxTypingModels` writes
-English's as `work/offensive_words.txt`):
+Given `[left-out-words]`, a regular expression a line (`Tools/KeyVoxTypingModels` writes a
+language's as `work/offensive_words.txt`), the words spelled with capitals and the swipe vocabulary
+leave out the words it matches, as the dictionary does (see "Words spelled with capitals"); with
+`""` as `[dictionary-words]` it is read with no swipe vocabulary built, as German's is. Given
+`[dictionary-words]`, the language's dictionary words and probabilities (a word, a tab, and a
+probability a line), it then builds the swipe vocabulary:
 
 ```bash
 .venv/bin/python count_swipe_words.py --language <language> <data-dir>
@@ -109,11 +114,12 @@ English's as `work/offensive_words.txt`):
 ```
 
 Steps that read none of each other's files run side by side: after `download_sources.py`, the
-vocabulary and the words spelled with capitals (`write_vocabulary.py`,
-`write_capitalized_spellings.py`) and the swipe vocabulary's counts (`count_swipe_words.py`,
-`count_swiped_words.py`, the spelling list) run beside `extract_sentences.py`; then the context model (`count_ngrams.py`,
-`write_context_model.py`) beside the sentence openers (`write_word_kinds.py`,
-`count_sentence_openers.py`, `write_sentence_openers.py`); then the two follower lists and the
+swipe vocabulary's counts (`count_swipe_words.py`, `count_swiped_words.py`, the spelling list) run
+beside `extract_sentences.py`; then `count_ngrams.py` beside the sentence openers
+(`write_word_kinds.py`, `count_sentence_openers.py`, `write_sentence_openers.py`), and once the
+counts are written, `write_context_model.py` beside the vocabulary and the words spelled with
+capitals (`write_vocabulary.py`, `write_capitalized_spellings.py`), since a vocabulary may add the
+words the counts show its word list lacks (see "Vocabulary"); then the two follower lists and the
 grammar words, once the counts, the vocabulary, and the word kinds are written; and last
 `write_swipe_vocabulary.py`. Each step reads the same files it would read run alone, so the files
 are the same; the memory of the steps running together adds up. Each step runs in a process group
@@ -131,16 +137,21 @@ bundled one before replacing it.
 
 ### Built data
 
-The builds of November 24, 2026, and Spanish's of November 27, with its `language.json`, its tuned
-opener weights, its count weights, and its context model sizes (see "Context model"): its words of
-text below are as counted once each. Every other context model fills the default limits (107,000
-words, 800,000 pairs, 600,000 sequences), so each is 14,963,028 bytes, as English's is; Spanish's
-holds 240,000 words, 2,000,000 pairs, and 2,000,000 sequences in 42,160,028 bytes.
+The builds of November 24, 2026, and German's of November 27, rebuilt with its `language.json`,
+whose apostrophe and ordinal periods (see "Text in each language") leave 65,402 fewer sentences
+than November 24's and 198 fewer words, with the written lexicon words its vocabulary adds (see
+"Vocabulary") and contractions, and with the words its dictionary leaves out given as
+`[left-out-words]`; German's bundled files are this build's. Spanish's of November 27 was built with
+its `language.json`, its tuned opener weights, its count weights, and its context model sizes (see
+"Context model"); its words of text below are as counted once each. Every other context model fills
+the default limits (107,000 words, 800,000 pairs, 600,000 sequences), so each is 14,963,028 bytes, as
+English's is; Spanish's holds 240,000 words, 2,000,000 pairs, and 2,000,000 sequences in 42,160,028
+bytes.
 
 | Build | Words of text | Vocabulary | Capitalized spellings | Grammar words |
 | --- | --- | --- | --- | --- |
-| en | 528,779,799 | 109,172 (SCOWL size 60) | 18,144 | 152 |
-| de | 118,350,701 | 209,470 | 146,689 | 220 |
+| en | 528,779,799 | 109,172 (SCOWL size 60) | 18,138 | 152 |
+| de | 118,350,503 | 222,263 | 152,968 | 220 |
 | de-bundestag | 138,467,367 | 209,470 | 146,689 | 222 |
 | es | 281,865,056 | 236,307 | 2,955 | 156 |
 | fr | 393,698,831 | 165,093 | 19,021 | 195 |
@@ -149,11 +160,11 @@ Texts, sentences, and words each source gave after deduplication:
 
 | Build | Source | Texts | Sentences | Words |
 | --- | --- | --- | --- | --- |
-| de | Tatoeba | 627,288 | 666,250 | 4,813,532 |
-| de | OASST2 | 6,086 | 36,718 | 412,098 |
-| de | WildChat | 29,581 | 52,602 | 386,654 |
-| de | YODAS2 | 19,250 | 1,353,933 | 23,715,021 |
-| de | YouTube-Commons | 41,435 | 175,889 | 89,023,396 |
+| de | Tatoeba | 627,288 | 665,043 | 4,813,527 |
+| de | OASST2 | 6,086 | 36,146 | 412,098 |
+| de | WildChat | 29,581 | 51,497 | 386,653 |
+| de | YODAS2 | 19,250 | 1,314,138 | 23,714,836 |
+| de | YouTube-Commons | 41,435 | 153,166 | 89,023,389 |
 | de-bundestag | Open Discourse (besides de's) | 69,394 | 1,314,524 | 20,116,666 |
 | es | Tatoeba | 378,560 | 391,930 | 2,695,083 |
 | es | OASST2 | 27,962 | 198,026 | 2,674,964 |
@@ -212,6 +223,15 @@ quotation can begin. Sentences end only at the shared ending marks and line brea
 "¡" are not word characters and neither end nor start a sentence, so a question after a comma stays
 in its sentence, and one after a period already starts its own.
 
+Two rules come from the language's `language.json` in the package, as the keyboard reads them
+(`TypingTextRules`), and `Language` fills them in from it (`languages.py`): the language's closing
+single quotation mark is its keyboard's apostrophe after a letter, so where that is no apostrophe
+already it is read as one between two letters (German "geht‘s" is "geht's", as Apple's German
+keyboard types it); and with `ordinalPeriods`, a period right after a digit writes an ordinal
+number and ends no sentence ("Am 3. Juli" is one sentence), as on the keyboard. German has both;
+English, Spanish, and French have neither, so their text is read as before.
+`python -m unittest test_normalize` checks both rules and that English is unchanged.
+
 ## Vocabulary
 
 `write_vocabulary.py` writes a language's vocabulary, its words with their capitals, one per line:
@@ -242,9 +262,31 @@ common part, which SCOWL's size 50 is for English, is the spellings the word lis
 a spelling only the lexicons add is a rare sense, and does not keep the word's usual spelling with
 a capital from the capitalized spellings.
 
+AOSP's German word list leaves out common words: almost every lowercase word beginning with an
+umlaut ("überhaupt", "ändern", "öffnen", "öffentlich"; 969 of its 209,470 spellings began with
+"ä", "ö", or "ü", against 4,995 with "u"), and common forms such as "nimmst", "solltet", and
+"sowas", which German's sentences write hundreds or thousands of times. So German's vocabulary
+first adds the Wikidata Lexemes words the word list lacks that its sentences, as `count_ngrams.py`
+counted them, write at least as often as the median word-list word they write at all, 17 times
+(`adds_written_lexicon_words` in `languages.py`, `vocabulary/written_lexicon_words.py`): 12,352
+words, in every spelling the lexicons write them in, as common words. A lexicon form the sentences
+write less often, such as a rare inflection, stays out. They are 1,437 of the vocabulary's spellings
+beginning with an umlaut, and add 6,283 nouns to the capitalized spellings; no capitalized spelling
+is lost. `python -m unittest test_written_lexicon_words` checks the rule.
+
+The list holds no contraction either, such as "geht's" or "gibt's", which German writes thousands of
+times and Apple's German keyboard restores when the apostrophe is left out ("gehts" gives "geht’s",
+measured on the iOS 27.2 simulator). So German's vocabulary also adds the contractions its carefully
+written sources, Tatoeba and OASST2 (`WRITTEN_SOURCES`), write at least as often as the median
+word-list word they write, 3 times, whose part before the apostrophe is a word of the list
+(`adds_written_contractions`, `vocabulary/written_contractions.py`): 115, from "geht's" (233 times)
+and "gibt's" (171) to "stimmt's" and "du's". The speech transcripts are left out, as they write
+other languages' contractions ("don't", "c'est") almost as often; the written sources still bring a
+few ("don't", 15 times). `python -m unittest test_written_contractions` checks the rule.
+
 | Language | Word list | Vocabulary | Written in lowercase by the spelling check |
 | --- | --- | --- | --- |
-| de | 205,887 words | 209,470 spellings | (no check) |
+| de | 205,887 words, 12,352 written lexicon words, and 115 written contractions | 222,263 spellings | (no check) |
 | es | 236,193 words | 236,307 spellings | 2,146 words |
 | fr | 163,631 single words | 165,093 spellings | 812 words |
 
@@ -401,6 +443,19 @@ Each language's source weights are in `languages.py`: English's were tuned again
 suggestion bars (youtube-commons 0, oasst2 0.3, tatoeba 10). German and French give the same
 weights by kind of source, speech 0, chat and text messages 0.3, and Tatoeba 10.
 
+German's were measured against Apple's German (Germany) bars after 53 sentences
+(captured on the iOS 27.2 simulator, in the format `--apple` reads), over a
+grid of 24 weightings (Tatoeba 1, 10, 30; OASST2 and WildChat 0, 0.3, 1, 3; speech 0, 0.1), and keep
+those weights: no weighting with Tatoeba at 10 or 30 shares more words with Apple's bars, and the
+few that share more, with Tatoeba at 1, show far fewer different bars than Apple's:
+
+| Weights (Tatoeba, OASST2, WildChat, speech) | Words shared with Apple's bar | Different bars (Apple: 36) | Held out: Tatoeba | OASST2 | WildChat | YODAS2 | YouTube-Commons |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 10, 0.3, 0.3, 0 (German) | 1.26 of 3 | 17 | 29.3% | 8.6% | 5.0% | 17.6% | 15.8% |
+| 10, 0.3, 0.3, 0.1 | 1.21 of 3 | 13 | 28.5% | 8.8% | 5.9% | 20.5% | 18.4% |
+| 1, 0.3, 0.3, 0.1 | 1.30 of 3 | 8 | 27.8% | 8.9% | 6.4% | 21.5% | 20.2% |
+| 30, 0.3, 0.3, 0 | 1.23 of 3 | 22 | 29.3% | 8.0% | 4.8% | 17.2% | 15.7% |
+
 Spanish's were tuned against the bars Apple's Spanish (Spain) keyboard showed after 53 sentences
 on an iOS 27.2 simulator, read with `--apple`: the same weights but speech at 0.1, which share more
 words with Apple's bars and find the next sentence's first word more often in every source's
@@ -428,8 +483,15 @@ where Apple offers "No", "Y", and "Si", its openers at the start of the text.
 ## Words spelled with capitals
 
 `capitalized_spellings_<language>.txt` holds the words the keyboard and dictation write with their
-capitals, such as "Jennifer" or "iPhone", and in German its nouns. English's is bundled in
-`Packages/KeyVoxLinguistics`. It is built from the vocabulary and the written sources.
+capitals, such as "Jennifer" or "iPhone", and in German its nouns. English's, German's, and
+Spanish's are bundled in `Packages/KeyVoxLinguistics`. It is built from the vocabulary and the written sources.
+
+A word a pattern of `--leave-out` matches whole, by its letter form, is left out, as the language's
+dictionary leaves it out: the patterns are the ones `Tools/KeyVoxTypingModels` writes for the
+language as `work/offensive_words.txt`, so the list is written again with them once the language's
+typing models are built. English's leaves out the 6 words English's dictionary leaves out, and
+German's the 4 words Multilingual HateCheck's German slurs match (`Tools/KeyVoxTypingModels`, "Words
+left out"); each is otherwise the list written without them. `write_swipe_vocabulary.py` reads `--leave-out` the same way.
 
 Spellings with capitals in a row are left out, as the system keyboard leaves acronyms such
 as "nasa" lowercase, except those listed in `measured_spellings.txt`, which the English system
@@ -593,9 +655,7 @@ Top-1 rises with every size, so every kept form is in the list. With all of them
 decode to their word first that did not, and 55 that did no longer do: 44 of those to an added
 word, 11 of them a British spelling of the American word ("center" to "centre", "organized" to
 "organised") and the rest look-alikes ("it" to "itu", "this" to "theos"). The split's one swipe of
-"haha" decoded as "has" before and as "haha" now. The test split was not decoded. The measurement,
-every row above with each swipe gained and lost and the SHA-256 of the list it measured, is kept
-with KeyVox's language data as `swipe/vocabulary-build/swipe_accuracy_val-22465.json`.
+"haha" decoded as "has" before and as "haha" now. The test split was not decoded.
 
 ### Why a list of its own
 

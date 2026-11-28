@@ -12,7 +12,7 @@ public struct SentenceEnding: Sendable, Hashable {
     }
 
     public let mark: Mark
-    /// The sentence's words in order, lowercased, with curly apostrophes written straight.
+    /// The sentence's words in order, lowercased, with typed apostrophes written straight.
     public let words: [String]
 
     public var firstWord: String { words[0] }
@@ -26,15 +26,16 @@ public struct SentenceEnding: Sendable, Hashable {
 
     /// The sentence that ends where the last sentence of `text` begins, or nil when no
     /// earlier sentence with words ends there.
-    public init?(before text: String) {
+    /// - Parameter rules: How the typing language's text is read (`TypingLanguage.textRules`).
+    public init?(before text: String, rules: TypingTextRules = .standard) {
         let text = text[...]
-        var index = TypingTextContext.sentenceStart(in: text)
+        var index = TypingTextContext.sentenceStart(in: text, rules: rules)
         var mark: Mark?
         var endsAtLineBreak = false
         while index > text.startIndex {
             let previous = text.index(before: index)
             let character = text[previous]
-            if TypingTextContext.isSentenceBoundary(at: previous, in: text) {
+            if TypingTextContext.isSentenceBoundary(at: previous, in: text, rules: rules) {
                 if character.isNewline {
                     endsAtLineBreak = true
                 } else if mark == nil {
@@ -47,10 +48,10 @@ public struct SentenceEnding: Sendable, Hashable {
         }
         guard let mark = mark ?? (endsAtLineBreak ? .lineBreak : nil) else { return nil }
 
-        let sentence = text[TypingTextContext.sentenceStart(in: text[..<index])..<index]
+        let sentence = text[TypingTextContext.sentenceStart(in: text[..<index], rules: rules)..<index]
         let words = sentence
-            .split { TypingTextContext.isWordCharacter($0) == false }
-            .map { $0.lowercased().replacingOccurrences(of: "’", with: "'") }
+            .split { rules.isWordCharacter($0) == false }
+            .map { rules.straightApostrophes(in: $0.lowercased()) }
         guard words.isEmpty == false else { return nil }
         self.init(mark: mark, words: words)
     }

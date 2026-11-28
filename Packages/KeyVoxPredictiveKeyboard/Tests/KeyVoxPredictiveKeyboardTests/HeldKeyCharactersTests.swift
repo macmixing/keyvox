@@ -17,12 +17,10 @@ final class HeldKeyCharactersTests: XCTestCase {
     }
 
     func testCenteredOfferKeepsItsOrderAndFindsTheKeysOwnText() throws {
-        let list = try HeldKeyCharacters.bundled(for: .english)
-        let offers = list.offersByKey.filter { $0.value.direction == .centered }
-        XCTAssertFalse(offers.isEmpty)
-        for (key, offer) in offers {
-            XCTAssertEqual(offer.characters[offer.ownIndex], key)
-        }
+        // The centered offer the keyboard shows is the web endings' (`WebEndings`).
+        let offer = try XCTUnwrap(try WebEndings.bundled().offer(region: "US", preferredLanguages: ["en-US"], languages: [.english]))
+        XCTAssertEqual(offer.held.direction, .centered)
+        XCTAssertEqual(offer.held.characters[offer.held.ownIndex], offer.ending)
     }
 
     func testCenteredOfferWithoutTheKeysOwnTextIsRejected() throws {

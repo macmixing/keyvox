@@ -18,9 +18,18 @@ struct TypingLanguageManifest: Decodable {
     let alwaysCapitalizedWords: [String]
     let quotationMarks: QuotationMarks
     /// The marks that open a sentence before its first word: typed where a sentence starts, the
-    /// sentence still starts after them. None when absent.
+    /// sentence still starts after them (`TypingTextRules.sentenceOpeningMarks`). None when absent.
     let sentenceOpeningMarks: String?
     /// The folder in `PredictiveData` whose dictionary, models, and swipe files a regional variant
     /// uses where its own folder has none; nil for a language that has all its own.
     let sharedDataFolder: String?
+    /// Whether a period right after a digit writes an ordinal number rather than ending the
+    /// sentence (`TypingTextRules.ordinalPeriods`); false when left out.
+    let ordinalPeriods: Bool?
+    /// The locale of Apple's keyboard for the language, whose web endings its keyboard adds to the
+    /// region's (`WebEndings`).
+    let webEndingsLocale: String
+    /// The mark the keyboard writes for the apostrophe of a word it writes, such as a corrected
+    /// contraction; the dictionary's straight apostrophe when left out.
+    let writtenApostrophe: String?
 }

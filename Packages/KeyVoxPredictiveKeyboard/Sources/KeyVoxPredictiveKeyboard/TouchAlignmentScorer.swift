@@ -54,7 +54,7 @@ public struct TouchAlignmentScorer: Sendable {
     }
 
     private func alignmentTable(touches: [CGPoint], word: String) -> [[Double]] {
-        let letters = Array(aimedLetters(word))
+        let letters = aimedLetters(word)
         let touchCount = touches.count
         let letterCount = letters.count
         let unreachable = Double.greatestFiniteMagnitude / 4
@@ -122,13 +122,16 @@ public struct TouchAlignmentScorer: Sendable {
         return parameters.skippedLetterCost
     }
 
-    /// The keys `word`'s letters are aimed at, lowercased: a letter with a key of its own on the
-    /// layout at that key, and any other at the key of its letter without accents.
-    private func aimedLetters(_ word: String) -> String {
-        String(word.replacingOccurrences(of: "’", with: "'").lowercased().flatMap { letter -> String in
-            keys.center(of: letter) == nil
-                ? String(letter).folding(options: [.caseInsensitive, .diacriticInsensitive], locale: nil)
-                : String(letter)
-        })
+    /// The keys a word's letters are aimed at, lowercased: a letter that has a key of its own is
+    /// aimed at it, an accented letter that has none at its plain letter's key, as a long press on
+    /// that key types it, and any other letter at the key whose popup offers it, such as French
+    /// "œ" at "o".
+    private func aimedLetters(_ word: String) -> [Character] {
+        TypingTextRules.standard.straightApostrophes(in: word).lowercased().map { letter in
+            guard keys.center(of: letter) == nil else { return letter }
+            let plain = String(letter).folding(options: .diacriticInsensitive, locale: nil)
+            if plain.count == 1, keys.center(of: Character(plain)) != nil { return Character(plain) }
+            return keys.offeringKey(of: letter) ?? (plain.count == 1 ? Character(plain) : letter)
+        }
     }
 }

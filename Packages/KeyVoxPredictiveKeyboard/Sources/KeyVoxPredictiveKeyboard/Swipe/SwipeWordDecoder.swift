@@ -31,7 +31,7 @@ final class SwipeWordDecoder: @unchecked Sendable {
         guard lexicon.letters == settings.letters,
               lexicon.keepsDoubleLetters == settings.keepsDoubleLetters,
               decoder.map({ $0.symbols == symbols && $0.inputs == frameWidth }) ?? true else {
-            throw PredictiveKeyboardError.invalidSwipeModel("swipe.json")
+            throw PredictiveKeyboardError.invalidSwipeModel(SwipeModelSettings.fileName)
         }
     }
 

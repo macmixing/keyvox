@@ -6,7 +6,7 @@ import Foundation
 /// allowed), so the preceding-word context handed to the engine is never
 /// broken by numbers, symbols, or other tokens the harness cannot type. Without a
 /// layout the letters are the English ones, ASCII; with a typing language's layout they
-/// are the letters its keys type or its held popups offer, such as German "ä" and "ß".
+/// are the letters its keys type or its held popups offer.
 struct SentenceWords {
     let words: [String]
     /// The words as the sentence writes them, with their capitals.

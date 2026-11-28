@@ -139,6 +139,7 @@ public final class PredictiveTypingSession {
     private let now: () -> Date
     private let casing: WordCasing
     private let quotes: SmartQuotes
+    private let textRules: TypingTextRules
     private let pickedWordSpaceCharacters: CharacterList?
     private let spacedFromPickedWordCharacters: CharacterList?
     private let noNextWordCharacters: CharacterList?
@@ -153,10 +154,11 @@ public final class PredictiveTypingSession {
         self.now = now
         casing = language.casing
         quotes = language.quotes
+        textRules = language.textRules
         pickedWordSpaceCharacters = try? CharacterList.takingPickedWordSpace(for: language)
         spacedFromPickedWordCharacters = try? CharacterList.spacedFromPickedWord(for: language)
         noNextWordCharacters = try? CharacterList.withoutNextWords(for: language)
-        sentenceOpeningMarks = language.sentenceOpeningMarks
+        sentenceOpeningMarks = language.textRules.sentenceOpeningMarks
     }
 
     /// Call after a tapped character has been inserted.
@@ -165,7 +167,7 @@ public final class PredictiveTypingSession {
         revertibleAutocorrection = nil
         chosenText = nil
         swipedText = nil
-        let context = TypingTextContext(textBeforeCursor: textBeforeCursor)
+        let context = TypingTextContext(textBeforeCursor: textBeforeCursor, rules: textRules)
         if context.currentWord.isEmpty {
             wordTouches.reset()
         } else {
@@ -206,7 +208,7 @@ public final class PredictiveTypingSession {
             watchDeletion(textBeforeCursor: text)
         }
         lastTextCount = text.count
-        let context = TypingTextContext(textBeforeCursor: textBeforeCursor, textAfterCursor: textAfterCursor)
+        let context = TypingTextContext(textBeforeCursor: textBeforeCursor, textAfterCursor: textAfterCursor, rules: textRules)
         wordTouches.synchronize(currentWord: context.currentWord, restOfWord: context.restOfWord)
     }
 
@@ -239,7 +241,7 @@ public final class PredictiveTypingSession {
         }
         watchedCorrections.removeAll { $0.corrections.isEmpty }
         if reachedAny || textBeforeReplacedWord != nil {
-            let currentWord = TypingTextContext(textBeforeCursor: text).currentWord
+            let currentWord = TypingTextContext(textBeforeCursor: text, rules: textRules).currentWord
             textBeforeReplacedWord = String(text.dropLast(currentWord.count).suffix(Self.watchedContext))
         }
     }
@@ -300,20 +302,21 @@ public final class PredictiveTypingSession {
         let context = TypingTextContext(
             textBeforeCursor: textBeforeCursor,
             selectedText: selectedText,
-            textAfterCursor: textAfterCursor
+            textAfterCursor: textAfterCursor,
+            rules: textRules
         )
         let word = suggestedWord(in: context)
         let isAllLetters = word.text.allSatisfy(\.isLetter)
         return PredictionRequest(
             currentWord: word.text,
             touches: word.endsAtCursor && isAllLetters ? wordTouches.touches(for: word.text) : [],
-            previousWords: context.previousWords,
+            previousWords: lookupWords(context.previousWords),
             keepsTypedWord: word.endsAtCursor == false,
             isAtSentenceStart: context.isAtSentenceStart,
-            previousSentence: context.isAtSentenceStart ? SentenceEnding(before: textBeforeCursor ?? "") : nil,
+            previousSentence: context.isAtSentenceStart ? SentenceEnding(before: textBeforeCursor ?? "", rules: textRules) : nil,
             heldBackCorrections: word.endsAtCursor ? memory.rejections.corrections(heldBackFor: word.text, at: now()) : [],
             pickedWords: word.text.isEmpty && pickedText.isEmpty == false && (textBeforeCursor ?? "").hasSuffix(pickedText)
-                ? TypingTextContext.wordsNewestFirst(in: pickedText)
+                ? TypingTextContext.wordsNewestFirst(in: pickedText, rules: textRules)
                 : [],
             pickRun: pickRun,
             offersNextWords: word.text.isEmpty == false
@@ -333,7 +336,7 @@ public final class PredictiveTypingSession {
         guard selectedText?.isEmpty ?? true, revertibleAutocorrection(endingAt: textBeforeCursor) == nil else {
             return nil
         }
-        let context = TypingTextContext(textBeforeCursor: textBeforeCursor, textAfterCursor: textAfterCursor)
+        let context = TypingTextContext(textBeforeCursor: textBeforeCursor, textAfterCursor: textAfterCursor, rules: textRules)
         guard context.currentWord.isEmpty == false else { return context.wordBeforeSeparators }
         return context.restOfWord.isEmpty ? context.currentWord : nil
     }
@@ -366,14 +369,14 @@ public final class PredictiveTypingSession {
     /// left that word as typed and the text still reads that word, a space, and the
     /// current word. `result` supplies the current word's autocorrection, if any.
     public func revisionRequest(textBeforeCursor: String?, result: PredictionResult?) -> RevisionRequest? {
-        let context = TypingTextContext(textBeforeCursor: textBeforeCursor)
+        let context = TypingTextContext(textBeforeCursor: textBeforeCursor, rules: textRules)
         guard let revisable = revisableWord(before: context, textBeforeCursor: textBeforeCursor) else {
             return nil
         }
         return RevisionRequest(
             word: revisable.word,
             touches: revisable.touches,
-            previousWords: revisable.previousWords,
+            previousWords: lookupWords(revisable.previousWords),
             followingWord: autocorrection(in: result, for: context.currentWord) ?? context.currentWord,
             heldBackCorrections: memory.rejections.corrections(heldBackFor: revisable.word, at: now())
         )
@@ -408,7 +411,7 @@ public final class PredictiveTypingSession {
             chosenText = nil
             return TextEdit(deleteCount: 0, insertText: separator)
         }
-        let context = TypingTextContext(textBeforeCursor: textBeforeCursor)
+        let context = TypingTextContext(textBeforeCursor: textBeforeCursor, rules: textRules)
         let currentWord = context.currentWord
         let touches = wordTouches.touches(for: currentWord)
         let replacesChosenSpace = takesChosenSpace(separator, currentWord: currentWord, textBeforeCursor: textBeforeCursor)
@@ -527,7 +530,7 @@ public final class PredictiveTypingSession {
     /// or a closing square bracket does; nil when it follows the space.
     /// - Parameter typesExactly: Whether the character types as shown instead of as a curly quote.
     public func pickedWordSpaceEdit(character: String, typesExactly: Bool, textBeforeCursor: String?) -> TextEdit? {
-        let currentWord = TypingTextContext(textBeforeCursor: textBeforeCursor).currentWord
+        let currentWord = TypingTextContext(textBeforeCursor: textBeforeCursor, rules: textRules).currentWord
         guard takesChosenSpace(character, currentWord: currentWord, textBeforeCursor: textBeforeCursor) else {
             return nil
         }
@@ -570,7 +573,8 @@ public final class PredictiveTypingSession {
         let context = TypingTextContext(
             textBeforeCursor: textBeforeCursor,
             selectedText: selectedText,
-            textAfterCursor: textAfterCursor
+            textAfterCursor: textAfterCursor,
+            rules: textRules
         )
         let word = suggestedWord(in: context)
         if item.kind == .revert, word.endsAtCursor,
@@ -592,7 +596,7 @@ public final class PredictiveTypingSession {
         swipedText = nil
         wordTouches.reset()
         let textAfterWord = context.followingText.dropFirst(word.charactersAfterCursor)
-        let isSeparated = textAfterWord.first.map { TypingTextContext.isWordCharacter($0) == false } ?? false
+        let isSeparated = textAfterWord.first.map { textRules.isWordCharacter($0) == false } ?? false
         let space = isSeparated ? "" : " "
         let written: String
         if item.kind == .typed {
@@ -642,10 +646,11 @@ public final class PredictiveTypingSession {
         let context = TypingTextContext(
             textBeforeCursor: textBeforeCursor,
             selectedText: selectedText,
-            textAfterCursor: textAfterCursor
+            textAfterCursor: textAfterCursor,
+            rules: textRules
         )
         let leadingSpace = swipeLeadingSpace(textBeforeCursor: textBeforeCursor, selectedText: selectedText)
-        let isFollowedByWord = context.followingText.first.map(TypingTextContext.isWordCharacter) ?? false
+        let isFollowedByWord = context.followingText.first.map(textRules.isWordCharacter) ?? false
         let space = isFollowedByWord ? " " : ""
         lastAutocorrection = nil
         revertibleAutocorrection = nil
@@ -661,7 +666,7 @@ public final class PredictiveTypingSession {
     /// it from the text before the cursor.
     public func previousWords(beforeSwipeAfter textBeforeCursor: String?, selectedText: String? = nil) -> [String] {
         let leadingSpace = swipeLeadingSpace(textBeforeCursor: textBeforeCursor, selectedText: selectedText)
-        return TypingTextContext(textBeforeCursor: textBeforeCursor.map { $0 + leadingSpace }).previousWords
+        return lookupWords(TypingTextContext(textBeforeCursor: textBeforeCursor.map { $0 + leadingSpace }, rules: textRules).previousWords)
     }
 
     /// The space a swiped word goes in after: one right after the word of the swipe before it, unless
@@ -689,7 +694,7 @@ public final class PredictiveTypingSession {
         for correction in reverted.corrections {
             memory.recordUndo(of: correction.correction, typed: correction.typed)
         }
-        let isSeparated = followingText.first.map { TypingTextContext.isWordCharacter($0) == false } ?? false
+        let isSeparated = followingText.first.map { textRules.isWordCharacter($0) == false } ?? false
         let space = isSeparated ? "" : " "
         chosenText = followingText.isEmpty ? reverted.original + space : nil
         return TextEdit(deleteCount: reverted.correctedText.count, insertText: reverted.original + space)
@@ -724,6 +729,12 @@ public final class PredictiveTypingSession {
         )
     }
 
+    /// Earlier words as the dictionary, the word lists, and the learned words are looked up by:
+    /// with their apostrophes straight, however the language's text writes them.
+    private func lookupWords(_ words: [String]) -> [String] {
+        words.map(textRules.straightApostrophes(in:))
+    }
+
     /// The revisable word, if the text still reads it, one space, and the current word.
     private func revisableWord(
         before context: TypingTextContext,
@@ -749,9 +760,13 @@ public final class PredictiveTypingSession {
         let request = result.request
         switch result.typedWordKind {
         case .unknown:
-            memory.recordUse(of: written ?? word, after: request.isAtSentenceStart ? nil : request.previousWords.first, at: now())
+            memory.recordUse(
+                of: textRules.typographicApostrophes(in: written ?? word),
+                after: request.isAtSentenceStart ? nil : request.previousWords.first,
+                at: now()
+            )
         case .dictionaryWord where request.isAtSentenceStart == false && word != word.lowercased():
-            memory.recordCapitalUse(of: word, at: now())
+            memory.recordCapitalUse(of: textRules.typographicApostrophes(in: word), at: now())
         case .dictionaryWord, .usersWord:
             break
         }

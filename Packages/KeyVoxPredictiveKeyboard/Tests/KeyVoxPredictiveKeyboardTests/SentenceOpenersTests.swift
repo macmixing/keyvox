@@ -43,7 +43,7 @@ final class SentenceOpenersTests: XCTestCase {
 
     func testTheRequestNamesTheLanguagesOpeningMarkRightBeforeTheCursorAtASentenceStart() {
         let spanish = PredictiveTypingSession(language: .spanish)
-        let marks = TypingLanguage.spanish.sentenceOpeningMarks.map(String.init)
+        let marks = TypingLanguage.spanish.textRules.sentenceOpeningMarks.map(String.init)
         XCTAssertFalse(marks.isEmpty)
         for mark in marks {
             XCTAssertEqual(spanish.request(textBeforeCursor: mark).sentenceOpeningMark, mark)

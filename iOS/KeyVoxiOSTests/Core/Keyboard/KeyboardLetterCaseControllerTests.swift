@@ -35,7 +35,7 @@ struct KeyboardLetterCaseControllerTests {
     }
 
     @Test func aSentenceOpeningMarkWhereASentenceStartsKeepsTheShift() {
-        let marks = TypingLanguage.spanish.sentenceOpeningMarks.map(String.init)
+        let marks = TypingLanguage.spanish.textRules.sentenceOpeningMarks.map(String.init)
         #expect(marks.isEmpty == false)
         for mark in marks {
             for before in ["", "A. ", "A?\n"] {
@@ -55,9 +55,29 @@ struct KeyboardLetterCaseControllerTests {
             language: language
         )
     }
+
+    @Test func germanOrdinalNumbersPeriodKeepsTheSentenceGoing() {
+        // Apple's German keyboard leaves shift off after "Am 3. ", and on after "Gut. ".
+        #expect(KeyboardLetterCaseController.shouldAutoCapitalize(
+            textBeforeCursor: "Am 3. ",
+            autocapitalization: .sentences,
+            language: .german
+        ) == false)
+        #expect(KeyboardLetterCaseController.shouldAutoCapitalize(
+            textBeforeCursor: "Gut. ",
+            autocapitalization: .sentences,
+            language: .german
+        ))
+        #expect(KeyboardLetterCaseController.shouldAutoCapitalize(
+            textBeforeCursor: "Am 3. ",
+            autocapitalization: .sentences,
+            language: .english
+        ))
+    }
 }
 
 private extension TypingLanguage {
     static let english = try! TypingLanguage.bundled(identifier: "en")
     static let spanish = try! TypingLanguage.bundled(identifier: "es")
+    static let german = try! TypingLanguage.bundled(identifier: "de")
 }

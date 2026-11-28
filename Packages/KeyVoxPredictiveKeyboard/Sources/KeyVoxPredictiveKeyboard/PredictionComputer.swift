@@ -18,6 +18,8 @@ public final class PredictionComputer: @unchecked Sendable {
     /// after words at 1.4 times or less ("and", "with", "like").
     static let everydayWordContextLogLift = log(1.5)
     private var keys: KeyCenterMap
+    /// For letters only a held key's popup offers, the key held to pick them.
+    private let offeringKeys: [Character: Character]
     private var neighborKeySlips: NeighborKeySlips
     private var vocabulary = PersonalVocabulary.empty
     private var forms = PersonalWordForms.empty
@@ -32,14 +34,15 @@ public final class PredictionComputer: @unchecked Sendable {
         self.engine = engine
         casing = engine.language.casing
         self.parameters = parameters
-        keys = KeyCenterMap(geometry: engine.language.letterLayout.defaultGeometry)
+        offeringKeys = (try? HeldKeyCharacters.bundled(for: engine.language))?.letterKeysOfOfferedLetters ?? [:]
+        keys = KeyCenterMap(geometry: engine.language.letterLayout.defaultGeometry, offeringKeys: offeringKeys)
         neighborKeySlips = NeighborKeySlips(keys: keys)
     }
 
     /// Call whenever the letter keys move or resize.
     public func updateKeyboardGeometry(_ geometry: [PredictionKeyGeometry], keyboardSize: CGSize) {
         guard engine.updateKeyboardGeometry(geometry, keyboardSize: keyboardSize) else { return }
-        let keys = KeyCenterMap(geometry: geometry)
+        let keys = KeyCenterMap(geometry: geometry, offeringKeys: offeringKeys)
         let neighborKeySlips = NeighborKeySlips(keys: keys)
         lock.lock()
         self.keys = keys
@@ -122,6 +125,17 @@ public final class PredictionComputer: @unchecked Sendable {
     }
 
     public func compute(_ request: PredictionRequest) throws -> PredictionResult {
+        let result = try result(for: request)
+        let language = engine.language
+        return PredictionResult(
+            request: result.request,
+            bar: result.bar.writingApostrophes(of: language),
+            autocorrection: result.autocorrection.map(language.writingApostrophes),
+            typedWordKind: result.typedWordKind
+        )
+    }
+
+    private func result(for request: PredictionRequest) throws -> PredictionResult {
         lock.lock()
         let keys = keys
         let neighborKeySlips = neighborKeySlips
@@ -142,7 +156,7 @@ public final class PredictionComputer: @unchecked Sendable {
             )
         }
 
-        let typed = request.currentWord.replacingOccurrences(of: "’", with: "'")
+        let typed = engine.language.textRules.straightApostrophes(in: request.currentWord)
         let engineTouches = request.touches.map(PredictionTouch.init(location:))
         let completion = try engine.predict(
             typedWord: typed,
@@ -274,7 +288,7 @@ public final class PredictionComputer: @unchecked Sendable {
     /// left alone, as are corrections the user turned down.
     public func revision(for request: RevisionRequest) throws -> String? {
         try proposedRevision(for: request).flatMap {
-            request.heldBackCorrections.contains(PersonalVocabulary.key($0)) ? nil : $0
+            request.heldBackCorrections.contains(PersonalVocabulary.key($0)) ? nil : engine.language.writingApostrophes($0)
         }
     }
 
@@ -285,7 +299,7 @@ public final class PredictionComputer: @unchecked Sendable {
         let forms = forms
         let learned = learned
         lock.unlock()
-        let typed = request.word.replacingOccurrences(of: "’", with: "'")
+        let typed = engine.language.textRules.straightApostrophes(in: request.word)
         if let phraseStart = vocabulary.phraseForm(of: typed, before: request.followingWord) {
             let written = casing.apply(of: typed, to: phraseStart)
             return written == typed ? nil : written
@@ -331,7 +345,7 @@ public final class PredictionComputer: @unchecked Sendable {
         request: PredictionRequest,
         policy: ContestedTapPolicy
     ) throws -> Character? {
-        let typed = request.currentWord.replacingOccurrences(of: "’", with: "'").lowercased()
+        let typed = engine.language.textRules.straightApostrophes(in: request.currentWord).lowercased()
         let landedOnOtherKey = otherKeyFrame.contains(touch)
         if policy.keepsOtherKey(otherKey, startsWord: typed.isEmpty, landedOnOtherKey: landedOnOtherKey) {
             return nil

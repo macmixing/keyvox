@@ -12,5 +12,6 @@
     "openingDouble": "“",
     "closingDouble": "”"
   },
-  "sentenceOpeningMarks": "¿¡"
+  "sentenceOpeningMarks": "¿¡",
+  "webEndingsLocale": "es_419"
 }
