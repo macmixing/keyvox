@@ -17,8 +17,8 @@ public struct TypingLanguage: Sendable {
     public let letterLayouts: [String]
     public let casing: WordCasing
     public let quotes: SmartQuotes
-    /// How the language's text is read: the apostrophe it types inside words, and whether a
-    /// period after a digit ends a sentence.
+    /// How the language's text is read: the apostrophe it types inside words, whether a period
+    /// after a digit ends a sentence, and the marks that open a sentence before its first word.
     public let textRules: TypingTextRules
     /// The locale of Apple's keyboard for the language in `web_endings.json`, whose web endings
     /// the language's keyboard offers beside the device region's (`WebEndings`).
@@ -30,7 +30,6 @@ public struct TypingLanguage: Sendable {
     let editLetters: String
     /// The letters a short typed word needs one of to be taken as an attempt at a word.
     let vowels: String
-
     /// Whether a word typed right after `text` starts a sentence (`TypingTextContext.startsSentence`),
     /// read by the language's text rules.
     public func startsSentence(after text: String) -> Bool {
@@ -49,11 +48,11 @@ public struct TypingLanguage: Sendable {
     /// - Throws: `PredictiveKeyboardError.invalidLetterLayout` for a layout the language does not
     ///   offer.
     public static func bundled(identifier: String, letterLayout layoutName: String? = nil) throws -> TypingLanguage {
-        let resources = try TypingLanguageResources(identifier: identifier)
+        let ownResources = try TypingLanguageResources(identifier: identifier)
         let manifest: TypingLanguageManifest
         let layouts: TypingLanguageLetterLayouts
         do {
-            let data = try Data(contentsOf: resources.url("language.json"))
+            let data = try Data(contentsOf: ownResources.url("language.json"))
             let decoder = JSONDecoder()
             manifest = try decoder.decode(TypingLanguageManifest.self, from: data)
             layouts = try decoder.decode(TypingLanguageLetterLayouts.self, from: data)
@@ -68,6 +67,7 @@ public struct TypingLanguage: Sendable {
               manifest.writtenApostrophe.map({ $0.count == 1 }) ?? true else {
             throw PredictiveKeyboardError.invalidTypingLanguage(identifier)
         }
+        let resources = try manifest.sharedDataFolder.map(ownResources.sharingData(withFolder:)) ?? ownResources
         let chosenLayout = layoutName ?? layouts.defaultLetterLayout
         guard layouts.letterLayouts.contains(chosenLayout) else {
             throw PredictiveKeyboardError.invalidLetterLayout(chosenLayout)
@@ -95,7 +95,8 @@ public struct TypingLanguage: Sendable {
         writtenApostrophe = manifest.writtenApostrophe.map(Character.init)
         textRules = TypingTextRules(
             apostrophe: Character(manifest.quotationMarks.closingSingle),
-            ordinalPeriods: manifest.ordinalPeriods ?? false
+            ordinalPeriods: manifest.ordinalPeriods ?? false,
+            sentenceOpeningMarks: Set(manifest.sentenceOpeningMarks ?? "")
         )
     }
 }

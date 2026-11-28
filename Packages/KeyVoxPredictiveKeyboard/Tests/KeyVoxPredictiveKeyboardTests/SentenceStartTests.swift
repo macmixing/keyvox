@@ -44,4 +44,18 @@ final class SentenceStartTests: XCTestCase {
             XCTAssertFalse(TypingTextContext.startsSentence(after: closedMidSentence), "after \(closedMidSentence)")
         }
     }
+
+    func testALanguagesSentenceOpeningMarksKeepTheSentenceStart() {
+        let marks = TypingLanguage.spanish.textRules.sentenceOpeningMarks.map(String.init)
+        XCTAssertFalse(marks.isEmpty)
+        for mark in marks {
+            for before in ["", "a\n"] + sentenceEnds.map({ $0 + " " }) {
+                XCTAssertTrue(TypingLanguage.spanish.startsSentence(after: before + mark), "after \(before + mark)")
+            }
+            for before in ["a ", "a, ", "a"] {
+                XCTAssertFalse(TypingLanguage.spanish.startsSentence(after: before + mark), "after \(before + mark)")
+            }
+            XCTAssertFalse(TypingLanguage.english.startsSentence(after: mark), "English after \(mark)")
+        }
+    }
 }

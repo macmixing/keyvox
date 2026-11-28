@@ -1,0 +1,38 @@
+a	right	a á à ä â ã å ą æ ā ª
+c	right	c ç ć č
+d	right	d đ
+e	right	e é è ë ê ę ė ē
+i	left	i í ï ì î į ī
+n	left	n ń
+o	left	o ó ò ö ô õ ø œ ō º
+s	right	s š
+u	left	u ú ü ù û ū
+A	right	A Á À Ä Â Ã Å Ą Æ Ā ª
+C	right	C Ç Ć Č
+D	right	D Đ
+E	right	E É È Ë Ê Ę Ė Ē
+I	left	I Í Ï Ì Î Į Ī
+N	left	N Ń
+O	left	O Ó Ò Ö Ô Õ Ø Œ Ō º
+S	right	S Š
+U	left	U Ú Ü Ù Û Ū
+1	right	1 1º 1ª
+2	right	2 2º 2ª
+3	right	3 3º 3ª
+4	right	4 4º 4ª
+5	right	5 5º 5ª
+6	right	6 6º 6ª
+7	right	7 7º 7ª
+8	right	8 8º 8ª
+9	right	9 9º 9ª
+0	centered	0 0ª ° 0º
+-	right	- – — •
+/	right	/ \
+$	right	$ ¢ € £ ¥ ₩ ₽
+&	right	& §
+"	strictly-left	" ” “ „ » «
+.	right	. …
+?	right	? ¿
+!	right	! ¡
+’	left	' ’ ‘ `
+%	right	% ‰

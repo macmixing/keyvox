@@ -85,6 +85,16 @@ final class SwipeWordsTests: XCTestCase {
         XCTAssertEqual(words, ["Big", "Dictation", "omw"], "a learned word joins once the bar offers it")
     }
 
+    func testALanguageWithoutASwipeModelDecodesNoSwipe() throws {
+        let language = TypingLanguage.spanish
+        XCTAssertFalse(language.offersSwipeTyping)
+        XCTAssertTrue(TypingLanguage.english.offersSwipeTyping)
+        let computer = PredictionComputer(engine: try PredictiveEngine(language: language))
+        let path = SwipePath.through("hola", on: language.letterLayout)
+        XCTAssertEqual(try computer.swipeCandidates(for: path, previousWords: []).count, 0)
+        XCTAssertEqual(try computer.swipeWords(for: path, previousWords: [], wordCase: .asSpelled, limit: 4), [])
+    }
+
     private func best(
         _ word: String,
         previousWords: [String] = [],

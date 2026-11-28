@@ -12,6 +12,7 @@ let package = Package(
                 .copy("Resources/PERCEPTRON-LICENSE.txt"),
                 .copy("Resources/capitalized_spellings_de.txt"),
                 .copy("Resources/capitalized_spellings_en.txt"),
+                .copy("Resources/capitalized_spellings_es.txt"),
                 .copy("Resources/example_phrases.txt"),
                 .copy("Resources/greeting_phrases.txt"),
                 .copy("Resources/punctuation_name_phrases.txt"),
