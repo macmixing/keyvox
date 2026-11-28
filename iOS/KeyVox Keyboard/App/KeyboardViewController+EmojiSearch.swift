@@ -1,4 +1,5 @@
 import KeyVoxEmoji
+import KeyVoxPredictiveKeyboard
 import UIKit
 
 /// The emoji search, as on the system emoji keyboard, recorded by watching it
@@ -118,7 +119,7 @@ extension KeyboardViewController {
         emojiPanel = .searching
         applyLetterCase()
         showEmojiSearchResults()
-        KeyboardEmojiSearchIndex.shared.load { [weak self] in
+        KeyboardEmojiSearchIndex.shared.load(language: KeyboardTypingLanguage.current.identifier) { [weak self] in
             self?.showEmojiSearchResults()
         }
     }

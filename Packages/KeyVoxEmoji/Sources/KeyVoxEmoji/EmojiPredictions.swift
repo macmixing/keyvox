@@ -2,12 +2,17 @@ import Foundation
 
 /// The emoji the suggestion bar offers for a word, at most three, in the order to show them, as
 /// `Tools/KeyVoxEmojiData/write_emoji_predictions.py` writes them from the emoji search's data;
-/// `EmojiSearch` finds them first for that word, so the bar and the search agree.
+/// `EmojiSearch` finds them first for that word, so the bar and the search agree. Each typing
+/// language has its own.
 public struct EmojiPredictions: Sendable {
     private let emojiByWord: [String: [String]]
 
-    public static func bundled() throws -> EmojiPredictions {
-        try EmojiPredictions(contentsOf: EmojiDataLocator().url(name: "emoji_predictions", extension: "txt"))
+    /// The bundled emoji for the words of the typing language `language`, a language identifier
+    /// such as the keyboard's typing languages have; a regional variant without its own takes its
+    /// language's. Throws `EmojiDataError.missingData` for a language the package has none for.
+    public static func bundled(language: String) throws -> EmojiPredictions {
+        try EmojiPredictions(contentsOf: EmojiDataLocator().url(
+            name: "emoji_predictions", extension: "txt", language: language))
     }
 
     /// Reads data of one line per word: the word and its emoji separated by spaces, split by a tab.

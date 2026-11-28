@@ -239,13 +239,13 @@ extension KeyboardViewController {
         refreshPredictions()
     }
 
-    /// Hands the suggestions the emoji the bar offers for a word (`barEmoji(for:)`), and shows them
-    /// once they are read.
+    /// Hands the suggestions the emoji the bar offers for a word (`barEmoji(for:)`) in the language
+    /// the keyboard types in, and shows them once they are read.
     private func loadEmojiPredictions() {
         predictionCoordinator.emojiForWord = { [weak self] word in
             self?.barEmoji(for: word) ?? []
         }
-        KeyboardEmojiPredictionsIndex.shared.load { [weak self] in
+        KeyboardEmojiPredictionsIndex.shared.load(language: KeyboardTypingLanguage.current.identifier) { [weak self] in
             self?.predictionCoordinator.refreshEmojiSuggestions()
         }
     }
@@ -331,6 +331,7 @@ extension KeyboardViewController {
         predictionCoordinator.reset()
         if typingTraits.allowsPredictions {
             predictionCoordinator.prepare()
+            loadEmojiPredictions()
         }
         synchronizeLetterCase()
         updateAccentKey()

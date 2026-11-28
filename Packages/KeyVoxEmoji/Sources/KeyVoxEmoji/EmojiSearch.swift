@@ -15,8 +15,12 @@ public struct EmojiSearch: Sendable {
     private let wordEmoji: [UInt16]
     private let wordEmojiStarts: [Int]
 
-    public static func bundled() throws -> EmojiSearch {
-        try EmojiSearch(contentsOf: EmojiDataLocator().url(name: "emoji_search", extension: "txt"))
+    /// The bundled search in the typing language `language`, a language identifier such as the
+    /// keyboard's typing languages have; a regional variant without its own takes its language's.
+    /// Throws `EmojiDataError.missingData` for a language the package has none for.
+    public static func bundled(language: String) throws -> EmojiSearch {
+        try EmojiSearch(contentsOf: EmojiDataLocator().url(
+            name: "emoji_search", extension: "txt", language: language))
     }
 
     /// Reads search data of one line per emoji: the emoji and its words separated by spaces,
@@ -88,14 +92,14 @@ public struct EmojiSearch: Sendable {
     }
 
     /// The words of `text` as the search data has them: runs of letters and digits, decomposed
-    /// for compatibility, without nonspacing marks, lowercased, so neither case nor accents
-    /// keep a search from finding a word.
+    /// for compatibility, without nonspacing marks, case folded, so neither case nor accents keep a
+    /// search from finding a word, and German "ß" finds "ss".
     static func words(in text: String) -> [String] {
         let folded = text.decomposedStringWithCompatibilityMapping.unicodeScalars
             .filter { $0.properties.generalCategory != .nonspacingMark }
         var words: [String] = []
         var word = String.UnicodeScalarView()
-        for scalar in String(String.UnicodeScalarView(folded)).lowercased().unicodeScalars {
+        for scalar in String(String.UnicodeScalarView(folded)).folding(options: .caseInsensitive, locale: nil).unicodeScalars {
             if isWordScalar(scalar) {
                 word.append(scalar)
             } else if word.isEmpty == false {
