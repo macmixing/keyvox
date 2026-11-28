@@ -267,14 +267,13 @@ is lost. `python -m unittest test_written_lexicon_words` checks the rule.
 
 The list holds no contraction either, such as "geht's" or "gibt's", which German writes thousands of
 times and Apple's German keyboard restores when the apostrophe is left out ("gehts" gives "geht’s",
-measured on the iOS 27.2 simulator in `apple-languages/runs/sim-contractions-de_DE` of KeyVox's
-language data). So German's vocabulary also adds the contractions its carefully written sources,
-Tatoeba and OASST2 (`WRITTEN_SOURCES`), write at least as often as the median word-list word they
-write, 3 times, whose part before the apostrophe is a word of the list
+measured on the iOS 27.2 simulator). So German's vocabulary also adds the contractions its carefully
+written sources, Tatoeba and OASST2 (`WRITTEN_SOURCES`), write at least as often as the median
+word-list word they write, 3 times, whose part before the apostrophe is a word of the list
 (`adds_written_contractions`, `vocabulary/written_contractions.py`): 115, from "geht's" (233 times)
 and "gibt's" (171) to "stimmt's" and "du's". The speech transcripts are left out, as they write
-other languages' contractions ("don't", "c'est") almost as often; the written sources still bring
-a few ("don't", 15 times). `python -m unittest test_written_contractions` checks the rule.
+other languages' contractions ("don't", "c'est") almost as often; the written sources still bring a
+few ("don't", 15 times). `python -m unittest test_written_contractions` checks the rule.
 
 | Language | Word list | Vocabulary | Written in lowercase by the spelling check |
 | --- | --- | --- | --- |
@@ -363,7 +362,7 @@ suggestion bars (youtube-commons 0, oasst2 0.3, tatoeba 10). German and French g
 weights by kind of source, speech 0, chat and text messages 0.3, and Tatoeba 10.
 
 German's were measured against Apple's German (Germany) bars after 53 sentences
-(`apple-languages/sentence-openers/de_DE.json` in KeyVox's language data, read with `--apple`), over a
+(captured on the iOS 27.2 simulator, in the format `--apple` reads), over a
 grid of 24 weightings (Tatoeba 1, 10, 30; OASST2 and WildChat 0, 0.3, 1, 3; speech 0, 0.1), and keep
 those weights: no weighting with Tatoeba at 10 or 30 shares more words with Apple's bars, and the
 few that share more, with Tatoeba at 1, show far fewer different bars than Apple's:
@@ -543,9 +542,7 @@ Top-1 rises with every size, so every kept form is in the list. With all of them
 decode to their word first that did not, and 55 that did no longer do: 44 of those to an added
 word, 11 of them a British spelling of the American word ("center" to "centre", "organized" to
 "organised") and the rest look-alikes ("it" to "itu", "this" to "theos"). The split's one swipe of
-"haha" decoded as "has" before and as "haha" now. The test split was not decoded. The measurement,
-every row above with each swipe gained and lost and the SHA-256 of the list it measured, is kept
-with KeyVox's language data as `swipe/vocabulary-build/swipe_accuracy_val-22465.json`.
+"haha" decoded as "has" before and as "haha" now. The test split was not decoded.
 
 ### Why a list of its own
 
