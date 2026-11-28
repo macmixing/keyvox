@@ -631,8 +631,8 @@ fixes 2 more mistyped words, while completions come within 2 letters on 61.9% of
 umlauts do, at that key; the other column was measured before, when every umlaut was aimed at its
 plain vowel's key, which also turned a correctly tapped sentence-first "über" into "aber".
 
-On the 45 Tatoeba sentences Apple's German keyboard was measured typing on the iOS 27.2 simulator
-(`apple-languages/runs/sim17-tatoeba-de_DE` in KeyVox's language data), typed as Apple's were, at
+On the 45 Tatoeba sentences Apple's German keyboard was measured typing on the iOS 27.2 simulator,
+typed as Apple's were, at
 the keys' centers and in lowercase, both keyboards end with 308 of the 309 words right: Apple
 writes "Charkiw" as "Charlie", and KeyVox "ungekocht" as "gekocht". KeyVox writes 55 of the 61
 words capitalized after a sentence's first with their capitals, and capitalizes 1 of the 202
