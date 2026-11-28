@@ -598,9 +598,13 @@ sentences differ, so the columns compare the languages, not like with like.
 | Next word first / in top 3 | 400 | 12.4% / 23.7% | 9.0% / 21.3% |
 | Final words correct, Apple / KeyVox | Apple's 45 French Tatoeba sentences, no noise (`compare --apple`) | 93.6% / 94.6% (277 / 280 of 296) | |
 
-The plan's taps near the AZERTY-French accent key, beside "n", type what the keyboard's accent key
-would, or the letter beside it when the contested-tap rule gives the tap to the letter; a letter
-picked from a popup is tapped on the key held to pick it, as the keyboard records it.
+In `compare`, the plan's taps that land on the AZERTY-French accent key, beside "n", type what the
+keyboard's accent key would, or the letter beside it when the contested-tap rule gives the tap to the
+letter; an apostrophe the accent key types records its tap, as on the keyboard, so an elided word's
+taps keep lining up with its letters. `evaluate` types each letter on the letter key nearest its tap, as it does beside every
+other key, so its taps never reach the accent key, and the engine is handed the letter keys alone,
+as the keyboard hands them. A letter picked from a popup is tapped on the key held to pick it, as the
+keyboard records it.
 
 The weights of the contested-tap rule and of the corrector were also searched on French plans of
 300 sentences at noise 0.3 from the corpus less the measured plans' sentences: no value of the
