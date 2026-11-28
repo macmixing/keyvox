@@ -4,7 +4,8 @@ import XCTest
 /// Each theme has its own palette on every platform, every palette's key opacity is visible
 /// without hiding the backdrop entirely, and every swipe trail can be drawn: it has a width,
 /// tapers rather than grows, its glow layers widen outward from the stroke while fading, its
-/// tail and lift last, and its head blooms outward.
+/// tail and lift last, and its head blooms outward. The Classic theme's light trail is drawn in
+/// the microphone's own color.
 final class KeyboardThemeCatalogTests: XCTestCase {
     func testEveryThemeHasItsOwnPaletteOnEveryPlatform() {
         for platform in KeyboardThemePlatform.allCases {
@@ -54,6 +55,16 @@ final class KeyboardThemeCatalogTests: XCTestCase {
                 XCTAssertGreaterThan(trail.bloomDuration, 0, context)
                 XCTAssertGreaterThan(trail.bloomFadeDuration, 0, context)
             }
+        }
+    }
+
+    func testClassicLightSwipeTrailIsTheMicrophoneColor() {
+        for platform in KeyboardThemePlatform.allCases {
+            let palette = KeyboardThemeCatalog.palette(for: .classic, on: platform)
+            let microphone = palette.microphoneForeground.light
+            XCTAssertEqual(palette.swipeTrail.color.light, microphone, "\(platform)")
+            XCTAssertEqual(palette.swipeTrail.headColor.light, microphone, "\(platform)")
+            XCTAssertEqual(palette.swipeTrail.glowColor.light, microphone, "\(platform)")
         }
     }
 }

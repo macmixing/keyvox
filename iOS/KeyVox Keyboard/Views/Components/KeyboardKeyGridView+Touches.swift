@@ -6,8 +6,8 @@ import UIKit
 /// Each finger is followed separately. A character types when its finger lifts, or as
 /// soon as another finger lands (rollover), so overlapping two-thumb taps always type in
 /// the order they landed. Delete repeats while held, as the system keyboard's does, even once
-/// the finger slides off it; a held space bar becomes a cursor trackpad, a quick slide across it
-/// switches the typing language, holding the
+/// the finger slides off it; a held space bar becomes a cursor trackpad, a swipe across it, from
+/// one end toward the other, switches the typing language, holding the
 /// alternate-symbols key opens Compact Keys, holding a key that offers more characters, such
 /// as accented letters, opens their popup, where the finger picks one, and the globe's finger is
 /// the system's, which moves on to the next keyboard or, held, lists them.
@@ -202,6 +202,7 @@ extension KeyboardKeyGridView {
                           let offset = KeyboardSpaceLanguageSlide.offset(
                               from: session.activationLocation,
                               to: touch.location(in: self),
+                              spaceBarWidth: session.keyView?.bounds.width ?? 0,
                               trackpadWasActive: wasTrackpadActive
                           ) {
                     onSpaceLanguageSlide?(offset)

@@ -63,6 +63,8 @@ final class KeyboardKeyGridView: UIView {
     /// Every page shown so far, kept so showing it again does not build it again.
     private var pages: [KeyboardKeyGridPage.Layout: KeyboardKeyGridPage] = [:]
     private var currentPage: KeyboardKeyGridPage?
+    /// The key flip that shows a change of typing language, while it plays.
+    private let keyFlipTransition = KeyboardKeyFlipTransition()
     private var rowSpacing = KeyboardStyle.keyboardRowSpacing
     private var displayZoomScale: CGFloat = 1
     private let topRowAccessoryReferenceStack = UIStackView()
@@ -146,10 +148,15 @@ final class KeyboardKeyGridView: UIView {
 
     /// Shows the letter keys in the layout the keyboard types in now, building its page the first
     /// time, and reports the letter key frames again, since a new language's suggestions start
-    /// without them even when its layout is the same.
-    func showCurrentLetterLayout() {
+    /// without them even when its layout is the same. The keys showing turn over into the new
+    /// ones in a wave going `flipDirection` (`KeyboardKeyFlipTransition`); the new keys take
+    /// touches from the start.
+    func showCurrentLetterLayout(flipDirection: KeyboardKeyFlipWave.Direction) {
         lastReportedCharacterGeometry = []
+        let outgoingPage = currentPage
         showPage()
+        guard let outgoingPage else { return }
+        flipKeys(from: outgoingPage, direction: flipDirection)
     }
 
     func setReturnKeyEnabled(_ enabled: Bool) {
@@ -373,8 +380,41 @@ final class KeyboardKeyGridView: UIView {
         configureTouchRouter()
     }
 
+    /// Turns the keys of `outgoingPage` over into those of the page showing, which may be the
+    /// same page, while the keys are on screen; with Reduce Motion they crossfade.
+    private func flipKeys(from outgoingPage: KeyboardKeyGridPage, direction: KeyboardKeyFlipWave.Direction) {
+        guard let page = currentPage, window != nil, isContentHidden == false, bounds.isEmpty == false else {
+            return
+        }
+        // The wave reaches each key by where it lies, so the new keys are laid out first.
+        layoutIfNeeded()
+        settleLayout(of: page)
+        if outgoingPage !== page {
+            outgoingPage.view.isHidden = false
+        }
+        keyFlipTransition.run(
+            outgoing: outgoingPage.keyViews,
+            incoming: page.keyViews,
+            in: self,
+            direction: direction,
+            reduceMotion: UIAccessibility.isReduceMotionEnabled
+        ) { [weak self, weak outgoingPage] in
+            guard let self, let outgoingPage, outgoingPage !== self.currentPage else { return }
+            outgoingPage.view.isHidden = true
+        }
+    }
+
+    /// Lays out `page`'s rows and their keys now. They lay out after this view, so until then
+    /// their frames are from the previous layout pass.
+    private func settleLayout(of page: KeyboardKeyGridPage) {
+        page.view.layoutIfNeeded()
+        page.view.arrangedSubviews.forEach { $0.layoutIfNeeded() }
+    }
+
     /// Shows the page for the current layout, building it the first time it is needed.
     private func showPage() {
+        // A key flip still playing ends here, so its leaving page is hidden before pages change.
+        keyFlipTransition.finish()
         cancelAllTouches()
         let layout = KeyboardKeyGridPage.Layout(
             symbolPage: symbolPage,
@@ -383,7 +423,7 @@ final class KeyboardKeyGridView: UIView {
             showsEmojiKey: showsEmojiKey,
             showsNextKeyboardKey: showsNextKeyboardKey,
             fieldKeys: fieldKeys,
-            letterLayout: KeyboardLetterRows.current.layoutIdentifier
+            letterLayout: symbolPage == .letters ? KeyboardLetterRows.current.layoutIdentifier : nil
         )
         let page = pages[layout] ?? makePage(for: layout)
         if page !== currentPage {
@@ -415,10 +455,8 @@ final class KeyboardKeyGridView: UIView {
 
     private func reportCharacterGeometryIfNeeded() {
         guard symbolPage == .letters else { return }
-        // Rows and their keys lay out after this view, so settle both first or the frames
-        // read below are from the previous layout pass.
-        currentPage?.view.layoutIfNeeded()
-        currentPage?.view.arrangedSubviews.forEach { $0.layoutIfNeeded() }
+        // Settled first, or the frames read below are from the previous layout pass.
+        currentPage.map(settleLayout(of:))
         let geometry = keyViews.compactMap { keyView -> KeyboardCharacterKeyGeometry? in
             guard case let .character(value) = keyView.model.kind,
                   value.count == 1,

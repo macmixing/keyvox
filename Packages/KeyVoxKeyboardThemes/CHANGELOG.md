@@ -8,17 +8,18 @@ The format loosely follows Keep a Changelog, and the package uses semantic versi
 
 ## [2.0.0] - 2026-11-24
 
-Swipe trail styles for each theme.
+Swipe trail styles for each theme, and the microphone's color.
 
 ### Includes
 
 - `KeyboardThemePalette.swipeTrail` (`KeyboardThemeSwipeTrail`): the trail a swipe leaves across the letter keys, with its stroke, head-dot, and glow colors and its width for the light and dark appearances, its nested glow layers, how long its tail lasts, how far it tapers, how its opacity falls off, and how far its bands overlap, the head dot's size, how long the tail retracts once the finger lifts and on what timing curve, and how the head dot grows and fades.
-- The KeyVox theme draws it in indigo in light and lavender with a lighter head in dark; the Classic theme in the platform's system blue in light and white in dark.
+- The KeyVox theme draws it in indigo in light and lavender with a lighter head in dark; the Classic theme in the microphone's own color in light and white in dark.
+- `KeyboardThemePalette.microphoneForeground`: the microphone in the dictation button, the platform's system indigo at 85 percent in both themes and appearances.
 - `KeyboardThemeSystemColor.blue`.
 
 ### Notes
 
-- `2.0.0` changes public API: `KeyboardThemePalette`'s initializer takes the required `swipeTrail:`, and `KeyboardThemeSystemColor` gains `.blue`, so palettes built and exhaustive switches written for `1.0.0` need updating; key colors are unchanged.
+- `2.0.0` changes public API: `KeyboardThemePalette`'s initializer takes the required `microphoneForeground:` and `swipeTrail:`, and `KeyboardThemeSystemColor` gains `.blue`, so palettes built and exhaustive switches written for `1.0.0` need updating; key colors are unchanged.
 
 ---
 
