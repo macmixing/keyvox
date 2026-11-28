@@ -60,10 +60,6 @@ class ApostropheTests(unittest.TestCase):
         self.assertEqual(simulator(insertion_far__first=True).type_word("it's"), "ixt's")
 
 
-if __name__ == "__main__":
-    unittest.main()
-
-
 class LetterWithoutKeyTests(unittest.TestCase):
     def test_types_it_as_spelled_from_its_base_key(self):
         self.assertEqual(simulator(GERMAN, sharp_s(0.0)).type_word("straße"), "straße")
@@ -85,3 +81,7 @@ class OtherLayoutTests(unittest.TestCase):
     def test_adds_the_measured_letter_on_the_measured_layout(self):
         typed = simulator(insertions={"zx": 1}, insertion_neighbor__last=True).type_word("az")
         self.assertEqual(typed, "azx")
+
+
+if __name__ == "__main__":
+    unittest.main()
