@@ -1,10 +1,22 @@
 // Prints LatinIME's suggestions for typed letters, as tapped at the center of each key of a
-// QWERTY layout, after up to three previous words. Typed letters left empty ask for
-// next-word predictions.
+// letter layout, after up to three previous words. Typed letters left empty ask for next-word
+// predictions.
 //
-// usage: latinime_suggestions DICTIONARY_DIRECTORY [--shared-session] < QUERIES
+// usage: latinime_suggestions DICTIONARY_DIRECTORY [--shared-session]
+//            --row LETTERS OFFSET [--row LETTERS OFFSET]... [--key-for LETTER KEY]... < QUERIES
+//   each --row: a letter row of the layout, top to bottom: its letters and the offset of its first
+//     letter, in key pitches (letter_layout.py)
+//   each --key-for: a letter without a key of its own and the letter key that types it
 //   each query line: typed<TAB>previous word[<TAB>older word[<TAB>oldest word]]
 //   each output line: query index, then word<TAB>score<TAB>type for each suggestion, best first
+//
+// Each letter key is 100 units square: row r spans r * 100 to (r + 1) * 100 down, and a row's ith
+// letter spans (offset + i) * 100 to (offset + i + 1) * 100 across. The keyboard is as wide as its
+// widest letter row and a row taller than its letter rows, for the space bar, five keys wide in its
+// middle; the apostrophe key follows the second row's last letter. A letter without a key of its
+// own is tapped on the key --key-for gives it (the caller's rule, letter_keys.py), as a long press
+// there types it. Typed letters of MAX_WORD_LENGTH code points or more get no suggestions, as in
+// the keyboard's engine.
 //
 // Each query searches in a session of its own. A session continues its last search when the
 // new typed letters start with the last ones, keeping that search's previous words, so a shared
@@ -13,6 +25,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstdlib>
 #include <cstring>
 #include <iostream>
 #include <memory>
@@ -33,19 +46,35 @@
 using namespace latinime;
 
 struct Key { int code, x, y, w, h; };
+struct LetterRow { std::vector<int> letters; double offset; };
+struct Keyboard { std::vector<Key> keys; int width, height; };
 
-static std::vector<Key> qwertyKeys() {
-    std::vector<Key> keys;
-    const std::string rows[] = {"qwertyuiop", "asdfghjkl", "zxcvbnm"};
-    const int offsets[] = {0, 50, 150};
-    for (int row = 0; row < 3; ++row) {
-        for (int col = 0; col < static_cast<int>(rows[row].size()); ++col) {
-            keys.push_back({rows[row][col], offsets[row] + col * 100, row * 100, 100, 100});
+static std::vector<int> utf8CodePoints(const std::string &text);
+
+static constexpr int kKeySize = 100;
+
+static int keyPosition(double pitches) {
+    return static_cast<int>(std::lround(pitches * kKeySize));
+}
+
+static Keyboard letterKeyboard(const std::vector<LetterRow> &rows) {
+    Keyboard keyboard{{}, 0, static_cast<int>(rows.size() + 1) * kKeySize};
+    for (size_t row = 0; row < rows.size(); ++row) {
+        const auto &letters = rows[row].letters;
+        for (size_t column = 0; column < letters.size(); ++column) {
+            keyboard.keys.push_back({letters[column], keyPosition(rows[row].offset + column),
+                    static_cast<int>(row) * kKeySize, kKeySize, kKeySize});
         }
+        keyboard.width = std::max(keyboard.width,
+                keyPosition(rows[row].offset + letters.size()));
     }
-    keys.push_back({' ', 250, 300, 500, 100});
-    keys.push_back({'\'', 950, 100, 100, 100});
-    return keys;
+    keyboard.keys.push_back({' ', keyboard.width / 2 - 5 * kKeySize / 2,
+            static_cast<int>(rows.size()) * kKeySize, 5 * kKeySize, kKeySize});
+    const size_t apostropheRow = rows.size() > 1 ? 1 : 0;
+    keyboard.keys.push_back({'\'', keyPosition(rows[apostropheRow].offset
+            + rows[apostropheRow].letters.size()), static_cast<int>(apostropheRow) * kKeySize,
+            kKeySize, kKeySize});
+    return keyboard;
 }
 
 static JniArray intArray(const std::vector<int> &values) {
@@ -54,16 +83,17 @@ static JniArray intArray(const std::vector<int> &values) {
     return array;
 }
 
-static ProximityInfo makeProximityInfo(JNIEnv *env, const std::vector<Key> &keys) {
-    constexpr int gridWidth = 10;
-    constexpr int gridHeight = 4;
-    constexpr int keyboardWidth = 1000;
-    constexpr int keyboardHeight = 400;
+static ProximityInfo makeProximityInfo(JNIEnv *env, const Keyboard &keyboard) {
+    const auto &keys = keyboard.keys;
+    const int gridWidth = (keyboard.width + kKeySize - 1) / kKeySize;
+    const int gridHeight = (keyboard.height + kKeySize - 1) / kKeySize;
+    const int keyboardWidth = keyboard.width;
+    const int keyboardHeight = keyboard.height;
     std::vector<int> proximity(gridWidth * gridHeight * MAX_PROXIMITY_CHARS_SIZE, 0);
     for (int gy = 0; gy < gridHeight; ++gy) {
         for (int gx = 0; gx < gridWidth; ++gx) {
-            const int cx = gx * 100 + 50;
-            const int cy = gy * 100 + 50;
+            const int cx = gx * kKeySize + kKeySize / 2;
+            const int cy = gy * kKeySize + kKeySize / 2;
             std::vector<std::pair<float, int>> nearby;
             for (const auto &key : keys) {
                 const float dx = static_cast<float>(cx - (key.x + key.w / 2));
@@ -87,7 +117,7 @@ static ProximityInfo makeProximityInfo(JNIEnv *env, const std::vector<Key> &keys
     auto xArray = intArray(xs); auto yArray = intArray(ys);
     auto widthArray = intArray(widths); auto heightArray = intArray(heights);
     auto codeArray = intArray(codes);
-    return ProximityInfo(env, keyboardWidth, keyboardHeight, gridWidth, gridHeight, 100, 100,
+    return ProximityInfo(env, keyboardWidth, keyboardHeight, gridWidth, gridHeight, kKeySize, kKeySize,
             &proximityArray, static_cast<int>(keys.size()), &xArray, &yArray, &widthArray,
             &heightArray, &codeArray, nullptr, nullptr, nullptr);
 }
@@ -135,35 +165,26 @@ static void appendUtf8(const int codePoint, std::string *text) {
     }
 }
 
-static int physicalBaseKey(int codePoint) {
-    if (codePoint >= 'A' && codePoint <= 'Z') return codePoint + ('a' - 'A');
-    switch (codePoint) {
-        case 0x00E0: case 0x00E1: case 0x00E2: case 0x00E3: case 0x00E4:
-        case 0x00E5: case 0x00E6: return 'a';
-        case 0x00E7: return 'c';
-        case 0x00E8: case 0x00E9: case 0x00EA: case 0x00EB: return 'e';
-        case 0x00EC: case 0x00ED: case 0x00EE: case 0x00EF: return 'i';
-        case 0x00F0: return 'd';
-        case 0x00F1: return 'n';
-        case 0x00F2: case 0x00F3: case 0x00F4: case 0x00F5: case 0x00F6:
-        case 0x00F8: case 0x0153: return 'o';
-        case 0x00DF: return 's';
-        case 0x00F9: case 0x00FA: case 0x00FB: case 0x00FC: return 'u';
-        case 0x00FD: case 0x00FF: return 'y';
-        case 0x00FE: return 't';
-        default: return codePoint;
-    }
+// The code point whose key a typed code point is tapped on: the key --key-for gives it, or its own.
+static int tappedKey(int codePoint, const std::unordered_map<int, int> &keyFor) {
+    const auto found = keyFor.find(codePoint);
+    return found != keyFor.end() ? found->second : codePoint;
 }
 
 static std::vector<Result> suggest(Dictionary *dictionary, ProximityInfo *proximity,
-        DicTraverseSession *session, JNIEnv *env, const std::vector<Key> &keys,
-        const std::string &input, const std::vector<std::string> &previousWords = {}) {
-    std::unordered_map<int, Key> byCode;
-    for (const auto &key : keys) byCode[key.code] = key;
+        DicTraverseSession *session, JNIEnv *env, const std::unordered_map<int, Key> &byCode,
+        const std::unordered_map<int, int> &keyFor, const std::string &input,
+        const std::vector<std::string> &previousWords = {}) {
     std::vector<int> xs, ys, times, pointerIds, codePoints;
     const auto inputCodePoints = utf8CodePoints(input);
+    // LatinIME searches typed letters shorter than MAX_WORD_LENGTH only; the keyboard's engine
+    // offers no candidates for longer ones, and neither does this.
+    if (inputCodePoints.size() >= MAX_WORD_LENGTH) return {};
     for (int i = 0; i < static_cast<int>(inputCodePoints.size()); ++i) {
-        const auto key = byCode.at(physicalBaseKey(inputCodePoints[i]));
+        // A code point with no key of its own and none from --key-for is tapped at the origin, as
+        // the keyboard's engine taps a code point its keys lack when it is given no touches.
+        const auto found = byCode.find(tappedKey(inputCodePoints[i], keyFor));
+        const Key key = found != byCode.end() ? found->second : Key{inputCodePoints[i], 0, 0, 0, 0};
         xs.push_back(key.x + key.w / 2); ys.push_back(key.y + key.h / 2);
         times.push_back(i * 100); pointerIds.push_back(0); codePoints.push_back(inputCodePoints[i]);
     }
@@ -214,12 +235,38 @@ static std::vector<Result> suggest(Dictionary *dictionary, ProximityInfo *proxim
     return results;
 }
 
+static int usage() {
+    std::cerr << "usage: latinime_suggestions DICTIONARY_DIRECTORY [--shared-session] "
+                 "--row LETTERS OFFSET [--row LETTERS OFFSET]... [--key-for LETTER KEY]... "
+                 "< QUERIES\n";
+    return 2;
+}
+
 int main(int argc, char **argv) {
-    const bool sharesSession = argc == 3 && std::strcmp(argv[2], "--shared-session") == 0;
-    if (argc != 2 && !sharesSession) {
-        std::cerr << "usage: latinime_suggestions DICTIONARY_DIRECTORY [--shared-session] < QUERIES\n";
-        return 2;
+    if (argc < 2) return usage();
+    bool sharesSession = false;
+    std::vector<LetterRow> rows;
+    std::unordered_map<int, int> keyFor;
+    for (int index = 2; index < argc; ++index) {
+        if (std::strcmp(argv[index], "--shared-session") == 0) {
+            sharesSession = true;
+        } else if (std::strcmp(argv[index], "--row") == 0 && index + 2 < argc) {
+            char *end = nullptr;
+            const double offset = std::strtod(argv[index + 2], &end);
+            if (end == argv[index + 2] || *end != '\0') return usage();
+            rows.push_back({utf8CodePoints(argv[index + 1]), offset});
+            index += 2;
+        } else if (std::strcmp(argv[index], "--key-for") == 0 && index + 2 < argc) {
+            const auto letter = utf8CodePoints(argv[index + 1]);
+            const auto key = utf8CodePoints(argv[index + 2]);
+            if (letter.size() != 1 || key.size() != 1) return usage();
+            keyFor[letter[0]] = key[0];
+            index += 2;
+        } else {
+            return usage();
+        }
     }
+    if (rows.empty()) return usage();
     struct stat info {};
     if (stat(argv[1], &info) != 0) return 3;
     auto policy = DictionaryStructureWithBufferPolicyFactory::newPolicyForExistingDictFile(
@@ -227,8 +274,10 @@ int main(int argc, char **argv) {
     if (!policy) return 4;
     JNIEnv env;
     Dictionary dictionary(&env, std::move(policy));
-    auto keys = qwertyKeys();
-    auto proximity = makeProximityInfo(&env, keys);
+    const auto keyboard = letterKeyboard(rows);
+    auto proximity = makeProximityInfo(&env, keyboard);
+    std::unordered_map<int, Key> byCode;
+    for (const auto &key : keyboard.keys) byCode[key.code] = key;
     std::unique_ptr<DicTraverseSession> sharedSession;
     if (sharesSession) sharedSession = std::make_unique<DicTraverseSession>(&env, nullptr, true);
     std::string line;
@@ -246,7 +295,7 @@ int main(int argc, char **argv) {
         std::unique_ptr<DicTraverseSession> ownSession;
         if (!sharedSession) ownSession = std::make_unique<DicTraverseSession>(&env, nullptr, true);
         DicTraverseSession *session = sharedSession ? sharedSession.get() : ownSession.get();
-        const auto results = suggest(&dictionary, &proximity, session, &env, keys,
+        const auto results = suggest(&dictionary, &proximity, session, &env, byCode, keyFor,
                 fields[0], previous);
         std::cout << index++;
         for (const auto &result : results) {

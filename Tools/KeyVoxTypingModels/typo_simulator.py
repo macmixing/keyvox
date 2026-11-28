@@ -9,6 +9,11 @@ times more often. The spreads, the rates, the length factors, and the gamma dist
 shape come from `calibrate_typo_simulator.py`, which sets them so that the simulator's mistakes,
 measured as ITE typists' were, match theirs.
 
+Each word draws its randomness from a stream of its own, seeded by the simulator's seed and the
+key its caller names the word by (`type_word`), so how one word is typed never re-draws another:
+a change to how a letter is typed moves another word only through how often each key is meant,
+which the spreads' miss rates are weighed over (`letters`).
+
 For a word, in order:
 1. Each pair of neighboring different letters is swapped at the transposition rate.
 2. Each letter is left out at the omission rate for its place, or, the second of a double
@@ -19,11 +24,20 @@ For a word, in order:
 4. A word's apostrophe is left out at its rate, which no sloppiness changes; otherwise it is
    typed after everything typed for the letters before it.
 Farther substitutions and extra letters are drawn from the ones ITE typists made at the same
-letter, or from all of them for a letter they never made one at."""
+letter, or from all of them for a letter they never made one at.
+
+On another layout than the one ITE typists typed on (`measured_layout`), an extra key beside a
+letter is drawn by where it sits from the letter's key instead: each place a key beside it can sit,
+as often as ITE typists' extra keys beside a letter sat there, among the places with a key.
+
+A letter without a key of its own on the layout (`accents`, from `measure_accent_typing.py`) is
+tapped at its base letter's key, as a long press there types it; a tap that lands on that key types
+the letter, or, at its measured rate, its plain spelling, and a tap on another key types that
+key's letter."""
 
 import random
 from bisect import bisect
-from collections import defaultdict
+from collections import Counter, defaultdict
 from itertools import accumulate
 
 import numpy as np
@@ -63,10 +77,44 @@ class LetterChoices:
                 return letter
 
 
+class NeighborInsertions:
+    """Draws an extra key beside a letter on a layout other than the one the extra keys were
+    measured on, by where it sits from the letter's key."""
+
+    def __init__(self, pairs, measured_layout, layout, spread):
+        offsets = Counter()
+        for pair, count in pairs.items():
+            letter, extra = pair[0], pair[1:]
+            if letter in measured_layout.keys and extra in measured_layout.keys:
+                (x, y), (extra_x, extra_y) = (measured_layout.center(letter),
+                                              measured_layout.center(extra))
+                offsets[(extra_x - x, extra_y - y)] += count
+        self.tables = {}
+        for letter in layout.letters:
+            x, y = layout.center(letter)
+            counts = Counter()
+            for (across, down), count in sorted(offsets.items()):
+                key = spread.key_at(x + across, y + down)
+                if key is not None and key != letter:
+                    counts[key] += count
+            self.tables[letter] = LetterChoices.table(
+                counts or Counter(dict.fromkeys(layout.neighbors(letter), 1)))
+
+    def draw(self, context, rng):
+        letters, totals = self.tables[context]
+        return letters[bisect(totals, rng.random() * totals[-1])]
+
+
 class TypoSimulator:
-    def __init__(self, layout, measurements, calibration, seed):
-        self.rng = random.Random(seed)
+    def __init__(self, layout, measurements, calibration, seed, letters=None, accents=None,
+                 measured_layout=None):
+        """`letters`, how often each letter is meant at each place in a word, defaults to the
+        measured ITE typists'; `accents` gives each letter without a key its key and plain
+        spelling and how often it is typed plain."""
+        self.seed = seed
         self.keys = layout.keys
+        self.accents = accents or {}
+        letters = letters or measurements["letters"]
         self.rates = calibration["rates"]
         self.length_factors = {int(length): factor
                                for length, factor in calibration["length_factors"].items()}
@@ -76,22 +124,27 @@ class TypoSimulator:
         for position in POSITIONS:
             values = calibration["spreads"][position]
             spread = TouchSpread(layout, values["across"], values["down"])
-            letters = measurements["letters"][position]
-            base = spread.miss_rate(letters)
+            meant = letters[position]
+            base = spread.miss_rate(meant)
             self.spreads[position] = spread
             self.miss_ratios[position] = np.asarray(
-                [spread.miss_rate(letters, scale) / base for scale in SPREAD_SCALES])
+                [spread.miss_rate(meant, scale) / base for scale in SPREAD_SCALES])
         self.choices = {kind: LetterChoices(measurements["typos"]["letters"][kind])
                         for kind in LETTERED_KINDS}
+        if measured_layout is not None and measured_layout.keys != layout.keys:
+            self.choices["insertion_neighbor"] = NeighborInsertions(
+                measurements["typos"]["letters"]["insertion_neighbor"], measured_layout, layout,
+                self.spreads["middle"])
 
     def spread_scale(self, position, misses):
         """The spread scale at which taps miss `misses` times as often as at the calibrated
         spreads."""
         return float(np.interp(misses, self.miss_ratios[position], SPREAD_SCALES))
 
-    def type_word(self, word):
-        """The letters typed for the word."""
-        rng = self.rng
+    def type_word(self, word, key):
+        """The letters typed for the word, drawn from the stream of `key`, which names this typing
+        of the word apart from every other the caller asks for."""
+        rng = random.Random(f"{self.seed}\t{key}")
         apostrophe = word.find("'")
         letters = list(word.replace("'", ""))
         sloppiness = (self.length_factors[max(1, min(len(letters), LONGEST_COUNTED_LENGTH))]
@@ -118,19 +171,25 @@ class TypoSimulator:
             if happens("undoubled") if index > 0 and letters[index - 1] == letter \
                     else happens(f"omission/{position}"):
                 continue
+            accent = None
             if letter not in self.keys:
-                typed.append(letter)
-                continue
-            hit = self.spreads[position].tap(letter, rng, scales[position])
+                accent = self.accents.get(letter)
+                if accent is None:
+                    typed.append(letter)
+                    continue
+            key = letter if accent is None else accent["key"]
+            hit = self.spreads[position].tap(key, rng, scales[position])
             if happens(f"substitution_far/{position}"):
-                hit = self.choices["substitution_far"].draw(letter, rng, exclude=letter)
+                hit = self.choices["substitution_far"].draw(key, rng, exclude=key)
+            if accent is not None and hit == key:
+                hit = accent["plain"] if rng.random() < accent["plain_rate"] else letter
             typed.append(hit)
             if happens(f"doubled/{position}"):
-                typed.append(hit)
+                typed.append(hit[-1])
             if happens(f"insertion_neighbor/{position}"):
-                typed.append(self.choices["insertion_neighbor"].draw(letter, rng))
+                typed.append(self.choices["insertion_neighbor"].draw(key, rng))
             if happens(f"insertion_far/{position}"):
-                typed.append(self.choices["insertion_far"].draw(letter, rng))
+                typed.append(self.choices["insertion_far"].draw(key, rng))
 
         if apostrophe >= 0 and rng.random() >= self.rates["apostrophe_dropped"]:
             typed.insert(len(typed) if apostrophe_at is None else apostrophe_at, "'")

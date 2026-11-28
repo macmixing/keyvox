@@ -118,6 +118,27 @@ PROFANITY_LIST = Source(
     ),
 )
 
+# Multilingual HateCheck's test cases, one dataset per language on Hugging Face, each pinned to a
+# revision; another language's dictionary leaves out the slurs its cases tag (`hatecheck_slurs.py`,
+# `offensive_words.py`).
+_HATECHECK_REVISIONS = {
+    "german": "5229a5cc475f36c08d03ca52f0ccb005705e60d2",
+    "french": "5d3085f2129139abc10d2b58becd4d4f2978e5d5",
+}
+MULTILINGUAL_HATECHECK = Source(
+    name="multilingual-hatecheck",
+    license="CC BY 4.0",
+    license_url="https://creativecommons.org/licenses/by/4.0/",
+    files=tuple(
+        DownloadedFile(
+            url=f"https://huggingface.co/datasets/Paul/hatecheck-{dataset}/resolve/{revision}/test.csv",
+            path=f"sources/multilingual-hatecheck/{dataset}.csv",
+        )
+        for dataset, revision in _HATECHECK_REVISIONS.items()
+    ),
+)
+
+# The English typing models' sources; another language downloads only its HateCheck dataset.
 SOURCES = (TATOEBA, OASST1, ITE, PROFANITY_LIST)
 
 
@@ -139,8 +160,20 @@ def oasst1_path(data_dir: Path) -> Path:
     return data_dir / OASST1.files[0].path
 
 
-def profanity_list_path(data_dir: Path) -> Path:
-    return data_dir / PROFANITY_LIST.files[0].path
+def profanity_list_path(data_dir: Path, name: str = "en.json") -> Path:
+    """The profanity list's file of a language's terms, such as `en.json`."""
+    for file in PROFANITY_LIST.files:
+        if Path(file.path).name == name:
+            return data_dir / file.path
+    raise KeyError(name)
+
+
+def hatecheck_file(dataset: str) -> DownloadedFile:
+    """The pinned file of one of Multilingual HateCheck's datasets, such as `german`."""
+    for file in MULTILINGUAL_HATECHECK.files:
+        if Path(file.path).stem == dataset:
+            return file
+    raise KeyError(dataset)
 
 
 def ite_path(data_dir: Path, member: str) -> Path:

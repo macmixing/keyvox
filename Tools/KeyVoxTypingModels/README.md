@@ -1,7 +1,10 @@
 # KeyVox Typing Models
 
-Builds the typing models the predictive keyboard bundles for its English typing language in
-`Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/PredictiveData/en`:
+Builds the typing models the predictive keyboard bundles for a typing language: those of its
+English typing language in
+`Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/PredictiveData/en`, and the
+same files for German, Spanish, and French, which are built but not bundled yet (see "Other typing
+languages"). English's:
 
 | Bundled file | What it is | Built by |
 | --- | --- | --- |
@@ -27,6 +30,7 @@ Every input is pinned to a revision or a recorded SHA-256 in `sources.py` or
 | [Aalto ITE Typing dataset](https://doi.org/10.5281/zenodo.12528163) | The typing events the rankers learn from, and the sentences left out of the counts | Zenodo record 12528163; five files are read from the archive by byte range | CC BY 4.0 |
 | [AOSP LatinIME](https://android.googlesource.com/platform/packages/inputmethods/LatinIME/) | Writing and reading the dictionary | The native sources bundled in `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveNative/latinime`, compiled unchanged | Apache 2.0 |
 | [Profanity List](https://github.com/dsojevic/profanity-list) | The words the dictionary and the swipe vocabulary leave out: its English terms tagged racial or anti-LGBTQ, or religious at strong severity or above (`offensive_words.py`) | Commit `c27924319aa9bd6f917e3782b4f4b6604a50b652` | MIT |
+| [Multilingual HateCheck](https://huggingface.co/datasets/Paul/hatecheck-german) | The words German and French dictionaries leave out: the slurs of its slur test cases that target the groups English's left-out tags name (see "Words left out") | German revision `5229a5cc475f36c08d03ca52f0ccb005705e60d2`, French `5d3085f2129139abc10d2b58becd4d4f2978e5d5` | CC BY 4.0 |
 
 Tatoeba publishes only its current export, which changes every week. `rewind_tatoeba.py` turns
 it back into the export of the cutoff `sources.py` pins: every sentence the contribution log
@@ -56,10 +60,10 @@ python3.14 -m venv <data-dir>/venv
 PYTHON=<data-dir>/venv/bin/python ./build_typing_models.sh <data-dir>
 ```
 
-The built files land in `<data-dir>/built` under the names they have in `PredictiveData/en`,
-and `compare_with_bundled.py` then says for each whether it is the same as the bundled one,
-leaving out the write times in the dictionary header; with `--check` after the data directory,
-the build fails if any differs. The package is left alone. The build runs the candidate caches
+The built files land in `<data-dir>/built` under the names they have in the language's folder,
+`PredictiveData/en` for English, and `compare_with_bundled.py` then says for each whether it is
+the same as the bundled one, leaving out the write times in the dictionary header; with `--check`
+after the data directory, the build fails if any differs. The package is left alone. The build runs the candidate caches
 with `--as-bundled`, which asks LatinIME the queries the bundled rankers learned from as the
 July caches asked them, so every built file is the bundled one (see "How the bundled rankers
 were trained"). Once the sources are
@@ -71,9 +75,10 @@ The LatinIME tools are compiled with the Xcode command line tools.
 
 `latinime_suggestions.cpp` orders candidates of equal score with `std::sort`, which leaves
 the order of ties to the C++ standard library. The rankers are trained on the order that Apple
-clang 21.0.0 (clang-2100.3.34.1) with libc++ 220106 (macOS 27.2 SDK) gives;
-`build_native_tools.sh` checks for exactly that compiler and libc++ version and stops with a
-message naming both on any other toolchain. Apple clang 15.0.0 with libc++ 160006 (macOS 13),
+clang 21.0.0 (clang-2100.3.34.1) with libc++ 220106 (macOS 27.2 SDK) gives, and Apple clang
+21.0.0 (clang-2100.3.33.1) with the same libc++ rebuilds every bundled file the same;
+`build_native_tools.sh` checks for one of those compilers and that libc++ version and stops with
+a message naming them on any other toolchain. Apple clang 15.0.0 with libc++ 160006 (macOS 13),
 for one, orders 8,485 of the July build's 84,720 correction queries' ties differently, and the
 trained rankers differ. Every other step gives the same bytes on either.
 
@@ -86,19 +91,20 @@ July caches did.
 
 ## Steps
 
-`build_typing_models.sh` runs them in this order:
+`build_typing_models.sh` runs them in this order for English; another language skips the English
+sources' steps and trains its rankers on simulated typing (see "Other typing languages"):
 
 | Step | Writes |
 | --- | --- |
-| `download_sources.py` | `sources/`, with each file's SHA-256 in `sources/checksums.txt` |
+| `download_sources.py` | `sources/`, with each file's SHA-256 in `sources/checksums.txt`; for another language, the SHA-256 of its language build's files |
 | `build_native_tools.sh` | `bin/write_latinime_dictionary`, `bin/latinime_suggestions` |
 | `rewind_tatoeba.py` | `sources/tatoeba/eng_sentences_at_cutoff.tsv.bz2`, checked against its recorded SHA-256 |
 | `scowl_word_list.sh` | `work/scowl-*.txt` |
 | `offensive_words.py` | `work/offensive_words.txt`: a pattern a line of the words the dictionary leaves out |
-| `write_dictionary_inputs.py`, then `bin/write_latinime_dictionary` | `work/dictionary_unigrams.tsv` and `work/dictionary_ngrams.tsv`, every word and sequence counted, which the later steps and `Tools/KeyVoxLanguageModel` read, and `work/counted_dictionary/`, compiled from them, which the caches ask with `--as-bundled`; `work/dictionary_kept_*.tsv`, the same less the words `offensive_words.txt` matches and every sequence holding one, and `built/dictionary/`, compiled from those |
+| `write_dictionary_inputs.py`, then `bin/write_latinime_dictionary` | `work/dictionary_unigrams.tsv` and `work/dictionary_ngrams.tsv`, every word and sequence counted, which the later steps and `Tools/KeyVoxLanguageModel` read, and `work/counted_dictionary/`, compiled from them, which the caches ask with `--as-bundled`, and always for another language; `work/dictionary_kept_*.tsv`, the same less the words `offensive_words.txt` matches and every sequence holding one, and `built/dictionary/`, compiled from those with the language's locale and header attributes (`typing_languages.py`) |
 | `split_ite_events.py` | `work/ite/`: autocorrections, words left alone, and accepted predictions, split by typist |
 | `write_feature_context_model.py` | `work/feature_context_800k.bin`: the word and word-pair counts the rankers train with |
-| `cache_correction_candidates.py`, `cache_completion_candidates.py` | `work/*_candidates.pkl.gz`: LatinIME's candidates; with `--as-bundled`, as the build runs them, for the queries the bundled rankers learned from (`bundled_queries.py`), otherwise for every record `training_sets.py` gives the trainers |
+| `cache_correction_candidates.py`, `cache_completion_candidates.py` | `work/*_candidates.pkl.gz`: LatinIME's candidates, typed on the keys of the language's letter layout; with `--as-bundled`, as the build runs them, for the queries the bundled rankers learned from (`bundled_queries.py`), otherwise for every record `training_sets.py` gives the trainers |
 | `train_correction_models.py`, `train_completion_ranker.py` | `work/*.pkl.gz` and held-out reports in `work/reports/` |
 | `export_tree_models.py` | `built/*.kvtr`, checked against the trained models on 10,000 rows |
 | `write_accent_words.py`, `write_accent_overlay.py` | `built/accent_overlay.bin` |
@@ -176,10 +182,11 @@ simulated typing mistakes. English has both, so the method is proven on English:
 trained on simulated typing alone are scored against the ones trained on ITE.
 
 The simulator is measured and calibrated against ITE, then types sentences from the pipeline's
-own sources. Its steps are not part of `build_typing_models.sh`, and they and the training
-steps write into the data directory they are given, over files a build wrote there. So after
-a build, copy its data directory and run them in the copy; the build's own files are never
-replaced. For `sim+ite`, use another copy and `--source sim+ite`:
+own sources. For English, its steps are not part of `build_typing_models.sh`, and they and the
+training steps write into the data directory they are given, over files a build wrote there. So
+after a build, copy its data directory and run them in the copy; the build's own files are never
+replaced. For `sim+ite`, use another copy and `--source sim+ite`. The copy's `work/simulation` is
+also the calibration every other language's build reads (see "Other typing languages"):
 
 ```bash
 cp -R <data-dir> <sim-dir>
@@ -208,7 +215,12 @@ done
 | `export_tree_models.py` | `built/*.kvtr` |
 
 `python -m unittest test_typo_simulator` checks that the simulator types a word's apostrophe
-after everything it typed for the letters before it.
+after everything it typed for the letters before it, that it types a letter without a key on
+that letter's key, as spelled or plain at its rate, that on another layout than ITE's it adds
+extra keys beside a letter on that layout, and that a word is typed the same whatever was typed
+before it. `python -m unittest test_letter_keys` checks which key types a letter
+(`letter_keys.py`), and `python -m unittest test_hatecheck_slurs` how the slurs are read from a
+dataset's cases and turned into the patterns the dictionary leaves out (`hatecheck_slurs.py`).
 
 ### What is measured
 
@@ -237,10 +249,11 @@ kinds by place in the word, first, middle, or last.
 ### The simulator
 
 `letter_layout.py` reads a typing language's letter keys from its default letter layout through
-one function, `letter_rows`: the layout the package's `language.json` names (`defaultLetterLayout`),
-read from `letter_layouts/<layout>.json`, each row's letters starting after the widths of the keys
-and padding before them, each key a square one key pitch across and down, as `LetterKeyLayout`
-lays them out.
+one function, `letter_rows`: the layout the language's `language.json` names (`defaultLetterLayout`,
+from the package or the file `--language-file` names), read from the package's
+`letter_layouts/<layout>.json`, each row's letters starting after the widths of the keys and
+padding before them, each key a square one key pitch across and down, as `LetterKeyLayout` lays
+them out. The suggestion reader taps the same keys.
 
 Each letter is tapped with a two-dimensional Gaussian around its key's center, and the key the
 tap lands on is the letter typed; a tap outside every letter key is drawn again
@@ -259,6 +272,10 @@ length's factor times a draw from a gamma distribution of mean one; the word's m
 multiplied by it, and its taps spread wider by as much as makes them miss that many times more
 often (`typo_simulator.py`). The other kinds happen at their own rates per chance, and farther
 substitutions and extra letters are drawn from the ones ITE typists made at the same letter.
+Each word draws its randomness from a stream of its own, seeded by the simulator's seed and the
+word's sentence, typist, and place in the sentence (`write_simulated_records.py`), so a change to
+how one letter is typed re-draws no other word; it moves another only through how often each key
+is meant, which the spreads' miss rates are weighed over.
 
 `calibrate_typo_simulator.py` sets the simulator so that its mistakes, measured with
 `typo_kinds.py`, match two of ITE's measurements: how often a word of each length is mistyped,
@@ -267,15 +284,15 @@ of, each kind's events per typo and the share with a second mistake, from the ty
 autocorrection. Typists who rely on autocorrection leave far more slips of a finger than typists
 who fix their own: neighbor-key substitutions are 67% of a typo's mistakes there, and 45% of
 the mistakes in text typed without it. Twelve rounds of typing the ITE words, measuring, and
-moving each setting by its gap give spreads of 0.186 to 0.197 key pitches across and 0.153 to
-0.170 down, a gamma shape of 0.069, and length factors of 0.47 for two letters, 0.54 for four,
-1.16 for eight, and 2.83 for twelve or more (2.57 for one letter). Measured with another seed,
+moving each setting by its gap give spreads of 0.186 to 0.197 key pitches across and 0.154 to
+0.170 down, a gamma shape of 0.069, and length factors of 0.48 for two letters, 0.54 for four,
+1.19 for eight, and 3.07 for twelve or more (2.30 for one letter). Measured with another seed,
 every kind seen at least 200 times among the autocorrected typos is within 10% of its events per
-typo there but three of the rarest: a first letter left out, 0.24 per hundred typos and 0.42
-simulated; an extra key beside the first letter, 0.17 and 0.23; and an extra key beside the
-last letter, 0.21 and 0.19. A second mistake is in 18.4% of the simulated typos with a letter
-mistake, and the share of words mistyped at each length is within 6% of ITE's, but for
-one-letter words, 0.09% and 0.10%.
+typo there but four: a first letter left out, 0.24 per hundred typos and 0.45 simulated; an
+extra key beside the first letter, 0.17 and 0.22; an extra farther letter in the middle, 0.46
+and 0.39; and an extra farther letter last, 1.19 and 1.33. A second mistake is in 18.8% of the
+simulated typos with a letter mistake, and the share of words mistyped at each length is within
+5% of ITE's.
 
 A first simulator matched the kinds of mistakes in text typed without autocorrection instead.
 Its typos had 42% neighbor-key substitutions and 12% with a second mistake, and rankers trained
@@ -289,10 +306,10 @@ against 16.
 fragments the counts are made from, by a hash of their words, never one ITE typists copied:
 222,814 sentences. `write_simulated_records.py` types each three times, as three typists:
 
-- 196,366 words typed differently from the word meant, the corrections;
-- 87,110 words typed as meant that no dictionary or SCOWL size-50 word spells, which the action
+- 196,156 words typed differently from the word meant, the corrections;
+- 87,026 words typed as meant that no dictionary or SCOWL size-50 word spells, which the action
   model learns to leave alone;
-- 196,748 completions: words picked at random, typed as far as ITE typists had typed a word of
+- 196,738 completions: words picked at random, typed as far as ITE typists had typed a word of
   that length when they picked its completion, mistakes included.
 
 The counts the rankers train with leave out the sentences ITE typists copied, so a typed word's
@@ -325,23 +342,27 @@ The harness scored the bundled rankers and three trained with caches asked witho
 
 | Measure | Plan | Bundled | `ite` | `sim` | `sim+ite` |
 | --- | --- | --- | --- | --- | --- |
-| Final words correct | 80 sentences, noise 0.3 (`compare`) | 96.1% (909/946) | 96.1% (909) | 96.3% (911) | 96.1% (909) |
-| Final words correct | 400 sentences, noise 0.25 (`evaluate`) | 98.7% | 98.6% | 98.7% | 98.6% |
-| Mistyped words fixed | 400 | 94.7% (1,165/1,230) | 94.6% (1,163) | 94.9% (1,167) | 94.6% (1,164) |
-| Mistyped words changed to a different word | 400 | 1.3% (16) | 1.5% (18) | 1.1% (14) | 1.4% (17) |
-| Correctly typed words wrongly changed | 400 | 0.0% (0/3,760) | 0.0% | 0.0% | 0.0% |
-| Completion offered within 2 letters | 400 | 50.5% | 51.5% | 58.8% | 58.9% |
-| Completion keystroke savings | 400 | 39.9% | 40.7% | 41.9% | 41.8% |
-| Suggestion bar shows the word within 3 letters | 400 | 85.3% | 85.3% | 85.7% | 85.6% |
-| Next word first / in top 3 | 400 | 9.0% / 21.3% | same | same | same |
+| Final words correct | 80 sentences, noise 0.3 (`compare`) | 96.1% (909/946) | 96.1% (909) | 96.3% (911)† | 96.1% (909)† |
+| Final words correct | 400 sentences, noise 0.25 (`evaluate`) | 98.7% | 98.6% | 98.7%† | 98.6%† |
+| Mistyped words fixed | 400 | 94.7% (1,165/1,230) | 94.6% (1,163) | 94.9% (1,167)† | 94.6% (1,164)† |
+| Mistyped words changed to a different word | 400 | 1.3% (16) | 1.5% (18) | 1.1% (14)† | 1.4% (17)† |
+| Correctly typed words wrongly changed | 400 | 0.0% (0/3,760) | 0.0% | 0.0%† | 0.0%† |
+| Completion offered within 2 letters | 400 | 50.5% | 51.5% | 58.8%† | 58.9%† |
+| Completion keystroke savings | 400 | 39.9% | 40.7% | 41.9%† | 41.8%† |
+| Suggestion bar shows the word within 3 letters | 400 | 85.3% | 85.3% | 85.7%† | 85.6%† |
+| Next word first / in top 3 | 400 | 9.0% / 21.3% | same | same† | same† |
 | Final words correct | ITE held-out typists, 3,000 sentences (`evaluate`) | 98.2% (`compare`: 98.3%) | same | same | same |
 | Mistyped words fixed | ITE | 55.9% (326/583) | same | same | same |
 | Mistyped words changed to a different word | ITE | 10.1% (59) | same | same | same |
 | Correctly typed words wrongly changed | ITE | 0.5% (97/21,130) | same | same | same |
-| Completion offered within 2 letters | ITE | 51.6% | 51.9% | 61.4% | 60.1% |
-| Completion keystroke savings | ITE | 37.6% | 37.7% | 40.5% | 40.0% |
+| Completion offered within 2 letters | ITE | 51.6% | 51.9% | 60.6% | 60.8% |
+| Completion keystroke savings | ITE | 37.6% | 37.7% | 40.4% | 40.2% |
 | Suggestion bar shows the word within 3 letters | ITE | 84.8% | 84.8% | 84.7% | 84.8% |
 | Next word first / in top 3 | ITE | 15.5% / 26.5% | same | same | same |
+
+† Rankers trained on the simulator before each word drew its randomness from a stream of its own;
+the rankers trained on the current simulator score the same as those on every ITE measure above
+but the completion lines, which moved by at most 0.8 points.
 
 Only the speed lines differ between runs. The rankers trained on ITE fix two fewer mistyped
 words on the 400-sentence plan than the bundled ones and change two more to another word, so
@@ -354,3 +375,204 @@ To score built files, copy the harness's release build and put the built files i
 `KeyVoxPredictiveKeyboard_KeyVoxPredictiveKeyboard.bundle/Contents/Resources/PredictiveData/en`;
 the copy reads its own bundle. The ITE plan is made with
 `Tools/KeyVoxTypingHarness/Scripts/ite_typo_plan.py <data-dir>/sources/ite/processed2020/english <plan.json> --split holdout --max-sentences 3000`.
+
+## Other typing languages
+
+`typing_languages.py` lists the typing languages and what differs between them; every step that
+depends on the language takes `--language` (default `en`), and `--language-file` to read the
+language's `language.json` from outside the package, for a language the package does not ship yet.
+From that file the tools read the default letter layout, whose keys the suggestion reader and the
+typo simulator tap, and the vowels the action model's rule for short words uses, and from the
+`held_key_characters.txt` beside it, when the language has one, the letters each key offers on a
+long press. German, Spanish, and French are built from what `Tools/KeyVoxLanguageModel` built for
+them, and their rankers learn from simulated typing alone, as no typing dataset like ITE exists for
+them:
+
+| | English | German, Spanish, French |
+| --- | --- | --- |
+| Dictionary words | SCOWL size 60, American | The language build's vocabulary (`built/vocabulary.txt`: the AOSP LatinIME word list with its capitals settled), in lowercase |
+| Probabilities, pairs, and sequences | Tatoeba and OASST1, less the sentences ITE typists copied | The language build's `counts.npz`, of every source it reads, less the held-out simulation sentences |
+| Words never corrected | The dictionary's and SCOWL size 50's | The dictionary's and the vocabulary's common part (`built/common_vocabulary.txt`) |
+| Words left out | The profanity list's English terms (`offensive_words.py`) | German and French: Multilingual HateCheck's slurs; Spanish: none yet (see "Words left out") |
+| Accent overlay | 262 accented SCOWL words the dictionary lacks | Empty: the dictionary holds the accented words, and LatinIME finds them from their plain letters |
+| Dictionary header | Locale `en_US` | Locale `de`, `es`, or `fr`, as the AOSP word list's header; German also asks for umlaut processing, as AOSP's German list does, so "ue" types "ü" |
+| Typing the rankers learn from | ITE | Simulated on the language's sentences and letter layout, with the English calibration |
+| Held out | ITE's sentence buckets 8-9 | The simulated sentence buckets 8-9, which the dictionary and the rankers' word counts leave out |
+
+A language's data directory links in two directories, besides the Python environment:
+
+```bash
+mkdir -p <data-dir>/sources
+ln -s <language-build> <data-dir>/sources/language-build
+ln -s <english-sim-dir>/work/simulation <data-dir>/sources/typo-calibration
+PYTHON=<venv>/bin/python ./build_typing_models.sh <data-dir> --language de \
+  --language-file <language.json>
+```
+
+`<language-build>` is the data directory of `Tools/KeyVoxLanguageModel`'s build of the language,
+with its `vocabulary.txt`, `counts.npz`, `sentences/`, and `built/vocabulary.txt` and
+`built/common_vocabulary.txt`; `download_sources.py` records their SHA-256 in
+`sources/checksums.txt`, beside the language's Multilingual HateCheck dataset, if it has one, which
+it downloads. `<english-sim-dir>` is an English data directory after the simulator's
+steps of "Training on simulated typing" through `compare_simulated_typing.py`, whose
+`work/simulation` holds `ite_typing.json` and `typo_calibration.json`. In place of the English
+ranker steps, the build then runs, with `--language`:
+
+| Step | Writes |
+| --- | --- |
+| `measure_accent_typing.py` | `work/simulation/accent_typing.json`: how often each letter without a key is typed plain |
+| `write_simulated_records.py --calibration <data-dir>/sources/typo-calibration` | `work/simulation/corrections.tsv`, `preserves.tsv`, `completions.tsv`, and `typed_words.json`, the words typed and mistyped in each bucket |
+| `write_feature_context_model.py` | `work/feature_context_800k.bin`, from the language build's counts less every simulation sentence |
+| the caches and the trainers | as for English, with `--source sim`, which they default to for another language; the caches ask `work/counted_dictionary/` |
+
+The steps hold the language build's counts in memory: French's dictionary inputs took 13 GB at
+their peak.
+
+### What the simulator types
+
+`simulation_sentences.py` picks a third of the sentences of the language build's Tatoeba and
+OASST2 sentences, the written sources spelled with care, as English's are Tatoeba and OASST1, by
+the same hash of their words. Each is typed three times, as for English.
+
+ITE's typists' fingers are taken to be anyone's: the touch spreads, mistake rates, length factors,
+and sloppiness calibrated on ITE carry over, in key pitches, to the language's letter layout. What
+is the language's own is measured:
+
+- How often each letter is meant at each place in a word, which the spread's miss rates are
+  weighed over, from the simulation sentences.
+- Where an extra key beside a letter sits: on another layout than ITE's QWERTY, the extra key is
+  drawn by where ITE's extra keys beside a letter sat from it, among the places the layout has a
+  key, so QWERTY's extra "x" after "z" is a "u" on German's QWERTZ.
+- How often a letter without a key is typed plain (`measure_accent_typing.py`). Such a letter is
+  typed with a long press on the key whose long-press list offers it, from the language's
+  `held_key_characters.txt`, as the keyboard aims a popup letter at the key that offers it; a
+  letter no list offers, or a language without the file, takes the first key of its plain
+  spelling. A letter's plain spelling comes from Unicode: its base letters with its accents left
+  off ("e" for "é"), or, for a letter with no accent to leave off, its case folding ("ss" for
+  German "ß"). The simulator taps that key: a tap landing on it types the letter, or its plain
+  spelling at the measured rate, and a tap on another key types that key's letter. A letter
+  neither gives a key, such as French "œ" without a long-press list, is typed as spelled. The rule
+  is one, `letter_keys.py`, so the suggestion reader taps such a letter on the same key
+  (`--key-for`), and a letter it gives no key at the origin, as the keyboard's engine taps a letter
+  its keys lack when it is given no touches. The rate is measured in the language build's WildChat
+  turns, the one source of text people typed in every language, over the dictionary words with one
+  such letter whose plain spelling is no dictionary word: how often WildChat writes each spelling. A
+  letter seen fewer than 200 times takes the rate of every such letter together.
+
+Letters with a key of their own, German "ü", "ö", and "ä" and Spanish "ñ", are tapped as any other
+key: WildChat leaves them plain in 0.8% to 2.7% of their words, while it leaves out a missing key's
+accent far more often.
+
+| Language | Letters without a key, typed plain in WildChat |
+| --- | --- |
+| de | "ß" as "ss" 9.1% of 1,002 words; the others together 11.3% |
+| es | "á" 43.2%, "é" 45.9%, "í" 45.3%, "ó" 36.9%, "ú" 50.2%; the others together 41.8% |
+| fr | "é" 14.7%, "è" 15.4%, "ê" 15.4%, "ç" 19.2%, "à" 19.6%, "ô" 18.8%, "â" 41.7%, "û" 37.5%, "ï" 54.8%; the others together 15.5% |
+
+WildChat is typed mostly on computers, whose German and French keyboards have keys for most of
+these letters; 88milSMS, French text messages typed on phones in 2011, leaves "é" plain in 32.3%
+of its words and "ç" in 44.9%, so the French rates may be low for phone typing.
+
+### Words left out
+
+German and French dictionaries leave out the slurs of the language's Multilingual HateCheck
+dataset, the test cases of hateful sentences built around a slur (`slur_h`), each tagged
+with the group its slur targets (`hatecheck_slurs.py`). The groups left out are the ones English's
+left-out tags name: Black, immigrant, Indigenous, gay, trans, Jewish, and Muslim people
+(`offensive_words.LEFT_OUT_TARGETS`). Slurs against women and disabled people stay, as English's
+list tags them apart. A case whose template marks its slur, `[SLR_S]` or `[SLR_P]`, gives the slur
+as the words the placeholder stands for; the other cases of a template differ only in their slur
+and the article or adjective before it, so a case's slur is its word where they differ most. Each
+form the cases write, singular and plural, is a pattern of its own, so the forms come from the
+dataset and no ending is added; a form is matched as English's are, by its letter form, so an
+unaccented spelling of a slur is left out with it. Slurs of several words are left aside, as no
+word is one.
+
+Spanish leaves no word out yet: its dataset's slurs for those groups include words in everyday use,
+some written thousands of times in the Spanish build's text, and no data source tells those apart
+from the slurs.
+
+| Language | Forms the dataset gives | Dictionary words left out |
+| --- | --- | --- |
+| de | 12 | 4 |
+| fr | 20 | 10, and the 3 word pairs that hold one |
+
+The forms come from the pinned datasets (`sources.py`) and are written, as patterns, to
+`work/offensive_words.txt` at build time; this README does not repeat them. The other forms are no
+dictionary word. The datasets give no case of a slur used as an everyday word: their only
+non-hateful cases with a slur quote it or speak against it (`counter_quote_nh`, `counter_ref_nh`),
+for every slur alike.
+
+The dictionary leaves out the words, and the caches ask the dictionary as counted, with them, so
+the rankers are as they would be without the list, as English's bundled rankers are; the
+measures below are the same with and without it.
+
+### Features of letters outside ASCII
+
+The keyboard's engine computes the rankers' and the action model's features over the words' UTF-8
+bytes: lengths, edit distances, shared beginnings and endings, first and last letters, and repeated
+letters (`KeyVoxPredictiveNative.cpp`). `ranker_features.py` computes them the same way, so a
+letter such as "é" counts two bytes in both; for English's ASCII words bytes and letters are the
+same. Only the rule that a word of four letters or fewer needs a vowel counts letters, with the
+language's `vowels`.
+
+### Measured on simulated typing
+
+Built on November 27, 2026 from the language builds of November 24, with `language.json` files
+kept outside the package (German on `QWERTZ-German`, Spanish on `QWERTY-Spanish`, French on
+`AZERTY-French`, with their accented vowels as vowels); each build took about 15 minutes, with the
+others running beside it. None is bundled.
+
+| | de | es | fr |
+| --- | --- | --- | --- |
+| Dictionary words | 205,875 | 236,188 | 163,620 |
+| Word pairs, three-word sequences | 160,000, 60,000 | 160,000, 60,000 | 159,997, 60,000 |
+| `dictionary.body` | 9,780,288 bytes | 10,215,079 bytes | 8,533,024 bytes |
+| `correction_ranker.kvtr`, `completion_ranker.kvtr`, `autocorrect_decision.kvtr` | 218,260, 218,260, 74,260 bytes | the same | the same |
+| `accent_overlay.bin` | 12 bytes, no entries | the same | the same |
+| Simulation sentences | 224,318 | 177,956 | 219,215 |
+| Corrections, words typed as meant, completions simulated | 187,302, 142,845, 196,814 | 400,497, 164,733, 194,895 | 313,951, 52,778, 192,085 |
+
+Measured on the held-out simulation sentences, buckets 8-9, by the trainers' reports
+(`work/reports/correction_models.json` and `completion_ranker.json`), with English's ITE held-out
+report from the bundled build beside them; English's is real typing and the others' simulated, so
+the columns compare a language's simulated typing with English's real typing, not like with like.
+Ranking is of the intended word among LatinIME's 8 candidates:
+
+| Measure | de | es | fr | en (ITE) |
+| --- | --- | --- | --- | --- |
+| Correction: intended word among the 8 candidates | 91.9% | 95.1% | 96.2% | 97.9% |
+| Correction: first, LatinIME's order / reranked | 77.2% / 83.0% | 89.4% / 91.2% | 86.3% / 91.0% | 85.3% / 90.1% |
+| Correction: in the top 3, reranked | 91.3% | 94.9% | 95.8% | 96.9% |
+| Completion: intended word among the 8 candidates | 61.7% | 48.7% | 52.5% | 83.4% |
+| Completion: first, LatinIME's order / reranked | 23.1% / 43.8% | 16.6% / 35.7% | 19.4% / 40.1% | 38.6% / 55.4% |
+| Completion: in the top 3, reranked | 57.8% | 45.7% | 50.1% | 76.5% |
+| Plausible typos fixed by the action model at 0.9 | 36.3% | 50.9% | 58.8% | 45.2% |
+
+Every word of the held-out sentences, acting at each threshold (`held_out_words`): the words typed,
+1,011,150 German, 997,230 Spanish, and 968,274 French, of which 3.7%, 8.0%, and 6.4% were mistyped,
+and 5,138, 19,613, and 11,727 of those were typed as another word the action model never replaces,
+such as Spanish "esta" for "está":
+
+| Threshold | Measure | de | es | fr |
+| --- | --- | --- | --- | --- |
+| 0.9 | Final words correct | 97.51% | 95.78% | 96.99% |
+| 0.9 | Mistyped words fixed (of those not typed as a word) | 33.7% (39.0%) | 48.8% (64.7%) | 53.7% (66.2%) |
+| 0.9 | Mistyped words changed to another word | 0.39% | 0.27% | 0.42% |
+| 0.9 | Correctly typed words wrongly changed | 0.036% | 0.125% | 0.041% |
+| 0.95 | Final words correct | 97.14% | 94.81% | 96.63% |
+| 0.95 | Mistyped words fixed (of those not typed as a word) | 23.3% (27.0%) | 36.1% (47.9%) | 47.9% (59.0%) |
+| 0.95 | Mistyped words changed to another word | 0.15% | 0.09% | 0.25% |
+| 0.95 | Correctly typed words wrongly changed | 0.017% | 0.075% | 0.027% |
+| none | Final words correct, as typed | 96.29% | 91.98% | 93.59% |
+
+These are the trainers' measures: the keyboard corrects with `NoisyChannelCorrector`, which reads
+the rankers' choice of candidates but not the action model's probability (see "What the harness can
+tell apart"), and `Tools/KeyVoxTypingHarness` scores English only. They show the rankers learn the
+language, ranking the intended word first more often than LatinIME alone does, and give a baseline
+to hold later builds to.
+
+The German vocabulary lacks most words that begin with "ä", "ö", or "ü", as the AOSP German word
+list it is built from does: "überhaupt" (52,006 times in the German build's counts), "ändern",
+"öffnen", and "öffentlich" are not in the dictionary, nor 51 more such words written at least 1,000
+times each, 255,706 times in all. The list holds only 44 lowercase words beginning with "ü".
