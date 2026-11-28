@@ -522,7 +522,8 @@ language's `vowels`.
 Built on November 27, 2026 from the language builds of November 24, with `language.json` files
 kept outside the package (German on `QWERTZ-German`, Spanish on `QWERTY-Spanish`, French on
 `AZERTY-French`, with their accented vowels as vowels); each build took about 15 minutes, with the
-others running beside it. None is bundled.
+others running beside it. Of them, Spanish's are bundled from a later build ("Spanish's bundled
+files").
 
 | | de | es | fr |
 | --- | --- | --- | --- |
@@ -576,3 +577,49 @@ The German vocabulary lacks most words that begin with "ä", "ö", or "ü", as t
 list it is built from does: "überhaupt" (52,006 times in the German build's counts), "ändern",
 "öffnen", and "öffentlich" are not in the dictionary, nor 51 more such words written at least 1,000
 times each, 255,706 times in all. The list holds only 44 lowercase words beginning with "ü".
+
+### Spanish's bundled files
+
+The Spanish files bundled in `PredictiveData/es`, which Latin American Spanish (`PredictiveData/es-419`)
+uses too, were built on November 27, 2026 with the package's own `es/language.json`, from a Spanish
+language build whose counts take the written sources 20 times (`count_weights` in
+`Tools/KeyVoxLanguageModel/languages.py`; `language_build.Counts` takes the held-out sentences out as
+many times). Their rankers were trained by the simulator before it drew each word's randomness from a
+stream of its own.
+
+Rebuilt on November 28 with the current tools, the dictionary came out with the same words, counts,
+and bytes but for the build time in its header, and the accent overlay the same. The retrained
+rankers moved each measure by a word or a tenth of a point either way, as each typing draw does:
+across the default draw and fifteen others, none scored as well as the bundled rankers on every
+measure of the plans below and of two selection plans drawn from the held-out sentences the plans
+leave out (2,000 sentences at noise 0.25 and 500 at noise 0.3). The bundled dictionary, rankers, and
+accent overlay were kept.
+
+`Tools/KeyVoxTypingHarness` scored the bundled files through the keyboard's engine, typed from the
+Spanish simulation sentences of the held-out buckets 8-9 (35,575 sentences, which the dictionary and
+the rankers leave out), from WildChat sentences typed in Latin America and in Spain
+(`Tools/KeyVoxLanguageModel/README.md`, "Latin American Spanish"), and from the 45 Tatoeba sentences
+typed into Apple's Spanish (Spain) and Spanish (Latin America) keyboards on an iOS 27.2 simulator, as
+Apple was given them: accents left out, lowercase, inverted marks left out. Noise is the touch spread
+in key pitches. Every plan was scored with a context model counted from the language build's text
+less every measured sentence, as the bundled context model has seen them:
+
+| Measure | Plan | es | es-419 |
+| --- | --- | --- | --- |
+| Final words correct | Held-out, 80 sentences, noise 0.3 (`compare`) | 93.2% (712/764) | |
+| Mistyped words fixed | Held-out, 400 sentences, noise 0.25 (`evaluate`) | 92.8% (814/877) | |
+| Mistyped words changed to a different word | Held-out, 400 | 3.3% (29) | |
+| Correctly typed words wrongly changed | Held-out, 400 | 0.4% (11/2,718) | |
+| Completion offered within 2 letters / keystroke savings | Held-out, 400 | 54.1% / 40.9% | |
+| Suggestion bar shows the word within 3 letters | Held-out, 400 | 76.7% | |
+| Next word first / in top 3 | Held-out, 400 | 15.3% / 26.7% | |
+| Final words correct | Apple's 45 sentences, no noise (`compare --apple`) | 95.8% (253/264); Apple's Spain keyboard 97.3% (257/264) | 95.8% (253/264); Apple's Latin American keyboard 97.0% (256/264) |
+| Final words correct | Latin America, 160 sentences, noise 0.3 | 93.8% (1,441/1,537) | the same |
+| Mistyped words fixed / changed to a different word | Latin America, 800 sentences, noise 0.25 | 94.8% (1,856/1,957) / 2.9% (56) | the same |
+| Correctly typed words wrongly changed | Latin America, 800 | 0.2% (8/5,192) | the same |
+| Completion offered within 2 letters / bar within 3 letters | Latin America, 800 | 52.7% / 75.4% | the same |
+| Final words correct | Spain, 160 sentences, noise 0.3 | 92.9% (1,478/1,591) | |
+| Mistyped words fixed / changed to a different word | Spain, 800 sentences, noise 0.25 | 94.6% (1,920/2,029) / 3.0% (60) | |
+
+Latin American Spanish types with the same files and rules for words, so it scores as Spanish does on
+every plan it was typed on.
