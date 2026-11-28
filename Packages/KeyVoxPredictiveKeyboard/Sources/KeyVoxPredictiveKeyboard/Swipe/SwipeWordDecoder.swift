@@ -18,7 +18,7 @@ final class SwipeWordDecoder: @unchecked Sendable {
     private let layout: LetterKeyLayout
     /// Where the model's letters lie on `layout`; nil when one has no key there.
     private let keys: SwipeKeys?
-    private let keyLetters: Set<Unicode.Scalar>
+    private let formLetters: SwipeLetterForm.Letters
     private let encoder: SwipeEncoderNetwork
     private let decoder: SwipeDecoderNetwork?
     private let lexicon: SwipeLexicon
@@ -28,7 +28,7 @@ final class SwipeWordDecoder: @unchecked Sendable {
         settings = try SwipeModelSettings(contentsOf: resources.dataURL(SwipeModelSettings.fileName))
         layout = language.letterLayout
         keys = SwipeKeys(modelLetters: settings.letters, layout: layout)
-        keyLetters = settings.keyLetters
+        formLetters = settings.formLetters
         encoder = try SwipeEncoderNetwork(contentsOf: resources.dataURL(SwipeEncoderNetwork.fileName))
         decoder = try resources.optionalDataURL(SwipeDecoderNetwork.fileName).map(SwipeDecoderNetwork.init(contentsOf:))
         lexicon = try SwipeLexicon(contentsOf: resources.dataURL(SwipeLexiconFormat.fileName))
@@ -222,9 +222,9 @@ final class SwipeWordDecoder: @unchecked Sendable {
         }
     }
 
-    /// `spelling`'s swipe form for this model (`SwipeModelSettings.keyLetters`).
+    /// `spelling`'s swipe form for this model (`SwipeModelSettings.formLetters`).
     func form(of spelling: String) -> String {
-        SwipeLetterForm.form(of: spelling, keeping: keyLetters)
+        SwipeLetterForm.form(of: spelling, letters: formLetters)
     }
 
     /// The keys on screen a swipe of `spelling` passes (`SwipeKeys`).

@@ -30,10 +30,10 @@ public enum SwipeLexiconBuilder {
 
     public static func fileData(words: [Word], settings: SwipeModelSettings) throws -> Data {
         let keyIndex = settings.keyIndex
-        let keyLetters = settings.keyLetters
+        let formLetters = settings.formLetters
         var spellingsByForm: [String: [Spelling]] = [:]
         for (order, word) in words.enumerated() where word.isOfferable {
-            let form = SwipeLetterForm.form(of: word.spelling, keeping: keyLetters)
+            let form = SwipeLetterForm.form(of: word.spelling, letters: formLetters)
             guard form.isEmpty == false else { continue }
             spellingsByForm[form, default: []].append(
                 Spelling(text: word.spelling, probability: word.probability, order: order)

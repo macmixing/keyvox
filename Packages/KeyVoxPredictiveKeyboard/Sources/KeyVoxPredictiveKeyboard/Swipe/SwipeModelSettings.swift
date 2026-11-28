@@ -45,6 +45,9 @@ public struct SwipeModelSettings: Decodable, Sendable, Equatable {
 
     /// The model's keys, in the order its emissions list them after the blank.
     public let letters: String
+    /// Letters with no key of their own that a swipe spells with the keys of others, each with
+    /// those letters, as people swipe them (French "œ" as "oe"); none when absent.
+    let spelledLetters: [String: String]?
     /// Whether a letter repeated right after itself is a key of its own in key paths.
     public let keepsDoubleLetters: Bool
     public let pruning: Pruning
@@ -79,9 +82,14 @@ public struct SwipeModelSettings: Decodable, Sendable, Equatable {
         Dictionary(uniqueKeysWithValues: letters.unicodeScalars.enumerated().map { ($1, $0) })
     }
 
-    /// The letters the model has keys of their own for, which keep their accents in swipe forms
-    /// (`SwipeLetterForm.form(of:keeping:)`).
-    public var keyLetters: Set<Unicode.Scalar> {
-        Set(letters.unicodeScalars)
+    /// How the model reads words' letters (`SwipeLetterForm.form(of:letters:)`): its keys' letters
+    /// keep their accents, and its spelled letters are written as their letters.
+    public var formLetters: SwipeLetterForm.Letters {
+        SwipeLetterForm.Letters(
+            keys: Set(letters.unicodeScalars),
+            spellings: Dictionary(uniqueKeysWithValues: (spelledLetters ?? [:]).compactMap { letter, spelling in
+                letter.unicodeScalars.count == 1 ? (letter.unicodeScalars.first!, spelling) : nil
+            })
+        )
     }
 }
