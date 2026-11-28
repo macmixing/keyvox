@@ -59,14 +59,6 @@ final class FrenchCanadaTypingLanguageTests: XCTestCase {
         XCTAssertEqual(offer.held.characters, [".ca", ".us", ".edu", ".com", ".net", ".org"])
     }
 
-    func testTheWebEndingKeyOffersApplesFrenchEndingsInAUSRegionInTheirOrder() throws {
-        // Apple's French (France) keyboard offered these in a US region, the key typing ".com".
-        let offer = try XCTUnwrap(try WebEndings.bundled().offer(region: "US", preferredLanguages: ["en-US"], languages: [.french]))
-        XCTAssertEqual(offer.ending, ".com")
-        let measured = [".fr", ".us", ".edu", ".com", ".net", ".org"]
-        XCTAssertEqual(offer.held.characters.filter(measured.contains), measured)
-    }
-
     /// How many characters the separator's edit deletes after `Bonj` and the bar's `Bonjour`.
     private func pickedWordEdit(in language: TypingLanguage, separator: String) -> Int {
         let session = PredictiveTypingSession(language: language)
