@@ -174,6 +174,16 @@ final class GermanTypingLanguageTests: XCTestCase {
         XCTAssertNoThrow(try PredictiveEngine(language: .german))
     }
 
+    func testAContractionTypedWithoutItsApostropheIsRestoredWithApplesMark() throws {
+        // Apple's German keyboard turned "gehts" into "geht’s" at space, with U+2019, and left a
+        // "geht‘s" typed with its apostrophe key as typed.
+        let computer = PredictionComputer(engine: try PredictiveEngine(language: .german))
+        let session = PredictiveTypingSession(language: .german)
+        XCTAssertEqual(try computer.compute(session.request(textBeforeCursor: "wie gehts")).autocorrection, "geht’s")
+        XCTAssertNil(try computer.compute(session.request(textBeforeCursor: "Wie geht‘s")).autocorrection)
+        XCTAssertEqual(TypingLanguage.english.writingApostrophes("don't"), "don't")
+    }
+
     func testGermanBundlesNoSwipeModelSoSwipingIsNotOffered() {
         XCTAssertFalse(TypingLanguage.german.offersSwipeTyping)
         XCTAssertTrue(TypingLanguage.english.offersSwipeTyping)

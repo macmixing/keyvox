@@ -167,7 +167,6 @@ ausdruck	bringen:-2.633 der:-2.703 gebracht:-2.773 von:-2.877 zu:-3.082 und:-3.3
 ausdrücklich	sagen:-2.146 nicht:-2.962 dass:-3.235 auch:-3.623 die:-3.655 für:-3.758 bei:-3.795 zu:-3.914 gesagt:-3.957 das:-4.050 richtig:-4.082 auf:-4.169
 auseinander	und:-1.259 zu:-1.308 genommen:-1.778 nehmen:-2.007 gesetzt:-2.066 setzen:-2.513 ziehen:-2.549 gehen:-2.679 liegen:-2.776 so:-3.074 setzt:-3.168 halten:-3.179
 ausgabe	von:-1.817 der:-2.336 des:-2.793 und:-3.080 ist:-3.397 die:-3.752 vom:-4.017 mit:-4.210 in:-4.211 zu:-4.297 unserer:-4.409 auf:-4.465
-ausgeben	und:-1.764 kann:-2.489 lassen:-2.740 können:-2.991 müssen:-3.068 für:-3.155 das:-3.187 wollen:-3.202 aber:-3.213 also:-3.214 muss:-3.287 um:-3.291
 ausgeführt	werden:-1.316 wird:-1.718 und:-2.318 dass:-2.631 hat:-2.726 haben:-2.967 wurde:-3.330 worden:-3.371 habe:-3.516 ist:-4.100 aber:-4.120 also:-4.233
 ausgehen	dass:-0.040 und:-2.094 kann:-2.524 können:-2.548 wird:-3.093 muss:-3.315 also:-3.513 dann:-3.552 oder:-3.586 ja:-3.605 aber:-3.671 würde:-3.685
 ausland	zu:-2.410 und:-2.814 gehen:-3.483 ist:-3.499 oder:-3.936 sind:-4.167 in:-4.248 nicht:-4.391 hier:-4.472 studieren:-4.560 also:-4.579 gegangen:-4.646
@@ -394,7 +393,7 @@ bundesregierung	und:-2.631 hat:-2.889 die:-3.103 in:-3.335 ist:-3.665 nicht:-3.9
 bundestag	und:-2.297 hat:-3.523 ist:-3.740 die:-3.744 zu:-3.750 in:-3.804 ein:-4.218 oder:-4.236 eine:-4.239 mit:-4.312 nicht:-4.356 beschlossen:-4.362
 bus	und:-2.411 oder:-3.289 zu:-3.440 ist:-3.496 fahren:-3.836 in:-3.899 mit:-4.012 kommt:-4.078 der:-4.103 fährt:-4.168 war:-4.269 nicht:-4.309
 business	und:-3.324 model:-3.447 ist:-3.940 talk:-4.024 models:-4.194 as:-4.291 and:-4.376 modell:-4.445 zu:-4.480 logik:-4.519 in:-4.585 mit:-4.663
-but	not:-1.911 i:-2.617 also:-3.794 for:-3.913 it:-3.913 in:-4.318 is:-4.618 as:-4.641 no:-4.882 he:-4.978 different:-5.083 still:-5.160
+but	not:-1.911 i:-2.617 also:-3.794 it's:-3.804 for:-3.913 it:-3.913 in:-4.318 is:-4.618 as:-4.641 no:-4.882 he:-4.978 different:-5.083
 button	und:-2.870 ist:-3.553 hier:-3.667 drücken:-3.725 mit:-3.793 klicken:-3.874 der:-3.929 auf:-3.989 das:-4.136 zu:-4.398 in:-4.423 oder:-4.569
 bzw	die:-1.265 auch:-1.330 den:-1.954 in:-2.056 mit:-2.134 nicht:-2.285 auf:-2.411 eine:-2.435 von:-2.474 zu:-2.543 im:-2.569 dass:-2.584
 bäume	und:-2.470 die:-2.890 sind:-3.002 zu:-3.505 in:-3.792 fällen:-3.985 hier:-4.075 nicht:-4.122 gefällt:-4.146 auf:-4.194 im:-4.217 so:-4.238
@@ -1000,6 +999,7 @@ geholfen	hat:-0.862 haben:-1.545 und:-1.724 werden:-2.551 dass:-2.758 wird:-2.99
 geholt	und:-0.140 habe:-1.260 hat:-1.336 haben:-1.544 weil:-1.722 werden:-2.098 aber:-2.218 also:-2.338 ja:-2.674 da:-2.755 wird:-2.876 für:-2.976
 gehst	du:-0.613 und:-2.839 dann:-3.127 in:-3.583 jetzt:-3.622 mit:-3.856 oder:-3.882 auf:-3.935 ja:-3.947 da:-4.174 nicht:-4.321 einfach:-4.368
 geht	es:-1.492 das:-3.035 nicht:-3.129 und:-3.247 um:-3.361 ja:-3.472 auch:-3.624 dann:-3.665 hier:-4.098 aber:-4.124 die:-4.199 man:-4.223
+geht's	los:-2.399 weiter:-2.561 nicht:-3.054 ja:-3.169 dir:-3.275 um:-3.314 auch:-3.326 jetzt:-3.391 mit:-3.462 hier:-3.492 gut:-3.525 dann:-3.541
 gehören	die:-2.603 zu:-2.814 und:-2.923 auch:-2.940 nicht:-3.634 zum:-3.881 das:-3.908 aber:-3.914 in:-3.950 ja:-3.993 dazu:-4.040 dann:-4.054
 gehört	dass:-2.425 und:-2.548 haben:-2.607 auch:-2.776 habe:-2.826 zu:-2.858 aber:-3.332 hat:-3.341 das:-3.478 ja:-3.514 dazu:-3.683 die:-3.801
 geil	und:-2.040 ist:-2.245 aus:-2.333 also:-2.535 aber:-2.606 das:-2.812 ja:-2.870 so:-3.047 dass:-3.177 finde:-3.334 oder:-3.431 weil:-3.550
@@ -1113,6 +1113,7 @@ geändert	hat:-1.107 werden:-1.188 und:-1.477 haben:-1.738 wird:-2.620 wurde:-2.
 geöffnet	und:-0.488 werden:-0.999 hat:-1.463 haben:-1.598 wird:-1.807 ist:-1.857 habe:-2.151 worden:-2.574 sind:-2.789 wurde:-2.874 für:-2.993 hatte:-3.013
 gib	mir:-0.757 uns:-2.212 ihm:-3.216 mal:-3.654 es:-3.864 nicht:-4.127 dir:-4.253 das:-4.286 acht:-4.433 ihr:-4.451 die:-4.454 den:-4.469
 gibt	es:-0.878 auch:-3.490 ja:-3.571 die:-3.628 und:-3.750 eine:-3.918 keine:-4.200 noch:-4.255 aber:-4.258 ein:-4.272 so:-4.366 einen:-4.575
+gibt's	auch:-2.529 ja:-2.558 noch:-2.799 hier:-3.167 da:-3.293 dann:-3.373 ein:-3.515 nicht:-3.571 natürlich:-3.661 doch:-3.748 eine:-3.755 halt:-3.837
 gilt	für:-2.176 auch:-2.347 es:-2.480 das:-2.765 als:-3.393 die:-3.432 natürlich:-3.530 nicht:-3.583 und:-3.834 aber:-3.835 ja:-4.028 der:-4.096
 ging	es:-1.498 das:-3.206 ja:-3.594 und:-3.619 nicht:-3.791 er:-3.846 in:-3.885 dann:-3.908 die:-3.924 um:-3.936 auf:-4.096 auch:-4.178
 gingen	die:-2.456 sie:-2.591 in:-2.980 wir:-3.247 und:-3.662 auf:-3.663 dann:-3.761 zu:-3.858 an:-3.912 nach:-4.007 alle:-4.256 mit:-4.282
@@ -1305,7 +1306,7 @@ höre	ich:-1.319 auf:-3.387 dass:-3.483 und:-3.526 die:-3.856 das:-3.858 sie:-3.
 hören	und:-1.778 sie:-2.055 wir:-2.187 dass:-2.712 uns:-2.977 kann:-3.336 aber:-3.350 was:-3.426 ja:-3.437 oder:-3.518 können:-3.548 ist:-3.612
 hört	sich:-1.676 man:-2.106 auf:-3.033 ihr:-3.354 und:-3.469 nicht:-3.615 das:-3.649 es:-3.663 ja:-3.822 die:-3.867 dann:-4.021 er:-4.168
 hörte	ich:-2.371 er:-2.763 man:-3.049 dass:-3.096 auf:-3.218 sie:-3.242 die:-3.377 sich:-3.437 nicht:-3.467 wie:-3.595 und:-3.796 das:-3.811
-i	gt:-2.536 can:-2.821 want:-3.196 d:-3.496 und:-3.596 am:-3.811 do:-3.938 was:-4.180 will:-4.273 just:-4.365 like:-4.475 need:-4.491
+i	gt:-2.536 can:-2.821 want:-3.196 don't:-3.289 d:-3.496 und:-3.596 am:-3.811 do:-3.938 was:-4.180 will:-4.273 just:-4.365 like:-4.475
 ich	habe:-2.477 bin:-3.134 glaube:-3.406 jetzt:-3.689 weiß:-3.714 das:-3.723 kann:-3.830 auch:-3.966 nicht:-4.049 mir:-4.104 mich:-4.165 will:-4.250
 idee	ist:-2.217 dass:-2.735 und:-2.878 von:-3.067 die:-3.209 war:-3.317 kommen:-3.539 gekommen:-3.616 der:-3.692 des:-3.721 zu:-3.757 aber:-3.823
 ideen	und:-1.995 die:-2.718 für:-2.963 zu:-3.257 wie:-3.472 haben:-3.668 von:-3.701 in:-3.756 habt:-3.838 sind:-3.887 oder:-4.012 hat:-4.121
@@ -1646,7 +1647,7 @@ logik	und:-2.392 der:-2.652 ist:-2.848 die:-2.958 des:-3.247 nicht:-3.551 von:-3
 logisch	dass:-1.953 und:-2.052 ist:-2.295 aber:-2.709 wenn:-3.185 weil:-3.251 also:-3.418 oder:-3.591 zu:-3.668 so:-3.744 gesehen:-3.931 nicht:-3.966
 lohnt	sich:-0.366 es:-2.014 und:-4.010 zu:-4.422 oder:-4.894 also:-5.198 ist:-5.217 das:-5.225 in:-5.225 für:-5.274 aber:-5.327 auch:-5.361
 look	like:-2.825 und:-3.365 up:-3.422 mit:-3.663 for:-3.711 ist:-3.782 and:-3.923 zu:-3.975 in:-4.083 back:-4.260 von:-4.346 so:-4.476
-los	ist:-1.609 und:-1.753 mit:-2.411 angeles:-2.935 geht:-3.194 ja:-3.296 war:-3.351 also:-3.416 hier:-3.578 so:-3.656 aber:-3.669 dann:-3.673
+los	ist:-1.609 und:-1.753 geht's:-2.129 mit:-2.411 angeles:-2.935 geht:-3.194 ja:-3.296 war:-3.351 also:-3.416 hier:-3.578 so:-3.656 aber:-3.669
 lt	font:-0.504 i:-1.983 b:-2.069 p:-3.954 gt:-4.540 form:-6.002 linke:-6.135 und:-6.209 rechte:-6.209 main:-6.376 header:-6.376 das:-6.472
 luft	und:-2.264 zu:-3.295 ist:-3.353 nach:-3.372 in:-3.803 raus:-4.170 die:-4.281 aus:-4.360 oder:-4.510 ja:-4.514 auf:-4.534 mit:-4.537
 lust	auf:-2.212 hat:-2.648 mehr:-2.695 und:-2.836 habt:-2.950 haben:-3.076 zu:-3.267 drauf:-3.291 habe:-3.702 hast:-3.706 am:-3.965 darauf:-4.153
@@ -2462,7 +2463,6 @@ tag	und:-2.544 der:-3.542 in:-3.702 zu:-3.750 ist:-3.762 an:-3.772 für:-3.774 m
 tage	und:-3.042 später:-3.075 lang:-3.133 in:-3.460 nach:-3.767 die:-3.903 vor:-3.923 im:-3.990 zu:-4.345 bis:-4.429 oder:-4.455 an:-4.469
 tagen	und:-3.103 in:-3.421 ist:-3.786 die:-4.031 wieder:-4.097 oder:-4.200 noch:-4.250 nicht:-4.266 ein:-4.281 mit:-4.309 im:-4.316 hat:-4.397
 tages	und:-3.181 ist:-3.421 die:-3.863 auch:-3.927 wird:-4.077 zu:-4.112 in:-4.164 ein:-4.301 werden:-4.378 mit:-4.431 als:-4.447 nicht:-4.448
-talk	und:-3.013 ist:-3.328 mit:-3.615 podcast:-4.154 in:-4.339 radio:-4.349 zu:-4.486 von:-4.678 oder:-4.743 hier:-4.825 so:-4.871 and:-4.908
 tasche	und:-2.038 ist:-2.934 zu:-3.332 die:-3.596 greifen:-3.608 haben:-3.621 hat:-3.675 mit:-3.701 oder:-3.982 in:-4.192 hier:-4.217 für:-4.240
 taste	und:-2.303 gedrückt:-2.466 drücken:-2.529 auf:-3.408 drücke:-3.799 drückt:-3.871 die:-3.905 für:-3.913 ist:-4.005 oder:-4.069 um:-4.089 dann:-4.116
 tat	ist:-3.263 so:-3.352 und:-3.531 das:-3.608 ein:-3.610 es:-3.642 die:-3.729 nicht:-3.798 eine:-3.890 der:-4.008 auch:-4.108 sich:-4.150
@@ -2716,7 +2716,6 @@ vorher	schon:-2.566 noch:-2.983 nicht:-3.084 auch:-3.465 war:-3.694 und:-3.802 g
 vorhin	schon:-1.685 gesagt:-2.412 auch:-3.018 in:-4.005 noch:-4.040 gesehen:-4.046 erwähnt:-4.054 die:-4.231 angesprochen:-4.324 das:-4.375 so:-4.384 von:-4.391
 vorne	und:-2.661 ist:-3.064 an:-3.357 zu:-3.486 mit:-3.945 auf:-4.094 in:-4.146 dran:-4.153 rein:-4.172 so:-4.236 bis:-4.276 die:-4.300
 vorschlag	der:-2.270 gemacht:-2.723 für:-3.045 des:-3.048 von:-3.084 ist:-3.096 zu:-3.486 machen:-3.513 den:-3.586 dass:-3.752 und:-3.822 zur:-3.865
-vorschläge	für:-2.469 gemacht:-2.541 die:-2.867 machen:-2.963 und:-3.068 zu:-3.146 der:-3.179 zur:-3.564 wie:-3.589 von:-3.753 habt:-3.771 in:-3.896
 vorsichtig	sein:-1.346 und:-2.804 mit:-2.825 zu:-3.174 damit:-3.998 auf:-4.036 ist:-4.088 wenn:-4.144 weil:-4.167 in:-4.242 an:-4.266 aber:-4.323
 vorstellen	dass:-0.978 kann:-2.344 und:-2.371 wie:-2.435 können:-2.665 was:-3.284 wenn:-3.320 also:-3.376 aber:-3.463 möchte:-3.619 das:-3.751 ja:-3.799
 vorstellung	von:-1.988 dass:-2.540 davon:-2.827 der:-2.972 des:-3.249 und:-3.366 die:-3.422 ist:-3.486 wie:-3.810 was:-4.055 vom:-4.113 hat:-4.140
@@ -2740,6 +2739,7 @@ wand	und:-2.397 zu:-3.221 ist:-3.360 hängen:-3.839 oder:-3.881 mit:-3.985 an:-4
 wann	ist:-2.827 ich:-3.271 das:-3.285 die:-3.343 immer:-3.454 hast:-3.490 und:-3.522 sie:-3.567 es:-3.679 wird:-3.700 der:-3.701 haben:-3.826
 want	it:-4.406 a:-4.459 is:-4.851 and:-4.934 sex:-5.074 one:-5.180 me:-5.237 my:-5.672 in:-5.873 for:-5.873 ist:-6.461 so:-6.461
 war	das:-2.703 es:-2.857 ein:-3.325 ja:-3.414 die:-3.419 der:-3.471 und:-3.594 so:-3.684 auch:-3.705 nicht:-3.744 eine:-3.923 schon:-3.940
+war's	dann:-1.847 das:-2.337 für:-2.454 mit:-2.542 jetzt:-2.638 auch:-2.781 schon:-2.972 eigentlich:-3.368 von:-3.443 ja:-3.453 und:-3.479 aber:-3.713
 waren	die:-2.483 wir:-2.930 und:-3.059 es:-3.544 sie:-3.584 ja:-3.635 auch:-3.728 das:-3.911 in:-3.958 so:-4.023 nicht:-4.206 jetzt:-4.245
 warm	und:-1.692 ist:-1.885 wird:-2.741 werden:-3.107 geworden:-3.142 genug:-3.457 war:-3.537 aber:-3.559 machen:-3.632 zu:-3.645 also:-3.648 an:-3.691
 warst	du:-0.697 ja:-2.929 und:-3.102 nicht:-4.024 ein:-4.040 doch:-4.070 schon:-4.211 in:-4.260 so:-4.388 auch:-4.500 immer:-4.508 dann:-4.610
@@ -2766,7 +2766,7 @@ weile	her:-2.761 und:-3.181 dauern:-3.233 bis:-3.323 nicht:-3.510 lang:-3.790 in
 wein	und:-2.097 ist:-2.696 zu:-3.101 oder:-3.319 in:-3.458 trinken:-3.539 aus:-3.900 getrunken:-3.955 hat:-4.191 wird:-4.205 auf:-4.227 mit:-4.258
 weise	wie:-2.528 zu:-3.299 und:-3.451 die:-3.561 auch:-3.756 in:-3.797 mit:-3.951 ist:-4.044 nicht:-4.226 dass:-4.349 das:-4.412 auf:-4.439
 weit	weg:-2.484 über:-3.417 ist:-3.514 von:-3.669 entfernt:-3.684 dass:-3.718 und:-3.787 so:-3.907 wie:-4.033 nach:-4.137 in:-4.197 sind:-4.298
-weiter	und:-1.763 zu:-2.988 mit:-3.182 nach:-3.614 also:-3.657 so:-3.698 in:-3.742 aber:-3.848 geht:-3.942 ja:-4.154 auf:-4.219 weg:-4.320
+weiter	und:-1.763 zu:-2.988 mit:-3.182 nach:-3.614 also:-3.657 so:-3.698 in:-3.742 aber:-3.848 geht:-3.942 ja:-4.154 geht's:-4.177 auf:-4.219
 weitere	informationen:-2.711 fragen:-3.276 frage:-4.242 videos:-4.251 möglichkeit:-4.655 beispiele:-4.951 wortmeldungen:-4.971 wichtige:-5.025 entwicklung:-5.128 infos:-5.168 maßnahmen:-5.176 möglichkeiten:-5.234
 weiteren	wortmeldungen:-3.012 video:-3.571 verlauf:-3.726 folge:-3.780 videos:-4.084 fragen:-4.104 punkt:-4.433 informationen:-4.448 ausgabe:-4.484 beratung:-4.719 ist:-4.846 schritt:-4.905
 weiterer	punkt:-2.316 folge:-3.045 wichtiger:-3.236 vorteil:-3.421 grund:-3.481 aspekt:-3.752 schritt:-3.793 großer:-4.622 tipp:-4.798 baustein:-4.798 teil:-4.837 faktor:-4.837
@@ -2868,7 +2868,7 @@ worden	ist:-0.237 sind:-0.771 und:-1.161 war:-2.309 dass:-2.375 aber:-2.860 sein
 wort	hat:-2.416 gemeldet:-2.897 gottes:-3.307 und:-3.323 für:-3.499 zu:-3.534 ist:-3.670 das:-3.850 an:-4.064 nicht:-4.309 in:-4.400 kommen:-4.422
 worte	zu:-2.613 und:-2.896 die:-3.006 des:-3.516 sind:-3.555 in:-3.761 von:-3.812 nicht:-3.993 für:-4.170 fassen:-4.179 sagen:-4.218 mit:-4.235
 worten	die:-2.886 und:-3.085 von:-3.644 zu:-3.669 des:-3.672 das:-3.676 der:-3.799 wenn:-3.938 wir:-3.999 es:-4.095 nicht:-4.262 in:-4.487
-worum	es:-0.546 geht:-1.614 ich:-3.690 ging:-3.987 wir:-4.442 du:-4.571 sie:-4.720 sich:-5.373 handelt:-5.373 die:-5.454 ihr:-5.454 soll:-5.454
+worum	es:-0.546 geht:-1.614 geht's:-2.814 ich:-3.690 ging:-3.987 wir:-4.442 du:-4.571 sie:-4.720 sich:-5.373 handelt:-5.373 die:-5.454 ihr:-5.454
 wow	das:-1.826 ich:-3.187 was:-3.212 okay:-3.302 ja:-3.330 da:-3.447 und:-3.456 also:-3.616 ist:-3.775 so:-3.861 jetzt:-3.990 die:-4.014
 wunder	dass:-1.840 wunderschön:-2.827 und:-3.174 ist:-3.507 von:-3.673 der:-3.913 wenn:-4.069 wunderschöne:-4.117 also:-4.129 in:-4.147 zu:-4.237 des:-4.253
 wunderbar	und:-1.961 dann:-2.816 so:-3.010 also:-3.123 aber:-3.256 ja:-3.258 mit:-3.383 dass:-3.389 funktioniert:-3.390 ist:-3.665 hier:-3.696 in:-3.702
