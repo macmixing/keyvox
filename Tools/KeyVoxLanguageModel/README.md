@@ -374,6 +374,30 @@ few that share more, with Tatoeba at 1, show far fewer different bars than Apple
 | 1, 0.3, 0.3, 0.1 | 1.30 of 3 | 8 | 27.8% | 8.9% | 6.4% | 21.5% | 20.2% |
 | 30, 0.3, 0.3, 0 | 1.23 of 3 | 22 | 29.3% | 8.0% | 4.8% | 17.2% | 15.7% |
 
+Spanish's were tuned against the bars Apple's Spanish (Spain) keyboard showed after 53 sentences
+on an iOS 27.2 simulator, read with `--apple`: the same weights but speech at 0.1, which share more
+words with Apple's bars and find the next sentence's first word more often in every source's
+held-out texts:
+
+| Weights (Tatoeba, OASST2, WildChat, speech) | Words shared with Apple's bar | Different bars (Apple: 36) | Held out: Tatoeba | OASST2 | WildChat | YODAS2 | YouTube-Commons |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 10, 0.3, 0.3, 0 | 0.91 of 3 | 16 | 15.1% | 8.0% | 5.7% | 8.3% | 8.4% |
+| 10, 0.3, 0.3, 0.1 (Spanish) | 1.00 of 3 | 18 | 15.9% | 8.4% | 6.4% | 9.5% | 9.4% |
+
+A grid of 96 weightings (Tatoeba 1, 10, 30; OASST2 and WildChat 0, 0.3, 1, 3; speech 0, 0.1)
+shared at most 1.06 words (10, 0, 0.3, 0.1), at the cost of OASST2's held-out sentences (5.0%).
+Ten of the 53 sentences end in a line break with no mark, after which Apple's bar offers
+lowercase continuations rather than openers in every measured language; no weighting matches
+those.
+
+A sentence opened with one of the language's sentence opening marks (`sentenceOpeningMarks` in its
+`language.json`, Spanish's "¿" and "¡") also counts its first word after that mark
+(`count_sentence_openers.py`), and `sentence_openers.txt` gives every opener's log likelihood after
+each such mark (`opening <mark>` lines), which the keyboard offers right after the mark where a
+sentence starts: after "¿", Spanish's are "qué", "por", and "cómo", the three words Apple's Spanish
+keyboard offers there, measured on an iOS 27.2 simulator; after "¡", "no", "qué", and "me",
+where Apple offers "No", "Y", and "Si", its openers at the start of the text.
+
 ## Words spelled with capitals
 
 `capitalized_spellings_<language>.txt` holds the words the keyboard and dictation write with their
