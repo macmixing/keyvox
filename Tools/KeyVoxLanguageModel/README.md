@@ -84,8 +84,8 @@ steps:
 ```bash
 .venv/bin/python download_sources.py --language <language> <data-dir>
 .venv/bin/python extract_sentences.py --language <language> <data-dir>
-.venv/bin/python count_ngrams.py <data-dir>
-.venv/bin/python write_context_model.py <data-dir> <output-dir>/context_model.bin
+.venv/bin/python count_ngrams.py --language <language> <data-dir>
+.venv/bin/python write_context_model.py --language <language> <data-dir> <output-dir>/context_model.bin
 .venv/bin/python write_word_kinds.py --language <language> <data-dir>
 .venv/bin/python count_sentence_openers.py --language <language> <data-dir>
 .venv/bin/python write_sentence_openers.py --language <language> <data-dir> --output <output-dir>/sentence_openers.txt
@@ -131,8 +131,11 @@ bundled one before replacing it.
 
 ### Built data
 
-The builds of November 24, 2026; Spanish was rebuilt on November 27 with its `language.json` and its tuned opener weights, which changed only its sentence openers. Every context model fills the default limits (107,000 words,
-800,000 pairs, 600,000 sequences), so each is 14,963,028 bytes, as English's is.
+The builds of November 24, 2026, and Spanish's of November 27, with its `language.json`, its tuned
+opener weights, its count weights, and its context model sizes (see "Context model"): its words of
+text below are as counted once each. Every other context model fills the default limits (107,000
+words, 800,000 pairs, 600,000 sequences), so each is 14,963,028 bytes, as English's is; Spanish's
+holds 240,000 words, 2,000,000 pairs, and 2,000,000 sequences in 42,160,028 bytes.
 
 | Build | Words of text | Vocabulary | Capitalized spellings | Grammar words |
 | --- | --- | --- | --- | --- |
@@ -317,6 +320,40 @@ with `write_treebank_word_kinds.py`, in the same classes; a word the treebank sp
 it, in its sentence and the next ones, are read on their own.
 `.venv/bin/python -m unittest test_write_treebank_word_kinds` checks that a sentence after one
 with a split word keeps all its words.
+
+## Context model
+
+`count_ngrams.py` counts each source's sentences as many times as the language's `count_weights`
+give it (`languages.py`, once for an unlisted source), and records the weights in `counts.npz`
+(`source_names`, `source_weights`), so `Tools/KeyVoxTypingModels` takes a sentence out of the
+counts as many times as it was counted. `write_context_model.py` keeps as many words, pairs, and
+sequences as the language's `context_words`, `context_pairs`, and `context_sequences` give it.
+Every language but Spanish counts each source once and keeps the default sizes, so its files are
+unchanged.
+
+Spanish counts Tatoeba, OASST2, and WildChat, the text people wrote, 20 times and the speech
+transcripts once, and keeps 240,000 words, 2,000,000 pairs, and 2,000,000 sequences: its 282 million
+words of text are 87% speech, and Spanish writes a word in many forms. Scored with
+`Tools/KeyVoxTypingHarness` on the Spanish simulation sentences of the typing models' held-out
+buckets 8-9 (400 sentences at noise 0.25 and 80 at noise 0.3), and on the 45 sentences typed into
+Apple's Spanish keyboard, with context models counted from the sentence files less every one of
+those sentences, so no measured sentence was counted (the typing models' README, "Measured on
+simulated typing", gives every measure):
+
+| Counts and sizes | Suggestion bar shows the word within 3 letters | Mistyped words fixed | Correctly typed words wrongly changed | Final words correct, 80 at 0.3 | Apple's 45 |
+| --- | --- | --- | --- | --- | --- |
+| Once each, default sizes | 73.8% | 806/877 | 17/2,718 | 706/764 | 251/264 |
+| Once each, 2,000,000 pairs and sequences | 74.6% | 807 | 16 | 708 | 252 |
+| Once each, 5,000,000 pairs and sequences | 75.0% | 807 | 16 | 705 | 252 |
+| Written 5 times, 2,000,000 | 75.7% | 810 | 15 | 709 | 253 |
+| Written 20 times, 2,000,000 | 76.2% | 813 | 11 | 712 | 253 |
+| Written 50 times, 2,000,000 | 76.2% | 814 | 10 | 712 | 252 |
+| Written text alone, 2,000,000 | 75.7% | 812 | 14 | 709 | 252 |
+
+Each row replaces only the context model of files built from counts taking every source once; 20
+times with 2,000,000 pairs and sequences is the best row that lowers no measure of another. Built
+with those weights, the dictionary and rankers raise every measure further (the typing models'
+README).
 
 ## Sentence openers
 

@@ -34,8 +34,8 @@ IDENTIFIER="$("$PYTHON" languages.py "$LANGUAGE")"
 # no other group running beside it reads, so the groups run side by side; the steps that read
 # several groups' files run once those groups are done.
 context_model() {
-  "$PYTHON" count_ngrams.py "$DATA_DIR"
-  "$PYTHON" write_context_model.py "$DATA_DIR" "$OUTPUT_DIR/context_model.bin"
+  "$PYTHON" count_ngrams.py --language "$LANGUAGE" "$DATA_DIR"
+  "$PYTHON" write_context_model.py --language "$LANGUAGE" "$DATA_DIR" "$OUTPUT_DIR/context_model.bin"
 }
 sentence_openers() {
   "$PYTHON" write_word_kinds.py --language "$LANGUAGE" "$DATA_DIR"

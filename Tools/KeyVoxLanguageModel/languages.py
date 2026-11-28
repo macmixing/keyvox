@@ -102,6 +102,13 @@ class Language:
     measured_spellings: Path | None = None
     # A swipe dataset whose swiped words the swipe vocabulary adds (count_swiped_words.py).
     swiped_words: Source | None = None
+    # How many times count_ngrams.py counts each source's sentences; unlisted sources count once.
+    count_weights: dict[str, int] = field(default_factory=dict)
+    # The words, word pairs, and three-word sequences the context model keeps at most
+    # (write_context_model.py).
+    context_words: int = 107_000
+    context_pairs: int = 800_000
+    context_sequences: int = 600_000
 
     def source(self, name: str) -> Source:
         return next(use.source for use in self.sources if use.source.name == name)
@@ -207,6 +214,15 @@ LANGUAGES = {
         # words with Apple's bars and finds more held-out next sentences' first words in every
         # source (README, "Sentence openers").
         opener_weights={**_OPENER_WEIGHTS, "youtube-commons": 0.1, "yodas2": 0.1},
+        # Text people wrote counts 20 times and speech once, and the context model keeps about as
+        # many words as the dictionary has and more pairs and sequences, as Spanish writes a word
+        # in many forms: measured on held-out Spanish sentences the counts never saw, this fixes
+        # more mistyped words, changes fewer typed right, and shows more words in the suggestion
+        # bar than counting every source once at English's sizes (README, "Context model").
+        count_weights={"tatoeba": 20, "oasst2": 20, "wildchat": 20},
+        context_words=240_000,
+        context_pairs=2_000_000,
+        context_sequences=2_000_000,
     ),
     "fr": Language(
         identifier="fr",

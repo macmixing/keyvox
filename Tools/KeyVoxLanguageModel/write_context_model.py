@@ -28,6 +28,7 @@ from pathlib import Path
 
 import numpy as np
 
+from languages import LANGUAGES, language_argument
 from normalize import SENTENCE_START
 
 ID_BITS = 21
@@ -72,11 +73,16 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("data_dir", type=Path)
     parser.add_argument("output", type=Path)
-    parser.add_argument("--words", type=int, default=107_000)
-    parser.add_argument("--pairs", type=int, default=800_000)
-    parser.add_argument("--sequences", type=int, default=600_000)
+    language_argument(parser)
+    parser.add_argument("--words", type=int, help="default: the language's context_words")
+    parser.add_argument("--pairs", type=int, help="default: the language's context_pairs")
+    parser.add_argument("--sequences", type=int, help="default: the language's context_sequences")
     parser.add_argument("--scaled-total", type=int, default=31_167_351)
     arguments = parser.parse_args()
+    language = LANGUAGES[arguments.language]
+    arguments.words = arguments.words or language.context_words
+    arguments.pairs = arguments.pairs or language.context_pairs
+    arguments.sequences = arguments.sequences or language.context_sequences
 
     counts = np.load(arguments.data_dir / "counts.npz")
     vocabulary = (arguments.data_dir / "vocabulary.txt").read_text(encoding="utf-8").split("\n")[:-1]
