@@ -54,7 +54,7 @@ public struct TouchAlignmentScorer: Sendable {
     }
 
     private func alignmentTable(touches: [CGPoint], word: String) -> [[Double]] {
-        let letters = Array(Self.foldedLetters(word))
+        let letters = Array(aimedLetters(word))
         let touchCount = touches.count
         let letterCount = letters.count
         let unreachable = Double.greatestFiniteMagnitude / 4
@@ -102,7 +102,7 @@ public struct TouchAlignmentScorer: Sendable {
     /// Touches at the centers of the typed letters' keys, for input that arrived without
     /// touch positions.
     public func centerTouches(for typedWord: String) -> [CGPoint] {
-        Self.foldedLetters(typedWord).compactMap { keys.center(of: $0) }
+        aimedLetters(typedWord).compactMap { keys.center(of: $0) }
     }
 
     private func aimCost(_ touch: CGPoint, _ letter: Character) -> Double {
@@ -122,9 +122,13 @@ public struct TouchAlignmentScorer: Sendable {
         return parameters.skippedLetterCost
     }
 
-    /// Lowercased letters with accents removed, so "café" is aimed at the plain "e" key.
-    private static func foldedLetters(_ word: String) -> String {
-        word.replacingOccurrences(of: "’", with: "'")
-            .folding(options: [.caseInsensitive, .diacriticInsensitive], locale: nil)
+    /// The keys `word`'s letters are aimed at, lowercased: a letter with a key of its own on the
+    /// layout at that key, and any other at the key of its letter without accents.
+    private func aimedLetters(_ word: String) -> String {
+        String(word.replacingOccurrences(of: "’", with: "'").lowercased().flatMap { letter -> String in
+            keys.center(of: letter) == nil
+                ? String(letter).folding(options: [.caseInsensitive, .diacriticInsensitive], locale: nil)
+                : String(letter)
+        })
     }
 }
