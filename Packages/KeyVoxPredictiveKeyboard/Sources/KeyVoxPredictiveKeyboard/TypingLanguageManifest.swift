@@ -20,4 +20,7 @@ struct TypingLanguageManifest: Decodable {
     /// The marks that open a sentence before its first word: typed where a sentence starts, the
     /// sentence still starts after them. None when absent.
     let sentenceOpeningMarks: String?
+    /// The folder in `PredictiveData` whose dictionary, models, and swipe files a regional variant
+    /// uses where its own folder has none; nil for a language that has all its own.
+    let sharedDataFolder: String?
 }

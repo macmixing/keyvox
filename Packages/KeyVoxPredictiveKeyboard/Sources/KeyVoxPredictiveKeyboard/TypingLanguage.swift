@@ -35,11 +35,11 @@ public struct TypingLanguage: Sendable {
     /// - Throws: `PredictiveKeyboardError.invalidLetterLayout` for a layout the language does not
     ///   offer.
     public static func bundled(identifier: String, letterLayout layoutName: String? = nil) throws -> TypingLanguage {
-        let resources = try TypingLanguageResources(identifier: identifier)
+        let ownResources = try TypingLanguageResources(identifier: identifier)
         let manifest: TypingLanguageManifest
         let layouts: TypingLanguageLetterLayouts
         do {
-            let data = try Data(contentsOf: resources.url("language.json"))
+            let data = try Data(contentsOf: ownResources.url("language.json"))
             let decoder = JSONDecoder()
             manifest = try decoder.decode(TypingLanguageManifest.self, from: data)
             layouts = try decoder.decode(TypingLanguageLetterLayouts.self, from: data)
@@ -51,6 +51,7 @@ public struct TypingLanguage: Sendable {
         guard layouts.identifier == identifier else {
             throw PredictiveKeyboardError.invalidTypingLanguage(identifier)
         }
+        let resources = try manifest.sharedDataFolder.map(ownResources.sharingData(withFolder:)) ?? ownResources
         let chosenLayout = layoutName ?? layouts.defaultLetterLayout
         guard layouts.letterLayouts.contains(chosenLayout) else {
             throw PredictiveKeyboardError.invalidLetterLayout(chosenLayout)

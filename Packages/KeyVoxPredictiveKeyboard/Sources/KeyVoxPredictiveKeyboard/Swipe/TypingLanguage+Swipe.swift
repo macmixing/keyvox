@@ -6,6 +6,6 @@ extension TypingLanguage {
     /// language without one is typed by tapping alone, and decodes no swipe.
     public var offersSwipeTyping: Bool {
         [SwipeModelSettings.fileName, SwipeEncoderNetwork.fileName, SwipeLexiconFormat.fileName]
-            .allSatisfy { resources.optionalURL($0) != nil }
+            .allSatisfy { resources.optionalDataURL($0) != nil }
     }
 }
