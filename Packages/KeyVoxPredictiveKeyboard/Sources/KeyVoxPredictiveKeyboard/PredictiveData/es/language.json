@@ -1,0 +1,15 @@
+{
+  "identifier": "es",
+  "defaultLetterLayout": "QWERTY-Spanish",
+  "alternativeLetterLayouts": ["QWERTY", "AZERTY", "QWERTZ"],
+  "editLetters": "aábcdeéfghiíjklmnñoópqrstuúüvwxyz",
+  "vowels": "aáeéiíoóuúüy",
+  "alwaysCapitalizedWords": [],
+  "quotationMarks": {
+    "openingSingle": "‘",
+    "closingSingle": "’",
+    "openingDouble": "“",
+    "closingDouble": "”"
+  },
+  "sentenceOpeningMarks": "¿¡"
+}

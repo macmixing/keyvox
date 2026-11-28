@@ -319,7 +319,10 @@ public final class PredictiveTypingSession {
             pickRun: pickRun,
             offersNextWords: word.text.isEmpty == false
                 || textBeforeCursor?.last.map { noNextWordCharacters?.contains(String($0)) != true } ?? true,
-            revertibleText: word.endsAtCursor ? revertibleAutocorrection(endingAt: textBeforeCursor)?.original : nil
+            revertibleText: word.endsAtCursor ? revertibleAutocorrection(endingAt: textBeforeCursor)?.original : nil,
+            sentenceOpeningMark: context.isAtSentenceStart && word.text.isEmpty
+                ? textBeforeCursor?.last.flatMap { textRules.sentenceOpeningMarks.contains($0) ? String($0) : nil }
+                : nil
         )
     }
 

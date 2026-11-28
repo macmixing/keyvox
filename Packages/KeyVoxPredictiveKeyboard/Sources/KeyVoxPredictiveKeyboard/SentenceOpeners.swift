@@ -2,16 +2,21 @@ import Foundation
 
 /// The words the suggestion bar offers where a sentence begins: every opener scored by its log
 /// likelihood after the previous sentence's ending, plus a boost for that sentence's first word
-/// and one for each word in it under that ending, the best three first. The model is written by
+/// and one for each word in it under that ending, the best three first. Right after one of the
+/// language's sentence opening marks, the openers are scored by their log likelihood after that
+/// mark instead, when the model has it. The model is written by
 /// Tools/KeyVoxLanguageModel/write_sentence_openers.py, which documents the file's lines.
 public struct SentenceOpeners: Sendable {
     private static let noEnding = "*"
+    private static let openingPrefix = Array("opening ".utf8)
 
     /// The openers, in the order of every ending's scores.
     private let openers: [String]
     /// Each ending's opener scores by the ending's name, with `noEnding` where no earlier
     /// sentence ended.
     private let endingScores: [String: [Float]]
+    /// Each sentence opening mark's opener scores, by the mark.
+    private let openingScores: [String: [Float]]
     /// Each boost line's 64-bit FNV-1a key hash, sorted. The boosts for the key at `i` are the
     /// openers `boostOpeners[boostStarts[i]..<boostStarts[i + 1]]` with `boostValues` alike:
     /// flat arrays, so the model costs a few bytes per boost in memory.
@@ -26,6 +31,7 @@ public struct SentenceOpeners: Sendable {
         var openers: [String] = []
         var openerIndices: [String: UInt16] = [:]
         var endingScores: [String: [Float]] = [:]
+        var openingScores: [String: [Float]] = [:]
         var boostLines: [(hash: UInt64, values: Range<Int>)] = []
         var boostHashes: [UInt64] = []
         var boostStarts: [Int] = []
@@ -37,11 +43,13 @@ public struct SentenceOpeners: Sendable {
             for line in ScoredWordLines.lines(in: bytes) {
                 guard let tab = bytes[line].firstIndex(of: UInt8(ascii: "\t")) else { continue }
                 let values = (tab + 1)..<line.upperBound
-                guard bytes[line].starts(with: endingPrefix) else {
+                let isOpening = bytes[line].starts(with: Self.openingPrefix)
+                guard isOpening || bytes[line].starts(with: endingPrefix) else {
                     boostLines.append((Self.hash(bytes[line.lowerBound..<tab]), values))
                     continue
                 }
-                let name = String(decoding: bytes[(line.lowerBound + endingPrefix.count)..<tab], as: UTF8.self)
+                let prefixLength = isOpening ? Self.openingPrefix.count : endingPrefix.count
+                let name = String(decoding: bytes[(line.lowerBound + prefixLength)..<tab], as: UTF8.self)
                 let pairs = ScoredWordLines.pairs(in: bytes, values)
                 if openers.isEmpty {
                     openers = pairs.map(\.word)
@@ -55,7 +63,11 @@ public struct SentenceOpeners: Sendable {
                         scores[Int(index)] = pair.value
                     }
                 }
-                endingScores[name] = scores
+                if isOpening {
+                    openingScores[name] = scores
+                } else {
+                    endingScores[name] = scores
+                }
             }
 
             boostLines.sort { $0.hash < $1.hash }
@@ -73,6 +85,7 @@ public struct SentenceOpeners: Sendable {
         }
         self.openers = openers
         self.endingScores = endingScores
+        self.openingScores = openingScores
         self.boostHashes = boostHashes
         self.boostStarts = boostStarts
         self.boostOpeners = boostOpeners
@@ -80,10 +93,13 @@ public struct SentenceOpeners: Sendable {
     }
 
     /// The best openers, most likely first, after `ending`, or the general openers when no
-    /// earlier sentence ended or the last one ended at a bare line break.
-    public func words(after ending: SentenceEnding?) -> [String] {
+    /// earlier sentence ended or the last one ended at a bare line break; right after the sentence
+    /// opening mark `openingMark`, the openers after that mark when the model has them.
+    public func words(after ending: SentenceEnding?, openingMark: String? = nil) -> [String] {
         guard var scores = endingScores[Self.noEnding] else { return [] }
-        if let ending, let endingScores = endingScores[ending.mark.rawValue] {
+        if let openingMark, let openingScores = openingScores[openingMark] {
+            scores = openingScores
+        } else if let ending, let endingScores = endingScores[ending.mark.rawValue] {
             scores = endingScores
             addBoosts(for: "first \(ending.mark.rawValue) \(ending.firstWord)", to: &scores)
             for word in Set(ending.words) {

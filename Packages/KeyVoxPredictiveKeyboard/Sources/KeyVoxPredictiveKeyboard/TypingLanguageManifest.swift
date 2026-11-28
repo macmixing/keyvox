@@ -44,6 +44,9 @@ struct TypingLanguageManifest: Decodable {
     /// Whether a period right after a digit writes an ordinal number rather than ending the
     /// sentence (`TypingTextRules.ordinalPeriods`); false when left out.
     let ordinalPeriods: Bool?
+    /// The marks that open a sentence before its first word: typed where a sentence starts, the
+    /// sentence still starts after them. None when absent.
+    let sentenceOpeningMarks: String?
     /// The locale of Apple's keyboard for the language, whose web endings its keyboard adds to the
     /// region's (`WebEndings`).
     let webEndingsLocale: String

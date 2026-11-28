@@ -133,11 +133,20 @@ def sentences_with_endings(text: str, rules: TextRules = DEFAULT_RULES) -> Itera
     text runs out first. Three or more periods are an
     ellipsis, which pauses a sentence rather than ending it, as on the keyboard. HTML entities
     such as "&nbsp;" are decoded."""
+    for words, ending, _ in sentences_with_openings(text, rules):
+        yield words, ending
+
+
+def sentences_with_openings(text: str, rules: TextRules = DEFAULT_RULES,
+                            opening_marks: str = "") -> Iterator[tuple[list[str], str | None, str | None]]:
+    """`sentences_with_endings`, each sentence also with the one of `opening_marks` it opens
+    with, before its first word and after any spaces, or None."""
     if rules.composed:
         text = unicodedata.normalize("NFC", text)
     text = _marks_read(html.unescape(_BRACKETED.sub(" ", text)), rules)
     words: list[str] = []
     position = 0
+    start = 0
     for ending in _ENDING.finditer(text):
         words += _WORD.findall(text[position:ending.start()].lower())
         position = ending.end()
@@ -149,11 +158,17 @@ def sentences_with_endings(text: str, rules: TextRules = DEFAULT_RULES) -> Itera
         else:
             mark = mark[-1]
         if words:
-            yield words, mark
+            yield words, mark, _opening(text[start:position], opening_marks)
         words = []
+        start = position
     words += _WORD.findall(text[position:].lower())
     if words:
-        yield words, None
+        yield words, None, _opening(text[start:], opening_marks)
+
+
+def _opening(sentence: str, opening_marks: str) -> str | None:
+    lead = sentence.lstrip()
+    return lead[0] if lead and lead[0] in opening_marks else None
 
 
 def begins_written_run(before: str, rules: TextRules = DEFAULT_RULES) -> bool:

@@ -35,6 +35,8 @@ was written with English's weights, `youtube-commons=0 oasst2=0.3 tatoeba=10`.
 The output must match `SentenceOpeners` in KeyVoxPredictiveKeyboard. Each line is a kind,
 a key, a tab, and `word:value` pairs:
     ending <period|question|exclamation|*>   every opener with its log likelihood
+    opening <mark>                           every opener with its log likelihood right after
+                                             one of the language's sentence opening marks
     first <ending> <first word>              boosts for the previous sentence's first word
     word <ending> <word>                     boosts for a word in the previous sentence
 """
@@ -66,6 +68,7 @@ def weighted_sources(sources: dict, weights: dict[str, float], word_weights: dic
     word_pairs: Counter = Counter()
     word_sentences: Counter = Counter()
     word_openers: defaultdict = defaultdict(Counter)
+    opened: defaultdict = defaultdict(Counter)
     for name, counts in sources.items():
         weight = weights.get(name, 1.0)
         word_weight = word_weights.get(name, weight)
@@ -81,12 +84,15 @@ def weighted_sources(sources: dict, weights: dict[str, float], word_weights: dic
         if weight > 0:
             for word, count in counts["openers"].items():
                 openers[word] += count * weight
+            for (mark, word), count in counts.get("opened", {}).items():
+                opened[mark][word] += count * weight
         if word_weight > 0:
             for pair, count in counts["word_pairs"].items():
                 word_pairs[pair] += count * word_weight
             for word, count in counts["word_sentences"].items():
                 word_sentences[word] += count * word_weight
-    return openers, {key: value for key, value in contexts.items() if value}, word_pairs, word_sentences, word_openers
+    return (openers, {key: value for key, value in contexts.items() if value}, word_pairs, word_sentences,
+            word_openers, opened)
 
 
 def boosts(following: Counter, total: float, expected: dict[str, float], strength: float,
@@ -115,7 +121,7 @@ def boosts(following: Counter, total: float, expected: dict[str, float], strengt
 class OpenerModel:
     def __init__(self, sources: dict, weights: dict[str, float], word_weights: dict[str, float],
                  kinds: dict[str, str], arguments):
-        openers, contexts, word_pairs, word_sentences, word_openers = weighted_sources(sources, weights, word_weights)
+        openers, contexts, word_pairs, word_sentences, word_openers, opened = weighted_sources(sources, weights, word_weights)
         vocabulary = [word for word, _ in openers.most_common(arguments.openers)]
         total = sum(openers[word] for word in vocabulary)
         general = {word: openers[word] / total for word in vocabulary}
@@ -128,6 +134,15 @@ class OpenerModel:
             ending_total = sum(following.values())
             self.endings[ending] = {
                 word: (following.get(word, 0) + arguments.strength * general[word]) / (ending_total + arguments.strength)
+                for word in vocabulary
+            }
+
+        # The openers after each sentence opening mark, as after an ending.
+        self.openings = {}
+        for mark, following in opened.items():
+            opened_total = sum(following.values())
+            self.openings[mark] = {
+                word: (following.get(word, 0) + arguments.strength * general[word]) / (opened_total + arguments.strength)
                 for word in vocabulary
             }
 
@@ -182,6 +197,8 @@ class OpenerModel:
 
         lines = [f"ending {ENDING_NAMES.get(ending, ANY)}\t{pairs({w: math.log(p) for w, p in distribution.items()})}"
                  for ending, distribution in self.endings.items()]
+        lines += [f"opening {mark}\t{pairs({w: math.log(p) for w, p in distribution.items()})}"
+                  for mark, distribution in self.openings.items()]
         lines += [f"first {ENDING_NAMES[ending]} {first}\t{pairs(moved)}" for (ending, first), moved in self.first.items()]
         lines += [f"word {ENDING_NAMES[ending]} {word}\t{pairs(moved)}" for (ending, word), moved in self.words.items()]
         return sorted(lines)

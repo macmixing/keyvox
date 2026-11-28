@@ -19,8 +19,8 @@ public struct TypingLanguage: Sendable {
     public let quotes: SmartQuotes
     /// The key beside the letters that puts accents on them, when the language has one.
     public let accentKey: AccentKey?
-    /// How the language's text is read: the apostrophe it types inside words, and whether a
-    /// period after a digit ends a sentence.
+    /// How the language's text is read: the apostrophe it types inside words, whether a period
+    /// after a digit ends a sentence, and the marks that open a sentence before its first word.
     public let textRules: TypingTextRules
     /// The locale of Apple's keyboard for the language in `web_endings.json`, whose web endings
     /// the language's keyboard offers beside the device region's (`WebEndings`).
@@ -99,7 +99,8 @@ public struct TypingLanguage: Sendable {
         textRules = TypingTextRules(
             apostrophe: Character(manifest.quotationMarks.closingSingle),
             ordinalPeriods: manifest.ordinalPeriods ?? false,
-            spacedOpeningMark: manifest.quotationMarks.spacedOpeningMark
+            spacedOpeningMark: manifest.quotationMarks.spacedOpeningMark,
+            sentenceOpeningMarks: Set(manifest.sentenceOpeningMarks ?? "")
         )
     }
 }
