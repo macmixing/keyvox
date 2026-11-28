@@ -138,3 +138,27 @@ iOS 27.2 simulator (`~/KeyVoxLanguageData/apple-languages/runs/sim-weburl-summar
 python3 write_web_endings.py "<runtime>/Contents/Resources/RuntimeRoot/System/Library/TextInput" \
   ../../Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/PredictiveData/web_endings.json
 ```
+
+## Emoji in each language
+
+`EmojiLanguageProbeTests` plays a script of steps, a JSON array its file's comment describes, on
+whichever keyboard is in use: picking a keyboard from the globe's menu, opening the emoji keyboard,
+typing a word into its search field and recording the results shown, typing a word and recording
+the suggestion bar, tapping elements by label or the screen at a point, and saving screenshots and
+the labeled elements. It recorded the system emoji search with each language's keyboard for
+`Tools/KeyVoxEmojiData` ("Measured on the system keyboard" there), and plays the same steps on the
+KeyVox keyboard. `SettingsScriptProbeTests` plays steps in the Settings app the same way, such as
+adding a language's keyboard.
+
+```sh
+TEST_RUNNER_EMOJI_LANGUAGE_SCRIPT=/tmp/steps.json \
+TEST_RUNNER_EMOJI_LANGUAGE_OUTPUT=/tmp/emoji-language.json \
+xcodebuild test -project AppleKeyboardBaseline.xcodeproj -scheme BaselineUITests \
+  -destination "platform=iOS Simulator,id=<simulator-udid>" \
+  -derivedDataPath /tmp/keyvox-apple-baseline -parallel-testing-enabled NO \
+  -only-testing:BaselineUITests/EmojiLanguageProbeTests
+```
+
+with `/tmp/steps.json` holding, for example, `["pick:Deutsch (Deutschland)", "emoji", "search:Hund"]`.
+`SettingsScriptProbeTests` reads its steps from `TEST_RUNNER_SETTINGS_SCRIPT` and saves into
+`TEST_RUNNER_SETTINGS_SCRIPT_OUTPUT_DIR`.

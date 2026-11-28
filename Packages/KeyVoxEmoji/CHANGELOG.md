@@ -6,6 +6,23 @@ The format loosely follows Keep a Changelog, and the package uses semantic versi
 
 ---
 
+## [2.0.0] - 2026-11-28
+
+Emoji search and suggestion-bar emoji in every typing language the keyboard offers: English, German, Spanish (Spain and Latin America), and French (France and Canada).
+
+### Includes
+
+- `EmojiSearch.bundled(language:)` and `EmojiPredictions.bundled(language:)` read a typing language's data by its identifier, such as `de` or `es-419`; a regional variant without its own data reads its language's, so French (Canada) uses French's.
+- Search and bar data for German, Spanish, Spanish (Latin America), and French from CLDR's annotations in each language, with every form of a noun finding the noun's emoji, as the system emoji search finds them with each language's keyboard. English's data is unchanged.
+- Words are compared case folded as well as without accents, so German "ß" finds "ss".
+- No word a language's typing data leaves out finds or offers emoji.
+
+### Notes
+
+- `2.0.0` replaces `EmojiSearch.bundled()` and `EmojiPredictions.bundled()` with `bundled(language:)`; keyboard hosts pass the language they type in.
+
+---
+
 ## [1.0.1] - 2026-10-30
 
 Frequently Used can now tell a host whether the user has used any emoji, so a keyboard can keep offering suggestion-bar emoji after it starts again.
