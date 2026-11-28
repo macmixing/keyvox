@@ -74,7 +74,7 @@ built. The Leipzig corpora (news and web text) are formal writing and are not re
 ```bash
 python3.14 -m venv .venv
 .venv/bin/pip install -r requirements.txt
-PYTHON=.venv/bin/python ./build_language_data.sh <language> <data-dir> <output-dir> [dictionary-words]
+PYTHON=.venv/bin/python ./build_language_data.sh <language> <data-dir> <output-dir> [dictionary-words [left-out-words]]
 ```
 
 `<language>` is `en`, `de`, `de-bundestag` (German with the Bundestag speeches), `es`, or `fr`.
@@ -97,10 +97,12 @@ steps:
 .venv/bin/python write_grammar_words.py <data-dir> <output-dir>/grammar_words.txt
 ```
 
-Given `[dictionary-words]`, the language's dictionary words and probabilities (a word, a tab,
-and a probability a line), it then builds the swipe vocabulary, leaving out the words that
-`[left-out-words]`, a regular expression a line, matches (`Tools/KeyVoxTypingModels` writes
-English's as `work/offensive_words.txt`):
+Given `[left-out-words]`, a regular expression a line (`Tools/KeyVoxTypingModels` writes a
+language's as `work/offensive_words.txt`), the words spelled with capitals and the swipe vocabulary
+leave out the words it matches, as the dictionary does (see "Words spelled with capitals"); with
+`""` as `[dictionary-words]` it is read with no swipe vocabulary built, as German's is. Given
+`[dictionary-words]`, the language's dictionary words and probabilities (a word, a tab, and a
+probability a line), it then builds the swipe vocabulary:
 
 ```bash
 .venv/bin/python count_swipe_words.py --language <language> <data-dir>
@@ -135,14 +137,16 @@ bundled one before replacing it.
 
 The builds of November 24, 2026, and German's of November 27, rebuilt with its `language.json`,
 whose apostrophe and ordinal periods (see "Text in each language") leave 65,402 fewer sentences
-than November 24's and 198 fewer words, and with the written lexicon words its vocabulary adds (see
-"Vocabulary") and contractions; German's bundled files are this build's. Every context model fills the default limits (107,000 words,
-800,000 pairs, 600,000 sequences), so each is 14,963,028 bytes, as English's is.
+than November 24's and 198 fewer words, with the written lexicon words its vocabulary adds (see
+"Vocabulary") and contractions, and with the words its dictionary leaves out given as
+`[left-out-words]`; German's bundled files are this build's. Every context model fills the default
+limits (107,000 words, 800,000 pairs, 600,000 sequences), so each is 14,963,028 bytes, as English's
+is.
 
 | Build | Words of text | Vocabulary | Capitalized spellings | Grammar words |
 | --- | --- | --- | --- | --- |
 | en | 528,779,799 | 109,172 (SCOWL size 60) | 18,144 | 152 |
-| de | 118,350,503 | 222,263 | 152,972 | 220 |
+| de | 118,350,503 | 222,263 | 152,968 | 220 |
 | de-bundestag | 138,467,367 | 209,470 | 146,689 | 222 |
 | es | 281,865,056 | 236,307 | 2,955 | 156 |
 | fr | 393,698,831 | 165,093 | 19,021 | 195 |
