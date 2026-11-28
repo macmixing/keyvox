@@ -145,7 +145,7 @@ is.
 
 | Build | Words of text | Vocabulary | Capitalized spellings | Grammar words |
 | --- | --- | --- | --- | --- |
-| en | 528,779,799 | 109,172 (SCOWL size 60) | 18,144 | 152 |
+| en | 528,779,799 | 109,172 (SCOWL size 60) | 18,138 | 152 |
 | de | 118,350,503 | 222,263 | 152,968 | 220 |
 | de-bundestag | 138,467,367 | 209,470 | 146,689 | 222 |
 | es | 281,865,056 | 236,307 | 2,955 | 156 |
@@ -387,9 +387,9 @@ bundled in `Packages/KeyVoxLinguistics`. It is built from the vocabulary and the
 A word a pattern of `--leave-out` matches whole, by its letter form, is left out, as the language's
 dictionary leaves it out: the patterns are the ones `Tools/KeyVoxTypingModels` writes for the
 language as `work/offensive_words.txt`, so the list is written again with them once the language's
-typing models are built. German's leaves out the 4 words Multilingual HateCheck's German slurs
-match (`Tools/KeyVoxTypingModels`, "Words left out"), and is otherwise the list written without
-them. `write_swipe_vocabulary.py` reads `--leave-out` the same way.
+typing models are built. English's leaves out the 6 words English's dictionary leaves out, and
+German's the 4 words Multilingual HateCheck's German slurs match (`Tools/KeyVoxTypingModels`, "Words
+left out"); each is otherwise the list written without them. `write_swipe_vocabulary.py` reads `--leave-out` the same way.
 
 Spellings with capitals in a row are left out, as the system keyboard leaves acronyms such
 as "nasa" lowercase, except those listed in `measured_spellings.txt`, which the English system
