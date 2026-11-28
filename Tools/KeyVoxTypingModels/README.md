@@ -552,6 +552,48 @@ plans and the 80-sentence plan, 0.9% have their first letter tapped onto the spa
 English's do, which a space before a word keeps as a space in every language, and 1.9% a later
 letter, 1.3% of English's.
 
+### French (Canada) through the keyboard
+
+French (Canada) (`PredictiveData/fr-CA`) types with France's dictionary, rankers, autocorrect
+decision model, and word lists (`sharedDataFolder`), on Apple's French (Canada) default layout,
+QWERTY-Accents. Whether it needs data of its own was measured on November 27, 2026 on Canadian
+French the models never saw: the Leipzig Corpora Collection's `fra-ca_web_2020_1M` (CC BY), web
+text crawled from Canadian sites in 2020, beside its France counterpart `fra-fr_web_2013_1M`, both
+filtered the same way to sentences a phone user could type as written (4 to 20 words; letters,
+apostrophes, hyphens, and `, . ? ! ; :` only; a capital first and `.`, `?`, or `!` last; at least two
+common French words; no word in capitals throughout): 350,587 Canadian and 376,738 France sentences.
+
+France's dictionary holds 98.25% of the Canadian text's words and 97.41% of the France text's, read
+as the keyboard reads words (an apostrophe inside, a hyphen between). Of the 410 words written at
+least eight times as often in the Canadian text, 55 are not in it, most of them crawl artifacts and
+place names; Canadian words such as "courriel", "cégep", "magasiner", and "dépanneur" are in it,
+while "condo", "locateur", and "postsecondaire" are in the language build's vocabulary but below the
+dictionary's cut.
+
+The harness typed the same plans, seed 1 and seed 2, with `--language fr-CA` and with the same taps
+as `fr` on AZERTY-French:
+
+| Measure | Plan | fr-CA | same taps as fr |
+| --- | --- | --- | --- |
+| Final words correct | Canadian, 400 sentences, noise 0.25 (`compare`) | 96.9% (5,203/5,369) | 97.0% (5,207/5,369) |
+| Final words correct | Canadian, 80 sentences, noise 0.3 | 93.1% (938/1,007) | 93.3% (940/1,007) |
+| Final words correct | Canadian, 400 sentences, noise 0.3, seed 2 | 93.4% (4,952/5,300) | 93.2% (4,937/5,300) |
+| Final words correct | French's Tatoeba plan, 400 sentences, noise 0.25 | 97.1% (2,736/2,817) | 97.0% (2,732/2,817) |
+| Final words correct | French's Tatoeba plan, 80 sentences, noise 0.3 | 91.5% (452/494) | 92.7% (458/494) |
+| Final words correct | Tatoeba, 400 sentences, noise 0.3, seed 2 | 93.6% (2,699/2,884) | 93.5% (2,696/2,884) |
+| Final words correct | Canadian, 400 (`evaluate`) | 97.4% | 97.6% |
+| Mistyped words fixed | Canadian, 400 | 93.2% (1,382/1,483) | 93.6% (1,383/1,478) |
+| Correctly typed words wrongly changed | Canadian, 400 | 0.5% (19/3,675) | 0.5% (18/3,682) |
+| Contractions typed without the apostrophe, restored | Canadian, 400 | 91.9% (194/211) | 92.8% (194/209) |
+| Completion keystroke savings | Canadian, 400 | 42.4% | 42.2% |
+| Next word first / in top 3 | Canadian, 400 | 12.2% / 22.1% | 12.2% / 22.1% |
+
+The same finger offsets fall on other neighboring keys on QWERTY-Accents than on AZERTY-French, so
+the two columns differ by which slips are made (`evaluate` draws 1,483 and 1,478 mistyped words), not
+by the data; the words each gets wrong differ both ways, and on the 400-sentence plans neither layout
+leads by more than 0.2 points. France typed `fr`'s plans of its own web text at 96.2% (noise 0.25) and
+91.4% (noise 0.3), below its Canadian results, so French (Canada) keeps France's data.
+
 The German vocabulary lacks most words that begin with "ä", "ö", or "ü", as the AOSP German word
 list it is built from does: "überhaupt" (52,006 times in the German build's counts), "ändern",
 "öffnen", and "öffentlich" are not in the dictionary, nor 51 more such words written at least 1,000
