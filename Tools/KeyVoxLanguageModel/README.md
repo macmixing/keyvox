@@ -328,8 +328,8 @@ Each language's source weights are in `languages.py`: English's were tuned again
 suggestion bars (youtube-commons 0, oasst2 0.3, tatoeba 10). German, Spanish, and French give the
 same weights by kind of source, speech 0, chat and text messages 0.3, and Tatoeba 10.
 
-Apple's French (France) bars were captured after 52 sentences and in an empty field
-(`apple-languages/sentence-openers/fr_FR.json` in KeyVox's language data, iOS 27.2 simulator).
+Apple's French (France) bars were captured after 52 sentences and in an empty field, on the iOS 27.2
+simulator.
 With `--apple`, the bundled French openers share 1.15 of Apple's 3 words a bar and show 17
 different bars to Apple's 37. Other weights move this little: Tatoeba 3 shares 1.23, Tatoeba 1
 1.17, 88milSMS 3 1.15, 88milSMS 10 1.11, and Tatoeba 30 1.15, a few words over 53 bars, so
