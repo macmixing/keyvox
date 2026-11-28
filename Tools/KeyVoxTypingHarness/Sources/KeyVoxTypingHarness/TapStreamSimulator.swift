@@ -1,6 +1,7 @@
 import CoreGraphics
 import Foundation
 import KeyVoxPredictiveKeyboard
+import KeyVoxTypingSimulation
 
 /// Seeded streams of tapping fingers for the swipe gate (`swipe-gate`): every letter of a typing
 /// plan, then the space bar, tapped where the plan aims it, held 60 to 200 ms, sampled at the

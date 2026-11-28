@@ -378,6 +378,27 @@ To score built files, copy the harness's release build and put the built files i
 the copy reads its own bundle. The ITE plan is made with
 `Tools/KeyVoxTypingHarness/Scripts/ite_typo_plan.py <data-dir>/sources/ite/processed2020/english <plan.json> --split holdout --max-sentences 3000`.
 
+## Checking typing changes
+
+The harness plans above, of 80 to 3,000 sentences, measure accuracy when a model is trained or
+retuned. They are not how a change to typing is verified: that is the typing regression check in
+`KeyVoxPredictiveKeyboard`'s package tests (`iOS/Docs/ENGINEERING.md`, "Typing Regression
+Check"), a small fixed set of typing cases for every bundled typing language, typed through the
+typing session as `compare` types a plan, which fails naming the case and the word or suggestion
+bar that came out differently:
+
+```bash
+cd Packages/KeyVoxPredictiveKeyboard
+swift test --scratch-path /tmp/keyvox-predictive-keyboard-test-clean --filter TypingRegressionTests
+```
+
+When a change is meant to change typing, such as built files replacing bundled ones, record the
+new outcomes and review the diff of each language's `expected.jsonl`, one line per case:
+
+```bash
+KEYVOX_RECORD_TYPING_REGRESSION=1 swift test --scratch-path /tmp/keyvox-predictive-keyboard-test-clean --filter TypingRegressionTests
+```
+
 ## Other typing languages
 
 `typing_languages.py` lists the typing languages and what differs between them; every step that

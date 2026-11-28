@@ -176,7 +176,7 @@ provided "as is" without express or implied warranty.
 - Source: <https://tatoeba.org/en/downloads>
 - License: CC BY 2.0 FR
 - License URL: <https://creativecommons.org/licenses/by/2.0/fr/deed.en>
-- Note: English sentences were normalized, aggregated, and transformed into non-reversible dictionary-frequency and previous-word count artifacts bundled with `Packages/KeyVoxPredictiveKeyboard`, and into its non-reversible word, word-pair, and word-sequence count artifact and sentence-opener, capitalized-spelling, next-word, grammar-word, and swipe-vocabulary lists. `Tools/KeyVoxLanguageModel` rebuilds the count artifact and the lists.
+- Note: English sentences were normalized, aggregated, and transformed into non-reversible dictionary-frequency and previous-word count artifacts bundled with `Packages/KeyVoxPredictiveKeyboard`, and into its non-reversible word, word-pair, and word-sequence count artifact and sentence-opener, capitalized-spelling, next-word, grammar-word, and swipe-vocabulary lists. `Tools/KeyVoxLanguageModel` rebuilds the count artifact and the lists. The package's typing regression check holds 30 of the sentences, lowercased and without punctuation other than apostrophes, as test cases (`Tests/KeyVoxPredictiveKeyboardTests/Fixtures/typing_regression/en/cases.jsonl`).
 
 Attribution: Based on sentence data contributed by the Tatoeba community.
 
@@ -211,7 +211,7 @@ Attribution: Based on YouTube-Commons by PleIAs: transcripts of videos their cre
 - Source: <https://tatoeba.org/en/downloads>
 - License: CC BY 2.0 FR
 - License URL: <https://creativecommons.org/licenses/by/2.0/fr/deed.en>
-- Note: German, Spanish, and French sentences were normalized, aggregated, and transformed into the non-reversible artifacts and lists described above.
+- Note: German, Spanish, and French sentences were normalized, aggregated, and transformed into the non-reversible artifacts and lists described above. The predictive keyboard package's typing regression check holds 30 sentences of each language, lowercased and without punctuation other than apostrophes and Spanish sentence opening marks, as test cases (`Tests/KeyVoxPredictiveKeyboardTests/Fixtures/typing_regression/<language>/cases.jsonl`, for `de`, `es`, `es-419`, `fr`, and `fr-CA`).
 
 Attribution: Based on sentence data contributed by the Tatoeba community.
 

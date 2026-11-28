@@ -12,6 +12,7 @@ let package = Package(
             name: "KeyVoxTypingHarness",
             dependencies: [
                 .product(name: "KeyVoxPredictiveKeyboard", package: "KeyVoxPredictiveKeyboard"),
+                .product(name: "KeyVoxTypingSimulation", package: "KeyVoxPredictiveKeyboard"),
             ]
         ),
     ]

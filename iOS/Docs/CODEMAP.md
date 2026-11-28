@@ -49,7 +49,7 @@ The current default runtime flow is:
 - **`../Packages/KeyVoxState/`**: shared observable-state boundary that preserves Combine behavior on Apple platforms.
 - **`../Packages/KeyVoxPromotions/`**: campaign manifest loading, eligibility, selection, persistence, and published campaign state.
 - **`../Packages/KeyVoxVoiceActivity/`**: shared Silero model, VAD protocol/configuration, actor-isolated detector, live detector for the live meter, and speech-runtime bridge.
-- **`../Packages/KeyVoxPredictiveKeyboard/`**: UI-independent typing prediction and correction for each bundled typing language, built on a bundled AOSP LatinIME native target with KeyVox ranking: the shared `PredictiveTypingSession`, `PredictionComputer`, noisy-channel and missing-space correction, completions, next-word and sentence-opener suggestions, swipe typing (the bundled swipe model's inference, the lexicon-constrained word search over the bundled dictionary and the user's own words, and the tap-versus-swipe gate), personal vocabulary, typing memory and its file, held-key characters and popup layout, smart quotes, bundled language data, and package tests; its `KeyVoxTypingLanguageCatalog` product lists the bundled typing languages and the letter layouts each offers without loading them, for hosts that do not type, such as the containing app.
+- **`../Packages/KeyVoxPredictiveKeyboard/`**: UI-independent typing prediction and correction for each bundled typing language, built on a bundled AOSP LatinIME native target with KeyVox ranking: the shared `PredictiveTypingSession`, `PredictionComputer`, noisy-channel and missing-space correction, completions, next-word and sentence-opener suggestions, swipe typing (the bundled swipe model's inference, the lexicon-constrained word search over the bundled dictionary and the user's own words, and the tap-versus-swipe gate), personal vocabulary, typing memory and its file, held-key characters and popup layout, smart quotes, bundled language data, and package tests; its `KeyVoxTypingLanguageCatalog` product lists the bundled typing languages and the letter layouts each offers without loading them, for hosts that do not type, such as the containing app; its `KeyVoxTypingSimulation` product types planned taps through the typing session on the KeyVox letter page's key frames, for `Tools/KeyVoxTypingHarness` and the package's typing regression check (`Tests/KeyVoxPredictiveKeyboardTests/Fixtures/typing_regression`).
 - **`../Packages/KeyVoxEmoji/`**: UI-independent emoji catalog in the system emoji keyboard's categories and order, emoji search, Frequently Used ranking, suggestion-bar emoji by word, two-person skin tones, bundled emoji data, and package tests.
 - **`../Packages/KeyVoxKeyboardThemes/`**: UI-independent keyboard theme identifiers with their saved-value fallback, the per-platform theme catalog, each theme's light and dark key palette and swipe trail style, and package tests.
 - **`../Packages/KeyVoxTextComposition/`**: platform-neutral leading-capitalization, leading-spacing, quotation-mark context, sentence-boundary, adjacent terminal-punctuation, and trailing-separator policy used immediately before insertion.
@@ -807,6 +807,11 @@ Packages/
 │   │   ├── KeyVoxTypingLanguageCatalog/
 │   │   │   ├── TypingLanguageCatalog.swift
 │   │   │   └── TypingLanguageLetterLayouts.swift
+│   │   ├── KeyVoxTypingSimulation/
+│   │   │   ├── KeyboardLayoutModel.swift
+│   │   │   ├── SessionTyper.swift
+│   │   │   ├── TypingRegressionCase.swift
+│   │   │   └── TypingRegressionFixture.swift
 │   │   └── KeyVoxPredictiveNative/
 │   │       ├── KeyVoxPredictiveNative.cpp
 │   │       ├── include/KeyVoxPredictiveNative.h
@@ -2130,7 +2135,7 @@ Packages/
 - `Packages/KeyVoxLocalInference/Tests/KeyVoxLocalInferenceTests/`
   - Package-level coverage for local prompt formatting, adapter-aware generation behavior, and opt-in live model prompt suites for Polished, Casual, and the Polished gauntlet.
 - `Packages/KeyVoxPredictiveKeyboard/Tests/KeyVoxPredictiveKeyboardTests/`
-  - Package-level coverage for autocorrection, missing-space correction, word revision, deleted-into and remembered corrections, contact names and dictionary phrases, learned words, capitals, and suggestions, sentence endings and openers, picked-word spacing and repeated picks, emoji suggestions, smart quotes, held-key characters and popup layout, character lists, the bundled letter layouts and the layouts each language names, the typing-language catalog, loading a language in each layout it offers and swipes decoded on that layout's keys, French's language, quotation marks, held-key popups as Apple's French keyboard draws them, picked-word spacing, and accent key, and the typing-memory file.
+  - Package-level coverage for autocorrection, missing-space correction, word revision, deleted-into and remembered corrections, contact names and dictionary phrases, learned words, capitals, and suggestions, sentence endings and openers, picked-word spacing and repeated picks, emoji suggestions, smart quotes, held-key characters and popup layout, character lists, the bundled letter layouts and the layouts each language names, the typing-language catalog, loading a language in each layout it offers and swipes decoded on that layout's keys, French's language, quotation marks, held-key popups as Apple's French keyboard draws them, picked-word spacing, and accent key, the typing-memory file, and the typing regression check (`TypingRegressionTests`), which types every bundled typing language's cases in `Fixtures/typing_regression` and matches their recorded text and suggestion bars exactly.
 - `Packages/KeyVoxEmoji/Tests/KeyVoxEmojiTests/`
   - Package-level coverage for the catalog, keyboard sections, Frequently Used ranking, search, suggestion-bar emoji, and two-person tones.
 - `Packages/KeyVoxKeyboardThemes/Tests/KeyVoxKeyboardThemesTests/`

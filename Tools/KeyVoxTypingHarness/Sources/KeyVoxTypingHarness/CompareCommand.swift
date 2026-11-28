@@ -1,5 +1,6 @@
 import Foundation
 import KeyVoxPredictiveKeyboard
+import KeyVoxTypingSimulation
 
 /// `compare`: types the plan through the shipping KeyVox typing session, optionally with
 /// the user's own words loaded, and scores it word for word, against what the Apple
@@ -47,7 +48,7 @@ enum CompareCommand {
                     produced: AppleBaselineResults.words(in: $0.sentences[sentenceIndex].text)
                 )
             }
-            let typed = try typer.type(sentence)
+            let typed = try typer.type(words: sentence.words, taps: sentence.taps).text
             texts.append(AppleBaselineResults.Sentence(text: typed))
             let keyVoxWords = WordAlignment.align(
                 intended: sentence.truthWords,

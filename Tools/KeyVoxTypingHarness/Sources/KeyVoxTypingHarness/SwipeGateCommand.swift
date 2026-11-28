@@ -1,6 +1,7 @@
 import CoreGraphics
 import Foundation
 import KeyVoxPredictiveKeyboard
+import KeyVoxTypingSimulation
 
 /// Replays touches through the keyboard's swipe gate (`SwipeGate`):
 ///

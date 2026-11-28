@@ -1,5 +1,6 @@
 import Foundation
 import KeyVoxPredictiveKeyboard
+import KeyVoxTypingSimulation
 
 /// The engine, sized to the harness keyboard grid, plus how long it took to start.
 struct EngineSetup {

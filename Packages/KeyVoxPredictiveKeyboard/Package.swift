@@ -17,6 +17,10 @@ let package = Package(
             name: "KeyVoxTypingLanguageCatalog",
             targets: ["KeyVoxTypingLanguageCatalog"]
         ),
+        .library(
+            name: "KeyVoxTypingSimulation",
+            targets: ["KeyVoxTypingSimulation"]
+        ),
     ],
     dependencies: [
         .package(path: "../KeyVoxLinguistics"),
@@ -33,6 +37,8 @@ let package = Package(
                 // The bundled LatinIME sources narrow sizes to int and use variable-length
                 // arrays throughout, as upstream does.
                 .unsafeFlags(["-Wno-shorten-64-to-32", "-Wno-vla-cxx-extension"]),
+                // Unoptimized, the dictionary search makes the typing regression check four times slower.
+                .unsafeFlags(["-O2"], .when(configuration: .debug)),
             ]
         ),
         .target(
@@ -53,9 +59,14 @@ let package = Package(
                 .define("ACCELERATE_NEW_LAPACK"),
             ]
         ),
+        .target(
+            name: "KeyVoxTypingSimulation",
+            dependencies: ["KeyVoxPredictiveKeyboard"],
+            path: "Sources/KeyVoxTypingSimulation"
+        ),
         .testTarget(
             name: "KeyVoxPredictiveKeyboardTests",
-            dependencies: ["KeyVoxPredictiveKeyboard", "KeyVoxTypingLanguageCatalog"],
+            dependencies: ["KeyVoxPredictiveKeyboard", "KeyVoxTypingLanguageCatalog", "KeyVoxTypingSimulation"],
             path: "Tests/KeyVoxPredictiveKeyboardTests",
             resources: [.copy("Fixtures")]
         ),

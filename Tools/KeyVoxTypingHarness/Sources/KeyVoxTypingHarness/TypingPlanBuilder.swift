@@ -1,5 +1,6 @@
 import Foundation
 import KeyVoxPredictiveKeyboard
+import KeyVoxTypingSimulation
 
 /// Builds a typing plan: picks sentences from the corpus and draws a Gaussian finger
 /// offset for every letter that will be tapped. Given a typing language, the plan names it,
@@ -41,7 +42,7 @@ enum TypingPlanBuilder {
         )
     }
 
-    private static func gaussianPair(
+    static func gaussianPair(
         standardDeviation: Double,
         generator: inout SeededRandomGenerator
     ) -> [Double] {

@@ -82,6 +82,14 @@ enum HarnessCommand {
         var layoutPath: String?
     }
 
+    struct RegressionCasesOptions {
+        /// The corpus to pick from, how many cases to pick (`--sentences`), the finger noise, and
+        /// the typing language (`--language`).
+        var source = PlanSource(sentenceLimit: 30, noiseInKeyPitches: 0.3)
+        /// The folder holding every language's regression check.
+        var fixturesPath = ""
+    }
+
     struct ExplainOptions {
         var typedWord = ""
         var touches: [CGPoint] = []
@@ -105,6 +113,7 @@ enum HarnessCommand {
     case swipeLexicon(SwipeLexiconOptions)
     case swipeAccuracy(SwipeAccuracyOptions)
     case swipeGate(SwipeGateOptions)
+    case regressionCases(RegressionCasesOptions)
 
     static let usage = """
     usage:
@@ -128,6 +137,8 @@ enum HarnessCommand {
       KeyVoxTypingHarness swipe-accuracy --swipes <jsonl-path> --layout <layout-json> [--limit <count>]
                                          [--context-weights <w,w,...>] [--no-context] [--calibrate-personal]
       KeyVoxTypingHarness swipe-gate [--plan <path> [--taps <count>]] [--swipes <jsonl-path> --layout <layout-json>]
+      KeyVoxTypingHarness regression-cases --language <id> --corpus <path>... --fixtures <folder>
+                                           [--sentences <count>] [--noise <key pitches>] [--seed <value>]
     """
 
     init(arguments: [String]) throws {
@@ -312,6 +323,20 @@ enum HarnessCommand {
                 throw HarnessError.usage
             }
             self = .swipeGate(options)
+        case "regression-cases":
+            var options = RegressionCasesOptions()
+            while let flag = remaining.popFirst() {
+                if flag != "--plan", try Self.parseSource(flag, into: &options.source, remaining: &remaining) { continue }
+                switch flag {
+                case "--fixtures": options.fixturesPath = try Self.value(after: flag, in: &remaining)
+                default: throw HarnessError.unknownFlag(flag)
+                }
+            }
+            guard options.source.corpusPaths.isEmpty == false, options.source.languageIdentifier != nil,
+                  options.fixturesPath.isEmpty == false else {
+                throw HarnessError.usage
+            }
+            self = .regressionCases(options)
         default:
             throw HarnessError.usage
         }

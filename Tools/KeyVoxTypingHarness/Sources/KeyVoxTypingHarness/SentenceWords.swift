@@ -1,4 +1,5 @@
 import Foundation
+import KeyVoxTypingSimulation
 
 /// The typeable words of one sentence, in order, lowercased.
 ///
@@ -13,19 +14,26 @@ struct SentenceWords {
     let written: [String]
 
     init?(sentence: String, layout: KeyboardLayoutModel? = nil) {
-        let tokens = sentence
-            .replacingOccurrences(of: "’", with: "'")
-            .split(whereSeparator: { $0.isWhitespace })
-            .map { token in
-                token.trimmingCharacters(in: CharacterSet.letters.inverted)
-            }
-            .filter { $0.isEmpty == false }
+        let tokens = Self.tokens(in: sentence)
         guard tokens.isEmpty == false,
               tokens.allSatisfy({ Self.isTypeableWord($0, layout: layout) }) else {
             return nil
         }
         words = tokens.map { $0.lowercased() }
         written = tokens
+    }
+
+    /// The sentence's whitespace-separated tokens with the characters other than letters around
+    /// them trimmed, as written, typographic apostrophes straightened; tokens of no letters are
+    /// left out.
+    static func tokens(in sentence: String) -> [String] {
+        sentence
+            .replacingOccurrences(of: "’", with: "'")
+            .split(whereSeparator: { $0.isWhitespace })
+            .map { token in
+                token.trimmingCharacters(in: CharacterSet.letters.inverted)
+            }
+            .filter { $0.isEmpty == false }
     }
 
     /// Up to three earlier words, newest first, matching the engine's context window.
