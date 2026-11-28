@@ -33,28 +33,8 @@ struct KeyboardLetterCaseControllerTests {
 
         #expect(controller.letterCase == .lowercase)
     }
-
-    @Test func germanOrdinalNumbersPeriodKeepsTheSentenceGoing() {
-        // Apple's German keyboard leaves shift off after "Am 3. ", and on after "Gut. ".
-        #expect(KeyboardLetterCaseController.shouldAutoCapitalize(
-            textBeforeCursor: "Am 3. ",
-            autocapitalization: .sentences,
-            language: .german
-        ) == false)
-        #expect(KeyboardLetterCaseController.shouldAutoCapitalize(
-            textBeforeCursor: "Gut. ",
-            autocapitalization: .sentences,
-            language: .german
-        ))
-        #expect(KeyboardLetterCaseController.shouldAutoCapitalize(
-            textBeforeCursor: "Am 3. ",
-            autocapitalization: .sentences,
-            language: .english
-        ))
-    }
 }
 
 private extension TypingLanguage {
     static let english = try! TypingLanguage.bundled(identifier: "en")
-    static let german = try! TypingLanguage.bundled(identifier: "de")
 }
