@@ -617,7 +617,15 @@ Measured on the halves above; the scoring named is German's at the time.
 - **German scoring with `k1`.** Context weight 1.0 or 1.3 and same-path context weight 1.6 measured
   at most `k1`'s 91.89% on the tune half; a beam of 400, 92.02%.
 - **The vocabulary without English's words** (`k1`): German's tune half 91.72%.
-
+- **More German rounds and swipes**, with German's scoring: a third round from `g6` on 2,000,000
+  fresh swipes (nearest of 4,096 donors, seed 3; `g7`) and one run from `k1`'s first epoch on both
+  sets (`g8`) each reached 93.16% on German's tune half against `g6`'s 93.07%, and the mean of
+  their weights 93.25%, which decoded 90.94% of the test half against `g6`'s 91.06%.
+- **German scoring with `g6`.** A beam of 300 or 400 measured 93.16% and 93.20% on the tune half;
+  context weight 0.5 or 0.9 with same-path context weight 0.6 or 1.0, at most 93.07%.
+- **What `g6` still misses.** Of its tune half's 163 misses, 7 are "wurde" lost to "würde",
+  which the dictionary ranks a step higher, of 15 swipes of it on QWERTZ and QWERTY, where both
+  trace the same keys; on QWERTZ-German all 12 decode.
 - **The vocabulary.** With `r3-ft2` and German's scoring at frequency weight 0.065 and length
   bonus 2.3, the German test half decoded 89.52% with the swipe vocabulary, 89.24% without the
   words of English's lexicon that German's word list and lexicons lack (such as "the" and "you",
