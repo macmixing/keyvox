@@ -460,7 +460,10 @@ public final class PredictionComputer: @unchecked Sendable {
         ranker: SuggestionCandidateRanker
     ) throws -> SuggestionBar {
         guard let previousWord = request.previousWords.first else {
-            let openers = engine.sentenceOpeners.words(after: request.previousSentence).map { word in
+            let openers = engine.sentenceOpeners.words(
+                after: request.previousSentence,
+                openingMark: request.sentenceOpeningMark
+            ).map { word in
                 let written = engine.capitalizedSpellings.written(word)
                 return written == word ? WordCasing.startingSentence(word) : written
             }
