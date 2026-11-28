@@ -49,7 +49,8 @@ def main():
         paths.suggestion_reader,
         paths.counted_dictionary if arguments.as_bundled or not language.uses_english_text
         else paths.dictionary, keys,
-        paths.correction_queries, language.letter_rows(), shared_session=arguments.as_bundled)
+        paths.correction_queries, language.letter_rows(), language.held_keys(),
+        shared_session=arguments.as_bundled)
     latinime_candidates.save(outputs, paths.correction_candidates)
     print(f"cached {len(outputs):,} queries in {paths.correction_candidates}")
 

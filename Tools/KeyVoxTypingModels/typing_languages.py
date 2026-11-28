@@ -24,6 +24,7 @@ from pathlib import Path
 import regex
 
 import words
+from letter_keys import HELD_KEY_CHARACTERS, held_keys
 from letter_layout import PREDICTIVE_DATA, letter_rows
 
 ENGLISH_TEXT = "english"
@@ -81,6 +82,11 @@ class TypingLanguage:
     @property
     def vowels(self) -> str:
         return self.manifest["vowels"]
+
+    def held_keys(self) -> dict[str, str]:
+        """The characters the language's keys offer on a long press, by key, from the
+        `held_key_characters.txt` beside its `language.json`, or none (`letter_keys.held_keys`)."""
+        return held_keys(self.manifest_path.parent / HELD_KEY_CHARACTERS)
 
     def valid_word(self, text: str) -> bool:
         """Whether the text is one word of the language as the builders read words."""

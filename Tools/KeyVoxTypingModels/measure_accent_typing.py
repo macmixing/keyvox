@@ -3,8 +3,9 @@ on the language's default letter layout as its plain spelling instead, and write
 `<data_dir>/work/simulation/accent_typing.json` for the typo simulator.
 
 A letter without a key is typed with a long press on the key `letter_keys.key_for` gives it, the
-first key of its plain spelling (`letter_keys.plain_spelling`), or, left plain, with the plain
-spelling's keys; a letter it gives no key is typed as spelled. How often writers
+key whose long-press list offers it or else the first key of its plain spelling
+(`letter_keys.plain_spelling`), or, left plain, with the plain spelling's keys; a letter it gives no
+key is typed as spelled. How often writers
 leave it plain is measured from the language build's sentences of `accent_source`
 (`typing_languages.py`), text people typed: for each dictionary word with one such letter, however
 many times, whose plain spelling is no dictionary word (a word whose plain spelling is another word
@@ -54,6 +55,7 @@ def main():
         raise SystemExit(f"{language.identifier} names no source to measure its accents in")
 
     keys = {letter for letters, _ in language.letter_rows() for letter in letters}
+    held = language.held_keys()
     words = {line.split("\t", 1)[0] for line in
              paths.dictionary_unigrams.read_text(encoding="utf-8").splitlines()}
     counts = Counter()
@@ -61,7 +63,7 @@ def main():
         counts.update(sentence)
 
     keyless = sorted({character for word in words for character in word
-                      if character not in keys and key_for(character, keys) is not None})
+                      if character not in keys and key_for(character, keys, held) is not None})
     keyed = sorted(letter for letter in keys if plain_spelling(letter) != letter
                    and plain_spelling(letter) and all(c in keys for c in plain_spelling(letter)))
     measured = plain_counts(words, counts, set(keyless))
@@ -74,7 +76,7 @@ def main():
         kept, plain = measured[letter]
         enough = kept + plain >= FEWEST_WORDS
         letters[letter] = {
-            "key": key_for(letter, keys), "plain": plain_spelling(letter),
+            "key": key_for(letter, keys, held), "plain": plain_spelling(letter),
             "spelled": kept, "plain_spelled": plain,
             "plain_rate": plain / (kept + plain) if enough else pooled, "measured": enough,
         }
