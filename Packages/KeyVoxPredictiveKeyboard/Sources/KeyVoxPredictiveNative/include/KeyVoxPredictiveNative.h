@@ -154,6 +154,23 @@ bool KVPKEngineForEachDictionaryWord(
     KVPKDictionaryWordVisitor visit
 );
 
+/// A bundled dictionary opened on its own, without the context model, rankers, or keys an
+/// engine loads, only to ask which words it has. Its file stays mapped until it is closed.
+typedef void *KVPKDictionaryRef;
+
+/// Opens the dictionary at `dictionaryPath`, or returns null when it cannot.
+KVPKDictionaryRef KVPKDictionaryOpen(const char *dictionaryPath);
+
+void KVPKDictionaryClose(KVPKDictionaryRef dictionary);
+
+/// Whether the dictionary has the word of `codePointCount` code points at `codePoints`, as an
+/// engine's `wordIsValid` says it of a word.
+bool KVPKDictionaryHasWord(
+    KVPKDictionaryRef dictionary,
+    const int32_t *codePoints,
+    int32_t codePointCount
+);
+
 #ifdef __cplusplus
 }
 #endif

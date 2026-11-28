@@ -517,6 +517,7 @@ iOS/
 │   │   │   ├── smart_delete_after_word_characters.txt
 │   │   │   └── smart_delete_before_word_characters.txt
 │   │   ├── Prediction/
+│   │   │   ├── KeyboardEverydayKnownNames.swift
 │   │   │   ├── KeyboardPersonalVocabularyBuilder.swift
 │   │   │   ├── KeyboardPredictionCoordinator.swift
 │   │   │   ├── KeyboardPredictionEngine.swift
@@ -741,12 +742,14 @@ Packages/
 │   ├── Package.swift
 │   ├── Sources/
 │   │   ├── KeyVoxPredictiveKeyboard/
+│   │   │   ├── AccentKey.swift
 │   │   │   ├── AccentSuggestionOverlay.swift
 │   │   │   ├── CharacterList.swift
 │   │   │   ├── ContestedTap.swift
 │   │   │   ├── ContestedTapPolicy.swift
 │   │   │   ├── ContextLanguageScorer.swift
 │   │   │   ├── CorrectionRejections.swift
+│   │   │   ├── EverydayKnownNames.swift
 │   │   │   ├── FollowerTable.swift
 │   │   │   ├── GrammarWords.swift
 │   │   │   ├── HeldKeyCharacters.swift
@@ -758,12 +761,15 @@ Packages/
 │   │   │   ├── LearnedWords.swift
 │   │   │   ├── LetterKeyLayout.swift
 │   │   │   ├── LetterKeyRow.swift
+│   │   │   ├── MissingApostrophe.swift
 │   │   │   ├── MissingSpaceCorrector.swift
+│   │   │   ├── NeighborKeySlips.swift
 │   │   │   ├── NoisyChannelCorrector.swift
 │   │   │   ├── PersonalVocabulary.swift
 │   │   │   ├── PersonalWordForms.swift
 │   │   │   ├── PickVariety.swift
 │   │   │   ├── PredictionComputer.swift
+│   │   │   ├── PredictionComputer+AccentKey.swift
 │   │   │   ├── PredictionModels.swift
 │   │   │   ├── PredictionRequest.swift
 │   │   │   ├── PredictionResult.swift
@@ -796,6 +802,7 @@ Packages/
 │   │   │   ├── TypingSlip.swift
 │   │   │   ├── TypingLanguage.swift
 │   │   │   ├── TypingLanguageCatalog+Bundled.swift
+│   │   │   ├── TypingLanguageDictionary.swift
 │   │   │   ├── TypingLanguageManifest.swift
 │   │   │   ├── TypingLanguageResources.swift
 │   │   │   ├── TypingTextContext.swift
@@ -808,6 +815,7 @@ Packages/
 │   │   │   ├── TypingLanguageCatalog.swift
 │   │   │   └── TypingLanguageLetterLayouts.swift
 │   │   └── KeyVoxPredictiveNative/
+│   │       ├── KeyVoxPredictiveDictionary.cpp
 │   │       ├── KeyVoxPredictiveNative.cpp
 │   │       ├── include/KeyVoxPredictiveNative.h
 │   │       ├── jni.h
@@ -2016,6 +2024,10 @@ Packages/
   - Lets a host outside an app bundle, such as the Android engine, point the typing package at its unchanged SwiftPM resource bundle before the first typing language loads.
 - `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/PredictiveEngine.swift`
   - Loads a typing language's dictionary, context model, rankers, accent overlay, and word lists, and bridges to the `KeyVoxPredictiveNative` LatinIME target, handing it the language's edit letters and vowels.
+- `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/TypingLanguageDictionary.swift` and `Sources/KeyVoxPredictiveNative/KeyVoxPredictiveDictionary.cpp`
+  - A typing language's bundled dictionary opened on its own, without the context model, rankers, or keys an engine loads, answering only whether it has a word, as the engine's `wordIsValid` does; its file is let go with it.
+- `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/EverydayKnownNames.swift` and `MissingApostrophe.swift`
+  - Which of the user's known names are everyday words of any of the user's typing languages, or such words written without their apostrophe, checked against each language's dictionary opened alone (a language's capital-only spellings excepted) and let go; `PredictionComputer.updateVocabulary` treats them as its own language's everyday words. `MissingApostrophe` is the shared check of a word written without its apostrophe.
 - `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/NoisyChannelCorrector.swift`, `SuggestionCandidateRanker.swift`, `MissingSpaceCorrector.swift`, `TouchAlignmentScorer.swift`, and `ContextLanguageScorer.swift`
   - Score candidates by context likelihood against where the touches landed, a letter with a key of its own on the layout aimed at that key, an accented letter without one at its plain letter's key, and a letter only a held key's popup offers at that key (`KeyCenterMap`), decide when space replaces the typed word, rank completions and corrections on one score, and read a typed word as two words whose space was missed.
 - `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/SuggestionBar.swift` and `SuggestionBarComposer.swift`
@@ -2040,13 +2052,15 @@ Packages/
   - Runs the shared typing session on the main thread and suggestion work on a serial background engine, publishing a result only when no newer request was made; at a word boundary it uses the current result or computes it on the spot so a fast space never skips an autocorrection. Contested-tap checks run on a second engine so keys such as delete never wait for suggestions. Swipes decode on the suggestion engine's queue; anything typed before a swipe's word arrives waits for it, a word whose place moved meanwhile goes nowhere, and once the word goes in the bar shows suggestions for it with no autocorrection, which space never applies to a word just swiped in. The separator ending a word just swiped in goes in as the keyboard's own edit, never the space key's double-space period, and that word's record ends once the cursor or the field moves from where the word left it.
   - Never rereads the document proxy when background work finishes: a swipe's word is checked against the place recorded on the main thread after every change to the text or cursor, the host's and the keyboard's own, and typed from the text read when the swipe ended.
 - `KeyVox Keyboard/Core/Prediction/KeyboardPredictionEngine.swift`
-  - Serial-queue owner of one lazily created `PredictionComputer` for one typing language, holding geometry until the engine exists, keeping the vocabulary and the learned words handed over last for the next engine, the host handing over the new language's learned words when the language changes, and remembering when the engine cannot load; a change of language lets go of the engine and its letter key frames, so only that language's files stay loaded.
+  - Serial-queue owner of one lazily created `PredictionComputer` for one typing language, holding geometry until the engine exists, keeping the vocabulary, with its known names that are everyday words of the selected languages, and the learned words handed over last for the next engine, the host handing over the new language's learned words when the language changes, and remembering when the engine cannot load; a change of language lets go of the engine and its letter key frames, so only that language's files stay loaded.
 - `KeyVox Keyboard/Core/Prediction/KeyboardSwipePlace.swift`
   - Where a swiped word goes: the field, counted on the main thread and named by its document identifier, which is new each time a field takes focus, and the text around the cursor when its swipe ended, so a word whose cursor or field moved goes nowhere.
 - `KeyVox Keyboard/Core/Prediction/KeyboardTypingLanguage.swift`
   - The typing language the keyboard types in, shared by its engines, typing session, letter rows, held keys, word-ending characters, and quote keys: one of the user's selected languages (`KeyboardTypingLanguageSelection`, read through `KeyboardAppSettingsStore`) in the layout chosen for it, the one last typed in or the first selected when that one was removed, reread by `adoptSettings(_:)`; holds the bundled `TypingLanguageCatalog` and loads only the active language.
 - `KeyVox Keyboard/Core/Prediction/KeyboardTypingTraits.swift`
   - Resolves what the letter keyboard may do in the focused field from its keyboard type, content type, secure entry, autocorrection, and autocapitalization traits, narrowed by the shared keyboard typing settings; a feature the field turns off stays off. Swiping also stays off in a typing language without a swipe model (`TypingLanguage.offersSwipeTyping`). Carries the field's `KeyboardFieldKeys`.
+- `KeyVox Keyboard/Core/Prediction/KeyboardEverydayKnownNames.swift`
+  - Works out `EverydayKnownNames` for the user's known names and selected typing languages on the suggestion engine's queue, again only when the names or the selected languages change, so each new field and each change of language reuses the last answer.
 - `KeyVox Keyboard/Core/Prediction/KeyboardPersonalVocabularyBuilder.swift`
   - Builds `PersonalVocabulary` from KeyVox Dictionary phrases and the system supplementary lexicon, treating lexicon entries whose input matches their text, ignoring case, as known names and the rest as text replacements.
 - `KeyVox Keyboard/Core/Prediction/KeyboardTypingMemory.swift`

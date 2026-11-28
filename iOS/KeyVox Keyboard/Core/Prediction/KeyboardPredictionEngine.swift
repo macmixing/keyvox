@@ -4,7 +4,8 @@ import KeyVoxPredictiveKeyboard
 
 /// A prediction engine with a serial queue of its own for one typing language. It is created the
 /// first time work on `queue` needs it and is kept up to date with the letter keys' layout, the
-/// user's vocabulary, and what the keyboard learned from the user's typing in the language from the
+/// user's vocabulary with which of its known names are everyday words of the user's typing
+/// languages, and what the keyboard learned from the user's typing in the language from the
 /// start. Changing the language lets go of the engine, so only one language's files stay loaded,
 /// and the next one is created for the new language with the same vocabulary and the learned words
 /// handed over last, which the host replaces with the new language's. Everything other than `queue`
@@ -14,7 +15,7 @@ final class KeyboardPredictionEngine {
     private var language: TypingLanguage
     private var computer: PredictionComputer?
     private var pendingGeometry: (keys: [PredictionKeyGeometry], size: CGSize)?
-    private var vocabulary: PersonalVocabulary?
+    private var vocabulary: (words: PersonalVocabulary, everydayKnownNames: EverydayKnownNames)?
     private var learnedWords: LearnedVocabulary?
     private var isUnavailable = false
 
@@ -47,7 +48,7 @@ final class KeyboardPredictionEngine {
             self.pendingGeometry = nil
         }
         if let vocabulary {
-            try? computer.updateVocabulary(vocabulary)
+            try? computer.updateVocabulary(vocabulary.words, everydayKnownNames: vocabulary.everydayKnownNames)
         }
         if let learnedWords {
             try? computer.updateLearnedWords(learnedWords)
@@ -66,9 +67,9 @@ final class KeyboardPredictionEngine {
     }
 
     /// Call on `queue`.
-    func updateVocabulary(_ vocabulary: PersonalVocabulary) {
-        self.vocabulary = vocabulary
-        try? computer?.updateVocabulary(vocabulary)
+    func updateVocabulary(_ vocabulary: PersonalVocabulary, everydayKnownNames: EverydayKnownNames) {
+        self.vocabulary = (vocabulary, everydayKnownNames)
+        try? computer?.updateVocabulary(vocabulary, everydayKnownNames: everydayKnownNames)
     }
 
     /// Call on `queue`.

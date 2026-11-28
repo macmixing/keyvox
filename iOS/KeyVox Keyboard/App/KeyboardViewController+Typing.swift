@@ -260,10 +260,15 @@ extension KeyboardViewController {
     }
 
     private func applyPersonalVocabulary(dictionaryPhrases: [String], lexicon: UILexicon?) {
-        let vocabulary = KeyboardPersonalVocabularyBuilder.vocabulary(dictionaryPhrases: dictionaryPhrases, lexicon: lexicon)
-        userVocabulary = vocabulary
-        predictionCoordinator.updateVocabulary(vocabulary)
+        userVocabulary = KeyboardPersonalVocabularyBuilder.vocabulary(dictionaryPhrases: dictionaryPhrases, lexicon: lexicon)
+        applyUserVocabulary()
         refreshPredictions()
+    }
+
+    /// Hands the suggestions the user's vocabulary as last built, its known names judged against
+    /// every typing language the user selected.
+    func applyUserVocabulary() {
+        predictionCoordinator.updateVocabulary(userVocabulary, typingLanguages: KeyboardTypingLanguage.selection.identifiers)
     }
 
     /// Starts the check `resolveContestedTap` makes when the finger lands rather than when it
