@@ -3,7 +3,7 @@
 Builds the language data of each typing language: the files the predictive keyboard bundles
 for English in `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/PredictiveData/en`,
 the capitalized spellings shared with dictation in `Packages/KeyVoxLinguistics/Sources/KeyVoxLinguistics/Resources`,
-and the same files for German, Spanish, and French. Spanish's are bundled in `PredictiveData/es` and its capitalized spellings in `KeyVoxLinguistics`; German's and French's are built but not bundled yet:
+and the same files for German, Spanish, and French. Spanish's are bundled in `PredictiveData/es` and its capitalized spellings in `KeyVoxLinguistics`, and Latin American Spanish (`PredictiveData/es-419`) uses them ("Latin American Spanish"); German's and French's are built but not bundled yet:
 
 | File | Built by | Reads |
 | --- | --- | --- |
@@ -354,6 +354,45 @@ Each row replaces only the context model of files built from counts taking every
 times with 2,000,000 pairs and sequences is the best row that lowers no measure of another. Built
 with those weights, the dictionary and rankers raise every measure further (the typing models'
 README).
+
+### Latin American Spanish
+
+Latin American Spanish (`PredictiveData/es-419`) bundles no language data of its own: it uses
+Spanish's (`sharedDataFolder`), as measurement showed no build counted toward Latin American text
+types it better without typing something else worse.
+
+WildChat gives each turn the country it was typed in. Its Spanish user turns typed in 19 Latin
+American countries and in Spain were read and split as this build reads WildChat, and kept as test
+sentences where every word is spelled as the user's own country spells it (that country's
+[RLA-ES](https://github.com/sbosio/rla-es) Hunspell dictionary, release 2.9) and no sentence was
+typed in both regions: 25,183 Latin American and 8,170 Spain sentences, of which 1,000 of each,
+picked by a hash, were left out of every count and typed by `Tools/KeyVoxTypingHarness` (800 at
+noise 0.25 with `evaluate`, 160 at 0.3 with `compare`). Spanish's own measures (the typing models'
+held-out sentences, and the 45 Tatoeba sentences typed into Apple's Spanish (Latin America) keyboard)
+were left out of the counts too.
+
+With Spanish's data, Latin American sentences come out as well as Spain's: 94.8% of mistyped words
+fixed (Spain 94.6%), 0.2% of correctly typed words wrongly changed (Spain 0.2%), and 93.8% of final
+words correct (Spain 92.9%). The suggestion bar shows the word within 3 letters for 75.4% (Spain
+78.1%); the Latin American sentences' words are longer (21.4% of 8 letters or more, Spain 19.6%).
+
+Counting the Latin American turns more raised the Latin American measures but restored fewer accents
+on Spanish's own sentences, which Apple's Latin American keyboard restores as Apple's Spain keyboard
+does ("asi" to "así", "podra" to "podrá"): people in Latin American chats often type without accents,
+so those spellings became everyday words. Each row replaces only the context model:
+
+| WildChat's Latin American turns counted | Latin American: fixed, wrongly changed, final words, bar within 3 letters | Held-out 400: fixed | Held-out 80: final words | Apple's 45 |
+| --- | --- | --- | --- | --- |
+| 20 times, as the rest (Spanish's counts) | 1,856/1,957, 8/5,192, 1,441/1,537, 75.4% | 814/877 | 712/764 | 253/264 |
+| 40 times | 1,853, 8, 1,440, 75.6% | 813 | 712 | 253 |
+| 100 times | 1,858, 8, 1,444, 76.2% | 813 | 708 | 252 |
+| 200 times | 1,861, 6, 1,449, 76.5% | 810 | 708 | 252 |
+| 400 times | 1,862, 6, 1,453, 76.5% | 809 | 703 | 250 |
+| 400 times where the vocabulary spells every word of the sentence, else 20 | 1,858, 10, 1,441, 76.2% | 811 | 710 | 253 |
+| 800 times where the vocabulary spells every word, else 20 | 1,861, 10, 1,441, 76.3% | 810 | 707 | 253 |
+
+Every row that counts them more lowers a measure of Spanish's or of the Latin American sentences, so
+Latin American Spanish keeps Spanish's counts.
 
 ## Sentence openers
 
