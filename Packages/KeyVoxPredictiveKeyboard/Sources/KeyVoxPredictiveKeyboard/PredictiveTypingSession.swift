@@ -143,6 +143,7 @@ public final class PredictiveTypingSession {
     private let pickedWordSpaceCharacters: CharacterList?
     private let spacedFromPickedWordCharacters: CharacterList?
     private let noNextWordCharacters: CharacterList?
+    private let sentenceOpeningMarks: Set<Character>
 
     public init(
         language: TypingLanguage,
@@ -157,6 +158,7 @@ public final class PredictiveTypingSession {
         pickedWordSpaceCharacters = try? CharacterList.takingPickedWordSpace(for: language)
         spacedFromPickedWordCharacters = try? CharacterList.spacedFromPickedWord(for: language)
         noNextWordCharacters = try? CharacterList.withoutNextWords(for: language)
+        sentenceOpeningMarks = language.textRules.sentenceOpeningMarks
     }
 
     /// Call after a tapped character has been inserted.
@@ -308,7 +310,7 @@ public final class PredictiveTypingSession {
         return PredictionRequest(
             currentWord: word.text,
             touches: word.endsAtCursor && isAllLetters ? wordTouches.touches(for: word.text) : [],
-            previousWords: context.previousWords,
+            previousWords: lookupWords(context.previousWords),
             keepsTypedWord: word.endsAtCursor == false,
             isAtSentenceStart: context.isAtSentenceStart,
             previousSentence: context.isAtSentenceStart ? SentenceEnding(before: textBeforeCursor ?? "", rules: textRules) : nil,
@@ -319,7 +321,10 @@ public final class PredictiveTypingSession {
             pickRun: pickRun,
             offersNextWords: word.text.isEmpty == false
                 || textBeforeCursor?.last.map { noNextWordCharacters?.contains(String($0)) != true } ?? true,
-            revertibleText: word.endsAtCursor ? revertibleAutocorrection(endingAt: textBeforeCursor)?.original : nil
+            revertibleText: word.endsAtCursor ? revertibleAutocorrection(endingAt: textBeforeCursor)?.original : nil,
+            sentenceOpeningMark: context.isAtSentenceStart && word.text.isEmpty
+                ? textBeforeCursor?.last.flatMap { sentenceOpeningMarks.contains($0) ? String($0) : nil }
+                : nil
         )
     }
 
@@ -371,7 +376,7 @@ public final class PredictiveTypingSession {
         return RevisionRequest(
             word: revisable.word,
             touches: revisable.touches,
-            previousWords: revisable.previousWords,
+            previousWords: lookupWords(revisable.previousWords),
             followingWord: autocorrection(in: result, for: context.currentWord) ?? context.currentWord,
             heldBackCorrections: memory.rejections.corrections(heldBackFor: revisable.word, at: now())
         )
@@ -661,7 +666,7 @@ public final class PredictiveTypingSession {
     /// it from the text before the cursor.
     public func previousWords(beforeSwipeAfter textBeforeCursor: String?, selectedText: String? = nil) -> [String] {
         let leadingSpace = swipeLeadingSpace(textBeforeCursor: textBeforeCursor, selectedText: selectedText)
-        return TypingTextContext(textBeforeCursor: textBeforeCursor.map { $0 + leadingSpace }, rules: textRules).previousWords
+        return lookupWords(TypingTextContext(textBeforeCursor: textBeforeCursor.map { $0 + leadingSpace }, rules: textRules).previousWords)
     }
 
     /// The space a swiped word goes in after: one right after the word of the swipe before it, unless
@@ -724,6 +729,12 @@ public final class PredictiveTypingSession {
         )
     }
 
+    /// Earlier words as the dictionary, the word lists, and the learned words are looked up by:
+    /// with their apostrophes straight, however the language's text writes them.
+    private func lookupWords(_ words: [String]) -> [String] {
+        words.map(textRules.straightApostrophes(in:))
+    }
+
     /// The revisable word, if the text still reads it, one space, and the current word.
     private func revisableWord(
         before context: TypingTextContext,
@@ -749,9 +760,13 @@ public final class PredictiveTypingSession {
         let request = result.request
         switch result.typedWordKind {
         case .unknown:
-            memory.recordUse(of: written ?? word, after: request.isAtSentenceStart ? nil : request.previousWords.first, at: now())
+            memory.recordUse(
+                of: textRules.typographicApostrophes(in: written ?? word),
+                after: request.isAtSentenceStart ? nil : request.previousWords.first,
+                at: now()
+            )
         case .dictionaryWord where request.isAtSentenceStart == false && word != word.lowercased():
-            memory.recordCapitalUse(of: word, at: now())
+            memory.recordCapitalUse(of: textRules.typographicApostrophes(in: word), at: now())
         case .dictionaryWord, .usersWord:
             break
         }

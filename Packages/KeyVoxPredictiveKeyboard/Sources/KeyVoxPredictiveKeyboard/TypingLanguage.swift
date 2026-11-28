@@ -19,18 +19,30 @@ public struct TypingLanguage: Sendable {
     public let quotes: SmartQuotes
     /// The key beside the letters that puts accents on them, when the language has one.
     public let accentKey: AccentKey?
-    /// How the language's text is read: the apostrophe it types inside words, and whether a
-    /// period after a digit ends a sentence.
+    /// How the language's text is read: the apostrophe it types inside words, whether a period
+    /// after a digit ends a sentence, and the marks that open a sentence before its first word.
     public let textRules: TypingTextRules
+    /// The locale of Apple's keyboard for the language in `web_endings.json`, whose web endings
+    /// the language's keyboard offers beside the device region's (`WebEndings`).
+    public let webEndingsLocale: String
+    /// The mark the keyboard writes for the apostrophe of a word it writes, or nil for the
+    /// dictionary's straight apostrophe.
+    let writtenApostrophe: Character?
     /// The letters single-letter edits of a typed word try, in the order they are tried.
     let editLetters: String
     /// The letters a short typed word needs one of to be taken as an attempt at a word.
     let vowels: String
-
     /// Whether a word typed right after `text` starts a sentence (`TypingTextContext.startsSentence`),
     /// read by the language's text rules.
     public func startsSentence(after text: String) -> Bool {
         TypingTextContext.startsSentence(after: text, rules: textRules)
+    }
+
+    /// `word`, a word the keyboard writes, with its straight apostrophes written as the language
+    /// writes them in words it writes (`writtenApostrophe`).
+    public func writingApostrophes(_ word: String) -> String {
+        guard let writtenApostrophe else { return word }
+        return String(word.map { $0 == "'" ? writtenApostrophe : $0 })
     }
 
     /// The bundled language in the folder `identifier`, drawn in the layout named `letterLayout`,
@@ -51,8 +63,10 @@ public struct TypingLanguage: Sendable {
         } catch {
             throw PredictiveKeyboardError.invalidTypingLanguage(identifier)
         }
-        // The closing single mark is what the apostrophe key types inside words, one character.
-        guard layouts.identifier == identifier, manifest.quotationMarks.closingSingle.count == 1 else {
+        // The closing single mark is what the apostrophe key types inside words, and the written
+        // apostrophe what written words take; each is one character.
+        guard layouts.identifier == identifier, manifest.quotationMarks.closingSingle.count == 1,
+              manifest.writtenApostrophe.map({ $0.count == 1 }) ?? true else {
             throw PredictiveKeyboardError.invalidTypingLanguage(identifier)
         }
         let resources = try manifest.sharedDataFolder.map(ownResources.sharingData(withFolder:)) ?? ownResources
@@ -80,9 +94,12 @@ public struct TypingLanguage: Sendable {
         accentKey = manifest.accentKey.map(AccentKey.init(manifest:))
         editLetters = manifest.editLetters
         vowels = manifest.vowels
+        webEndingsLocale = manifest.webEndingsLocale
+        writtenApostrophe = manifest.writtenApostrophe.map(Character.init)
         textRules = TypingTextRules(
             apostrophe: Character(manifest.quotationMarks.closingSingle),
             ordinalPeriods: manifest.ordinalPeriods ?? false,
+            sentenceOpeningMarks: Set(manifest.sentenceOpeningMarks ?? ""),
             spacedOpeningMark: manifest.quotationMarks.spacedOpeningMark
         )
     }

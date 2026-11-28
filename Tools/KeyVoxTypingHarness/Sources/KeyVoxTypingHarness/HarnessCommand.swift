@@ -92,6 +92,8 @@ enum HarnessCommand {
         var personalWords: [String] = []
         /// The word typed after the typed word, to reconsider the typed word with it.
         var followingWord: String?
+        /// The bundled typing language to type in.
+        var languageIdentifier = "en"
     }
 
     case evaluate(EvaluateOptions)
@@ -120,7 +122,7 @@ enum HarnessCommand {
                                [--personal <word or phrase,...>] [--known-names <word,...>]
       KeyVoxTypingHarness tune --tune-plan <path>... [--holdout-plan <path>...] [--passes <count>]
       KeyVoxTypingHarness explain [--word <typed>] [--touches "x,y x,y ..."] [--previous <newest,older,...>]
-                                  [--following <next word>] [--personal <word or phrase,...>]
+                                  [--following <next word>] [--personal <word or phrase,...>] [--language <id>]
                                   [--param <name>=<value>...]
       KeyVoxTypingHarness swipe-lexicon --output <kvsl-path> [--words <tsv-path>] [--language <id>]
       KeyVoxTypingHarness swipe-accuracy --swipes <jsonl-path> --layout <layout-json> [--limit <count>]
@@ -245,6 +247,7 @@ enum HarnessCommand {
                     options.personalWords = try Self.value(after: flag, in: &remaining)
                         .split(separator: ",").map(String.init)
                 case "--following": options.followingWord = try Self.value(after: flag, in: &remaining)
+                case "--language": options.languageIdentifier = try Self.value(after: flag, in: &remaining)
                 case "--param":
                     try Self.applyParameter(try Self.value(after: flag, in: &remaining), to: &options.parameters)
                 default: throw HarnessError.unknownFlag(flag)
@@ -406,6 +409,7 @@ enum HarnessError: Error, CustomStringConvertible {
     case invalidValue(String)
     case unreadableCorpus(String)
     case planMismatch(String)
+    case mixedLanguages([String])
 
     var description: String {
         switch self {
@@ -419,6 +423,8 @@ enum HarnessError: Error, CustomStringConvertible {
             return "could not read corpus at \(path)"
         case .planMismatch(let detail):
             return "results do not match the plan: \(detail)"
+        case .mixedLanguages(let languages):
+            return "the plans must name one typing language; they name \(languages.joined(separator: ", "))"
         }
     }
 }

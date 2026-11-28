@@ -120,9 +120,11 @@ words word by word, and `compare` types the plan through the keyboard's typing s
 Apple's keyboard's results for the same taps when given. `--language <id>` on `plan` (or
 `evaluate` from a corpus) types a bundled typing language other than English: the plan names it,
 its taps aim at that language's letter layout, its sentences are those its keys can type (a letter
-only a held popup offers, such as German "ß", is picked from it exactly), and `compare` also says
-how many words come out with the capitals the corpus writes them with, such as German nouns. A tap
-on a language's accent key types what the keyboard's accent key would (`AccentKey`).
+only a held popup offers, such as German "ß", is picked from it exactly), `evaluate`, `compare`, and
+`tune` type it in that language (`tune` refuses plans that name different languages), and `compare`
+also says how many words come out with the capitals the corpus writes them with, such as German
+nouns. In `compare`, a tap on a language's accent key types what the keyboard's accent key would
+(`AccentKey`).
 Without `--language`, plans and scores are English's as before.
 
 ```bash

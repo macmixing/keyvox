@@ -10,8 +10,9 @@ public struct CapitalizedSpellings: Sendable {
 
     private static let newline = UInt8(ascii: "\n")
     private static let tab = UInt8(ascii: "\t")
-    private static let resourceNamePrefix = "capitalized_spellings_"
-    private static let resourceExtension = "txt"
+    /// The bundled lists' file names: this prefix, then the language code.
+    static let resourceNamePrefix = "capitalized_spellings_"
+    static let resourceExtension = "txt"
 
     /// Lines of a lowercase word, a tab, and its spelling, in byte order of the lowercase
     /// word, mapped rather than read so they take no memory of their own.

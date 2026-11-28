@@ -58,9 +58,7 @@ also has how many records swipe it and the outcome of the rules for its words, a
 the swipe dataset has is listed with no source."""
 
 import argparse
-import re
 import statistics
-import unicodedata
 from bisect import bisect_left, bisect_right
 from collections import Counter
 from dataclasses import dataclass, field
@@ -73,6 +71,8 @@ from names import is_written_as_name
 from write_capitalized_spellings import (
     has_capitals_in_a_row,
     keeps_capitals_in_a_row,
+    leave_out_matcher,
+    letter_form as swipe_form,
     read_measured_spellings,
 )
 
@@ -84,11 +84,6 @@ REPORT_NAME = "swipe_vocabulary_report.tsv"
 
 KEPT = "kept"
 OFFENSIVE = "offensive"
-
-
-def swipe_form(word: str) -> str:
-    decomposed = unicodedata.normalize("NFD", word.casefold())
-    return "".join(character for character in decomposed if unicodedata.category(character)[0] == "L")
 
 
 @dataclass
@@ -321,11 +316,7 @@ def main() -> None:
     spelling_forms = read_spelling_forms(arguments.spelling_list)
     scale = DictionaryScale(probabilities, dictionary_counts)
 
-    lines = arguments.leave_out.read_text(encoding="utf-8").splitlines() if arguments.leave_out else []
-    offensive = re.compile("|".join(f"(?:{line})" for line in lines if line)) if any(lines) else None
-
-    def is_offensive(form: str) -> bool:
-        return offensive is not None and offensive.fullmatch(form) is not None
+    is_offensive = leave_out_matcher(arguments.leave_out)
 
     outcome = {form: OFFENSIVE if is_offensive(form) else outcome_of(candidate, letters, dictionary_counts, spelling_forms)
                for form, candidate in candidates.items()}

@@ -35,12 +35,7 @@ enum CompareCommand {
         var appleCorrect = 0
         var keyVoxCorrect = 0
         var bothCorrect = 0
-        // Words after the first of a sentence the corpus writes with a capital, such as German
-        // nouns, and those it writes in lowercase, and how many of each KeyVox writes as written.
-        var capitalized = 0
-        var keyVoxCapitalized = 0
-        var lowercase = 0
-        var keyVoxWronglyCapitalized = 0
+        var capitals = CapitalsTally()
         var rows = ["intended\tapple\tkeyvox\tprevious"]
         var texts: [AppleBaselineResults.Sentence] = []
 
@@ -59,22 +54,7 @@ enum CompareCommand {
                 produced: AppleBaselineResults.words(in: typed)
             )
             if let written = sentence.written {
-                let producedWritten = AppleBaselineResults.writtenWords(in: typed)
-                let aligned = WordAlignment.alignedIndices(
-                    intended: sentence.truthWords,
-                    produced: producedWritten.map { $0.lowercased() }
-                )
-                for index in written.indices.dropFirst() {
-                    let produced = aligned[index].map { producedWritten[$0] }
-                    guard produced?.lowercased() == sentence.truthWords[index] else { continue }
-                    if written[index] != written[index].lowercased() {
-                        capitalized += 1
-                        keyVoxCapitalized += produced == written[index] ? 1 : 0
-                    } else {
-                        lowercase += 1
-                        keyVoxWronglyCapitalized += produced == written[index] ? 0 : 1
-                    }
-                }
+                capitals.record(written: written, intended: sentence.truthWords, typed: typed)
             }
             for (index, intended) in sentence.truthWords.enumerated() {
                 let appleWord = appleWords?[index] ?? ""
@@ -116,8 +96,8 @@ enum CompareCommand {
         if plan.sentences.contains(where: { $0.written != nil }) {
             lines += [
                 "  of the correct words after a sentence's first, as the corpus writes them:",
-                "    written with capitals, KeyVox wrote them so:   \(percent(keyVoxCapitalized, capitalized))",
-                "    written in lowercase, KeyVox capitalized them: \(percent(keyVoxWronglyCapitalized, lowercase))",
+                "    written with capitals, KeyVox wrote them so:   \(percent(capitals.keptCapitals, capitals.capitalized))",
+                "    written in lowercase, KeyVox capitalized them: \(percent(capitals.addedCapitals, capitals.lowercase))",
             ]
         }
         if apple != nil {

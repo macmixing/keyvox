@@ -125,6 +125,17 @@ public final class PredictionComputer: @unchecked Sendable {
     }
 
     public func compute(_ request: PredictionRequest) throws -> PredictionResult {
+        let result = try result(for: request)
+        let language = engine.language
+        return PredictionResult(
+            request: result.request,
+            bar: result.bar.writingApostrophes(of: language),
+            autocorrection: result.autocorrection.map(language.writingApostrophes),
+            typedWordKind: result.typedWordKind
+        )
+    }
+
+    private func result(for request: PredictionRequest) throws -> PredictionResult {
         lock.lock()
         let keys = keys
         let neighborKeySlips = neighborKeySlips
@@ -277,7 +288,7 @@ public final class PredictionComputer: @unchecked Sendable {
     /// left alone, as are corrections the user turned down.
     public func revision(for request: RevisionRequest) throws -> String? {
         try proposedRevision(for: request).flatMap {
-            request.heldBackCorrections.contains(PersonalVocabulary.key($0)) ? nil : $0
+            request.heldBackCorrections.contains(PersonalVocabulary.key($0)) ? nil : engine.language.writingApostrophes($0)
         }
     }
 
@@ -476,7 +487,10 @@ public final class PredictionComputer: @unchecked Sendable {
         ranker: SuggestionCandidateRanker
     ) throws -> SuggestionBar {
         guard let previousWord = request.previousWords.first else {
-            let openers = engine.sentenceOpeners.words(after: request.previousSentence).map { word in
+            let openers = engine.sentenceOpeners.words(
+                after: request.previousSentence,
+                openingMark: request.sentenceOpeningMark
+            ).map { word in
                 let written = engine.capitalizedSpellings.written(word)
                 return written == word ? WordCasing.startingSentence(word) : written
             }

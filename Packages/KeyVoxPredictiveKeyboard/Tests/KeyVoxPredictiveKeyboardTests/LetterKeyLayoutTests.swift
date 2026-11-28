@@ -3,10 +3,11 @@ import XCTest
 
 final class LetterKeyLayoutTests: XCTestCase {
     func testEveryLayoutALanguageNamesLoads() throws {
-        let language = TypingLanguage.english
-        XCTAssertFalse(language.alternativeLetterLayouts.contains(language.letterLayout.identifier))
-        for identifier in language.alternativeLetterLayouts {
-            XCTAssertEqual(try LetterKeyLayout.bundled(identifier: identifier).identifier, identifier)
+        for language in [TypingLanguage.english, .spanish] {
+            XCTAssertFalse(language.alternativeLetterLayouts.contains(language.letterLayout.identifier))
+            for identifier in language.alternativeLetterLayouts {
+                XCTAssertEqual(try LetterKeyLayout.bundled(identifier: identifier).identifier, identifier)
+            }
         }
     }
 

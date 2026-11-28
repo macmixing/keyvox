@@ -2222,37 +2222,37 @@
         }
       }
     },
-    "Auto-Correction, Predictive Text, and Swipe Typing currently support English only." : {
-      "comment" : "Note in keyboard settings explaining which typing features are limited to English.",
+    "Swipe Typing currently supports English only." : {
+      "comment" : "Note in keyboard settings explaining that swipe typing is limited to English.",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Auto-Korrektur, Textvorschläge und Wischen zum Tippen unterstützen derzeit nur Englisch."
+            "value" : "Wischen zum Tippen unterstützt derzeit nur Englisch."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Por ahora, la autocorrección, el texto predictivo y la escritura deslizando solo están disponibles en inglés."
+            "value" : "Por ahora, la escritura deslizando solo está disponible en inglés."
           }
         },
         "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Por ahora, la autocorrección, el texto predictivo y la escritura deslizando solo están disponibles en inglés."
+            "value" : "Por ahora, la escritura deslizando solo está disponible en inglés."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "La correction automatique, la prédiction et la saisie par glissement ne sont actuellement disponibles qu’en anglais."
+            "value" : "La saisie par glissement n’est actuellement disponible qu’en anglais."
           }
         },
         "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "La correction automatique, la prédiction et la saisie par glissement ne sont actuellement disponibles qu’en anglais."
+            "value" : "La saisie par glissement n’est actuellement disponible qu’en anglais."
           }
         }
       }

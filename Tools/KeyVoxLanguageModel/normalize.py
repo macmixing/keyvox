@@ -7,8 +7,11 @@ without ending the sentence. Bracketed transcript tags such as "[Music]" are dro
 
 A language's `TextRules` add what its writing needs beyond that: composing letters with
 their accents (Unicode NFC), so a letter typed as a base letter and a combining accent
-stays one letter, and its quotation marks, where a quotation can begin. The default rules
-are the ones the bundled English data was built with.
+stays one letter; its quotation marks, where a quotation can begin; the mark its keyboard
+types as an apostrophe, read as one between letters; and whether a period right after a digit
+writes an ordinal number rather than ending the sentence, as the keyboard reads them from the
+language's language.json. The default rules are the
+ones the bundled English data was built with.
 """
 
 import html
@@ -43,6 +46,10 @@ class TextRules:
     composed: bool = False
     # Quotation marks beyond the shared ones, where a quotation can begin.
     quotation_marks: str = ""
+    # Marks beyond "'" and "’" written as an apostrophe between two letters.
+    apostrophes: str = ""
+    # A period right after a digit writes an ordinal number and ends no sentence.
+    ordinal_periods: bool = False
 
 
 DEFAULT_RULES = TextRules()
@@ -55,10 +62,33 @@ def _possible_start(rules: TextRules) -> re.Pattern:
     return re.compile(f"[.!?\\n\"“”:(\\[{{{re.escape(rules.quotation_marks)}]+")
 
 
+# A period right after a digit that is not part of a run of periods, as an ordinal number ends.
+_ORDINAL_PERIOD = re.compile(r"(?<=\d)\.(?!\.)")
+
+
+@cache
+def _apostrophe(rules: TextRules) -> re.Pattern | None:
+    """One of the language's other apostrophe marks between two letters."""
+    if not rules.apostrophes:
+        return None
+    return re.compile(f"(?<=[^\\W\\d_])[{re.escape(rules.apostrophes)}](?=[^\\W\\d_])")
+
+
+def _marks_read(text: str, rules: TextRules) -> str:
+    """`text` with its apostrophes written "'" and, where the language writes ordinal numbers
+    with a period, those periods taken out, so neither splits a word or a sentence."""
+    text = text.replace("’", "'")
+    if (apostrophe := _apostrophe(rules)) is not None:
+        text = apostrophe.sub("'", text)
+    if rules.ordinal_periods:
+        text = _ORDINAL_PERIOD.sub(" ", text)
+    return text
+
+
 def _prepared(text: str, rules: TextRules) -> str:
     if rules.composed:
         text = unicodedata.normalize("NFC", text)
-    return _BRACKETED.sub(" ", text).replace("’", "'")
+    return _marks_read(_BRACKETED.sub(" ", text), rules)
 
 
 def is_word(text: str) -> bool:
@@ -103,11 +133,20 @@ def sentences_with_endings(text: str, rules: TextRules = DEFAULT_RULES) -> Itera
     text runs out first. Three or more periods are an
     ellipsis, which pauses a sentence rather than ending it, as on the keyboard. HTML entities
     such as "&nbsp;" are decoded."""
+    for words, ending, _ in sentences_with_openings(text, rules):
+        yield words, ending
+
+
+def sentences_with_openings(text: str, rules: TextRules = DEFAULT_RULES,
+                            opening_marks: str = "") -> Iterator[tuple[list[str], str | None, str | None]]:
+    """`sentences_with_endings`, each sentence also with the one of `opening_marks` it opens
+    with, before its first word and after any spaces, or None."""
     if rules.composed:
         text = unicodedata.normalize("NFC", text)
-    text = html.unescape(_BRACKETED.sub(" ", text)).replace("’", "'")
+    text = _marks_read(html.unescape(_BRACKETED.sub(" ", text)), rules)
     words: list[str] = []
     position = 0
+    start = 0
     for ending in _ENDING.finditer(text):
         words += _WORD.findall(text[position:ending.start()].lower())
         position = ending.end()
@@ -119,11 +158,17 @@ def sentences_with_endings(text: str, rules: TextRules = DEFAULT_RULES) -> Itera
         else:
             mark = mark[-1]
         if words:
-            yield words, mark
+            yield words, mark, _opening(text[start:position], opening_marks)
         words = []
+        start = position
     words += _WORD.findall(text[position:].lower())
     if words:
-        yield words, None
+        yield words, None, _opening(text[start:], opening_marks)
+
+
+def _opening(sentence: str, opening_marks: str) -> str | None:
+    lead = sentence.lstrip()
+    return lead[0] if lead and lead[0] in opening_marks else None
 
 
 def begins_written_run(before: str, rules: TextRules = DEFAULT_RULES) -> bool:

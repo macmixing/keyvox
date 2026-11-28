@@ -60,7 +60,8 @@ final class KeyboardKeyGridView: UIView {
     private(set) var letterKeyPitch: CGFloat = 0
     let swipeTrailView = KeyboardSwipeTrailView()
 
-    /// Every page shown so far, kept so showing it again does not build it again.
+    /// Every page shown so far in the letter layout showing, and the pages every layout shares,
+    /// kept so showing one again does not build it again.
     private var pages: [KeyboardKeyGridPage.Layout: KeyboardKeyGridPage] = [:]
     private var currentPage: KeyboardKeyGridPage?
     /// The key flip that shows a change of typing language, while it plays.
@@ -155,7 +156,8 @@ final class KeyboardKeyGridView: UIView {
     /// time, and reports the letter key frames again, since a new language's suggestions start
     /// without them even when its layout is the same. The keys showing turn over into the new
     /// ones in a wave going `flipDirection` (`KeyboardKeyFlipTransition`); the new keys take
-    /// touches from the start.
+    /// touches from the start. The pages drawn in another layout are let go once the keys have
+    /// turned, so the keys of one layout are held at a time.
     func showCurrentLetterLayout(flipDirection: KeyboardKeyFlipWave.Direction) {
         lastReportedCharacterGeometry = []
         let outgoingPage = currentPage
@@ -393,9 +395,11 @@ final class KeyboardKeyGridView: UIView {
     }
 
     /// Turns the keys of `outgoingPage` over into those of the page showing, which may be the
-    /// same page, while the keys are on screen; with Reduce Motion they crossfade.
+    /// same page, while the keys are on screen; with Reduce Motion they crossfade. The pages of
+    /// other letter layouts are let go once the flip ends, or at once when there is none.
     private func flipKeys(from outgoingPage: KeyboardKeyGridPage, direction: KeyboardKeyFlipWave.Direction) {
         guard let page = currentPage, window != nil, isContentHidden == false, bounds.isEmpty == false else {
+            releasePagesOfOtherLetterLayouts()
             return
         }
         // The wave reaches each key by where it lies, so the new keys are laid out first.
@@ -411,8 +415,21 @@ final class KeyboardKeyGridView: UIView {
             direction: direction,
             reduceMotion: UIAccessibility.isReduceMotionEnabled
         ) { [weak self, weak outgoingPage] in
-            guard let self, let outgoingPage, outgoingPage !== self.currentPage else { return }
-            outgoingPage.view.isHidden = true
+            guard let self else { return }
+            if let outgoingPage, outgoingPage !== self.currentPage {
+                outgoingPage.view.isHidden = true
+            }
+            self.releasePagesOfOtherLetterLayouts()
+        }
+    }
+
+    /// Lets go of the pages drawn in a letter layout other than the one the keyboard types in now,
+    /// apart from the page showing, which a key flip about to start may still turn over.
+    private func releasePagesOfOtherLetterLayouts() {
+        let letterLayout = KeyboardLetterRows.current.layoutIdentifier
+        for (layout, page) in pages where layout.letterLayout.map({ $0 != letterLayout }) == true && page !== currentPage {
+            page.view.removeFromSuperview()
+            pages[layout] = nil
         }
     }
 

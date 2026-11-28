@@ -5,8 +5,10 @@
 # lists were built from, and, given the language's dictionary words and probabilities (a word, a
 # tab, and a probability a line; Tools/KeyVoxTypingModels writes English's as
 # work/dictionary_unigrams.tsv), the swipe vocabulary of the words that dictionary lacks, with
-# the words of the language's swipe dataset, leaving out the words of [left-out-words], a pattern a
-# line (Tools/KeyVoxTypingModels writes English's as work/offensive_words.txt).
+# the words of the language's swipe dataset. The words spelled with capitals and the swipe
+# vocabulary leave out the words of [left-out-words], a pattern a line (Tools/KeyVoxTypingModels
+# writes a language's as work/offensive_words.txt); give "" as [dictionary-words] to leave them
+# out without building a swipe vocabulary.
 # <language> names a build in languages.py (en, de, de-bundestag, es, fr).
 # The builders share the source readers and the normalizing code, so a change made for one can
 # change another's output; rebuild every language after changing any tool here.
@@ -22,7 +24,7 @@ DATA_DIR="$(cd "$2" && pwd)"
 mkdir -p "$3"
 OUTPUT_DIR="$(cd "$3" && pwd)"
 DICTIONARY_WORDS=""
-[[ $# -ge 4 ]] && DICTIONARY_WORDS="$(cd "$(dirname "$4")" && pwd)/$(basename "$4")"
+[[ $# -ge 4 && -n "$4" ]] && DICTIONARY_WORDS="$(cd "$(dirname "$4")" && pwd)/$(basename "$4")"
 LEAVE_OUT=()
 [[ $# -eq 5 ]] && LEAVE_OUT=(--leave-out "$(cd "$(dirname "$5")" && pwd)/$(basename "$5")")
 PYTHON="${PYTHON:-python3}"
@@ -33,10 +35,6 @@ IDENTIFIER="$("$PYTHON" languages.py "$LANGUAGE")"
 # Each group of steps reads only the sources, the sentences, or its own files, and writes files
 # no other group running beside it reads, so the groups run side by side; the steps that read
 # several groups' files run once those groups are done.
-context_model() {
-  "$PYTHON" count_ngrams.py "$DATA_DIR"
-  "$PYTHON" write_context_model.py "$DATA_DIR" "$OUTPUT_DIR/context_model.bin"
-}
 sentence_openers() {
   "$PYTHON" write_word_kinds.py --language "$LANGUAGE" "$DATA_DIR"
   "$PYTHON" count_sentence_openers.py --language "$LANGUAGE" "$DATA_DIR"
@@ -45,7 +43,8 @@ sentence_openers() {
 capitalized_spellings() {
   "$PYTHON" write_vocabulary.py --language "$LANGUAGE" "$DATA_DIR" "$OUTPUT_DIR/vocabulary.txt" "$OUTPUT_DIR/common_vocabulary.txt"
   "$PYTHON" write_capitalized_spellings.py --language "$LANGUAGE" "$DATA_DIR" \
-    "$OUTPUT_DIR/vocabulary.txt" "$OUTPUT_DIR/common_vocabulary.txt" "$OUTPUT_DIR/capitalized_spellings_$IDENTIFIER.txt"
+    "$OUTPUT_DIR/vocabulary.txt" "$OUTPUT_DIR/common_vocabulary.txt" "$OUTPUT_DIR/capitalized_spellings_$IDENTIFIER.txt" \
+    ${LEAVE_OUT[@]+"${LEAVE_OUT[@]}"}
 }
 swipe_counts() {
   "$PYTHON" count_swipe_words.py --language "$LANGUAGE" "$DATA_DIR"
@@ -110,19 +109,21 @@ finish() {
 start "$PYTHON" download_sources.py --language "$LANGUAGE" "$DATA_DIR"
 finish "$STEP"
 
-# The vocabulary and the words spelled with capitals, and the swipe vocabulary's counts, read
-# only the sources.
-start capitalized_spellings; CAPITALIZED=$STEP
+# The swipe vocabulary's counts read only the sources.
 SWIPE=""
 if [[ -n "$DICTIONARY_WORDS" ]]; then
   start swipe_counts; SWIPE=$STEP
 fi
 
-# The context model and the sentence openers read the sentences.
+# The counts and the sentence openers read the sentences; the context model and the vocabulary,
+# with the words spelled with capitals, read the counts.
 start "$PYTHON" extract_sentences.py --language "$LANGUAGE" "$DATA_DIR"
 finish "$STEP"
-start context_model; CONTEXT=$STEP
 start sentence_openers; OPENERS=$STEP
+start "$PYTHON" count_ngrams.py --language "$LANGUAGE" "$DATA_DIR"
+finish "$STEP"
+start "$PYTHON" write_context_model.py --language "$LANGUAGE" "$DATA_DIR" "$OUTPUT_DIR/context_model.bin"; CONTEXT=$STEP
+start capitalized_spellings; CAPITALIZED=$STEP
 finish "$CONTEXT" "$OPENERS" "$CAPITALIZED"
 
 # Words that follow an unknown word, and a common word, and the grammar words: the counts, the

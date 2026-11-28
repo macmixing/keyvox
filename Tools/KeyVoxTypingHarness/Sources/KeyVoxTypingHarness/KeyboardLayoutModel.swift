@@ -29,7 +29,7 @@ struct KeyboardLayoutModel {
 
     /// The letter keys' frames: the rows' letters alone, as the keyboard hands the engine.
     let keyFrames: [Character: CGRect]
-    /// Letters no key types, each with the key whose held popup offers it, such as German "ß" on "s".
+    /// Letters no key types, each with the key whose held popup offers it.
     let popupLetters: [Character: Character]
     /// Every key on the page, letters included.
     let allKeys: [(key: Key, frame: CGRect)]

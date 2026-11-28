@@ -5,6 +5,7 @@
   "editLetters": "abcdefghijklmnopqrstuvwxyzàâæçèéêëîïôùûüÿœ",
   "vowels": "aeiouyàâæèéêëîïôùûüÿœ",
   "alwaysCapitalizedWords": [],
+  "webEndingsLocale": "fr_FR",
   "quotationMarks": {
     "openingSingle": "‘",
     "closingSingle": "’",
