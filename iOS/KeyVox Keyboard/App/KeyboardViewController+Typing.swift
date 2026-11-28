@@ -283,6 +283,12 @@ extension KeyboardViewController {
               activation.isRepeat == false else {
             return nil
         }
+        if case let .character(value) = activation.kind, activation.isHeldKeyChoice == false,
+           let accentKey = KeyboardTypingLanguage.current.accentKey,
+           value == accentKey.character || accentKey.isMark(value) || value == SmartQuotes.apostrophe {
+            // On the letter page only the accent key shows these.
+            return .accentKey
+        }
         return Self.contestedKey(for: activation.kind)
     }
 
