@@ -67,6 +67,10 @@ enum HarnessCommand {
     struct SwipeAccuracyOptions {
         var swipesPath = ""
         var layoutPath = ""
+        /// The bundled typing language to decode in, and the letter layout it shows; its default
+        /// layout when nil.
+        var languageIdentifier = "en"
+        var letterLayout: String?
         var limit: Int?
         /// Context weights to rank with; none ranks with the bundled one.
         var contextWeights: [Double] = []
@@ -126,6 +130,7 @@ enum HarnessCommand {
                                   [--param <name>=<value>...]
       KeyVoxTypingHarness swipe-lexicon --output <kvsl-path> [--words <tsv-path>] [--language <id>]
       KeyVoxTypingHarness swipe-accuracy --swipes <jsonl-path> --layout <layout-json> [--limit <count>]
+                                         [--language <id>] [--letter-layout <name>]
                                          [--context-weights <w,w,...>] [--no-context] [--calibrate-personal]
       KeyVoxTypingHarness swipe-gate [--plan <path> [--taps <count>]] [--swipes <jsonl-path> --layout <layout-json>]
     """
@@ -275,6 +280,8 @@ enum HarnessCommand {
                 switch flag {
                 case "--swipes": options.swipesPath = try Self.value(after: flag, in: &remaining)
                 case "--layout": options.layoutPath = try Self.value(after: flag, in: &remaining)
+                case "--language": options.languageIdentifier = try Self.value(after: flag, in: &remaining)
+                case "--letter-layout": options.letterLayout = try Self.value(after: flag, in: &remaining)
                 case "--limit":
                     guard let limit = Int(try Self.value(after: flag, in: &remaining)), limit > 0 else {
                         throw HarnessError.invalidValue(flag)
