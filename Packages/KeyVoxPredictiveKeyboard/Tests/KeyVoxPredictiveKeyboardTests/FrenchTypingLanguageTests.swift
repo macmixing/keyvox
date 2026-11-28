@@ -28,11 +28,22 @@ final class FrenchTypingLanguageTests: XCTestCase {
 
     func testAQuotationTheQuoteKeyOpensKeepsTheSentenceStartWhereItIs() {
         // `"oui"` → `« Oui »`, and `oui "oui" oui` → `Oui « oui » oui`.
-        XCTAssertTrue(TypingTextContext.startsSentence(after: "«" + noBreakSpace))
-        XCTAssertFalse(TypingTextContext.startsSentence(after: "Oui «" + noBreakSpace))
+        XCTAssertTrue(TypingLanguage.french.startsSentence(after: "«" + noBreakSpace))
+        XCTAssertFalse(TypingLanguage.french.startsSentence(after: "Oui «" + noBreakSpace))
         let context = TypingTextContext(textBeforeCursor: "Oui «" + noBreakSpace + "ou")
         XCTAssertEqual(context.currentWord, "ou")
         XCTAssertEqual(context.previousWords, ["Oui"])
+    }
+
+    func testAGuillemetPickedFromThePopupEndsTheSentenceStart() {
+        // `«bonjour»` and `« bonjour »`, typed from the quote key's popup, stay lowercase.
+        XCTAssertFalse(TypingLanguage.french.startsSentence(after: "«"))
+        XCTAssertFalse(TypingLanguage.french.startsSentence(after: "« "))
+        XCTAssertTrue(TypingLanguage.french.startsSentence(after: ""))
+        // English reads every opening mark as before.
+        for text in ["“", "«", "« ", "Yes. “"] {
+            XCTAssertTrue(TypingLanguage.english.startsSentence(after: text), text)
+        }
     }
 
     func testAPickedWordKeepsItsSpaceBeforeAQuestionMark() {

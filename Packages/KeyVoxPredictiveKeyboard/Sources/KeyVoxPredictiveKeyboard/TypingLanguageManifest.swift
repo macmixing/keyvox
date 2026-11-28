@@ -11,6 +11,12 @@ struct TypingLanguageManifest: Decodable {
         /// The space the quote key types inside its marks, after the opening mark and before the
         /// closing one; none when absent.
         let spaceInsideDouble: String?
+
+        /// The opening double mark and the space the quote key types inside it, when it types one.
+        var spacedOpeningMark: TypingTextRules.SpacedMark? {
+            guard let space = spaceInsideDouble, space.count == 1, openingDouble.count == 1 else { return nil }
+            return TypingTextRules.SpacedMark(mark: Character(openingDouble), space: Character(space))
+        }
     }
 
     /// The key beside the letters that puts accents on them and types the apostrophe

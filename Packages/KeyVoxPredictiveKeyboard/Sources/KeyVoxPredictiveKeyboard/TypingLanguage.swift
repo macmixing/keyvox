@@ -81,7 +81,8 @@ public struct TypingLanguage: Sendable {
         vowels = manifest.vowels
         textRules = TypingTextRules(
             apostrophe: Character(manifest.quotationMarks.closingSingle),
-            ordinalPeriods: manifest.ordinalPeriods ?? false
+            ordinalPeriods: manifest.ordinalPeriods ?? false,
+            spacedOpeningMark: manifest.quotationMarks.spacedOpeningMark
         )
     }
 }

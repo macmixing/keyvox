@@ -8,13 +8,29 @@ public struct TypingTextRules: Sendable, Equatable {
     /// Whether a period right after a digit writes an ordinal number rather than ending the
     /// sentence. A run of periods, as an ellipsis is typed, still pauses rather than ends.
     public let ordinalPeriods: Bool
+    /// The opening double mark and the space the quote key types inside it, where the language's
+    /// quote key types one (`SmartQuotes`): only together with that space does the mark keep a
+    /// sentence start; typed without it, as from a held key's popup, the mark ends it.
+    public let spacedOpeningMark: SpacedMark?
+
+    /// A quotation mark and the space typed with it.
+    public struct SpacedMark: Sendable, Equatable {
+        public let mark: Character
+        public let space: Character
+
+        public init(mark: Character, space: Character) {
+            self.mark = mark
+            self.space = space
+        }
+    }
 
     /// The rules of English, which the bundled English data was built with.
     public static let standard = TypingTextRules(apostrophe: "’", ordinalPeriods: false)
 
-    public init(apostrophe: Character, ordinalPeriods: Bool) {
+    public init(apostrophe: Character, ordinalPeriods: Bool, spacedOpeningMark: SpacedMark? = nil) {
         self.apostrophe = apostrophe
         self.ordinalPeriods = ordinalPeriods
+        self.spacedOpeningMark = spacedOpeningMark
     }
 
     /// Whether `character` belongs inside a word: a letter or an apostrophe.
