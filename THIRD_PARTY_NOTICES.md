@@ -314,7 +314,7 @@ Copyright (c) 2025 FUTO
 - Source: <https://github.com/dsojevic/profanity-list> (revision `c27924319aa9bd6f917e3782b4f4b6604a50b652`)
 - License: MIT
 - License URL: <https://github.com/dsojevic/profanity-list/blob/c27924319aa9bd6f917e3782b4f4b6604a50b652/LICENSE>
-- Note: The predictive keyboard's English dictionary and swipe vocabulary leave out the words that the list's English terms tagged racial or anti-LGBTQ, or religious at strong severity or above, match (`Tools/KeyVoxTypingModels/offensive_words.py`); none of its files are copied into them. The list has no German, Spanish, or French terms, and is not used for those languages (German and French use Multilingual HateCheck, below).
+- Note: The predictive keyboard's English dictionary, swipe vocabulary, and capitalized-spelling list leave out the words that the list's English terms tagged racial or anti-LGBTQ, or religious at strong severity or above, match (`Tools/KeyVoxTypingModels/offensive_words.py`); none of its files are copied into them. The list has no German, Spanish, or French terms, and is not used for those languages (German and French use Multilingual HateCheck, below).
 
 Copyright (c) 2021 David Sojevic
 
