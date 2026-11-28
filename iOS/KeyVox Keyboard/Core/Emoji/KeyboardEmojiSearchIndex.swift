@@ -30,7 +30,8 @@ final class KeyboardEmojiSearchIndex {
     }
 
     private func loadSearch(language: String, _ completion: @escaping () -> Void) {
-        self.language = language
+        // A later request replaced this one while the bar's emoji were read; that one finishes it.
+        guard language == self.language else { return }
         if loadedLanguage == language {
             completion()
             return
