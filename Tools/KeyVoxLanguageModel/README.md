@@ -17,7 +17,7 @@ needs German swipe typing), and for Spanish and French, which are built but not 
 | `swipe_vocabulary.txt` | `count_swipe_words.py`, `count_swiped_words.py`, `write_swipe_vocabulary.py` | Every source, through `source_texts.py`, the words swipe.futo.org's training split had people swipe, the dictionary's words and probabilities, and SCOWL's size 80 in every spelling |
 
 The swipe vocabulary is built only for a language whose dictionary and letter layout the package
-has, so for English alone today (see "Swipe vocabulary").
+has, and is bundled with a swipe model, so for English alone today (see "Swipe vocabulary").
 
 English's dictionary, rankers, and accent overlay, bundled beside these files, are built by
 `Tools/KeyVoxTypingModels`, which builds German's, Spanish's, and French's from these builds'

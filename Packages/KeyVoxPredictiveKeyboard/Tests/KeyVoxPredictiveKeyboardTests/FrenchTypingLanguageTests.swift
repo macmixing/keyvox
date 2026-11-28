@@ -1,8 +1,7 @@
 import XCTest
 @testable import KeyVoxPredictiveKeyboard
 
-/// French's rules, as Apple's French (France) keyboard was measured typing them on iOS 27.2
-/// (`~/KeyVoxLanguageData/apple-languages`).
+/// French's rules, as Apple's French (France) keyboard was measured typing them on iOS 27.2.
 final class FrenchTypingLanguageTests: XCTestCase {
     private let quotes = TypingLanguage.french.quotes
     private let quoteKey = SmartQuotes.doubleQuote

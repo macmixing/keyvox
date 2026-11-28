@@ -3,7 +3,7 @@ import XCTest
 @testable import KeyVoxPredictiveKeyboard
 
 /// French (Canada)'s rules, as Apple's French (Canada) keyboard was measured typing them on
-/// iOS 27.2 (`~/KeyVoxLanguageData/apple-languages`), with France's dictionary and models.
+/// iOS 27.2, with France's dictionary and models.
 final class FrenchCanadaTypingLanguageTests: XCTestCase {
     private let language = TypingLanguage.frenchCanada
 

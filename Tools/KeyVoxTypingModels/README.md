@@ -2,9 +2,9 @@
 
 Builds the typing models the predictive keyboard bundles for a typing language: those of its
 English typing language in
-`Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/PredictiveData/en`, German's
-in `PredictiveData/de`, and the same files for Spanish and French, which are built but not bundled
-yet (see "Other typing languages"). English's:
+`Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/PredictiveData/en`, and the
+same files for German, Spanish, and French, each bundled in its own `PredictiveData/<language>` once
+the language ships there (German's and French's are; see "Other typing languages"). English's:
 
 | Bundled file | What it is | Built by |
 | --- | --- | --- |
@@ -525,7 +525,9 @@ language's `vowels`.
 Built on November 27, 2026 from the language builds of November 24, with `language.json` files
 kept outside the package (German on `QWERTZ-German`, Spanish on `QWERTY-Spanish`, French on
 `AZERTY-French`, with their accented vowels as vowels); each build took about 15 minutes, with the
-others running beside it. German's bundled files are a later build (see "German").
+others running beside it. None of these builds is bundled: German's bundled files are a later build
+(see "German"), and French's are built from French's `language.json` in the package (see "French
+through the keyboard").
 
 | | de | es | fr |
 | --- | --- | --- | --- |
@@ -572,10 +574,115 @@ such as Spanish "esta" for "está":
 
 These are the trainers' measures: the keyboard corrects with `NoisyChannelCorrector`, which reads
 the rankers' choice of candidates but not the action model's probability (see "What the harness can
-tell apart"), and `Tools/KeyVoxTypingHarness` scored English only at the time (see "German" for
-the keyboard's own scores). They show the rankers learn the
+tell apart"), and `Tools/KeyVoxTypingHarness` scored English only at the time (see "German" and
+"French through the keyboard" for the keyboard's own scores). They show the rankers learn the
 language, ranking the intended word first more often than LatinIME alone does, and give a baseline
 to hold later builds to.
+
+### French through the keyboard
+
+`Tools/KeyVoxTypingHarness` typed French through the bundled French files and the typing session,
+with `--language fr`, on November 27, 2026. Its corpus is the Tatoeba texts of the French simulation
+sentences in held-out buckets 8-9, which the dictionary's counts and the rankers leave out, as Tatoeba
+writes them (41,622 sentences); its plans are 400 sentences at noise 0.25 and 80 at noise 0.3, seed 1,
+and a zero-noise plan of the 45 Tatoeba sentences Apple's French keyboard was measured typing, with
+Apple's results beside them. English's bundled measures from "Results" are beside French's; their
+sentences differ, so the columns compare the languages, not like with like.
+
+| Measure | Plan | fr | en |
+| --- | --- | --- | --- |
+| Final words correct | 80 sentences, noise 0.3 (`compare`) | 92.7% (458/494) | 96.1% (909/946) |
+| Final words correct | 400 sentences, noise 0.25 (`compare`) | 97.0% (2,732/2,817) | |
+| Final words correct | 400 (`evaluate`) | 97.7% | 98.7% |
+| Mistyped words fixed | 400 | 93.2% (613/658) | 94.7% (1,165/1,230) |
+| Mistyped words changed to a different word | 400 | 3.2% (21) | 1.3% (16) |
+| Correctly typed words wrongly changed | 400 | 0.4% (9/2,004) | 0.0% (0/3,760) |
+| Contractions typed without the apostrophe, restored | 400 | 92.9% (144/155) | |
+| Completion offered within 2 letters | 400 | 60.5% | 50.5% |
+| Completion keystroke savings | 400 | 41.3% | 39.9% |
+| Suggestion bar shows the word within 3 letters | 400 | 80.0% | 85.3% |
+| Next word first / in top 3 | 400 | 12.4% / 23.7% | 9.0% / 21.3% |
+| Final words correct, Apple / KeyVox | Apple's 45 French Tatoeba sentences, no noise (`compare --apple`) | 93.6% / 94.6% (277 / 280 of 296) | |
+
+The plan's taps near the AZERTY-French accent key, beside "n", type what the keyboard's accent key
+would, or the letter beside it when the contested-tap rule gives the tap to the letter; a letter
+picked from a popup is tapped on the key held to pick it, as the keyboard records it.
+
+The weights of the contested-tap rule and of the corrector were also searched on French plans of
+300 sentences at noise 0.3 from the corpus less the measured plans' sentences: no value of the
+contested-tap weights moved 4,282 words by more than 10, and the corrector's tuned weights gained one
+word of 2,153 on the plan held out, so French keeps the shared weights. Of the French words of those
+plans and the 80-sentence plan, 0.9% have their first letter tapped onto the space bar, as 0.85% of
+English's do, which a space before a word keeps as a space in every language, and 1.9% a later
+letter, 1.3% of English's.
+
+French's bundled dictionary was built again on November 28, 2026 with these tools and French's
+`language.json` in the package, so it leaves out the Multilingual HateCheck slurs (see "Words left
+out"): 163,620 words, 10 fewer, and 3 fewer word pairs. French's bundled rankers, autocorrect
+decision model, and accent overlay are the ones built before, whose rankers were trained on typing
+the simulator drew before it drew each word's randomness from a stream of its own (see "The
+simulator"). The harness typed the bundled files with the new dictionary and with the earlier one on
+plans of the same kind, from a corpus of the 41,179 Tatoeba texts that are each one French
+simulation sentence of buckets 8-9: 400 sentences at noise 0.25 and 80 at noise 0.3, seed 1, and 400
+at noise 0.3, seed 2, each with `--language fr` and with `--language fr-CA`. Every measure was the
+same with either dictionary.
+
+Rankers trained again with these tools, which draw each word's randomness from its own stream, moved
+a few measures down on the same plans, so the bundled rankers were kept:
+
+| Measure | Plan | Bundled rankers | Trained again |
+| --- | --- | --- | --- |
+| Final words correct | `fr`, 400 sentences, noise 0.3, seed 2 (`compare`) | 94.1% (2,685/2,854) | 94.0% (2,682) |
+| Completion offered within 2 letters | `fr`, 400 sentences, noise 0.25 (`evaluate`) | 60.8% | 60.7% |
+| Top-3 completions show the word before space | `fr`, 400 | 91.2% | 91.1% |
+| Completion offered within 2 / 3 letters | `fr-CA`, 400 sentences, noise 0.25 (`evaluate`) | 60.5% / 76.9% | 60.2% / 76.6% |
+| Top-3 completions show the word before space | `fr-CA`, 400 | 91.1% | 91.0% |
+| Suggestion bar shows the word within 2 letters | `fr-CA`, 400 | 62.5% | 62.4% |
+
+On the other plans they typed one word more correctly or the same, and on `fr-CA`'s 400-sentence
+`evaluate` fixed one more mistyped word and changed one fewer to another word.
+
+### French (Canada) through the keyboard
+
+French (Canada) (`PredictiveData/fr-CA`) types with France's dictionary, rankers, autocorrect
+decision model, and word lists (`sharedDataFolder`), on Apple's French (Canada) default layout,
+QWERTY-Accents. Whether it needs data of its own was measured on November 27, 2026 on Canadian
+French the models never saw: the Leipzig Corpora Collection's `fra-ca_web_2020_1M` (CC BY), web
+text crawled from Canadian sites in 2020, beside its France counterpart `fra-fr_web_2013_1M`, both
+filtered the same way to sentences a phone user could type as written (4 to 20 words; letters,
+apostrophes, hyphens, and `, . ? ! ; :` only; a capital first and `.`, `?`, or `!` last; at least two
+common French words; no word in capitals throughout): 350,587 Canadian and 376,738 France sentences.
+
+France's dictionary holds 98.25% of the Canadian text's words and 97.41% of the France text's, read
+as the keyboard reads words (an apostrophe inside, a hyphen between). Of the 410 words written at
+least eight times as often in the Canadian text, 55 are not in it, most of them crawl artifacts and
+place names; Canadian words such as "courriel", "cégep", "magasiner", and "dépanneur" are in it,
+while "condo", "locateur", and "postsecondaire" are in the language build's vocabulary but below the
+dictionary's cut.
+
+The harness typed the same plans, seed 1 and seed 2, with `--language fr-CA` and with the same taps
+as `fr` on AZERTY-French:
+
+| Measure | Plan | fr-CA | same taps as fr |
+| --- | --- | --- | --- |
+| Final words correct | Canadian, 400 sentences, noise 0.25 (`compare`) | 96.9% (5,203/5,369) | 97.0% (5,207/5,369) |
+| Final words correct | Canadian, 80 sentences, noise 0.3 | 93.1% (938/1,007) | 93.3% (940/1,007) |
+| Final words correct | Canadian, 400 sentences, noise 0.3, seed 2 | 93.4% (4,952/5,300) | 93.2% (4,937/5,300) |
+| Final words correct | French's Tatoeba plan, 400 sentences, noise 0.25 | 97.1% (2,736/2,817) | 97.0% (2,732/2,817) |
+| Final words correct | French's Tatoeba plan, 80 sentences, noise 0.3 | 91.5% (452/494) | 92.7% (458/494) |
+| Final words correct | Tatoeba, 400 sentences, noise 0.3, seed 2 | 93.6% (2,699/2,884) | 93.5% (2,696/2,884) |
+| Final words correct | Canadian, 400 (`evaluate`) | 97.4% | 97.6% |
+| Mistyped words fixed | Canadian, 400 | 93.2% (1,382/1,483) | 93.6% (1,383/1,478) |
+| Correctly typed words wrongly changed | Canadian, 400 | 0.5% (19/3,675) | 0.5% (18/3,682) |
+| Contractions typed without the apostrophe, restored | Canadian, 400 | 91.9% (194/211) | 92.8% (194/209) |
+| Completion keystroke savings | Canadian, 400 | 42.4% | 42.2% |
+| Next word first / in top 3 | Canadian, 400 | 12.2% / 22.1% | 12.2% / 22.1% |
+
+The same finger offsets fall on other neighboring keys on QWERTY-Accents than on AZERTY-French, so
+the two columns differ by which slips are made (`evaluate` draws 1,483 and 1,478 mistyped words), not
+by the data; the words each gets wrong differ both ways, and on the 400-sentence plans neither layout
+leads by more than 0.2 points. France typed `fr`'s plans of its own web text at 96.2% (noise 0.25) and
+91.4% (noise 0.3), below its Canadian results, so French (Canada) keeps France's data.
 
 The German vocabulary of that build lacks most words that begin with "ä", "ö", or "ü", as the AOSP
 German word list it is built from does: "überhaupt" (52,006 times in the German build's counts),
