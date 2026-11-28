@@ -2,8 +2,9 @@
 lacks, so a swipe can decode to them. One word per line, its spelling, a tab, and its
 probability on the dictionary's scale (0 to 255, already log-scaled), likeliest first.
 
-A word here is a swipe form, as a swipe draws it: its letters only, case and accents folded
-(the swipe model's `letter_form`). Every form `count_swipe_words.py` counted that no
+A word here is a swipe form, as a swipe draws it: its letters only, case and accents folded,
+but for a letter the keyboard has a key of its own for, which keeps its accents (the swipe
+model's `letter_form`). Every form `count_swipe_words.py` counted that no
 dictionary word spells is a candidate, and these rules, in this order, leave one out:
 
 1. offensive: a pattern of `--leave-out` matches it whole, a word the dictionary leaves out too
@@ -86,9 +87,16 @@ KEPT = "kept"
 OFFENSIVE = "offensive"
 
 
-def swipe_form(word: str) -> str:
-    decomposed = unicodedata.normalize("NFD", word.casefold())
-    return "".join(character for character in decomposed if unicodedata.category(character)[0] == "L")
+def swipe_form(word: str, keys: str) -> str:
+    """`word`'s letters, case folded, with the accents of every letter but `keys` folded."""
+    form = []
+    for character in unicodedata.normalize("NFC", word.casefold()):
+        if character in keys:
+            form.append(character)
+        else:
+            form.extend(letter for letter in unicodedata.normalize("NFD", character)
+                        if unicodedata.category(letter)[0] == "L")
+    return "".join(form)
 
 
 @dataclass
@@ -129,7 +137,7 @@ class SwipedForm:
         return self.spellings.total()
 
 
-def read_counts(path: Path, dictionary_forms: set[str]):
+def read_counts(path: Path, dictionary_forms: set[str], keys: str):
     """The candidates by form, the sources' names, and how often the sources write each
     dictionary form on its own, counted as a candidate's count is."""
     candidates: dict[str, Candidate] = {}
@@ -140,7 +148,7 @@ def read_counts(path: Path, dictionary_forms: set[str]):
         for row in rows:
             fields = row.rstrip("\n").split("\t")
             word, numbers = fields[0], [int(value) for value in fields[1:-2]]
-            form = swipe_form(word)
+            form = swipe_form(word, keys)
             if not form:
                 continue
             counts, joined = numbers[0::2], numbers[1::2]
@@ -159,14 +167,14 @@ def read_counts(path: Path, dictionary_forms: set[str]):
     return candidates, sources, dictionary_counts
 
 
-def read_swiped(path: Path, dictionary_forms: set[str]) -> dict[str, SwipedForm]:
+def read_swiped(path: Path, dictionary_forms: set[str], keys: str) -> dict[str, SwipedForm]:
     """The swipe dataset's forms that no dictionary word spells."""
     swiped: dict[str, SwipedForm] = {}
     with open(path, encoding="utf-8") as rows:
         rows.readline()
         for row in rows:
             spelling, records, in_the_middle = row.rstrip("\n").split("\t")
-            form = swipe_form(spelling)
+            form = swipe_form(spelling, keys)
             if not form or form in dictionary_forms:
                 continue
             item = swiped.setdefault(form, SwipedForm(form))
@@ -280,21 +288,21 @@ class DictionaryScale:
         return round(statistics.median(self.probabilities[low:high]))
 
 
-def read_dictionary(path: Path) -> dict[str, int]:
+def read_dictionary(path: Path, keys: str) -> dict[str, int]:
     """Each dictionary form's highest probability, from the dictionary's word list."""
     probabilities: dict[str, int] = {}
     with open(path, encoding="utf-8") as rows:
         for row in rows:
             word, probability = row.rstrip("\n").split("\t")[:2]
-            form = swipe_form(word)
+            form = swipe_form(word, keys)
             if form:
                 probabilities[form] = max(probabilities.get(form, 0), int(probability))
     return probabilities
 
 
-def read_spelling_forms(path: Path) -> set[str]:
+def read_spelling_forms(path: Path, keys: str) -> set[str]:
     with open(path, encoding="utf-8") as words:
-        return {swipe_form(word.strip()) for word in words if word.strip()}
+        return {swipe_form(word.strip(), keys) for word in words if word.strip()}
 
 
 def main() -> None:
@@ -315,10 +323,10 @@ def main() -> None:
     letters = language.letter_keys()
     measured = read_measured_spellings(language.measured_spellings) if language.measured_spellings else set()
 
-    probabilities = read_dictionary(arguments.dictionary)
-    candidates, sources, dictionary_counts = read_counts(arguments.data_dir / COUNTS_NAME, set(probabilities))
-    swiped = read_swiped(arguments.data_dir / SWIPED_NAME, set(probabilities))
-    spelling_forms = read_spelling_forms(arguments.spelling_list)
+    probabilities = read_dictionary(arguments.dictionary, letters)
+    candidates, sources, dictionary_counts = read_counts(arguments.data_dir / COUNTS_NAME, set(probabilities), letters)
+    swiped = read_swiped(arguments.data_dir / SWIPED_NAME, set(probabilities), letters)
+    spelling_forms = read_spelling_forms(arguments.spelling_list, letters)
     scale = DictionaryScale(probabilities, dictionary_counts)
 
     lines = arguments.leave_out.read_text(encoding="utf-8").splitlines() if arguments.leave_out else []
