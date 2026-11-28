@@ -369,9 +369,11 @@ the copy reads its own bundle. The ITE plan is made with
 depends on the language takes `--language` (default `en`), and `--language-file` to read the
 language's `language.json` from outside the package, for a language the package does not ship yet.
 From that file the tools read the default letter layout, whose keys the suggestion reader and the
-typo simulator tap, and the vowels the action model's rule for short words uses. German, Spanish,
-and French are built from what `Tools/KeyVoxLanguageModel` built for them, and their rankers learn
-from simulated typing alone, as no typing dataset like ITE exists for them:
+typo simulator tap, and the vowels the action model's rule for short words uses, and from the
+`held_key_characters.txt` beside it, when the language has one, the letters each key offers on a
+long press. German, Spanish, and French are built from what `Tools/KeyVoxLanguageModel` built for
+them, and their rankers learn from simulated typing alone, as no typing dataset like ITE exists for
+them:
 
 | | English | German, Spanish, French |
 | --- | --- | --- |
@@ -428,19 +430,21 @@ is the language's own is measured:
 - Where an extra key beside a letter sits: on another layout than ITE's QWERTY, the extra key is
   drawn by where ITE's extra keys beside a letter sat from it, among the places the layout has a
   key, so QWERTY's extra "x" after "z" is a "u" on German's QWERTZ.
-- How often a letter without a key is typed plain (`measure_accent_typing.py`). A letter's plain
-  spelling comes from Unicode: its base letters with its accents left off ("e" for "é"), or, for a
-  letter with no accent to leave off, its case folding ("ss" for German "ß"). Such a letter is
-  typed with a long press on its plain spelling's first key, so the simulator taps that key: a tap
-  landing on it types the letter, or its plain spelling at the measured rate, and a tap on another
-  key types that key's letter. A letter Unicode gives no other spelling, such as French "œ" and
-  "æ", is typed as spelled. The rule is one, `letter_keys.py`, so the suggestion reader taps such a
-  letter on the same key (`--key-for`), and a letter it gives no key at the origin, as the
-  keyboard's engine taps a letter its keys lack when it is given no touches. The rate is measured
-  in the language build's WildChat turns, the one source of text people typed in every language,
-  over the dictionary words with one such letter whose plain spelling is no dictionary word: how
-  often WildChat writes each spelling. A letter seen fewer than 200 times takes the rate of every
-  such letter together.
+- How often a letter without a key is typed plain (`measure_accent_typing.py`). Such a letter is
+  typed with a long press on the key whose long-press list offers it, from the language's
+  `held_key_characters.txt`, as the keyboard aims a popup letter at the key that offers it; a
+  letter no list offers, or a language without the file, takes the first key of its plain
+  spelling. A letter's plain spelling comes from Unicode: its base letters with its accents left
+  off ("e" for "é"), or, for a letter with no accent to leave off, its case folding ("ss" for
+  German "ß"). The simulator taps that key: a tap landing on it types the letter, or its plain
+  spelling at the measured rate, and a tap on another key types that key's letter. A letter
+  neither gives a key, such as French "œ" without a long-press list, is typed as spelled. The rule
+  is one, `letter_keys.py`, so the suggestion reader taps such a letter on the same key
+  (`--key-for`), and a letter it gives no key at the origin, as the keyboard's engine taps a letter
+  its keys lack when it is given no touches. The rate is measured in the language build's WildChat
+  turns, the one source of text people typed in every language, over the dictionary words with one
+  such letter whose plain spelling is no dictionary word: how often WildChat writes each spelling. A
+  letter seen fewer than 200 times takes the rate of every such letter together.
 
 Letters with a key of their own, German "ü", "ö", and "ä" and Spanish "ñ", are tapped as any other
 key: WildChat leaves them plain in 0.8% to 2.7% of their words, while it leaves out a missing key's
