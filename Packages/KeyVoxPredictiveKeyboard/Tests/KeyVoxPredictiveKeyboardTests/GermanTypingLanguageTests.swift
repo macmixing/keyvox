@@ -170,6 +170,37 @@ final class GermanTypingLanguageTests: XCTestCase {
         XCTAssertEqual(englishScorer.cost(of: plainTouches, typing: "café"), 0, accuracy: 1e-9)
     }
 
+    func testALetterOnlyAPopupOffersIsAimedAtTheKeyHeldToPickIt() throws {
+        // "ß" has no key of its own; holding "s" offers it.
+        let offering = try HeldKeyCharacters.bundled(for: .german).letterKeysOfOfferedLetters
+        let keys = KeyCenterMap(geometry: TypingLanguage.german.letterLayout.defaultGeometry, offeringKeys: offering)
+        let scorer = TouchAlignmentScorer(keys: keys, parameters: NoisyChannelCorrector.standardParameters.touch)
+        let word = "straße"
+        let touches = scorer.centerTouches(for: word)
+        XCTAssertEqual(touches.count, word.count)
+        XCTAssertEqual(scorer.cost(of: touches, typing: word), 0, accuracy: 1e-9)
+    }
+
+    func testALetterPickedFromAPopupKeepsItsWord() throws {
+        let computer = PredictionComputer(engine: try PredictiveEngine(language: .german))
+        let keys = KeyCenterMap(geometry: TypingLanguage.german.letterLayout.defaultGeometry)
+        let offering = try HeldKeyCharacters.bundled(for: .german).letterKeysOfOfferedLetters
+        for (before, word) in [("die ", "straße"), ("ich ", "weiß"), ("er ", "heißt")] {
+            let session = PredictiveTypingSession(language: .german)
+            var text = before
+            for letter in word {
+                text.append(letter)
+                // A popup's letter counts as a tap on the key held to pick it.
+                let center = try XCTUnwrap(keys.center(of: offering[letter] ?? letter))
+                session.recordTap(at: center, textBeforeCursor: text)
+            }
+            let result = try computer.compute(session.request(textBeforeCursor: text))
+            let edit = session.wordBoundaryEdit(separator: " ", textBeforeCursor: text, result: result)
+            // The word keeps its letters; a noun takes its capital.
+            XCTAssertEqual((String(text.dropLast(edit.deleteCount)) + edit.insertText).lowercased(), text + " ", word)
+        }
+    }
+
     func testGermanLoadsItsDictionaryModelsAndWordLists() throws {
         XCTAssertNoThrow(try PredictiveEngine(language: .german))
     }

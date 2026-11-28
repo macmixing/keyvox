@@ -18,6 +18,8 @@ public final class PredictionComputer: @unchecked Sendable {
     /// after words at 1.4 times or less ("and", "with", "like").
     static let everydayWordContextLogLift = log(1.5)
     private var keys: KeyCenterMap
+    /// For letters only a held key's popup offers, the key held to pick them.
+    private let offeringKeys: [Character: Character]
     private var neighborKeySlips: NeighborKeySlips
     private var vocabulary = PersonalVocabulary.empty
     private var forms = PersonalWordForms.empty
@@ -32,14 +34,15 @@ public final class PredictionComputer: @unchecked Sendable {
         self.engine = engine
         casing = engine.language.casing
         self.parameters = parameters
-        keys = KeyCenterMap(geometry: engine.language.letterLayout.defaultGeometry)
+        offeringKeys = (try? HeldKeyCharacters.bundled(for: engine.language))?.letterKeysOfOfferedLetters ?? [:]
+        keys = KeyCenterMap(geometry: engine.language.letterLayout.defaultGeometry, offeringKeys: offeringKeys)
         neighborKeySlips = NeighborKeySlips(keys: keys)
     }
 
     /// Call whenever the letter keys move or resize.
     public func updateKeyboardGeometry(_ geometry: [PredictionKeyGeometry], keyboardSize: CGSize) {
         guard engine.updateKeyboardGeometry(geometry, keyboardSize: keyboardSize) else { return }
-        let keys = KeyCenterMap(geometry: geometry)
+        let keys = KeyCenterMap(geometry: geometry, offeringKeys: offeringKeys)
         let neighborKeySlips = NeighborKeySlips(keys: keys)
         lock.lock()
         self.keys = keys
