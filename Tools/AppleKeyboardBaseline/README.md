@@ -139,6 +139,13 @@ python3 write_web_endings.py "<runtime>/Contents/Resources/RuntimeRoot/System/Li
   ../../Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/PredictiveData/web_endings.json
 ```
 
+`KeyHoldProbeTests` holds a web address field's ending key with `TEST_RUNNER_KEY_HOLD_KEYBOARD_TYPE=url`,
+which gives the host's text view that field's keyboard; holds of the `.com` key that slide a step
+further left or right each time read the popup's endings in order. With the device region US and
+English (US) the device's only language, Apple's French (France) keyboard offered `.eu .fr .us .edu
+.com .net .org` and its French (Canada) keyboard `.ca .us .edu .com .net .org`, both keys typing
+`.com`, as the French tests check.
+
 ## Emoji in each language
 
 `EmojiLanguageProbeTests` plays a script of steps, a JSON array its file's comment describes, on

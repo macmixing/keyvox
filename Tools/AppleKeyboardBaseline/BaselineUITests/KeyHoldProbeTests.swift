@@ -15,7 +15,8 @@ import XCTest
 /// then taps the keys labeled with the characters of `thenType`. Set
 /// `TEST_RUNNER_KEY_HOLD_SMART_QUOTES=1` to turn the text view's smart quotes on, and
 /// `TEST_RUNNER_KEY_HOLD_LANDSCAPE=1` to hold the keys in landscape; the device turns back upright
-/// after.
+/// after. `TEST_RUNNER_KEY_HOLD_KEYBOARD_TYPE=url` gives the text view a web address field's
+/// keyboard, whose web ending key a hold can press.
 ///
 /// Each hold starts on empty text, except where the keyboard covers the app's clear button, as a
 /// tall keyboard on its side does, when `textBefore` holds the text it started on.
@@ -73,6 +74,9 @@ final class KeyHoldProbeTests: XCTestCase {
         let app = XCUIApplication()
         if environment["KEY_HOLD_SMART_QUOTES"] == "1" {
             app.launchEnvironment["SMART_QUOTES"] = "1"
+        }
+        if let keyboardType = environment["KEY_HOLD_KEYBOARD_TYPE"] {
+            app.launchEnvironment["KEYBOARD_TYPE"] = keyboardType
         }
         app.launch()
         if environment["KEY_HOLD_LANDSCAPE"] == "1" {
