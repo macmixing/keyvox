@@ -2222,41 +2222,6 @@
         }
       }
     },
-    "Swipe Typing currently supports English only." : {
-      "comment" : "Note in keyboard settings explaining that swipe typing is limited to English.",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Wischen zum Tippen unterstützt derzeit nur Englisch."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Por ahora, la escritura deslizando solo está disponible en inglés."
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Por ahora, la escritura deslizando solo está disponible en inglés."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "La saisie par glissement n’est actuellement disponible qu’en anglais."
-          }
-        },
-        "fr-CA" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "La saisie par glissement n’est actuellement disponible qu’en anglais."
-          }
-        }
-      }
-    },
     "Available on Mac" : {
       "comment" : "Benefit title on the KeyVox Vibes unlock page.",
       "localizations" : {
