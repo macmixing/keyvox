@@ -215,7 +215,12 @@ done
 | `export_tree_models.py` | `built/*.kvtr` |
 
 `python -m unittest test_typo_simulator` checks that the simulator types a word's apostrophe
-after everything it typed for the letters before it.
+after everything it typed for the letters before it, that it types a letter without a key on
+that letter's key, as spelled or plain at its rate, that on another layout than ITE's it adds
+extra keys beside a letter on that layout, and that a word is typed the same whatever was typed
+before it. `python -m unittest test_letter_keys` checks which key types a letter
+(`letter_keys.py`), and `python -m unittest test_hatecheck_slurs` how the slurs are read from a
+dataset's cases and turned into the patterns the dictionary leaves out (`hatecheck_slurs.py`).
 
 ### What is measured
 
@@ -267,6 +272,10 @@ length's factor times a draw from a gamma distribution of mean one; the word's m
 multiplied by it, and its taps spread wider by as much as makes them miss that many times more
 often (`typo_simulator.py`). The other kinds happen at their own rates per chance, and farther
 substitutions and extra letters are drawn from the ones ITE typists made at the same letter.
+Each word draws its randomness from a stream of its own, seeded by the simulator's seed and the
+word's sentence, typist, and place in the sentence (`write_simulated_records.py`), so a change to
+how one letter is typed re-draws no other word; it moves another only through how often each key
+is meant, which the spreads' miss rates are weighed over.
 
 `calibrate_typo_simulator.py` sets the simulator so that its mistakes, measured with
 `typo_kinds.py`, match two of ITE's measurements: how often a word of each length is mistyped,
@@ -275,15 +284,15 @@ of, each kind's events per typo and the share with a second mistake, from the ty
 autocorrection. Typists who rely on autocorrection leave far more slips of a finger than typists
 who fix their own: neighbor-key substitutions are 67% of a typo's mistakes there, and 45% of
 the mistakes in text typed without it. Twelve rounds of typing the ITE words, measuring, and
-moving each setting by its gap give spreads of 0.186 to 0.197 key pitches across and 0.153 to
-0.170 down, a gamma shape of 0.069, and length factors of 0.47 for two letters, 0.54 for four,
-1.16 for eight, and 2.83 for twelve or more (2.57 for one letter). Measured with another seed,
+moving each setting by its gap give spreads of 0.186 to 0.197 key pitches across and 0.154 to
+0.170 down, a gamma shape of 0.069, and length factors of 0.48 for two letters, 0.54 for four,
+1.19 for eight, and 3.07 for twelve or more (2.30 for one letter). Measured with another seed,
 every kind seen at least 200 times among the autocorrected typos is within 10% of its events per
-typo there but three of the rarest: a first letter left out, 0.24 per hundred typos and 0.42
-simulated; an extra key beside the first letter, 0.17 and 0.23; and an extra key beside the
-last letter, 0.21 and 0.19. A second mistake is in 18.4% of the simulated typos with a letter
-mistake, and the share of words mistyped at each length is within 6% of ITE's, but for
-one-letter words, 0.09% and 0.10%.
+typo there but four: a first letter left out, 0.24 per hundred typos and 0.45 simulated; an
+extra key beside the first letter, 0.17 and 0.22; an extra farther letter in the middle, 0.46
+and 0.39; and an extra farther letter last, 1.19 and 1.33. A second mistake is in 18.8% of the
+simulated typos with a letter mistake, and the share of words mistyped at each length is within
+5% of ITE's.
 
 A first simulator matched the kinds of mistakes in text typed without autocorrection instead.
 Its typos had 42% neighbor-key substitutions and 12% with a second mistake, and rankers trained
@@ -297,10 +306,10 @@ against 16.
 fragments the counts are made from, by a hash of their words, never one ITE typists copied:
 222,814 sentences. `write_simulated_records.py` types each three times, as three typists:
 
-- 196,366 words typed differently from the word meant, the corrections;
-- 87,110 words typed as meant that no dictionary or SCOWL size-50 word spells, which the action
+- 196,156 words typed differently from the word meant, the corrections;
+- 87,026 words typed as meant that no dictionary or SCOWL size-50 word spells, which the action
   model learns to leave alone;
-- 196,748 completions: words picked at random, typed as far as ITE typists had typed a word of
+- 196,738 completions: words picked at random, typed as far as ITE typists had typed a word of
   that length when they picked its completion, mistakes included.
 
 The counts the rankers train with leave out the sentences ITE typists copied, so a typed word's
@@ -333,23 +342,27 @@ The harness scored the bundled rankers and three trained with caches asked witho
 
 | Measure | Plan | Bundled | `ite` | `sim` | `sim+ite` |
 | --- | --- | --- | --- | --- | --- |
-| Final words correct | 80 sentences, noise 0.3 (`compare`) | 96.1% (909/946) | 96.1% (909) | 96.3% (911) | 96.1% (909) |
-| Final words correct | 400 sentences, noise 0.25 (`evaluate`) | 98.7% | 98.6% | 98.7% | 98.6% |
-| Mistyped words fixed | 400 | 94.7% (1,165/1,230) | 94.6% (1,163) | 94.9% (1,167) | 94.6% (1,164) |
-| Mistyped words changed to a different word | 400 | 1.3% (16) | 1.5% (18) | 1.1% (14) | 1.4% (17) |
-| Correctly typed words wrongly changed | 400 | 0.0% (0/3,760) | 0.0% | 0.0% | 0.0% |
-| Completion offered within 2 letters | 400 | 50.5% | 51.5% | 58.8% | 58.9% |
-| Completion keystroke savings | 400 | 39.9% | 40.7% | 41.9% | 41.8% |
-| Suggestion bar shows the word within 3 letters | 400 | 85.3% | 85.3% | 85.7% | 85.6% |
-| Next word first / in top 3 | 400 | 9.0% / 21.3% | same | same | same |
+| Final words correct | 80 sentences, noise 0.3 (`compare`) | 96.1% (909/946) | 96.1% (909) | 96.3% (911)† | 96.1% (909)† |
+| Final words correct | 400 sentences, noise 0.25 (`evaluate`) | 98.7% | 98.6% | 98.7%† | 98.6%† |
+| Mistyped words fixed | 400 | 94.7% (1,165/1,230) | 94.6% (1,163) | 94.9% (1,167)† | 94.6% (1,164)† |
+| Mistyped words changed to a different word | 400 | 1.3% (16) | 1.5% (18) | 1.1% (14)† | 1.4% (17)† |
+| Correctly typed words wrongly changed | 400 | 0.0% (0/3,760) | 0.0% | 0.0%† | 0.0%† |
+| Completion offered within 2 letters | 400 | 50.5% | 51.5% | 58.8%† | 58.9%† |
+| Completion keystroke savings | 400 | 39.9% | 40.7% | 41.9%† | 41.8%† |
+| Suggestion bar shows the word within 3 letters | 400 | 85.3% | 85.3% | 85.7%† | 85.6%† |
+| Next word first / in top 3 | 400 | 9.0% / 21.3% | same | same† | same† |
 | Final words correct | ITE held-out typists, 3,000 sentences (`evaluate`) | 98.2% (`compare`: 98.3%) | same | same | same |
 | Mistyped words fixed | ITE | 55.9% (326/583) | same | same | same |
 | Mistyped words changed to a different word | ITE | 10.1% (59) | same | same | same |
 | Correctly typed words wrongly changed | ITE | 0.5% (97/21,130) | same | same | same |
-| Completion offered within 2 letters | ITE | 51.6% | 51.9% | 61.4% | 60.1% |
-| Completion keystroke savings | ITE | 37.6% | 37.7% | 40.5% | 40.0% |
+| Completion offered within 2 letters | ITE | 51.6% | 51.9% | 60.6% | 60.8% |
+| Completion keystroke savings | ITE | 37.6% | 37.7% | 40.4% | 40.2% |
 | Suggestion bar shows the word within 3 letters | ITE | 84.8% | 84.8% | 84.7% | 84.8% |
 | Next word first / in top 3 | ITE | 15.5% / 26.5% | same | same | same |
+
+† Rankers trained on the simulator before each word drew its randomness from a stream of its own;
+the rankers trained on the current simulator score the same as those on every ITE measure above
+but the completion lines, which moved by at most 0.8 points.
 
 Only the speed lines differ between runs. The rankers trained on ITE fix two fewer mistyped
 words on the 400-sentence plan than the bundled ones and change two more to another word, so
@@ -507,8 +520,8 @@ language's `vowels`.
 
 Built on November 27, 2026 from the language builds of November 24, with `language.json` files
 kept outside the package (German on `QWERTZ-German`, Spanish on `QWERTY-Spanish`, French on
-`AZERTY-French`, with their accented vowels as vowels); each build took about 13 minutes. None is
-bundled.
+`AZERTY-French`, with their accented vowels as vowels); each build took about 15 minutes, with the
+others running beside it. None is bundled.
 
 | | de | es | fr |
 | --- | --- | --- | --- |
@@ -518,7 +531,7 @@ bundled.
 | `correction_ranker.kvtr`, `completion_ranker.kvtr`, `autocorrect_decision.kvtr` | 218,260, 218,260, 74,260 bytes | the same | the same |
 | `accent_overlay.bin` | 12 bytes, no entries | the same | the same |
 | Simulation sentences | 224,318 | 177,956 | 219,215 |
-| Corrections, words typed as meant, completions simulated | 185,331, 142,998, 196,813 | 398,821, 164,851, 194,941 | 313,200, 52,870, 192,050 |
+| Corrections, words typed as meant, completions simulated | 187,302, 142,845, 196,814 | 400,497, 164,733, 194,895 | 313,951, 52,778, 192,085 |
 
 Measured on the held-out simulation sentences, buckets 8-9, by the trainers' reports
 (`work/reports/correction_models.json` and `completion_ranker.json`), with English's ITE held-out
@@ -528,30 +541,30 @@ Ranking is of the intended word among LatinIME's 8 candidates:
 
 | Measure | de | es | fr | en (ITE) |
 | --- | --- | --- | --- | --- |
-| Correction: intended word among the 8 candidates | 91.7% | 95.2% | 96.2% | 97.9% |
-| Correction: first, LatinIME's order / reranked | 76.6% / 82.5% | 89.5% / 91.3% | 86.6% / 91.0% | 85.3% / 90.1% |
-| Correction: in the top 3, reranked | 91.0% | 94.9% | 95.9% | 96.9% |
-| Completion: intended word among the 8 candidates | 61.7% | 48.6% | 52.6% | 83.4% |
-| Completion: first, LatinIME's order / reranked | 23.1% / 43.7% | 16.5% / 35.6% | 19.4% / 40.2% | 38.6% / 55.4% |
-| Completion: in the top 3, reranked | 57.9% | 45.5% | 50.2% | 76.5% |
-| Plausible typos fixed by the action model at 0.9 | 36.9% | 50.4% | 59.9% | 45.2% |
+| Correction: intended word among the 8 candidates | 91.9% | 95.1% | 96.2% | 97.9% |
+| Correction: first, LatinIME's order / reranked | 77.2% / 83.0% | 89.4% / 91.2% | 86.3% / 91.0% | 85.3% / 90.1% |
+| Correction: in the top 3, reranked | 91.3% | 94.9% | 95.8% | 96.9% |
+| Completion: intended word among the 8 candidates | 61.7% | 48.7% | 52.5% | 83.4% |
+| Completion: first, LatinIME's order / reranked | 23.1% / 43.8% | 16.6% / 35.7% | 19.4% / 40.1% | 38.6% / 55.4% |
+| Completion: in the top 3, reranked | 57.8% | 45.7% | 50.1% | 76.5% |
+| Plausible typos fixed by the action model at 0.9 | 36.3% | 50.9% | 58.8% | 45.2% |
 
 Every word of the held-out sentences, acting at each threshold (`held_out_words`): the words typed,
 1,011,150 German, 997,230 Spanish, and 968,274 French, of which 3.7%, 8.0%, and 6.4% were mistyped,
-and 5,211, 19,692, and 11,769 of those were typed as another word the action model never replaces,
+and 5,138, 19,613, and 11,727 of those were typed as another word the action model never replaces,
 such as Spanish "esta" for "está":
 
 | Threshold | Measure | de | es | fr |
 | --- | --- | --- | --- | --- |
-| 0.9 | Final words correct | 97.55% | 95.78% | 97.05% |
-| 0.9 | Mistyped words fixed (of those not typed as a word) | 34.3% (39.9%) | 48.4% (64.4%) | 54.8% (67.6%) |
-| 0.9 | Mistyped words changed to another word | 0.40% | 0.28% | 0.39% |
-| 0.9 | Correctly typed words wrongly changed | 0.034% | 0.121% | 0.042% |
-| 0.95 | Final words correct | 97.17% | 94.76% | 96.70% |
-| 0.95 | Mistyped words fixed (of those not typed as a word) | 23.6% (27.4%) | 35.0% (46.5%) | 49.1% (60.5%) |
-| 0.95 | Mistyped words changed to another word | 0.13% | 0.09% | 0.17% |
-| 0.95 | Correctly typed words wrongly changed | 0.017% | 0.064% | 0.026% |
-| none | Final words correct, as typed | 96.32% | 92.03% | 93.56% |
+| 0.9 | Final words correct | 97.51% | 95.78% | 96.99% |
+| 0.9 | Mistyped words fixed (of those not typed as a word) | 33.7% (39.0%) | 48.8% (64.7%) | 53.7% (66.2%) |
+| 0.9 | Mistyped words changed to another word | 0.39% | 0.27% | 0.42% |
+| 0.9 | Correctly typed words wrongly changed | 0.036% | 0.125% | 0.041% |
+| 0.95 | Final words correct | 97.14% | 94.81% | 96.63% |
+| 0.95 | Mistyped words fixed (of those not typed as a word) | 23.3% (27.0%) | 36.1% (47.9%) | 47.9% (59.0%) |
+| 0.95 | Mistyped words changed to another word | 0.15% | 0.09% | 0.25% |
+| 0.95 | Correctly typed words wrongly changed | 0.017% | 0.075% | 0.027% |
+| none | Final words correct, as typed | 96.29% | 91.98% | 93.59% |
 
 These are the trainers' measures: the keyboard corrects with `NoisyChannelCorrector`, which reads
 the rankers' choice of candidates but not the action model's probability (see "What the harness can
