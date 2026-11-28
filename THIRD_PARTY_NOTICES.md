@@ -322,7 +322,7 @@ Copyright (c) 2021 David Sojevic
 - Source: <https://huggingface.co/datasets/Paul/hatecheck-german> (revision `5229a5cc475f36c08d03ca52f0ccb005705e60d2`) and <https://huggingface.co/datasets/Paul/hatecheck-french> (revision `5d3085f2129139abc10d2b58becd4d4f2978e5d5`)
 - License: CC BY 4.0
 - License URL: <https://creativecommons.org/licenses/by/4.0/>
-- Note: The German and French typing dictionaries `Tools/KeyVoxTypingModels` builds leave out the slurs of the datasets' slur test cases that target Black, immigrant, Indigenous, gay, trans, Jewish, or Muslim people, in the forms the test cases write them (`Tools/KeyVoxTypingModels/hatecheck_slurs.py`, `offensive_words.py`); none of its files are copied into them, and none of these dictionaries are bundled yet.
+- Note: The German and French typing dictionaries `Tools/KeyVoxTypingModels` builds leave out the slurs of the datasets' slur test cases that target Black, immigrant, Indigenous, gay, trans, Jewish, or Muslim people, in the forms the test cases write them (`Tools/KeyVoxTypingModels/hatecheck_slurs.py`, `offensive_words.py`), and the German capitalized-spelling list `Tools/KeyVoxLanguageModel` builds leaves out the same words; none of its files are copied into them. German's dictionary is bundled with `Packages/KeyVoxPredictiveKeyboard` and its capitalized-spelling list with `Packages/KeyVoxLinguistics`; French's dictionary is not bundled yet.
 
 Attribution: Based on Multilingual HateCheck by Röttger, Seelawi, Nozza, Talat, and Vidgen, *Multilingual HateCheck: Functional Tests for Multilingual Hate Speech Detection Models* (2022).
 
