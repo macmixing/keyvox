@@ -70,8 +70,9 @@ enum RegressionCaseBuilder {
     }
 
     /// The sentence's words and the letters tapped for them, or nil when a word holds a character
-    /// neither a key nor its plain letter's key types, or the dictionary does not offer it and it
-    /// is typed on keys alone or written with a capital.
+    /// that neither a key, its plain letter's key, nor a key's held popup types, or the dictionary
+    /// does not offer it and it is typed without a plain letter or written with a capital. A
+    /// letter with neither a key nor a plain letter on one is picked from the popup offering it.
     private static func candidate(
         for sentence: String,
         layout: KeyboardLayoutModel,
@@ -85,10 +86,12 @@ enum RegressionCaseBuilder {
         for (word, writing) in zip(words, written) {
             var letters = ""
             for character in word {
-                if character == "'" || layout.center(of: character) != nil {
+                if character == "'" || layout.keyFrames[character] != nil {
                     letters.append(character)
-                } else if let plain = plainLetter(of: character), layout.center(of: plain) != nil {
+                } else if let plain = plainLetter(of: character), layout.keyFrames[plain] != nil {
                     letters.append(plain)
+                } else if layout.types(character) {
+                    letters.append(character)
                 } else {
                     return nil
                 }

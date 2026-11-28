@@ -83,9 +83,9 @@ enum HarnessCommand {
     }
 
     struct RegressionCasesOptions {
-        /// The corpus to pick from, how many cases to pick (`--sentences`), and the finger noise.
+        /// The corpus to pick from, how many cases to pick (`--sentences`), the finger noise, and
+        /// the typing language (`--language`).
         var source = PlanSource(sentenceLimit: 30, noiseInKeyPitches: 0.3)
-        var languageIdentifier = ""
         /// The folder holding every language's regression check.
         var fixturesPath = ""
     }
@@ -328,12 +328,11 @@ enum HarnessCommand {
             while let flag = remaining.popFirst() {
                 if flag != "--plan", try Self.parseSource(flag, into: &options.source, remaining: &remaining) { continue }
                 switch flag {
-                case "--language": options.languageIdentifier = try Self.value(after: flag, in: &remaining)
                 case "--fixtures": options.fixturesPath = try Self.value(after: flag, in: &remaining)
                 default: throw HarnessError.unknownFlag(flag)
                 }
             }
-            guard options.source.corpusPaths.isEmpty == false, options.languageIdentifier.isEmpty == false,
+            guard options.source.corpusPaths.isEmpty == false, options.source.languageIdentifier != nil,
                   options.fixturesPath.isEmpty == false else {
                 throw HarnessError.usage
             }

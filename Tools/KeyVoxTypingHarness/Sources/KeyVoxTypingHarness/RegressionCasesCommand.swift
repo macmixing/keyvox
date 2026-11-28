@@ -6,8 +6,9 @@ import KeyVoxTypingSimulation
 /// typing them gives.
 enum RegressionCasesCommand {
     static func run(_ options: HarnessCommand.RegressionCasesOptions) throws {
+        guard let languageIdentifier = options.source.languageIdentifier else { throw HarnessError.usage }
         let cases = try RegressionCaseBuilder.build(
-            languageIdentifier: options.languageIdentifier,
+            languageIdentifier: languageIdentifier,
             corpusPaths: options.source.corpusPaths,
             caseCount: options.source.sentenceLimit,
             noiseInKeyPitches: options.source.noiseInKeyPitches,
@@ -15,7 +16,7 @@ enum RegressionCasesCommand {
         )
         let url = TypingRegressionFixture.casesURL(
             in: URL(fileURLWithPath: options.fixturesPath, isDirectory: true),
-            language: options.languageIdentifier
+            language: languageIdentifier
         )
         try TypingRegressionFixture.write(cases, to: url)
         print("Wrote \(cases.count) cases to \(url.path)")
