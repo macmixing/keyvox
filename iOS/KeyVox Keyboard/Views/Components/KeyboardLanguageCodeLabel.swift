@@ -27,10 +27,12 @@ final class KeyboardLanguageCodeLabel: UILabel {
         isAccessibilityElement = true
         layer.removeAllAnimations()
         alpha = Self.shownOpacity
+        // The fade starts from the opacity just set, not from what is on screen: on screen the
+        // label is still as its last fade left it, so a fade from there would stay invisible.
         UIView.animate(
             withDuration: Self.fadeDuration,
             delay: Self.holdDuration,
-            options: [.beginFromCurrentState, .allowUserInteraction]
+            options: [.allowUserInteraction]
         ) {
             self.alpha = 0
         } completion: { finished in

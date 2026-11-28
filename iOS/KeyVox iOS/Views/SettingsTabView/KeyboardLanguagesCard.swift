@@ -2,7 +2,8 @@ import SwiftUI
 
 /// The Languages card of Keyboard settings: the typing languages, with a Change button that opens
 /// `KeyboardLanguagesScreen`, then the letter layout of each, picked from the layouts the language
-/// offers in Apple's order. A language with one layout shows it without a Change menu.
+/// offers in Apple's order, each by the name Apple's settings show for it
+/// (`KeyboardLetterLayoutName`). A language with one layout shows it without a Change menu.
 struct KeyboardLanguagesCard: View {
     @Environment(\.appHaptics) private var appHaptics
     @EnvironmentObject private var settingsStore: AppSettingsStore
@@ -49,12 +50,12 @@ struct KeyboardLanguagesCard: View {
         let title = selection.languages.count > 1
             ? KeyboardSettingsCopy.layoutTitle(languageName: KeyboardTypingLanguageName.displayName(for: language.identifier))
             : KeyboardSettingsCopy.layoutTitle
-        valueRow(icon: "keyboard", title: title, value: language.letterLayout) {
+        valueRow(icon: "keyboard", title: title, value: KeyboardLetterLayoutName.displayName(for: language.letterLayout)) {
             if language.letterLayouts.count > 1 {
                 Menu {
                     Picker("", selection: layoutBinding(for: language)) {
                         ForEach(language.letterLayouts, id: \.self) { layout in
-                            Text(verbatim: layout).tag(layout)
+                            Text(verbatim: KeyboardLetterLayoutName.displayName(for: layout)).tag(layout)
                         }
                     }
                     .pickerStyle(.inline)

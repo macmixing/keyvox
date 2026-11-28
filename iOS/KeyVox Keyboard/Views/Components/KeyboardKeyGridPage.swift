@@ -12,8 +12,9 @@ final class KeyboardKeyGridPage {
         let showsEmojiKey: Bool
         let showsNextKeyboardKey: Bool
         let fieldKeys: KeyboardFieldKeys
-        /// The letter layout the letter page draws (`KeyboardLetterRows.current`).
-        let letterLayout: String
+        /// The letter layout the letter page draws (`KeyboardLetterRows.current`); none for the
+        /// other pages, which are the same in every letter layout.
+        let letterLayout: String?
     }
 
     /// The page's rows, stacked top to bottom.
