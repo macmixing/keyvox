@@ -36,4 +36,3 @@ $	right	$ ¢ € £ ¥ ₩ ₽
 !	right	! ¡
 ’	left	' ’ ‘ `
 %	right	% ‰
-.com	centered	.edu .com .org .gob
