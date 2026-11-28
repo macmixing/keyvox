@@ -2,11 +2,9 @@
 on the language's default letter layout as its plain spelling instead, and writes it to
 `<data_dir>/work/simulation/accent_typing.json` for the typo simulator.
 
-A letter's plain spelling is its base letters with its accents left off (its Unicode
-decomposition), or, for a letter with no accent to leave off, its Unicode case folding, which
-writes some letters with two; a letter whose plain spelling is itself, or does not start with a
-letter key, has none and is typed as spelled. A letter without a key is typed with a long press on
-its plain spelling's first key, or, left plain, with the plain spelling's keys. How often writers
+A letter without a key is typed with a long press on the key `letter_keys.key_for` gives it, the
+first key of its plain spelling (`letter_keys.plain_spelling`), or, left plain, with the plain
+spelling's keys; a letter it gives no key is typed as spelled. How often writers
 leave it plain is measured from the language build's sentences of `accent_source`
 (`typing_languages.py`), text people typed: for each dictionary word with one such letter, however
 many times, whose plain spelling is no dictionary word (a word whose plain spelling is another word
@@ -18,23 +16,15 @@ them plain far more rarely, as the measurements below the rates show."""
 
 import argparse
 import json
-import unicodedata
 from collections import Counter
 from pathlib import Path
 
 import language_build
+from letter_keys import key_for, plain_spelling
 from paths import DataPaths
 from typing_languages import add_language_arguments, language_from
 
 FEWEST_WORDS = 200
-
-
-def plain_spelling(letter):
-    """The letters a letter is written with when typed without its accent: its decomposition less
-    its accents, or its case folding when it has no accent to leave off."""
-    decomposed = unicodedata.normalize("NFD", letter)
-    plain = "".join(character for character in decomposed if not unicodedata.combining(character))
-    return plain if plain != letter else letter.casefold()
 
 
 def plain_counts(words, counts, letters):
@@ -71,8 +61,7 @@ def main():
         counts.update(sentence)
 
     keyless = sorted({character for word in words for character in word
-                      if character.isalpha() and character not in keys
-                      and plain_spelling(character)[:1] in keys})
+                      if character not in keys and key_for(character, keys) is not None})
     keyed = sorted(letter for letter in keys if plain_spelling(letter) != letter
                    and plain_spelling(letter) and all(c in keys for c in plain_spelling(letter)))
     measured = plain_counts(words, counts, set(keyless))
@@ -85,7 +74,7 @@ def main():
         kept, plain = measured[letter]
         enough = kept + plain >= FEWEST_WORDS
         letters[letter] = {
-            "key": plain_spelling(letter)[0], "plain": plain_spelling(letter),
+            "key": key_for(letter, keys), "plain": plain_spelling(letter),
             "spelled": kept, "plain_spelled": plain,
             "plain_rate": plain / (kept + plain) if enough else pooled, "measured": enough,
         }
