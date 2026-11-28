@@ -2,7 +2,7 @@
 
 Trains, tunes, exports, and measures KeyVox's own swipe (gesture) typing model: a small
 neural encoder that reads a finger path over any keyboard layout and scores that layout's
-keys frame by frame, decoded into words of KeyVox's English swipe lexicon. The approach
+keys frame by frame, decoded into words of a typing language's swipe lexicon. The approach
 follows the published description in *FUTO Swipe: Layout-Agnostic Neural Swipe Decoding*
 (Miller and Kostarevas, arXiv 2606.25247); the code is KeyVox's own.
 
@@ -11,6 +11,8 @@ and `swipe.json`, no decoder) is run `r3-ft2`: the width-144 encoder `r3-w144-au
 after two ranking fine-tunes. Its `swipe_encoder.kvsw` is byte for byte the file
 `export_weights.py` writes for `r3-ft2` (SHA-256 `6aea857c…cdc6`). On swipe.futo.org's
 English test split it decodes 92.56% of swipes to the swiped word first (see "Results").
+German, French, and Spanish bundle one encoder of their own, `r3-ft2` fine-tuned once more on
+swipes moved onto the keyboard's other letter layouts (see "Other typing languages").
 
 Data, trained weights, and results live in a data directory outside the repository, never
 in it.
@@ -28,11 +30,15 @@ in it.
 | Train the optional decoder | `train_decoder.py` | a decoder run |
 | Export the weights | `export_weights.py` | `swipe_encoder.kvsw` (and `swipe_decoder.kvsd`) |
 | Write the harness's input | `write_harness_swipes.py` | `<split>` swipes with the words before them |
+| Move swipes onto other layouts | `warp_layout_swipes.py` | `prepared/<name>-{train,val}.npz` |
+| Fine-tune for ranking on several layouts | `rank_layouts.py` | a new run |
 
 The shared modules: `words.py` (letters and key paths), `layouts.py`, `lexicon.py` (word
 list and key-path trie), `swipe_data.py`, `model.py`, `augment.py`, `ranking.py`,
 `decode.py` with `beam_search.c`, `scoring.py`, `emissions.py`, `run_emissions.py`,
-`run_settings.py`, `decoder_model.py`, `weights_format.py`, and `exported_model.py`.
+`run_settings.py`, `decoder_model.py`, `weights_format.py`, `exported_model.py`, `layout_warp.py`
+(moving a swipe from one layout's keys to another's), and `layout_swipes.py` (swipes of several
+layouts as tensors).
 
 ## Data
 
@@ -61,7 +67,8 @@ Both are MIT-licensed; swipe.futo.org is pinned to revision
   56,539.
 - The layout check holds swipe-5's English swipes on ClearFlow (11,503), Dvorak (2,250),
   KASROZ (1,047), QWERTZ (759), and AZERTY (96). swipe-5's German, French, and Spanish swipes
-  are never written anywhere.
+  are never trained on; `write_harness_swipes.py` writes them only to measure (see "Other typing
+  languages").
 - How We Swipe's logs give touch positions in pixels and the keyboard's size but not where
   its keys are, so they cannot be paired with a layout.
 
@@ -429,6 +436,151 @@ The setups differ, so these numbers are not a ranking:
   to its bundled lexicon, which lacks the words of 3.06% of test swipes, so those count as
   misses. KeyVox's lexicon includes words of the training split's sentences, which are
   Wikipedia sentences like the test split's.
+
+## Other typing languages
+
+German, French, and Spanish swipe with one encoder of their own and their own lexicons; English
+keeps `r3-ft2` and its files unchanged.
+
+### Letters
+
+A language's `swipe.json` names its model's letters: the letters its default layout gives keys of
+their own, German `abcdefghijklmnopqrstuvwxyzäöü` (QWERTZ-German), Spanish `…zñ`
+(QWERTY-Spanish), French `a`-`z` (AZERTY-French draws an accent key, not letter keys). A word's
+swipe form keeps the accents of those letters and folds every other accent onto its base letter,
+so "für" swipes over the "ü" key and "café" over the "e" key; `spelledLetters` writes a letter
+no key types as the letters people swipe for it, French `{"œ": "oe"}`: both of swipe.futo.org's
+French swipes of a word with "œ" ("cœur", "contrecœur") pass the "o" key and then the "e" key.
+A letter "ß" is case folded to "ss", as for English. On a layout without a key of its own for one
+of the model's letters, such as German's QWERTZ, QWERTY, and AZERTY, the keyboard swipes that
+letter on its base letter's key (`SwipeKeys` in the package). The lexicon is built from the
+language's dictionary and its swipe vocabulary (`Tools/KeyVoxLanguageModel`, "Swipe vocabulary"),
+with `KeyVoxTypingHarness swipe-lexicon --language <id>`:
+
+| Language | Swipe vocabulary | Lexicon words | Trie nodes | `swipe_lexicon.kvsl` |
+| --- | --- | --- | --- | --- |
+| en | 26,319 | 133,226 | 270,724 | 6,306,824 bytes |
+| de | 102,127 | 320,472 | 1,059,147 | 22,075,953 bytes |
+| fr | 59,966 | 223,596 | 470,326 | 11,035,060 bytes |
+| es | 74,670 | 310,858 | 579,330 | 14,390,581 bytes |
+
+### Measuring
+
+swipe.futo.org's fifth run holds German, French, and Spanish swipes, never trained on. They are
+kept as the run's English ones are (one finger, a scored distance of at most 134.7) and split by
+recording session: a session whose name's SHA-256 begins with an even byte is in the `tune` half,
+which chooses models and settings, and the rest in the `test` half, measured once for the chosen
+model, so no person's swipes are in both:
+
+```bash
+python write_harness_swipes.py <data-dir> swipe-5 de-german-test.jsonl --language de --layout german --half test
+KeyVoxTypingHarness swipe-accuracy --language de --letter-layout QWERTZ-German \
+  --swipes de-german-test.jsonl --layout <data-dir>/sources/futo-swipe/swipe-5/layouts/german.json
+```
+
+| Language | Layout (keyboard's) | Swipes | Tune | Test |
+| --- | --- | --- | --- | --- |
+| de | german (QWERTZ-German) | 2,407 | 1,048 | 1,359 |
+| de | qwertz (QWERTZ) | 1,307 | 901 | 406 |
+| de | qwerty (QWERTY) | 1,122 | 405 | 717 |
+| fr | azerty (AZERTY-French) | 2,323 | 1,161 | 1,162 |
+| fr | qwerty (QWERTY) | 479 | 272 | 207 |
+| es | spanish (QWERTY-Spanish) | 1,841 | 966 | 875 |
+
+swipe.futo.org's layout files place the letter keys where the keyboard's own layouts do (within
+0.001 of the frame), but for its AZERTY's apostrophe key where AZERTY-French draws its accent key.
+Each layout's swipes come from different people, and a half of a few hundred swipes moves a point
+for a handful of them, so the figures below pool each language's layouts.
+
+### Training the bundled model: `k1`
+
+`r3-ft2` was trained on QWERTY alone. With the languages' lexicons, German's and French's swipes
+on QWERTY decode within 2 points of English's test split, and those on QWERTZ-German, QWERTZ, and
+AZERTY-French 5 to 7 points below it; Spanish's, on QWERTY-Spanish, decode above it (below).
+`k1` fine-tunes it on English swipes moved onto those layouts:
+
+- `warp_layout_swipes.py` gives each swipe of the first run's training split and the extra runs
+  (1,067,609 whose letters all have keys) one of QWERTY, QWERTY, QWERTZ-German, QWERTZ,
+  AZERTY-French, AZERTY, QWERTY-Spanish, QWERTY-Accents, and QWERTZ-Accents, drawn with seed 0,
+  and moves it there (`layout_warp.py`): each key of the word's key path is matched to the point
+  of the swipe closest to it, in order, and the swipe moves by how far each key's letter moves,
+  blended linearly between matched points, keeping the person's own path around the keys (its
+  mean distance from them is 0.047 before and 0.046 after, on 2,000 validation swipes). A swipe
+  given QWERTY stays as recorded. The validation split is moved the same way.
+- `rank_layouts.py` is `finetune_encoder.py`'s ranking fine-tune layout by layout: each swipe's
+  16 hard negatives are mined with `r3-ft2` and its scoring on its own layout's key-path trie of
+  the 129,438-word lexicon `r3-ft2` was fine-tuned with, every batch holds swipes of one layout,
+  learning rate 5e-5, augmentation 0.5, batch 1,024, 3 epochs.
+
+```bash
+python warp_layout_swipes.py <data-dir> layouts \
+  --layouts QWERTY,QWERTY,QWERTZ-German,QWERTZ,AZERTY-French,AZERTY,QWERTY-Spanish,QWERTY-Accents,QWERTZ-Accents
+python rank_layouts.py <data-dir> r3-ft2 k1 <unigrams.tsv> --swipes layouts-train --validation layouts-val
+python export_weights.py <data-dir> k1 --checkpoint epoch-0.pt
+```
+
+The moved validation swipes decoded 90.36% first before it and 91.58%, 91.68%, and 91.69% after
+each epoch (`evaluate.py`'s decoder). The bundled encoder is the first epoch's, chosen on the tune
+halves (93.37% top-1 against 93.04% after the third, with German's scoring then at frequency
+weight 0.065 and length bonus 2.3); its `swipe_encoder.kvsw` (SHA-256 `dd7ad96e…9829`) is the same
+file in `de`, `fr`, and `es`. Their `swipe.json` is English's but for its letters: with `k1`,
+English's frequency weight and length bonus (0.045, 1.869) measured 93.33% on the tune halves,
+0.045 and 2.3 93.22%, 0.065 and 1.869 93.14%, and 0.065 and 2.3 93.23%.
+
+### Results
+
+`KeyVoxTypingHarness swipe-accuracy`, words before included, top-1 / top-3; "before" is `r3-ft2`
+with the same lexicons and `swipe.json`:
+
+| Language | Layout | Tune before | Tune `k1` | Test before | Test `k1` |
+| --- | --- | --- | --- | --- | --- |
+| de | german | 89.60 / 95.32 | 91.13 / 96.09 | 87.56 / 94.26 | 89.26 / 95.29 |
+| de | qwertz | 90.68 / 95.89 | 92.12 / 96.78 | 85.96 / 95.07 | 87.68 / 95.81 |
+| de | qwerty | 91.11 / 96.30 | 93.33 / 96.79 | 91.49 / 96.51 | 92.75 / 96.93 |
+| fr | azerty | 89.06 / 95.43 | 92.85 / 97.76 | 86.66 / 94.15 | 92.77 / 97.42 |
+| fr | qwerty | 95.59 / 98.16 | 95.96 / 98.16 | 90.82 / 96.14 | 90.34 / 97.58 |
+| es | spanish | 95.76 / 98.55 | 96.69 / 98.86 | 93.71 / 97.60 | 95.20 / 98.40 |
+
+Top-1 pooled by language:
+
+| Language | Tune before | Tune `k1` | Test before | Test `k1` |
+| --- | --- | --- | --- | --- |
+| German | 90.27% | 91.89% | 88.43% | 90.01% |
+| French | 90.30% | 93.44% | 87.29% | 92.40% |
+| Spanish | 95.76% | 96.69% | 93.71% | 95.20% |
+| All three | 91.40% | 93.33% | 89.08% | 91.66% |
+
+Beside them, English decodes 92.56% of its test split (95.84% top-3), and `r3-ft2` decodes
+swipe-5's English swipes on QWERTZ 91.17% (759), AZERTY 94.79% (96), and Dvorak 96.98% (2,250),
+the same run's people on layouts it never trained on. The German lexicon holds 97.86% to 98.24% of
+the German swipes' words by layout, against English's 96.93% of its test split. A German word's key path needs
+at most 32 frames in every test swipe. Swipes decode in a median 4.7 to 6.1 ms (95th percentile
+8.8 to 10.7 ms) by layout, against English's 5.0 ms (9.7 ms).
+
+Through the package, the process's physical footprint, the figure iOS limits app extensions by,
+rose after loading the engine and decoding 300 swipes by 13.6 MB in English, 21.2 MB in German,
+16.1 MB in French, and 13.2 MB in Spanish on a Mac; the beam search's per-node array is 4 bytes a
+trie node, 4.0 MB of German's.
+
+### Experiments not kept
+
+Measured on the halves above; the scoring named is German's at the time.
+
+- **The vocabulary.** With `r3-ft2` and German's scoring at frequency weight 0.065 and length
+  bonus 2.3, the German test half decoded 89.52% with the swipe vocabulary, 89.24% without the
+  words of English's lexicon that German's word list and lexicons lack (such as "the" and "you",
+  which the vocabulary has from YouTube-Commons), and 88.92% with the dictionary alone; the
+  vocabulary is built by English's rules.
+- **German scoring.** With `r3-ft2`, frequency weight 0.065 and length bonus 2.3 raised the
+  German test half from 88.43% to 89.52%; with `k1` English's measured as well (above).
+- **CTC on several layouts** (`train.py`'s loss on the moved swipes, learning rate 1e-4,
+  3 epochs). With the tune halves' recorded swipes added 20 times each, the German test half went
+  from 89.52% to 89.93%; on the moved swipes alone, the tune halves went from 91.67% to 91.90%
+  after the first epoch and 91.60% after the third, French gaining and German losing up to a
+  point, as the CTC loss gives up the ranking `r3-ft2` was fine-tuned for.
+- **A second ranking round** (`k2`, from `k1`'s third epoch, fresh negatives): the moved
+  validation swipes 91.69% to 91.72%, the tune halves 93.23%. On German's layouts alone (`k1`'s
+  first epoch, 474,293 moved swipes, 2 epochs), German's tune half 91.84% against `k1`'s 91.97%.
 
 ## Setup
 
