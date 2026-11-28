@@ -45,9 +45,13 @@ enum TypingRegressionDifference {
         word.map { "\"\($0)\"" } ?? "nothing"
     }
 
-    private static func listed(_ items: [TypingRegressionOutcome.Item]?) -> String {
-        guard let items else { return "nothing" }
-        return "[" + items.map { "\($0.kind) \"\($0.text)\"" }.joined(separator: ", ") + "]"
+    private static func listed(_ bar: TypingRegressionOutcome.Bar?) -> String {
+        guard let bar else { return "nothing" }
+        let slots = [bar.leading, bar.primary, bar.trailing].map { item in
+            item.map { "\($0.kind) \"\($0.text)\"" } ?? "empty"
+        }
+        let emoji = bar.emoji.isEmpty ? "" : ", emoji " + bar.emoji.map(\.text).joined(separator: " ")
+        return "[" + slots.joined(separator: " | ") + emoji + "]"
     }
 }
 
