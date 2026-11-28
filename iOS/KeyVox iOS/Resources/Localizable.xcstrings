@@ -812,6 +812,12 @@
         "es" : {
           "variations" : {
             "plural" : {
+              "many" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "%lld idiomas"
+                }
+              },
               "one" : {
                 "stringUnit" : {
                   "state" : "needs_review",
@@ -830,6 +836,12 @@
         "es-419" : {
           "variations" : {
             "plural" : {
+              "many" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "%lld idiomas"
+                }
+              },
               "one" : {
                 "stringUnit" : {
                   "state" : "needs_review",
@@ -8269,19 +8281,19 @@
         "es" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Distribución"
+            "value" : "Disposición"
           }
         },
         "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Distribución"
+            "value" : "Disposición"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Disposition"
+            "value" : "Mise en page"
           }
         },
         "fr-CA" : {
@@ -8304,19 +8316,19 @@
         "es" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Distribuciones"
+            "value" : "Disposiciones"
           }
         },
         "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Distribuciones"
+            "value" : "Disposiciones"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Dispositions"
+            "value" : "Mises en page"
           }
         },
         "fr-CA" : {
@@ -8479,19 +8491,19 @@
         "es" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Distribución de cada idioma."
+            "value" : "Disposición de cada idioma."
           }
         },
         "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Distribución de cada idioma."
+            "value" : "Disposición de cada idioma."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Disposition de chaque langue."
+            "value" : "Mise en page de chaque langue."
           }
         },
         "fr-CA" : {
@@ -14238,19 +14250,19 @@
         "es" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Idiomas del teclado y sus distribuciones."
+            "value" : "Idiomas del teclado y sus disposiciones."
           }
         },
         "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Idiomas del teclado y sus distribuciones."
+            "value" : "Idiomas del teclado y sus disposiciones."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Langues du clavier et leurs dispositions."
+            "value" : "Langues du clavier et leurs mises en page."
           }
         },
         "fr-CA" : {
