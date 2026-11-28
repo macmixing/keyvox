@@ -12,5 +12,6 @@
     "closingDouble": "“"
   },
   "ordinalPeriods": true,
-  "webEndingsLocale": "de_DE"
+  "webEndingsLocale": "de_DE",
+  "writtenApostrophe": "’"
 }

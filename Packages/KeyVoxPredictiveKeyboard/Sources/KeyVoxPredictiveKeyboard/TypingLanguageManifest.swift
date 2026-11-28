@@ -23,4 +23,7 @@ struct TypingLanguageManifest: Decodable {
     /// The locale of Apple's keyboard for the language, whose web endings its keyboard adds to the
     /// region's (`WebEndings`).
     let webEndingsLocale: String
+    /// The mark the keyboard writes for the apostrophe of a word it writes, such as a corrected
+    /// contraction; the dictionary's straight apostrophe when left out.
+    let writtenApostrophe: String?
 }
