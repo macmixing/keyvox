@@ -401,10 +401,10 @@ Each language's source weights are in `languages.py`: English's were tuned again
 suggestion bars (youtube-commons 0, oasst2 0.3, tatoeba 10). German and French give the same
 weights by kind of source, speech 0, chat and text messages 0.3, and Tatoeba 10.
 
-Spanish's were tuned against Apple's Spanish (Spain) bars after 53 sentences
-(`apple-languages/sentence-openers/es_ES.json` in KeyVox's language data, read with `--apple`):
-the same weights but speech at 0.1, which share more words with Apple's bars and find the next
-sentence's first word more often in every source's held-out texts:
+Spanish's were tuned against the bars Apple's Spanish (Spain) keyboard showed after 53 sentences
+on an iOS 27.2 simulator, read with `--apple`: the same weights but speech at 0.1, which share more
+words with Apple's bars and find the next sentence's first word more often in every source's
+held-out texts:
 
 | Weights (Tatoeba, OASST2, WildChat, speech) | Words shared with Apple's bar | Different bars (Apple: 45) | Held out: Tatoeba | OASST2 | WildChat | YODAS2 | YouTube-Commons |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -422,7 +422,7 @@ A sentence opened with one of the language's sentence opening marks (`sentenceOp
 (`count_sentence_openers.py`), and `sentence_openers.txt` gives every opener's log likelihood after
 each such mark (`opening <mark>` lines), which the keyboard offers right after the mark where a
 sentence starts: after "¿", Spanish's are "qué", "por", and "cómo", the three words Apple's Spanish
-keyboard offers there (`apple-languages/runs/behavior-es_ES`); after "¡", "no", "qué", and "me",
+keyboard offers there, measured on an iOS 27.2 simulator; after "¡", "no", "qué", and "me",
 where Apple offers "No", "Y", and "Si", its openers at the start of the text.
 
 ## Words spelled with capitals
