@@ -57,6 +57,8 @@ final class KeyboardPredictionCoordinator {
     private var pendingSwipe: (number: Int, place: KeyboardSwipePlace, deliver: (TextEdit) -> Void)?
     private var swipeNumber = 0
     // Owned by `engine.queue`.
+    private let everydayKnownNames = KeyboardEverydayKnownNames()
+    // Owned by `engine.queue`.
     /// Decoded swipes not yet handed over, by number.
     private var decodedSwipes: [Int: String?] = [:]
 
@@ -149,17 +151,24 @@ final class KeyboardPredictionCoordinator {
         }
     }
 
-    func updateVocabulary(_ vocabulary: PersonalVocabulary) {
+    /// Hands both engines the user's vocabulary, with which of its known names are everyday words
+    /// of any of `typingLanguages`, the identifiers of the languages the user selected, worked out
+    /// on the suggestion engine's queue and handed to the tap-check engine from there.
+    func updateVocabulary(_ vocabulary: PersonalVocabulary, typingLanguages: [String]) {
         latestResult = nil
         engine.queue.async { [weak self] in
             guard let self else { return }
             self.latestRevision = nil
-            self.engine.updateVocabulary(vocabulary)
-        }
-        tapCheckEngine.queue.async { [weak self] in
-            guard let self else { return }
-            self.latestIntendedLetter = nil
-            self.tapCheckEngine.updateVocabulary(vocabulary)
+            let everydayKnownNames = self.everydayKnownNames.resolved(
+                knownNames: vocabulary.knownNames,
+                typingLanguages: typingLanguages
+            )
+            self.engine.updateVocabulary(vocabulary, everydayKnownNames: everydayKnownNames)
+            self.tapCheckEngine.queue.async { [weak self] in
+                guard let self else { return }
+                self.latestIntendedLetter = nil
+                self.tapCheckEngine.updateVocabulary(vocabulary, everydayKnownNames: everydayKnownNames)
+            }
         }
     }
 

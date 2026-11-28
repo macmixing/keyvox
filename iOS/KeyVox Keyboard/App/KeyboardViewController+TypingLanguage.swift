@@ -5,9 +5,14 @@ import UIKit
 /// language reaches the keys, predictions, swipes, taps, and what the keyboard learned.
 extension KeyboardViewController {
     /// Rereads the user's typing languages, as each time the keyboard shows or its host comes back,
-    /// and shows the language they give when it changed.
+    /// judges the user's known names against them again when they changed, and shows the language
+    /// they give when it changed.
     func adoptTypingLanguageSettings() {
+        let previousLanguages = KeyboardTypingLanguage.selection.identifiers
         let changed = KeyboardTypingLanguage.adoptSettings(appSettingsStore)
+        if KeyboardTypingLanguage.selection.identifiers != previousLanguages {
+            applyUserVocabulary()
+        }
         rootContainerView?.keyGridView.allowsSpaceLanguageSlide = KeyboardTypingLanguage.selection.languages.count > 1
         showLanguageCode()
         guard changed else { return }
