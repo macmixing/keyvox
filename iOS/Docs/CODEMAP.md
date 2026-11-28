@@ -1277,7 +1277,7 @@ Packages/
 - `KeyVox iOS/App/KeyboardLanguages/KeyboardBundledTypingLanguages.swift`
   - The containing app's copy of the keyboard's typing-language catalog, read from the typing package's resource bundle inside the keyboard extension, since the app does not bundle the typing data.
 - `KeyVox iOS/App/KeyboardLanguages/KeyboardTypingLanguageName.swift`
-  - A typing language's name from `Locale` in the language the app shows, with its region in parentheses for a regional variant.
+  - A typing language's name from `Locale` in the language the app shows, with its region in parentheses for a regional variant, and the short code the space bar shows, with its region only when another selected language shares the code and the region is a single country.
 - `KeyVox iOS/App/KeyboardLanguages/KeyboardLetterLayoutName.swift`
   - The name a letter layout is shown by: the name the system's own Keyboard settings show for it (the iOS 27.2 Settings app's `KeyboardLayouts` strings), localized through the app's string catalog, or the layout's identifier when no name is written for it.
 - `KeyVox iOS/App/Integration/KeyboardWarmStartPolicy.swift`
