@@ -762,6 +762,7 @@ Packages/
 │   │   │   ├── PredictiveData/
 │   │   │   │   ├── en/
 │   │   │   │   ├── fr/
+│   │   │   │   ├── fr-CA/
 │   │   │   │   └── letter_layouts/
 │   │   │   ├── PredictiveEngine.swift
 │   │   │   ├── PredictiveTypingSession.swift
