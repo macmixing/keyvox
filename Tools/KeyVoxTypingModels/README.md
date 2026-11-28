@@ -466,9 +466,13 @@ kept outside the package (German on `QWERTZ-German`, Spanish on `QWERTY-Spanish`
 `AZERTY-French`, with their accented vowels as vowels); each build took about 13 minutes.
 
 The Spanish files bundled in `PredictiveData/es` were built the same way on November 27 with the
-package's own `es/language.json`, from the Spanish language build of that day (the November 24
-build's vocabulary, counts, and sentences, unchanged) and the English calibration of "The
-simulator"; their trainers' reports give the Spanish column below.
+package's own `es/language.json` and the English calibration of "The simulator", from a Spanish
+language build whose counts take the written sources 20 times (`count_weights` in
+`Tools/KeyVoxLanguageModel/languages.py`; `language_build.Counts` takes the held-out sentences out
+as many times). The column below is the build from the unweighted counts; the bundled build's
+reports give 49.5% of completions' intended words among the 8 candidates and 37.2% first once
+reranked, 51.2% of plausible typos fixed at 0.9, and, at 0.9, 95.84% of held-out words final, 49.1%
+of mistyped words fixed, and 0.119% of correctly typed words wrongly changed.
 
 | | de | es | fr |
 | --- | --- | --- | --- |
@@ -518,29 +522,42 @@ the rankers' choice of candidates but not the action model's probability (see "W
 tell apart"). They show the rankers learn the language, ranking the intended word first more often
 than LatinIME alone does, and give a baseline to hold later builds to.
 
-`Tools/KeyVoxTypingHarness` scored the bundled Spanish files through the keyboard's engine with the
-sentence counts and noise English is scored with, typed from the Spanish simulation sentences of the held-out buckets
-8-9 (35,575 sentences, which the dictionary and the rankers leave out), beside the bundled English
-files' scores ("Results"). The sentences are written as the language build writes them, lowercase
-without punctuation; noise is the touch spread in key pitches.
+`Tools/KeyVoxTypingHarness` scored the Spanish files through the keyboard's engine with the sentence
+counts and noise English is scored with, typed from the Spanish simulation sentences of the held-out
+buckets 8-9 (35,575 sentences, which the dictionary and the rankers leave out), and on the 45
+Tatoeba sentences typed into Apple's Spanish (Spain) keyboard on an iOS 27.2 simulator, as Apple was
+given them: accents left out, lowercase, inverted marks left out
+(`apple-languages/runs/sim17-tatoeba-es_ES` in KeyVox's language data). The sentences are written as
+the language build writes them, lowercase without punctuation; noise is the touch spread in key
+pitches. The context model counts every source's text, these sentences among them, so each Spanish
+column was scored with a context model counted the same way from text that leaves them out
+(`Tools/KeyVoxLanguageModel`'s `count_ngrams.py` and `write_context_model.py` over the build's
+sentence files less those lines). Before: the files built from counts that take every source once,
+with English's context model sizes, and touches aimed at the plain letter of every accented one,
+"ñ" too. After: the bundled files, with the written sources counted 20 times, the larger context
+model, and "ñ" aimed at its own key (`TouchAlignmentScorer`).
 
-| Measure | Plan | es | en |
-| --- | --- | --- | --- |
-| Final words correct | 80 sentences, noise 0.3 (`compare`) | 92.1% (704/764) | 96.1% (909/946) |
-| Final words correct | 400 sentences, noise 0.25 (`evaluate`) | 97.5% | 98.7% |
-| Mistyped words fixed | 400 | 91.8% (805/877) | 94.7% (1,165/1,230) |
-| Mistyped words changed to a different word | 400 | 3.9% (34) | 1.3% (16) |
-| Correctly typed words wrongly changed | 400 | 0.7% (18/2,718) | 0.0% (0/3,760) |
-| Completion offered within 2 letters | 400 | 52.8% | 50.5% |
-| Completion keystroke savings | 400 | 40.0% | 39.9% |
-| Suggestion bar shows the word within 3 letters | 400 | 73.9% | 85.3% |
-| Next word first / in top 3 | 400 | 13.5% / 24.0% | 9.0% / 21.3% |
+| Measure | Plan | es before | es after | en |
+| --- | --- | --- | --- | --- |
+| Final words correct | 80 sentences, noise 0.3 (`compare`) | 92.4% (706/764) | 93.2% (712/764) | 96.1% (909/946) |
+| Final words correct | Apple's 45 sentences, no noise (`compare --apple`) | 95.1% (251/264) | 95.8% (253/264) | |
+| Final words correct | 400 sentences, noise 0.25 (`evaluate`) | 97.6% | 97.9% | 98.7% |
+| Mistyped words fixed | 400 | 91.9% (806/877) | 92.8% (814/877) | 94.7% (1,165/1,230) |
+| Mistyped words changed to a different word | 400 | 3.8% (33) | 3.3% (29) | 1.3% (16) |
+| Correctly typed words wrongly changed | 400 | 0.6% (17/2,718) | 0.4% (11/2,718) | 0.0% (0/3,760) |
+| Completion offered within 2 letters | 400 | 52.8% | 54.1% | 50.5% |
+| Suggestion bar shows the word within 3 letters | 400 | 73.8% | 76.7% | 85.3% |
+| Suggestion bar keystroke savings | 400 | 36.2% | 38.2% | |
+| Next word first / in top 3 | 400 | 13.5% / 24.0% | 15.3% / 26.7% | 9.0% / 21.3% |
 
-Of the 18 Spanish words typed right and changed, 16 are words the dictionary lacks: Spanish forms
-its vocabulary does not list ("engordas", "simplicidades", "indices") and words of chat turns in
-English or code ("defeat", "soju", "tci"). The other 2 are dictionary words changed to another:
-"sueño" to "suelo" and "levantaras" to "levantarás". In the 80-sentence plan, 6 sentences come out
-with a line break inside a word, where a tap landed on return.
+Apple's keyboard writes 97.3% (257/264) of its 45 sentences' words as the originals do. After, it
+gets 6 words KeyVox does not: five where a word and its accented twin are both dictionary words and
+the words around them decide ("el miro" for "miró", "de mi" for "mí", sentence-initial "esta" for
+"está"), and "incanjeable", which the dictionary lacks and KeyVox changes to "canjeable"; KeyVox
+gets 2 Apple does not ("dónde", "él"). With no context model leaving the test sentences out, the bundled files score
+94.0% (718/764), 97.0% (256/264), and 80.1% within 3 letters, which counts sentences the model has
+seen. In the 80-sentence plan, 6 sentences come out with a line break inside a word, where a tap
+landed on return.
 
 The German vocabulary lacks most words that begin with "ä", "ö", or "ü", as the AOSP German word
 list it is built from does: "überhaupt" (52,006 times in the German build's counts), "ändern",

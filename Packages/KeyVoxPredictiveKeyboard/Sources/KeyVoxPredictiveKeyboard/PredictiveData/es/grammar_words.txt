@@ -10,7 +10,6 @@ algún
 ante
 aquel
 aquella
-aquellas
 aquello
 aquellos
 aunque
@@ -30,6 +29,7 @@ cualquier
 cualquiera
 cuando
 cuanto
+cuantos
 cuál
 cuáles
 cuántas
