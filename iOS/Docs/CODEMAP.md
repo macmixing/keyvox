@@ -811,10 +811,15 @@ Packages/
 │   │   ├── EmojiCatalog.swift
 │   │   ├── EmojiCatalog+KeyboardSections.swift
 │   │   ├── EmojiData/
+│   │   │   ├── de/
 │   │   │   ├── emoji_catalog.txt
-│   │   │   ├── emoji_predictions.txt
-│   │   │   ├── emoji_search.txt
-│   │   │   └── emoji_starters.txt
+│   │   │   ├── emoji_starters.txt
+│   │   │   ├── en/
+│   │   │   │   ├── emoji_predictions.txt
+│   │   │   │   └── emoji_search.txt
+│   │   │   ├── es/
+│   │   │   ├── es-419/
+│   │   │   └── fr/
 │   │   ├── EmojiDataError.swift
 │   │   ├── EmojiDataLocator.swift
 │   │   ├── EmojiFrequentlyUsed.swift
@@ -2033,13 +2038,13 @@ Packages/
 - `Packages/KeyVoxEmoji/Sources/KeyVoxEmoji/EmojiCatalog.swift` and `EmojiCatalog+KeyboardSections.swift`
   - Bundled emoji catalog in the system emoji keyboard's categories and order, with names and skin-tone versions, filtered into keyboard sections by the host's drawability check.
 - `Packages/KeyVoxEmoji/Sources/KeyVoxEmoji/EmojiSearch.swift` and `EmojiPredictions.swift`
-  - Word-prefix emoji search with whole-word matches first, and the suggestion-bar emoji for a word, which the search returns first so the two agree.
+  - Word-prefix emoji search with whole-word matches first, and the suggestion-bar emoji for a word, which the search returns first so the two agree, each read from the typing language's folder of `EmojiData`, or, for a regional variant without one, its language's (`EmojiDataLocator.swift`).
 - `Packages/KeyVoxEmoji/Sources/KeyVoxEmoji/EmojiFrequentlyUsed.swift`
   - Codable Frequently Used ranking with decaying scores, bundled starters that fill what used emoji leave, ordering of other emoji lists by use, and whether any emoji was used.
 - `Packages/KeyVoxEmoji/Sources/KeyVoxEmoji/EmojiTwoPersonTones.swift`
   - Maps two-person emoji versions to and from each person's tone.
 - `KeyVox Keyboard/Core/Emoji/KeyboardEmojiSections.swift`, `KeyboardEmojiSearchIndex.swift`, and `KeyboardEmojiPredictionsIndex.swift`
-  - Shared indexes that read the bundled catalog, search, and suggestion-bar emoji once off the main thread and keep them while the keyboard runs.
+  - Shared indexes that read the bundled catalog once, and the search and suggestion-bar emoji of the language the keyboard types in, off the main thread, keeping one language's at a time: the bar's reads the new language's after a switch where the field offers suggestions, otherwise when the search next opens, and the search's when it next opens, finding nothing until then and ignoring requests a later one replaced.
 - `KeyVox Keyboard/Core/Emoji/KeyboardEmojiSupport.swift`
   - Asks the system emoji font whether it draws an emoji as one picture so the keyboard offers only emoji this phone shows.
 - `KeyVox Keyboard/Core/Emoji/KeyboardEmojiFrequentlyUsedStore.swift` and `KeyboardEmojiSkinToneStore.swift`
