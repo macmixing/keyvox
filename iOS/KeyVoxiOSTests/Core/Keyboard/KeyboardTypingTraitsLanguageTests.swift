@@ -5,21 +5,21 @@ import UIKit
 @testable import KeyVox_iOS
 
 /// Swiping follows the typing language: a field that allows it swipes in a language with a swipe
-/// model and only taps in one without.
+/// model and only taps in one without. Every bundled language bundles one.
 struct KeyboardTypingTraitsLanguageTests {
-    @Test func swipingNeedsTheLanguagesSwipeModel() throws {
+    @Test(arguments: ["en", "de", "es", "fr"])
+    func swipingNeedsTheLanguagesSwipeModel(identifier: String) throws {
         let defaults = try #require(UserDefaults(suiteName: "KeyboardTypingTraitsLanguageTests"))
         defaults.removePersistentDomain(forName: "KeyboardTypingTraitsLanguageTests")
         let settings = KeyboardAppSettingsStore(defaults: defaults)
-        let proxy = PlainFieldProxy()
+        let language = try TypingLanguage.bundled(identifier: identifier)
 
-        let english = KeyboardTypingTraits(proxy: proxy, settings: settings, language: try TypingLanguage.bundled(identifier: "en"))
-        let spanish = KeyboardTypingTraits(proxy: proxy, settings: settings, language: try TypingLanguage.bundled(identifier: "es"))
+        let traits = KeyboardTypingTraits(proxy: PlainFieldProxy(), settings: settings, language: language)
 
-        #expect(english.allowsSwipeTyping)
-        #expect(spanish.allowsSwipeTyping == false)
-        #expect(spanish.allowsPredictions)
-        #expect(spanish.allowsAutocorrection)
+        #expect(language.offersSwipeTyping)
+        #expect(traits.allowsSwipeTyping == language.offersSwipeTyping)
+        #expect(traits.allowsPredictions)
+        #expect(traits.allowsAutocorrection)
     }
 }
 
