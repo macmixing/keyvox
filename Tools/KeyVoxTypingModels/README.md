@@ -504,6 +504,9 @@ dictionary word. The datasets give no case of a slur used as an everyday word: t
 non-hateful cases with a slur quote it or speak against it (`counter_quote_nh`, `counter_ref_nh`),
 for every slur alike.
 
+German's capitalized spellings (`Tools/KeyVoxLanguageModel`, "Words spelled with capitals") leave
+out the same words, read from this build's `work/offensive_words.txt` with `--leave-out`.
+
 The dictionary leaves out the words, and the caches ask the dictionary as counted, with them, so
 the rankers are as they would be without the list, as English's bundled rankers are; the
 measures below are the same with and without it.
@@ -583,19 +586,34 @@ words (`Tools/KeyVoxLanguageModel`, "Vocabulary").
 
 ### German
 
-The bundled German files (`PredictiveData/de`) were built on November 27, 2026 from the German
-language build of that day, which reads German's `language.json` in the package and adds the
-written lexicon words and contractions, with the typo calibration of "Training on simulated typing"
-(`typo_calibration.json` of its calibrated run):
+The bundled German files (`PredictiveData/de`) are built from the German language build of November
+27, 2026, which reads German's `language.json` in the package and adds the written lexicon words and
+contractions, with the typo calibration of "Training on simulated typing" (`typo_calibration.json`
+of its calibrated run). The dictionary was built later that day with these tools, so it leaves out
+the 4 dictionary words Multilingual HateCheck's German slurs match ("Words left out"). The
+correction and completion rankers, the autocorrect decision model, and the accent overlay are those
+of the build of November 27, whose typo simulator drew every word's mistakes from one stream of
+randomness, before it drew each word's from a stream of its own:
 
 | | de |
 | --- | --- |
-| Dictionary words | 218,345 |
+| Dictionary words | 218,341 |
 | Word pairs, three-word sequences | 160,000, 60,000 |
-| `dictionary.body` | 10,154,345 bytes |
+| `dictionary.body` | 10,154,232 bytes |
 | `accent_overlay.bin` | 12 bytes, no entries |
 | Simulation sentences | 224,023 |
 | Corrections, words typed as meant, completions simulated | 184,877, 82,573, 196,849 |
+
+The rankers learn from the dictionary as counted, with the words it leaves out ("Words left out"),
+so the dictionary without them leaves every measure below the same: with the earlier dictionary and
+with this one, the bundled rankers type every plan below word for word alike. These tools, with the
+simulator's single stream put back, rebuild the bundled correction and completion rankers byte for
+byte. Retrained with the simulator as it is now, each word's own stream gives the rankers other
+mistakes to learn from, and the measures below move by a few words or a few tenths of a point either
+way. Of 12 retrained draws (`write_simulated_records.py`'s seed), none matched the bundled rankers
+on every measure, on the plans below or on 2,500 more held-out sentences outside them, so the
+bundled rankers were kept. A German build with these tools therefore writes the bundled dictionary,
+while `compare_with_bundled.py` reports the three rankers as different.
 
 `Tools/KeyVoxTypingHarness` scored them through the keyboard's own typing path (`--language de`) on
 plans of German Tatoeba sentences from the held-out simulation buckets 8-9, which the dictionary and
@@ -632,10 +650,9 @@ umlauts do, at that key; the other column was measured before, when every umlaut
 plain vowel's key, which also turned a correctly tapped sentence-first "über" into "aber".
 
 On the 45 Tatoeba sentences Apple's German keyboard was measured typing on the iOS 27.2 simulator,
-typed as Apple's were, at
-the keys' centers and in lowercase, both keyboards end with 308 of the 309 words right: Apple
-writes "Charkiw" as "Charlie", and KeyVox "ungekocht" as "gekocht". KeyVox writes 55 of the 61
-words capitalized after a sentence's first with their capitals, and capitalizes 1 of the 202
-written in lowercase; Apple writes 56 of its 60 such words with their capitals and capitalizes none
-of the 203 lowercase ones. Those sentences are in the language data the context model is counted
-from, so KeyVox knows their words' contexts.
+typed as Apple's were, at the keys' centers and in lowercase, both keyboards end with 308 of the 309
+words right: Apple writes "Charkiw" as "Charlie", and KeyVox "ungekocht" as "gekocht". KeyVox writes
+55 of the 61 words capitalized after a sentence's first with their capitals, and capitalizes 1 of
+the 202 written in lowercase; Apple writes 56 of its 60 such words with their capitals and
+capitalizes none of the 203 lowercase ones. Those sentences are in the language data the context
+model is counted from, so KeyVox knows their words' contexts.
