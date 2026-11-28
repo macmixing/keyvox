@@ -9,18 +9,25 @@ struct SentenceWords {
     let words: [String]
 
     init?(sentence: String) {
-        let tokens = sentence
+        let tokens = Self.tokens(in: sentence)
+        guard tokens.isEmpty == false,
+              tokens.allSatisfy(Self.isTypeableWord) else {
+            return nil
+        }
+        words = tokens.map { $0.lowercased() }
+    }
+
+    /// The sentence's whitespace-separated tokens with the characters other than letters around
+    /// them trimmed, as written, typographic apostrophes straightened; tokens of no letters are
+    /// left out.
+    static func tokens(in sentence: String) -> [String] {
+        sentence
             .replacingOccurrences(of: "’", with: "'")
             .split(whereSeparator: { $0.isWhitespace })
             .map { token in
                 token.trimmingCharacters(in: CharacterSet.letters.inverted)
             }
             .filter { $0.isEmpty == false }
-        guard tokens.isEmpty == false,
-              tokens.allSatisfy(Self.isTypeableWord) else {
-            return nil
-        }
-        words = tokens.map { $0.lowercased() }
     }
 
     /// Up to three earlier words, newest first, matching the engine's context window.

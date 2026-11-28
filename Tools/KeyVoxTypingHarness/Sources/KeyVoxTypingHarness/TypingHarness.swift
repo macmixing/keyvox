@@ -23,6 +23,8 @@ struct TypingHarness {
                 try SwipeAccuracyCommand.run(options)
             case .swipeGate(let options):
                 try SwipeGateCommand.run(options)
+            case .regressionCases(let options):
+                try RegressionCasesCommand.run(options)
             }
         } catch {
             FileHandle.standardError.write(Data("\(error)\n".utf8))

@@ -29,7 +29,7 @@ enum TypingPlanBuilder {
         return TypingPlan(noiseInKeyPitches: noiseInKeyPitches, seed: seed, sentences: planned)
     }
 
-    private static func gaussianPair(
+    static func gaussianPair(
         standardDeviation: Double,
         generator: inout SeededRandomGenerator
     ) -> [Double] {
