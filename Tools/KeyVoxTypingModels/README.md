@@ -30,6 +30,7 @@ Every input is pinned to a revision or a recorded SHA-256 in `sources.py` or
 | [Aalto ITE Typing dataset](https://doi.org/10.5281/zenodo.12528163) | The typing events the rankers learn from, and the sentences left out of the counts | Zenodo record 12528163; five files are read from the archive by byte range | CC BY 4.0 |
 | [AOSP LatinIME](https://android.googlesource.com/platform/packages/inputmethods/LatinIME/) | Writing and reading the dictionary | The native sources bundled in `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveNative/latinime`, compiled unchanged | Apache 2.0 |
 | [Profanity List](https://github.com/dsojevic/profanity-list) | The words the dictionary and the swipe vocabulary leave out: its English terms tagged racial or anti-LGBTQ, or religious at strong severity or above (`offensive_words.py`) | Commit `c27924319aa9bd6f917e3782b4f4b6604a50b652` | MIT |
+| [Multilingual HateCheck](https://huggingface.co/datasets/Paul/hatecheck-german) | The words German and French dictionaries leave out: the slurs of its slur test cases that target the groups English's left-out tags name (see "Words left out") | German revision `5229a5cc475f36c08d03ca52f0ccb005705e60d2`, French `5d3085f2129139abc10d2b58becd4d4f2978e5d5` | CC BY 4.0 |
 
 Tatoeba publishes only its current export, which changes every week. `rewind_tatoeba.py` turns
 it back into the export of the cutoff `sources.py` pins: every sentence the contribution log
@@ -100,7 +101,7 @@ sources' steps and trains its rankers on simulated typing (see "Other typing lan
 | `rewind_tatoeba.py` | `sources/tatoeba/eng_sentences_at_cutoff.tsv.bz2`, checked against its recorded SHA-256 |
 | `scowl_word_list.sh` | `work/scowl-*.txt` |
 | `offensive_words.py` | `work/offensive_words.txt`: a pattern a line of the words the dictionary leaves out |
-| `write_dictionary_inputs.py`, then `bin/write_latinime_dictionary` | `work/dictionary_unigrams.tsv` and `work/dictionary_ngrams.tsv`, every word and sequence counted, which the later steps and `Tools/KeyVoxLanguageModel` read, and `work/counted_dictionary/`, compiled from them, which the caches ask with `--as-bundled`; `work/dictionary_kept_*.tsv`, the same less the words `offensive_words.txt` matches and every sequence holding one, and `built/dictionary/`, compiled from those with the language's locale and header attributes (`typing_languages.py`) |
+| `write_dictionary_inputs.py`, then `bin/write_latinime_dictionary` | `work/dictionary_unigrams.tsv` and `work/dictionary_ngrams.tsv`, every word and sequence counted, which the later steps and `Tools/KeyVoxLanguageModel` read, and `work/counted_dictionary/`, compiled from them, which the caches ask with `--as-bundled`, and always for another language; `work/dictionary_kept_*.tsv`, the same less the words `offensive_words.txt` matches and every sequence holding one, and `built/dictionary/`, compiled from those with the language's locale and header attributes (`typing_languages.py`) |
 | `split_ite_events.py` | `work/ite/`: autocorrections, words left alone, and accepted predictions, split by typist |
 | `write_feature_context_model.py` | `work/feature_context_800k.bin`: the word and word-pair counts the rankers train with |
 | `cache_correction_candidates.py`, `cache_completion_candidates.py` | `work/*_candidates.pkl.gz`: LatinIME's candidates, typed on the keys of the language's letter layout; with `--as-bundled`, as the build runs them, for the queries the bundled rankers learned from (`bundled_queries.py`), otherwise for every record `training_sets.py` gives the trainers |
@@ -377,7 +378,7 @@ from simulated typing alone, as no typing dataset like ITE exists for them:
 | Dictionary words | SCOWL size 60, American | The language build's vocabulary (`built/vocabulary.txt`: the AOSP LatinIME word list with its capitals settled), in lowercase |
 | Probabilities, pairs, and sequences | Tatoeba and OASST1, less the sentences ITE typists copied | The language build's `counts.npz`, of every source it reads, less the held-out simulation sentences |
 | Words never corrected | The dictionary's and SCOWL size 50's | The dictionary's and the vocabulary's common part (`built/common_vocabulary.txt`) |
-| Words left out | The profanity list's English terms (`offensive_words.py`) | None: the pinned profanity list has English terms alone |
+| Words left out | The profanity list's English terms (`offensive_words.py`) | German and French: Multilingual HateCheck's slurs; Spanish: none yet (see "Words left out") |
 | Accent overlay | 262 accented SCOWL words the dictionary lacks | Empty: the dictionary holds the accented words, and LatinIME finds them from their plain letters |
 | Dictionary header | Locale `en_US` | Locale `de`, `es`, or `fr`, as the AOSP word list's header; German also asks for umlaut processing, as AOSP's German list does, so "ue" types "ü" |
 | Typing the rankers learn from | ITE | Simulated on the language's sentences and letter layout, with the English calibration |
@@ -396,7 +397,8 @@ PYTHON=<venv>/bin/python ./build_typing_models.sh <data-dir> --language de \
 `<language-build>` is the data directory of `Tools/KeyVoxLanguageModel`'s build of the language,
 with its `vocabulary.txt`, `counts.npz`, `sentences/`, and `built/vocabulary.txt` and
 `built/common_vocabulary.txt`; `download_sources.py` records their SHA-256 in
-`sources/checksums.txt`. `<english-sim-dir>` is an English data directory after the simulator's
+`sources/checksums.txt`, beside the language's Multilingual HateCheck dataset, if it has one, which
+it downloads. `<english-sim-dir>` is an English data directory after the simulator's
 steps of "Training on simulated typing" through `compare_simulated_typing.py`, whose
 `work/simulation` holds `ite_typing.json` and `typo_calibration.json`. In place of the English
 ranker steps, the build then runs, with `--language`:
@@ -406,7 +408,7 @@ ranker steps, the build then runs, with `--language`:
 | `measure_accent_typing.py` | `work/simulation/accent_typing.json`: how often each letter without a key is typed plain |
 | `write_simulated_records.py --calibration <data-dir>/sources/typo-calibration` | `work/simulation/corrections.tsv`, `preserves.tsv`, `completions.tsv`, and `typed_words.json`, the words typed and mistyped in each bucket |
 | `write_feature_context_model.py` | `work/feature_context_800k.bin`, from the language build's counts less every simulation sentence |
-| the caches and the trainers | as for English, with `--source sim`, which they default to for another language |
+| the caches and the trainers | as for English, with `--source sim`, which they default to for another language; the caches ask `work/counted_dictionary/` |
 
 The steps hold the language build's counts in memory: French's dictionary inputs took 13 GB at
 their peak.
@@ -451,6 +453,40 @@ WildChat is typed mostly on computers, whose German and French keyboards have ke
 these letters; 88milSMS, French text messages typed on phones in 2011, leaves "é" plain in 32.3%
 of its words and "ç" in 44.9%, so the French rates may be low for phone typing.
 
+### Words left out
+
+German and French dictionaries leave out the slurs of the language's Multilingual HateCheck
+dataset, the test cases of hateful sentences built around a slur (`slur_h`), each tagged
+with the group its slur targets (`hatecheck_slurs.py`). The groups left out are the ones English's
+left-out tags name: Black, immigrant, Indigenous, gay, trans, Jewish, and Muslim people
+(`offensive_words.LEFT_OUT_TARGETS`). Slurs against women and disabled people stay, as English's
+list tags them apart. A case whose template marks its slur, `[SLR_S]` or `[SLR_P]`, gives the slur
+as the words the placeholder stands for; the other cases of a template differ only in their slur
+and the article or adjective before it, so a case's slur is its word where they differ most. Each
+form the cases write, singular and plural, is a pattern of its own, so the forms come from the
+dataset and no ending is added; a form is matched as English's are, by its letter form, so an
+unaccented spelling of a slur is left out with it. Slurs of several words are left aside, as no
+word is one.
+
+Spanish leaves no word out yet: its dataset's slurs for those groups include words in everyday use,
+some written thousands of times in the Spanish build's text, and no data source tells those apart
+from the slurs.
+
+| Language | Forms the dataset gives | Dictionary words left out |
+| --- | --- | --- |
+| de | 12 | 4 |
+| fr | 20 | 10, and the 3 word pairs that hold one |
+
+The forms come from the pinned datasets (`sources.py`) and are written, as patterns, to
+`work/offensive_words.txt` at build time; this README does not repeat them. The other forms are no
+dictionary word. The datasets give no case of a slur used as an everyday word: their only
+non-hateful cases with a slur quote it or speak against it (`counter_quote_nh`, `counter_ref_nh`),
+for every slur alike.
+
+The dictionary leaves out the words, and the caches ask the dictionary as counted, with them, so
+the rankers are as they would be without the list, as English's bundled rankers are; the
+measures below are the same with and without it.
+
 ### Features of letters outside ASCII
 
 The keyboard's engine computes the rankers' and the action model's features over the words' UTF-8
@@ -469,9 +505,9 @@ bundled.
 
 | | de | es | fr |
 | --- | --- | --- | --- |
-| Dictionary words | 205,879 | 236,188 | 163,630 |
-| Word pairs, three-word sequences | 160,000, 60,000 | 160,000, 60,000 | 160,000, 60,000 |
-| `dictionary.body` | 9,780,366 bytes | 10,215,079 bytes | 8,533,339 bytes |
+| Dictionary words | 205,875 | 236,188 | 163,620 |
+| Word pairs, three-word sequences | 160,000, 60,000 | 160,000, 60,000 | 159,997, 60,000 |
+| `dictionary.body` | 9,780,288 bytes | 10,215,079 bytes | 8,533,024 bytes |
 | `correction_ranker.kvtr`, `completion_ranker.kvtr`, `autocorrect_decision.kvtr` | 218,260, 218,260, 74,260 bytes | the same | the same |
 | `accent_overlay.bin` | 12 bytes, no entries | the same | the same |
 | Simulation sentences | 224,318 | 177,956 | 219,215 |
