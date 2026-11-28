@@ -2,11 +2,12 @@
 ranker is trained and checked on, `training_sets.completion_sets` for the language
 (`--language`) and training source (`--source`, `ite` for English and `sim` for any other language
 unless given), each asked in a LatinIME session of its own on the language's letter keys, and
-caches the
-answers in `<data_dir>/work/completion_candidates.pkl.gz`. With `--as-bundled` it asks the
-queries the bundled ranker learned from (`bundled_queries.py`) in one shared session of the
+caches the answers in `<data_dir>/work/completion_candidates.pkl.gz`. With `--as-bundled` it asks
+the queries the bundled ranker learned from (`bundled_queries.py`) in one shared session of the
 dictionary as counted, with the words `offensive_words.py` matches, instead, as it learned from
-it, so the build rebuilds the bundled ranker."""
+it, so the build rebuilds the bundled ranker. Another language's queries are asked of its
+dictionary as counted too, so the words it leaves out leave its ranker as it would be without
+them."""
 
 import argparse
 from pathlib import Path
@@ -41,7 +42,8 @@ def main():
     keys = latinime_candidates.unique_queries(collections)
     outputs = latinime_candidates.run_suggestions(
         paths.suggestion_reader,
-        paths.counted_dictionary if arguments.as_bundled else paths.dictionary, keys,
+        paths.counted_dictionary if arguments.as_bundled or not language.uses_english_text
+        else paths.dictionary, keys,
         paths.completion_queries, language.letter_rows(), shared_session=arguments.as_bundled)
     latinime_candidates.save(outputs, paths.completion_candidates)
     print(f"cached {len(outputs):,} queries in {paths.completion_candidates}")
