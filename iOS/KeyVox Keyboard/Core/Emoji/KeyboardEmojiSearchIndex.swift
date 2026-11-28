@@ -21,6 +21,9 @@ final class KeyboardEmojiSearchIndex {
     /// Calls `completion` on the main thread once the search and the bar's emoji of `language`, a
     /// typing language's identifier, are read, at once when they already are.
     func load(language: String, _ completion: @escaping () -> Void) {
+        // Asked for at once, so the search finds nothing in the language it held while the bar's
+        // emoji of the new one are still being read.
+        self.language = language
         KeyboardEmojiPredictionsIndex.shared.load(language: language) { [self] in
             loadSearch(language: language, completion)
         }
