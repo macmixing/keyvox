@@ -174,13 +174,15 @@ extension KeyboardViewController {
         }
     }
 
-    /// Records a typed letter's touch for prediction and ends a one-letter shift. A letter picked
-    /// from a held key's popup counts as a tap at the center of the key held to pick it, so the
-    /// word's touches keep lining up with its letters.
+    /// Records the touch of a typed character that belongs inside a word (`TypingTextRules`), a
+    /// letter or an apostrophe such as the accent key types, for prediction, and ends a one-letter
+    /// shift after a letter. A letter picked from a held key's popup counts as a tap at the center
+    /// of the key held to pick it, so the word's touches keep lining up with its characters.
     func recordTypedCharacter(_ activation: KeyboardKeyActivation) {
         guard case let .character(value) = activation.kind,
               value.count == 1,
-              value.first?.isLetter == true else {
+              let character = value.first,
+              KeyboardTypingLanguage.current.textRules.isWordCharacter(character) else {
             return
         }
         if symbolPage == .letters {
@@ -189,7 +191,9 @@ extension KeyboardViewController {
                 : activation.location
             predictionCoordinator.recordTap(at: location)
         }
-        letterCaseController.consumeTypedLetter()
+        if character.isLetter {
+            letterCaseController.consumeTypedLetter()
+        }
     }
 
     func handleSuggestionSelected(_ item: SuggestionBar.Item) {
