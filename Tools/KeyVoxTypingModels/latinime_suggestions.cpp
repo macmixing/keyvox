@@ -3,9 +3,10 @@
 // predictions.
 //
 // usage: latinime_suggestions DICTIONARY_DIRECTORY [--shared-session]
-//            --row LETTERS OFFSET [--row LETTERS OFFSET]... < QUERIES
+//            --row LETTERS OFFSET [--row LETTERS OFFSET]... [--key-for LETTER KEY]... < QUERIES
 //   each --row: a letter row of the layout, top to bottom: its letters and the offset of its first
 //     letter, in key pitches (letter_layout.py)
+//   each --key-for: a letter without a key of its own and the letter key that types it
 //   each query line: typed<TAB>previous word[<TAB>older word[<TAB>oldest word]]
 //   each output line: query index, then word<TAB>score<TAB>type for each suggestion, best first
 //
@@ -13,8 +14,9 @@
 // letter spans (offset + i) * 100 to (offset + i + 1) * 100 across. The keyboard is as wide as its
 // widest letter row and a row taller than its letter rows, for the space bar, five keys wide in its
 // middle; the apostrophe key follows the second row's last letter. A letter without a key of its
-// own is tapped on its base letter's key ("é" on "e"), as a long press there types it. Typed
-// letters of MAX_WORD_LENGTH code points or more get no suggestions, as in the keyboard's engine.
+// own is tapped on the key --key-for gives it (the caller's rule, letter_keys.py), as a long press
+// there types it. Typed letters of MAX_WORD_LENGTH code points or more get no suggestions, as in
+// the keyboard's engine.
 //
 // Each query searches in a session of its own. A session continues its last search when the
 // new typed letters start with the last ones, keeping that search's previous words, so a shared
@@ -163,40 +165,25 @@ static void appendUtf8(const int codePoint, std::string *text) {
     }
 }
 
-// The letter whose key types the code point: its own key, or, for a letter without one, its base
-// letter's.
-static int physicalBaseKey(int codePoint, const std::unordered_map<int, Key> &byCode) {
-    if (codePoint >= 'A' && codePoint <= 'Z') return codePoint + ('a' - 'A');
-    if (byCode.count(codePoint)) return codePoint;
-    switch (codePoint) {
-        case 0x00E0: case 0x00E1: case 0x00E2: case 0x00E3: case 0x00E4:
-        case 0x00E5: case 0x00E6: return 'a';
-        case 0x00E7: return 'c';
-        case 0x00E8: case 0x00E9: case 0x00EA: case 0x00EB: return 'e';
-        case 0x00EC: case 0x00ED: case 0x00EE: case 0x00EF: return 'i';
-        case 0x00F0: return 'd';
-        case 0x00F1: return 'n';
-        case 0x00F2: case 0x00F3: case 0x00F4: case 0x00F5: case 0x00F6:
-        case 0x00F8: case 0x0153: return 'o';
-        case 0x00DF: return 's';
-        case 0x00F9: case 0x00FA: case 0x00FB: case 0x00FC: return 'u';
-        case 0x00FD: case 0x00FF: return 'y';
-        case 0x00FE: return 't';
-        default: return codePoint;
-    }
+// The code point whose key a typed code point is tapped on: the key --key-for gives it, or its own.
+static int tappedKey(int codePoint, const std::unordered_map<int, int> &keyFor) {
+    const auto found = keyFor.find(codePoint);
+    return found != keyFor.end() ? found->second : codePoint;
 }
 
 static std::vector<Result> suggest(Dictionary *dictionary, ProximityInfo *proximity,
         DicTraverseSession *session, JNIEnv *env, const std::unordered_map<int, Key> &byCode,
-        const std::string &input, const std::vector<std::string> &previousWords = {}) {
+        const std::unordered_map<int, int> &keyFor, const std::string &input,
+        const std::vector<std::string> &previousWords = {}) {
     std::vector<int> xs, ys, times, pointerIds, codePoints;
     const auto inputCodePoints = utf8CodePoints(input);
     // LatinIME searches typed letters shorter than MAX_WORD_LENGTH only; the keyboard's engine
     // offers no candidates for longer ones, and neither does this.
     if (inputCodePoints.size() >= MAX_WORD_LENGTH) return {};
     for (int i = 0; i < static_cast<int>(inputCodePoints.size()); ++i) {
-        // A code point no key types is tapped at the origin, as the keyboard's engine does.
-        const auto found = byCode.find(physicalBaseKey(inputCodePoints[i], byCode));
+        // A code point with no key of its own and none from --key-for is tapped at the origin, as
+        // the keyboard's engine taps a code point its keys lack when it is given no touches.
+        const auto found = byCode.find(tappedKey(inputCodePoints[i], keyFor));
         const Key key = found != byCode.end() ? found->second : Key{inputCodePoints[i], 0, 0, 0, 0};
         xs.push_back(key.x + key.w / 2); ys.push_back(key.y + key.h / 2);
         times.push_back(i * 100); pointerIds.push_back(0); codePoints.push_back(inputCodePoints[i]);
@@ -250,7 +237,8 @@ static std::vector<Result> suggest(Dictionary *dictionary, ProximityInfo *proxim
 
 static int usage() {
     std::cerr << "usage: latinime_suggestions DICTIONARY_DIRECTORY [--shared-session] "
-                 "--row LETTERS OFFSET [--row LETTERS OFFSET]... < QUERIES\n";
+                 "--row LETTERS OFFSET [--row LETTERS OFFSET]... [--key-for LETTER KEY]... "
+                 "< QUERIES\n";
     return 2;
 }
 
@@ -258,6 +246,7 @@ int main(int argc, char **argv) {
     if (argc < 2) return usage();
     bool sharesSession = false;
     std::vector<LetterRow> rows;
+    std::unordered_map<int, int> keyFor;
     for (int index = 2; index < argc; ++index) {
         if (std::strcmp(argv[index], "--shared-session") == 0) {
             sharesSession = true;
@@ -266,6 +255,12 @@ int main(int argc, char **argv) {
             const double offset = std::strtod(argv[index + 2], &end);
             if (end == argv[index + 2] || *end != '\0') return usage();
             rows.push_back({utf8CodePoints(argv[index + 1]), offset});
+            index += 2;
+        } else if (std::strcmp(argv[index], "--key-for") == 0 && index + 2 < argc) {
+            const auto letter = utf8CodePoints(argv[index + 1]);
+            const auto key = utf8CodePoints(argv[index + 2]);
+            if (letter.size() != 1 || key.size() != 1) return usage();
+            keyFor[letter[0]] = key[0];
             index += 2;
         } else {
             return usage();
@@ -300,7 +295,7 @@ int main(int argc, char **argv) {
         std::unique_ptr<DicTraverseSession> ownSession;
         if (!sharedSession) ownSession = std::make_unique<DicTraverseSession>(&env, nullptr, true);
         DicTraverseSession *session = sharedSession ? sharedSession.get() : ownSession.get();
-        const auto results = suggest(&dictionary, &proximity, session, &env, byCode,
+        const auto results = suggest(&dictionary, &proximity, session, &env, byCode, keyFor,
                 fields[0], previous);
         std::cout << index++;
         for (const auto &result : results) {

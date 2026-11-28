@@ -313,9 +313,17 @@ Copyright (c) 2025 FUTO
 - Source: <https://github.com/dsojevic/profanity-list> (revision `c27924319aa9bd6f917e3782b4f4b6604a50b652`)
 - License: MIT
 - License URL: <https://github.com/dsojevic/profanity-list/blob/c27924319aa9bd6f917e3782b4f4b6604a50b652/LICENSE>
-- Note: The predictive keyboard's English dictionary and swipe vocabulary leave out the words that the list's English terms tagged racial or anti-LGBTQ, or religious at strong severity or above, match (`Tools/KeyVoxTypingModels/offensive_words.py`); none of its files are copied into them. The list has no German, Spanish, or French terms, and is not used for those languages.
+- Note: The predictive keyboard's English dictionary and swipe vocabulary leave out the words that the list's English terms tagged racial or anti-LGBTQ, or religious at strong severity or above, match (`Tools/KeyVoxTypingModels/offensive_words.py`); none of its files are copied into them. The list has no German, Spanish, or French terms, and is not used for those languages (German and French use Multilingual HateCheck, below).
 
 Copyright (c) 2021 David Sojevic
+
+### Multilingual HateCheck (build-time word filter)
+- Source: <https://huggingface.co/datasets/Paul/hatecheck-german> (revision `5229a5cc475f36c08d03ca52f0ccb005705e60d2`) and <https://huggingface.co/datasets/Paul/hatecheck-french> (revision `5d3085f2129139abc10d2b58becd4d4f2978e5d5`)
+- License: CC BY 4.0
+- License URL: <https://creativecommons.org/licenses/by/4.0/>
+- Note: The German and French typing dictionaries `Tools/KeyVoxTypingModels` builds leave out the slurs of the datasets' slur test cases that target Black, immigrant, Indigenous, gay, trans, Jewish, or Muslim people, in the forms the test cases write them (`Tools/KeyVoxTypingModels/hatecheck_slurs.py`, `offensive_words.py`); none of its files are copied into them, and none of these dictionaries are bundled yet.
+
+Attribution: Based on Multilingual HateCheck by Röttger, Seelawi, Nozza, Talat, and Vidgen, *Multilingual HateCheck: Functional Tests for Multilingual Hate Speech Detection Models* (2022).
 
 ### MIT License (applies to `whisper.cpp`, OpenAI Whisper, `llama.cpp`, Hex, swipe.futo.org, and the Profanity List above)
 

@@ -2,5 +2,6 @@
 enum SettingsDestination: Hashable {
     case dictation
     case keyboard
+    case keyboardLanguages
     case keyVoxSpeak
 }

@@ -10,10 +10,11 @@ the records the rankers and the action model train on, in `<data_dir>/work/simul
   completions are kept (`ite_records.completes`). A length fewer than `FEWEST_COMPLETIONS` ITE
   completions had takes the counts of the longest length below it that had that many.
 
-Each sentence is typed by `TYPISTS` simulated typists. A line is the sentence's section, the
-typed letters, the intended word, then up to three previous words of the sentence, newest first,
-as `split_ite_events.py` writes ITE's; every typist's records of a sentence share its section, so
-the rankers' split by sentence keeps them together. `typed_words.json` counts, by bucket
+Each sentence is typed by `TYPISTS` simulated typists, each word drawn by the simulator from the
+stream of the sentence, the typist, and the word's place in the sentence. A line is the sentence's
+section, the typed letters, the intended word, then up to three previous words of the sentence,
+newest first, as `split_ite_events.py` writes ITE's; every typist's records of a sentence share its
+section, so the rankers' split by sentence keeps them together. `typed_words.json` counts, by bucket
 (`training_sets.py`), the words typed, how many were mistyped, and how many of those were typed
 as another word the action model never replaces.
 
@@ -126,10 +127,11 @@ def main():
     for index, sentence in enumerate(sentences):
         section = sentence_section(index)
         counted = typed_words[stable_bucket(section)]
-        for _ in range(TYPISTS):
+        joined = " ".join(sentence)
+        for typist in range(TYPISTS):
             for position, word in enumerate(sentence):
                 previous = sentence[max(0, position - 3):position][::-1]
-                typed = simulator.type_word(word)
+                typed = simulator.type_word(word, f"{joined}\t{typist}\t{position}")
                 counted["words"] += 1
                 if typed != word:
                     counted["mistyped"] += 1
