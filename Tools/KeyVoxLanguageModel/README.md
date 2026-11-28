@@ -690,24 +690,26 @@ them to the dictionary's words.
 
 ### German, French, and Spanish
 
-Their swipe vocabularies are built by the same rules from their own language builds
-(`language-builds/de-2026-11-27`, `fr-rebuild`, and `es-weighted-2026-11-27` in KeyVox's language
-data, the builds their bundled files come from), their dictionaries' words
-(`Tools/KeyVoxTypingModels`' `work/dictionary_unigrams.tsv`), and their left-out words, none, as
-the pinned profanity list has English terms alone. Their forms keep German "ä", "ö", and "ü" and
-Spanish "ñ", which have keys of their own, and write French "œ" as "oe". Their spelling lists, the
+Their swipe vocabularies are built by the same rules from their own language builds, the builds
+their bundled files come from, their dictionaries' words (`Tools/KeyVoxTypingModels`'
+`work/dictionary_unigrams.tsv`), and the words their dictionaries leave out
+(`work/offensive_words.txt` there: German's and French's Multilingual HateCheck slurs, Spanish
+none; `Tools/KeyVoxTypingModels/README.md`, "Words left out"). Their forms keep German "ä", "ö",
+and "ü" and Spanish "ñ", which have keys of their own, and write French "œ" as "oe". Their spelling lists, the
 forms the misspelling rule never leaves out, are their keyboard word lists' words with every form
 of their lexicons (`write_spelling_list.py`: German 887,784, French 581,344, Spanish 658,738). They have no swipe
 dataset's words: swipe.futo.org's German, French, and Spanish swipes measure their swipe models
-and are never read here. The counts, from the builds of November 27, 2026:
+and are never read here. The counts, from the builds of November 27, 2026, with the left-out
+words of November 28:
 
 | Rule | German | French | Spanish |
 | --- | --- | --- | --- |
+| Offensive | 2 | 6 | 0 |
 | Letters | 11,756 | 26,648 | 9,759 |
-| One source | 743,884 | 941,006 | 479,903 |
+| One source | 743,883 | 941,004 | 479,903 |
 | Joined | 223 | 350 | 188 |
 | Misspelling | 11,817 | 25,160 | 22,811 |
-| Kept | 102,127 of 869,807 | 59,966 of 1,053,130 | 74,670 of 587,331 |
+| Kept | 102,126 of 869,807 | 59,962 of 1,053,130 | 74,670 of 587,331 |
 
 The written sources of all three hold English, so English words that the language's word list
 lacks are kept by the same rules, the commonest being "the", "of", and "to" in German. With the
