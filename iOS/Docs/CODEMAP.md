@@ -1,5 +1,5 @@
 # KeyVox iOS Code Map
-**Last Updated: 2026-11-20**
+**Last Updated: 2026-11-28**
 
 ## Project Overview
 
@@ -115,6 +115,7 @@ iOS/
 │   │   │   ├── KeyboardTypingMemoryResetScope.swift
 │   │   │   └── KeyboardWarmStartPolicy.swift
 │   │   ├── KeyboardLanguages/
+│   │   │   ├── AppSettingsStore+KeyboardTypingLanguages.swift
 │   │   │   ├── KeyboardBundledTypingLanguages.swift
 │   │   │   ├── KeyboardLetterLayoutName.swift
 │   │   │   ├── KeyboardTypingLanguageName.swift
@@ -318,6 +319,11 @@ iOS/
 │   │   │   ├── DictationSettingsView+General.swift
 │   │   │   ├── DictationSettingsView+Model.swift
 │   │   │   ├── DictationSettingsView.swift
+│   │   │   ├── KeyboardLanguagesCard.swift
+│   │   │   ├── KeyboardLanguagesScreen.swift
+│   │   │   ├── KeyboardLanguagesSettingsCopy.swift
+│   │   │   ├── KeyboardLanguagesSettingsView.swift
+│   │   │   ├── KeyboardLayoutsCard.swift
 │   │   │   ├── KeyboardSettingsCopy.swift
 │   │   │   ├── KeyboardSettingsView.swift
 │   │   │   ├── KeyVoxSpeakSettingsCopy.swift
@@ -329,7 +335,8 @@ iOS/
 │   │   │   ├── SettingsTabView+About.swift
 │   │   │   ├── SettingsTabView+General.swift
 │   │   │   ├── SettingsTabView+VibesAI.swift
-│   │   │   └── SettingsTabView.swift
+│   │   │   ├── SettingsTabView.swift
+│   │   │   └── SettingsValueRow.swift
 │   │   ├── StyleTabView+KeyVoxVibes.swift
 │   │   ├── StyleTabView.swift
 │   │   ├── ThirdPartyNoticesView.swift
@@ -1281,6 +1288,8 @@ Packages/
   - Single source of truth for where each typing language's memory lives in the App Group: English, the language the keyboard typed in before it had languages, keeps the original `Keyboard/typing-memory.json`, and every other language has `Keyboard/typing-memory-<language>.json` beside it. Compiled into the containing app, keyboard extension, and tests.
 - `KeyVox iOS/App/KeyboardLanguages/KeyboardTypingLanguageSelection.swift`
   - Resolves the keyboard's typing languages from the saved languages and layouts and the bundled catalog: saved order kept, languages the keyboard does not bundle dropped, a saved layout used only when the language offers it, and, when nothing saved is bundled, the bundled language the app was written in (its development localization), else the first bundled language; the keyboard types in the last language it used while that one is still selected, else the first (`activeLanguage(lastUsed:)`). Compiled into the containing app, the keyboard extension, and tests.
+- `KeyVox iOS/App/KeyboardLanguages/AppSettingsStore+KeyboardTypingLanguages.swift`
+  - The containing app's resolved typing languages and layouts (`keyboardTypingLanguageSelection`): the saved languages and layouts resolved against the bundled catalog, for every settings view that shows them.
 - `KeyVox iOS/App/KeyboardLanguages/KeyboardBundledTypingLanguages.swift`
   - The containing app's copy of the keyboard's typing-language catalog, read from the typing package's resource bundle inside the keyboard extension, since the app does not bundle the typing data.
 - `KeyVox iOS/App/KeyboardLanguages/KeyboardTypingLanguageName.swift`
@@ -1664,9 +1673,9 @@ Packages/
   - Keeps selected Vibe displayed as `None` until both Vibes access and local Vibes AI readiness are active, and exposes an install entry point when the model is missing.
 - `KeyVox iOS/Views/SettingsTabView/SettingsTabView.swift`
   - Top-level settings composition: the Dictation, Keyboard, and KeyVox Speak rows, the KeyVox Vibes AI card, then the About sections.
-  - Owns the deletion- and download-confirmation request bindings, third-party notices sheet presentation, and the single navigation destination for the Dictation, Keyboard, and KeyVox Speak screens, which hides the tab bar on each; an `AppTabRouter` model-section request opens the Dictation screen with its dictation model card expanded.
+  - Owns the deletion- and download-confirmation request bindings, third-party notices sheet presentation, and the single navigation destination for the Dictation, Keyboard, keyboard Languages, and KeyVox Speak screens, which hides the tab bar on each; an `AppTabRouter` model-section request opens the Dictation screen with its dictation model card expanded.
 - `KeyVox iOS/Views/SettingsTabView/SettingsDestination.swift`
-  - The Dictation, Keyboard, and KeyVox Speak screens the Settings tab pushes onto its navigation stack.
+  - The Dictation, Keyboard, keyboard Languages, and KeyVox Speak screens the Settings tab pushes onto its navigation stack.
 - `KeyVox Keyboard/Core/KeyboardToolbarMode.swift`
   - Central warning-priority resolver for the keyboard toolbar: dictation model missing, dictation model action required, Full Access missing, microphone permission missing, then branded.
   - Required app updates are not a keyboard toolbar mode, so dictation stays available from the keyboard while the containing app shows its forced-update prompt.
@@ -1680,14 +1689,22 @@ Packages/
 - `KeyVox iOS/Views/SettingsTabView/DictationSettingsCopy.swift`
   - Copy owner for the Dictation settings screen and the Settings row that opens it.
 - `KeyVox iOS/Views/SettingsTabView/KeyboardSettingsView.swift`
-  - Keyboard settings screen: single-line typing toggles for keyboard haptics (hidden on iPad), auto-capitalization, auto-correction, caps lock, predictive text, swipe typing, the emoji keyboard, and the period shortcut, then the Languages card, then Classic Theme, Compact Keys, Open on 123, and Left-Handed Layout with descriptions, then Reset Learned Words through the shared deletion confirmation.
+  - Keyboard settings screen: single-line typing toggles for keyboard haptics (hidden on iPad), auto-capitalization, auto-correction, caps lock, predictive text, swipe typing, the emoji keyboard, and the period shortcut, then the Languages row that opens `KeyboardLanguagesSettingsView`, then Classic Theme, Compact Keys, Open on 123, and Left-Handed Layout with descriptions, then Reset Learned Words through the shared deletion confirmation.
   - The Classic Theme toggle switches the saved keyboard theme between Classic and KeyVox.
 - `KeyVox iOS/Views/SettingsTabView/KeyboardLanguagesCard.swift`
-  - The Languages card between the typing toggles and Classic Theme: the typing languages with a Change button that opens `KeyboardLanguagesScreen` full screen, then one Layout row per language with a Change menu of the layouts it offers in Apple's order, default first, each by the name the system's settings show for it (`KeyboardLetterLayoutName`); a language with one layout shows it without the menu.
+  - The Languages card of the keyboard's Languages settings: the typing language by name when there is one, or how many there are, with a Change button that opens `KeyboardLanguagesScreen` full screen.
+- `KeyVox iOS/Views/SettingsTabView/KeyboardLayoutsCard.swift`
+  - The Layout card of the keyboard's Languages settings, with one Change menu: one language shows its layout and the menu lists the layouts it offers in Apple's order, default first, with no menu when it offers one layout; several languages show a description in place of the layouts, and the menu lists every language in space-bar order with its layout under its name, each opening its layouts unless it offers only one. Layouts show by the name the system's settings show for them (`KeyboardLetterLayoutName`).
+- `KeyVox iOS/Views/SettingsTabView/KeyboardLanguagesSettingsView.swift`
+  - The keyboard's Languages settings screen, opened from the Languages row of Keyboard settings: the Languages card, then the Layout card. Owns the full-screen keyboard language list presentation.
+- `KeyVox iOS/Views/SettingsTabView/KeyboardLanguagesSettingsCopy.swift`
+  - Copy owner for the keyboard's Languages settings screen and the Keyboard settings row that opens it.
 - `KeyVox iOS/Views/SettingsTabView/KeyboardLanguagesScreen.swift`
   - The shared language list with multiple selection over the bundled typing languages, alphabetical by name; Done saves the checked languages in their order.
 - `KeyVox iOS/Views/SettingsTabView/KeyboardSettingsCopy.swift`
   - Copy owner for the Keyboard settings screen and the Settings row that opens it.
+- `KeyVox iOS/Views/SettingsTabView/SettingsValueRow.swift`
+  - Shared settings-row layout for a setting's current value: an icon, a title, the value under it, and trailing content such as a Change button.
 - `KeyVox iOS/Views/SettingsTabView/SettingsRow.swift`
   - Shared settings-row layout with mutually exclusive SF Symbol and template-rendered asset icon support and an optional description for single-line rows.
 - `KeyVox iOS/Views/SettingsTabView/DictationSettingsView+Model.swift`
