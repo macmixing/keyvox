@@ -14,7 +14,7 @@ The words spelled only with capitals are bundled per language, so the keyboard r
 
 - Added `CapitalizedSpellings(languageCode:)`, which loads the bundled `capitalized_spellings_<language>.txt`.
 - The English list is now `capitalized_spellings_en.txt`; `CapitalizedSpellings()` still loads it, for dictation's continuation casing.
-- Bundled German's list, `capitalized_spellings_de.txt` (152,972 words), built by `Tools/KeyVoxLanguageModel` from AOSP LatinIME's German word list and Wikidata Lexemes: German nouns and names, which the keyboard writes with their capitals ("haus" gives "Haus", as Apple's German keyboard corrects it at space); words also written in lowercase, such as "leben", are left out.
+- Bundled German's list, `capitalized_spellings_de.txt`, built by `Tools/KeyVoxLanguageModel` from AOSP LatinIME's German word list and Wikidata Lexemes: German nouns and names, which the keyboard writes with their capitals ("haus" gives "Haus", as Apple's German keyboard corrects it at space); words also written in lowercase, such as "leben", are left out, and so are the 4 words Multilingual HateCheck's German slurs match, as German's dictionary leaves them out (152,968 words).
 
 ### Notes
 
