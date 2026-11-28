@@ -78,4 +78,10 @@ public struct SwipeModelSettings: Decodable, Sendable, Equatable {
     var keyIndex: [Unicode.Scalar: Int] {
         Dictionary(uniqueKeysWithValues: letters.unicodeScalars.enumerated().map { ($1, $0) })
     }
+
+    /// The letters the model has keys of their own for, which keep their accents in swipe forms
+    /// (`SwipeLetterForm.form(of:keeping:)`).
+    public var keyLetters: Set<Unicode.Scalar> {
+        Set(letters.unicodeScalars)
+    }
 }

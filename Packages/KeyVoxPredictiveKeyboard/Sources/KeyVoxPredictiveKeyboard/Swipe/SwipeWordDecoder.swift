@@ -11,10 +11,14 @@ import CoreGraphics
 /// The files are the language's own (`PredictiveData/<language>/`): `swipe.json`, the encoder,
 /// the swipe lexicon built for that model, and the decoder when the model has one. The decoder
 /// reads one fixed key layout, so a model with one is bundled per language; the encoder alone
-/// reads any layout from its key centers.
+/// reads any layout from its key centers. On a layout without a key of its own for one of the
+/// model's letters, that letter is swiped on its base letter's key (`SwipeKeys`).
 final class SwipeWordDecoder: @unchecked Sendable {
     let settings: SwipeModelSettings
     private let layout: LetterKeyLayout
+    /// Where the model's letters lie on `layout`; nil when one has no key there.
+    private let keys: SwipeKeys?
+    private let keyLetters: Set<Unicode.Scalar>
     private let encoder: SwipeEncoderNetwork
     private let decoder: SwipeDecoderNetwork?
     private let lexicon: SwipeLexicon
@@ -23,6 +27,8 @@ final class SwipeWordDecoder: @unchecked Sendable {
         let resources = language.resources
         settings = try SwipeModelSettings(contentsOf: resources.url(SwipeModelSettings.fileName))
         layout = language.letterLayout
+        keys = SwipeKeys(modelLetters: settings.letters, layout: layout)
+        keyLetters = settings.keyLetters
         encoder = try SwipeEncoderNetwork(contentsOf: resources.url(SwipeEncoderNetwork.fileName))
         decoder = try resources.optionalURL(SwipeDecoderNetwork.fileName).map(SwipeDecoderNetwork.init(contentsOf:))
         lexicon = try SwipeLexicon(contentsOf: resources.url(SwipeLexiconFormat.fileName))
@@ -47,7 +53,9 @@ final class SwipeWordDecoder: @unchecked Sendable {
     /// first, or nil when those keys lack one of the model's letters.
     func emissions(for path: [SwipeTouchSample], keys: KeyCenterMap) -> [Float]? {
         guard path.isEmpty == false,
-              let frame = SwipeKeyboardFrame(keys: keys, layout: layout, letters: settings.letters) else {
+              let swipeKeys = self.keys,
+              decoder == nil || swipeKeys.isOneKeyPerLetter,
+              let frame = SwipeKeyboardFrame(keys: keys, layout: layout, letters: String(swipeKeys.letters)) else {
             return nil
         }
         let points = SwipePathResampler.resample(
@@ -57,7 +65,13 @@ final class SwipeWordDecoder: @unchecked Sendable {
             },
             points: encoder.points
         )
-        return emissions(forResampled: points, keyCenters: frame.keyCenters)
+        let emissions = emissions(forResampled: points, keyCenters: frame.keyCenters)
+        guard swipeKeys.isOneKeyPerLetter == false else { return emissions }
+        // Each model letter takes the score of the key it lies on.
+        let keyCount = swipeKeys.letters.count + 1
+        return (0..<emissions.count / keyCount).flatMap { frame in
+            [emissions[frame * keyCount]] + swipeKeys.keyOfLetter.map { emissions[frame * keyCount + $0 + 1] }
+        }
     }
 
     /// The per-frame log-probabilities for a path already resampled into the model's frame.
@@ -107,7 +121,11 @@ final class SwipeWordDecoder: @unchecked Sendable {
         for (source, isPersonal) in [(lexicon, false)] + (personal.map { [($0, true)] } ?? []) {
             source.withTables { tables in
                 for ending in SwipeBeamSearch.endings(
-                    emissions: emissions, symbols: symbols, lexicon: tables, pruning: settings.pruning
+                    emissions: emissions,
+                    symbols: symbols,
+                    lexicon: tables,
+                    keyOfLetter: keys?.keyOfLetter ?? Array(0..<symbols - 1),
+                    pruning: settings.pruning
                 ) {
                     for form in Int(tables.formStart[ending.node])..<Int(tables.formStart[ending.node + 1]) {
                         let frequency = isPersonal
@@ -179,11 +197,10 @@ final class SwipeWordDecoder: @unchecked Sendable {
     /// when the model has squiggle settings, squiggles over it, either of which asks for the key's
     /// letter doubled; nil when the model has no loop settings or the keys lack one of its letters.
     func doublingKeys(path: [SwipeTouchSample], keyPath: [Int], keys: KeyCenterMap) -> [Bool]? {
-        guard let loops = settings.loops, settings.keepsDoubleLetters == false else { return nil }
-        let letters = Array(settings.letters.unicodeScalars)
+        guard let loops = settings.loops, settings.keepsDoubleLetters == false, let letters = self.keys?.letters else { return nil }
         var centers: [CGPoint] = []
         for key in keyPath {
-            guard let center = keys.center(of: Character(letters[key])) else { return nil }
+            guard let center = keys.center(of: letters[key]) else { return nil }
             centers.append(center)
         }
         let pitch = Double(keys.pitch.width)
@@ -199,16 +216,24 @@ final class SwipeWordDecoder: @unchecked Sendable {
     /// the keys `keys` lays out (`SwipeLandingKey`); nil when the model has no landing settings or
     /// the keys lack one of its letters.
     func landingLosses(path: [SwipeTouchSample], keys: KeyCenterMap) -> [Double]? {
-        settings.landing.flatMap {
-            SwipeLandingKey.losses(path: path, keys: keys, letters: settings.letters, settings: $0)
+        guard let letters = self.keys?.letters else { return nil }
+        return settings.landing.flatMap {
+            SwipeLandingKey.losses(path: path, keys: keys, letters: String(letters), settings: $0)
         }
     }
 
+    /// `spelling`'s swipe form for this model (`SwipeModelSettings.keyLetters`).
+    func form(of spelling: String) -> String {
+        SwipeLetterForm.form(of: spelling, keeping: keyLetters)
+    }
+
+    /// The keys on screen a swipe of `spelling` passes (`SwipeKeys`).
     private func keyPath(of spelling: String?) -> [Int]? {
-        spelling.flatMap {
+        guard let keyIndex = keys?.keyIndex else { return nil }
+        return spelling.flatMap {
             SwipeLetterForm.keyPath(
-                of: SwipeLetterForm.form(of: $0),
-                keyIndex: settings.keyIndex,
+                of: form(of: $0),
+                keyIndex: keyIndex,
                 keepsDoubleLetters: settings.keepsDoubleLetters
             )
         }
@@ -226,7 +251,7 @@ final class SwipeWordDecoder: @unchecked Sendable {
     /// `rankingSamePaths` gave them.
     private func rankingFirstKeys(_ candidates: inout [SwipeCandidate], landingLosses: [Double], usesContext: Bool) {
         let extraWeight = usesContext ? settings.scoring.firstKeyContextWeight - settings.scoring.contextWeight : 0
-        let words = Dictionary(grouping: candidates.indices) { SwipeLetterForm.form(of: candidates[$0].spelling) }
+        let words = Dictionary(grouping: candidates.indices) { form(of: candidates[$0].spelling) }
         var sets: [ArraySlice<Int>: [(word: String, firstKey: Int)]] = [:]
         for word in words.keys {
             guard let path = keyPath(of: word), path.isEmpty == false else { continue }
@@ -317,8 +342,8 @@ final class SwipeWordDecoder: @unchecked Sendable {
             return found
         }
         let extraWeight = usesContext ? settings.scoring.samePathContextWeight - settings.scoring.contextWeight : 0
-        let keyIndex = settings.keyIndex
-        let words = Dictionary(grouping: candidates.indices) { SwipeLetterForm.form(of: candidates[$0].spelling) }
+        guard let keyIndex = keys?.keyIndex else { return }
+        let words = Dictionary(grouping: candidates.indices) { form(of: candidates[$0].spelling) }
         let sets = Dictionary(grouping: words.keys) { word in
             SwipeLetterForm.keyPath(of: word, keyIndex: keyIndex, keepsDoubleLetters: settings.keepsDoubleLetters) ?? []
         }
