@@ -136,13 +136,13 @@ bundled one before replacing it.
 The builds of November 24, 2026, and German's of November 27, rebuilt with its `language.json`,
 whose apostrophe and ordinal periods (see "Text in each language") leave 65,402 fewer sentences
 than November 24's and 198 fewer words, and with the written lexicon words its vocabulary adds (see
-"Vocabulary"); German's bundled files are this build's. Every context model fills the default limits (107,000 words,
+"Vocabulary") and contractions; German's bundled files are this build's. Every context model fills the default limits (107,000 words,
 800,000 pairs, 600,000 sequences), so each is 14,963,028 bytes, as English's is.
 
 | Build | Words of text | Vocabulary | Capitalized spellings | Grammar words |
 | --- | --- | --- | --- | --- |
 | en | 528,779,799 | 109,172 (SCOWL size 60) | 18,144 | 152 |
-| de | 118,350,503 | 222,148 | 152,972 | 220 |
+| de | 118,350,503 | 222,263 | 152,972 | 220 |
 | de-bundestag | 138,467,367 | 209,470 | 146,689 | 222 |
 | es | 281,865,056 | 236,307 | 2,955 | 156 |
 | fr | 393,698,831 | 165,093 | 19,021 | 195 |
@@ -265,9 +265,20 @@ write less often, such as a rare inflection, stays out. They are 1,437 of the vo
 beginning with an umlaut, and add 6,283 nouns to the capitalized spellings; no capitalized spelling
 is lost. `python -m unittest test_written_lexicon_words` checks the rule.
 
+The list holds no contraction either, such as "geht's" or "gibt's", which German writes thousands of
+times and Apple's German keyboard restores when the apostrophe is left out ("gehts" gives "geht’s",
+measured on the iOS 27.2 simulator in `apple-languages/runs/sim-contractions-de_DE` of KeyVox's
+language data). So German's vocabulary also adds the contractions its carefully written sources,
+Tatoeba and OASST2 (`WRITTEN_SOURCES`), write at least as often as the median word-list word they
+write, 3 times, whose part before the apostrophe is a word of the list
+(`adds_written_contractions`, `vocabulary/written_contractions.py`): 115, from "geht's" (233 times)
+and "gibt's" (171) to "stimmt's" and "du's". The speech transcripts are left out, as they write
+other languages' contractions ("don't", "c'est") almost as often; the written sources still bring
+a few ("don't", 15 times). `python -m unittest test_written_contractions` checks the rule.
+
 | Language | Word list | Vocabulary | Written in lowercase by the spelling check |
 | --- | --- | --- | --- |
-| de | 205,887 words, and 12,352 written lexicon words | 222,148 spellings | (no check) |
+| de | 205,887 words, 12,352 written lexicon words, and 115 written contractions | 222,263 spellings | (no check) |
 | es | 236,193 words | 236,307 spellings | 2,146 words |
 | fr | 163,631 single words | 165,093 spellings | 812 words |
 

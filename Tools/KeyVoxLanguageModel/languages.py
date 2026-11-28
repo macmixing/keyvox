@@ -65,6 +65,10 @@ class LexiconVocabulary:
     # counted them, write them at least as often as the median word-list word they write
     # (vocabulary/written_lexicon_words.py), for a word list that leaves out common words.
     adds_written_lexicon_words: bool = False
+    # Contractions of a word-list word the written sources write at least as often as the median
+    # word-list word they write join it (vocabulary/written_contractions.py), for a word list that
+    # holds none.
+    adds_written_contractions: bool = False
 
 
 @dataclass(frozen=True)
@@ -177,6 +181,8 @@ _GERMAN = dict(
         # AOSP's German list lacks almost every lowercase word beginning with an umlaut, and common
         # verb forms (README, "Vocabulary").
         adds_written_lexicon_words=True,
+        # It holds no contraction either.
+        adds_written_contractions=True,
     ),
     # CLDR's German quotation marks.
     text_rules=_text_rules("„“‚‘"),

@@ -4,13 +4,15 @@ Writes two lists, the vocabulary and its common part, as SCOWL's sizes 60 and 50
 
 English's vocabulary is SCOWL (scowl_words.sh). Another language's is its AOSP LatinIME word
 list, each word's capitals settled by its lexicons and, where the language has one, a spelling
-check, which never leaves a word out (vocabulary/spellings.py). Where the language says so
-(`adds_written_lexicon_words`), the word list first gains the lexicon words it lacks that the
-language's sentences write as often as its own words (vocabulary/written_lexicon_words.py), which
-reads `count_ngrams.py`'s counts in the data directory. Its common part is the spellings the word
-list itself writes, those words included: a spelling only the lexicons add is a rare sense, such as
-a rare verb form spelled like a common noun in lowercase. Only single words as the keyboard reads
-them are kept: letters with inner apostrophes, composed with their accents.
+check, which never leaves a word out (vocabulary/spellings.py). Where the language says so, the
+word list first gains the lexicon words it lacks that the language's sentences write as often as
+its own words (`adds_written_lexicon_words`, vocabulary/written_lexicon_words.py, reading
+`count_ngrams.py`'s counts), and the contractions of its words that its carefully written sources
+write as often (`adds_written_contractions`, vocabulary/written_contractions.py, reading
+`extract_sentences.py`'s sentences). Its common part is the spellings the word list itself writes,
+those words included: a spelling only the lexicons add is a rare sense, such as a rare verb form
+spelled like a common noun in lowercase. Only single words as the keyboard reads them are kept:
+letters with inner apostrophes, composed with their accents.
 """
 
 import argparse
@@ -27,7 +29,9 @@ from vocabulary.latinime_words import latinime_words
 from vocabulary.lexicon_check import lexicon_accepted
 from vocabulary.lexicon_forms import lexicon_forms
 from vocabulary.spellings import settled_spellings
+from vocabulary.written_contractions import written_contractions
 from vocabulary.written_lexicon_words import written_lexicon_words
+from write_capitalized_spellings import WRITTEN_SOURCES
 
 SCOWL_SIZE = "60"
 SCOWL_COMMON_SIZE = "50"
@@ -65,6 +69,10 @@ def main() -> None:
     if vocabulary.adds_written_lexicon_words:
         added = written_lexicon_words(arguments.data_dir, {word.lower() for word in word_list}, lexicon)
         word_list += sorted(added)
+    contractions = set()
+    if vocabulary.adds_written_contractions:
+        contractions = written_contractions(arguments.data_dir, WRITTEN_SOURCES, {word.lower() for word in word_list})
+        word_list += sorted(contractions)
     if vocabulary.spelling_check == "hunspell":
         extension = source_paths(arguments.data_dir, vocabulary.spelling_dictionary)[0]
         snapshot = (arguments.data_dir / "sources" / "spelling-snapshots"
@@ -92,7 +100,8 @@ def main() -> None:
     arguments.common_output.write_text("".join(spelling + "\n" for spelling in common), encoding="utf-8")
     words = {spelling.lower() for spelling in spellings}
     print(f"{arguments.output}: {len(spellings)} spellings of {len(words)} words, {len(common)} common, "
-          f"from {len(listed)} word-list spellings ({len(added)} written lexicon words added) "
+          f"from {len(listed)} word-list spellings ({len(added)} written lexicon words and "
+          f"{len(contractions)} written contractions added) "
           f"and {len(lexicon)} lexicon forms")
 
 
