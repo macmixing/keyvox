@@ -126,7 +126,7 @@ final class KeyboardKeyView: UIView {
         borderRenderer.strokeColor = effectiveBorderColor.cgColor
         titleLabels.forEach { $0.textColor = colors.foreground }
         subtitleLabel.textColor = colors.foreground
-        languageCodeLabel?.textColor = colors.foreground
+        languageCodeLabel?.setColor(colors.foreground)
         imageView.tintColor = colors.foreground
 
         let shadow = state == .pressed ? KeyboardStyle.pressedKeyShadow : KeyboardStyle.keyShadow
@@ -245,21 +245,24 @@ final class KeyboardKeyView: UIView {
         })
     }
 
-    /// Shows the short code of the language the space bar switched to at the key's bottom right,
-    /// fading out, read as the language's full name.
-    func showLanguageCode(_ code: String, name: String) {
+    /// Shows the short code of the language the keyboard types in at the key's bottom right, or
+    /// nothing when `code` is nil; VoiceOver, which reads the key as one item, reads the language's
+    /// full name as the key's value while the code shows.
+    func showLanguageCode(_ code: String?, name: String?) {
+        accessibilityValue = code == nil ? nil : name
+        guard code != nil || languageCodeLabel != nil else { return }
         let label = languageCodeLabel ?? makeLanguageCodeLabel()
-        label.show(code: code, name: name)
+        label.show(code: code)
     }
 
     private func makeLanguageCodeLabel() -> KeyboardLanguageCodeLabel {
         let label = KeyboardLanguageCodeLabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.textColor = titleLabels[0].textColor
+        label.setColor(titleLabels[0].textColor ?? KeyboardStyle.keyLabelColor)
         addSubview(label)
         NSLayoutConstraint.activate([
-            label.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -KeyboardStyle.languageCodeInset),
-            label.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -KeyboardStyle.languageCodeInset),
+            label.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -KeyboardStyle.languageCodeTrailingInset),
+            label.lastBaselineAnchor.constraint(equalTo: bottomAnchor, constant: -KeyboardStyle.languageCodeBaselineInset),
         ])
         languageCodeLabel = label
         return label
