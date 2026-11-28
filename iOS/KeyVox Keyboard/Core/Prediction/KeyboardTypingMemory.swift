@@ -7,13 +7,26 @@ import KeyVoxPredictiveKeyboard
 /// main thread. When the KeyVox app resets what the keyboard learned, in every language or in this
 /// one, the memory starts over the next time the keyboard is shown. Use from the main thread.
 final class KeyboardTypingMemory {
-    /// The memory of the language the keyboard types in, loaded again when the language changes.
+    /// The memory of the language the keyboard types in, loaded again when the language changes
+    /// unless its save is still to be made.
     static var current: KeyboardTypingMemory {
-        let language = KeyboardTypingLanguage.current.identifier
+        current(language: KeyboardTypingLanguage.current.identifier)
+    }
+
+    /// The memory of `language` as the current one. A memory let go while its save is still to be
+    /// made or written is taken back rather than loaded again from its file, which doesn't hold that
+    /// change yet.
+    static func current(
+        language: String,
+        load: (String) -> KeyboardTypingMemory = { KeyboardTypingMemory(language: $0) }
+    ) -> KeyboardTypingMemory {
         if let loaded = loadedCurrent, loaded.language == language {
             return loaded
         }
-        let memory = KeyboardTypingMemory(language: language)
+        if let released = loadedCurrent, released.isSaving {
+            awaitingSave[released.language] = released
+        }
+        let memory = awaitingSave.removeValue(forKey: language) ?? load(language)
         memory.onLearnedVocabularyChange = { onCurrentLearnedVocabularyChange?() }
         loadedCurrent = memory
         return memory
@@ -23,6 +36,9 @@ final class KeyboardTypingMemory {
     static var onCurrentLearnedVocabularyChange: (() -> Void)?
 
     private static var loadedCurrent: KeyboardTypingMemory?
+    /// Memories let go while a save of theirs is still to be made or written, by language, until it
+    /// is written.
+    private static var awaitingSave: [String: KeyboardTypingMemory] = [:]
 
     /// The typing language whose memory this is.
     let language: String
@@ -37,6 +53,12 @@ final class KeyboardTypingMemory {
     private let saveQueue = DispatchQueue(label: "org.keyvox.keyboard.typing-memory", qos: .utility)
     private var resetGeneration: ResetGeneration
     private var isSaveScheduled = false
+    private var writesInFlight = 0
+
+    /// Whether a change is still to be saved: its save is waiting to be made, or being written.
+    private var isSaving: Bool {
+        isSaveScheduled || writesInFlight > 0
+    }
 
     /// The resets a memory was loaded under: of every language, and of its own language.
     private struct ResetGeneration: Equatable {
@@ -95,13 +117,33 @@ final class KeyboardTypingMemory {
         DispatchQueue.main.asyncAfter(deadline: .now() + Self.saveDelay) { [self] in
             isSaveScheduled = false
             // A memory loaded before a reset is never saved over the reset.
-            guard let file, currentResetGeneration() == resetGeneration else { return }
+            guard let file, currentResetGeneration() == resetGeneration else {
+                stopAwaitingSaveIfSaved()
+                return
+            }
             let saved = memory.saved
             let generation = resetGeneration
+            writesInFlight += 1
             saveQueue.async { [self] in
-                guard currentResetGeneration() == generation else { return }
-                try? file.save(saved, resetGeneration: generation.allLanguages)
+                if currentResetGeneration() == generation {
+                    try? file.save(saved, resetGeneration: generation.allLanguages)
+                    // The KeyVox app counts a reset before removing the file, so a reset made while
+                    // this was written is seen here and what was written is removed too.
+                    if currentResetGeneration() != generation {
+                        try? FileManager.default.removeItem(at: file.url)
+                    }
+                }
+                DispatchQueue.main.async { [self] in
+                    writesInFlight -= 1
+                    stopAwaitingSaveIfSaved()
+                }
             }
         }
+    }
+
+    /// Lets go of this memory, once it is let go as the current one and nothing is left to save.
+    private func stopAwaitingSaveIfSaved() {
+        guard isSaving == false, Self.awaitingSave[language] === self else { return }
+        Self.awaitingSave[language] = nil
     }
 }

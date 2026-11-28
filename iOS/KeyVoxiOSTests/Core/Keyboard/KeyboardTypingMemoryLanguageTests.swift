@@ -18,7 +18,8 @@ struct KeyboardTypingMemoryLanguageTests {
         let (folder, original) = try makeFolder()
         defer { try? FileManager.default.removeItem(at: folder) }
         try Self.storedFile.write(to: original)
-        let defaults = makeDefaults()
+        let (defaults, suiteName) = makeDefaults()
+        defer { defaults.removePersistentDomain(forName: suiteName) }
         defaults.set(2, forKey: UserDefaultsKeys.keyboardTypingMemoryResetGeneration)
 
         let memory = KeyboardTypingMemory(
@@ -40,7 +41,8 @@ struct KeyboardTypingMemoryLanguageTests {
         let (folder, original) = try makeFolder()
         defer { try? FileManager.default.removeItem(at: folder) }
         try Self.storedFile.write(to: original)
-        let defaults = makeDefaults()
+        let (defaults, suiteName) = makeDefaults()
+        defer { defaults.removePersistentDomain(forName: suiteName) }
         defaults.set(2, forKey: UserDefaultsKeys.keyboardTypingMemoryResetGeneration)
 
         let other = KeyboardTypingMemory(language: "xx", fileURL: original, defaults: defaults)
@@ -56,7 +58,8 @@ struct KeyboardTypingMemoryLanguageTests {
     @Test func resettingOneLanguageLeavesTheOthersAndResettingAllForgetsEveryLanguage() throws {
         let (folder, original) = try makeFolder()
         defer { try? FileManager.default.removeItem(at: folder) }
-        let defaults = makeDefaults()
+        let (defaults, suiteName) = makeDefaults()
+        defer { defaults.removePersistentDomain(forName: suiteName) }
         let otherFile = KeyboardTypingMemoryLocation.fileURL(forLanguage: "xx", besideOriginal: original)
         try Self.storedFile.write(to: original)
         try Self.storedFile.write(to: otherFile)
@@ -84,16 +87,41 @@ struct KeyboardTypingMemoryLanguageTests {
         #expect(restarts == ["xx", "original"])
     }
 
+    @Test func aLanguageSwitchedBackToBeforeItsMemorySavesKeepsThatMemorysChange() throws {
+        let (folder, original) = try makeFolder()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let (defaults, suiteName) = makeDefaults()
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        defaults.set(2, forKey: UserDefaultsKeys.keyboardTypingMemoryResetGeneration)
+        let language = "a\(UUID().uuidString)"
+        let otherLanguage = "b\(UUID().uuidString)"
+        try Self.storedFile.write(to: KeyboardTypingMemoryLocation.fileURL(forLanguage: language, besideOriginal: original))
+        let load = { (language: String) in
+            KeyboardTypingMemory(language: language, fileURL: original, defaults: defaults)
+        }
+
+        let memory = KeyboardTypingMemory.current(language: language, load: load)
+        #expect(memory.memory.learnedVocabulary.keys == ["zorblat"])
+        memory.memory.clear()
+        _ = KeyboardTypingMemory.current(language: otherLanguage, load: load)
+        let returned = KeyboardTypingMemory.current(language: language, load: load)
+
+        #expect(returned === memory)
+        #expect(returned.memory.learnedVocabulary.keys.isEmpty)
+    }
+
     private func makeFolder() throws -> (folder: URL, original: URL) {
         let folder = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
         return (folder, folder.appendingPathComponent("typing-memory.json"))
     }
 
-    private func makeDefaults() -> UserDefaults {
+    /// A settings store of the test's own, removed when the test ends; the reset count it held goes
+    /// with it, so a save the test leaves waiting is never written.
+    private func makeDefaults() -> (defaults: UserDefaults, suiteName: String) {
         let suiteName = "KeyboardTypingMemoryLanguageTests.\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suiteName)!
         defaults.removePersistentDomain(forName: suiteName)
-        return defaults
+        return (defaults, suiteName)
     }
 }

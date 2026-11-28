@@ -43,6 +43,321 @@
       "comment" : "Approximate voice download size shown right after the install status sentence on the KeyVox Speak setup card; keep the leading space.",
       "shouldTranslate" : false
     },
+    "AZERTY" : {
+      "comment" : "Name of a keyboard letter layout, as the system's Keyboard settings show it.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "AZERTY"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "AZERTY"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "AZERTY"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "AZERTY"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "AZERTY"
+          }
+        }
+      }
+    },
+    "AZERTY – French" : {
+      "comment" : "Name of the French AZERTY keyboard letter layout, as the system's Keyboard settings show it.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "AZERTY – Französisch"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "AZERTY – Francés"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "AZERTY – francés"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "AZERTY – Français"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "AZERTY – français"
+          }
+        }
+      }
+    },
+    "Dvorak" : {
+      "comment" : "Name of a keyboard letter layout, as the system's Keyboard settings show it.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dvorak"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dvorak"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dvorak"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dvorak"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dvorak"
+          }
+        }
+      }
+    },
+    "QWERTY" : {
+      "comment" : "Name of a keyboard letter layout, as the system's Keyboard settings show it.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "QWERTY"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "QWERTY"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "QWERTY"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "QWERTY"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "QWERTY"
+          }
+        }
+      }
+    },
+    "QWERTY – French" : {
+      "comment" : "Name of the French QWERTY keyboard letter layout, as the system's Keyboard settings show it.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "QWERTY – Französisch"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "QWERTY – Francés"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "QWERTY – francés"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "QWERTY – Français"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "QWERTY – français"
+          }
+        }
+      }
+    },
+    "QWERTY – Spanish" : {
+      "comment" : "Name of the Spanish QWERTY keyboard letter layout, as the system's Keyboard settings show it.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "QWERTY – Spanisch"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "QWERTY – Español"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "QWERTY – español"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "QWERTY – Espagnol"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "QWERTY – espagnol"
+          }
+        }
+      }
+    },
+    "QWERTZ" : {
+      "comment" : "Name of a keyboard letter layout, as the system's Keyboard settings show it.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "QWERTZ"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "QWERTZ"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "QWERTZ"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "QWERTZ"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "QWERTZ"
+          }
+        }
+      }
+    },
+    "QWERTZ – French" : {
+      "comment" : "Name of the French QWERTZ keyboard letter layout, as the system's Keyboard settings show it.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "QWERTZ – Französisch"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "QWERTZ – Francés"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "QWERTZ – francés"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "QWERTZ – Français"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "QWERTZ – français"
+          }
+        }
+      }
+    },
+    "QWERTZ – German" : {
+      "comment" : "Name of the German QWERTZ keyboard letter layout, as the system's Keyboard settings show it.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "QWERTZ – Deutsch"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "QWERTZ – Alemán"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "QWERTZ – alemán"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "QWERTZ – Allemand"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "QWERTZ – allemand"
+          }
+        }
+      }
+    },
     "Reset Learned Words in %@?" : {
       "comment" : "Title of the confirmation shown before clearing the words the KeyVox keyboard has learned in one language. The placeholder is the language's name, such as English.",
       "localizations" : {
