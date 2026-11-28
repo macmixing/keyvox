@@ -4,8 +4,7 @@ Builds the language data of each typing language: the files the predictive keybo
 for English in `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/PredictiveData/en`,
 the capitalized spellings shared with dictation in `Packages/KeyVoxLinguistics/Sources/KeyVoxLinguistics/Resources`,
 and the same files for German, Spanish, and French, each bundled in its own `PredictiveData/<language>`
-once the language ships there (German's are, all but the swipe vocabulary, which needs German swipe
-typing, and French's are):
+but for the swipe vocabulary, which needs the language's swipe typing:
 
 | File | Built by | Reads |
 | --- | --- | --- |
@@ -86,8 +85,8 @@ steps:
 ```bash
 .venv/bin/python download_sources.py --language <language> <data-dir>
 .venv/bin/python extract_sentences.py --language <language> <data-dir>
-.venv/bin/python count_ngrams.py <data-dir>
-.venv/bin/python write_context_model.py <data-dir> <output-dir>/context_model.bin
+.venv/bin/python count_ngrams.py --language <language> <data-dir>
+.venv/bin/python write_context_model.py --language <language> <data-dir> <output-dir>/context_model.bin
 .venv/bin/python write_word_kinds.py --language <language> <data-dir>
 .venv/bin/python count_sentence_openers.py --language <language> <data-dir>
 .venv/bin/python write_sentence_openers.py --language <language> <data-dir> --output <output-dir>/sentence_openers.txt
@@ -134,11 +133,15 @@ bundled one before replacing it.
 
 ### Built data
 
-The builds of November 24, 2026, and German's of November 27, rebuilt with its `language.json`,
+The builds of November 24, 2026, German's of November 27, rebuilt with its `language.json`,
 whose apostrophe and ordinal periods (see "Text in each language") leave 65,402 fewer sentences
 than November 24's and 198 fewer words, and with the written lexicon words its vocabulary adds (see
-"Vocabulary") and contractions; German's bundled files are this build's. Every context model fills the default limits (107,000 words,
-800,000 pairs, 600,000 sequences), so each is 14,963,028 bytes, as English's is.
+"Vocabulary") and contractions, and Spanish's of November 27, with its `language.json`, its tuned
+opener weights, its count weights, and its context model sizes (see "Context model"): its words of
+text below are as counted once each. German's and Spanish's bundled files are these builds'.
+Every other context model fills the default limits (107,000 words, 800,000 pairs, 600,000
+sequences), so each is 14,963,028 bytes, as English's is; Spanish's holds 240,000 words, 2,000,000
+pairs, and 2,000,000 sequences in 42,160,028 bytes.
 Rebuilt on November 27, 2026 from the same sources, with French's `language.json` in the
 package, French gave the same bytes in every file; those are the bundled French files.
 
@@ -358,12 +361,46 @@ it, in its sentence and the next ones, are read on their own.
 `.venv/bin/python -m unittest test_write_treebank_word_kinds` checks that a sentence after one
 with a split word keeps all its words.
 
+## Context model
+
+`count_ngrams.py` counts each source's sentences as many times as the language's `count_weights`
+give it (`languages.py`, once for an unlisted source), and records the weights in `counts.npz`
+(`source_names`, `source_weights`), so `Tools/KeyVoxTypingModels` takes a sentence out of the
+counts as many times as it was counted. `write_context_model.py` keeps as many words, pairs, and
+sequences as the language's `context_words`, `context_pairs`, and `context_sequences` give it.
+Every language but Spanish counts each source once and keeps the default sizes, so its files are
+unchanged.
+
+Spanish counts Tatoeba, OASST2, and WildChat, the text people wrote, 20 times and the speech
+transcripts once, and keeps 240,000 words, 2,000,000 pairs, and 2,000,000 sequences: its 282 million
+words of text are 87% speech, and Spanish writes a word in many forms. Scored with
+`Tools/KeyVoxTypingHarness` on the Spanish simulation sentences of the typing models' held-out
+buckets 8-9 (400 sentences at noise 0.25 and 80 at noise 0.3), and on the 45 sentences typed into
+Apple's Spanish keyboard, with context models counted from the sentence files less every one of
+those sentences, so no measured sentence was counted (the typing models' README, "Measured on
+simulated typing", gives every measure):
+
+| Counts and sizes | Suggestion bar shows the word within 3 letters | Mistyped words fixed | Correctly typed words wrongly changed | Final words correct, 80 at 0.3 | Apple's 45 |
+| --- | --- | --- | --- | --- | --- |
+| Once each, default sizes | 73.8% | 806/877 | 17/2,718 | 706/764 | 251/264 |
+| Once each, 2,000,000 pairs and sequences | 74.6% | 807 | 16 | 708 | 252 |
+| Once each, 5,000,000 pairs and sequences | 75.0% | 807 | 16 | 705 | 252 |
+| Written 5 times, 2,000,000 | 75.7% | 810 | 15 | 709 | 253 |
+| Written 20 times, 2,000,000 | 76.2% | 813 | 11 | 712 | 253 |
+| Written 50 times, 2,000,000 | 76.2% | 814 | 10 | 712 | 252 |
+| Written text alone, 2,000,000 | 75.7% | 812 | 14 | 709 | 252 |
+
+Each row replaces only the context model of files built from counts taking every source once; 20
+times with 2,000,000 pairs and sequences is the best row that lowers no measure of another. Built
+with those weights, the dictionary and rankers raise every measure further (the typing models'
+README).
+
 ## Sentence openers
 
 `sentence_openers.txt` holds the words the suggestion bar offers where a sentence begins.
 Each language's source weights are in `languages.py`: English's were tuned against Apple's English
-suggestion bars (youtube-commons 0, oasst2 0.3, tatoeba 10). German, Spanish, and French give the
-same weights by kind of source, speech 0, chat and text messages 0.3, and Tatoeba 10.
+suggestion bars (youtube-commons 0, oasst2 0.3, tatoeba 10). German and French give the same
+weights by kind of source, speech 0, chat and text messages 0.3, and Tatoeba 10.
 
 German's were measured against Apple's German (Germany) bars after 53 sentences
 (`apple-languages/sentence-openers/de_DE.json` in KeyVox's language data, read with `--apple`), over a
@@ -384,6 +421,30 @@ With `--apple`, the bundled French openers share 1.15 of Apple's 3 words a bar a
 different bars to Apple's 37. Other weights move this little: Tatoeba 3 shares 1.23, Tatoeba 1
 1.17, 88milSMS 3 1.15, 88milSMS 10 1.11, and Tatoeba 30 1.15, a few words over 53 bars, so
 French keeps the weights the languages share.
+
+Spanish's were tuned against Apple's Spanish (Spain) bars after 53 sentences
+(`apple-languages/sentence-openers/es_ES.json` in KeyVox's language data, read with `--apple`):
+the same weights but speech at 0.1, which share more words with Apple's bars and find the next
+sentence's first word more often in every source's held-out texts:
+
+| Weights (Tatoeba, OASST2, WildChat, speech) | Words shared with Apple's bar | Different bars (Apple: 45) | Held out: Tatoeba | OASST2 | WildChat | YODAS2 | YouTube-Commons |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 10, 0.3, 0.3, 0 | 0.91 of 3 | 16 | 15.1% | 8.0% | 5.7% | 8.3% | 8.4% |
+| 10, 0.3, 0.3, 0.1 (Spanish) | 1.00 of 3 | 18 | 15.9% | 8.4% | 6.4% | 9.5% | 9.4% |
+
+A grid of 96 weightings (Tatoeba 1, 10, 30; OASST2 and WildChat 0, 0.3, 1, 3; speech 0, 0.1)
+shared at most 1.06 words (10, 0, 0.3, 0.1), at the cost of OASST2's held-out sentences (5.0%).
+Ten of the 53 sentences end in a line break with no mark, after which Apple's bar offers
+lowercase continuations rather than openers in every measured language; no weighting matches
+those.
+
+A sentence opened with one of the language's sentence opening marks (`sentenceOpeningMarks` in its
+`language.json`, Spanish's "¿" and "¡") also counts its first word after that mark
+(`count_sentence_openers.py`), and `sentence_openers.txt` gives every opener's log likelihood after
+each such mark (`opening <mark>` lines), which the keyboard offers right after the mark where a
+sentence starts: after "¿", Spanish's are "qué", "por", and "cómo", the three words Apple's Spanish
+keyboard offers there (`apple-languages/runs/behavior-es_ES`); after "¡", "no", "qué", and "me",
+where Apple offers "No", "Y", and "Si", its openers at the start of the text.
 
 ## Words spelled with capitals
 

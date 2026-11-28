@@ -57,7 +57,8 @@ def sentences(paths, source):
 
 class Counts:
     """The language build's counts, as arrays: each word's count by id, and each pair's and
-    sequence's key and count, keys sorted."""
+    sequence's key and count, keys sorted, with how many times each source's sentences were
+    counted (`source_weights`, once for a source the counts do not list)."""
 
     def __init__(self, paths):
         build = paths.language_build
@@ -74,15 +75,18 @@ class Counts:
             self.pair_counts = counts["pair_counts"].copy()
             self.triple_keys = counts["triple_keys"]
             self.triple_counts = counts["triple_counts"].copy()
+            self.source_weights = (dict(zip(counts["source_names"].tolist(), counts["source_weights"].tolist()))
+                                   if "source_weights" in counts.files else {})
 
     def leave_out(self, paths, left_out):
         """Takes every line of every source whose words, joined by spaces, are in `left_out` out of
-        the counts. Returns how many lines it took out."""
+        the counts, as many times as its source was counted. Returns how many lines it took out."""
         words = Counter()
         pairs = Counter()
         triples = Counter()
         lines = tokens = 0
         for path in sentence_paths(paths):
+            weight = self.source_weights.get(path.stem, 1)
             with path.open(encoding="utf-8") as source:
                 for line in source:
                     line = line.rstrip("\n")
@@ -90,15 +94,17 @@ class Counts:
                         continue
                     lines += 1
                     sentence = line.split()
-                    tokens += len(sentence)
-                    words.update(word for word in sentence if word in self.ids)
+                    tokens += len(sentence) * weight
+                    for word in sentence:
+                        if word in self.ids:
+                            words[word] += weight
                     ids = [self.sentence_start] + [self.ids.get(word, -1) for word in sentence]
                     for first, second in zip(ids, ids[1:]):
                         if first >= 0 and second >= 0:
-                            pairs[(first << ID_BITS) | second] += 1
+                            pairs[(first << ID_BITS) | second] += weight
                     for first, second, third in zip(ids, ids[1:], ids[2:]):
                         if first >= 0 and second >= 0 and third >= 0:
-                            triples[(first << 2 * ID_BITS) | (second << ID_BITS) | third] += 1
+                            triples[(first << 2 * ID_BITS) | (second << ID_BITS) | third] += weight
         self.total_tokens -= tokens
         for word, count in words.items():
             self.word_counts[self.ids[word]] -= count

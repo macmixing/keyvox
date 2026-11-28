@@ -31,4 +31,7 @@ public struct PredictionRequest: Sendable, Equatable {
     /// Right after the user deleted the separator that ended an autocorrection, what was typed
     /// before it, which the bar offers in place of suggestions.
     public var revertibleText: String?
+    /// At a sentence start right after one of the typing language's sentence opening marks, that
+    /// mark, which the sentence openers follow.
+    public var sentenceOpeningMark: String?
 }

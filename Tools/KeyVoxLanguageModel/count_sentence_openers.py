@@ -9,11 +9,13 @@ previous sentences with that ending held the word, so a word's pull on the next 
 opener can be measured. Words are counted only after a sentence that ended with a mark: a
 bare line break mostly breaks lists and code rather than messages. A question is followed by
 what answers it, so a question asked right after another is not counted as following it. Pairs seen fewer than `MINIMUM_PAIR_COUNT` times, or for an
-opener outside the source's `KEPT_OPENERS` most common, are dropped.
+opener outside the source's `KEPT_OPENERS` most common, are dropped. A sentence opened with one
+of the language's sentence opening marks (`sentenceOpeningMarks` in its language.json), such as
+a question opened with its inverted mark, also counts its first word after that mark, in `opened`.
 
 One text in ten, chosen by a hash of the text, is held out and kept whole for measuring, so
 a measurement never sees text the counts came from. Writes `<data_dir>/openers/<source>.pkl`
-with `openers`, `contexts`, `word_pairs`, `word_sentences`, and `held_out`.
+with `openers`, `contexts`, `word_pairs`, `word_sentences`, `opened`, and `held_out`.
 """
 
 import argparse
@@ -23,7 +25,7 @@ from collections import Counter, defaultdict
 from pathlib import Path
 
 from languages import LANGUAGES, language_argument
-from normalize import LINE_BREAK, sentences_with_endings
+from normalize import LINE_BREAK, sentences_with_openings
 from source_texts import source_texts
 
 QUESTION = "?"
@@ -54,12 +56,16 @@ def main() -> None:
         word_pairs: Counter[tuple[str, str, str]] = Counter()
         # (previous ending, word in the previous sentence)
         word_sentences: Counter[tuple[str, str]] = Counter()
+        # (opening mark, first word) of a sentence opened with one of the language's sentence
+        # opening marks
+        opened: Counter[tuple[str, str]] = Counter()
         # (ending, previous first word, previous last word, previous words, next first word)
         held_out: list[tuple[str, str, str, tuple[str, ...], str]] = []
+        opening_marks = language.sentence_opening_marks()
         for text in texts:
             hold = is_held_out(text)
             previous = None
-            for words, ending in sentences_with_endings(text, language.text_rules):
+            for words, ending, opening in sentences_with_openings(text, language.text_rules, opening_marks):
                 if previous is not None and not (previous[1] == QUESTION and ending == QUESTION):
                     previous_words, previous_ending = previous
                     context = (previous_ending, previous_words[0], previous_words[-1])
@@ -73,6 +79,8 @@ def main() -> None:
                             word_pairs.update((previous_ending, word, words[0]) for word in present)
                 if not hold:
                     openers[words[0]] += 1
+                    if opening:
+                        opened[(opening, words[0])] += 1
                 previous = (words, ending) if ending else None
 
         kept = {word for word, _ in openers.most_common(KEPT_OPENERS)}
@@ -86,6 +94,7 @@ def main() -> None:
                 "contexts": dict(contexts),
                 "word_pairs": word_pairs,
                 "word_sentences": word_sentences,
+                "opened": opened,
                 "held_out": held_out,
             }, output)
         pairs = sum(sum(counter.values()) for counter in contexts.values())

@@ -72,12 +72,13 @@ public struct TypingTextContext: Sendable, Equatable {
     /// a line break, or at a space after a period, question mark, or exclamation mark that is
     /// not part of an ellipsis, since an ellipsis pauses a sentence rather than ending it.
     /// Quotation marks belong to the sentence they open or close, so an opening mark after
-    /// the space and a closing mark before it leave the sentence start where it is. Where the
+    /// the space and a closing mark before it leave the sentence start where it is, as do the
+    /// language's sentence opening marks (`TypingTextRules.sentenceOpeningMarks`). Where the
     /// language writes ordinal numbers with a period (`TypingTextRules.ordinalPeriods`), a period
     /// right after a digit ends no sentence.
     public static func startsSentence(after text: String, rules: TypingTextRules = .standard) -> Bool {
         if let spaced = rules.spacedOpeningMark, endsWithUnspacedOpeningMark(text, spaced) { return false }
-        let beforeOpeningMarks = trimmingEnd(of: text[...], while: isQuotationMark)
+        let beforeOpeningMarks = trimmingEnd(of: text[...]) { isQuotationMark($0) || rules.sentenceOpeningMarks.contains($0) }
         guard let last = beforeOpeningMarks.last else { return true }
         if last.isNewline { return true }
         guard last.isWhitespace else { return false }

@@ -3,9 +3,12 @@
 Writes `<data_dir>/vocabulary.txt` (one word per line; a word's line number is its id)
 and `<data_dir>/counts.npz`. Pairs and sequences are packed into one key of 21 bits per
 word id. Every sentence begins with the sentence-start marker, the vocabulary's last id,
-so the words that open sentences are counted after it. Words seen only once, or beyond
+so the words that open sentences are counted after it. Words counted only once, or beyond
 the vocabulary limit, are counted on their own but break pairs and sequences as a
-sentence end does.
+sentence end does. Each source's sentences count as many times as the language's count
+weights give it (languages.py, once unless listed), and `counts.npz` records the weights
+(`source_names`, `source_weights`) so a step that takes sentences out of the counts takes
+them out as many times.
 """
 
 import argparse
@@ -16,6 +19,7 @@ from pathlib import Path
 
 import numpy as np
 
+from languages import LANGUAGES, language_argument
 from normalize import SENTENCE_START
 
 ID_BITS = 21
@@ -24,11 +28,10 @@ CHUNK_TOKENS = 50_000_000
 BREAK = -1
 
 
-def sentence_words(paths: list[Path]) -> Iterator[list[str]]:
-    for path in paths:
-        with open(path, encoding="utf-8") as lines:
-            for line in lines:
-                yield line.split()
+def sentence_words(path: Path) -> Iterator[list[str]]:
+    with open(path, encoding="utf-8") as lines:
+        for line in lines:
+            yield line.split()
 
 
 def merged(keys: np.ndarray, counts: np.ndarray, new_keys: np.ndarray, new_counts: np.ndarray):
@@ -54,15 +57,23 @@ def chunk_ngrams(ids: np.ndarray):
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
+    language_argument(parser)
     parser.add_argument("data_dir", type=Path)
     arguments = parser.parse_args()
     paths = sorted((arguments.data_dir / "sentences").glob("*.txt"))
+    weights = {path: LANGUAGES[arguments.language].count_weights.get(path.stem, 1) for path in paths}
 
     word_counts: Counter[str] = Counter()
     sentence_count = 0
-    for words in sentence_words(paths):
-        word_counts.update(words)
-        sentence_count += 1
+    for path in paths:
+        source_counts: Counter[str] = Counter()
+        source_sentences = 0
+        for words in sentence_words(path):
+            source_counts.update(words)
+            source_sentences += 1
+        for word, count in source_counts.items():
+            word_counts[word] += count * weights[path]
+        sentence_count += source_sentences * weights[path]
     total_tokens = sum(word_counts.values())
     vocabulary = [word for word, count in word_counts.most_common(MAXIMUM_VOCABULARY - 1) if count >= 2]
     ids = {word: index for index, word in enumerate(vocabulary)}
@@ -77,27 +88,28 @@ def main() -> None:
     buffer = array("q")
     processed = 0
 
-    def flush() -> None:
+    def flush(weight: int) -> None:
         nonlocal pair_keys, pair_counts, triple_keys, triple_counts, buffer
         if len(buffer) < 3:
             buffer = array("q")
             return
         pairs, triples = chunk_ngrams(np.frombuffer(buffer, dtype=np.int64))
         unique, counts = np.unique(pairs, return_counts=True)
-        pair_keys, pair_counts = merged(pair_keys, pair_counts, unique, counts)
+        pair_keys, pair_counts = merged(pair_keys, pair_counts, unique, counts * weight)
         unique, counts = np.unique(triples, return_counts=True)
-        triple_keys, triple_counts = merged(triple_keys, triple_counts, unique, counts)
+        triple_keys, triple_counts = merged(triple_keys, triple_counts, unique, counts * weight)
         buffer = array("q")
 
-    for words in sentence_words(paths):
-        buffer.append(sentence_start)
-        buffer.extend([ids.get(word, BREAK) for word in words])
-        buffer.append(BREAK)
-        processed += len(words)
-        if len(buffer) >= CHUNK_TOKENS:
-            flush()
-            print(f"  counted {processed} words: {len(pair_keys)} pairs, {len(triple_keys)} sequences", flush=True)
-    flush()
+    for path in paths:
+        for words in sentence_words(path):
+            buffer.append(sentence_start)
+            buffer.extend([ids.get(word, BREAK) for word in words])
+            buffer.append(BREAK)
+            processed += len(words)
+            if len(buffer) >= CHUNK_TOKENS:
+                flush(weights[path])
+                print(f"  counted {processed} words: {len(pair_keys)} pairs, {len(triple_keys)} sequences", flush=True)
+        flush(weights[path])
 
     with open(arguments.data_dir / "vocabulary.txt", "w", encoding="utf-8") as output:
         output.writelines(word + "\n" for word in vocabulary)
@@ -109,6 +121,8 @@ def main() -> None:
         pair_counts=pair_counts,
         triple_keys=triple_keys,
         triple_counts=triple_counts,
+        source_names=np.array([path.stem for path in paths]),
+        source_weights=np.array([weights[path] for path in paths], dtype=np.int64),
     )
     print(f"{len(pair_keys)} pairs, {len(triple_keys)} sequences", flush=True)
 

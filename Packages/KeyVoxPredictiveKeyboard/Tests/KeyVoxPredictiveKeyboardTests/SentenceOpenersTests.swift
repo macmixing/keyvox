@@ -12,6 +12,7 @@ final class SentenceOpenersTests: XCTestCase {
         ending *\ti:-1.0 the:-1.5 he:-2.0 they:-3.0 how:-3.5 what:-4.0
         ending question\ti:-1.0 what:-1.6 the:-1.7 they:-3.0 how:-3.0 he:-4.0
         first question how\thow:2.5
+        opening ^\thow:-0.5 what:-0.8 i:-3.0 the:-4.0 he:-5.0 they:-6.0
         word question they\tthey:2.5 he:-1.0
 
         """
@@ -31,6 +32,26 @@ final class SentenceOpenersTests: XCTestCase {
 
     func testEveryWordInTheSentenceBoostsItsOpeners() {
         XCTAssertEqual(words(after: .question, ["did", "they", "go"]), ["they", "i", "what"])
+    }
+
+    func testASentenceOpeningMarkSetsTheOpenersLikelihoodInPlaceOfTheEnding() {
+        XCTAssertEqual(openers.words(after: nil, openingMark: "^"), ["how", "what", "i"])
+        let ending = SentenceEnding(mark: .question, words: ["did", "they", "go"])
+        XCTAssertEqual(openers.words(after: ending, openingMark: "^"), ["how", "what", "i"])
+        XCTAssertEqual(openers.words(after: ending, openingMark: "~"), openers.words(after: ending))
+    }
+
+    func testTheRequestNamesTheLanguagesOpeningMarkRightBeforeTheCursorAtASentenceStart() {
+        let spanish = PredictiveTypingSession(language: .spanish)
+        let marks = TypingLanguage.spanish.textRules.sentenceOpeningMarks.map(String.init)
+        XCTAssertFalse(marks.isEmpty)
+        for mark in marks {
+            XCTAssertEqual(spanish.request(textBeforeCursor: mark).sentenceOpeningMark, mark)
+            XCTAssertEqual(spanish.request(textBeforeCursor: "a. " + mark).sentenceOpeningMark, mark)
+            XCTAssertNil(spanish.request(textBeforeCursor: "a, " + mark).sentenceOpeningMark)
+            XCTAssertNil(spanish.request(textBeforeCursor: mark + "a").sentenceOpeningMark)
+            XCTAssertNil(PredictiveTypingSession(language: .english).request(textBeforeCursor: mark).sentenceOpeningMark)
+        }
     }
 
     func testGeneralOpenersWithoutAnEndingOfItsOwn() {

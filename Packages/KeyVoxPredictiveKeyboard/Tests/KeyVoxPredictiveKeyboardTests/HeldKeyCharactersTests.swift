@@ -30,6 +30,22 @@ final class HeldKeyCharactersTests: XCTestCase {
         XCTAssertThrowsError(try HeldKeyCharacters(contentsOf: url))
     }
 
+    func testLetterKeysOfferNoLetterThatHasAKeyOfItsOwn() throws {
+        for language in [TypingLanguage.english, .spanish] {
+            let keys = Set(language.letterLayout.rows.flatMap(\.items).compactMap { item -> String? in
+                guard case let .character(text) = item else { return nil }
+                return text
+            })
+            let list = try HeldKeyCharacters.bundled(for: language)
+            for key in keys.flatMap({ [$0, $0.uppercased()] }) {
+                guard let offer = list.offer(forKey: key) else { continue }
+                XCTAssertEqual(offer.characters.first, key, "\(language.identifier) \(key)")
+                let others = offer.characters.dropFirst().map { $0.lowercased() }
+                XCTAssertTrue(keys.isDisjoint(with: others), "\(language.identifier) \(key)")
+            }
+        }
+    }
+
     func testKeysWithoutAnOfferHaveNone() throws {
         XCTAssertNil(try HeldKeyCharacters.bundled(for: .english).offer(forKey: "q"))
     }
