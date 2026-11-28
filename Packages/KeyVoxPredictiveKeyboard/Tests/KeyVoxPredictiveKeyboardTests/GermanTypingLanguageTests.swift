@@ -14,7 +14,7 @@ extension TypingLanguage {
 }
 
 /// German as Apple's iOS 27.2 German (Germany) keyboard types it, measured key by key on an
-/// iPhone and a simulator (`~/KeyVoxLanguageData/apple-languages`).
+/// iPhone and a simulator.
 final class GermanTypingLanguageTests: XCTestCase {
     func testGermanShowsQWERTZGermanAndOffersApplesOtherLayoutsInOrder() {
         let german = TypingLanguage.german
