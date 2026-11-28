@@ -12,7 +12,7 @@ the package once the language ships there.
 
 import json
 import sys
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 
 from normalize import DEFAULT_RULES, TextRules
@@ -61,6 +61,14 @@ class LexiconVocabulary:
     # that accepted them (vocabulary/hunspell_snapshot.py).
     spelling_snapshot_sha256: str | None = None
     spelling_snapshot_hunspell: str | None = None
+    # Lexicon words the word list lacks join it when the language's sentences, as count_ngrams.py
+    # counted them, write them at least as often as the median word-list word they write
+    # (vocabulary/written_lexicon_words.py), for a word list that leaves out common words.
+    adds_written_lexicon_words: bool = False
+    # Contractions of a word-list word the written sources write at least as often as the median
+    # word-list word they write join it (vocabulary/written_contractions.py), for a word list that
+    # holds none.
+    adds_written_contractions: bool = False
 
 
 @dataclass(frozen=True)
@@ -102,6 +110,21 @@ class Language:
     measured_spellings: Path | None = None
     # A swipe dataset whose swiped words the swipe vocabulary adds (count_swiped_words.py).
     swiped_words: Source | None = None
+
+    def __post_init__(self) -> None:
+        # The keyboard's own reading of the language's text, from its language.json in the package:
+        # its closing single mark, which its apostrophe key types after a letter, as an apostrophe
+        # when it is none already, and `ordinalPeriods`. Before the language ships there, neither.
+        path = PREDICTIVE_DATA / self.identifier / "language.json"
+        if not path.exists():
+            return
+        manifest = json.loads(path.read_text(encoding="utf-8"))
+        closing_single = manifest["quotationMarks"]["closingSingle"]
+        object.__setattr__(self, "text_rules", replace(
+            self.text_rules,
+            apostrophes="" if closing_single in ("'", "’") else closing_single,
+            ordinal_periods=manifest.get("ordinalPeriods", False),
+        ))
 
     def source(self, name: str) -> Source:
         return next(use.source for use in self.sources if use.source.name == name)
@@ -155,6 +178,11 @@ _GERMAN = dict(
     vocabulary=LexiconVocabulary(
         word_list=latinime_word_list("de", "07ae553cd55f9901412065bad7617379908ed5f2a701d226ffde85a9b8ffd5c0"),
         lexicons=(wikidata_forms("de", "7a52e72e6da01d13ca3a75c1b7515163957a0f8c763e5ded53d147f5510de843"),),
+        # AOSP's German list lacks almost every lowercase word beginning with an umlaut, and common
+        # verb forms (README, "Vocabulary").
+        adds_written_lexicon_words=True,
+        # It holds no contraction either.
+        adds_written_contractions=True,
     ),
     # CLDR's German quotation marks.
     text_rules=_text_rules("„“‚‘"),

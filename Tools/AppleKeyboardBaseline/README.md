@@ -125,3 +125,16 @@ left, and `bar`, the suggestion bar's entries then; each case's result is also p
 `SWIPE_CASE_RESULT` line, for a device, whose output file stays on the device. Each case's
 screenshot is kept in the test's results, and in `TEST_RUNNER_SWIPE_SCREENSHOTS`, when set, as a
 PNG.
+
+## Web endings
+
+`write_web_endings.py` writes the web endings Apple's keyboard lists for each locale, read from an
+iOS simulator runtime's own keyboard files (`System/Library/TextInput/TextInput_*.bundle/Keyboard-*.plist`,
+`UI-TopLevelDomain`), into the predictive keyboard's `PredictiveData/web_endings.json`, with how
+many of the region's endings Apple's keyboard places right of the key's own, as measured on the
+iOS 27.2 simulator (`~/KeyVoxLanguageData/apple-languages/runs/sim-weburl-summary.md`):
+
+```sh
+python3 write_web_endings.py "<runtime>/Contents/Resources/RuntimeRoot/System/Library/TextInput" \
+  ../../Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/PredictiveData/web_endings.json
+```

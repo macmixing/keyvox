@@ -17,4 +17,13 @@ struct TypingLanguageManifest: Decodable {
     /// Words always written as listed, alone or before an apostrophe.
     let alwaysCapitalizedWords: [String]
     let quotationMarks: QuotationMarks
+    /// Whether a period right after a digit writes an ordinal number rather than ending the
+    /// sentence (`TypingTextRules.ordinalPeriods`); false when left out.
+    let ordinalPeriods: Bool?
+    /// The locale of Apple's keyboard for the language, whose web endings its keyboard adds to the
+    /// region's (`WebEndings`).
+    let webEndingsLocale: String
+    /// The mark the keyboard writes for the apostrophe of a word it writes, such as a corrected
+    /// contraction; the dictionary's straight apostrophe when left out.
+    let writtenApostrophe: String?
 }

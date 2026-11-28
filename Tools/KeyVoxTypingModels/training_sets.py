@@ -5,7 +5,11 @@ these records, so every record a trainer reads has its candidates.
 
 Records are split into ten buckets by the sentence being typed: the correction ranker trains on
 buckets 0-4, the action model on bucket 5, and the completion ranker on 0-7. Whatever the
-training source, they are measured on ITE's buckets 8-9."""
+training source, English's are measured on ITE's buckets 8-9.
+
+Another language has no ITE typing: its rankers train on simulated typing alone and are measured
+on its simulated buckets 8-9, whose sentences its dictionary and the rankers' word counts leave
+out (`simulation_sentences.py`)."""
 
 from dataclasses import dataclass
 
@@ -54,7 +58,29 @@ def uses(source, part):
     return part in source.split("+")
 
 
-def correction_sets(paths, source):
+def training_source(source, language):
+    """The training source: the one asked for, or by default `ite` for English and `sim` for any
+    other language, which has only simulated typing."""
+    if language.uses_english_text:
+        return source or "ite"
+    if source not in (None, "sim"):
+        raise SystemExit(f"{language.identifier} has no ITE typing; its rankers train on "
+                         "simulated typing alone (--source sim)")
+    return "sim"
+
+
+def correction_sets(paths, source, language):
+    if not language.uses_english_text:
+        typos = plausible_corrections(simulated(paths, "corrections"))
+        preserves = simulated(paths, "preserves")
+        return CorrectionSets(
+            ranker_typos=in_buckets(typos, CORRECTION_RANKER_BUCKETS),
+            action_typos=in_buckets(typos, ACTION_BUCKETS),
+            action_preserves=in_buckets(preserves, ACTION_BUCKETS),
+            test_typos=in_buckets(typos, TEST_BUCKETS),
+            test_preserves=in_buckets(preserves, TEST_BUCKETS),
+            external=[],
+        )
     section_sentences = load_section_sentences(paths.root)
     ite_typos = annotate(correction_records(paths), section_sentences)
     ite_preserves = annotate(preserve_records(paths), section_sentences)
@@ -77,8 +103,13 @@ def correction_sets(paths, source):
     )
 
 
-def completion_sets(paths, source):
-    """The completion ranker's training records and ITE's held-out ones."""
+def completion_sets(paths, source, language):
+    """The completion ranker's training records and the held-out ones: ITE's for English, the
+    simulated ones of the held-out buckets for any other language."""
+    if not language.uses_english_text:
+        completions = simulated(paths, "completions")
+        return (in_buckets(completions, COMPLETION_RANKER_BUCKETS),
+                in_buckets(completions, TEST_BUCKETS))
     ite = annotate(completion_records(paths.root), load_section_sentences(paths.root))
     training = []
     if uses(source, "ite"):

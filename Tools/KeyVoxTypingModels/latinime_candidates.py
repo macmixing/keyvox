@@ -5,13 +5,13 @@ import gzip
 import pickle
 import subprocess
 
-from words import clean
+from words import normalized
 
 MAX_CANDIDATES = 8
 
 
 def query_key(typed, previous):
-    return clean(typed), tuple(clean(word) for word in previous[:3] if clean(word))
+    return normalized(typed), tuple(normalized(word) for word in previous[:3] if normalized(word))
 
 
 def unique_queries(collections):
@@ -29,8 +29,18 @@ def unique_queries(collections):
     return keys
 
 
-def run_suggestions(reader, dictionary, keys, query_path, shared_session=False):
-    """LatinIME's candidates for each query, deduplicated, best first, as (word, score, type).
+def row_arguments(letter_rows):
+    """The suggestion reader's arguments for a layout's letter rows
+    (`letter_layout.letter_rows`)."""
+    arguments = []
+    for letters, offset in letter_rows:
+        arguments += ["--row", letters, repr(float(offset))]
+    return arguments
+
+
+def run_suggestions(reader, dictionary, keys, query_path, letter_rows, shared_session=False):
+    """LatinIME's candidates for each query, deduplicated, best first, as (word, score, type), with
+    the typed letters tapped on the keys of `letter_rows`.
 
     Each query searches in a session of its own, or, with `shared_session`, all in one, as the
     caches the bundled rankers learned from did (`latinime_suggestions.cpp`)."""
@@ -41,7 +51,8 @@ def run_suggestions(reader, dictionary, keys, query_path, shared_session=False):
     outputs = {}
     with query_path.open(encoding="utf-8") as stdin:
         process = subprocess.Popen(
-            [str(reader), str(dictionary), *(["--shared-session"] if shared_session else [])],
+            [str(reader), str(dictionary), *(["--shared-session"] if shared_session else []),
+             *row_arguments(letter_rows)],
             stdin=stdin,
             stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, bufsize=1,
         )
@@ -49,7 +60,7 @@ def run_suggestions(reader, dictionary, keys, query_path, shared_session=False):
             fields = line.rstrip("\n").split("\t")
             results = []
             for position in range(1, len(fields) - 2, 3):
-                results.append((clean(fields[position]), int(fields[position + 1]),
+                results.append((normalized(fields[position]), int(fields[position + 1]),
                                 int(fields[position + 2])))
             deduped = []
             observed = set()

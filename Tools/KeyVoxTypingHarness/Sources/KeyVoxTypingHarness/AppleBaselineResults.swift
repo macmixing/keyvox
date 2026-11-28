@@ -20,9 +20,15 @@ struct AppleBaselineResults: Codable {
 
     /// Lowercased words of a recorded sentence with surrounding punctuation removed.
     static func words(in text: String) -> [String] {
+        writtenWords(in: text).map { $0.lowercased() }
+    }
+
+    /// The words of a recorded sentence as written, with their capitals, surrounding
+    /// punctuation removed.
+    static func writtenWords(in text: String) -> [String] {
         text.replacingOccurrences(of: "’", with: "'")
             .split(whereSeparator: { $0.isWhitespace })
-            .map { $0.trimmingCharacters(in: CharacterSet.letters.inverted).lowercased() }
+            .map { $0.trimmingCharacters(in: CharacterSet.letters.inverted) }
             .filter { $0.isEmpty == false }
     }
 }
