@@ -25,7 +25,7 @@ ITE's, for `ROUNDS` rounds:
   the autocorrected typos', a smaller shape making second mistakes likelier.
 The rounds start from the rates measured with autocorrection off, the fitted spreads and their
 far substitutions, no length factors, and a shape of one. Every round types the words with the
-same seed."""
+same seed, each word from the stream of its place in the words."""
 
 import argparse
 import json
@@ -80,8 +80,8 @@ def main():
     for round_number in range(ROUNDS + 1):
         simulator = TypoSimulator(layout, measurements, calibration, SEED)
         counts = TypoCounts()
-        for word in words:
-            counts.add(word, simulator.type_word(word), layout)
+        for index, word in enumerate(words):
+            counts.add(word, simulator.type_word(word, index), layout)
         simulated = counts.summary()
         simulated_shares = shares(simulated)
         by_length, second = mistyped_shares(simulated)

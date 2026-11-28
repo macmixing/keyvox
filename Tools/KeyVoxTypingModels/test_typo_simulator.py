@@ -1,8 +1,8 @@
 """Checks that the typo simulator types a word's apostrophe after everything it typed for the
 letters before it, whatever it left out, doubled, or added before it; that it types a letter
-without a key on its base letter's key, as spelled or plain at its rate; and that on another
-layout than ITE's it adds extra keys beside a letter on that layout. Run with
-`python -m unittest test_typo_simulator`."""
+without a key on its base letter's key, as spelled or plain at its rate; that on another layout
+than ITE's it adds extra keys beside a letter on that layout; and that each word's typing depends
+on its own key alone. Run with `python -m unittest test_typo_simulator`."""
 
 import unittest
 
@@ -17,18 +17,20 @@ NARROW = 0.08
 LETTER_KINDS = ("omission", "substitution_far", "doubled", "insertion_neighbor", "insertion_far")
 
 
-# German's letter rows, with "ü", "ö", and "ä" keys and no "ß" key.
+# QWERTZ-German's letter rows (`letter_layouts/QWERTZ-German.json`).
 GERMAN = LetterLayout([("qwertzuiopü", 0.0), ("asdfghjklöä", 0.0), ("yxcvbnm", 2.0)])
 
 
-def simulator(layout=LAYOUT, accents=None, measured_layout=None, insertions=None, **forced):
-    """A simulator that makes only the given mistakes, named as calibrated rates, every time."""
+def simulator(layout=LAYOUT, accents=None, measured_layout=None, insertions=None, spread=NARROW,
+              **forced):
+    """A simulator that makes only the given mistakes, named as calibrated rates, every time, with
+    taps spread by `spread`."""
     rates = {"transposition": 0.0, "undoubled": 0.0, "apostrophe_dropped": 0.0}
     rates.update({f"{kind}/{position}": 0.0 for kind in LETTER_KINDS for position in POSITIONS})
     rates.update({kind.replace("__", "/"): ALWAYS for kind in forced})
     calibration = {
         "rates": rates,
-        "spreads": {position: {"across": NARROW, "down": NARROW} for position in POSITIONS},
+        "spreads": {position: {"across": spread, "down": spread} for position in POSITIONS},
         "length_factors": {str(length): 1.0 for length in range(1, LONGEST_COUNTED_LENGTH + 1)},
         "sloppiness_shape": 1e9,
     }
@@ -48,41 +50,50 @@ def sharp_s(plain_rate):
 
 class ApostropheTests(unittest.TestCase):
     def test_types_a_word_as_meant_without_mistakes(self):
-        self.assertEqual(simulator().type_word("don't"), "don't")
+        self.assertEqual(simulator().type_word("don't", "word"), "don't")
 
     def test_follows_a_doubled_letter_before_it(self):
-        self.assertEqual(simulator(doubled__middle=True).type_word("it's"), "itt's")
+        self.assertEqual(simulator(doubled__middle=True).type_word("it's", "word"), "itt's")
 
     def test_follows_a_left_out_letter_before_it(self):
-        self.assertEqual(simulator(omission__first=True).type_word("it's"), "t's")
+        self.assertEqual(simulator(omission__first=True).type_word("it's", "word"), "t's")
 
     def test_follows_an_added_letter_before_it(self):
-        self.assertEqual(simulator(insertion_far__first=True).type_word("it's"), "ixt's")
-
-
-if __name__ == "__main__":
-    unittest.main()
+        self.assertEqual(simulator(insertion_far__first=True).type_word("it's", "word"), "ixt's")
 
 
 class LetterWithoutKeyTests(unittest.TestCase):
     def test_types_it_as_spelled_from_its_base_key(self):
-        self.assertEqual(simulator(GERMAN, sharp_s(0.0)).type_word("straße"), "straße")
+        self.assertEqual(simulator(GERMAN, sharp_s(0.0)).type_word("straße", "word"), "straße")
 
     def test_types_it_plain_at_its_rate(self):
-        self.assertEqual(simulator(GERMAN, sharp_s(1.0)).type_word("straße"), "strasse")
+        self.assertEqual(simulator(GERMAN, sharp_s(1.0)).type_word("straße", "word"), "strasse")
 
     def test_types_a_letter_with_a_key_on_that_key(self):
-        self.assertEqual(simulator(GERMAN, sharp_s(1.0)).type_word("grün"), "grün")
+        self.assertEqual(simulator(GERMAN, sharp_s(1.0)).type_word("grün", "word"), "grün")
 
 
 class OtherLayoutTests(unittest.TestCase):
     def test_adds_the_key_at_the_measured_place_on_the_layout(self):
-        # Measured on QWERTY, an extra "x" after "z" is the key right of it; on QWERTZ-German the
-        # key right of "z" is "u".
+        # An extra key measured right of a letter on QWERTY is added right of it on QWERTZ-German.
         typed = simulator(GERMAN, measured_layout=LAYOUT, insertions={"zx": 1},
-                          insertion_neighbor__last=True).type_word("az")
+                          insertion_neighbor__last=True).type_word("az", "word")
         self.assertEqual(typed, "azu")
 
     def test_adds_the_measured_letter_on_the_measured_layout(self):
-        typed = simulator(insertions={"zx": 1}, insertion_neighbor__last=True).type_word("az")
+        typed = simulator(insertions={"zx": 1}, insertion_neighbor__last=True).type_word("az", "word")
         self.assertEqual(typed, "azx")
+
+
+class WordStreamTests(unittest.TestCase):
+    def test_types_a_word_the_same_whatever_was_typed_before(self):
+        # Taps this wide miss their key often, so a word's typing depends on its random draws.
+        typed = simulator(spread=0.6).type_word("keyboard", "second")
+        typist = simulator(spread=0.6)
+        for index in range(20):
+            typist.type_word("anything", f"first {index}")
+        self.assertEqual(typist.type_word("keyboard", "second"), typed)
+
+
+if __name__ == "__main__":
+    unittest.main()

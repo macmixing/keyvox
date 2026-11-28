@@ -24,6 +24,7 @@ from pathlib import Path
 import regex
 
 import words
+from letter_keys import HELD_KEY_CHARACTERS, held_keys
 from letter_layout import PREDICTIVE_DATA, letter_rows
 
 ENGLISH_TEXT = "english"
@@ -48,6 +49,9 @@ class TypingLanguage:
     # The profanity list's file of the language's terms (`offensive_words.py`), or None when the
     # pinned list has none for the language.
     profanity_list: str | None = None
+    # The Multilingual HateCheck dataset whose slurs the language's dictionary leaves out
+    # (`offensive_words.py`), or None.
+    hatecheck_dataset: str | None = None
     # The language build's sentence files the typo simulator types, in order
     # (`simulation_sentences.py`).
     simulation_sources: tuple[str, ...] = ()
@@ -79,6 +83,11 @@ class TypingLanguage:
     def vowels(self) -> str:
         return self.manifest["vowels"]
 
+    def held_keys(self) -> dict[str, str]:
+        """The characters the language's keys offer on a long press, by key, from the
+        `held_key_characters.txt` beside its `language.json`, or none (`letter_keys.held_keys`)."""
+        return held_keys(self.manifest_path.parent / HELD_KEY_CHARACTERS)
+
     def valid_word(self, text: str) -> bool:
         """Whether the text is one word of the language as the builders read words."""
         if self.uses_english_text:
@@ -97,8 +106,7 @@ class TypingLanguage:
 # Sentences people wrote, not speech or chat: the typo simulator types what typists mean, and these
 # are the sources written and spelled with care, as English's Tatoeba and OASST1 are.
 _WRITTEN_SOURCES = ("tatoeba", "oasst2")
-# A third of their sentences is about as many as English's tenth of its Tatoeba sentences and
-# OASST1 fragments.
+# The share of their sentences that types about as many as English's simulation does.
 _LANGUAGE_BUILD_SHARE = 3
 # WildChat's turns are what people typed to a chat assistant, the one typed source of every
 # language build.
@@ -106,18 +114,17 @@ _LANGUAGE_BUILD = dict(simulation_sources=_WRITTEN_SOURCES, simulation_share=_LA
                        accent_source="wildchat")
 
 # Each language build's locale is its AOSP word list's (`locale=` in the list's header). The pinned
-# profanity list has English terms alone.
+# profanity list has English terms alone; German and French leave out Multilingual HateCheck's slurs.
 LANGUAGES = {
     "en": TypingLanguage(identifier="en", locale="en_US", text=ENGLISH_TEXT,
                          profanity_list="en.json"),
-    # The AOSP German word list's header asks for German umlaut processing, which lets "ue",
-    # "oe", and "ae" type "ü", "ö", and "ä": WildChat's German turns write 1.1% of their words
-    # with an umlaut so.
+    # The AOSP German word list's header asks for German umlaut processing, which lets an umlaut
+    # be typed as its letter followed by an "e".
     "de": TypingLanguage(identifier="de", locale="de",
                          dictionary_attributes=(("REQUIRES_GERMAN_UMLAUT_PROCESSING", 1),),
-                         **_LANGUAGE_BUILD),
+                         hatecheck_dataset="german", **_LANGUAGE_BUILD),
     "es": TypingLanguage(identifier="es", locale="es", **_LANGUAGE_BUILD),
-    "fr": TypingLanguage(identifier="fr", locale="fr", **_LANGUAGE_BUILD),
+    "fr": TypingLanguage(identifier="fr", locale="fr", hatecheck_dataset="french", **_LANGUAGE_BUILD),
 }
 
 

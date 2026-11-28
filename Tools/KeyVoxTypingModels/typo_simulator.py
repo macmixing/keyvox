@@ -9,6 +9,11 @@ times more often. The spreads, the rates, the length factors, and the gamma dist
 shape come from `calibrate_typo_simulator.py`, which sets them so that the simulator's mistakes,
 measured as ITE typists' were, match theirs.
 
+Each word draws its randomness from a stream of its own, seeded by the simulator's seed and the
+key its caller names the word by (`type_word`), so how one word is typed never re-draws another:
+a change to how a letter is typed moves another word only through how often each key is meant,
+which the spreads' miss rates are weighed over (`letters`).
+
 For a word, in order:
 1. Each pair of neighboring different letters is swapped at the transposition rate.
 2. Each letter is left out at the omission rate for its place, or, the second of a double
@@ -25,10 +30,10 @@ On another layout than the one ITE typists typed on (`measured_layout`), an extr
 letter is drawn by where it sits from the letter's key instead: each place a key beside it can sit,
 as often as ITE typists' extra keys beside a letter sat there, among the places with a key.
 
-A letter without a key of its own on the layout (`accents`, from `measure_accent_typing.py`), such
-as French "é", is tapped at its base letter's key, as a long press there types it; a tap that lands
-on that key types the letter, or, at its measured rate, its plain spelling ("e", or "ss" for
-German "ß"), and a tap on another key types that key's letter."""
+A letter without a key of its own on the layout (`accents`, from `measure_accent_typing.py`) is
+tapped at its base letter's key, as a long press there types it; a tap that lands on that key types
+the letter, or, at its measured rate, its plain spelling, and a tap on another key types that
+key's letter."""
 
 import random
 from bisect import bisect
@@ -106,7 +111,7 @@ class TypoSimulator:
         """`letters`, how often each letter is meant at each place in a word, defaults to the
         measured ITE typists'; `accents` gives each letter without a key its key and plain
         spelling and how often it is typed plain."""
-        self.rng = random.Random(seed)
+        self.seed = seed
         self.keys = layout.keys
         self.accents = accents or {}
         letters = letters or measurements["letters"]
@@ -136,9 +141,10 @@ class TypoSimulator:
         spreads."""
         return float(np.interp(misses, self.miss_ratios[position], SPREAD_SCALES))
 
-    def type_word(self, word):
-        """The letters typed for the word."""
-        rng = self.rng
+    def type_word(self, word, key):
+        """The letters typed for the word, drawn from the stream of `key`, which names this typing
+        of the word apart from every other the caller asks for."""
+        rng = random.Random(f"{self.seed}\t{key}")
         apostrophe = word.find("'")
         letters = list(word.replace("'", ""))
         sloppiness = (self.length_factors[max(1, min(len(letters), LONGEST_COUNTED_LENGTH))]

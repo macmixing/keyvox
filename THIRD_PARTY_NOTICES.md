@@ -205,7 +205,7 @@ Attribution: Based on the OpenAssistant OASST2 dataset created by the OpenAssist
 Attribution: Based on YouTube-Commons by PleIAs: transcripts of videos their creators published under the Creative Commons Attribution license, each credited to its channel in the dataset.
 
 ### Multilingual typing-language sources (derived predictive-keyboard data)
-- Note: The entries below are the sources of the German, Spanish, and French typing-language data that `Tools/KeyVoxLanguageModel` builds: the non-reversible word, word-pair, and word-sequence count artifact and the non-reversible sentence-opener, capitalized-spelling, next-word, and grammar-word lists, and the vocabulary they are built with. `Tools/KeyVoxTypingModels` builds those languages' typing dictionaries (the vocabulary with non-reversible word, word-pair, and word-sequence probabilities from the same counts) and their correction and completion rankers (trained on typing simulated on Tatoeba and OASST2 sentences) from that data. German's are bundled with `Packages/KeyVoxPredictiveKeyboard` (`PredictiveData/de`) and its capitalized-spelling list with `Packages/KeyVoxLinguistics`; Spanish's and French's are not bundled yet. Tatoeba, OASST2, and YouTube-Commons are credited above, and their German, Spanish, and French text is used the same way.
+- Note: The entries below are the sources of the German, Spanish, and French typing-language data that `Tools/KeyVoxLanguageModel` builds: the non-reversible word, word-pair, and word-sequence count artifact and the non-reversible sentence-opener, capitalized-spelling, next-word, and grammar-word lists, and the vocabulary they are built with. `Tools/KeyVoxTypingModels` builds those languages' typing dictionaries (the vocabulary with non-reversible word, word-pair, and word-sequence probabilities from the same counts) and their correction and completion rankers (trained on typing simulated on Tatoeba and OASST2 sentences) from that data; none of these are bundled yet. Tatoeba, OASST2, and YouTube-Commons are credited above, and their German, Spanish, and French text is used the same way.
 
 ### Tatoeba German, Spanish, and French sentences (derived predictive-keyboard data)
 - Source: <https://tatoeba.org/en/downloads>
@@ -252,7 +252,7 @@ Attribution: Based on Open Discourse (Richter et al.): the speeches of the Germa
 - Upstream revision: `127336e9f29d69607eab55982324b210279ae8c5`
 - License: Apache License 2.0
 - License URL: <https://www.apache.org/licenses/LICENSE-2.0>
-- Note: The German, Spanish, and French vocabularies are modified versions of the `de`, `es`, and `fr` word lists: single words only, with their capitals settled by Wikidata Lexemes, Grammalecte, and RLA-ES, and the German one with the Wikidata Lexemes words its sentences write as often as the list's own words, which the list lacks. The typing dictionaries `Tools/KeyVoxTypingModels` builds for those languages hold the vocabularies' words in lowercase.
+- Note: The German, Spanish, and French vocabularies are modified versions of the `de`, `es`, and `fr` word lists: single words only, with their capitals settled by Wikidata Lexemes, Grammalecte, and RLA-ES. The typing dictionaries `Tools/KeyVoxTypingModels` builds for those languages hold the vocabularies' words in lowercase.
 
 Copyright (c) 2008, The Android Open Source Project
 
@@ -260,7 +260,7 @@ Copyright (c) 2008, The Android Open Source Project
 - Source: <https://dumps.wikimedia.org/wikidatawiki/entities/>
 - License: CC0 1.0
 - License URL: <https://creativecommons.org/publicdomain/zero/1.0/>
-- Note: German, Spanish, and French word forms and their lexical categories settle the capitals in the vocabularies and tell German nouns from names; German forms its sentences write often fill in the words the German word list lacks.
+- Note: German, Spanish, and French word forms and their lexical categories settle the capitals in the vocabularies and tell German nouns from names.
 - Note: `Tools/KeyVoxEmojiData` reads the German, Spanish, and French nouns' forms from the dump of November 18, 2026, so `KeyVoxEmoji`'s search data for those languages finds a noun's emoji by its other forms, such as its plural.
 
 Attribution: Based on Wikidata Lexemes.
@@ -314,9 +314,17 @@ Copyright (c) 2025 FUTO
 - Source: <https://github.com/dsojevic/profanity-list> (revision `c27924319aa9bd6f917e3782b4f4b6604a50b652`)
 - License: MIT
 - License URL: <https://github.com/dsojevic/profanity-list/blob/c27924319aa9bd6f917e3782b4f4b6604a50b652/LICENSE>
-- Note: The predictive keyboard's English dictionary and swipe vocabulary leave out the words that the list's English terms tagged racial or anti-LGBTQ, or religious at strong severity or above, match (`Tools/KeyVoxTypingModels/offensive_words.py`); none of its files are copied into them. The list has no German, Spanish, or French terms, and is not used for those languages.
+- Note: The predictive keyboard's English dictionary and swipe vocabulary leave out the words that the list's English terms tagged racial or anti-LGBTQ, or religious at strong severity or above, match (`Tools/KeyVoxTypingModels/offensive_words.py`); none of its files are copied into them. The list has no German, Spanish, or French terms, and is not used for those languages (German and French use Multilingual HateCheck, below).
 
 Copyright (c) 2021 David Sojevic
+
+### Multilingual HateCheck (build-time word filter)
+- Source: <https://huggingface.co/datasets/Paul/hatecheck-german> (revision `5229a5cc475f36c08d03ca52f0ccb005705e60d2`) and <https://huggingface.co/datasets/Paul/hatecheck-french> (revision `5d3085f2129139abc10d2b58becd4d4f2978e5d5`)
+- License: CC BY 4.0
+- License URL: <https://creativecommons.org/licenses/by/4.0/>
+- Note: The German and French typing dictionaries `Tools/KeyVoxTypingModels` builds leave out the slurs of the datasets' slur test cases that target Black, immigrant, Indigenous, gay, trans, Jewish, or Muslim people, in the forms the test cases write them (`Tools/KeyVoxTypingModels/hatecheck_slurs.py`, `offensive_words.py`); none of its files are copied into them, and none of these dictionaries are bundled yet.
+
+Attribution: Based on Multilingual HateCheck by Röttger, Seelawi, Nozza, Talat, and Vidgen, *Multilingual HateCheck: Functional Tests for Multilingual Hate Speech Detection Models* (2022).
 
 ### MIT License (applies to `whisper.cpp`, OpenAI Whisper, `llama.cpp`, Hex, swipe.futo.org, and the Profanity List above)
 

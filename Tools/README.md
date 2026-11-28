@@ -112,24 +112,6 @@ PYTHON=<data-dir>/venv/bin/python Tools/KeyVoxTypingModels/build_typing_models.s
 PYTHON=<venv>/bin/python Tools/KeyVoxTypingModels/build_typing_models.sh <data-dir> --language de --language-file <language.json>
 ```
 
-### `KeyVoxTypingHarness/`
-
-Types sentences through the predictive keyboard with simulated fingers and scores what comes out:
-`plan` writes a reproducible plan of taps, `evaluate` scores autocorrection, completions, and next
-words word by word, and `compare` types the plan through the keyboard's typing session, beside
-Apple's keyboard's results for the same taps when given. `--language <id>` on `plan` (or
-`evaluate` from a corpus) types a bundled typing language other than English: the plan names it,
-its taps aim at that language's letter layout, its sentences are those its keys can type (a letter
-only a held popup offers, such as German "ß", is picked from it exactly), and `compare` also says
-how many words come out with the capitals the corpus writes them with, such as German nouns. A tap
-on a language's accent key types what the keyboard's accent key would (`AccentKey`).
-Without `--language`, plans and scores are English's as before.
-
-```bash
-swift run -c release --package-path Tools/KeyVoxTypingHarness KeyVoxTypingHarness \
-  plan --corpus <sentences.txt> --language de --sentences 400 --noise 0.25 --output <plan.json>
-```
-
 ## Update Feed
 
 ### `UpdateFeed/configure_local_feed.sh`
