@@ -36,6 +36,7 @@ extension KeyboardViewController {
         }
         letterCaseController.reset()
         synchronizeLetterCase()
+        updateAccentKey()
         refreshPredictions()
     }
 
@@ -71,6 +72,7 @@ extension KeyboardViewController {
         isReturnKeyEnabled = fieldAllowsReturn()
         predictionCoordinator.textDidChange()
         synchronizeLetterCase()
+        updateAccentKey()
         refreshPredictions()
         updateActiveInsertionVisualState()
     }
@@ -109,6 +111,8 @@ extension KeyboardViewController {
             return applyWordBoundary(separator: " ", emitsKeypress: true)
         case .returnKey:
             return applyWordBoundary(separator: "\n", emitsKeypress: true)
+        case let .character(value) where KeyboardTypingLanguage.current.accentKey?.isMark(value) == true:
+            return applyAccentMark(value)
         case let .character(value) where Self.wordEndingCharacters?.contains(value) == true:
             let separator = activation.isHeldKeyChoice
                 ? value
@@ -171,16 +175,19 @@ extension KeyboardViewController {
     }
 
     /// Records a typed letter's touch for prediction and ends a one-letter shift. A letter picked
-    /// from a held key's popup was not tapped where it sits, so the word's touches stop lining up
-    /// and it is scored from key centers.
+    /// from a held key's popup counts as a tap at the center of the key held to pick it, so the
+    /// word's touches keep lining up with its letters.
     func recordTypedCharacter(_ activation: KeyboardKeyActivation) {
         guard case let .character(value) = activation.kind,
               value.count == 1,
               value.first?.isLetter == true else {
             return
         }
-        if symbolPage == .letters, activation.isHeldKeyChoice == false {
-            predictionCoordinator.recordTap(at: activation.location)
+        if symbolPage == .letters {
+            let location = activation.isHeldKeyChoice && activation.keyFrame.isNull == false
+                ? CGPoint(x: activation.keyFrame.midX, y: activation.keyFrame.midY)
+                : activation.location
+            predictionCoordinator.recordTap(at: location)
         }
         letterCaseController.consumeTypedLetter()
     }
@@ -276,6 +283,12 @@ extension KeyboardViewController {
               activation.isRepeat == false else {
             return nil
         }
+        if case let .character(value) = activation.kind, activation.isHeldKeyChoice == false,
+           let accentKey = KeyboardTypingLanguage.current.accentKey,
+           value == accentKey.character || accentKey.isMark(value) || value == SmartQuotes.apostrophe {
+            // On the letter page only the accent key shows these.
+            return .accentKey
+        }
         return Self.contestedKey(for: activation.kind)
     }
 
@@ -320,6 +333,7 @@ extension KeyboardViewController {
             predictionCoordinator.prepare()
         }
         synchronizeLetterCase()
+        updateAccentKey()
         refreshPredictions()
     }
 

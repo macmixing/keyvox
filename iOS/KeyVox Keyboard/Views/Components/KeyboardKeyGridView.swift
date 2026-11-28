@@ -95,6 +95,7 @@ final class KeyboardKeyGridView: UIView {
     /// more than one; never in the emoji search, whose space bar types into the search.
     var allowsSpaceLanguageSlide = false
     private(set) var letterCase: KeyboardLetterCase = .lowercase
+    private(set) var accentKeyLabel: KeyboardAccentKeyLabel?
     private(set) var isKeyboardEnabled = true
     weak var popupContainerView: UIView?
     weak var popupOwnerKeyView: KeyboardKeyView?
@@ -175,6 +176,13 @@ final class KeyboardKeyGridView: UIView {
         guard letterCase != self.letterCase else { return }
         self.letterCase = letterCase
         currentPage?.apply(letterCase: letterCase, isTrackpadModeActive: spaceTrackpadController.isActive)
+    }
+
+    /// Shows the accent key as `label` says, or as the letter layout draws it when nil.
+    func setAccentKeyLabel(_ label: KeyboardAccentKeyLabel?) {
+        guard label != accentKeyLabel else { return }
+        accentKeyLabel = label
+        currentPage?.apply(accentKeyLabel: label, isTrackpadModeActive: spaceTrackpadController.isActive)
     }
 
     /// Whether the keys are hidden while another page shows in the grid's place; the grid keeps
@@ -434,6 +442,7 @@ final class KeyboardKeyGridView: UIView {
         page.view.spacing = rowSpacing
         page.keyViews.forEach { $0.displayZoomScale = displayZoomScale }
         page.apply(letterCase: letterCase, isTrackpadModeActive: spaceTrackpadController.isActive)
+        page.apply(accentKeyLabel: accentKeyLabel, isTrackpadModeActive: spaceTrackpadController.isActive)
         updateAllKeyStates()
         setNeedsLayout()
     }

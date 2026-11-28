@@ -22,6 +22,7 @@ final class KeyboardKeyGridPage {
     private(set) var keyViews: [KeyboardKeyView] = []
     private var baseModels: [ObjectIdentifier: KeyboardKeyModel] = [:]
     private var letterCase: KeyboardLetterCase
+    private var accentKeyLabel: KeyboardAccentKeyLabel?
     private let isNumberPad: Bool
     private var letterRowLayoutGeometries: [KeyboardLayoutGeometry.LetterRowLayout] = []
     private var thirdRowLayoutGeometry: KeyboardLayoutGeometry.ThirdRowLayout?
@@ -108,9 +109,21 @@ final class KeyboardKeyGridPage {
     func apply(letterCase: KeyboardLetterCase, isTrackpadModeActive: Bool) {
         guard letterCase != self.letterCase else { return }
         self.letterCase = letterCase
+        relabelKeys(isTrackpadModeActive: isTrackpadModeActive)
+    }
+
+    /// Shows the accent key as `accentKeyLabel` says, or as the layout draws it when nil.
+    func apply(accentKeyLabel: KeyboardAccentKeyLabel?, isTrackpadModeActive: Bool) {
+        guard accentKeyLabel != self.accentKeyLabel else { return }
+        self.accentKeyLabel = accentKeyLabel
+        relabelKeys(isTrackpadModeActive: isTrackpadModeActive)
+    }
+
+    /// Relabels the keys whose label the letter case or the accent key's label changes.
+    private func relabelKeys(isTrackpadModeActive: Bool) {
         for keyView in keyViews {
             guard let baseModel = baseModels[ObjectIdentifier(keyView)] else { continue }
-            let casedModel = baseModel.applying(letterCase)
+            let casedModel = baseModel.applying(letterCase).showing(accentKeyLabel)
             guard casedModel != keyView.model else { continue }
             keyView.apply(
                 model: casedModel,

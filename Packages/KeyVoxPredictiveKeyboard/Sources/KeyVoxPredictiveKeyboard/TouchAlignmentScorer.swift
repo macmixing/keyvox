@@ -123,13 +123,15 @@ public struct TouchAlignmentScorer: Sendable {
     }
 
     /// The keys a word's letters are aimed at, lowercased: a letter that has a key of its own is
-    /// aimed at it, and an accented letter that has none at its plain letter's key, as a long
-    /// press on that key types it.
+    /// aimed at it, an accented letter that has none at its plain letter's key, as a long press on
+    /// that key types it, and any other letter at the key whose popup offers it, such as French
+    /// "œ" at "o".
     private func aimedLetters(_ word: String) -> [Character] {
         word.replacingOccurrences(of: "’", with: "'").lowercased().map { letter in
             guard keys.center(of: letter) == nil else { return letter }
             let plain = String(letter).folding(options: .diacriticInsensitive, locale: nil)
-            return plain.count == 1 ? Character(plain) : letter
+            if plain.count == 1, keys.center(of: Character(plain)) != nil { return Character(plain) }
+            return keys.offeringKey(of: letter) ?? (plain.count == 1 ? Character(plain) : letter)
         }
     }
 }

@@ -76,6 +76,7 @@ public struct TypingTextContext: Sendable, Equatable {
     /// language writes ordinal numbers with a period (`TypingTextRules.ordinalPeriods`), a period
     /// right after a digit ends no sentence.
     public static func startsSentence(after text: String, rules: TypingTextRules = .standard) -> Bool {
+        if let spaced = rules.spacedOpeningMark, endsWithUnspacedOpeningMark(text, spaced) { return false }
         let beforeOpeningMarks = trimmingEnd(of: text[...], while: isQuotationMark)
         guard let last = beforeOpeningMarks.last else { return true }
         if last.isNewline { return true }
@@ -83,6 +84,17 @@ public struct TypingTextContext: Sendable, Equatable {
         let sentence = trimmingEnd(of: beforeOpeningMarks) { $0.isWhitespace && $0.isNewline == false }
         let beforeClosingMarks = trimmingEnd(of: sentence, while: isQuotationMark)
         return sentenceStart(in: beforeClosingMarks, rules: rules) == beforeClosingMarks.endIndex
+    }
+
+    /// Whether the marks and spaces ending `text` hold `spaced.mark` without `spaced.space` right
+    /// after it, as when the mark is picked from a held key's popup instead of typed with the
+    /// quote key.
+    private static func endsWithUnspacedOpeningMark(
+        _ text: String,
+        _ spaced: TypingTextRules.SpacedMark
+    ) -> Bool {
+        let tail = Array(text.reversed().prefix { ($0.isWhitespace && $0.isNewline == false) || isQuotationMark($0) }.reversed())
+        return tail.indices.contains { tail[$0] == spaced.mark && ($0 + 1 < tail.count ? tail[$0 + 1] != spaced.space : true) }
     }
 
     private static func isQuotationMark(_ character: Character) -> Bool {

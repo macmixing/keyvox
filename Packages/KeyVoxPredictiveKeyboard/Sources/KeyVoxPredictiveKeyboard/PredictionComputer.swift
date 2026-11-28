@@ -18,6 +18,8 @@ public final class PredictionComputer: @unchecked Sendable {
     /// after words at 1.4 times or less ("and", "with", "like").
     static let everydayWordContextLogLift = log(1.5)
     private var keys: KeyCenterMap
+    /// For letters only a held key's popup offers, the key held to pick them.
+    private let offeringKeys: [Character: Character]
     private var neighborKeySlips: NeighborKeySlips
     private var vocabulary = PersonalVocabulary.empty
     private var forms = PersonalWordForms.empty
@@ -32,14 +34,15 @@ public final class PredictionComputer: @unchecked Sendable {
         self.engine = engine
         casing = engine.language.casing
         self.parameters = parameters
-        keys = KeyCenterMap(geometry: engine.language.letterLayout.defaultGeometry)
+        offeringKeys = (try? HeldKeyCharacters.bundled(for: engine.language))?.letterKeysOfOfferedLetters ?? [:]
+        keys = KeyCenterMap(geometry: engine.language.letterLayout.defaultGeometry, offeringKeys: offeringKeys)
         neighborKeySlips = NeighborKeySlips(keys: keys)
     }
 
     /// Call whenever the letter keys move or resize.
     public func updateKeyboardGeometry(_ geometry: [PredictionKeyGeometry], keyboardSize: CGSize) {
         guard engine.updateKeyboardGeometry(geometry, keyboardSize: keyboardSize) else { return }
-        let keys = KeyCenterMap(geometry: geometry)
+        let keys = KeyCenterMap(geometry: geometry, offeringKeys: offeringKeys)
         let neighborKeySlips = NeighborKeySlips(keys: keys)
         lock.lock()
         self.keys = keys
@@ -357,19 +360,7 @@ public final class PredictionComputer: @unchecked Sendable {
 
         var letters: [ContestedTap.Letter] = []
         for (letter, distance) in nearby {
-            let prefix = typed + String(letter)
-            // The likeliest words under the exact letters, not a typo-tolerant prediction: the
-            // tap is waiting on this, and only words that start with the letters count.
-            let completions = try engine.likeliestWords(startingWith: prefix, limit: 8)
-                + engine.personalSuggestions(typedWord: prefix, touches: [])
-                + [prefix]
-            var continuation: Double?
-            for word in completions where word.lowercased().hasPrefix(prefix) {
-                let score = try language.score(of: word, previousWords: request.previousWords)
-                guard score.isDictionaryWord else { continue }
-                continuation = max(continuation ?? -.infinity, score.logProbability)
-            }
-            if let continuation {
+            if let continuation = try continuation(of: typed + String(letter), language: language, request: request) {
                 letters.append(ContestedTap.Letter(
                     letter: letter,
                     distance: distance,
@@ -379,7 +370,12 @@ public final class PredictionComputer: @unchecked Sendable {
         }
 
         var ending: Double?
-        if typed.isEmpty == false {
+        if otherKey == .accentKey, typed.isEmpty == false, let accentKey = engine.language.accentKey,
+           let mark = accentKeyMark(after: typed) {
+            let left = accentKey.edit(placing: mark, after: typed).map { String(typed.dropLast($0.deleteCount)) + $0.insertText }
+                ?? typed + engine.language.textRules.straightApostrophes(in: mark)
+            ending = try continuation(of: left.lowercased(), language: language, request: request)
+        } else if typed.isEmpty == false {
             let score = try language.score(of: typed, previousWords: request.previousWords)
             ending = score.isDictionaryWord ? score.logProbability : nil
         }
@@ -390,6 +386,26 @@ public final class PredictionComputer: @unchecked Sendable {
             letters: letters,
             endingLogProbability: ending
         ))
+    }
+
+    /// The likeliest real word beginning with `prefix`, scored in context, or nil when none does.
+    /// It reads the likeliest words under the exact letters, not a typo-tolerant prediction: a
+    /// tap is waiting on this, and only words that start with the letters count.
+    private func continuation(
+        of prefix: String,
+        language: ContextLanguageScorer,
+        request: PredictionRequest
+    ) throws -> Double? {
+        let completions = try engine.likeliestWords(startingWith: prefix, limit: 8)
+            + engine.personalSuggestions(typedWord: prefix, touches: [])
+            + [prefix]
+        var continuation: Double?
+        for word in completions where word.lowercased().hasPrefix(prefix) {
+            let score = try language.score(of: word, previousWords: request.previousWords)
+            guard score.isDictionaryWord else { continue }
+            continuation = max(continuation ?? -.infinity, score.logProbability)
+        }
+        return continuation
     }
 
     /// Text replacements always expand; words the cursor is in and known names are never

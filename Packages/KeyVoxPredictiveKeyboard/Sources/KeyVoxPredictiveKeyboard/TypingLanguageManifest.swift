@@ -8,6 +8,28 @@ struct TypingLanguageManifest: Decodable {
         let closingSingle: String
         let openingDouble: String
         let closingDouble: String
+        /// The space the quote key types inside its marks, after the opening mark and before the
+        /// closing one; none when absent.
+        let spaceInsideDouble: String?
+
+        /// The opening double mark and the space the quote key types inside it, when it types one.
+        var spacedOpeningMark: TypingTextRules.SpacedMark? {
+            guard let space = spaceInsideDouble, space.count == 1, openingDouble.count == 1 else { return nil }
+            return TypingTextRules.SpacedMark(mark: Character(openingDouble), space: Character(space))
+        }
+    }
+
+    /// The key beside the letters that puts accents on them and types the apostrophe
+    /// (`AccentKey`).
+    struct AccentKey: Decodable {
+        /// The character the letter layouts draw on the key.
+        let character: String
+        /// Each mark the key or its popup puts on letters, with its Unicode combining mark.
+        let combiningMarks: [String: String]
+        /// The marks the key itself shows, in the order a tie between them is settled.
+        let keyMarks: [String]
+        /// The mark the key shows after each lowercase letter when no mark makes a known word.
+        let usualMarks: [String: String]
     }
 
     /// The letters single-letter edits of a typed word try, in the order they are tried.
@@ -17,6 +39,8 @@ struct TypingLanguageManifest: Decodable {
     /// Words always written as listed, alone or before an apostrophe.
     let alwaysCapitalizedWords: [String]
     let quotationMarks: QuotationMarks
+    /// The language's accent key, when its letter layouts have one it drives.
+    let accentKey: AccentKey?
     /// Whether a period right after a digit writes an ordinal number rather than ending the
     /// sentence (`TypingTextRules.ordinalPeriods`); false when left out.
     let ordinalPeriods: Bool?

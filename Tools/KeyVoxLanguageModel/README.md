@@ -3,8 +3,9 @@
 Builds the language data of each typing language: the files the predictive keyboard bundles
 for English in `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/PredictiveData/en`,
 the capitalized spellings shared with dictation in `Packages/KeyVoxLinguistics/Sources/KeyVoxLinguistics/Resources`,
-and the same files for German, bundled in `PredictiveData/de` (all but the swipe vocabulary, which
-needs German swipe typing), and for Spanish and French, which are built but not bundled yet:
+and the same files for German, Spanish, and French, each bundled in its own `PredictiveData/<language>`
+once the language ships there (German's are, all but the swipe vocabulary, which needs German swipe
+typing, and French's are):
 
 | File | Built by | Reads |
 | --- | --- | --- |
@@ -17,7 +18,7 @@ needs German swipe typing), and for Spanish and French, which are built but not 
 | `swipe_vocabulary.txt` | `count_swipe_words.py`, `count_swiped_words.py`, `write_swipe_vocabulary.py` | Every source, through `source_texts.py`, the words swipe.futo.org's training split had people swipe, the dictionary's words and probabilities, and SCOWL's size 80 in every spelling |
 
 The swipe vocabulary is built only for a language whose dictionary and letter layout the package
-has, so for English alone today (see "Swipe vocabulary").
+has, and is bundled with a swipe model, so for English alone today (see "Swipe vocabulary").
 
 English's dictionary, rankers, and accent overlay, bundled beside these files, are built by
 `Tools/KeyVoxTypingModels`, which builds German's, Spanish's, and French's from these builds'
@@ -138,6 +139,8 @@ whose apostrophe and ordinal periods (see "Text in each language") leave 65,402 
 than November 24's and 198 fewer words, and with the written lexicon words its vocabulary adds (see
 "Vocabulary") and contractions; German's bundled files are this build's. Every context model fills the default limits (107,000 words,
 800,000 pairs, 600,000 sequences), so each is 14,963,028 bytes, as English's is.
+Rebuilt on November 27, 2026 from the same sources, with French's `language.json` in the
+package, French gave the same bytes in every file; those are the bundled French files.
 
 | Build | Words of text | Vocabulary | Capitalized spellings | Grammar words |
 | --- | --- | --- | --- | --- |
@@ -359,8 +362,8 @@ with a split word keeps all its words.
 
 `sentence_openers.txt` holds the words the suggestion bar offers where a sentence begins.
 Each language's source weights are in `languages.py`: English's were tuned against Apple's English
-suggestion bars (youtube-commons 0, oasst2 0.3, tatoeba 10). German and French give the same
-weights by kind of source, speech 0, chat and text messages 0.3, and Tatoeba 10.
+suggestion bars (youtube-commons 0, oasst2 0.3, tatoeba 10). German, Spanish, and French give the
+same weights by kind of source, speech 0, chat and text messages 0.3, and Tatoeba 10.
 
 German's were measured against Apple's German (Germany) bars after 53 sentences
 (`apple-languages/sentence-openers/de_DE.json` in KeyVox's language data, read with `--apple`), over a
@@ -374,6 +377,13 @@ few that share more, with Tatoeba at 1, show far fewer different bars than Apple
 | 10, 0.3, 0.3, 0.1 | 1.21 of 3 | 13 | 28.5% | 8.8% | 5.9% | 20.5% | 18.4% |
 | 1, 0.3, 0.3, 0.1 | 1.30 of 3 | 8 | 27.8% | 8.9% | 6.4% | 21.5% | 20.2% |
 | 30, 0.3, 0.3, 0 | 1.23 of 3 | 22 | 29.3% | 8.0% | 4.8% | 17.2% | 15.7% |
+
+Apple's French (France) bars were captured after 52 sentences and in an empty field
+(`apple-languages/sentence-openers/fr_FR.json` in KeyVox's language data, iOS 27.2 simulator).
+With `--apple`, the bundled French openers share 1.15 of Apple's 3 words a bar and show 17
+different bars to Apple's 37. Other weights move this little: Tatoeba 3 shares 1.23, Tatoeba 1
+1.17, 88milSMS 3 1.15, 88milSMS 10 1.11, and Tatoeba 30 1.15, a few words over 53 bars, so
+French keeps the weights the languages share.
 
 ## Words spelled with capitals
 

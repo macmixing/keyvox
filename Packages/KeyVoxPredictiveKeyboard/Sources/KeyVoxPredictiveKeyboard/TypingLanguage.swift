@@ -17,6 +17,8 @@ public struct TypingLanguage: Sendable {
     public let letterLayouts: [String]
     public let casing: WordCasing
     public let quotes: SmartQuotes
+    /// The key beside the letters that puts accents on them, when the language has one.
+    public let accentKey: AccentKey?
     /// How the language's text is read: the apostrophe it types inside words, and whether a
     /// period after a digit ends a sentence.
     public let textRules: TypingTextRules
@@ -89,13 +91,15 @@ public struct TypingLanguage: Sendable {
         letterLayouts = layouts.letterLayouts
         casing = WordCasing(alwaysCapitalizedWords: manifest.alwaysCapitalizedWords)
         quotes = SmartQuotes(marks: manifest.quotationMarks)
+        accentKey = manifest.accentKey.map(AccentKey.init(manifest:))
         editLetters = manifest.editLetters
         vowels = manifest.vowels
         webEndingsLocale = manifest.webEndingsLocale
         writtenApostrophe = manifest.writtenApostrophe.map(Character.init)
         textRules = TypingTextRules(
             apostrophe: Character(manifest.quotationMarks.closingSingle),
-            ordinalPeriods: manifest.ordinalPeriods ?? false
+            ordinalPeriods: manifest.ordinalPeriods ?? false,
+            spacedOpeningMark: manifest.quotationMarks.spacedOpeningMark
         )
     }
 }
