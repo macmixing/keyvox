@@ -439,8 +439,8 @@ The setups differ, so these numbers are not a ranking:
 
 ## Other typing languages
 
-German, French, and Spanish swipe with one encoder of their own and their own lexicons; English
-keeps `r3-ft2` and its files unchanged.
+French and Spanish swipe with one encoder of their own, German with another trained from it, and
+each with its own lexicon; English keeps `r3-ft2` and its files unchanged.
 
 ### Letters
 
@@ -492,7 +492,7 @@ swipe.futo.org's layout files place the letter keys where the keyboard's own lay
 Each layout's swipes come from different people, and a half of a few hundred swipes moves a point
 for a handful of them, so the figures below pool each language's layouts.
 
-### Training the bundled model: `k1`
+### Training French's and Spanish's model: `k1`
 
 `r3-ft2` was trained on QWERTY alone. With the languages' lexicons, German's and French's swipes
 on QWERTY decode within 2 points of English's test split, and those on QWERTZ-German, QWERTZ, and
@@ -523,9 +523,47 @@ The moved validation swipes decoded 90.36% first before it and 91.58%, 91.68%, a
 each epoch (`evaluate.py`'s decoder). The bundled encoder is the first epoch's, chosen on the tune
 halves (93.37% top-1 against 93.04% after the third, with German's scoring then at frequency
 weight 0.065 and length bonus 2.3); its `swipe_encoder.kvsw` (SHA-256 `dd7ad96e…9829`) is the same
-file in `de`, `fr`, and `es`. Their `swipe.json` is English's but for its letters: with `k1`,
+file in `fr` and `es`. Their `swipe.json` is English's but for its letters: with `k1`,
 English's frequency weight and length bonus (0.045, 1.869) measured 93.33% on the tune halves,
 0.045 and 2.3 93.22%, 0.065 and 1.869 93.14%, and 0.065 and 2.3 93.23%.
+
+### Training German's model: `g6`
+
+With `k1`, German's test half decoded 2.4 points under French's and 2.5 under English's test split. Of its tune
+half's 191 misses, 73 lost to another lexicon word, 45 to another form of the same word (such as
+"den" for "dem" or "im" for "in"), 44 were words the lexicon lacks, 9 lost to an English
+vocabulary word, 9 the beam dropped, and 9 lost to their umlaut twin on a layout without umlaut
+keys ("würde" for "wurde"). English swipes moved onto German's layouts still trace English words,
+so `g6` is trained on swipes of German words:
+
+- `retarget_swipes.py` draws German words by how often German's texts write them on their own
+  (`Tools/KeyVoxLanguageModel`'s `count_swipe_words.py` table), among the 287,654 of its
+  1,057,670 words the German lexicon holds on every layout, and gives each one of QWERTZ-German,
+  QWERTZ-German, QWERTZ, QWERTY, and AZERTY. Of 2,048 English swipes drawn with a key path as
+  long on swipe.futo.org's QWERTY, the one whose keys lie nearest the word's, by mean distance,
+  is moved key by key onto the word's keys on that layout (`layout_warp.py`); 2,000,000 training
+  and 100,000 validation swipes, seed 2.
+- `rank_layouts.py --language de` reads the German lexicon on each layout as the keyboard reads
+  German there, its umlauts kept on QWERTZ-German and folded onto their base letter elsewhere, and
+  runs the ranking fine-tune from `k1`'s first epoch for 3 epochs; `g6` is a second round from
+  that run's third epoch, with fresh negatives, for 2 epochs.
+
+```bash
+python retarget_swipes.py <data-dir> de-near3 <swipe_word_counts.tsv> <unigrams.tsv> --language de \
+  --layouts QWERTZ-German,QWERTZ-German,QWERTZ,QWERTY,AZERTY --swipes 2000000 --donors 2048 --seed 2
+python rank_layouts.py <data-dir> k1e0 g5 <unigrams.tsv> --language de --swipes de-near3-train --validation de-near-val
+python rank_layouts.py <data-dir> g5e2 g6 <unigrams.tsv> --language de --swipes de-near3-train \
+  --validation de-near-val --epochs 2
+python export_weights.py <data-dir> g6 --checkpoint epoch-0.pt
+```
+
+`k1e0` and `g5e2` hold `k1`'s first epoch and `g5`'s third as `best.pt`, with their settings and
+scoring. The validation swipes (`de-near-val`, 20,000) decoded 91.23% first after `g5` and 91.64%
+and 91.59% after `g6`'s epochs. The bundled encoder is `g6`'s first epoch, chosen on German's tune
+half (92.69% with English's scoring, 92.52% after the second); its `swipe_encoder.kvsw` is SHA-256
+`240c636e…afcf`. German's `swipe.json` then takes frequency weight 0.055 and length bonus 2.8,
+chosen on the tune half from 0.035 to 0.065 and 1.6 to 3.6: 93.07%, against 92.69% at English's
+and 92.90% to 93.07% from length bonus 2.2 to 3.2 at frequency weight 0.045 and 0.055.
 
 ### Results
 
@@ -537,6 +575,9 @@ with the same lexicons and `swipe.json`:
 | de | german | 89.60 / 95.32 | 91.13 / 96.09 | 87.56 / 94.26 | 89.26 / 95.29 |
 | de | qwertz | 90.68 / 95.89 | 92.12 / 96.78 | 85.96 / 95.07 | 87.68 / 95.81 |
 | de | qwerty | 91.11 / 96.30 | 93.33 / 96.79 | 91.49 / 96.51 | 92.75 / 96.93 |
+| de `g6` | german | | 92.94 / 97.23 | | 90.51 / 96.47 |
+| de `g6` | qwertz | | 93.45 / 97.23 | | 89.90 / 95.81 |
+| de `g6` | qwerty | | 92.59 / 97.04 | | 92.75 / 96.79 |
 | fr | azerty | 89.06 / 95.43 | 92.85 / 97.76 | 86.66 / 94.15 | 92.77 / 97.42 |
 | fr | qwerty | 95.59 / 98.16 | 95.96 / 98.16 | 90.82 / 96.14 | 90.34 / 97.58 |
 | es | spanish | 95.76 / 98.55 | 96.69 / 98.86 | 93.71 / 97.60 | 95.20 / 98.40 |
@@ -549,6 +590,9 @@ Top-1 pooled by language:
 | French | 90.30% | 93.44% | 87.29% | 92.40% |
 | Spanish | 95.76% | 96.69% | 93.71% | 95.20% |
 | All three | 91.40% | 93.33% | 89.08% | 91.66% |
+
+German's bundled `g6` with its own scoring decodes 93.07% of its tune half and 91.06% of its test
+half first; with French's and Spanish's `k1`, the three pool to 93.92% and 92.21%.
 
 Beside them, English decodes 92.56% of its test split (95.84% top-3), and `r3-ft2` decodes
 swipe-5's English swipes on QWERTZ 91.17% (759), AZERTY 94.79% (96), and Dvorak 96.98% (2,250),
@@ -565,6 +609,14 @@ trie node, 4.0 MB of German's.
 ### Experiments not kept
 
 Measured on the halves above; the scoring named is German's at the time.
+
+- **German words from any English swipe** (`retarget_swipes.py` with one donor, a random English
+  swipe with a key path as long): German's tune half fell from 91.89% to 89.51%, the swipes'
+  paths bending where no person's do. Nearest of 256 donors (400,000 swipes) reached 92.22%,
+  of 1,024 (800,000) 92.44%, and a second round from it 92.61%, all with English's scoring.
+- **German scoring with `k1`.** Context weight 1.0 or 1.3 and same-path context weight 1.6 measured
+  at most `k1`'s 91.89% on the tune half; a beam of 400, 92.02%.
+- **The vocabulary without English's words** (`k1`): German's tune half 91.72%.
 
 - **The vocabulary.** With `r3-ft2` and German's scoring at frequency weight 0.065 and length
   bonus 2.3, the German test half decoded 89.52% with the swipe vocabulary, 89.24% without the
