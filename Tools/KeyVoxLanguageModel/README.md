@@ -91,7 +91,7 @@ steps:
 .venv/bin/python count_sentence_openers.py --language <language> <data-dir>
 .venv/bin/python write_sentence_openers.py --language <language> <data-dir> --output <output-dir>/sentence_openers.txt
 .venv/bin/python write_vocabulary.py --language <language> <data-dir> <output-dir>/vocabulary.txt <output-dir>/common_vocabulary.txt
-.venv/bin/python write_capitalized_spellings.py --language <language> <data-dir> <output-dir>/vocabulary.txt <output-dir>/common_vocabulary.txt <output-dir>/capitalized_spellings_<identifier>.txt
+.venv/bin/python write_capitalized_spellings.py --language <language> <data-dir> <output-dir>/vocabulary.txt <output-dir>/common_vocabulary.txt <output-dir>/capitalized_spellings_<identifier>.txt [--leave-out <left-out-words>]
 .venv/bin/python write_unknown_word_followers.py <data-dir> <output-dir>/vocabulary.txt <output-dir>/unknown_word_followers.txt
 .venv/bin/python write_word_followers.py <data-dir> <output-dir>/vocabulary.txt <output-dir>/word_followers.txt
 .venv/bin/python write_grammar_words.py <data-dir> <output-dir>/grammar_words.txt
@@ -377,8 +377,15 @@ few that share more, with Tatoeba at 1, show far fewer different bars than Apple
 ## Words spelled with capitals
 
 `capitalized_spellings_<language>.txt` holds the words the keyboard and dictation write with their
-capitals, such as "Jennifer" or "iPhone", and in German its nouns. English's is bundled in
-`Packages/KeyVoxLinguistics`. It is built from the vocabulary and the written sources.
+capitals, such as "Jennifer" or "iPhone", and in German its nouns. English's and German's are
+bundled in `Packages/KeyVoxLinguistics`. It is built from the vocabulary and the written sources.
+
+A word a pattern of `--leave-out` matches whole, by its letter form, is left out, as the language's
+dictionary leaves it out: the patterns are the ones `Tools/KeyVoxTypingModels` writes for the
+language as `work/offensive_words.txt`, so the list is written again with them once the language's
+typing models are built. German's leaves out the 4 words Multilingual HateCheck's German slurs
+match (`Tools/KeyVoxTypingModels`, "Words left out"), and is otherwise the list written without
+them. `write_swipe_vocabulary.py` reads `--leave-out` the same way.
 
 Spellings with capitals in a row are left out, as the system keyboard leaves acronyms such
 as "nasa" lowercase, except those listed in `measured_spellings.txt`, which the English system
