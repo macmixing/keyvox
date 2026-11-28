@@ -215,6 +215,17 @@ final class GermanTypingLanguageTests: XCTestCase {
         XCTAssertEqual(TypingLanguage.english.writingApostrophes("don't"), "don't")
     }
 
+    func testAWordBeforeTheCursorIsReadWhicheverApostropheItIsWrittenWith() throws {
+        // The data writes "geht's"; the keyboard writes "geht’s", and the apostrophe key "geht‘s".
+        let computer = PredictionComputer(engine: try PredictiveEngine(language: .german))
+        let bar = { (text: String) in
+            try computer.compute(PredictiveTypingSession(language: .german).request(textBeforeCursor: text)).bar.items.map(\.text)
+        }
+        let straight = try bar("Na, geht's ")
+        XCTAssertEqual(try bar("Na, geht’s "), straight)
+        XCTAssertEqual(try bar("Na, geht‘s "), straight)
+    }
+
     func testGermanBundlesNoSwipeModelSoSwipingIsNotOffered() {
         XCTAssertFalse(TypingLanguage.german.offersSwipeTyping)
         XCTAssertTrue(TypingLanguage.english.offersSwipeTyping)
