@@ -522,7 +522,8 @@ language's `vowels`.
 Built on November 27, 2026 from the language builds of November 24, with `language.json` files
 kept outside the package (German on `QWERTZ-German`, Spanish on `QWERTY-Spanish`, French on
 `AZERTY-French`, with their accented vowels as vowels); each build took about 15 minutes, with the
-others running beside it. None is bundled.
+others running beside it. None of these builds is bundled: French's bundled files are built from
+French's `language.json` in the package (see "French through the keyboard").
 
 | | de | es | fr |
 | --- | --- | --- | --- |
