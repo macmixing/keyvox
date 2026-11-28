@@ -226,6 +226,21 @@ final class GermanTypingLanguageTests: XCTestCase {
         XCTAssertEqual(try bar("Na, geht‘s "), straight)
     }
 
+    func testAWordTypedWithTheApostropheKeyIsLearned() throws {
+        let computer = PredictionComputer(engine: try PredictiveEngine(language: .german))
+        let memory = TypingMemory()
+        let typed = "Quaxel‘s"
+        for day in 0..<LearnedWords.usesToLearn {
+            let session = PredictiveTypingSession(language: .german, memory: memory, now: { Date(timeIntervalSince1970: Double(day) * 86_400) })
+            let text = "Das ist " + typed
+            let result = try computer.compute(session.request(textBeforeCursor: text))
+            XCTAssertNil(result.autocorrection, typed)
+            _ = session.wordBoundaryEdit(separator: " ", textBeforeCursor: text, result: result)
+        }
+        // Words are looked up with their apostrophes straight.
+        XCTAssertNotNil(memory.learnedVocabulary.word(TypingLanguage.german.textRules.straightApostrophes(in: typed)))
+    }
+
     func testGermanBundlesNoSwipeModelSoSwipingIsNotOffered() {
         XCTAssertFalse(TypingLanguage.german.offersSwipeTyping)
         XCTAssertTrue(TypingLanguage.english.offersSwipeTyping)

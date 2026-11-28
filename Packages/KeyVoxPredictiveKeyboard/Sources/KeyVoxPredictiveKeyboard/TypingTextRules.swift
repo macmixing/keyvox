@@ -26,4 +26,10 @@ public struct TypingTextRules: Sendable, Equatable {
     public func straightApostrophes(in word: String) -> String {
         String(word.map { $0 == "’" || $0 == apostrophe ? "'" : $0 })
     }
+
+    /// `word` with the language's apostrophe written as the typographic one, the apostrophe the
+    /// learned words are kept with beside the straight one (`PersonalVocabulary.key`).
+    public func typographicApostrophes(in word: String) -> String {
+        String(word.map { $0 == apostrophe ? Character(SmartQuotes.apostrophe) : $0 })
+    }
 }

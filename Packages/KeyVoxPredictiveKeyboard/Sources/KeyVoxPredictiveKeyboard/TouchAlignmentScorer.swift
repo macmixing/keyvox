@@ -127,7 +127,7 @@ public struct TouchAlignmentScorer: Sendable {
     /// that key types it, and any other letter at the key whose popup offers it, such as French
     /// "œ" at "o".
     private func aimedLetters(_ word: String) -> [Character] {
-        word.replacingOccurrences(of: "’", with: "'").lowercased().map { letter in
+        TypingTextRules.standard.straightApostrophes(in: word).lowercased().map { letter in
             guard keys.center(of: letter) == nil else { return letter }
             let plain = String(letter).folding(options: .diacriticInsensitive, locale: nil)
             if plain.count == 1, keys.center(of: Character(plain)) != nil { return Character(plain) }

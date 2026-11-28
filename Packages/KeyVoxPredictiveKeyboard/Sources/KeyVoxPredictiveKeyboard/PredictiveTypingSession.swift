@@ -755,9 +755,13 @@ public final class PredictiveTypingSession {
         let request = result.request
         switch result.typedWordKind {
         case .unknown:
-            memory.recordUse(of: written ?? word, after: request.isAtSentenceStart ? nil : request.previousWords.first, at: now())
+            memory.recordUse(
+                of: textRules.typographicApostrophes(in: written ?? word),
+                after: request.isAtSentenceStart ? nil : request.previousWords.first,
+                at: now()
+            )
         case .dictionaryWord where request.isAtSentenceStart == false && word != word.lowercased():
-            memory.recordCapitalUse(of: word, at: now())
+            memory.recordCapitalUse(of: textRules.typographicApostrophes(in: word), at: now())
         case .dictionaryWord, .usersWord:
             break
         }
