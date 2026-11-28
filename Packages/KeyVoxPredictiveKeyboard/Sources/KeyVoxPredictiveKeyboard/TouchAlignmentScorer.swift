@@ -54,7 +54,7 @@ public struct TouchAlignmentScorer: Sendable {
     }
 
     private func alignmentTable(touches: [CGPoint], word: String) -> [[Double]] {
-        let letters = Array(Self.foldedLetters(word))
+        let letters = aimedLetters(word)
         let touchCount = touches.count
         let letterCount = letters.count
         let unreachable = Double.greatestFiniteMagnitude / 4
@@ -102,7 +102,7 @@ public struct TouchAlignmentScorer: Sendable {
     /// Touches at the centers of the typed letters' keys, for input that arrived without
     /// touch positions.
     public func centerTouches(for typedWord: String) -> [CGPoint] {
-        Self.foldedLetters(typedWord).compactMap { keys.center(of: $0) }
+        aimedLetters(typedWord).compactMap { keys.center(of: $0) }
     }
 
     private func aimCost(_ touch: CGPoint, _ letter: Character) -> Double {
@@ -122,9 +122,16 @@ public struct TouchAlignmentScorer: Sendable {
         return parameters.skippedLetterCost
     }
 
-    /// Lowercased letters with accents removed, so "café" is aimed at the plain "e" key.
-    private static func foldedLetters(_ word: String) -> String {
-        word.replacingOccurrences(of: "’", with: "'")
-            .folding(options: [.caseInsensitive, .diacriticInsensitive], locale: nil)
+    /// The keys a word's letters are aimed at, lowercased: a letter that has a key of its own is
+    /// aimed at it, an accented letter that has none at its plain letter's key, as a long press on
+    /// that key types it, and any other letter at the key whose popup offers it, such as French
+    /// "œ" at "o".
+    private func aimedLetters(_ word: String) -> [Character] {
+        TypingTextRules.standard.straightApostrophes(in: word).lowercased().map { letter in
+            guard keys.center(of: letter) == nil else { return letter }
+            let plain = String(letter).folding(options: .diacriticInsensitive, locale: nil)
+            if plain.count == 1, keys.center(of: Character(plain)) != nil { return Character(plain) }
+            return keys.offeringKey(of: letter) ?? (plain.count == 1 ? Character(plain) : letter)
+        }
     }
 }

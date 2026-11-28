@@ -49,7 +49,7 @@ The current default runtime flow is:
 - **`../Packages/KeyVoxState/`**: shared observable-state boundary that preserves Combine behavior on Apple platforms.
 - **`../Packages/KeyVoxPromotions/`**: campaign manifest loading, eligibility, selection, persistence, and published campaign state.
 - **`../Packages/KeyVoxVoiceActivity/`**: shared Silero model, VAD protocol/configuration, actor-isolated detector, live detector for the live meter, and speech-runtime bridge.
-- **`../Packages/KeyVoxPredictiveKeyboard/`**: UI-independent English typing prediction and correction built on a bundled AOSP LatinIME native target with KeyVox ranking: the shared `PredictiveTypingSession`, `PredictionComputer`, noisy-channel and missing-space correction, completions, next-word and sentence-opener suggestions, swipe typing (the bundled swipe model's inference, the lexicon-constrained word search over the bundled dictionary and the user's own words, and the tap-versus-swipe gate), personal vocabulary, typing memory and its file, held-key characters and popup layout, smart quotes, bundled language data, and package tests; its `KeyVoxTypingLanguageCatalog` product lists the bundled typing languages and the letter layouts each offers without loading them, for hosts that do not type, such as the containing app; its `KeyVoxTypingSimulation` product types planned taps through the typing session on the KeyVox letter page's key frames, for `Tools/KeyVoxTypingHarness` and the package's typing regression check (`Tests/KeyVoxPredictiveKeyboardTests/Fixtures/typing_regression`).
+- **`../Packages/KeyVoxPredictiveKeyboard/`**: UI-independent typing prediction and correction for each bundled typing language, built on a bundled AOSP LatinIME native target with KeyVox ranking: the shared `PredictiveTypingSession`, `PredictionComputer`, noisy-channel and missing-space correction, completions, next-word and sentence-opener suggestions, swipe typing (the bundled swipe model's inference, the lexicon-constrained word search over the bundled dictionary and the user's own words, and the tap-versus-swipe gate), personal vocabulary, typing memory and its file, held-key characters and popup layout, smart quotes, bundled language data, and package tests; its `KeyVoxTypingLanguageCatalog` product lists the bundled typing languages and the letter layouts each offers without loading them, for hosts that do not type, such as the containing app; its `KeyVoxTypingSimulation` product types planned taps through the typing session on the KeyVox letter page's key frames, for `Tools/KeyVoxTypingHarness` and the package's typing regression check (`Tests/KeyVoxPredictiveKeyboardTests/Fixtures/typing_regression`).
 - **`../Packages/KeyVoxEmoji/`**: UI-independent emoji catalog in the system emoji keyboard's categories and order, emoji search, Frequently Used ranking, suggestion-bar emoji by word, two-person skin tones, bundled emoji data, and package tests.
 - **`../Packages/KeyVoxKeyboardThemes/`**: UI-independent keyboard theme identifiers with their saved-value fallback, the per-platform theme catalog, each theme's light and dark key palette and swipe trail style, and package tests.
 - **`../Packages/KeyVoxTextComposition/`**: platform-neutral leading-capitalization, leading-spacing, quotation-mark context, sentence-boundary, adjacent terminal-punctuation, and trailing-separator policy used immediately before insertion.
@@ -547,6 +547,7 @@ iOS/
 │   │   ├── KeyboardDisplayZoom.swift
 │   │   ├── KeyboardFieldBottomRowKeys.swift
 │   │   ├── KeyboardFieldKeys.swift
+│   │   ├── KeyboardWebEndings.swift
 │   │   ├── KeyboardFoldableDisplay.swift
 │   │   ├── KeyboardScreenShape.swift
 │   │   ├── KeyboardDictationModelStatus.swift
@@ -767,8 +768,10 @@ Packages/
 │   │   │   ├── PredictionRequest.swift
 │   │   │   ├── PredictionResult.swift
 │   │   │   ├── PredictiveData/
+│   │   │   │   ├── de/
 │   │   │   │   ├── en/
-│   │   │   │   └── letter_layouts/
+│   │   │   │   ├── letter_layouts/
+│   │   │   │   └── web_endings.json
 │   │   │   ├── PredictiveEngine.swift
 │   │   │   ├── PredictiveTypingSession.swift
 │   │   │   ├── RepeatedPicks.swift
@@ -792,7 +795,9 @@ Packages/
 │   │   │   ├── TypingLanguageManifest.swift
 │   │   │   ├── TypingLanguageResources.swift
 │   │   │   ├── TypingTextContext.swift
+│   │   │   ├── TypingTextRules.swift
 │   │   │   ├── UnknownWordFollowers.swift
+│   │   │   ├── WebEndings.swift
 │   │   │   ├── WordCasing.swift
 │   │   │   └── WordFollowers.swift
 │   │   ├── KeyVoxTypingLanguageCatalog/
@@ -1781,7 +1786,9 @@ Packages/
 - `KeyVox Keyboard/Core/KeyboardOpeningLayout.swift`
   - Resolves the page and keys mode a field opens on: the full-size number pad in a numbers-only field on a display that shows it (`KeyboardDisplay.showsNumberPad`), otherwise full letter keys, or the number page in the user's Compact Keys mode when the field or Open on 123 prefers numbers.
 - `KeyVox Keyboard/Core/KeyboardFieldKeys.swift`
-  - Maps the focused field's keyboard type and return key type to its bottom row (standard, web address, web search, email, or post), its `KeyboardReturnKeyStyle`, and its number pad, and decides which pages show the field's bottom row; owns the common web ending's text.
+  - Maps the focused field's keyboard type and return key type to its bottom row (standard, web address, web search, email, or post), its `KeyboardReturnKeyStyle`, and its number pad, and decides which pages show the field's bottom row; the web ending key's text comes from `KeyboardWebEndings`.
+- `KeyVox Keyboard/Core/KeyboardWebEndings.swift`
+  - The web endings the web ending key types and offers for the device's region and languages and the keyboard's typing languages, from the package's `WebEndings`, worked out again when any of them changes.
 - `KeyVox Keyboard/Core/KeyboardFieldBottomRowKeys.swift`
   - The keys each field bottom row shows in place of the standard row's space bar and return key.
 - `KeyVox Keyboard/Core/KeyboardNumberPadGeometry.swift`
@@ -1881,7 +1888,7 @@ Packages/
 - `KeyVox Keyboard/Core/Input/KeyboardSmartDeletion.swift`
   - Decides which plain space, before or after a deleted selection, a smart-deleting field removes with it, from the bundled `smart_delete_before_word_characters.txt` and `smart_delete_after_word_characters.txt` character lists.
 - `KeyVox Keyboard/Core/Input/KeyboardSymbolPageReturnTracker.swift`
-  - Returns to the letter page right after a character that belongs inside words (as `TypingTextContext.isWordCharacter` defines it) is typed on a symbol page, or on the space that follows any other symbol-page character.
+  - Returns to the letter page right after a character that belongs inside words (as the typing language's `TypingTextRules.isWordCharacter` defines it) is typed on a symbol page, or on the space that follows any other symbol-page character.
 - `KeyVox Keyboard/Core/Input/KeyboardHeldKeyController.swift`
   - Times a finger on a key that offers held-key characters, opens the popup through the typing language's `HeldKeyCharacters`, read again when the language changes, follows the finger across its cells, and reports whether the touch chose a character, closed the popup, or never opened it; in the web endings popup the selection follows the finger's movement from where it was when the popup opened.
 - `KeyVox Keyboard/Core/Input/KeyboardDeleteRepeatSchedule.swift`
@@ -1997,7 +2004,7 @@ Packages/
 - `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/PredictionComputer.swift`
   - Computes the suggestion bar and space-bar autocorrection for a `PredictionRequest`, revisions for a `RevisionRequest`, and the intended letter for a contested tap; takes the keyboard geometry, personal vocabulary, and learned vocabulary from the host.
 - `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/TypingLanguage.swift`, `TypingLanguageManifest.swift`, and `TypingLanguageResources.swift`
-  - One bundled typing language read from its `PredictiveData/<language>` folder: its files, and from its `language.json` its default letter layout and the alternatives Apple's keyboard offers in Apple's order, edit letters, vowels, always-capitalized words (`WordCasing`), and quotation marks (`SmartQuotes`).
+  - One bundled typing language read from its `PredictiveData/<language>` folder: its files, and from its `language.json` its default letter layout and the alternatives Apple's keyboard offers in Apple's order, edit letters, vowels, always-capitalized words (`WordCasing`), quotation marks (`SmartQuotes`), and text rules (`TypingTextRules`: the apostrophe it types inside words and whether a period after a digit ends a sentence). The bundled languages are English (`en`) and German (`de`).
 - `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxTypingLanguageCatalog/`
   - The `KeyVoxTypingLanguageCatalog` product: `TypingLanguageCatalog` lists every folder in a copy of `PredictiveData` that has a `language.json`, reading only that file, and finds the copy inside another bundle by the typing package's resource bundle name; `TypingLanguageLetterLayouts` decodes a language's identifier, default layout, and alternatives from it, the single reader of those fields, which `TypingLanguage` uses too. `TypingLanguageCatalog+Bundled.swift` in the main target reads the package's own copy.
 - `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/LetterKeyLayout.swift` and `LetterKeyRow.swift`
@@ -2007,7 +2014,7 @@ Packages/
 - `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/PredictiveEngine.swift`
   - Loads a typing language's dictionary, context model, rankers, accent overlay, and word lists, and bridges to the `KeyVoxPredictiveNative` LatinIME target, handing it the language's edit letters and vowels.
 - `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/NoisyChannelCorrector.swift`, `SuggestionCandidateRanker.swift`, `MissingSpaceCorrector.swift`, `TouchAlignmentScorer.swift`, and `ContextLanguageScorer.swift`
-  - Score candidates by context likelihood against where the touches landed, decide when space replaces the typed word, rank completions and corrections on one score, and read a typed word as two words whose space was missed.
+  - Score candidates by context likelihood against where the touches landed, a letter only a held key's popup offers aimed at that key (`KeyCenterMap`), decide when space replaces the typed word, rank completions and corrections on one score, and read a typed word as two words whose space was missed.
 - `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/SuggestionBar.swift` and `SuggestionBarComposer.swift`
   - Role-based suggestion-bar model (primary, leading, trailing, and emoji items) and its composition while a word is typed, between words, and for putting a correction back.
 - `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/PersonalVocabulary.swift` and `PersonalWordForms.swift`
@@ -2016,8 +2023,10 @@ Packages/
   - What the keyboard learns from typing: turned-down corrections, learned words, and learned capitals, shared by every session while the keyboard runs, saved to a host-chosen JSON file under a reset generation, and forgettable per word.
 - `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/HeldKeyCharacters.swift` and `HeldKeyPopupLayout.swift`
   - Bundled held-key characters per key with the side each popup opens toward, and the popup cell layout that reaches the keyboard's edge and spills to the other side, or takes a second row, when an offer does not fit; a centered offer, such as the web endings, keeps its listed order and slides along to stay on the keyboard.
-- `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/SmartQuotes.swift`, `CharacterList.swift`, and `TypingTextContext.swift`
-  - The typing language's opening and closing quote marks, its bundled character lists that end words, shape picked-word spacing, or suppress next-word suggestions, and the word and sentence context read around the cursor.
+- `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/SmartQuotes.swift`, `CharacterList.swift`, `TypingTextContext.swift`, and `TypingTextRules.swift`
+  - The typing language's opening and closing quote marks, its bundled character lists that end words, shape picked-word spacing, or suppress next-word suggestions, and the word and sentence context read around the cursor by the language's text rules (German's apostrophe "‘" inside words, its ordinal numbers' periods, which end no sentence).
+- `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/WebEndings.swift`
+  - The web endings a web address field's key types and offers, chosen as Apple's keyboard chooses them from the device's region and languages and the keyboard's languages, from the lists of Apple's keyboard files (`PredictiveData/web_endings.json`, written by `Tools/AppleKeyboardBaseline/write_web_endings.py`).
 - `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/Swipe/`
   - Swipe typing, one job per file: `SwipeGate` (tap versus swipe), `SwipeTouchSample`, `SwipeKeyboardFrame` (live key geometry into the model's frame), `SwipePathResampler`, `SwipeMotionFeatures`, `SwipeTensorFile` (memory-mapped fp16 weights), `SwipeMath` (Accelerate kernels with plain-Swift fallbacks), `SwipeEncoderNetwork`, `SwipeDecoderNetwork`, `SwipeLexiconFormat`, `SwipeLexiconBuilder`, and `SwipeLexicon` (the memory-mapped key-path trie), `SwipeVocabulary` (the words the trie holds beside the dictionary's), `SwipeLetterForm`, `SwipeBeamSearch`, `SwipeKeyVisits` (a swipe lined up with a key path), `SwipeKeyLoop` (loops around keys, which double their letters), `SwipeKeySquiggle` (squiggles over keys, which double them as loops do), `SwipeTwinFacts` (what the language's data says about a doubled-letter twin), `SwipeLandingKey` (where a swipe lands, between words that differ only in their first key), `SwipeCandidateScoring`, `SwipeModelSettings` (`swipe.json`), `SwipeWordDecoder`, `SwipeDecoding` (the computer's loaded decoder and the user's-words lexicon), `SwipeCandidate`, `SwipeWordCase`, and `PredictionComputer+Swipe` (`swipeWords(for:previousWords:wordCase:limit:)`, written as typing writes words).
 - `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/TypedWordTouches.swift`

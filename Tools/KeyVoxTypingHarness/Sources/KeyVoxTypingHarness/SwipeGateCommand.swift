@@ -39,8 +39,7 @@ enum SwipeGateCommand {
 
     /// Returns whether any tap became a swipe.
     private static func replayTaps(plan: TypingPlan, minimumTaps: Int) throws -> Bool {
-        // Typing plans type English.
-        let layout = KeyboardLayoutModel(language: try TypingLanguage.bundled(identifier: "en"))
+        let layout = KeyboardLayoutModel(language: try TypingLanguage.bundled(identifier: plan.languageIdentifier))
         let simulator = TapStreamSimulator(layout: layout, gateParameters: SwipeGate<Int>.standardParameters)
         var failed = false
         print("simulated tapping, \(minimumTaps) taps or more per model, pitch \(String(format: "%.1f", layout.keyPitch.width)) pt")

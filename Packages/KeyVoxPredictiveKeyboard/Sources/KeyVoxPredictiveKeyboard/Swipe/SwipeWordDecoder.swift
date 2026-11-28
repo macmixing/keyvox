@@ -21,7 +21,7 @@ final class SwipeWordDecoder: @unchecked Sendable {
 
     init(language: TypingLanguage) throws {
         let resources = language.resources
-        settings = try SwipeModelSettings(contentsOf: resources.url("swipe.json"))
+        settings = try SwipeModelSettings(contentsOf: resources.url(SwipeModelSettings.fileName))
         layout = language.letterLayout
         encoder = try SwipeEncoderNetwork(contentsOf: resources.url(SwipeEncoderNetwork.fileName))
         decoder = try resources.optionalURL(SwipeDecoderNetwork.fileName).map(SwipeDecoderNetwork.init(contentsOf:))
@@ -31,7 +31,7 @@ final class SwipeWordDecoder: @unchecked Sendable {
         guard lexicon.letters == settings.letters,
               lexicon.keepsDoubleLetters == settings.keepsDoubleLetters,
               decoder.map({ $0.symbols == symbols && $0.inputs == frameWidth }) ?? true else {
-            throw PredictiveKeyboardError.invalidSwipeModel("swipe.json")
+            throw PredictiveKeyboardError.invalidSwipeModel(SwipeModelSettings.fileName)
         }
     }
 

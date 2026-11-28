@@ -1,0 +1,17 @@
+{
+  "identifier": "de",
+  "defaultLetterLayout": "QWERTZ-German",
+  "alternativeLetterLayouts": ["QWERTZ", "QWERTY", "AZERTY"],
+  "editLetters": "abcdefghijklmnopqrstuvwxyzäöüß",
+  "vowels": "aeiouyäöü",
+  "alwaysCapitalizedWords": [],
+  "quotationMarks": {
+    "openingSingle": "‚",
+    "closingSingle": "‘",
+    "openingDouble": "„",
+    "closingDouble": "“"
+  },
+  "ordinalPeriods": true,
+  "webEndingsLocale": "de_DE",
+  "writtenApostrophe": "’"
+}

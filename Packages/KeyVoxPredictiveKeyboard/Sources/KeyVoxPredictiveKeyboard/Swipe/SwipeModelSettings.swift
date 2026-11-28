@@ -58,9 +58,12 @@ public struct SwipeModelSettings: Decodable, Sendable, Equatable {
     /// How the point a swipe lands on weighs words by their first key (`SwipeLandingKey`).
     let landing: SwipeLandingKey.Settings?
 
+    /// The name of a language's swipe settings file.
+    static let fileName = "swipe.json"
+
     /// The settings of `language`'s bundled swipe model.
     public static func bundled(for language: TypingLanguage) throws -> SwipeModelSettings {
-        try SwipeModelSettings(contentsOf: language.resources.url("swipe.json"))
+        try SwipeModelSettings(contentsOf: language.resources.url(fileName))
     }
 
     public init(contentsOf url: URL) throws {

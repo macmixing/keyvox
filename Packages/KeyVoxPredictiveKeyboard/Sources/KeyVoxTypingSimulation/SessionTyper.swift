@@ -9,7 +9,8 @@ import KeyVoxPredictiveKeyboard
 /// exactly as a keyboard host applies them.
 ///
 /// Apostrophes are not tapped, matching how people type contractions on a letter page and
-/// rely on autocorrect to restore them.
+/// rely on autocorrect to restore them. A letter only a held popup offers is picked from it,
+/// exactly, at its key's center.
 public struct SessionTyper {
     /// A moment while typing a sentence: after `letters` taps of the word at index `word`, or,
     /// with no letters, after the space before it (before the first key, for the first word).
@@ -107,8 +108,9 @@ public struct SessionTyper {
         }
     }
 
-    /// Taps `letter`'s key `offset` key pitches from its center, returning the suggestion bar
-    /// after the key it hit, or nil when no key types the letter or the tap misses the keyboard.
+    /// Taps `letter`'s key `offset` key pitches from its center, or picks it from its key's popup,
+    /// returning the suggestion bar after the key it hit, or nil when no key types the letter or
+    /// the tap misses the keyboard.
     @discardableResult
     private func tap(
         _ letter: Character,
@@ -117,6 +119,9 @@ public struct SessionTyper {
         text: inout String
     ) throws -> SuggestionBar? {
         guard let center = layout.center(of: letter) else { return nil }
+        if layout.popupLetters[letter] != nil {
+            return try press(.letter(letter), at: center, session: session, text: &text)
+        }
         let touch = CGPoint(
             x: center.x + offset[0] * layout.keyPitch.width,
             y: center.y + offset[1] * layout.keyPitch.height

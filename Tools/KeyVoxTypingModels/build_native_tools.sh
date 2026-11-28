@@ -11,6 +11,7 @@ set -euo pipefail
 VERIFIED_COMPILERS=(
   "Apple clang version 21.0.0 (clang-2100.3.34.1)"
   "Apple clang version 21.0.0 (clang-2100.3.33.1)"
+  "Apple clang version 21.0.0 (clang-2100.4.1.1)"
 )
 EXPECTED_LIBCXX_VERSION="220106"
 

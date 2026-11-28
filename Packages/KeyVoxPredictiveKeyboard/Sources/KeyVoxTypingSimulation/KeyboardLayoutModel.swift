@@ -26,6 +26,8 @@ public struct KeyboardLayoutModel {
     private static let touchMargin = 14.0
 
     public let keyFrames: [Character: CGRect]
+    /// Letters no key types, each with the key whose held popup offers it.
+    public let popupLetters: [Character: Character]
     /// Every key on the page, letters first in letter order, so a touch as near one key as
     /// another always lands on the same one.
     public let allKeys: [(key: Key, frame: CGRect)]
@@ -74,6 +76,18 @@ public struct KeyboardLayoutModel {
         }
         keyFrames = frames
 
+        var popupLetters: [Character: Character] = [:]
+        if let held = try? HeldKeyCharacters.bundled(for: language) {
+            for key in frames.keys.sorted() {
+                for character in held.offer(forKey: String(key))?.characters ?? [] {
+                    guard character.count == 1, let letter = character.first, letter.isLetter,
+                          frames[letter] == nil, popupLetters[letter] == nil else { continue }
+                    popupLetters[letter] = key
+                }
+            }
+        }
+        self.popupLetters = popupLetters
+
         let bottomRowY = Double(layout.rows.count) * rowPitch
         let sideWidth = keyWidth * 2.5 + Self.keySpacing * 1.5
         let spaceWidth = gridWidth - sideWidth * 2 - Self.keySpacing * 2
@@ -90,14 +104,20 @@ public struct KeyboardLayoutModel {
         )
     }
 
+    /// Whether `letter` can be typed: it has a key, or a key's held popup offers it.
+    public func types(_ letter: Character) -> Bool {
+        keyFrames[letter] != nil || popupLetters[letter] != nil
+    }
+
     public var predictionGeometry: [PredictionKeyGeometry] {
         keyFrames
             .sorted { $0.key < $1.key }
             .map { PredictionKeyGeometry(character: $0.key, frame: $0.value) }
     }
 
+    /// The center of the key that types `letter`, or of the key whose popup offers it.
     public func center(of letter: Character) -> CGPoint? {
-        guard let frame = keyFrames[letter] else { return nil }
+        guard let frame = keyFrames[letter] ?? popupLetters[letter].flatMap({ keyFrames[$0] }) else { return nil }
         return CGPoint(x: frame.midX, y: frame.midY)
     }
 

@@ -4,6 +4,11 @@
 enum WordAlignment {
     /// For each intended word, the produced word aligned to it, or nil when deleted.
     static func align(intended: [String], produced: [String]) -> [String?] {
+        alignedIndices(intended: intended, produced: produced).map { $0.map { produced[$0] } }
+    }
+
+    /// For each intended word, the index of the produced word aligned to it, or nil when deleted.
+    static func alignedIndices(intended: [String], produced: [String]) -> [Int?] {
         let rows = intended.count
         let columns = produced.count
         var cost = Array(repeating: Array(repeating: 0, count: columns + 1), count: rows + 1)
@@ -23,14 +28,14 @@ enum WordAlignment {
             }
         }
 
-        var aligned = [String?](repeating: nil, count: rows)
+        var aligned = [Int?](repeating: nil, count: rows)
         var row = rows
         var column = columns
         while row > 0 {
             if column > 0,
                cost[row][column] == cost[row - 1][column - 1]
                 + (intended[row - 1] == produced[column - 1] ? 0 : 1) {
-                aligned[row - 1] = produced[column - 1]
+                aligned[row - 1] = column - 1
                 row -= 1
                 column -= 1
             } else if cost[row][column] == cost[row - 1][column] + 1 {

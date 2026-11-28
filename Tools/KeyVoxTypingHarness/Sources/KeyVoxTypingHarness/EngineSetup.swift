@@ -21,7 +21,10 @@ struct EngineSetup {
         engine.updateKeyboardGeometry(layout.predictionGeometry, keyboardSize: layout.keyboardSize)
         startupMilliseconds = Self.milliseconds(since: started)
         startupFootprintBytes = MemoryFootprint.current() &- footprintBefore
-        keys = KeyCenterMap(geometry: layout.predictionGeometry)
+        keys = KeyCenterMap(
+            geometry: layout.predictionGeometry,
+            offeringKeys: try HeldKeyCharacters.bundled(for: engine.language).letterKeysOfOfferedLetters
+        )
         language = ContextLanguageScorer(engine: engine)
     }
 

@@ -3,8 +3,9 @@
 # with build_language_data.sh: the context model, the sentence openers, the words spelled with
 # capitals, the words that follow an unknown word or a common word, the grammar words, and the
 # swipe vocabulary, which reads the dictionary's words and probabilities from
-# <typing-data-dir>/work/dictionary_unigrams.tsv and leaves out the words the patterns of
-# <typing-data-dir>/work/offensive_words.txt match, both written by Tools/KeyVoxTypingModels's build.
+# <typing-data-dir>/work/dictionary_unigrams.tsv. The words spelled with capitals and the swipe
+# vocabulary leave out the words the patterns of <typing-data-dir>/work/offensive_words.txt match,
+# as the dictionary does; both files are written by Tools/KeyVoxTypingModels's build.
 # The builders share the source readers and the normalizing code, so a change made for one can
 # change another's output; run this after changing any tool here, never a single builder alone.
 #

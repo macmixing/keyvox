@@ -1,0 +1,2337 @@
+ending *	ich:-1.665 sie:-2.758 er:-2.819 das:-2.948 die:-2.965 es:-3.187 wir:-3.335 der:-3.373 du:-3.447 was:-3.804 wie:-3.983 wenn:-4.116 warum:-4.454 ihr:-4.537 ein:-4.598 hast:-4.638 wer:-4.638 in:-4.648 mein:-4.709 man:-4.847 meine:-4.877 diese:-4.908 ist:-4.942 wo:-4.958 haben:-5.170 dieses:-5.250 dieser:-5.331 eine:-5.345 bitte:-5.346 im:-5.351 wann:-5.558 habt:-5.608 alle:-5.619 als:-5.660 mir:-5.671 bist:-5.671 mit:-5.682 auf:-5.692 da:-5.729 kannst:-5.741 sind:-5.765 heute:-5.778 lass:-5.778 so:-5.848 niemand:-5.851 seine:-5.888 hier:-5.891 und:-5.901 kann:-5.925 sein:-6.028 jetzt:-6.049 können:-6.065 jeder:-6.066 nach:-6.100 aber:-6.123 um:-6.126 hat:-6.127 für:-6.134 ihre:-6.136 viele:-6.138 willst:-6.144 alles:-6.155 am:-6.170 bei:-6.174 welche:-6.198 vielleicht:-6.231 an:-6.251 nicht:-6.260 danke:-6.267 von:-6.299 gib:-6.311 mach:-6.335 deine:-6.347 sag:-6.358 nur:-6.365 dies:-6.372 unsere:-6.393 gibt:-6.432 darf:-6.442 auch:-6.452 dein:-6.472 seid:-6.491 unser:-6.506 den:-6.528 weißt:-6.529 sami:-6.554 sei:-6.575 komm:-6.588 gestern:-6.596 ohne:-6.628 lasst:-6.682 vor:-6.705 aus:-6.727 könntest:-6.734 möchtest:-6.777 lassen:-6.778 hör:-6.780 zu:-6.781 je:-6.792 manchmal:-6.803 nichts:-6.812 nimm:-6.882 soll:-6.886 geh:-6.908 könnten:-6.931 wollen:-6.931 ja:-6.974 morgen:-6.978 manche:-6.987 seit:-6.993 nein:-7.005 könnt:-7.046 jemand:-7.070 welches:-7.075 woher:-7.083 einige:-7.088 sagen:-7.123 keiner:-7.124 während:-7.132 früher:-7.133 gott:-7.146 dann:-7.154 bis:-7.155 zum:-7.159 gehen:-7.177 glaubst:-7.183 schau:-7.185 kein:-7.188 wissen:-7.256 nun:-7.268 selbst:-7.291 wohin:-7.298 durch:-7.303 einen:-7.310 vergiss:-7.321 jedes:-7.323 zwei:-7.326 leider:-7.335 über:-7.336 obwohl:-7.345 kommt:-7.359 kinder:-7.368 machen:-7.371 dem:-7.380 liebe:-7.385 wird:-7.385 beim:-7.387 geben:-7.395 weil:-7.413 möchten:-7.415 habe:-7.420 macht:-7.430 jede:-7.433 wieviel:-7.446 kennst:-7.452 keine:-7.460 dort:-7.462 tut:-7.470 noch:-7.472 nehmen:-7.474 geht:-7.479 wegen:-7.495 immer:-7.501 magst:-7.531 vielen:-7.556 wollt:-7.560 herr:-7.563 menschen:-7.566 war:-7.573 würdest:-7.573 oh:-7.575 wieso:-7.575 kommen:-7.581 wen:-7.589 sagt:-7.593 na:-7.600 sieh:-7.617 ihm:-7.621 nachdem:-7.626 also:-7.627 warte:-7.632 unter:-7.635 ach:-7.635 eines:-7.635 ob:-7.641 wem:-7.643 welchen:-7.643 könnte:-7.653 dass:-7.672 wirst:-7.673 einer:-7.676 sprechen:-7.693 tu:-7.710 natürlich:-7.725 welcher:-7.731 sprich:-7.736 hallo:-7.737 gefällt:-7.754 mama:-7.759 warst:-7.759 stell:-7.771 mich:-7.771 würden:-7.781 uns:-7.782 denkst:-7.786 entschuldigen:-7.790 schon:-7.798 erst:-7.800 entschuldigung:-7.812 bring:-7.814 etwas:-7.822 endlich:-7.838 gut:-7.845 diesen:-7.847 guten:-7.853 geld:-7.858 bin:-7.861 doch:-7.874 damit:-7.875 sobald:-7.876 drei:-7.888 könntet:-7.894 siehst:-7.899 gebt:-7.899 frauen:-7.903 gehst:-7.904 werden:-7.906 ruf:-7.910 pass:-7.914 stimmt:-7.915 würde:-7.916 wäre:-7.918 seien:-7.919 laß:-7.920 bald:-7.935 wozu:-7.939 frag:-7.941 glauben:-7.947 denken:-7.951 gute:-7.955 bleib:-7.957 dafür:-7.957 plötzlich:-7.968 iss:-7.969 zieh:-7.974 hört:-7.985 kommst:-7.991 mehr:-7.993 besser:-7.995 laßt:-8.003 muss:-8.007 sehen:-8.008 falls:-8.012 damals:-8.014 vergessen:-8.020 warten:-8.026 denn:-8.028 hören:-8.031 entschuldige:-8.035 hättest:-8.038 versuche:-8.047 waren:-8.049 bevor:-8.053 hätte:-8.056 wessen:-8.056 esperanto:-8.056 beide:-8.068 halte:-8.072 egal:-8.086 meiner:-8.086 kaum:-8.099 essen:-8.108 oft:-8.115 eure:-8.125 erzähl:-8.129 lieber:-8.135 dir:-8.149 o:-8.149 zeig:-8.151 jeden:-8.151 ab:-8.152 trotz:-8.155 versuchen:-8.163 soweit:-8.164 halt:-8.165 aufgrund:-8.183 fast:-8.185 zur:-8.193 eigentlich:-8.198 findest:-8.205 kennen:-8.206 papa:-8.206 denk:-8.210 sage:-8.213 genau:-8.218 sprichst:-8.227 glaubt:-8.235 bringen:-8.236 mögen:-8.241 zwischen:-8.246
+ending exclamation	ich:-1.670 sie:-3.609 er:-4.273 das:-2.705 die:-3.526 es:-3.079 wir:-3.440 der:-3.767 du:-2.999 was:-3.570 wie:-3.975 wenn:-4.334 warum:-5.133 ihr:-5.067 ein:-4.804 hast:-5.521 wer:-5.289 in:-5.326 mein:-5.066 man:-5.634 meine:-5.694 diese:-6.265 ist:-5.377 wo:-4.974 haben:-6.520 dieses:-7.074 dieser:-6.166 eine:-5.332 bitte:-5.343 im:-6.508 wann:-6.272 habt:-7.762 alle:-6.072 als:-8.279 mir:-5.293 bist:-6.273 mit:-5.832 auf:-5.983 da:-4.141 kannst:-6.903 sind:-6.523 heute:-5.580 lass:-5.526 so:-5.070 niemand:-7.080 seine:-11.326 hier:-5.018 und:-4.237 kann:-6.054 sein:-8.450 jetzt:-4.833 können:-7.367 jeder:-7.357 nach:-7.755 aber:-5.135 um:-7.329 hat:-8.452 für:-6.854 ihre:-6.860 viele:-11.438 willst:-6.860 alles:-5.700 am:-6.842 bei:-7.067 welche:-8.425 vielleicht:-5.760 an:-12.422 nicht:-5.762 danke:-6.251 von:-7.083 gib:-6.669 mach:-6.521 deine:-6.388 sag:-6.855 nur:-6.169 dies:-6.674 unsere:-7.772 gibt:-7.701 darf:-6.679 auch:-7.773 dein:-5.987 seid:-12.662 unser:-6.861 den:-6.074 weißt:-8.430 sami:-12.725 sei:-5.827 komm:-5.765 gestern:-8.460 ohne:-6.675 lasst:-7.371 vor:-7.774 aus:-7.084 könntest:-7.070 möchtest:-7.760 lassen:-6.382 hör:-6.680 zu:-6.862 je:-8.462 manchmal:-8.463 nichts:-6.680 nimm:-7.775 soll:-10.774 geh:-6.522 könnten:-6.075 wollen:-13.102 ja:-7.078 morgen:-6.526 manche:-13.158 seit:-8.464 nein:-7.362 könnt:-13.217 jemand:-8.465 welches:-13.246 woher:-7.372 einige:-11.735 sagen:-8.466 keiner:-7.372 während:-7.777 früher:-7.372 gott:-7.085 dann:-4.712 bis:-6.514 zum:-8.408 gehen:-7.085 glaubst:-8.466 schau:-7.777 kein:-7.078 wissen:-7.373 nun:-6.161 selbst:-7.086 wohin:-6.863 durch:-8.467 einen:-6.857 vergiss:-7.777 jedes:-8.467 zwei:-7.777 leider:-8.409 über:-8.467 obwohl:-8.438 kommt:-6.681 kinder:-13.539 machen:-6.863 dem:-7.373 liebe:-7.777 wird:-13.556 beim:-8.467 geben:-11.794 weil:-7.373 möchten:-7.777 habe:-7.373 macht:-13.601 jede:-7.086 wieviel:-13.617 kennst:-13.624 keine:-7.086 dort:-6.527 tut:-7.778 noch:-6.073 nehmen:-7.778 geht:-6.863 wegen:-13.666 immer:-7.778 magst:-8.468 vielen:-7.665 wollt:-13.731 herr:-7.373 menschen:-13.737 war:-13.744 würdest:-8.439 oh:-7.086 wieso:-13.746 kommen:-6.863 wen:-13.760 sagt:-8.469 na:-7.778 sieh:-6.681 ihm:-7.778 nachdem:-8.439 also:-7.344 warte:-6.863 unter:-13.806 ach:-6.681 eines:-6.863 ob:-7.778 wem:-11.832 welchen:-13.814 könnte:-6.676 dass:-6.863 wirst:-8.440 einer:-8.469 sprechen:-8.469 tu:-6.863 natürlich:-7.374 welcher:-8.469 sprich:-7.778 hallo:-7.374 gefällt:-8.469 mama:-7.778 warst:-13.930 stell:-8.469 mich:-7.086 würden:-13.952 uns:-8.469 denkst:-13.957 entschuldigen:-8.470 schon:-6.523 erst:-8.470 entschuldigung:-7.764 bring:-7.374 etwas:-7.374 endlich:-11.857 gut:-8.384 diesen:-7.374 guten:-7.749 geld:-14.029 bin:-8.470 doch:-6.527 damit:-6.527 sobald:-7.779 drei:-8.470 könntet:-14.065 siehst:-7.779 gebt:-8.470 frauen:-14.074 gehst:-8.470 werden:-8.470 ruf:-8.470 pass:-7.374 stimmt:-8.470 würde:-14.087 wäre:-8.470 seien:-8.470 laß:-7.779 bald:-6.276 wozu:-14.110 frag:-14.112 glauben:-14.118 denken:-14.122 gute:-7.086 bleib:-7.374 dafür:-7.779 plötzlich:-14.139 iss:-7.086 zieh:-14.145 hört:-7.374 kommst:-7.779 mehr:-7.086 besser:-11.874 laßt:-7.779 muss:-8.470 sehen:-14.180 falls:-10.567 damals:-8.470 vergessen:-8.470 warten:-14.197 denn:-5.983 hören:-8.470 entschuldige:-7.374 hättest:-7.779 versuche:-14.218 waren:-14.220 bevor:-11.879 hätte:-8.470 wessen:-7.779 esperanto:-14.227 beide:-8.471 halte:-14.243 egal:-14.257 meiner:-14.257 kaum:-7.779 essen:-7.779 oft:-14.286 eure:-14.296 erzähl:-6.681 lieber:-8.471 dir:-6.681 o:-7.087 zeig:-7.779 jeden:-14.322 ab:-7.374 trotz:-14.326 versuchen:-8.471 soweit:-8.471 halt:-7.779 aufgrund:-14.354 fast:-8.471 zur:-7.087 eigentlich:-7.779 findest:-14.376 kennen:-14.377 papa:-8.471 denk:-7.779 sage:-7.374 genau:-7.374 sprichst:-14.398 glaubt:-14.406 bringen:-8.471 mögen:-8.471 zwischen:-14.417
+ending period	ich:-2.163 sie:-3.129 er:-3.406 das:-2.968 die:-3.208 es:-2.992 wir:-3.870 der:-3.873 du:-3.988 was:-4.245 wie:-4.696 wenn:-4.070 warum:-5.125 ihr:-5.740 ein:-4.756 hast:-5.705 wer:-4.710 in:-4.863 mein:-5.907 man:-4.239 meine:-5.422 diese:-5.203 ist:-5.260 wo:-5.341 haben:-6.413 dieses:-6.486 dieser:-6.381 eine:-5.215 bitte:-5.486 im:-5.671 wann:-6.715 habt:-8.064 alle:-5.640 als:-6.171 mir:-6.185 bist:-6.804 mit:-5.277 auf:-5.693 da:-5.092 kannst:-5.860 sind:-6.653 heute:-5.476 lass:-6.088 so:-5.224 niemand:-6.457 seine:-6.884 hier:-6.181 und:-3.792 kann:-6.142 sein:-6.660 jetzt:-4.855 können:-6.260 jeder:-6.130 nach:-6.147 aber:-3.490 um:-6.423 hat:-6.750 für:-5.818 ihre:-6.413 viele:-6.625 willst:-6.071 alles:-5.619 am:-6.045 bei:-5.780 welche:-6.810 vielleicht:-5.216 an:-6.448 nicht:-6.129 danke:-5.821 von:-6.142 gib:-6.387 mach:-6.240 deine:-7.055 sag:-7.086 nur:-5.189 dies:-6.174 unsere:-6.760 gibt:-7.550 darf:-6.965 auch:-5.840 dein:-6.558 seid:-7.662 unser:-7.206 den:-6.144 weißt:-6.674 sami:-14.113 sei:-6.716 komm:-6.724 gestern:-8.249 ohne:-6.583 lasst:-7.454 vor:-6.808 aus:-6.803 könntest:-6.640 möchtest:-6.942 lassen:-7.737 hör:-7.910 zu:-6.408 je:-6.479 manchmal:-6.480 nichts:-6.680 nimm:-6.912 soll:-6.620 geh:-6.814 könnten:-7.014 wollen:-7.289 ja:-6.633 morgen:-6.641 manche:-7.007 seit:-7.630 nein:-6.967 könnt:-9.149 jemand:-7.460 welches:-7.611 woher:-8.436 einige:-6.823 sagen:-7.897 keiner:-7.460 während:-7.201 früher:-8.049 gott:-6.971 dann:-5.164 bis:-6.985 zum:-6.453 gehen:-6.951 glaubst:-8.760 schau:-7.455 kein:-6.674 wissen:-7.770 nun:-6.446 selbst:-6.549 wohin:-8.069 durch:-7.346 einen:-7.108 vergiss:-7.902 jedes:-7.737 zwei:-7.278 leider:-6.737 über:-6.830 obwohl:-8.308 kommt:-7.083 kinder:-9.716 machen:-7.549 dem:-7.077 liebe:-7.211 wird:-7.748 beim:-7.308 geben:-8.204 weil:-7.354 möchten:-8.221 habe:-8.034 macht:-7.447 jede:-7.503 wieviel:-11.934 kennst:-8.221 keine:-6.997 dort:-6.153 tut:-8.044 noch:-6.805 nehmen:-8.044 geht:-7.877 wegen:-8.452 immer:-7.447 magst:-9.151 vielen:-7.410 wollt:-8.466 herr:-9.856 menschen:-7.207 war:-7.450 würdest:-8.466 oh:-8.452 wieso:-7.359 kommen:-7.460 wen:-9.166 sagt:-9.856 na:-7.087 sieh:-7.153 ihm:-8.474 nachdem:-9.507 also:-5.916 warte:-7.911 unter:-7.478 ach:-7.911 eines:-7.434 ob:-6.504 wem:-7.778 welchen:-9.573 könnte:-7.873 dass:-6.946 wirst:-8.751 einer:-7.881 sprechen:-9.136 tu:-7.463 natürlich:-7.162 welcher:-9.643 sprich:-8.222 hallo:-9.692 gefällt:-9.166 mama:-9.166 warst:-15.318 stell:-8.210 mich:-7.767 würden:-8.732 uns:-8.467 denkst:-13.238 entschuldigen:-8.459 schon:-7.135 erst:-6.808 entschuldigung:-8.752 bring:-8.752 etwas:-7.280 endlich:-9.828 gut:-8.044 diesen:-7.881 guten:-8.666 geld:-8.069 bin:-7.898 doch:-5.311 damit:-6.709 sobald:-7.337 drei:-8.742 könntet:-7.915 siehst:-7.555 gebt:-8.762 frauen:-9.094 gehst:-8.762 werden:-9.152 ruf:-8.251 pass:-7.906 stimmt:-7.352 würde:-8.204 wäre:-7.869 seien:-8.416 laß:-8.251 bald:-7.544 wozu:-9.152 frag:-7.550 glauben:-8.251 denken:-8.025 gute:-7.651 bleib:-7.778 dafür:-6.829 plötzlich:-9.152 iss:-9.167 zieh:-8.467 hört:-8.251 kommst:-7.296 mehr:-6.949 besser:-8.049 laßt:-9.167 muss:-8.613 sehen:-8.762 falls:-8.191 damals:-7.915 vergessen:-8.742 warten:-8.467 denn:-5.356 hören:-11.955 entschuldige:-7.902 hättest:-8.069 versuche:-7.699 waren:-15.608 bevor:-8.216 hätte:-8.069 wessen:-15.615 esperanto:-8.069 beide:-7.478 halte:-9.081 egal:-7.763 meiner:-8.064 kaum:-8.467 essen:-9.123 oft:-7.515 eure:-13.274 erzähl:-8.762 lieber:-8.445 dir:-7.770 o:-8.064 zeig:-8.762 jeden:-8.460 ab:-7.434 trotz:-8.976 versuchen:-9.668 soweit:-12.238 halt:-8.069 aufgrund:-8.685 fast:-8.069 zur:-8.976 eigentlich:-7.455 findest:-8.054 kennen:-8.069 papa:-8.762 denk:-9.081 sage:-9.167 genau:-8.064 sprichst:-8.460 glaubt:-15.794 bringen:-9.137 mögen:-9.137 zwischen:-9.109
+ending question	ich:-1.707 sie:-3.564 er:-4.173 das:-2.328 die:-3.703 es:-2.892 wir:-3.841 der:-3.794 du:-3.208 was:-4.481 wie:-4.801 wenn:-4.261 warum:-5.404 ihr:-5.314 ein:-4.527 hast:-5.510 wer:-5.633 in:-4.981 mein:-5.407 man:-4.717 meine:-6.094 diese:-6.526 ist:-5.503 wo:-5.906 haben:-7.003 dieses:-6.325 dieser:-6.600 eine:-5.223 bitte:-6.086 im:-5.900 wann:-9.566 habt:-11.030 alle:-5.637 als:-10.460 mir:-5.520 bist:-6.108 mit:-6.511 auf:-5.757 da:-5.146 kannst:-7.508 sind:-6.606 heute:-6.323 lass:-5.923 so:-4.826 niemand:-6.103 seine:-10.577 hier:-5.305 und:-5.802 kann:-6.607 sein:-7.019 jetzt:-5.771 können:-11.487 jeder:-7.702 nach:-11.522 aber:-5.071 um:-6.099 hat:-7.703 für:-6.070 ihre:-7.006 viele:-7.619 willst:-7.703 alles:-7.021 am:-6.515 bei:-5.308 welche:-6.070 vielleicht:-5.311 an:-6.333 nicht:-6.600 danke:-5.306 von:-7.622 gib:-6.053 mach:-6.326 deine:-6.312 sag:-5.776 nur:-5.896 dies:-7.545 unsere:-7.008 gibt:-7.651 darf:-11.864 auch:-9.213 dein:-7.024 seid:-11.913 unser:-10.827 den:-5.152 weißt:-7.710 sami:-11.976 sei:-6.611 komm:-5.777 gestern:-7.682 ohne:-6.953 lasst:-7.712 vor:-7.600 aus:-5.768 könntest:-10.357 möchtest:-12.199 lassen:-6.622 hör:-7.026 zu:-7.011 je:-12.214 manchmal:-7.011 nichts:-5.926 nimm:-6.622 soll:-7.657 geh:-7.715 könnten:-12.353 wollen:-10.949 ja:-5.141 morgen:-7.715 manche:-10.395 seit:-7.027 nein:-4.288 könnt:-12.468 jemand:-7.716 welches:-12.497 woher:-7.716 einige:-7.716 sagen:-7.659 keiner:-7.716 während:-12.554 früher:-7.027 gott:-7.717 dann:-4.134 bis:-11.000 zum:-7.456 gehen:-12.599 glaubst:-7.717 schau:-7.028 kein:-6.998 wissen:-12.678 nun:-5.523 selbst:-7.718 wohin:-7.718 durch:-7.028 einen:-6.114 vergiss:-6.114 jedes:-7.718 zwei:-6.322 leider:-12.757 über:-11.034 obwohl:-7.718 kommt:-6.337 kinder:-12.790 machen:-7.718 dem:-7.718 liebe:-11.043 wird:-7.660 beim:-11.043 geben:-10.440 weil:-4.350 möchten:-12.837 habe:-7.661 macht:-12.851 jede:-12.855 wieviel:-12.868 kennst:-12.874 keine:-6.985 dort:-6.114 tut:-12.892 noch:-5.932 nehmen:-7.719 geht:-7.719 wegen:-7.029 immer:-7.719 magst:-12.952 vielen:-7.580 wollt:-12.982 herr:-11.071 menschen:-7.719 war:-11.073 würdest:-12.995 oh:-5.932 wieso:-11.073 kommen:-13.003 wen:-13.011 sagt:-7.029 na:-5.159 sieh:-7.029 ihm:-7.720 nachdem:-13.048 also:-5.974 warte:-7.720 unter:-10.460 ach:-6.108 eines:-13.057 ob:-13.063 wem:-13.065 welchen:-13.065 könnte:-7.029 dass:-5.769 wirst:-13.095 einer:-7.029 sprechen:-7.720 tu:-13.132 natürlich:-6.090 welcher:-13.153 sprich:-6.624 hallo:-10.468 gefällt:-13.176 mama:-13.181 warst:-13.181 stell:-7.691 mich:-6.330 würden:-13.203 uns:-7.720 denkst:-13.208 entschuldigen:-13.212 schon:-13.220 erst:-7.720 entschuldigung:-13.234 bring:-13.236 etwas:-6.625 endlich:-13.260 gut:-6.337 diesen:-13.269 guten:-13.274 geld:-7.721 bin:-11.110 doch:-6.114 damit:-6.605 sobald:-13.298 drei:-7.721 könntet:-13.316 siehst:-13.321 gebt:-13.321 frauen:-13.325 gehst:-13.326 werden:-13.328 ruf:-13.332 pass:-7.721 stimmt:-13.337 würde:-6.114 wäre:-11.117 seien:-13.341 laß:-7.721 bald:-7.721 wozu:-13.361 frag:-13.363 glauben:-13.369 denken:-13.373 gute:-7.721 bleib:-5.932 dafür:-7.721 plötzlich:-13.390 iss:-13.391 zieh:-7.030 hört:-7.692 kommst:-13.413 mehr:-10.483 besser:-13.417 laßt:-13.425 muss:-13.429 sehen:-13.430 falls:-7.437 damals:-13.436 vergessen:-7.721 warten:-7.721 denn:-6.503 hören:-13.453 entschuldige:-7.721 hättest:-7.721 versuche:-9.270 waren:-13.471 bevor:-7.721 hätte:-7.721 wessen:-13.478 esperanto:-13.478 beide:-10.098 halte:-11.132 egal:-13.508 meiner:-6.605 kaum:-7.030 essen:-10.489 oft:-7.721 eure:-13.546 erzähl:-7.030 lieber:-13.557 dir:-13.571 o:-7.722 zeig:-13.573 jeden:-13.573 ab:-7.722 trotz:-7.692 versuchen:-13.585 soweit:-7.722 halt:-13.586 aufgrund:-13.604 fast:-6.337 zur:-7.722 eigentlich:-7.722 findest:-13.627 kennen:-13.628 papa:-7.722 denk:-7.692 sage:-13.634 genau:-7.722 sprichst:-13.649 glaubt:-13.657 bringen:-13.658 mögen:-11.147 zwischen:-10.104
+first exclamation ab	der:0.745
+first exclamation aber	nein:1.979 o:1.842 machen:1.732 den:1.344 warum:1.223 lass:1.077 er:0.812 sie:0.509
+first exclamation abgemacht	wir:0.616
+first exclamation ach	selbst:1.552 am:1.432 könnte:1.350 alle:1.053 ist:0.716 wer:0.675 da:0.651 so:0.571
+first exclamation achte	sie:0.642 die:0.609
+first exclamation achten	vielleicht:1.576 er:0.882 die:0.572
+first exclamation achtung	dieser:1.274 da:0.826 der:0.785 mein:0.744 hier:0.721 obwohl:0.681 die:0.672 es:0.345
+first exclamation ah	jetzt:1.067 wie:0.685 was:0.521 kannst:0.454 du:0.314
+first exclamation aha	also:2.321 ach:1.993 sie:0.860
+first exclamation alle	bist:1.623 auf:1.481 mir:1.148 aber:1.073 wie:0.551
+first exclamation allen	ein:1.199 der:0.745
+first exclamation alles	liebe:2.344 schon:1.722 danke:1.588 und:0.953 gut:0.928 der:0.441
+first exclamation als	heute:1.791 sie:0.569
+first exclamation also	aber:1.210 wie:0.687
+first exclamation am	und:0.865 die:0.571
+first exclamation an	mach:1.948 mein:1.244 die:0.572
+first exclamation arbeite	vielleicht:1.653
+first exclamation argh	mein:1.321
+first exclamation au	mich:2.465 mein:1.266 lass:1.153 eine:1.061 mir:1.042
+first exclamation aua	meine:1.581
+first exclamation auch	so:1.283 sie:0.642
+first exclamation auf	lasst:2.022 kommt:1.680 nun:1.424 komm:1.231 ein:1.102 so:0.899 der:0.321
+first exclamation aufstehen	heute:1.489 ein:1.122 der:0.668 es:0.409
+first exclamation aufwachen	es:0.486 du:0.459
+first exclamation autsch	meine:1.621 mir:1.429
+first exclamation außer	habe:2.447
+first exclamation beachte	er:0.919 sie:0.642 das:0.326
+first exclamation beeil	siehst:2.191 alle:1.347 mein:1.195 der:0.904 wir:0.751 sie:0.514
+first exclamation beeile	wir:0.821 der:0.668
+first exclamation beeilen	wir:0.724 der:0.571
+first exclamation beeilt	ihr:1.092 der:0.515 die:0.420
+first exclamation bei	hast:1.460 wenn:0.908 es:0.408
+first exclamation betrachte	und:0.943
+first exclamation beweg	du:0.459
+first exclamation bis	dann:1.116
+first exclamation bist	sage:2.371
+first exclamation bitte	danke:1.699 keine:1.567 bei:1.558 falls:1.555 einen:1.454 ohne:1.364 dieser:1.114 kann:1.074
+first exclamation bleib	nicht:1.424
+first exclamation bleiben	so:1.149 wir:0.724 es:0.312
+first exclamation bleibt	und:0.866 es:0.409
+first exclamation bravo	gut:1.232 du:0.458 das:0.365
+first exclamation bring	für:2.150 die:0.609
+first exclamation bringt	die:0.609 das:0.326
+first exclamation brot	in:1.333
+first exclamation brr	was:0.667 es:0.486
+first exclamation brrr	wie:0.831 das:0.366
+first exclamation da	gebt:2.533 gestern:2.529 nach:2.177 danke:1.433 jetzt:1.087 ein:0.739 was:0.495 und:0.483
+first exclamation danke	manchmal:2.093 besser:2.045 einige:1.976 gute:1.752 entschuldige:1.551 dass:1.297 einen:1.294 dir:1.207
+first exclamation dann	von:2.100 denn:1.558 in:1.241 wo:1.074 der:0.542 wir:0.413
+first exclamation darf	nur:1.813 der:0.705
+first exclamation das	nehmen:1.727 würdest:1.726 also:1.511 tut:1.382 genau:1.181 hört:1.181 nichts:1.180
+first exclamation dass	schon:1.915 komm:1.544 ist:1.357 wenn:0.875
+first exclamation dein	komm:1.615 wo:1.238 der:0.705
+first exclamation den	nimm:2.445 und:0.741 da:0.699
+first exclamation denk	jede:2.228 tu:2.117
+first exclamation denke	sie:0.605 die:0.572
+first exclamation denken	wenn:0.986
+first exclamation denkt	seit:2.991 tut:2.648
+first exclamation denn	erst:2.952 wer:1.386 sie:0.641
+first exclamation der	sieh:1.787 kein:1.640 eine:1.121 mit:1.027 nicht:0.993 er:0.805 aber:0.693 mein:0.660
+first exclamation die	einer:2.170 während:1.825 vor:1.824 dass:1.372 sag:1.367 für:1.367 am:1.361 alle:1.323
+first exclamation diese	auch:2.415 sind:1.796 wie:0.601 die:0.419
+first exclamation dieser	weil:2.167 zur:2.025 wo:0.998 und:0.977 der:0.763
+first exclamation dieses	wo:1.201 da:0.825
+first exclamation doch	mich:2.193 ein:1.087
+first exclamation donnerwetter	ist:1.143 du:0.684 was:0.630 das:0.435
+first exclamation du	möchtest:1.471 geh:1.402 dir:1.279 bring:1.279 iss:1.136 jede:1.136 ja:1.132 geht:1.026
+first exclamation egal	beide:2.993
+first exclamation ehre	denn:1.762
+first exclamation ein	eine:0.973 aber:0.879 was:0.662 wenn:0.512 sie:0.497
+first exclamation eine	bis:1.766 ein:0.943 wir:0.361
+first exclamation einen	bis:1.848 dieser:1.677 nicht:1.480 hier:1.124 jetzt:1.038
+first exclamation eins	zwei:2.571 die:0.572
+first exclamation einverstanden	du:0.419 das:0.326
+first exclamation eitelkeit	alles:1.624
+first exclamation endlich	als:2.668 jetzt:1.310
+first exclamation endstation	alles:1.624
+first exclamation entschuldige	könntest:2.216 eigentlich:1.879 dafür:1.879 habe:1.677 mir:0.993 so:0.553 ich:0.521 das:0.358
+first exclamation entschuldigen	welcher:2.119 könnten:2.020 wissen:1.917 gibt:1.736 könnte:1.571 können:1.570 wo:1.348 wohin:1.320
+first exclamation entschuldigt	ich:0.422 wir:0.414
+first exclamation entschuldigung	ohne:1.871 die:0.420 ich:0.327
+first exclamation entspann	morgen:1.725 sei:1.383 es:0.843 du:0.412 wir:0.313
+first exclamation er	seine:2.225 nein:1.998 so:1.211 vielleicht:1.209 aber:0.910 wenn:0.543 und:0.500 das:0.316
+first exclamation erfolg	bald:1.905 wenn:0.986
+first exclamation erzähl	bitte:1.278 wie:0.657 ich:0.304
+first exclamation erzählen	ich:0.445
+first exclamation erzählt	wir:0.539 ich:0.308
+first exclamation es	papa:2.094 fast:2.094 hat:2.085 woher:1.547 lasst:1.546 jeder:1.540 soll:1.495 aus:1.404
+first exclamation esst	sie:0.972
+first exclamation fahr	die:0.761 wir:0.442
+first exclamation falsch	der:0.745
+first exclamation fass	der:0.705 das:0.561
+first exclamation fasse	aber:1.354 es:0.486
+first exclamation fasst	so:1.655
+first exclamation frag	vielleicht:1.398 heute:1.311 du:0.754 er:0.704
+first exclamation freude	es:0.486
+first exclamation freunde	wir:0.576
+first exclamation fünf	wenn:0.986 und:0.943
+first exclamation für	er:0.916 wir:0.573
+first exclamation ganz	um:2.347 aber:1.276 es:0.408
+first exclamation geben	dann:1.115 es:0.445
+first exclamation geduld	aber:1.210 er:0.816 es:0.342
+first exclamation gefällt	jetzt:1.212 der:0.745
+first exclamation geh	weißt:2.498 bleib:1.972 dies:1.625 morgen:1.552 bist:1.427 lass:1.064 bitte:0.976
+first exclamation gehen	lassen:1.590 es:0.380 ich:0.318 sie:0.315
+first exclamation geht	wenn:0.811 es:0.572 die:0.474 wir:0.441
+first exclamation genau	stimmt:2.882 ja:2.189 das:0.648
+first exclamation genug	nun:1.849 es:0.486
+first exclamation geraten	das:0.366
+first exclamation gib	dieses:1.974 hör:1.778 ohne:1.776 denn:1.436 dann:1.157 wenn:0.661 da:0.577
+first exclamation glaub	die:0.896 das:0.326
+first exclamation glaube	liebe:2.648
+first exclamation glaubt	danke:1.893 ihr:1.322
+first exclamation glück	niemand:2.606 mein:1.281
+first exclamation glückwunsch	ihr:1.282 sie:0.642 du:0.419
+first exclamation gott	über:2.667 unsere:2.320 den:1.481 mit:1.363 wer:1.101 jetzt:0.887 und:0.618 der:0.420
+first exclamation guck	meine:1.718 da:1.296 eine:1.006 mein:0.880 er:0.518 die:0.494
+first exclamation guckt	ist:1.468
+first exclamation gut	versuchen:2.738 herr:2.191 keiner:2.191 deine:1.704 hier:1.042 dann:0.914 der:0.489 wir:0.360
+first exclamation gute	wann:1.897 dies:1.753 bis:1.674 und:0.596 vielen:0.561 was:0.319
+first exclamation guten	ruf:2.043 bin:2.043 entschuldigen:2.043 na:1.698 möchten:1.698 entschuldigung:1.691 habt:1.691 haben:1.619
+first exclamation ha	endlich:2.759 nun:1.674 wie:0.656 das:0.426
+first exclamation hab	alle:1.602 es:0.715 was:0.464
+first exclamation habe	dann:1.116 wenn:0.946
+first exclamation haben	bald:1.905 es:0.486
+first exclamation habt	es:0.446
+first exclamation haha	entschuldige:2.368 jetzt:1.133 was:0.599
+first exclamation hahaha	das:0.366
+first exclamation hallo	hören:1.890 guten:1.876 kann:1.579 kommst:1.545 habt:1.537 entschuldige:1.344 wie:1.216 bist:1.141
+first exclamation halt	keine:1.703 gehen:1.702 hier:1.225 lass:0.938 da:0.801 der:0.440 du:0.407 wenn:0.384
+first exclamation halte	aber:1.242 der:0.633
+first exclamation halten	wenn:0.909 sie:0.605
+first exclamation haltet	er:0.919 sie:0.642
+first exclamation hast	lieber:2.764 in:1.215 warum:1.123 die:0.420 das:0.371
+first exclamation hat	wo:1.166 der:0.633
+first exclamation he	stell:2.290 beim:2.289 hättest:1.946 niemand:1.598 wohin:1.491 alle:1.443 was:1.004 komm:0.952
+first exclamation heda	was:0.667
+first exclamation hei	das:0.601
+first exclamation heilige	alles:1.624
+first exclamation heirate	je:2.990 du:0.459
+first exclamation helfen	den:1.806 das:0.366
+first exclamation her	die:0.609
+first exclamation herr	bringen:2.820 und:0.769 wie:0.657 die:0.475 wir:0.442
+first exclamation herzlichen	sie:1.335 du:0.432
+first exclamation hey	wessen:2.534 was:1.021 kannst:0.484
+first exclamation hier	essen:2.189 zu:1.734 kommt:1.645 dann:1.218 ist:1.009 so:0.864
+first exclamation hilf	dieser:1.621 eine:1.217 dann:0.927 ich:0.327
+first exclamation hilfe	mein:1.525 alle:1.479 wo:0.952 der:0.716 die:0.323
+first exclamation hinweg	einen:2.191 den:1.806
+first exclamation hm	es:0.706
+first exclamation hol	ach:2.064
+first exclamation hopp	auf:1.722
+first exclamation huch	vielen:2.515 dass:2.117 die:0.572 es:0.409
+first exclamation huhu	hättest:2.572 können:2.367 ist:1.391
+first exclamation hurra	unsere:2.443 alle:1.602 ein:0.996
+first exclamation hände	dies:2.101 warum:1.353
+first exclamation hätte	dann:1.370 aber:1.242 jetzt:1.101
+first exclamation hättest	mit:1.688 dann:1.156
+first exclamation höchste	wir:0.616
+first exclamation hör	glaubst:2.163 damit:1.542 sag:1.361 im:1.190 alles:1.133 mir:0.934 sei:0.857 du:0.830
+first exclamation höre	er:1.234 du:0.419
+first exclamation hören	sagen:2.736 er:0.704 die:0.680 sie:0.426 wir:0.361
+first exclamation hört	von:2.073 er:0.730 die:0.706 wir:0.387
+first exclamation ich	kommst:1.225 ob:1.224 na:1.224 natürlich:1.023 weil:1.023
+first exclamation igitt	in:1.404 du:0.419 das:0.326
+first exclamation ihr	sobald:2.128 geht:2.017 hört:1.926 nichts:1.926 kommt:1.583 doch:1.507 auf:1.241 nicht:1.133
+first exclamation im	kaum:2.608 mach:1.984 du:0.418
+first exclamation immer	nichts:1.960 damit:1.885 nicht:1.510 es:0.342 du:0.315
+first exclamation in	hört:2.166 natürlich:2.166 wohin:1.913 dies:1.820 gib:1.817 wie:0.550 wir:0.335
+first exclamation iss	dein:1.620 du:0.571 es:0.342
+first exclamation ist	gefällt:2.713 hast:1.258 so:1.043 was:0.387
+first exclamation iß	laß:2.609 es:0.446
+first exclamation ja	viele:2.302 nach:2.214 genau:2.025 ihr:0.899 und:0.834 zum:0.821 wir:0.475
+first exclamation jetzt	muss:2.367 hallo:1.820 niemand:1.675 hör:1.477 darf:1.476 schon:1.399 man:0.965 ist:0.841
+first exclamation kann	die:0.537 du:0.347
+first exclamation kannst	das:0.366
+first exclamation kauf	so:1.323 wir:0.616
+first exclamation kaufen	bis:1.982 sie:0.642 wir:0.576
+first exclamation kein	keine:2.125 vielen:0.730 wir:0.719
+first exclamation keine	immer:1.746 sage:1.545 früher:1.544 selbst:1.402 bei:1.392 hier:0.924 man:0.689
+first exclamation kinder	ihr:1.092 ein:0.969 es:0.815 die:0.420
+first exclamation komm	zeig:1.733 dein:1.388 gehen:1.388 lass:1.302 tu:1.278 ohne:1.185 dort:1.112 morgen:1.112
+first exclamation komme	sein:2.944 noch:1.765
+first exclamation kommen	in:1.098 dann:0.810 ich:0.440 die:0.303
+first exclamation kommt	gute:1.980 hier:0.973 dann:0.831 das:0.555 die:0.324
+first exclamation konzentriere	alles:1.624 das:0.366
+first exclamation kopf	bald:1.731 es:0.744 die:0.475
+first exclamation krieg	das:0.601
+first exclamation kuck	in:1.635 da:1.069 die:0.506
+first exclamation könnten	bitte:1.452
+first exclamation lach	wie:0.831
+first exclamation lache	vielleicht:1.613 sie:0.642 du:0.419
+first exclamation lange	komm:1.578 wie:1.060
+first exclamation lass	iss:1.581 diese:1.517 gib:1.374 geh:1.302 dieser:1.127 mir:1.039 er:0.742 wer:0.703
+first exclamation lassen	mir:1.062 dann:0.789 er:0.592 ich:0.371 sie:0.315
+first exclamation lasst	jedes:2.689 so:1.020 wenn:0.683 er:0.656 sie:0.379
+first exclamation lauf	warte:2.117 du:0.382
+first exclamation laß	dann:1.279 mir:1.226 der:0.542
+first exclamation laßt	geht:2.083 mir:1.317 dann:1.045
+first exclamation leg	mir:1.388 es:0.707
+first exclamation leise	das:0.561
+first exclamation lerne	das:0.326
+first exclamation lernen	sie:0.682
+first exclamation lesen	dein:1.764
+first exclamation leuchte	ach:2.104 was:0.667
+first exclamation liebe	dir:1.930 denn:1.588 wenn:0.812 wie:0.657
+first exclamation lies	der:0.705 es:0.446
+first exclamation links	da:0.862
+first exclamation los	sprich:2.086 etwas:1.885 gehen:1.741 erzähl:1.541 nur:1.290 noch:1.242 ihr:0.759 wir:0.514
+first exclamation lächle	bald:1.905 das:0.366
+first exclamation lüg	sei:1.686 du:0.459
+first exclamation lüge	sage:2.448 alles:1.624
+first exclamation mach	ob:1.619 dir:1.419 jeder:1.410 am:1.155 schon:0.997 hier:0.939 mir:0.932 sei:0.656
+first exclamation mach's	wir:0.505
+first exclamation mache	es:0.409 ich:0.308
+first exclamation machen	einen:1.768 alles:1.200 mir:1.005 dann:0.733 wir:0.654 er:0.536 der:0.321
+first exclamation macht	morgen:1.587 mir:0.987 ihr:0.880 wir:0.872 der:0.601
+first exclamation mahlzeit	ihr:1.613
+first exclamation mama	kannst:2.191 alle:1.438 mit:1.321 dann:0.789 da:0.535
+first exclamation man	warte:2.020 ach:1.930 sind:1.852 denn:1.588 er:0.785 und:0.769
+first exclamation mann	in:1.270 warum:1.179 wir:0.442
+first exclamation mannomann	er:0.959
+first exclamation mein	komm:1.350 was:0.656 er:0.654 die:0.344
+first exclamation meine	bitte:1.364 auf:1.338 was:0.951 wo:0.854 und:0.520 der:0.321
+first exclamation mensch	wo:1.166 jetzt:1.101 ein:1.087
+first exclamation mich	da:0.901
+first exclamation mir	zu:1.989 ach:1.900 bitte:1.248 ihr:1.117 als:0.980
+first exclamation mist	meine:1.447 was:0.492 ich:0.383
+first exclamation mit	komm:1.578 was:0.590
+first exclamation moment	warum:1.680 wie:0.628 was:0.464
+first exclamation musik	bei:2.295 wer:1.427
+first exclamation musst	wirst:2.978 lass:1.540
+first exclamation na	gehst:2.457 gib:1.562 mach:1.489 jetzt:1.004 in:0.908 das:0.592 wenn:0.450
+first exclamation nanu	die:0.649 das:0.366
+first exclamation natürlich	am:1.936 in:1.196 wer:1.178 aber:1.105 warum:1.104 hier:0.688 wie:0.583 um:0.519
+first exclamation nehmen	in:1.333 er:0.848 es:0.375
+first exclamation nehmt	lasst:2.406 die:0.609 wir:0.576
+first exclamation nein	nur:1.428 denn:1.337 das:0.634
+first exclamation nicht	halt:1.935 mama:1.935 schau:1.934 warte:1.481 im:1.305 den:1.092 da:0.689 das:0.625
+first exclamation nichts	laßt:2.537 laß:2.537 lassen:1.845 alles:1.512 die:0.538
+first exclamation nie	aber:1.277
+first exclamation nieder	sie:0.682 es:0.486
+first exclamation nimm	möchtest:2.337 keiner:2.144 von:2.000 kein:1.998 auf:1.799 dann:0.853 wenn:0.683 es:0.444
+first exclamation noch	die:0.649
+first exclamation nun	auch:2.279 um:2.058 iss:1.938 noch:1.438 man:1.225 hast:1.171 so:0.956 jetzt:0.845
+first exclamation nur	mehr:2.193 da:0.790 es:0.636 wir:0.505
+first exclamation o	unser:1.356 ach:1.267 mein:1.013 eine:0.945 dein:0.927 nicht:0.817 wie:0.624 was:0.538
+first exclamation och	wann:1.826 nicht:1.577 der:0.965
+first exclamation oh	obwohl:2.054 zeig:1.726 genau:1.524 habe:1.524 gott:1.381 tu:1.271 darf:1.180 eine:1.057
+first exclamation oho	die:0.609 du:0.419 das:0.326
+first exclamation oje	ab:2.274 wie:0.657 sie:0.508 was:0.492 es:0.312
+first exclamation pack	wir:0.616
+first exclamation papa	mama:2.419 hast:1.308 bitte:1.223 die:0.420
+first exclamation pass	dort:1.733 da:1.239 dieser:1.213 dein:1.126 auf:1.124 eine:0.809 in:0.806 die:0.716
+first exclamation passen	eine:1.407 er:0.919 und:0.903
+first exclamation passt	er:1.274
+first exclamation pfui	ein:1.199
+first exclamation polizei	könnte:2.368 machen:2.117 zu:2.117
+first exclamation potz	dem:2.407 du:0.419 das:0.326
+first exclamation probier	wenn:0.875 sie:0.570 das:0.489
+first exclamation psst	er:0.919 wir:0.576
+first exclamation pst	sprechen:2.882 sprich:2.537 der:0.633 du:0.348
+first exclamation quatsch	ich:0.345
+first exclamation rase	wir:0.616
+first exclamation raus	kommen:2.133 kommt:2.042 komm:1.589 heute:1.161 lass:1.135 aber:0.948 ihr:0.916 wo:0.873
+first exclamation recht	man:1.592
+first exclamation rede	nur:1.741 wenn:0.875 was:0.555
+first exclamation reg	denk:2.475 selbst:2.130 komm:1.481 in:1.270 wir:0.442
+first exclamation regen	noch:1.805 der:0.745
+first exclamation riech	das:0.366
+first exclamation ruf	er:0.848 was:0.555 wir:0.505 du:0.348
+first exclamation ruft	wir:0.616 das:0.366
+first exclamation ruhe	deine:1.920 alle:1.765
+first exclamation sag	doch:1.682 bitte:1.106 wie:0.790 und:0.597 die:0.303
+first exclamation sage	wer:1.283 was:0.523
+first exclamation sagen	heute:1.363 dann:0.954 sie:0.769 er:0.757
+first exclamation sagt	ihr:1.244 er:0.882 sie:0.605
+first exclamation schade	jetzt:1.134 dann:1.078 die:0.571 du:0.381
+first exclamation schalt	diese:1.899
+first exclamation schalte	es:0.603 die:0.506
+first exclamation schau	dort:1.668 hier:1.123 eine:1.079 ein:1.019 da:0.837 ist:0.765 der:0.659 dann:0.453
+first exclamation schauen	diese:1.596 ist:1.501 eine:1.144 da:0.599 sie:0.379 was:0.364 die:0.346
+first exclamation schaut	ihr:1.210 da:0.790 was:0.555 die:0.538
+first exclamation scheiße	die:0.649
+first exclamation schieß	erzähl:1.993
+first exclamation schlaf	dem:2.273 mach:1.851
+first exclamation schluss	ab:2.218 aus:2.074 damit:1.799
+first exclamation schmeiß	vielleicht:1.653 da:0.902
+first exclamation schnell	sieh:1.824 nun:1.568 komm:1.375 wenn:0.706 da:0.621 die:0.369 wir:0.336
+first exclamation schneller	er:0.959
+first exclamation schockschwere	mein:1.653
+first exclamation schon	nein:2.330 warum:1.241
+first exclamation schreib	er:0.919 die:0.609
+first exclamation schön	wir:0.576
+first exclamation sehr	zur:2.611 doch:2.131 vielen:0.669 kannst:0.639 der:0.516 für:0.341
+first exclamation seht	jetzt:1.069 die:0.506
+first exclamation sei	bring:1.518 dieses:1.369 geht:1.265 man:1.200 erzähl:1.175 sieh:1.175 im:1.090 deine:1.031
+first exclamation seid	diesen:2.590 ihr:1.119 wenn:0.784 wie:0.628
+first exclamation seien	machen:1.939 ihre:1.937 alles:1.368 in:1.189 sie:0.426 das:0.345
+first exclamation setz	noch:1.728 du:0.382
+first exclamation setzen	ihre:2.116 da:0.825
+first exclamation sicher	nachdem:2.975
+first exclamation sie	geben:2.252 möchten:1.998 schau:1.998 jede:1.654 gehen:1.654 lassen:1.649 kommen:1.544 dieser:1.201
+first exclamation sieh	zwei:2.085 dieses:1.736 einen:1.628 bist:1.340 ein:1.300 eine:1.219 der:0.664 da:0.650
+first exclamation so	vor:2.070 jede:1.728 tu:1.618 machen:1.617 den:1.570 darf:1.527 haben:1.448 nur:1.276
+first exclamation sofort	guten:0.945
+first exclamation soll	da:0.790 es:0.375 du:0.348
+first exclamation spann	was:1.097
+first exclamation spiel	bleib:2.448 du:0.459
+first exclamation sprechen	ihre:2.116 wenn:0.909
+first exclamation sprich	bleib:2.006 eines:1.753 sag:1.749 dein:1.322 ist:1.027 dann:0.715 sie:0.531 und:0.502
+first exclamation spring	was:0.667
+first exclamation steh	am:2.107 komm:1.578 es:0.409
+first exclamation steig	sie:0.605 du:0.382
+first exclamation stell	so:1.068 die:0.680 da:0.646 du:0.460
+first exclamation stellt	wenn:0.986 er:0.959
+first exclamation still	er:0.848 die:0.824 sie:0.570
+first exclamation stille	alles:1.584
+first exclamation toll	lass:1.462 wo:1.200 kannst:0.522
+first exclamation treten	werden:2.994 das:0.366
+first exclamation trink	iss:2.161 wir:0.754 du:0.315
+first exclamation trinke	man:1.592 das:0.366
+first exclamation trinken	jetzt:1.212 das:0.366
+first exclamation tritt	er:0.959
+first exclamation tu	wie:0.720 es:0.375
+first exclamation tut	ich:0.484 es:0.401
+first exclamation um	was:0.555
+first exclamation und	eigentlich:2.156 mehr:1.812 aus:1.811 bist:1.752 unser:1.700 für:1.697 lass:1.047
+first exclamation unglaublich	deine:1.960 was:0.667
+first exclamation unmöglich	ihr:1.282 die:0.609 das:0.326
+first exclamation unser	wir:1.000
+first exclamation ups	es:0.486 das:0.366
+first exclamation verdammt	hätte:2.570 heute:1.142 wo:0.854 jetzt:0.789 ein:0.775 er:0.536 ich:0.362
+first exclamation verehrter	wir:1.132
+first exclamation verflucht	dem:2.370 nichts:2.027 warum:1.276
+first exclamation vergessen	vielen:2.515 wer:1.350
+first exclamation vergesst	das:0.366
+first exclamation vergiss	sie:0.692 es:0.638 ich:0.345
+first exclamation verschwinde	du:0.382 ich:0.308
+first exclamation verschwindet	und:0.903 wir:0.576
+first exclamation versuch	sag:2.112 schon:1.948 vielleicht:1.575
+first exclamation versuche	gib:1.954 lass:1.396 der:0.601 sie:0.538 du:0.315
+first exclamation verzeih	entschuldigung:2.467 was:0.492 ich:0.304
+first exclamation verzeihen	könnten:1.695 ist:1.357 mein:1.210
+first exclamation verzeihung	kannst:2.010 ist:1.265 wer:1.223 aber:1.150 wo:1.074 wie:0.628
+first exclamation viel	da:0.819 du:0.633
+first exclamation vielen	falls:1.733 ihre:1.634 auf:1.543 meine:1.401 mit:1.129 warum:0.794 leider:0.686
+first exclamation vielleicht	vergessen:2.994
+first exclamation vorsicht	jemand:2.278 pass:1.734 ihre:1.479 deine:1.246 ein:1.009 nicht:0.941 da:0.827 lass:0.827
+first exclamation vorsichtig	die:0.649
+first exclamation vorwärts	etwas:2.407 nicht:1.614
+first exclamation warte	wessen:1.966 pass:1.765 machen:1.512 geh:1.343 nicht:1.310 hast:0.855 wer:0.744 ich:0.429
+first exclamation warten	wohin:1.964 vielleicht:1.423 was:0.437
+first exclamation wartet	wir:0.473 ich:0.335
+first exclamation warum	durch:2.712 essen:2.369 hast:1.257 die:0.369 wir:0.336
+first exclamation was	ihm:1.986 mögen:1.986 leider:1.955 gut:1.943 gibt:1.602 etwas:1.440 natürlich:1.440 früher:1.439
+first exclamation wasch	du:0.459
+first exclamation wehe	wenn:0.986 wir:0.616
+first exclamation weine	alles:1.450 es:0.312
+first exclamation weiter	du:0.459
+first exclamation welch	meine:1.477 und:0.799 was:0.522 du:0.315
+first exclamation welche	in:1.404 wo:1.238
+first exclamation welches	jetzt:1.212
+first exclamation wenn	soweit:2.213 halt:1.868 geh:1.245 im:1.238 lassen:1.176 den:1.025 denn:0.981
+first exclamation wer	sobald:2.369 doch:1.749 aber:1.074 dann:0.877 wenn:0.706 da:0.622
+first exclamation werde	es:0.486 das:0.366
+first exclamation wie	damals:2.045 wäre:2.045 erzähl:1.701 oh:1.701 kaum:1.701 früher:1.498 kein:1.352 bald:1.298
+first exclamation willkommen	heute:1.422 wo:1.134 wir:0.473 es:0.342
+first exclamation willst	immer:2.474 dass:2.020 wann:1.729 dieser:1.677 bitte:1.278
+first exclamation wir	eines:1.617 dort:1.451 warum:1.108 ist:0.891 dann:0.579 und:0.366 die:0.358
+first exclamation wirf	er:1.072 wenn:0.784 der:0.542
+first exclamation wirklich	schon:1.986 das:0.326
+first exclamation wo	warum:1.313 wenn:0.946
+first exclamation wollen	wann:1.863 wie:0.791 was:0.627
+first exclamation wow	ja:2.186 welche:1.137 wie:0.717 der:0.631
+first exclamation würdest	wir:0.616
+first exclamation zeigen	wir:0.821 sie:0.605
+first exclamation zieh	willst:1.787 man:1.187 dann:0.751 wenn:0.581 es:0.512 wir:0.493 du:0.309
+first exclamation zieht	es:0.707 wir:0.576
+first exclamation zu	man:1.416 er:1.098 sie:0.506
+first exclamation zum	was:0.554 ich:0.366
+first exclamation zur	mit:1.688 du:0.459
+first exclamation zurück	ihr:1.322 du:0.459
+first exclamation zwei	er:0.882
+first exclamation zweifle	du:0.459
+first exclamation öffne	warum:1.276 es:0.409
+first period a	einen:2.138 wer:0.978 geben:0.972 falls:0.967 gute:0.726 unter:0.652 ab:0.634 weil:0.600
+first period ab	dies:1.771 einen:0.595 mehr:0.534 er:0.520 das:0.366
+first period abends	dort:0.346
+first period aber	bevor:1.879 denken:1.783 etwas:1.758 kein:1.658 kommen:1.502 viele:1.432 na:1.317 manche:1.277
+first period ach	keine:2.003 komm:1.868 lass:1.555 dann:1.124 das:0.445
+first period achte	halte:1.545 vielleicht:1.373 als:0.567 einige:0.552 hier:0.339
+first period achtung	nicht:1.833 bitte:1.521
+first period adel	aber:0.636
+first period ah	mein:1.912 man:0.792 manche:0.487 ich:0.398 leider:0.387 ja:0.350
+first period all	dieser:1.810 sie:0.793 der:0.642 das:0.302
+first period alle	sehen:2.036 jede:1.754 geld:1.691 gute:1.482 keiner:1.388 niemand:1.234 gott:1.145
+first period allein	an:1.912 das:0.372
+first period allerdings	gibt:0.849 zwei:0.735 möchtest:0.604 einige:0.559 bist:0.552 aus:0.552 damit:0.518 für:0.449
+first period alles	dir:1.745 jede:1.611 liebe:1.467 zu:1.070 mach:0.987 nur:0.812 danke:0.783 auf:0.721
+first period als	damals:1.631 bis:1.513 seit:1.489 schau:1.402 ihre:1.229 nach:1.097 noch:1.080 damit:1.032
+first period also	bis:1.858 dass:1.839 mit:1.024 eine:1.009 könnte:0.604 du:0.453 war:0.421
+first period alt	je:2.307 aber:0.596
+first period alte	so:1.393 wer:1.153
+first period am	plötzlich:2.444 dort:1.640 kommen:1.601 bis:1.380 manche:1.376 noch:1.276 nun:1.099 ihre:1.083
+first period an	aufgrund:2.405 fast:2.098 mich:1.947 kommt:1.607 dafür:1.481 erst:1.471 sind:1.394 morgen:1.389
+first period andere	als:1.630 obwohl:0.975 bevor:0.932 was:0.724 du:0.613 und:0.532 damit:0.306
+first period anfangs	wie:1.109 und:1.014
+first period angeblich	stimmt:2.435
+first period anscheinend	mein:1.684 bitte:1.481
+first period ansonsten	diese:1.383 das:0.447
+first period arbeit	falls:2.813 aber:0.879
+first period arbeite	liebe:2.253 was:0.833
+first period armer	komm:2.126 da:1.334
+first period armut	lasst:2.445 menschen:0.970 aber:0.593 die:0.489
+first period atmen	und:0.754 das:0.448
+first period auch	wegen:2.171 vergiss:1.897 keiner:1.677 keine:1.447 gott:1.434 unsere:1.330 wann:1.308 je:1.220
+first period auf	nachdem:2.470 geben:1.820 hätte:1.752 denken:1.730 damit:1.428 zwei:1.358 natürlich:1.316 sag:1.263
+first period aufgrund	eigentlich:2.402 es:0.371
+first period aus	wem:2.058 so:1.337 mir:1.270 nicht:1.242 bei:1.087 doch:0.847 ist:0.837 diese:0.795
+first period b	einen:1.940 dem:1.911 auch:1.316 bei:1.273 im:1.206 zur:1.109 eine:1.041
+first period bald	gibt:2.329 kommt:2.097 von:1.633 meine:1.284 sie:0.568
+first period behalte	auf:1.620 das:0.448
+first period bei	eigentlich:1.608 wieso:1.561 sag:1.425 dem:1.421 damit:1.268 willst:1.266 ob:1.152 zum:1.112
+first period beide	zum:1.929 jede:0.777 wir:0.725 natürlich:0.638 das:0.387
+first period beides	wer:1.152 die:0.527
+first period beim	einer:2.135 wäre:2.129 dem:1.735 möchtest:1.668 soll:1.509 bei:1.097 hast:1.061 der:0.854
+first period beliebtheit	wenn:1.180
+first period beobachte	wie:1.148 es:0.456
+first period bereits	vor:2.163 seit:0.891 ab:0.807 seine:0.590
+first period besonders	macht:0.768 welche:0.518 sie:0.456 das:0.401
+first period besser	eigentlich:2.409 drei:1.322 dann:1.288 man:0.865 wir:0.708
+first period bestimmt	heute:1.515 warum:1.348
+first period bestimmte	mit:1.421
+first period beunruhige	zu:1.970 es:0.457
+first period bevor	etwas:2.590 jetzt:1.066 wie:0.993 wenn:0.716 manche:0.484
+first period bewegung	versuchen:2.184 auch:1.686 als:0.348
+first period bildung	doch:1.395 man:0.902
+first period bin	dann:1.365
+first period bis	seit:2.179 ab:2.081 von:1.443 wo:1.055 doch:1.041 wenn:0.475 gibt:0.464 unter:0.433
+first period bisher	von:1.834 heute:1.511
+first period bist	o:2.440 ach:2.364 eigentlich:2.137 warum:1.330 oh:1.243 alles:1.234 deine:0.594 du:0.486
+first period bitte	danke:1.432 ja:1.271 haben:1.163 denk:0.754 zur:0.704
+first period bleibe	versuche:0.883 er:0.563 sie:0.462
+first period bleiben	sobald:2.424 seien:1.243 wem:0.953 wir:0.782
+first period blicke	in:1.226 es:0.457
+first period brauchen	danke:1.682
+first period bücher	wenn:0.793 wir:0.709 aber:0.557
+first period c	beide:0.710 dass:0.497 einige:0.451 welche:0.447 es:0.357 das:0.340
+first period ca	dieser:1.808 der:0.640
+first period chr	an:1.681 von:1.546 den:1.532
+first period computer	sobald:2.388 vielleicht:1.351 man:0.903
+first period d	aber:0.621 dass:0.602 viele:0.485
+first period da	entschuldigung:2.184 laß:1.934 halt:1.844 genau:1.841 geh:1.765 siehst:1.588 aus:1.558 sieh:1.388
+first period dabei	jedes:0.799 sobald:0.630 beim:0.618 es:0.583 um:0.541 hier:0.448 als:0.444 aus:0.422
+first period dadurch	doch:1.425 aufgrund:1.362 beim:0.747 dies:0.575 viele:0.488 hast:0.412 jeder:0.330
+first period dafür	zieh:1.245 unter:0.803 sie:0.477 kannst:0.449 nun:0.413 kann:0.319
+first period daher	denn:1.418 oft:0.804 vielen:0.760 beim:0.718 aus:0.522 viele:0.459 um:0.391 hier:0.316
+first period damals	früher:2.528 diesen:2.445 also:1.474 im:1.355 heute:1.261 so:1.140 da:1.078
+first period damit	na:2.022 mehr:1.954 sein:1.811 als:1.570 und:0.771 durch:0.491 natürlich:0.417 er:0.321
+first period danach	dann:1.243 und:0.929 wann:0.407
+first period danke	oh:2.435 bis:1.705 und:0.936 du:0.921 vielleicht:0.870 gibt:0.807 kennst:0.608
+first period dann	aus:1.619 dies:1.338 und:0.832 warum:0.803 falls:0.598
+first period daran	uns:2.951 was:0.906 das:0.418
+first period darauf	einige:2.095 hast:1.547 du:0.757 der:0.709
+first period darf	ihre:1.859 hier:1.745 wollt:1.158 was:0.833 aber:0.522
+first period darin	im:1.564 und:0.710 sie:0.458
+first period darum	für:1.477 denn:1.255 ist:1.209 was:0.743 die:0.328
+first period darüber	tu:2.257 obwohl:0.963 jedes:0.706 beide:0.595 und:0.520 zum:0.459 dies:0.352 einige:0.335
+first period dass	welche:1.877 lass:1.522 vielleicht:1.101 aber:0.629 und:0.488 es:0.421 natürlich:0.409
+first period dazu	nach:1.766 trotz:1.438 falls:1.394 sobald:0.996 vergiss:0.938 jede:0.765 weil:0.703 um:0.607
+first period dein	unser:2.101 deine:1.681 darf:1.637 dass:1.627 bist:1.557 nicht:1.225 ist:0.805 so:0.788
+first period deine	zieh:2.279 versuche:2.242 sag:1.592 bist:1.452 wann:1.409 an:1.277 hast:1.252 lass:1.100
+first period dem	kaum:2.547 mit:1.761 doch:0.992 der:0.645 er:0.439 wenn:0.427
+first period demokratie	jedes:2.325 ist:1.110 nur:1.076 was:0.644 und:0.452 es:0.409
+first period den	gott:1.577 aus:1.494 morgen:1.414 auf:0.951 eine:0.722
+first period denen	lassen:2.588 danke:1.643
+first period denk	tu:2.448 ein:1.133 kann:0.302
+first period denke	welches:2.415 hier:1.708 ist:1.263 dann:1.217
+first period denken	seien:1.096 was:0.795 man:0.792 vielen:0.649 wir:0.635
+first period denkt	sprichst:2.911 macht:2.407 nein:2.169 die:0.454
+first period denn	glauben:2.466 nicht:1.414 für:1.262 zwischen:1.158 denk:1.145 wer:1.070 so:0.977 ein:0.758
+first period dennoch	erst:2.093 an:1.915 den:1.766 falls:1.069 hier:0.515 dafür:0.498 könntest:0.431 zum:0.367
+first period des	versuchen:1.683 ein:1.011 falls:0.978 wenn:0.706 oft:0.679 der:0.635 er:0.438 die:0.365
+first period deshalb	so:1.299 vielleicht:1.295 zu:0.330
+first period deswegen	ohne:2.010 aber:0.590 bis:0.585 das:0.403
+first period deutsch	heute:1.475 sie:0.462
+first period deutsche	ob:1.977 das:0.409
+first period dich	geh:2.058 mach:1.776 wie:1.038
+first period dichtung	die:0.491
+first period diejenigen	die:0.531
+first period dies	könnte:2.130 je:1.439 bei:1.152 halte:0.998 zur:0.947 trotz:0.947 doch:0.872 durch:0.695
+first period diese	siehst:1.643 kennst:1.629 wohin:1.553 bin:1.468 oft:1.292 schau:1.247 unser:1.124
+first period diesen	dem:2.184 der:0.672 er:0.487
+first period dieser	seien:1.865 wäre:1.592 jedes:1.526 bald:1.430 weil:1.336 beim:1.313 natürlich:1.240 darf:1.143
+first period dieses	vergessen:2.225 hör:1.810 vergiss:1.806 schau:1.583 macht:1.579 einen:1.411 hat:1.234 weißt:1.196
+first period diesmal	er:1.022
+first period dir	auch:1.613 ich:0.338
+first period doch	menschen:1.966 unsere:1.759 wann:1.722 zwischen:1.515 als:1.454 am:1.393 für:1.282 ein:0.778
+first period doof	selbst:2.382
+first period dort	menschen:2.052 selbst:1.726 um:1.664 mit:1.108 obwohl:0.885 wie:0.836 was:0.647 man:0.631
+first period draußen	lass:1.639 meine:1.316 wer:0.982
+first period drei	während:2.282 die:0.451
+first period du	welchen:1.585
+first period durch	drei:2.709 versuche:2.189 hat:1.719 dieses:1.603 dieser:1.536 wie:0.729
+first period egal	nun:1.874 versuche:0.810 sie:0.389
+first period ehrlich	aber:0.636 sie:0.504
+first period eigentlich	keiner:2.082 am:1.384 wo:1.043 mit:1.027 aber:0.929 wer:0.748 der:0.682 was:0.539
+first period ein	sagt:2.113 seien:1.394 je:1.230
+first period eine	hallo:2.338 glaubst:1.857 vergessen:1.848 besser:1.503 einer:1.419 durch:1.167
+first period einem	mit:1.342 der:0.709 sie:0.424
+first period einen	dort:1.552 für:1.389 jetzt:0.930 es:0.592 beim:0.467
+first period einer	nun:1.680 nur:1.404 er:0.754 die:0.491 der:0.480 und:0.447
+first period eines	seid:2.179 tu:2.080 sein:1.682 heute:1.440 nach:1.430 doch:1.025 mit:1.009 so:0.984
+first period einfach	aber:0.592 es:0.413
+first period einige	meiner:2.330 na:1.844 damit:1.657 im:1.149 ein:0.729 sie:0.491 beide:0.368
+first period einigkeit	und:0.715
+first period einmal	gestern:2.495 gut:2.393 im:1.222 doch:1.049 ein:0.789 und:0.665 wir:0.399
+first period eins	stimmt:2.359 das:0.372
+first period einst	plötzlich:3.256 nun:1.910 heute:1.774
+first period elefanten	sie:0.764 ihre:0.425
+first period endlich	habt:2.616 auf:1.446 jetzt:1.047 wir:0.612 die:0.356
+first period entschuldige	sprichst:2.577 dir:2.233 kannst:1.830 hast:1.215 ich:0.637
+first period entschuldigen	sprechen:2.722 wissen:2.386 woher:2.372 könnten:2.211 könnte:2.091 darf:1.984 haben:1.710 wo:1.633
+first period entschuldigung	dir:2.213 können:1.807 wann:1.690 wo:1.355 ist:0.981 wie:0.718
+first period entweder	könnte:2.583 was:1.149 der:0.676
+first period er	kennst:1.461
+first period erfahrung	nur:1.568 man:0.800 sie:0.359
+first period erfolg	für:1.816 mach:1.683 der:0.886 jedes:0.736 er:0.679
+first period erinnere	es:0.457 das:0.449
+first period erkläre	gibt:1.126 ab:0.769
+first period erst	seine:1.946 alles:1.326 dann:1.109 der:0.530 es:0.454 er:0.345
+first period erstelle	geht:0.965 gib:0.630 manche:0.602 auch:0.431 in:0.410 um:0.394 diese:0.356 mach:0.337
+first period erstens	soweit:3.119
+first period erwarte	mach:1.810 heute:1.439 wenn:0.794 es:0.380
+first period erzähl	sei:2.045 jeder:1.756 ich:0.336
+first period es	denkst:1.425
+first period esperanto	welche:2.165 leider:1.785 ohne:1.710 an:1.643 am:1.445 doch:1.091 warum:1.003 ein:0.830
+first period essen	eine:1.311 sie:0.423
+first period etwa	die:0.533 nicht:0.333
+first period etwas	jetzt:0.935 man:0.657 gibt:0.573 aber:0.348
+first period fahren	welches:2.454 ein:1.065
+first period falls	unsere:2.016 hat:2.012 ein:1.050 macht:0.994 vergiss:0.886 versuche:0.797 kommt:0.542 seine:0.466
+first period fast	viele:1.903 ist:1.239 eine:1.217 wir:0.613
+first period faulheit	es:0.712
+first period fehler	was:0.831 man:0.829 der:0.673 aber:0.520 es:0.341
+first period fernsehen	immer:2.407 doch:1.360 man:0.867 das:0.372
+first period fliegen	heute:1.516
+first period florian	er:0.884
+first period folge	dort:1.732 ich:0.300
+first period folgen	ich:0.370
+first period fordere	so:1.729
+first period frag	tu:2.634 der:0.585
+first period frage	dann:1.364 nach:0.343
+first period fragt	tut:2.741
+first period frau	nach:1.621 man:1.023
+first period frauen	jede:2.051 vor:1.721 ohne:1.595 manchmal:1.544 kinder:1.411 ihr:1.182 sie:0.864 wenn:0.423
+first period freiheit	sobald:2.285 das:0.304
+first period freitags	jetzt:1.222
+first period freude	liebe:2.367
+first period freunde	sag:2.160 sei:1.977 ohne:1.911 man:0.800 wenn:0.727 das:0.304
+first period freundschaft	je:1.927 man:0.867
+first period freut	falls:1.388 ich:0.580 haben:0.348
+first period frieden	doch:1.396 er:0.563
+first period früher	heute:2.045 bis:1.560 jetzt:1.393 da:0.971 mit:0.726
+first period furcht	wer:1.156
+first period fußball	es:0.457
+first period fünf	so:1.356 ein:1.137 die:0.491
+first period für	wieviel:2.143 weil:1.609 noch:1.337 komm:1.296 zum:1.191 zu:1.141 doch:0.943
+first period ganz	mich:2.362 alles:1.304 meine:1.210 wer:0.875 wir:0.507 und:0.475
+first period ganze	nur:1.713
+first period geben	ich:0.406
+first period gebildet	was:0.947
+first period gebt	denn:1.459 ein:1.177
+first period gedanken	kaum:2.949 man:0.901 die:0.509
+first period geduld	manchmal:1.861 jeder:1.688 nicht:1.688 aber:0.491 die:0.386
+first period gegen	diese:1.154 jetzt:0.990 aber:0.688 die:0.568 wir:0.555
+first period gegenüber	in:1.185
+first period geh	zieh:2.761 mach:1.657 da:1.103 du:0.606
+first period gehe	gehst:3.052 für:1.594
+first period gehen	sagen:2.500 geht:2.490 meine:1.282 wenn:0.664
+first period geld	menschen:1.844 natürlich:1.821 kein:1.580 am:1.271 also:1.208 wer:0.635 es:0.588 aber:0.579
+first period gelehrte	warum:1.349 man:0.944
+first period genau	nicht:1.786 dann:1.320 gibt:0.813 es:0.410
+first period genieße	dann:1.367 es:0.457
+first period genug	mach:1.776 jetzt:1.111 das:0.591
+first period gerade	geh:2.087 hat:2.056 man:0.862
+first period gern	wie:1.139 um:0.422 kann:0.336
+first period gerne	hallo:1.799 doch:1.376 ist:1.352 hier:0.903 lassen:0.879 bitte:0.749 beim:0.698 kann:0.514
+first period geschichte	ist:1.372
+first period gesegnet	er:0.604
+first period gesetze	ihre:1.972 wie:1.149
+first period gestern	wegen:2.407 na:1.728 heute:1.727 hat:1.561 hast:1.049 alles:1.007 der:0.700 wir:0.511
+first period gesundheit	wenn:0.870
+first period gib	manche:1.838 alles:1.157 denn:1.031 wenn:0.444
+first period gibst	sprichst:2.988
+first period gibt	iss:3.272 wir:0.718 etwas:0.679 die:0.473 wann:0.462
+first period glaube	liebe:2.255 und:0.644 er:0.492 das:0.338
+first period glaubst	ein:1.137
+first period gleich	zu:1.825 heute:1.371 er:0.459
+first period glück	je:2.001 doch:1.091 wer:0.809 und:0.707 man:0.598 der:0.442
+first period gott	bin:1.995 menschen:1.651 erst:1.453 hier:1.144 bei:0.949 alles:0.871 er:0.808 ist:0.699
+first period gottes	unter:2.499 zu:1.970
+first period groß	die:0.531
+first period große	ob:1.971 da:1.288 was:0.901 je:0.405
+first period gräm	denk:3.299 das:0.449
+first period grün	mehr:2.196 wenn:0.830 gehen:0.577
+first period gut	eines:2.080 noch:1.768 an:1.592 und:1.086 wir:0.390
+first period gute	sei:1.916 du:0.630 die:0.325
+first period guten	würden:2.509 würdest:2.377 entschuldigen:2.373 deine:1.674 bist:1.550 wie:1.536 sind:1.475 haben:1.357
+first period h	etwas:2.118 über:1.895 den:1.557 im:1.327 alle:1.312 mit:1.137
+first period ha	das:0.667
+first period hab	das:0.336
+first period habe	ja:2.036 das:0.404 nun:0.395 kann:0.301
+first period haben	würden:2.819 nein:1.940 ja:1.775 von:1.533 für:1.390 diese:1.080 warum:1.043
+first period habt	danke:1.683
+first period hallo	wohin:2.335 bin:2.250 mir:1.743 sind:1.631 könntest:1.625 wie:1.570 welchen:1.343 zur:1.054
+first period halt	jeden:1.227 wenn:0.830 das:0.662
+first period halte	jeder:1.751 nur:1.297
+first period halten	wir:0.741 und:0.708
+first period hass	das:0.449
+first period hast	lieber:2.354 morgen:1.457 dein:1.416 danke:1.395 hier:1.231 warum:1.054 meine:0.863 wo:0.824
+first period hat	mir:1.992 haben:1.763 mach:1.678 und:1.030 wird:0.736 aber:0.426
+first period hatten	war:2.445 viele:2.037 die:0.491
+first period heirate	du:0.837 es:0.457
+first period heiraten	du:0.837 sie:0.504
+first period herr	kommen:2.140 warum:0.999 da:0.983 der:0.438 wir:0.437 und:0.405 ich:0.308
+first period herzlichen	wie:1.146 besser:1.076
+first period heute	morgen:2.224 gestern:2.092 habe:1.639 ach:1.578 nimm:1.425 komm:1.332 kommt:1.166
+first period hier	versuchen:2.445 ruf:1.737 machen:1.733 wollen:1.603 hör:1.567 diesen:1.553 welches:1.418 nimm:1.415
+first period hinnerk	denn:1.459
+first period hinter	was:0.907 und:0.715
+first period hoffnung	am:1.715 so:1.319 es:0.380
+first period hol	du:0.837
+first period humor	wenn:0.870
+first period hunde	das:0.757 die:0.418
+first period hätte	was:0.947 das:0.449
+first period höflichkeit	wer:1.153 durch:0.772
+first period hör	sei:1.646 du:0.855 es:0.405 wenn:0.396 das:0.395 ich:0.347 wir:0.312
+first period höre	meine:1.379 nur:1.268 man:0.833 es:0.345
+first period hörst	wer:1.156
+first period hört	vielen:0.721 und:0.675 ich:0.332
+first period ihm	dem:2.223 nicht:1.756 man:0.867 und:0.678
+first period ihnen	denn:1.455 sie:0.500 nach:0.343
+first period ihr	laßt:2.250 kennen:1.703 habt:1.700 könntet:1.626 einen:1.569 seid:1.500 macht:1.393
+first period ihre	ihr:1.176 auf:1.154 meine:1.023 sie:0.925 diese:0.919
+first period im	wegen:1.677 obwohl:1.605 war:1.523 hättest:1.486 o:1.484 beim:1.452 einer:1.392 machen:1.227
+first period immer	egal:2.269 eines:2.105 manche:1.893 kein:1.729 viele:1.704 für:1.309 muss:1.300 da:0.961
+first period in	hört:1.356 ruf:1.356 genau:1.263 wollen:1.229
+first period indem	dass:2.149 alles:1.498 der:0.702 dies:0.500 je:0.364
+first period infolge	man:0.904 der:0.749
+first period intelligenz	ein:1.100 wenn:0.794
+first period inzwischen	es:0.425
+first period irgendetwas	doch:1.437 nur:1.379
+first period irgendwann	heute:1.515 es:0.456
+first period irgendwas	es:0.413 das:0.406
+first period irgendwie	so:1.281 wer:1.041
+first period irgendwo	doch:1.436 die:0.530 dort:0.348
+first period irren	jemand:2.413 nur:1.302 aber:0.843
+first period isaac	nach:1.842
+first period iss	lass:1.701 du:1.031 sie:0.392
+first period ist	siehst:1.845 machen:1.841 ja:1.730 nein:1.552 dafür:1.484 leider:1.438 danke:1.329 um:1.284
+first period iwan	alle:1.595 ist:1.413
+first period ja	nein:1.907 damals:1.832 na:1.765 unter:1.615 immer:1.599 manche:1.381 nimm:1.334 vor:1.297
+first period jahre	obwohl:1.195 aber:0.633 nach:0.344
+first period je	jede:2.087 menschen:1.940 nein:1.821 dies:1.430 am:1.367 bevor:0.730 was:0.522
+first period jede	gut:2.300 manche:1.784 keine:1.779 jeder:1.352 eine:0.910 diese:0.904 wenn:0.699 der:0.609
+first period jeden	menschen:2.253 manchmal:1.894 man:0.833 wenn:0.760
+first period jeder	diesen:1.842 weil:1.580 auch:1.174 niemand:1.136 zum:1.134 im:1.091 also:0.871 auf:0.763
+first period jedermann	es:0.712
+first period jedes	oft:2.039 jede:2.033 ob:1.538 zum:1.513 diese:0.921 und:0.895 in:0.761
+first period jemand	ihm:2.445 weißt:2.239 vielleicht:1.175 bitte:0.970 aber:0.682 der:0.540 er:0.512
+first period jene	diese:1.386 wer:1.156
+first period jenen	die:0.531
+first period jener	kommen:2.451 in:1.186
+first period jetzt	o:2.015 bald:1.756 niemand:1.218 haben:1.197 ihr:0.868 auf:0.845
+first period johny	denn:1.459 er:0.604
+first period juden	ihre:2.315
+first period jugend	der:0.789 aber:0.636
+first period junge	eine:1.390 die:0.530
+first period kaffee	vor:2.055 jeder:1.721 ich:0.438
+first period kann	hier:1.418 dies:1.415 bei:1.223 auf:1.181 so:0.970 vielleicht:0.952 aber:0.897 einen:0.529
+first period kannst	sieh:2.121 nein:2.029 ja:1.863 welchen:1.585 so:1.178 sagen:0.794 bitte:0.530
+first period kathi	das:0.703
+first period kaum	er:0.492 die:0.420
+first period kein	auch:1.691 welchen:1.261 denn:0.918 aber:0.796 er:0.757 versuche:0.383
+first period keine	bringen:2.720 uns:2.385 nach:1.235 nur:1.106 alle:0.988 alles:0.978 mit:0.814 so:0.789
+first period keinem	nur:1.379
+first period keiner	wieso:2.160 sei:1.841 alle:1.652 ist:1.132 wenn:0.591 und:0.475 es:0.432
+first period kennst	wieso:2.363 da:1.256 wer:1.079
+first period kinder	dies:1.596 nur:1.121 man:0.686 wenn:0.613 sie:0.509 das:0.444
+first period klar	kennst:2.810 bin:0.952 hier:0.808 also:0.435 das:0.400
+first period kluge	die:0.491 das:0.409
+first period koch	es:0.457 das:0.449
+first period komm	deine:2.098 meine:0.955 wo:0.916 diese:0.850 du:0.607 wir:0.554 man:0.409 ich:0.353
+first period kommen	jetzt:1.047 wir:0.612 natürlich:0.525 aber:0.461 ich:0.376
+first period kommst	der:0.712 es:0.380 ich:0.336
+first period kommt	könnten:2.124 aber:0.491
+first period krakau	sie:0.768
+first period krambambuli	ein:1.177
+first period krieg	wie:1.005 wenn:0.727 das:0.558 er:0.459
+first period krise	man:1.258
+first period kritik	erst:2.167
+first period krähen	es:0.712
+first period kunst	dort:1.845 der:0.789
+first period könig	der:0.749 die:0.491 es:0.417
+first period können	am:1.670 jedes:0.819 keine:0.799 ich:0.429 um:0.311
+first period könnte	weil:2.431 nun:1.982 einen:0.673 keine:0.629
+first period könntest	den:1.828 ob:0.446
+first period künstliche	und:0.754 viele:0.499 es:0.456
+first period lachen	das:0.448
+first period lange	wer:1.155 wie:1.148
+first period langsam	den:1.839
+first period lass	bleib:2.093 deine:1.734 von:1.625 kein:1.545 meine:1.271 hast:1.071 diese:0.830 jedes:0.699
+first period lasse	nimm:2.136 wenn:0.789 und:0.673 aber:0.553
+first period lassen	nur:1.196 seien:1.065 wir:0.605 und:0.572 er:0.421 ich:0.368
+first period lasst	vielleicht:1.087 jetzt:0.918 es:0.408
+first period lauf	stell:2.824 aber:0.596
+first period laut	nach:1.714 was:0.820 seine:0.466 die:0.435 das:0.341 um:0.305
+first period laß	es:0.457
+first period lebe	sei:2.082
+first period leben	eines:2.302 wenn:0.696 es:0.543 die:0.356
+first period lebenskunst	dann:1.367
+first period lehne	liebe:2.367
+first period lehrer	am:1.787 doch:1.432 egal:0.947
+first period leidenschaft	der:0.789 die:0.531
+first period leider	sprichst:2.550 einige:1.736 manchmal:1.567 auf:1.520 falls:1.030 es:0.577
+first period lerne	du:0.662 und:0.581 die:0.357 sie:0.329
+first period lernen	denken:3.039 hört:2.806 sobald:2.351
+first period lesen	wer:1.112 wenn:0.828
+first period letzten	ist:1.335 die:0.722 sie:0.425
+first period letztlich	wenn:0.869 er:0.601
+first period leute	eine:1.247 wir:0.643 es:0.312
+first period lew	er:0.604 die:0.531
+first period liebe	sage:2.777 sag:1.740 manchmal:1.441 bitte:0.957 eine:0.827 warum:0.785 aber:0.536 und:0.489
+first period lieben	es:0.457
+first period liebst	er:0.604
+first period linux	du:1.134
+first period lächle	und:0.755
+first period mach	alles:1.510 dein:1.289 dies:1.100 am:1.037 du:0.820 da:0.579
+first period machen	wenn:0.724 ich:0.511 viele:0.352 das:0.302
+first period macht	gott:1.878 ihr:1.274 ist:1.044 nur:1.024 wenn:0.515 wir:0.418
+first period mag	manche:2.264 hier:1.857
+first period magnus	im:1.610 mit:1.421
+first period magst	meine:1.450 so:1.356
+first period makemake	diese:1.386 er:0.604
+first period male	wenn:1.180
+first period mama	macht:2.117 ab:2.110 mach:1.520 kann:1.472 wo:1.085 was:0.580 man:0.577
+first period man	welcher:2.167 glaubst:1.726 wohin:1.381 genau:1.379 oft:1.105 aus:1.096 eines:1.065
+first period manager	im:1.610 sie:0.504
+first period manche	mir:1.558 leider:1.488 doch:0.794 vielleicht:0.748 und:0.596 wie:0.519
+first period manchmal	genau:2.171 kommen:1.870 während:1.742 wann:1.501 selbst:1.419 mir:1.240 ein:0.883 wer:0.861
+first period mann	sie:0.501 das:0.447
+first period marie	sie:0.955 der:0.676
+first period mehr	an:1.780 du:0.627 aber:0.438
+first period mein	hätte:1.464 genau:1.461 unser:1.035
+first period meine	trotz:2.004 gestern:1.641 hättest:1.551 dafür:1.279 eines:1.235 manche:1.023
+first period meiner	man:0.831 das:0.589 aber:0.522 sie:0.390
+first period mensch	was:0.835 und:0.644 er:0.492
+first period menschen	gut:2.255 ab:1.951 einige:1.648 niemand:1.468 jeder:1.307 im:1.084 doch:0.911 nur:0.853
+first period meteoroiden	jeden:2.988 ein:1.177
+first period mich	darf:1.988 um:1.720 mir:1.603 am:1.535 das:0.446
+first period milch	am:1.789 wenn:0.869
+first period millionen	aber:0.634 es:0.456
+first period mir	laßt:2.196 mama:2.195 lieber:1.835 woher:1.831 laß:1.739 lassen:1.482 gehen:1.436 lasst:1.342
+first period mist	hast:1.626
+first period mit	zwei:1.694 machen:1.484 erst:1.116 ohne:1.005 guten:0.987
+first period mitten	als:1.853 das:0.449
+first period moderne	ein:1.173 die:0.538
+first period momentan	auch:1.649 wie:1.107 das:0.407
+first period morgen	gehst:2.922 wirst:2.571 geht:2.134 seid:2.028 gehen:1.674 da:1.300 dort:1.281 mein:1.161
+first period morgens	es:0.457
+first period musik	wem:2.570 alles:1.507 aber:0.557 sie:0.425
+first period musst	schau:2.448
+first period mut	und:0.715
+first period männer	frauen:3.347 sobald:2.125 vor:1.863 ohne:1.752 welchen:1.498 denn:1.154 vielleicht:1.087 der:0.484
+first period möchten	vielen:2.426 aber:0.596
+first period möchtest	dort:1.801 bei:1.619
+first period möge	mögen:3.250 alles:1.508
+first period mögen	es:0.456
+first period müller	der:0.677 er:0.492
+first period na	ach:2.732 egal:2.313 gehen:1.910 lass:1.485 ein:0.849 du:0.509 ich:0.497
+first period nach	esperanto:2.024 schon:1.559 nimm:1.449 aus:1.395 welchen:1.373 an:1.219 hallo:1.091 dort:1.075
+first period nachdem	während:2.174 manchmal:1.817 nach:1.654 dann:1.179 er:0.416
+first period nachts	zu:1.927 aber:0.593
+first period natürlich	kennen:2.333 hier:1.426 man:0.798 aber:0.782 wer:0.695 was:0.487
+first period neben	im:1.547 was:0.884 zwei:0.684 um:0.620 einige:0.508 diese:0.331
+first period nehmen	geben:2.575 dann:1.082 was:0.687 sie:0.482 beim:0.474 er:0.318
+first period nein	natürlich:1.478 vielleicht:1.060 kann:0.975 warum:0.817
+first period neptun	die:0.531 das:0.449
+first period neue	dein:2.034 meine:1.480 um:0.422
+first period neugier	in:1.226
+first period nicht	manche:1.860 durch:1.684 auch:1.628 gehen:1.488 nichts:1.355 manchmal:1.256 den:1.091 ihr:0.894
+first period nichts	stell:2.372 kennen:2.301 dein:1.551 selbst:1.547 nun:1.496 jeder:1.341 alles:1.107 denn:0.966
+first period nie	mein:1.684 sie:0.464
+first period niemals	in:1.185 er:0.563 es:0.416 zum:0.401
+first period niemand	keiner:1.807 menschen:1.682 jeder:1.491 haben:1.289 zu:1.287 bei:0.979 ihr:0.960 mit:0.738
+first period nietzsche	viele:0.490 es:0.457
+first period nimm	ihre:1.405 mit:0.854 diese:0.819 nur:0.812 dann:0.800 ein:0.610 was:0.380
+first period noch	bleib:2.258 gute:2.195 sein:1.704 nach:1.452 auch:1.302 heute:1.126 jetzt:0.832 wir:0.699
+first period normalerweise	dieses:1.929 den:1.761 geht:0.923 aber:0.556 er:0.525
+first period nun	siehst:1.977 welche:1.636 dies:1.294 von:1.278 bringen:1.029 ist:0.852 du:0.770
+first period nur	egal:1.912 erst:1.438 sein:1.365 also:1.340 ohne:1.327 ob:1.288 nach:1.113 für:0.952
+first period nutze	es:0.445
+first period nähen	es:0.457
+first period o	kann:1.694 die:0.386 es:0.312
+first period ob	weil:2.166 doch:1.166 in:0.968 einige:0.750 unter:0.558 es:0.446 möchtest:0.343
+first period obwohl	der:0.985 sie:0.669 als:0.638 zum:0.337
+first period oder	am:1.607 wissen:1.085 man:0.760 und:0.571
+first period oft	zur:1.272 diese:1.145 in:0.999 und:0.515 das:0.462 aber:0.395
+first period oh	bring:2.757 über:1.801 vielleicht:1.015 dann:0.990 jetzt:0.845 wie:0.772 ach:0.640 gibt:0.483
+first period ohne	aber:0.705 die:0.603 der:0.574 erst:0.350
+first period ok	denk:1.399 bring:1.241 könnte:1.154 woher:1.093 gibt:0.696 kann:0.686 welche:0.676 kannst:0.570
+first period okay	entschuldigung:2.898 tut:2.545 na:2.069 mach:1.652 nehmen:0.841 versuche:0.688 nun:0.622 ich:0.440
+first period onkel	einige:2.174
+first period opa	jeder:1.756 eine:1.315
+first period optimisten	aber:0.636
+first period ordnung	was:0.947
+first period organisationen	wird:2.634 da:1.334
+first period papa	jemand:2.288 sei:1.919 wo:1.249 er:0.401
+first period papier	von:1.839 es:0.457
+first period pass	er:0.602 sie:0.502
+first period peter	ist:1.263 er:0.913 das:0.309
+first period phantasie	denn:1.754 sie:0.464
+first period philosophie	eine:1.314 wer:1.078 sie:0.690
+first period plötzlich	niemand:1.849 nun:1.844 sie:0.359 das:0.304
+first period politik	mit:1.309 man:0.833 aber:0.524 die:0.420
+first period politiker	sie:0.796 die:0.656
+first period professor	die:0.531
+first period qualität	man:0.902 wenn:0.829 aber:0.593
+first period quentin	dort:1.845 da:1.334
+first period rauchen	und:0.749 es:0.461 hier:0.351
+first period reden	je:1.961 wenn:0.828 es:0.413
+first period reg	die:0.531 das:0.449
+first period reich	danke:1.683 man:0.944
+first period reichtum	wäre:2.654 er:0.564 das:0.409
+first period rette	iss:3.341 mit:1.421
+first period richtet	denn:1.794
+first period rings	jede:2.435 durch:2.356 auf:1.544
+first period ruf	du:0.725 es:0.601 ich:0.301
+first period s	der:0.781
+first period sag	da:1.076 du:0.579 ich:0.401 aber:0.378
+first period sage	zu:1.858 vielleicht:1.614
+first period sagen	nichts:1.872 ohne:1.824 warum:1.117 wer:0.924
+first period sagt	etwas:2.401 er:0.604
+first period sami	alle:1.555 er:0.844
+first period sc	den:1.800
+first period schach	man:0.944
+first period schalte	ich:0.470 es:0.377
+first period schatz	unser:2.161 könntest:1.881 willst:1.601 meine:1.287 du:0.633 ich:0.347
+first period schau	dort:1.437 ist:1.339 man:0.537 das:0.462
+first period schauen	wenn:0.872
+first period schlaf	ab:2.476 versuchen:1.848
+first period schlechte	sie:0.462 nach:0.306
+first period schließlich	du:0.593 und:0.524 er:0.360
+first period schnell	bei:1.620 jetzt:1.180
+first period schokolade	man:0.939 sie:0.499
+first period schon	zum:1.581 nun:1.578 als:1.443 von:1.429 jeder:1.423 denn:1.048 mit:1.010 so:0.985
+first period schrei	damit:2.007 hier:1.747 ich:0.439
+first period schreibe	diesen:1.190 versuche:1.104 sprich:1.025 gib:0.700 keine:0.503 mehr:0.485 mach:0.479 dies:0.454
+first period schreiben	jedes:2.622
+first period schreien	es:0.457
+first period schuhe	frag:3.040
+first period schuld	das:0.447
+first period schweigen	und:0.755
+first period schwer	noch:2.126 und:0.715
+first period schön	gib:1.877 wo:1.369 vielen:0.719 aus:0.481 das:0.367
+first period schöne	dein:1.967 eine:1.315 wenn:0.794
+first period schönheit	sie:0.462
+first period sehen	dort:1.768 wir:0.710 sie:0.427
+first period sehr	dafür:1.952 welchen:1.577 danke:1.457 warum:1.124 wie:0.937 hier:0.642 und:0.530 er:0.378
+first period seht	sie:0.504 das:0.449
+first period sei	woher:2.336 vor:1.526 bist:1.524 nichts:1.463 dieser:1.315 auf:0.980 in:0.914 doch:0.796
+first period seid	o:2.714
+first period seien	ohne:1.939 kinder:1.755 wenn:0.754 wir:0.670 sei:0.414 sie:0.386
+first period sein	obwohl:2.465 seine:1.757 ihr:1.534 den:1.392 im:1.162 denn:1.011 eine:0.944 da:0.886
+first period seine	natürlich:1.801 von:1.297 für:1.139 hast:1.085 jetzt:1.009 diese:0.844 man:0.717
+first period seit	ob:1.523 kannst:1.208 ist:0.919 so:0.902 vielleicht:0.898 warum:0.855 die:0.480 was:0.453
+first period seitdem	diesen:2.655 siehst:2.493
+first period selbst	wieso:2.634 eines:2.124 auf:1.268 ist:1.060 dann:1.014 er:0.531 wenn:0.519 der:0.436
+first period selten	ein:1.176
+first period seltsam	jeder:1.833 eine:1.392
+first period setze	denn:1.454
+first period setzen	dort:1.840 dies:0.350
+first period sich	man:0.862 an:0.358 auf:0.338
+first period sicher	kein:2.023 selbst:1.961 und:0.677 aber:0.557
+first period sieh	in:1.082 er:0.460 sie:0.360 das:0.305
+first period sieht	keine:0.629 das:0.443
+first period sind	wo:1.613 können:1.525 kann:1.467 warum:0.977 und:0.681 ich:0.375
+first period sirius	er:0.844
+first period sitzt	das:0.703
+first period so	denk:2.448 hört:2.034 besser:1.934 durch:1.583 manche:1.415 mehr:1.387 damit:1.268 lass:0.977
+first period sobald	zu:1.873 heute:1.419 und:0.658 zum:0.597
+first period soeben	wann:2.121 der:0.789
+first period solange	erst:1.963 mit:1.216 was:0.743 und:0.551 die:0.327
+first period solche	wäre:2.574 hast:1.507 in:1.107 sie:0.648
+first period soll	vielen:2.288 mit:1.243
+first period sollten	dieses:1.961 ob:0.412 es:0.410 das:0.402
+first period sorge	wie:1.107 was:0.905
+first period sorgen	sie:0.727 selbst:0.433 es:0.416
+first period sorry	als:0.344
+first period sowohl	wir:0.781 während:0.710 dafür:0.566 manchmal:0.445
+first period soziale	doch:1.431 dies:0.581 es:0.451 manchmal:0.445
+first period sprache	jeder:1.831 man:0.942 ohne:0.483
+first period sprachen	ach:2.602 was:0.834 wenn:0.759
+first period sprechen	nicht:1.686 entschuldigen:1.121 das:0.302
+first period sprecht	nicht:2.133 falls:1.103 das:0.408
+first period sprich	nicht:1.627 dann:1.161 muss:1.134 was:0.741 der:0.583 das:0.497
+first period sprichst	bei:1.663
+first period spricht	die:0.420 sie:0.392
+first period statt	hören:2.935 welche:2.120 leider:2.084 zum:0.394
+first period stefan	seit:2.320 hat:1.883 in:0.971 wie:0.894 wenn:0.616 er:0.348
+first period steh	schau:2.411 es:0.635
+first period steig	der:0.789
+first period stell	nichts:1.983 so:1.275 was:0.827 damit:0.409 sie:0.383
+first period stelle	vielleicht:1.364 sei:0.504 nun:0.412 gib:0.393
+first period stille	nur:1.379 das:0.449
+first period stimmt	es:0.341 ich:0.302
+first period stopp	sprechen:3.326
+first period streng	versuche:2.609
+first period störe	damals:2.677 aber:0.596 sie:0.464
+first period suche	gib:1.871 nicht:1.744 um:0.343
+first period suchen	man:0.939
+first period sätze	sie:0.504
+first period sören	vor:2.167
+first period tadeln	mit:1.755
+first period talent	was:0.907
+first period tanzen	sie:0.502
+first period tatsachen	selbst:2.039
+first period tatsächlich	dieser:1.866 entschuldigung:1.316 nur:1.290 man:0.855 der:0.711 dafür:0.483
+first period tausende	die:0.529
+first period teile	oft:0.843 das:0.447
+first period tiere	ein:1.174 sie:0.501
+first period toleranz	aber:0.636
+first period traditionen	nur:1.379 sie:0.504
+first period traue	du:0.797
+first period treffen	machen:2.530 beide:2.523
+first period trink	so:1.356 er:0.564 das:0.409
+first period trinken	dann:1.325 sie:0.461
+first period trinkst	ich:0.511
+first period trotz	sei:2.070 da:1.282 sie:0.452 dies:0.304
+first period trotzdem	können:1.775 wer:1.033 wie:1.027 seine:0.471 als:0.463 vor:0.443 es:0.335 das:0.327
+first period tu	sei:2.010 wer:1.044 wir:0.676
+first period tue	dies:1.815 wenn:0.831 es:0.417
+first period tut	kommen:2.044 nicht:1.386 alles:1.138 so:0.949 besser:0.633 ich:0.502
+first period u	durch:0.660
+first period um	wollen:1.634 zwei:1.628 dass:1.464 noch:1.394 ja:1.309 den:1.069 also:0.958 dann:0.957
+first period und	zur:2.149 jeden:1.891 besser:1.686 ach:1.617 immer:1.386 vielen:1.368 schon:1.232 dass:1.138
+first period unlängst	leider:2.132
+first period uns	doch:1.292 da:1.189 wir:0.944 sie:0.359 viele:0.355 das:0.304
+first period unser	bald:1.795 zum:1.597 gib:1.222 dieser:1.219 auf:0.884 im:0.873 wir:0.784 meine:0.753
+first period unsere	unter:1.793 unser:1.658 während:1.655 selbst:1.333 zum:1.285 wir:1.101 auf:0.914 so:0.689
+first period unseren	sie:0.768
+first period unter	mehr:1.941 bei:1.367 dann:1.071 in:0.930 er:0.308
+first period vater	unser:2.596 natürlich:2.229 dein:1.930
+first period verbringe	vielleicht:1.392
+first period vergangenheit	es:0.457
+first period vergessen	wir:0.786 es:0.456
+first period vergesst	es:0.840
+first period vergib	lass:1.736 er:0.527 die:0.454 sie:0.427
+first period vergiss	hätte:2.680 es:0.767
+first period vergnügen	nichts:2.104 hier:1.858
+first period verschwende	sei:2.082 die:0.760
+first period versuch	dafür:1.873 sei:1.817 dein:1.739 bei:1.358 wo:1.147 vielleicht:1.087 und:0.451
+first period versuche	so:1.229 wer:0.989 du:0.976 bist:0.397
+first period versuchen	seien:2.882 mit:1.336 vielleicht:1.321 und:0.671 dieser:0.334
+first period vertrauen	keiner:2.485 es:0.452
+first period verzeih	er:0.604 sie:0.504
+first period verzeihen	wer:1.116 ich:0.373
+first period verzeihung	ich:0.469 es:0.376
+first period verändere	bleib:2.649
+first period veröffentlichte	in:1.186 die:0.491
+first period viel	hat:0.941 sag:0.621 manche:0.590
+first period viele	esperanto:2.343 stimmt:1.640 weißt:1.304 heute:0.720 doch:0.655
+first period vielen	soweit:2.799 danke:1.697 diese:1.060 entschuldigen:0.942 besser:0.754 habe:0.747 sind:0.621 könntest:0.616
+first period vieles	machen:2.495 doch:1.397 und:0.715
+first period vielleicht	sprich:2.051 nimm:1.400 welche:1.350 damit:1.300 auf:1.141 mir:1.042 jeder:1.015 dann:0.881
+first period vom	und:0.935 aber:0.517
+first period von	ihm:2.262 obwohl:2.180 einer:1.967 noch:1.433 unsere:1.410 soll:1.341 haben:1.239 dieser:1.223
+first period vor	diesen:2.042 wollen:1.748 zwei:1.742 über:1.520 einige:1.517 wann:1.463 könntest:1.426 heute:1.394
+first period vorhersagen	vor:2.163 der:0.785
+first period vorsicht	sie:0.427
+first period waffen	menschen:2.325 ihre:1.932
+first period wahre	wo:1.340 wer:1.044 die:0.420 sie:0.392
+first period wahrheit	lasst:2.488 man:0.944
+first period wahrscheinlich	aber:0.956 unsere:0.399
+first period walentina	sie:0.464
+first period wann	damals:2.512 wieso:2.236 dass:2.031 warum:1.145 da:1.129
+first period war	sei:2.045 die:0.454
+first period warst	bist:2.165
+first period warte	mein:1.606 meine:1.032 ich:0.740 wir:0.329
+first period warten	der:0.644 aber:0.491 er:0.459
+first period warum	essen:2.736 warten:2.409 früher:2.200 weil:1.854 einen:1.732 aus:1.581 willst:1.221 werden:1.014
+first period was	würde:1.870 sehen:1.802 genau:1.454 einer:1.378 sagen:1.371 nichts:1.312 kommt:1.311
+first period wasser	liebe:2.108 sei:1.863 jeder:1.575 wenn:0.922 wir:0.830 was:0.689
+first period weder	sie:0.728
+first period wegen	zum:1.989 kannst:1.699
+first period weihnachten	es:0.380
+first period weil	so:1.274 und:0.634 dass:0.495
+first period weine	niemand:1.994
+first period weiß	doch:1.326 jetzt:1.111 er:0.492
+first period weiße	selbst:1.999 denn:1.419
+first period weißt	warum:1.119 das:0.473
+first period welche	da:1.184 wir:0.638 und:0.606 gib:0.519
+first period welchen	das:0.445
+first period welches	diese:1.301 das:0.786
+first period wem	gott:2.073 denn:1.284 nur:1.205 wer:0.982 sie:0.329
+first period wenn	magst:1.652 stell:1.183
+first period wer	wem:1.686 uns:1.684 gibt:1.227 eigentlich:1.180 stimmt:1.128 beim:1.107 um:1.012
+first period werde	wenn:0.792 das:0.370
+first period wettbewerb	nicht:1.833 er:0.604
+first period wichtig	einen:2.261 vielleicht:1.337 falls:1.089 was:0.892 welches:0.831 durch:0.720 einige:0.516
+first period wie	frag:1.478 heute:1.137 weißt:1.044 viele:1.020 danke:0.965
+first period wieso	alle:1.591
+first period wilhelm	dem:2.299 mit:1.420
+first period willst	hat:1.858 und:0.475 ich:0.469
+first period wir	herr:1.803 wollt:1.455 werden:1.451 könnt:1.450
+first period wird	hat:2.023 bitte:1.405 der:0.673 das:0.334
+first period wirf	man:0.944
+first period wissen	keine:2.029 wann:1.890 diese:1.154 der:0.557 den:0.344
+first period wissenschaft	glauben:2.842 manchmal:1.963 so:1.353
+first period wissenschaftler	mehr:2.197
+first period wo	siehst:1.931 keine:1.653 morgen:1.477 dein:1.437 dort:1.237 nachdem:1.163 mit:0.814 in:0.646
+first period woher	welches:2.420 durch:2.288 da:1.188 du:0.691 er:0.458
+first period wohin	möchtest:2.122 soll:1.962 zu:1.858 willst:1.693 es:0.345
+first period wollen	nehmen:2.670 gehen:2.126 ja:1.969 aber:0.524 das:0.338
+first period worte	lassen:2.515 aber:0.523 sie:0.391
+first period wortgeklingel	mit:1.755
+first period wunderbar	an:2.331
+first period während	war:2.057 dies:1.427 alles:1.157 mit:0.993 diese:0.972 eine:0.964 ein:0.749
+first period würdest	du:0.834 nach:0.344
+first period yanni	er:0.884
+first period z	in:1.073 durch:0.908 sagen:0.845 geht:0.836 könnte:0.834
+first period zehn	einen:2.316 nur:1.379
+first period zeige	lass:1.771 aber:0.593
+first period zeit	kommen:2.345 wir:0.642 sie:0.622 und:0.610
+first period zieh	du:0.939 wir:0.885 der:0.585 sie:0.300
+first period ziehen	sie:0.493 nun:0.429
+first period zu	wieviel:2.447 kennen:2.268 esperanto:2.268 unser:1.839 dem:1.775 nichts:1.578 dort:1.319 diese:1.200
+first period zuckerbergs	und:0.755 aber:0.636
+first period zuerst	erst:1.792 unsere:1.768 nun:1.613 dann:1.537 nach:1.466 nachdem:1.395 mit:1.045 der:0.413
+first period zum	weil:2.019 nicht:1.414 auf:1.217 nur:0.975 da:0.929 muss:0.922 jetzt:0.804 obwohl:0.780
+first period zunächst	erst:2.100 zum:1.925 dann:1.314 welches:0.819 einige:0.779
+first period zur	ab:2.291 selbst:1.853 dort:1.658 alle:1.409 damit:0.785 die:0.614
+first period zusammen	jetzt:1.220
+first period zuvor	was:0.947 der:0.789
+first period zwei	essen:2.928 natürlich:1.951 vor:1.775 an:1.597 zu:1.578 als:1.462 ein:1.111 in:0.834
+first period zwischen	zwei:2.222 welche:1.990 nicht:1.655 ihr:1.466
+first period zwölf	wir:0.747 die:0.491
+first period öffne	dir:2.531 er:0.490 ich:0.437
+first period über	seid:2.007 natürlich:1.759 bist:1.581 von:1.255 danke:1.099 ist:0.829 da:0.764
+first period überall	alles:1.919 ein:0.973 wenn:0.668 der:0.585
+first period übersetze	lass:1.808
+first period übrigens	er:0.560 sie:0.460
+first question aber	mich:1.534 um:1.421 man:1.088 ein:0.676 was:0.655 er:0.519 viele:0.493
+first question ach	na:1.220 den:1.217 von:0.746 du:0.386
+first question alle	dann:0.859
+first question alles	bist:1.743 du:0.452
+first question als	warum:1.816
+first question also	beim:2.408 danke:1.314 denn:0.338 es:0.304
+first question am	dann:0.787 du:0.420
+first question aus	vor:2.560
+first question bin	ja:1.316 wie:1.158
+first question bist	versuche:1.209 vielleicht:0.991 bei:0.990 du:0.844 wenn:0.823 es:0.396 falls:0.366
+first question brauchen	dann:0.859 die:0.679
+first question bringst	einen:2.166
+first question da	wo:1.684 was:1.012
+first question darf	geh:2.313 meiner:1.763 würde:1.522 hast:1.229 aber:1.020 er:0.612 sie:0.360
+first question das	warten:1.980 würde:1.870 für:1.163 und:1.033 dass:1.017 auf:1.011 warum:0.841 danke:0.794
+first question dass	denn:2.016
+first question der	lassen:1.771 den:1.390 na:1.061
+first question die	zwei:1.418 oh:1.227 den:0.852 man:0.650 weil:0.484 wenn:0.458
+first question doch	oft:2.579
+first question du	pass:1.628 schau:1.284 für:1.153 gut:0.943 dieses:0.937 nun:0.884 dann:0.882 doch:0.834
+first question echt	mein:1.404 das:0.532
+first question ein	beide:1.775 an:1.648 da:1.074 nein:0.997 wie:0.913 das:0.331
+first question eine	dann:0.858 es:0.383
+first question er	alle:1.418 ist:1.354 dann:0.724
+first question erinnerst	dort:1.785 nein:0.926
+first question es	kommt:1.545 welche:1.414 wer:1.202 was:1.177 hast:1.157 warum:1.092 dann:0.509
+first question findest	kann:0.491
+first question frau	wir:0.730
+first question für	danke:1.356 er:0.836
+first question geh	heute:1.851 ja:1.279 sie:0.875
+first question gehen	nein:0.966
+first question gehst	hast:1.492 nein:0.926 sie:0.624
+first question gestern	sie:0.664
+first question gibst	die:0.679
+first question gibt	falls:2.160 ohne:1.891 zwischen:1.715 bei:1.088 wie:0.849 ein:0.724 wenn:0.619 es:0.490
+first question glaubst	natürlich:1.773
+first question habe	manchmal:0.639
+first question haben	nehmen:2.112 sein:1.765 mir:1.030 mein:0.976 ihr:0.931 hier:0.927 nein:0.459
+first question habt	mir:1.362 in:1.106 wir:0.600 die:0.544
+first question hallo	wir:1.066 bitte:0.699
+first question hast	hätte:1.714 jemand:1.711 soll:1.681 deine:1.358 welche:1.238 nimm:1.169 sei:1.163 heute:1.021
+first question hat	um:1.669 falls:0.663
+first question herr	haben:2.120 bitte:1.668 ist:1.385
+first question hier	kaum:2.199 danke:1.357 das:0.394
+first question hilfst	zu:2.267 wir:0.775
+first question hin	nur:2.059
+first question holk	aber:1.655
+first question hörst	auf:1.422 da:1.129 der:0.526 die:0.489 sie:0.434 du:0.302
+first question ich	hättest:1.889 woher:1.886 früher:1.544 kein:1.530 welche:1.413 zwei:1.196 und:0.956 alle:0.862
+first question ihr	kann:1.955 eine:1.283
+first question in	dort:1.708 einen:1.708
+first question ist	jeder:1.756 zieh:1.423 dieses:1.417 ihre:1.411 könntest:1.334 kann:1.214 denn:1.177 diese:1.174
+first question ja	versuche:1.649 was:1.046
+first question jeder	zur:2.621 nichts:1.734
+first question jetzt	kannst:2.514 dass:1.658
+first question kaffee	wenn:0.954 du:0.531
+first question kann	bin:2.100 durch:1.814 meiner:1.605 danke:0.973 ja:0.895 nein:0.827 also:0.560
+first question kannst	papa:1.902 dafür:1.902 immer:1.901 wäre:1.847 herr:1.824 unser:1.703 zwischen:1.345 dieses:1.211
+first question kenne	und:1.673 nein:0.966
+first question kennst	da:1.154 wie:0.993 nein:0.762 falls:0.608
+first question kommst	dein:2.100 du:0.357 ich:0.317
+first question kommt	alles:2.272 es:0.424
+first question können	einige:2.249 mögen:2.211 aber:0.955 man:0.790 ein:0.704 er:0.547 vielen:0.504 wir:0.406
+first question könnt	er:0.876
+first question könnten	der:0.579 ich:0.314
+first question könntest	vielen:2.156 danke:1.375 lass:1.337 hier:1.040 die:0.619 sie:0.558 sagen:0.512
+first question leben	nein:0.966
+first question lieben	mein:1.483 man:1.159
+first question magst	dann:1.210
+first question mama	ist:1.417
+first question meine	nein:0.924
+first question meinst	er:0.912 der:0.752 denn:0.455
+first question mir	versuche:1.574 was:0.972
+first question mit	zieh:2.161 so:1.093
+first question möchten	vielleicht:1.394 dann:0.855 der:0.712
+first question möchtest	seit:2.019 natürlich:1.558 ja:1.100 der:0.500
+first question müssen	gott:2.541 ja:1.279 es:0.347
+first question na	wird:2.415 gut:1.760 mir:1.362
+first question nein	ein:0.995 dann:0.822
+first question noch	dann:0.896
+first question nun	in:1.241 du:0.491
+first question o	am:1.945 oh:1.659 wer:1.515
+first question ob	ab:2.317 viele:2.266 natürlich:1.510 wenn:0.650 das:0.420 die:0.416
+first question oder	also:1.568 was:0.863 falls:0.623 du:0.611 die:0.542 natürlich:0.367
+first question oh	du:0.452 es:0.345
+first question papa	hast:1.421 der:0.943 was:0.940 er:0.804
+first question sag	du:0.531
+first question schon	hört:2.431 meine:1.642 jetzt:1.484 du:0.357
+first question sehen	das:0.427
+first question seht	er:1.116 das:0.355
+first question seid	ihr:1.439 es:0.424
+first question sie	sind:1.986 gut:1.511 dass:1.233 warum:1.058 na:0.941 aber:0.899 dann:0.475 wir:0.351
+first question siehst	bald:2.253 am:1.656 eine:1.028 in:0.914 so:0.842 es:0.471 die:0.352
+first question sind	eine:1.213 so:1.026 nein:0.783 dann:0.716 vielen:0.690 die:0.548 sie:0.481
+first question so	denk:2.401 na:1.160 da:1.153 ein:0.867
+first question soll	warte:2.360 selbst:2.359 nun:1.279 mir:1.277 man:0.899 der:0.496 die:0.471
+first question sprichst	noch:2.075
+first question stört	mich:2.363 für:1.692
+first question und	soweit:2.071 fast:1.929 wegen:1.727 alles:1.723 warum:1.467 jetzt:1.109 aus:1.108 wie:0.982
+first question vielleicht	du:0.525 denn:0.452
+first question wann	dieser:1.603 mir:1.076 was:0.642 wenn:0.493 ich:0.385 wir:0.314
+first question war	im:1.441 aber:1.375 er:0.636 du:0.520
+first question warst	er:0.916
+first question warum	gute:1.150 willst:1.142 stell:1.135 habe:1.120 von:1.101 dies:1.063
+first question weißt	vergiss:1.871 sei:1.774 erzähl:1.638 könntest:1.549 dass:1.019 weil:0.671 in:0.642 wenn:0.630
+first question welche	uns:2.337 keine:2.316 geben:2.291 manche:1.924 bei:1.167 man:0.876 ein:0.803 bitte:0.720
+first question welchen	heute:1.921 den:1.368
+first question welcher	um:1.811
+first question wenn	jedes:2.263 niemand:1.465 vielleicht:1.082 eine:1.040 ja:1.015 gibt:0.548 viele:0.534 zum:0.465
+first question wer	sagt:1.715 sagen:1.684 damit:1.161 nur:1.153 diese:1.123 sag:1.095 heute:1.023 doch:0.920
+first question wie	genau:1.323 o:1.323 laß:1.323 halte:1.275
+first question wieso	könnte:1.831 bleib:1.291 im:1.276 jetzt:1.213 mein:1.038 na:0.920 so:0.764 die:0.568
+first question willst	sieh:1.686 bist:1.233 aus:1.067 alle:1.003 man:0.895 da:0.769 aber:0.733 wenn:0.679
+first question wir	na:1.252 aber:1.211 es:0.312
+first question wird	morgen:2.537 eine:1.315 was:0.972
+first question wirklich	du:0.771 nein:0.763
+first question wissen	vergessen:2.620 man:1.159
+first question wo	manchmal:1.176 ihre:1.173 ach:1.072 auf:0.899 kommt:0.843 alle:0.840 deine:0.831
+first question woher	sein:2.013 aus:1.938 ein:0.814 der:0.498
+first question wohin	wir:0.963 es:0.312
+first question wollen	vielleicht:1.182 sie:0.878 wir:0.520
+first question woran	nun:1.496 wenn:1.227
+first question worauf	auf:1.648
+first question worum	nun:1.529 bitte:1.122 es:0.414
+first question wozu	gib:2.033 einer:1.972 nimm:1.771 dieser:1.760 wer:1.287 wenn:0.650 sie:0.648
+first question wünschen	diese:2.028 wir:0.775
+first question würde	ich:0.357
+first question würden	danke:1.435 es:0.424
+first question würdest	du:0.722 es:0.346
+first question zu	also:1.755 du:0.529 damit:0.490
+first question über	es:0.633 du:0.491
+word exclamation abgesägt	was:1.690
+word exclamation achtung	ich:-0.770 es:0.466
+word exclamation alle	warum:1.869 ich:-0.347
+word exclamation allen	das:0.622
+word exclamation alles	es:-1.550 ich:-0.798 das:-0.389
+word exclamation angst	sie:0.890 es:0.781
+word exclamation arbeit	das:0.572
+word exclamation arsch	ich:0.308
+word exclamation bleistift	du:1.223
+word exclamation bruder	das:1.165
+word exclamation chef	ich:0.382
+word exclamation das	wohin:1.451 nichts:1.270 mir:0.803 man:0.638 sie:-0.509 er:-0.390 es:0.359 ich:-0.353
+word exclamation dein	wir:0.506 ich:-0.479
+word exclamation deine	wir:0.708 sie:0.603 das:-0.479 ich:-0.311
+word exclamation deinem	es:-0.597
+word exclamation deinen	es:1.382
+word exclamation dem	ich:-0.715 du:-0.330
+word exclamation den	er:1.249 es:-0.648 ich:-0.482 sie:-0.442 wir:0.426
+word exclamation der	ich:-0.992 er:0.708 ihr:0.407 was:-0.355 das:-0.302
+word exclamation des	ich:-0.315 das:0.307
+word exclamation dich	alle:1.305 sie:-0.665 wir:0.630 du:0.595 warum:0.387
+word exclamation die	alle:0.900 man:0.869 du:-0.855 ich:-0.586 sie:0.583 was:-0.318
+word exclamation diese	sie:0.955
+word exclamation diesem	er:1.752 das:0.737
+word exclamation diesen	er:1.670
+word exclamation dieses	es:0.671
+word exclamation dir	dir:3.615 mir:1.440 man:1.380 es:0.721
+word exclamation doktor	sie:1.652
+word exclamation du	du:0.349 dir:1.297 sie:-1.272 wir:-1.167 er:-1.032 wann:0.895 warum:0.455 wer:0.326
+word exclamation dusel	das:1.083
+word exclamation ein	niemand:2.199 dir:1.796 du:-0.701 warum:0.672 wir:-0.668 das:-0.413 ich:-0.353
+word exclamation eine	du:-0.815 wir:-0.458 es:-0.404 ich:-0.371 das:-0.304
+word exclamation einen	ich:-0.338
+word exclamation einer	was:1.353
+word exclamation elision	ich:0.462
+word exclamation eltern	ich:0.306
+word exclamation entschuldigung	ich:0.594
+word exclamation er	er:1.139 was:0.481 ich:-0.392
+word exclamation es	es:0.520 dir:1.780 du:-0.575 sie:-0.526 wir:-0.478 das:-0.424 wer:0.413 was:-0.357
+word exclamation etwas	das:-0.423
+word exclamation euch	ihr:2.174 alles:1.893 wir:1.047 er:0.533 das:-0.483
+word exclamation fall	es:0.960
+word exclamation fastenbrechens	ich:0.462
+word exclamation fenster	mir:2.809 es:1.386
+word exclamation frage	ich:0.387
+word exclamation frau	sie:1.071
+word exclamation freunde	wir:1.007
+word exclamation frieden	ich:0.308
+word exclamation gedanken	wir:1.720 ich:-0.447
+word exclamation geduld	sie:1.294
+word exclamation geschäfte	wir:1.660
+word exclamation glück	niemand:4.321
+word exclamation glückwunsch	sie:2.496 du:1.174 ich:-0.857
+word exclamation grund	ich:0.521
+word exclamation güte	was:1.739 das:0.433
+word exclamation handy	ich:0.382
+word exclamation herr	wir:0.858 was:0.617
+word exclamation hilfe	er:1.553
+word exclamation himmels	ich:0.462
+word exclamation ich	wir:-1.554 das:-0.426 es:-0.318
+word exclamation idee	wann:4.043
+word exclamation ihm	er:2.721
+word exclamation ihn	er:2.674 ich:-0.604
+word exclamation ihr	ihr:2.988 nichts:2.900 wir:0.641 sie:0.593 ich:-0.487 das:-0.445
+word exclamation ihre	sie:1.192
+word exclamation januar	ich:0.462
+word exclamation jeden	das:0.678
+word exclamation kein	wir:0.735 das:0.699 es:0.440
+word exclamation keine	mir:1.396 wir:0.875 du:-0.579 ich:0.347
+word exclamation keinen	es:1.045
+word exclamation kind	es:0.806
+word exclamation kinder	ihr:2.140 es:1.133 ich:-0.337
+word exclamation kopf	es:1.372
+word exclamation krieg	das:0.794
+word exclamation kunde	wir:2.116
+word exclamation küche	ich:0.308
+word exclamation leute	ihr:2.341 ich:-0.349
+word exclamation licht	ich:0.707
+word exclamation lied	ich:0.308
+word exclamation mahlzeit	ihr:3.072
+word exclamation mama	wir:0.384
+word exclamation man	ich:-0.813 das:0.486
+word exclamation mann	er:1.685 wir:0.560 ich:-0.425
+word exclamation mein	was:0.665 ich:-0.468 es:-0.360
+word exclamation meine	was:1.240 du:-0.373 es:-0.310
+word exclamation meinem	du:0.742
+word exclamation mensch	das:0.349
+word exclamation menschen	es:0.711
+word exclamation mich	es:-2.611 mir:0.786 das:-0.768 ich:0.620 du:0.303
+word exclamation milch	das:0.796
+word exclamation mir	wann:1.476 ich:0.715 sie:-0.692 du:-0.619 wer:0.511 was:-0.467
+word exclamation mist	ich:0.524
+word exclamation moment	warum:3.005
+word exclamation motor	ich:0.462
+word exclamation mut	es:1.091
+word exclamation nacht	alles:2.955 es:0.554
+word exclamation ne	das:1.042
+word exclamation nichts	er:0.746 das:0.452
+word exclamation oma	du:1.406
+word exclamation ordnung	ich:0.308
+word exclamation panik	ich:0.387
+word exclamation papiere	ich:0.308
+word exclamation problem	wir:1.487
+word exclamation pullover	er:2.251
+word exclamation pötte	wir:1.660
+word exclamation quatsch	ich:0.387
+word exclamation ruhe	er:1.715 ich:0.371
+word exclamation seine	er:2.057
+word exclamation seite	du:1.342
+word exclamation sich	du:-0.704 was:0.383 ich:-0.329 es:-0.310
+word exclamation sie	sie:1.369 du:-1.684 wohin:1.356 das:-0.419 er:0.394 wir:0.387
+word exclamation sorge	er:0.716 ich:0.674 wir:0.321
+word exclamation sowas	das:1.083
+word exclamation stuhl	er:2.326
+word exclamation stumpf	du:1.303
+word exclamation süßigkeiten	sie:1.726
+word exclamation teufel	ich:0.389
+word exclamation tür	sie:0.924 es:0.483
+word exclamation uhr	wir:1.318
+word exclamation uns	wir:1.791 mir:1.747 es:-0.652
+word exclamation unser	wir:1.723
+word exclamation unseren	wir:1.580
+word exclamation vater	ich:0.307
+word exclamation verspätung	ich:0.595
+word exclamation vielen	das:-1.356 sie:0.917 du:0.825
+word exclamation vorschlag	ich:0.462
+word exclamation wahrheit	das:0.622
+word exclamation warum	warum:3.663
+word exclamation was	was:-1.408 ihm:3.119 wer:1.055 wir:-1.049 sie:-0.903 ich:-0.498
+word exclamation weg	er:1.856 wir:0.456
+word exclamation welt	das:0.346
+word exclamation wenig	es:1.285
+word exclamation wer	wer:4.853
+word exclamation wir	wir:1.553 wer:1.177 warum:1.026
+word exclamation zeit	es:0.569
+word exclamation zeitung	ich:0.462
+word exclamation zug	wir:1.451
+word period abschluss	es:1.158
+word period absicht	das:0.961
+word period absichten	er:1.446
+word period abwechslung	es:1.116
+word period achtung	sie:1.090
+word period affe	es:0.924
+word period akten	das:1.249
+word period alkohol	sie:1.041
+word period all	sie:1.146 ich:-1.135 wir:0.989
+word period alle	alle:2.765 jeder:1.345 niemand:1.268 dies:-1.166 ich:-1.123 man:-0.850 er:-0.799 alles:0.441 wer:-0.436
+word period allem	ich:-0.519
+word period allen	ich:-0.496 es:-0.394 wir:0.338
+word period aller	er:0.657 sie:0.418
+word period alles	alles:2.412 wieso:2.357 nichts:1.278 sie:-0.445 warum:0.427 was:-0.407 es:-0.351 das:-0.323 ich:-0.306
+word period allgemeinen	ich:-0.718 das:-0.668 es:-0.540 dies:0.456
+word period ameisen	wir:1.777
+word period analyse	dies:1.010
+word period anderem	das:-0.354
+word period anderen	du:-2.376 dies:1.782 er:-0.890 ich:-0.685 warum:0.645 wir:-0.526 man:0.459 sie:-0.343
+word period anderes	ich:-1.207 sie:-1.142 das:-1.114 wir:0.938
+word period andern	er:1.316
+word period anfang	alle:2.423 ich:-1.372 das:0.325
+word period anfänger	es:-0.413 ich:0.382
+word period angebot	dies:0.767 ich:0.458
+word period angelegenheit	es:-0.613
+word period angewohnheit	man:2.257
+word period angst	es:-0.515 er:0.422 sie:0.384
+word period anschuldigungen	sie:1.299
+word period antwort	sie:-1.302 wir:-1.196 was:-1.112 es:-1.077 er:0.378
+word period anzahl	dies:1.169 das:-0.488 sie:-0.472
+word period apparat	was:2.261
+word period arbeit	er:-2.119 was:-1.636 es:-0.747
+word period arbeitsplatz	ich:0.392
+word period architektur	ich:0.586
+word period argumente	es:-0.309
+word period armut	er:0.843 es:0.545
+word period art	wir:-1.331 es:0.403 dies:-0.328
+word period arten	es:0.877 dies:0.862 sie:-0.548
+word period arzt	es:0.650
+word period atmosphäre	ich:-0.660 das:-0.567 es:-0.522
+word period aufgabe	es:-1.068 sie:0.355
+word period aufgaben	ich:-0.610 es:-0.554 dies:0.524 was:-0.396
+word period aufmerksamkeit	ich:-0.430
+word period auge	dies:0.825 es:0.343
+word period augen	was:0.579 es:-0.469 du:0.345
+word period augenblick	das:0.304
+word period ausdruck	es:-0.623
+word period ausführung	dies:0.989
+word period ausland	es:0.972 das:0.954
+word period aussage	ich:-0.392
+word period aussprache	ich:0.484
+word period auswahl	dies:0.936
+word period auswirkungen	es:0.423
+word period auto	ihr:1.913 was:-1.747 wer:0.916 es:0.904 du:0.889 ich:-0.376 das:0.319
+word period autor	ich:-0.623
+word period autos	es:0.730 das:0.388
+word period bademantel	er:1.604
+word period band	ich:0.519
+word period bauern	dies:3.976
+word period baum	wann:3.540 das:-1.289 was:1.145 es:-1.048 er:0.754 ich:-0.491
+word period bedeutung	es:-0.713 was:-0.676 sie:0.589
+word period begriff	es:-0.445
+word period behörden	das:0.901
+word period beide	das:-1.206 es:-1.203
+word period beiden	ich:-0.719 sie:0.492 es:0.391 das:0.352
+word period beine	es:-0.800 sie:0.624
+word period beispiel	sie:-1.204 ich:-1.189 er:-1.109 du:-0.974 das:-0.918 es:-0.424
+word period beitrag	sie:-0.378
+word period bemühungen	ich:0.399
+word period berg	er:1.251
+word period bericht	ich:0.480
+word period betriebssystem	du:1.995
+word period bett	es:0.435 das:0.415
+word period bevölkerung	es:1.146 dies:0.884
+word period bewegung	es:-0.574
+word period bewusstseins	das:1.170
+word period beziehung	er:0.905 ich:-0.819 es:-0.622
+word period beziehungen	es:-0.345
+word period bezug	beide:1.826 dies:0.766
+word period bild	ich:-1.236 es:0.526 das:0.514
+word period bilder	sie:-0.656
+word period bildung	sie:0.697 es:0.612
+word period blick	es:-0.577
+word period blitz	das:0.967
+word period block	ich:0.697
+word period blut	es:0.805 das:0.787
+word period bolivien	sie:1.297
+word period bord	sie:1.086
+word period brief	er:1.121
+word period briefe	ich:0.536
+word period brot	das:0.788
+word period bruder	er:1.277
+word period buch	wir:-1.975 alle:1.579 sie:-0.718 wer:0.681 es:0.598
+word period bus	sie:0.454
+word period butter	es:1.016
+word period bzw	das:-1.301
+word period bücher	es:-1.542 du:0.612 wir:0.507 ich:-0.328
+word period bügeln	ich:0.704
+word period bühne	es:0.924
+word period bürger	ich:-0.667
+word period büro	ich:-0.499
+word period c	beide:1.181 ich:-0.738 das:-0.703 es:-0.631
+word period café	es:0.867 das:0.849
+word period chance	das:0.431
+word period chancen	sie:0.959
+word period charakter	ich:-0.620 sie:-0.575
+word period chef	wer:1.733 er:0.907 ich:-0.321
+word period code	dies:1.359 sie:-0.471 ich:-0.419 das:-0.362
+word period computer	das:-1.208 es:-1.163 du:-1.106 ich:-0.453 er:0.444
+word period d	ich:-1.267 sie:-1.262 es:-1.110
+word period das	das:0.481 wann:-3.924 er:-0.857 welches:0.686 sie:-0.672 alles:-0.613 nichts:0.583 ich:-0.504 jeder:-0.486
+word period daten	dies:1.426 ich:-0.862 das:-0.709 du:-0.588 sie:-0.552
+word period ddr	dies:1.014
+word period dein	sie:-2.618 mir:1.669 dies:-1.510 du:0.797 er:-0.333
+word period deine	wann:2.027 alle:-2.021 dies:-1.144 du:0.850 wir:-0.706 das:-0.647 warum:0.465 was:-0.340
+word period deinem	wer:1.576 es:-1.125 du:0.934
+word period deinen	du:0.606
+word period deiner	was:-1.273 du:0.800
+word period deines	das:0.791 es:-0.508
+word period dem	mich:1.670 dies:0.880 ich:-0.838 wir:-0.687 wer:-0.669 du:-0.669 was:-0.524 mir:0.499
+word period demokratie	es:0.652
+word period den	mir:-3.182 jeder:-2.995 wem:1.269 alles:-0.827 alle:-0.821 ihr:-0.721 ich:-0.685 dies:0.594
+word period denen	ich:-1.594 das:-1.564 es:-1.324 dies:-0.440
+word period der	wieso:-3.498 welches:-3.271 ihm:1.410 ich:-0.964 du:-0.881 wann:-0.748 alles:-0.727 alle:-0.691
+word period deren	es:-1.071 ich:-0.361 sie:0.335
+word period des	ich:-1.504 dies:1.346 du:-1.242 jeder:1.076 was:-0.956 beide:-0.822 wir:-0.587 man:-0.373
+word period dessen	es:-1.071 das:0.595
+word period deutschland	dies:1.385
+word period dialoge	sie:1.374
+word period dich	dies:-2.466 sie:-2.120 du:1.409 er:-1.290 man:-1.122 wir:-0.637 warum:0.571 es:-0.402
+word period die	welches:-2.650 beide:-2.210 niemand:-1.243 ich:-0.948 du:-0.932 er:-0.928 warum:-0.769 alles:-0.693
+word period diejenigen	das:-0.564 es:-0.562
+word period dienen	es:-0.492
+word period dienst	ich:0.346
+word period dienstag	das:0.903 ich:0.355
+word period dies	dies:-1.245 was:-1.750 du:-1.710 ich:-1.072 es:0.572 er:0.551 sie:-0.449
+word period diese	er:-3.299 alle:-2.566 jeder:-2.253 dies:-1.343 du:-0.712 sie:0.655 was:0.554 es:-0.315
+word period diesem	was:-2.141 es:-2.071 alles:1.399 warum:0.920 man:0.734 das:-0.390
+word period diesen	was:-1.974 er:1.671 dies:-1.176
+word period dieser	dies:-1.706 warum:0.810 das:-0.791 was:-0.698 wir:-0.670 er:0.667 wer:0.404 sie:-0.329
+word period dieses	es:0.868 beide:-0.604 du:-0.588 man:-0.361
+word period ding	was:2.028 es:1.148
+word period dinge	ich:-1.331 das:-0.787 wer:0.714 er:-0.460 sie:0.406
+word period dingen	sie:0.796 es:0.689
+word period dir	wieso:1.866 sie:-1.799 mir:1.388 alles:1.228 nichts:1.191 du:1.050 wir:-0.844 man:-0.796
+word period dollar	dies:0.415
+word period dorf	sie:-0.487
+word period druck	dies:0.906
+word period du	du:2.142 dies:-2.216 sie:-1.622 man:-1.377 dir:1.060 warum:0.988 er:-0.829 es:-0.697 wieso:0.620
+word period dummköpfe	ich:0.742
+word period dänen	alle:0.598
+word period e	sie:-0.694 ich:-0.679 es:-0.542
+word period ehe	sie:0.863
+word period ehre	wer:2.424
+word period eigenschaften	das:1.047
+word period eile	wir:1.654
+word period ein	etwas:-3.070 mich:-2.631 welches:-1.737 ihr:-1.184 sie:-0.879 dir:0.799 du:-0.781 ich:-0.661
+word period eindruck	was:1.863
+word period eine	wieso:-2.698 welches:-2.471 dir:-2.325 wir:-1.034 er:-0.965 beide:0.896 du:-0.834 ich:-0.718
+word period einem	ich:-1.504 man:-1.144 du:-0.920 dies:0.884 wir:-0.456 sie:-0.453 was:-0.423 wer:-0.315
+word period einen	welches:-1.767 du:-0.980 wir:-0.910 sie:-0.740 ich:-0.674 es:-0.520 dies:0.455 alles:-0.328
+word period einer	du:-3.079 jeder:1.451 dies:1.416 ich:-1.308 beide:-0.943 wer:-0.630 das:-0.617 was:-0.596
+word period eines	nichts:1.882 dies:1.466 ich:-1.452 er:-0.833 man:-0.483 wir:-0.448 es:-0.409 warum:0.356
+word period einige	was:-1.521 das:-0.456
+word period einigen	ich:-0.872 sie:0.647 es:0.628 dies:0.302
+word period einkaufszentrum	das:0.904
+word period eins	ich:-1.066 das:0.328
+word period eintritt	er:1.510
+word period einzelnen	das:1.120
+word period element	es:-0.364
+word period elemente	ich:-0.390 sie:-0.325
+word period eltern	sie:1.209 ich:-0.538 er:0.449
+word period ende	das:-1.788 was:-1.782 ich:-0.411 es:0.314
+word period endspiel	das:1.497
+word period energie	das:-0.578 es:-0.346
+word period energien	dies:1.024
+word period enkel	er:1.145 das:0.795
+word period entdeckung	ich:0.690
+word period entfaltung	sie:1.379
+word period entscheidung	es:-0.372
+word period entscheidungen	ich:0.356
+word period entschuldigung	es:-1.076 ich:0.712
+word period entwicklung	das:-0.660 sie:-0.632 was:-0.539 dies:0.380
+word period er	er:2.329 du:-1.835 mich:1.468 sie:-1.323 beide:1.180 wir:-1.142 man:-1.112 es:-0.746 alles:-0.661
+word period erde	das:-1.689 ich:-1.175 was:0.822 dies:-0.565 sie:-0.520 es:-0.488
+word period ereignisse	es:-0.338
+word period erfahrung	er:-0.967 sie:0.788 es:-0.774 das:0.330
+word period erfahrungen	sie:0.892 das:-0.578 dies:0.546 es:-0.449
+word period erfindung	es:0.981
+word period erfolg	er:0.842 ich:-0.634
+word period erfüllung	es:1.041
+word period ergebnisse	es:-0.474
+word period erklärungen	ich:0.525
+word period erwartungen	er:1.486
+word period es	es:0.394 beide:-2.088 welches:-1.959 dies:-1.536 ihr:-1.435 wer:-0.969 mir:-0.968 er:-0.708 sie:-0.557
+word period esperanto	ich:-0.700
+word period etwas	etwas:4.030 dies:-1.968 man:0.909 sie:-0.582 er:-0.565 du:-0.552
+word period euch	ihr:2.970 ich:-0.704 wir:0.596 es:-0.447 sie:-0.331
+word period eure	es:0.983
+word period euren	ihr:3.621
+word period euro	es:-0.980 das:0.702 was:-0.657
+word period ewigkeit	sie:0.645
+word period existenz	es:0.834
+word period fahrer	ich:0.544
+word period fahrrad	du:1.389 was:-0.606
+word period faktoren	es:0.349
+word period fall	ich:-1.278 sie:-1.157 es:-1.141 was:-1.065 er:0.773
+word period familie	alle:2.260 er:-1.459 es:-1.378
+word period farbe	sie:-0.647 es:-0.616
+word period farben	ich:-0.598 das:-0.505 es:-0.502
+word period faulheit	es:1.049
+word period fehler	man:1.253 wer:1.215
+word period fehlern	es:0.707 ich:0.400
+word period feinde	wir:1.668 du:1.406
+word period feinden	sie:1.288
+word period feld	es:-0.519
+word period fenster	man:0.878 das:0.362
+word period fernsehen	es:-0.749 das:0.550
+word period feuer	das:1.001
+word period figur	er:-0.523
+word period film	er:1.067
+word period firma	man:1.491 wir:-0.724
+word period flagge	sie:1.364
+word period fliegen	was:1.469 sie:-0.949 es:-0.918
+word period flugzeug	das:0.752 du:-0.449
+word period fluss	man:1.826 er:1.334
+word period form	ich:-0.815 sie:-0.721 es:-0.658 das:-0.588
+word period formen	sie:1.028 dies:0.682 es:-0.396
+word period forschung	dies:0.900
+word period fortschritt	das:0.781
+word period frage	sie:-1.771 man:-1.583 das:-1.518 was:-1.461 du:-1.218 es:-0.346
+word period frau	es:-2.684 sie:0.856 wer:0.723 ich:-0.708 man:0.659 warum:0.454 das:-0.393 was:-0.378
+word period frauen	es:-2.029 sie:1.213 wir:0.387 das:-0.374
+word period freiheit	ich:-1.527 es:-1.452 wir:0.597
+word period freude	es:-1.313 man:1.069 er:0.336
+word period freund	mir:2.075 er:1.025 das:-0.882 sie:-0.757 ich:-0.510 du:0.344
+word period freunde	wir:1.179 wer:1.106 ich:-0.502
+word period freundin	wir:1.250 was:-0.905 sie:0.842 das:0.438 ich:-0.433
+word period freundschaft	man:1.590 es:-0.835 er:-0.728
+word period frieden	was:1.239 er:0.500
+word period fruchtbaum	wer:2.778
+word period fräulein	ich:0.484
+word period fuchs	sie:-0.439
+word period funktion	welches:2.082 wir:1.497 dies:0.828 ich:-0.648 sie:-0.583 das:-0.514 es:-0.510 was:-0.393
+word period funktionen	dies:0.786 ich:-0.388 es:-0.336
+word period fußgänger	dies:1.014
+word period fähigkeit	ich:-0.781 sie:0.698 es:-0.643
+word period fähigkeiten	sie:-0.496 er:-0.464 ich:-0.463
+word period fällen	das:-0.543 es:-0.414
+word period führer	dies:1.298
+word period führung	dies:0.994
+word period gabe	du:1.759
+word period gebrauch	es:-0.335
+word period gebäude	man:1.834 es:0.792
+word period gedanken	man:0.673 er:0.546 ich:-0.483 du:0.446 es:-0.369
+word period geduld	es:-0.754
+word period gefahr	es:-0.691 was:-0.575 dies:0.345
+word period gefühl	ich:-1.426 sie:0.676 es:0.352 er:0.318
+word period gegensatz	das:-0.368
+word period gegenteil	das:1.094 ich:0.563 sie:0.457
+word period gegenwart	das:0.405
+word period gehalt	es:-0.409
+word period geheimnis	wir:1.307
+word period geheimnisse	ich:0.546
+word period gehirn	es:-0.869 das:0.430
+word period geist	was:1.560
+word period geld	wer:1.007 das:-0.835 wir:-0.651 er:-0.446 sie:-0.328 was:-0.313
+word period gemälde	es:-0.341
+word period generation	das:0.781
+word period genie	es:0.661
+word period gepäck	es:1.114
+word period gericht	ich:0.404
+word period geschenk	das:1.002
+word period geschichte	es:-1.721 was:0.546 sie:0.544 das:0.383
+word period geschäft	es:0.588 das:0.548
+word period geschöpf	er:1.448
+word period gesellschaft	alle:2.342 man:1.400 es:-1.184 sie:0.628 ich:-0.355
+word period gesetz	das:0.640
+word period gesicht	was:1.414 es:0.534
+word period gespräch	es:-0.590 du:-0.447
+word period gesundheit	ich:-1.001 es:-0.610
+word period gewalt	alle:3.147
+word period gewicht	es:-0.388 sie:-0.326
+word period gitarre	mir:0.993
+word period gläser	das:1.023
+word period glück	ich:-1.105 man:0.877 das:0.716
+word period grammatik	ich:0.860
+word period gras	er:1.522
+word period grenzen	das:0.948
+word period grund	warum:1.734 das:-1.489 er:0.769 du:0.695 wir:0.563 sie:0.521 es:0.432
+word period grundfreiheiten	sie:1.377
+word period grundlage	sie:1.033 ich:-0.486 es:-0.348
+word period gruppe	es:0.956 sie:-0.644
+word period gruppen	sie:1.073 es:-0.441
+word period größe	das:-0.620 es:-0.415 was:-0.415
+word period gründe	dies:0.914
+word period gründen	ich:-0.525 sie:-0.460
+word period h	ich:-1.010 es:-0.873
+word period hahn	das:0.793
+word period hals	das:-0.582
+word period hand	es:-1.582 was:0.849 ich:-0.324
+word period handy	das:0.726 es:0.722 ich:-0.691
+word period hass	er:1.134
+word period hauptstadt	sie:1.596 es:-0.454
+word period haus	alle:1.589 ich:-0.917 es:0.838
+word period hausaufgaben	ich:-0.496 es:-0.485
+word period haut	es:-0.607
+word period heimat	sie:-0.739 das:0.591
+word period heizung	es:0.859
+word period helium	alle:3.676
+word period herausforderung	es:-0.402
+word period herr	er:0.437
+word period herrn	er:0.950
+word period herz	was:0.777 du:0.543 ich:-0.396
+word period herzen	das:0.853 ich:-0.620
+word period hilfe	niemand:3.576 das:-0.953 es:-0.950
+word period himmel	es:0.488 was:0.481 sie:-0.392
+word period hoffnungen	das:1.021 ich:-0.373
+word period hotel	wir:1.581 es:1.173
+word period humor	das:0.863
+word period hund	er:1.612 ich:-0.443 das:0.398
+word period hunde	das:0.887
+word period hunger	ich:0.875
+word period hut	sie:0.818
+word period hälfte	das:0.545
+word period hände	du:1.247 es:-0.951 was:-0.748 ich:0.623
+word period häuser	sie:0.967
+word period höhe	das:-0.854 es:-0.852 sie:-0.789
+word period höhle	wir:1.915
+word period ich	ich:0.768 beide:-3.800 dies:-1.542 man:-1.377 jeder:-1.287 nichts:-1.191 wer:-0.961 ihr:-0.871 wieso:0.867
+word period idealist	ich:1.117
+word period idee	er:-1.286 es:-1.093
+word period ideen	es:-1.109 sie:-1.096
+word period ihm	sie:-2.511 er:1.519 dies:-1.452 ich:-0.659 es:-0.631 das:-0.468
+word period ihn	er:1.486 wir:-0.911 es:-0.877 du:-0.806 sie:-0.754 wer:0.748 man:-0.578 ich:-0.571
+word period ihnen	dies:-1.163 alles:1.157 sie:0.779 es:-0.733 warum:0.678 ich:-0.451 das:0.414 wir:-0.323
+word period ihr	ihr:3.913 dies:-1.378 warum:0.961 man:-0.952 es:-0.889 du:-0.791 sie:0.415 das:-0.307
+word period ihre	ihr:1.398 sie:0.793 ich:-0.727 wir:-0.671 was:-0.433
+word period ihrem	was:0.711 dies:-0.598 das:0.567 ich:-0.445 sie:0.413
+word period ihren	das:-1.998 wir:-1.877 dies:-0.572
+word period ihrer	sie:0.680 dies:-0.680 was:0.630 ich:-0.521 das:0.480
+word period ihres	dies:0.614 das:-0.510 es:-0.464 sie:-0.398
+word period individuum	dies:0.871
+word period informationen	das:0.922 dies:0.863 sie:-0.779 ich:-0.727 man:-0.591 was:-0.590 du:-0.375 es:-0.333
+word period inhalt	er:1.194 es:-0.454
+word period insekten	es:-0.349
+word period insel	sie:1.031 es:-0.770
+word period intelligenz	sie:0.441
+word period interesse	es:-0.347
+word period interessen	dies:0.821 ich:-0.353
+word period internet	ich:-0.815 das:-0.646 du:-0.509 es:-0.472
+word period internetverbindung	wir:1.917
+word period irgendwas	es:1.129
+word period irrtum	wir:1.493
+word period jahr	was:-1.663 das:-0.577 wir:0.473 ich:-0.413
+word period jahre	dies:2.352 was:-2.137 wir:-2.045 ich:-1.032 wer:0.915 es:-0.613 sie:-0.538 er:0.479
+word period jahren	es:-1.867 ich:-0.995 sie:-0.794 das:-0.369
+word period japanischlehrer	niemand:4.482
+word period jasager	ich:0.885
+word period jede	sie:-1.629 es:-1.353 dies:-0.570
+word period jedem	ich:-1.476
+word period jeden	das:-1.956 man:0.429
+word period jeder	man:1.140 ich:-1.036 dies:-0.636 er:-0.438 das:0.370 was:0.331
+word period jedermann	es:1.108
+word period jedes	dies:-0.405
+word period jemand	man:0.737 er:0.436 das:-0.401 es:-0.382 ich:-0.366
+word period jemandem	dies:0.414
+word period jemanden	es:-1.206
+word period job	ich:-0.381
+word period journalisten	sie:0.917
+word period jugend	wir:1.244 das:0.693
+word period juli	es:0.793
+word period juni	sie:0.912
+word period jäger	es:0.744 das:0.726
+word period kabel	dies:1.002
+word period kaffee	ich:0.599
+word period kakerlake	ich:0.707
+word period kampf	es:-0.463
+word period katze	wir:0.883 was:0.854 sie:0.473 das:0.332
+word period katzen	sie:0.909 es:-0.847
+word period kein	was:-3.110 sie:-0.519 du:-0.473 es:0.455 er:0.416
+word period keine	beide:-1.591 dies:-1.409 jeder:1.381 alles:1.340 ihr:0.995 man:-0.696 du:-0.666 wer:-0.519
+word period keinen	du:-2.376 warum:1.140 er:-0.826 wir:0.421
+word period keiner	alle:2.444 man:0.707 das:-0.376 wir:0.374 sie:0.331
+word period keinerlei	sie:1.142 ich:-0.377
+word period kenntnis	sie:1.361
+word period kern	dies:0.668
+word period ki	das:-0.596 ich:-0.548 was:-0.515 es:-0.479
+word period kilometer	das:1.007
+word period kind	dies:-0.450 sie:-0.405
+word period kinder	ich:-0.774 sie:0.452
+word period kindern	wir:-0.560 was:-0.477
+word period kindheit	sie:1.250
+word period kirche	man:1.518 sie:0.596
+word period klasse	das:0.744 es:-0.495
+word period klassenkameraden	sie:1.225
+word period kleid	das:0.882
+word period klitoris	er:1.604
+word period km	er:-0.442
+word period kokosnuss	ich:0.707
+word period kollege	er:1.450
+word period kollegin	sie:1.377
+word period kolonisierung	ich:0.707
+word period kommunikation	es:-0.556 dies:0.480
+word period konservatorium	du:2.107
+word period kontext	dies:0.861
+word period kontrolle	das:-0.372
+word period konzert	warum:3.004
+word period kopf	ich:-0.473 es:-0.371 er:0.309
+word period kopfschmerzen	ich:0.820
+word period kosten	es:-0.677
+word period kraft	das:-1.220 es:-1.053
+word period krankheit	man:1.814
+word period kreatur	sie:1.377
+word period krebs	er:1.587
+word period kreisen	sie:1.292
+word period krieg	er:0.710 wir:0.504
+word period krise	man:1.985
+word period kräfte	er:-0.433
+word period kultur	das:-0.715 sie:0.712 es:-0.712
+word period kumpel	ich:0.627
+word period kunde	er:1.245
+word period kunst	sie:0.400 es:0.338
+word period könig	er:0.755 es:-0.387 wir:0.345
+word period körper	es:-0.923 er:0.811
+word period küche	du:1.776
+word period kühe	ich:0.397
+word period kühlschrank	wir:1.186
+word period küken	das:1.100
+word period künstler	sie:0.671
+word period laden	es:-1.098
+word period lage	wir:1.162 sie:-0.868 es:-0.804 dies:0.724
+word period lampe	ich:0.730
+word period land	dies:-0.310 ich:-0.305
+word period landes	ich:-0.486 wir:-0.356
+word period laufe	es:-0.841 das:0.416
+word period laune	das:1.029
+word period lebens	es:-1.505 man:0.834 ich:-0.796
+word period lehrer	sie:-1.396 er:1.094 ich:-0.614
+word period lehrerin	sie:0.645
+word period leib	das:0.967
+word period leistung	dies:1.124 ich:-0.583 sie:-0.518
+word period leute	warum:0.835 man:0.649 das:0.312 es:-0.303
+word period leuten	sie:0.760 das:0.635 wir:-0.589
+word period licht	sie:-1.574 das:0.654 ich:-0.379
+word period lieblingsfarbe	ich:0.704
+word period lied	niemand:3.585 es:0.700
+word period linux	du:1.959
+word period liste	es:-0.569 ich:-0.561 dies:0.553 sie:-0.414
+word period lohn	es:0.921
+word period luft	das:-1.391 es:-1.303 du:1.180 man:1.037 wir:0.704
+word period lust	was:1.294 ich:0.436
+word period läden	es:1.112
+word period länder	dies:0.516
+word period ländern	dies:0.519
+word period lärm	es:-0.541
+word period lösung	es:0.616
+word period lösungen	ich:-0.344
+word period m	was:-0.468
+word period magen	ich:0.450
+word period male	ich:0.551
+word period mama	ich:0.333
+word period man	man:1.973 etwas:-2.303 wem:1.573 du:-1.471 ich:-1.155 er:-1.152 wir:-0.919 nichts:0.884 sie:-0.799
+word period manche	mir:2.711 es:-1.589 ich:-0.522
+word period mancher	man:2.108
+word period mann	ich:-1.203 er:1.197 es:-0.651 du:-0.553 warum:0.487
+word period mantel	du:1.639
+word period marie	sie:1.731
+word period mars	es:-0.502
+word period maschine	dies:0.821
+word period mathematik	sie:0.702
+word period medien	dies:1.158 es:-0.370
+word period medikament	sie:0.974
+word period meer	was:1.260 es:0.955 das:0.494
+word period meerjungfrau	sie:1.092
+word period mehrere	es:-0.957 das:-0.761
+word period mehrerer	sie:1.360
+word period mehrheit	es:-0.393
+word period mein	wir:-1.388 niemand:1.063 sie:-0.949 er:0.847 was:0.387 du:0.325 das:-0.314
+word period meine	er:-1.874 dies:0.752 mir:0.734 sie:0.728 du:-0.672 ich:0.377 was:-0.373 das:-0.357
+word period meinem	du:-1.977 was:-1.592 ich:0.533 er:-0.427
+word period meinen	er:0.960 es:-0.884 dies:-0.867 du:0.549
+word period meiner	warum:0.838 er:-0.733 sie:0.468 ich:0.447
+word period meines	er:0.488
+word period meins	es:0.924 ich:0.617
+word period meinung	warum:1.675 sie:-1.526 man:0.837 das:0.516 dies:-0.467 es:0.367
+word period meinungen	ich:-0.651 es:-0.599
+word period meisten	das:-1.449 ich:-0.517
+word period menge	ich:-1.086 es:-0.852 sie:0.413 das:0.311
+word period mensch	sie:-1.120 er:1.007 ich:-0.995 wer:0.612 was:0.377
+word period menschen	beide:-1.477 ich:-1.459 wann:1.167 was:-1.161 dies:-1.111 du:-1.054 mir:1.042 niemand:0.910
+word period menschenrechten	sie:1.297
+word period menschheit	ich:-1.132 es:-1.080 sie:0.754 wir:-0.570
+word period methode	das:-0.754 sie:-0.690 es:-0.587
+word period mich	mich:2.867 ihr:-3.123 dies:-2.537 wir:-1.842 man:-1.535 wann:1.269 mir:1.248 wer:-1.094 er:-0.711
+word period michel	das:1.252
+word period milch	sie:0.615 das:0.490
+word period milliarden	es:-0.671 dies:0.451
+word period millionär	ich:0.680
+word period minister	das:0.693
+word period minute	das:0.782
+word period minuten	du:0.721
+word period mir	mir:0.597 dies:-2.510 woher:2.190 wer:-1.486 warum:-1.059 wir:-0.961 sie:-0.824 ich:0.749 er:-0.719
+word period mischung	das:-0.489
+word period mist	ich:0.809
+word period mitte	es:0.903
+word period moment	er:0.631
+word period monat	es:0.447
+word period monate	das:-0.755
+word period monaten	ich:0.393
+word period mond	das:-0.849 er:0.802
+word period monolith	das:1.254
+word period mund	wer:2.116
+word period musik	es:-1.283 sie:0.764 ich:-0.419
+word period muskeln	ich:-0.304
+word period muster	dies:0.961
+word period mut	es:-0.870 das:0.473
+word period mutter	sie:0.949 ich:-0.782 das:-0.698 du:0.529 es:0.514 wir:0.420
+word period muttersprachler	ich:0.405
+word period mädchen	sie:1.277
+word period männer	ich:-1.066 sie:0.554
+word period männern	sie:0.678
+word period möglichkeit	dies:1.220 das:-0.876 ich:-0.870 du:-0.774 sie:-0.719 es:-0.486
+word period möglichkeiten	das:-0.867 es:-0.779 du:-0.723 man:-0.664
+word period münzen	sie:1.185
+word period mütze	es:1.118
+word period n	dies:0.722 das:-0.704 es:-0.702 ich:-0.674 was:-0.499
+word period nachbarin	sie:1.154
+word period nachricht	das:-0.971 es:-0.969
+word period nachrichten	sie:1.048
+word period nacht	wir:0.601 das:-0.517
+word period name	wir:1.139 es:-0.954 du:-0.812 er:0.775
+word period namen	wir:-1.500 sie:-1.464 es:-1.160 er:0.422
+word period narr	ich:0.419
+word period nase	ich:0.525
+word period nation	es:1.000
+word period natur	ich:-2.015 wir:0.515 was:0.469 sie:0.303
+word period ne	ich:0.470
+word period nicaragua	er:1.524
+word period nichts	nichts:2.011 alles:1.530 sie:-0.767 das:-0.704 ihr:0.413 wer:0.301
+word period niemand	jeder:2.482 alle:2.281 wir:0.563 du:0.404
+word period niemandem	ich:0.357
+word period niemanden	man:1.817
+word period niveau	es:-0.402
+word period notiz	es:1.188
+word period nummer	ich:0.637
+word period nähe	es:-0.763
+word period obdachlose	sie:1.379
+word period ofen	das:1.008
+word period ohren	er:0.863
+word period oma	du:1.335 sie:0.938 das:0.480
+word period onkel	das:1.168
+word period opposition	ich:-0.301
+word period ordnung	es:-1.402 was:0.986 du:0.752 ich:0.560
+word period original	ich:-0.446
+word period ort	es:-0.903 das:0.701
+word period paar	wer:1.172 er:0.346 das:-0.329
+word period panik	das:1.174
+word period papa	was:1.495 er:0.756
+word period papier	das:0.595
+word period park	das:-0.389
+word period parlament	dies:0.675
+word period partei	ich:-0.912
+word period party	du:1.637
+word period person	ich:-1.072 das:-1.037 es:-0.578
+word period personen	das:-0.673 dies:0.451 es:-0.365
+word period persönlichkeit	sie:1.123
+word period pferd	es:-0.705
+word period pflanze	es:-0.470
+word period pflanzen	sie:0.886 es:-0.490
+word period pflicht	ich:-0.664
+word period philosophie	sie:1.528 es:-0.678
+word period pinnwand	ich:0.627
+word period plan	ich:-0.649 es:-0.637
+word period planet	er:1.242
+word period platz	es:-1.145
+word period pläne	es:1.188
+word period poesie	sie:1.086
+word period politik	man:1.326 er:-1.055 das:0.566 dies:0.324
+word period politiker	wir:-1.381 sie:1.058 was:0.931
+word period polizei	sie:1.077
+word period polizisten	sie:1.029
+word period position	es:-0.416
+word period preis	das:-0.788
+word period prinzessin	das:0.766
+word period problem	sie:-1.694 du:-1.614 was:-1.433 wir:0.363
+word period probleme	das:-1.395 es:0.759 er:0.647 ich:0.307
+word period produkt	ich:-0.542
+word period produkte	es:-0.527
+word period programm	dies:1.035 es:-0.302
+word period programmierer	es:1.250
+word period projekt	ich:-0.766 das:-0.673 du:-0.571 es:-0.441
+word period prozent	es:-0.526
+word period prozess	dies:0.993
+word period präsident	er:1.238 ich:0.341
+word period präsidenten	er:1.377
+word period prüfung	sie:0.720
+word period punkt	ich:-0.832 das:-0.803 es:-0.757 dies:0.321
+word period pünktlichkeit	ich:0.704
+word period qualität	ich:-0.699 es:-0.581
+word period quatsch	ich:0.484
+word period quelle	es:-0.322
+word period rad	ich:0.403
+word period rasse	sie:1.300
+word period rat	er:1.129
+word period ratten	sie:1.531
+word period raum	man:1.998 es:-1.079 sie:0.389
+word period realität	das:-0.499 es:-0.411
+word period reformen	dies:1.019
+word period regel	sie:-1.014 es:-0.646 das:0.300
+word period regeln	ich:-0.694 sie:-0.579
+word period regen	wir:1.845 du:1.103 das:-1.096 dies:0.329
+word period regierung	es:-1.198 sie:-1.136
+word period reichtum	dies:0.333
+word period reihe	es:-0.936
+word period reise	wer:2.050 ich:-0.868 sie:-0.753 es:0.545
+word period religion	sie:1.442
+word period ressourcen	dies:0.988
+word period rest	sie:-0.356
+word period restaurant	es:-0.810
+word period rezept	es:1.002
+word period richtung	ihr:2.802 du:1.778 das:-1.063 es:-0.975 sie:0.740
+word period risiko	beide:1.894
+word period riß	das:1.254
+word period rolle	ich:-0.895 das:-0.886 was:-0.681 es:-0.545
+word period rosa	es:1.112
+word period rose	sie:0.971
+word period rosen	sie:1.377
+word period ruhe	wer:1.881
+word period s	wer:2.915 es:-0.792
+word period sache	was:1.036
+word period sachen	sie:0.487
+word period samariter	er:1.604
+word period satz	es:-2.232 sie:-0.764 er:0.712 das:-0.567
+word period schachtel	sie:1.088
+word period schatz	was:-0.635 ich:0.421
+word period scheibe	das:1.237
+word period schicksal	wer:2.117 es:0.611
+word period schiff	es:1.326
+word period schlaf	es:-0.865 er:0.828
+word period schmerzen	sie:0.935 es:-0.447
+word period schnee	das:0.619 es:0.315
+word period schrei	ich:0.740
+word period schritt	dies:0.807 das:-0.619 es:-0.617
+word period schritte	es:0.966
+word period schuhe	wir:1.115
+word period schuld	du:1.491 ich:0.351
+word period schule	er:-1.576 es:-0.382
+word period schwester	sie:1.393
+word period schönheit	es:-0.915 sie:0.553
+word period see	er:1.078
+word period seele	sie:-1.364 ich:-0.373
+word period seine	ich:-1.280 man:1.018 er:0.962 das:-0.590 dies:-0.475
+word period seinem	es:-1.738 er:1.329 was:0.694 man:0.688 ich:-0.479
+word period seinen	warum:1.256 das:-0.665 ich:-0.579
+word period seiner	er:0.916 ich:-0.868 es:-0.538 sie:-0.454
+word period seines	das:-0.881
+word period seite	sie:-1.557 wir:-1.451 das:-1.448
+word period seiten	wir:1.093 es:0.943
+word period sekunde	ich:0.339
+word period sekunden	es:-0.384
+word period sich	welches:-1.751 beide:-1.606 du:-0.909 was:-0.897 ich:-0.816 nichts:0.765 warum:-0.751 dies:0.603
+word period sicherheit	es:-0.369
+word period sicht	er:-0.379
+word period sie	sie:1.149 mir:-3.878 du:-1.607 beide:1.283 alles:-1.264 dies:1.238 er:-1.209 alle:-1.200 man:-0.771
+word period silvester	ich:0.702
+word period sinn	es:0.645
+word period sinne	es:0.888 ich:-0.525
+word period situation	ich:-0.924 es:-0.691
+word period situationen	ich:-0.402 das:-0.352 es:-0.306
+word period sitzung	ich:0.615
+word period software	dies:0.794 ich:-0.379 sie:-0.314
+word period sohn	er:1.759
+word period solch	dies:1.002
+word period solche	du:-1.224 es:-1.060 sie:0.683
+word period solchen	es:0.997 ich:-0.450
+word period soldat	ich:0.301
+word period soldaten	sie:0.917
+word period sonne	ich:-0.649 sie:0.508
+word period sonnensystems	er:1.513
+word period sorge	es:0.344
+word period sozialwissenschaften	sie:1.369
+word period spaziergang	ich:0.627
+word period spaß	was:-0.919 es:0.564 das:0.544
+word period spd	dies:1.021
+word period spiel	es:1.141 was:-1.027 man:0.968 du:0.767 ich:-0.610
+word period spiels	es:-0.325
+word period sprache	er:-0.871 man:0.729 wir:-0.471 ich:-0.395 wer:0.303
+word period sprichwort	das:-0.328
+word period staat	es:0.703
+word period staaten	das:1.105
+word period staatsform	es:1.270
+word period stadt	er:-1.755 warum:1.342 ich:-1.101 es:0.667 sie:0.512 man:0.503
+word period stahl	das:1.009
+word period station	das:1.050
+word period stein	man:1.291 es:0.551
+word period steine	sie:1.419
+word period sterns	das:1.254
+word period stift	ich:0.414
+word period stimme	warum:1.933 was:1.479 ich:-0.518
+word period stock	ich:0.620
+word period strafe	ich:0.412
+word period strand	was:1.902
+word period straße	sie:0.468 es:0.369
+word period straßen	es:0.717 sie:-0.653
+word period straßenbahn	sie:1.152
+word period strecke	es:-0.355
+word period streit	ich:-0.520
+word period strom	wir:1.158
+word period studenten	ich:-0.450
+word period studien	dies:0.978
+word period studium	das:-0.556 es:-0.511
+word period stuhl	er:1.901
+word period stunde	was:1.599 es:-1.485
+word period stunden	was:-1.296 sie:0.431
+word period städten	es:1.070
+word period stärke	es:-0.798
+word period stärkung	sie:1.372
+word period störung	ich:0.622
+word period system	ich:-0.718 es:-0.560 was:-0.484 dies:0.436
+word period sätze	ich:-0.588 sie:0.569 das:0.422
+word period süden	es:1.188
+word period tag	warum:0.676 das:-0.666 er:-0.548 wir:-0.496 ich:-0.493
+word period tagen	was:1.430 es:0.382
+word period tages	sie:-1.111
+word period tagesablauf	ich:0.883
+word period tante	ich:0.542
+word period tanz	das:1.029
+word period taschenschirm	er:1.604
+word period tassen	ich:0.707
+word period tatsache	es:-0.751
+word period technik	dies:0.681
+word period tee	ich:0.354
+word period teil	er:-1.412 sie:-1.395 wir:0.635 es:0.498
+word period teile	dies:0.852 es:-0.527 sie:-0.508
+word period telefon	sie:0.784 ich:0.421 es:0.344 das:0.326
+word period teller	es:1.047
+word period temperatur	dies:0.857
+word period temperaturen	es:-0.319
+word period tereschkowa	sie:1.739
+word period termin	sie:-0.554
+word period teufel	ich:-0.464
+word period text	sie:-1.213 das:-1.186 er:-1.181 wir:-1.016 es:-0.888 du:-0.809 dies:0.616
+word period thema	wir:1.145 es:0.572
+word period themen	ich:-0.381 das:-0.328
+word period theorie	sie:0.920 es:-0.779 das:0.437
+word period tier	er:0.998 das:0.300
+word period tiere	sie:0.956
+word period tipp	ich:0.695
+word period tochter	sie:1.332
+word period tod	man:0.819 er:0.451
+word period tomaten	ich:0.615
+word period tor	es:0.803
+word period traum	es:0.549
+word period treppe	ich:0.498
+word period träne	das:1.423
+word period träume	ich:-0.813 das:-0.763 es:-0.761
+word period typ	das:0.856 es:-0.810
+word period typen	ich:0.462
+word period tyrann	er:1.604
+word period tür	ich:-0.557 sie:0.434
+word period uhr	sie:0.775 du:0.661 das:-0.565
+word period uhren	man:1.932
+word period umgebung	sie:-0.397 es:-0.387
+word period umständen	das:-0.420
+word period umwelt	es:-0.343
+word period unglück	das:0.602
+word period universum	es:0.532
+word period universums	es:-0.305
+word period uns	etwas:1.886 wann:1.326 wir:1.296 er:-1.202 niemand:1.069 ich:-0.946 du:-0.913 alles:0.641
+word period unser	sie:-2.216 was:-2.027 ich:-1.416 wer:1.304 wir:0.894 er:0.444
+word period unsere	ihr:-1.607 ich:-1.590 wir:1.440 er:-0.753 das:-0.536
+word period unserem	wir:-1.163 er:0.410
+word period unseren	wir:-1.310 sie:0.821
+word period unserer	wir:1.104
+word period unseres	wir:2.001 ich:-1.001 das:0.716
+word period unternehmens	wir:1.866
+word period unterschied	das:0.364
+word period unterschiede	ich:-0.327
+word period untersuchung	es:1.105
+word period untertitel	das:1.254
+word period urlaub	ich:0.541
+word period ursache	es:-0.397
+word period vater	er:1.445 was:0.543
+word period verantwortung	ich:-0.466 wir:-0.315
+word period verbindung	dies:0.702 ich:-0.471 es:-0.419
+word period verbkonjugationen	niemand:4.482
+word period verfügung	ich:-0.580
+word period vergangenheit	sie:-1.167 das:0.436
+word period verkehr	es:-0.442
+word period verlust	man:2.081 es:-0.301
+word period vernunft	man:1.444 du:-0.839 sie:0.487
+word period verspätung	ich:0.674
+word period verständnis	das:0.836 ich:-0.538 es:-0.380
+word period versuchung	ich:0.553
+word period verwechslung	ich:0.704
+word period verwendung	dies:0.919
+word period verzeihung	ich:0.800
+word period viele	du:-2.549 er:-1.190 dies:-1.041 warum:0.775 ich:-0.489 was:-0.424 es:-0.322
+word period vielen	er:-1.551 das:-1.393 es:-0.928 du:0.539 dies:-0.537 wir:0.473
+word period vieles	es:-0.517
+word period viertel	dies:0.798
+word period vogel	was:1.732 das:0.643
+word period vormittag	ich:0.627
+word period vorschlag	es:-0.458 ich:0.338
+word period vorstellung	es:0.764
+word period vorteil	das:-0.446
+word period vorteile	es:-0.364
+word period vögel	sie:0.588 das:0.463
+word period wahl	mir:3.390 du:1.288 es:-0.866 sie:0.558
+word period wahnsinn	es:1.036
+word period wahrheit	wer:0.850 ich:-0.758 das:0.393 er:-0.324 es:-0.315
+word period wald	es:-1.278 sie:-1.265
+word period walentina	sie:1.489
+word period wand	sie:0.801 ich:-0.678
+word period wann	wir:1.040 er:-1.008
+word period warum	ich:0.527 man:0.359 das:0.350
+word period was	was:0.776 nichts:1.431 alles:1.181 sie:-0.817 wer:-0.795 er:-0.794 wir:-0.658 warum:0.443 dies:0.325
+word period wasser	ich:-0.736 das:-0.464
+word period wasserstoff	alle:3.641
+word period website	ich:0.493
+word period weg	das:-2.465 man:0.615 sie:-0.400
+word period wege	wer:2.071
+word period wehrt	es:1.270
+word period wein	wer:1.882 das:0.359
+word period weise	es:-0.954 sie:0.349
+word period welche	dies:2.764 sie:-1.463 ich:-1.425 du:-1.383 man:-1.205 es:-1.187 was:-1.095 wir:0.567
+word period welchem	es:-0.373
+word period welcher	ich:-0.435
+word period welches	das:1.341 es:0.482
+word period welpen	er:1.524
+word period welt	wir:-3.010 dies:-2.007 wer:1.304 du:-0.932 ich:-0.822 was:-0.698 das:-0.468 man:-0.326
+word period weltbild	es:1.116
+word period weltkrieg	es:-0.389
+word period wenig	sie:-1.925 wer:0.879
+word period wenige	wer:2.236 dies:0.793
+word period wenigen	es:-0.451 ich:0.345
+word period wenigsten	es:1.185
+word period wer	wer:4.955 wem:2.954 das:-1.020 alle:0.835 ich:-0.622 es:-0.498 er:0.321
+word period werk	was:-0.565
+word period werkstatt	er:1.519
+word period werkzeug	es:0.369
+word period wesen	er:0.716
+word period wetter	es:0.600
+word period widerstand	das:0.831
+word period wind	es:-1.135 das:0.470 ich:-0.425
+word period winter	wer:1.844 wir:1.070 es:0.338
+word period wir	wir:2.395 etwas:1.613 du:-1.402 ich:-1.131 er:-1.131 man:-0.996 sie:-0.795 wer:-0.535 jeder:0.468
+word period wirklichkeit	es:0.613
+word period wirtschaft	es:-0.377
+word period wissenschaft	sie:0.892 es:-0.808
+word period woche	das:0.759
+word period wochen	er:0.927 was:-0.564
+word period wochenende	das:0.689
+word period woher	er:0.862
+word period wohnraum	dies:1.016
+word period wohnung	ich:-0.912 das:-0.799 wir:-0.762
+word period wolf	es:-0.616
+word period wolken	das:-0.762 es:0.635
+word period wort	nichts:2.713 alle:1.686 wer:0.789 man:0.348
+word period worte	ich:-0.787
+word period worten	wir:1.642
+word period wunsch	man:1.437
+word period wurzel	dies:0.942
+word period wörter	ich:-1.178 das:0.535
+word period wörterbuch	es:0.534 ich:0.448
+word period z	das:-1.282 alle:-0.953
+word period zahl	es:-0.603 das:-0.565
+word period zauber	ich:0.480
+word period zeit	was:-2.572 dies:1.015 man:-0.920 jeder:0.900 sie:-0.652 ich:-0.561 du:-0.506 wer:-0.479
+word period zeiten	es:0.432
+word period zeitpunkt	ich:-0.538
+word period zeitung	das:1.111
+word period ziel	er:0.650
+word period ziele	dies:0.930 sie:-0.431 ich:0.320
+word period zigarette	ich:0.685
+word period zigaretten	es:1.026
+word period zimmer	wir:0.825 ich:0.647
+word period zimmerkollege	er:1.604
+word period zufall	nichts:4.235 es:0.805
+word period zug	ich:-0.765 es:0.730 wir:0.533
+word period zukunft	ich:-1.831 das:0.470
+word period zustand	man:1.830
+word period zustände	sie:1.148
+word period zweck	es:0.788
+word period zwerg	ich:0.674
+word period züge	dies:0.846
+word period äpfel	ich:0.923
+word period ärzte	ich:0.677
+word period übersetzung	es:0.441
+word period übung	sie:-0.510
+word question adresse	ich:0.483
+word question alles	du:1.082 das:0.518
+word question apotheke	ich:0.485
+word question auge	du:1.476
+word question auto	das:0.551 ich:0.322
+word question bad	ich:0.485
+word question balken	du:1.476
+word question bedeutung	es:1.224
+word question beide	ich:0.480
+word question bruder	du:1.474
+word question buch	es:0.974
+word question champagner	ich:0.485
+word question chef	er:2.104
+word question das	das:0.482 mich:1.552 wann:1.158 sie:-0.637 was:-0.596 er:0.523 du:-0.425 wir:-0.378 ich:-0.369
+word question dein	er:1.226 du:0.374
+word question deine	warum:2.843 ich:-0.543 du:0.427
+word question deinem	du:0.910 das:0.544
+word question dem	es:-0.413
+word question den	er:0.571 ich:-0.474
+word question der	was:-2.505 warum:1.193 es:-0.692 wir:-0.680 du:-0.630 das:-0.508 ich:-0.386 er:-0.371
+word question des	es:0.876
+word question dich	ich:-0.632 du:0.606 es:-0.437 das:-0.327
+word question die	was:-2.657 sie:0.742 du:-0.727 alle:0.718 er:-0.669 wir:-0.611 man:0.518 warum:0.497
+word question diese	sie:1.291 es:-1.202
+word question diesem	es:0.752 ich:-0.631
+word question diesen	er:1.742 ich:-0.458
+word question dieser	er:1.645 das:0.400
+word question dieses	es:1.211 ich:-0.594 das:0.426
+word question dir	das:-1.097 du:0.778 was:0.676 es:-0.381
+word question du	du:0.630 man:-0.899 alle:0.687 sie:-0.652 er:-0.583 mir:-0.512
+word question ein	wer:1.013 du:-0.624 ich:-0.620 sie:-0.570 was:0.563 dies:-0.504 er:0.489 es:-0.393
+word question eine	was:0.487
+word question einem	ich:-1.321 das:0.593
+word question einen	warum:1.847 wir:0.371 das:-0.304
+word question eines	es:0.699
+word question eltern	warum:3.734
+word question er	er:3.410 das:-0.661 du:0.322
+word question es	wer:1.178 was:0.945 sie:-0.762 du:-0.725 das:-0.628 ich:-0.352
+word question etwas	wir:0.725 du:0.522 es:0.498
+word question euch	ihr:3.107
+word question euer	ich:0.485
+word question euro	das:0.671
+word question fenster	es:1.379
+word question fernbedienung	ich:0.405
+word question frau	sie:1.785
+word question haus	das:0.651
+word question herr	sie:1.267
+word question hexe	warum:3.495
+word question hunger	ich:0.623
+word question hütte	warum:3.415
+word question ich	etwas:1.570 er:-0.788 wir:-0.730 wer:0.602 es:-0.576
+word question ihnen	sie:0.962
+word question ihr	ihr:3.350 warum:1.423 er:0.635 wir:0.584
+word question ihre	ich:-0.613
+word question jemand	ich:0.319
+word question jemanden	ich:0.545
+word question katze	warum:3.036 sie:1.320
+word question keine	was:1.985
+word question kinder	warum:3.196
+word question kollege	ich:0.485
+word question kosten	das:0.816
+word question kreises	ich:0.405
+word question lehrer	ich:0.329
+word question leiter	das:0.834
+word question leute	das:0.459
+word question lippenstift	ich:0.623
+word question man	man:3.197 das:-0.699 ich:-0.637 es:0.377
+word question mann	er:1.896 das:0.694
+word question maß	das:1.031
+word question mein	er:1.088 es:0.747
+word question meine	sie:0.688
+word question meinen	sie:1.354
+word question meinung	ich:0.598
+word question menschen	es:0.762 sie:0.749 ich:-0.530
+word question mir	das:-0.688 was:0.636 ich:0.564 du:-0.523 es:-0.520 wir:-0.337
+word question moment	ich:0.400
+word question mond	er:1.973
+word question männer	es:1.139
+word question napf	warum:3.495
+word question onkel	was:2.453
+word question platz	wir:1.937
+word question problem	es:0.872
+word question radio	ich:0.485
+word question regen	es:1.226
+word question sachen	ich:0.403
+word question satz	das:-0.566 er:-0.325
+word question schirm	es:1.006
+word question schmalzkringel	das:0.834
+word question schuhen	das:0.754
+word question see	ich:0.685
+word question sich	niemand:2.927 warum:1.846 sie:0.957 dies:0.553 das:-0.525 ich:-0.477
+word question sie	sie:1.621 was:-2.573 du:-1.437 warum:0.979 es:-0.763 man:0.580 das:-0.569 wir:0.520
+word question sonntag	ich:-0.381
+word question spaß	ich:0.405
+word question splitter	du:1.476
+word question sprache	ich:-0.810
+word question stunden	das:0.609
+word question stück	das:0.754
+word question tag	das:0.312
+word question taub	es:1.638
+word question telefon	es:1.090
+word question tür	sie:1.777
+word question umfang	ich:0.405
+word question uns	wir:2.059
+word question unser	ich:0.400
+word question viele	es:0.897 ich:-0.410
+word question wahrheit	das:0.677
+word question wann	ich:0.607 was:-0.491
+word question warum	warum:1.178 er:-0.778 es:0.696 ihr:0.695 was:-0.500 ich:-0.446 sie:0.339 wir:0.326
+word question was	was:0.366 etwas:0.985 ihr:0.783 nichts:0.695 man:-0.488 niemand:0.473 warum:0.473 es:-0.412 ich:-0.386
+word question wasser	das:0.423
+word question weihnachtsmann	ich:0.485
+word question welche	ich:-0.845
+word question wer	wer:2.665 sie:0.665
+word question wetter	es:1.144
+word question wieso	du:-1.224 es:0.825 sie:0.617
+word question wir	wir:1.685 das:-1.084
+word question wohin	wir:1.611
+word question zeit	ich:0.333
+word question übersetzung	das:0.834

@@ -14,7 +14,7 @@ enum CompareCommand {
                 "\(apple.sentences.count) Apple sentences for \(plan.sentences.count) planned"
             )
         }
-        let setup = try EngineSetup()
+        let setup = try EngineSetup(languageIdentifier: plan.languageIdentifier)
         let computer = PredictionComputer(engine: setup.engine, parameters: options.parameters)
         computer.updateKeyboardGeometry(
             setup.layout.predictionGeometry,
@@ -36,6 +36,7 @@ enum CompareCommand {
         var appleCorrect = 0
         var keyVoxCorrect = 0
         var bothCorrect = 0
+        var capitals = CapitalsTally()
         var rows = ["intended\tapple\tkeyvox\tprevious"]
         var texts: [AppleBaselineResults.Sentence] = []
 
@@ -53,6 +54,9 @@ enum CompareCommand {
                 intended: sentence.truthWords,
                 produced: AppleBaselineResults.words(in: typed)
             )
+            if let written = sentence.written {
+                capitals.record(written: written, intended: sentence.truthWords, typed: typed)
+            }
             for (index, intended) in sentence.truthWords.enumerated() {
                 let appleWord = appleWords?[index] ?? ""
                 let keyVoxWord = keyVoxWords[index] ?? ""
@@ -90,6 +94,13 @@ enum CompareCommand {
             lines.append("  Apple final words correct:   \(percent(appleCorrect, total))")
         }
         lines.append("  KeyVox final words correct:  \(percent(keyVoxCorrect, total))")
+        if plan.sentences.contains(where: { $0.written != nil }) {
+            lines += [
+                "  of the correct words after a sentence's first, as the corpus writes them:",
+                "    written with capitals, KeyVox wrote them so:   \(percent(capitals.keptCapitals, capitals.capitalized))",
+                "    written in lowercase, KeyVox capitalized them: \(percent(capitals.addedCapitals, capitals.lowercase))",
+            ]
+        }
         if apple != nil {
             lines += [
                 "  both correct:                \(percent(bothCorrect, total))",
