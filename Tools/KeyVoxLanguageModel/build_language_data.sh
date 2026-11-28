@@ -46,7 +46,7 @@ capitalized_spellings() {
 swipe_counts() {
   "$PYTHON" count_swipe_words.py --language "$LANGUAGE" "$DATA_DIR"
   "$PYTHON" count_swiped_words.py --language "$LANGUAGE" "$DATA_DIR"
-  ./scowl_words.sh 80 "$OUTPUT_DIR/spelling_list.txt" A,B,Z,C,D
+  "$PYTHON" write_spelling_list.py --language "$LANGUAGE" "$DATA_DIR" "$OUTPUT_DIR/spelling_list.txt"
 }
 
 # Every step runs in the background in a process group of its own (job control, `set -m`), so

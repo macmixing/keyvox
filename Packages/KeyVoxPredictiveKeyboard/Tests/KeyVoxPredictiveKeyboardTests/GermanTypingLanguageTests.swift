@@ -183,9 +183,4 @@ final class GermanTypingLanguageTests: XCTestCase {
         XCTAssertNil(try computer.compute(session.request(textBeforeCursor: "Wie geht‘s")).autocorrection)
         XCTAssertEqual(TypingLanguage.english.writingApostrophes("don't"), "don't")
     }
-
-    func testGermanBundlesNoSwipeModelSoSwipingIsNotOffered() {
-        XCTAssertFalse(TypingLanguage.german.offersSwipeTyping)
-        XCTAssertTrue(TypingLanguage.english.offersSwipeTyping)
-    }
 }

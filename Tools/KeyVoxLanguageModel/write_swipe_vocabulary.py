@@ -2,8 +2,10 @@
 lacks, so a swipe can decode to them. One word per line, its spelling, a tab, and its
 probability on the dictionary's scale (0 to 255, already log-scaled), likeliest first.
 
-A word here is a swipe form, as a swipe draws it: its letters only, case and accents folded
-(the swipe model's `letter_form`). Every form `count_swipe_words.py` counted that no
+A word here is a swipe form, as a swipe draws it: its letters only, case and accents folded,
+but for a letter the keyboard has a key of its own for, which keeps its accents, and a letter the
+language's swipe model spells with other letters (`spelledLetters` in its swipe.json), which is
+written so (the swipe model's `letter_form`). Every form `count_swipe_words.py` counted that no
 dictionary word spells is a candidate, and these rules, in this order, leave one out:
 
 1. offensive: a pattern of `--leave-out` matches it whole, a word the dictionary leaves out too
@@ -59,9 +61,12 @@ the swipe dataset has is listed with no source."""
 
 import argparse
 import statistics
+import unicodedata
 from bisect import bisect_left, bisect_right
 from collections import Counter
+from collections.abc import Callable
 from dataclasses import dataclass, field
+from functools import partial
 from pathlib import Path
 
 from count_swiped_words import OUTPUT_NAME as SWIPED_NAME
@@ -72,7 +77,6 @@ from write_capitalized_spellings import (
     has_capitals_in_a_row,
     keeps_capitals_in_a_row,
     leave_out_matcher,
-    letter_form as swipe_form,
     read_measured_spellings,
 )
 
@@ -84,6 +88,21 @@ REPORT_NAME = "swipe_vocabulary_report.tsv"
 
 KEPT = "kept"
 OFFENSIVE = "offensive"
+
+
+def swipe_form(word: str, keys: str, spellings: dict[str, str] | None = None) -> str:
+    """`word`'s letters, case folded, with the accents of every letter but `keys` folded and the
+    letters of `spellings` spelled as it gives them."""
+    form = []
+    for character in unicodedata.normalize("NFC", word.casefold()):
+        if character in keys:
+            form.append(character)
+        elif spellings and character in spellings:
+            form.append(spellings[character])
+        else:
+            form.extend(letter for letter in unicodedata.normalize("NFD", character)
+                        if unicodedata.category(letter)[0] == "L")
+    return "".join(form)
 
 
 @dataclass
@@ -124,7 +143,7 @@ class SwipedForm:
         return self.spellings.total()
 
 
-def read_counts(path: Path, dictionary_forms: set[str]):
+def read_counts(path: Path, dictionary_forms: set[str], form_of: Callable[[str], str]):
     """The candidates by form, the sources' names, and how often the sources write each
     dictionary form on its own, counted as a candidate's count is."""
     candidates: dict[str, Candidate] = {}
@@ -135,7 +154,7 @@ def read_counts(path: Path, dictionary_forms: set[str]):
         for row in rows:
             fields = row.rstrip("\n").split("\t")
             word, numbers = fields[0], [int(value) for value in fields[1:-2]]
-            form = swipe_form(word)
+            form = form_of(word)
             if not form:
                 continue
             counts, joined = numbers[0::2], numbers[1::2]
@@ -154,14 +173,14 @@ def read_counts(path: Path, dictionary_forms: set[str]):
     return candidates, sources, dictionary_counts
 
 
-def read_swiped(path: Path, dictionary_forms: set[str]) -> dict[str, SwipedForm]:
+def read_swiped(path: Path, dictionary_forms: set[str], form_of: Callable[[str], str]) -> dict[str, SwipedForm]:
     """The swipe dataset's forms that no dictionary word spells."""
     swiped: dict[str, SwipedForm] = {}
     with open(path, encoding="utf-8") as rows:
         rows.readline()
         for row in rows:
             spelling, records, in_the_middle = row.rstrip("\n").split("\t")
-            form = swipe_form(spelling)
+            form = form_of(spelling)
             if not form or form in dictionary_forms:
                 continue
             item = swiped.setdefault(form, SwipedForm(form))
@@ -275,21 +294,21 @@ class DictionaryScale:
         return round(statistics.median(self.probabilities[low:high]))
 
 
-def read_dictionary(path: Path) -> dict[str, int]:
+def read_dictionary(path: Path, form_of: Callable[[str], str]) -> dict[str, int]:
     """Each dictionary form's highest probability, from the dictionary's word list."""
     probabilities: dict[str, int] = {}
     with open(path, encoding="utf-8") as rows:
         for row in rows:
             word, probability = row.rstrip("\n").split("\t")[:2]
-            form = swipe_form(word)
+            form = form_of(word)
             if form:
                 probabilities[form] = max(probabilities.get(form, 0), int(probability))
     return probabilities
 
 
-def read_spelling_forms(path: Path) -> set[str]:
+def read_spelling_forms(path: Path, form_of: Callable[[str], str]) -> set[str]:
     with open(path, encoding="utf-8") as words:
-        return {swipe_form(word.strip()) for word in words if word.strip()}
+        return {form_of(word.strip()) for word in words if word.strip()}
 
 
 def main() -> None:
@@ -310,10 +329,11 @@ def main() -> None:
     letters = language.letter_keys()
     measured = read_measured_spellings(language.measured_spellings) if language.measured_spellings else set()
 
-    probabilities = read_dictionary(arguments.dictionary)
-    candidates, sources, dictionary_counts = read_counts(arguments.data_dir / COUNTS_NAME, set(probabilities))
-    swiped = read_swiped(arguments.data_dir / SWIPED_NAME, set(probabilities))
-    spelling_forms = read_spelling_forms(arguments.spelling_list)
+    form_of = partial(swipe_form, keys=letters, spellings=language.swipe_spellings())
+    probabilities = read_dictionary(arguments.dictionary, form_of)
+    candidates, sources, dictionary_counts = read_counts(arguments.data_dir / COUNTS_NAME, set(probabilities), form_of)
+    swiped = read_swiped(arguments.data_dir / SWIPED_NAME, set(probabilities), form_of)
+    spelling_forms = read_spelling_forms(arguments.spelling_list, form_of)
     scale = DictionaryScale(probabilities, dictionary_counts)
 
     is_offensive = leave_out_matcher(arguments.leave_out)

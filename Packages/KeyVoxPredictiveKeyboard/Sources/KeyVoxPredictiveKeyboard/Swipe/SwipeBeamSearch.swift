@@ -27,12 +27,17 @@ enum SwipeBeamSearch {
         var score: Float
     }
 
-    /// - Parameter emissions: Frame-major log-probabilities, `symbols` per frame, the blank first
-    ///   and then each key in the lexicon's key order.
+    /// - Parameters:
+    ///   - emissions: Frame-major log-probabilities, `symbols` per frame, the blank first and then
+    ///     each key in the lexicon's key order.
+    ///   - keyOfLetter: For each of the lexicon's keys, the key on screen it lies on
+    ///     (`SwipeKeys`): two lexicon keys in a row on one key on screen are a repeat, which takes
+    ///     a blank between them, as a letter repeated on its own key does.
     static func endings(
         emissions: [Float],
         symbols: Int,
         lexicon: SwipeLexicon.Tables,
+        keyOfLetter: [Int],
         pruning: SwipeModelSettings.Pruning
     ) -> [Ending] {
         let frames = emissions.count / symbols
@@ -62,7 +67,7 @@ enum SwipeBeamSearch {
                 for childIndex in Int(lexicon.childStart[node])..<Int(lexicon.childStart[node + 1]) {
                     let child = Int(lexicon.childNode[childIndex])
                     let key = Int(lexicon.nodeKey[child])
-                    let before = node > 0 && Int(lexicon.nodeKey[node]) == key ? entry.blank : total
+                    let before = node > 0 && keyOfLetter[Int(lexicon.nodeKey[node])] == keyOfLetter[key] ? entry.blank : total
                     accumulate(child, blank: -.infinity, key: before + emissions[emission + key + 1])
                 }
             }

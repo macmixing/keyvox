@@ -15,8 +15,9 @@ enum SwipeAccuracyCommand {
 
     static func run(_ options: HarnessCommand.SwipeAccuracyOptions) throws {
         let futo = try FutoSwipes(path: options.swipesPath, layoutPath: options.layoutPath, limit: options.limit)
-        let language = try TypingLanguage.bundled(identifier: "en")
+        let language = try TypingLanguage.bundled(identifier: options.languageIdentifier, letterLayout: options.letterLayout)
         let settings = try SwipeModelSettings.bundled(for: language)
+        let formLetters = settings.formLetters
         let weights = options.contextWeights.isEmpty ? [settings.scoring.contextWeight] : options.contextWeights
         let workers = max(1, ProcessInfo.processInfo.activeProcessorCount - 4)
         let computers = try (0..<workers).map { _ in try PredictionComputer(engine: PredictiveEngine(language: language)) }
@@ -39,7 +40,7 @@ enum SwipeAccuracyCommand {
                     canvas = swipe.canvas
                     computer.updateKeyboardGeometry(futo.keyGeometry(for: canvas), keyboardSize: canvas)
                 }
-                let target = SwipeLetterForm.form(of: swipe.word)
+                let target = SwipeLetterForm.form(of: swipe.word, letters: formLetters)
                 let decodeStart = ContinuousClock.now
                 let candidates = (try? computer.swipeCandidates(
                     for: swipe.samples,
@@ -52,7 +53,7 @@ enum SwipeAccuracyCommand {
                     }.sorted { $0.1 > $1.1 }
                     var forms: [String] = []
                     for (candidate, _) in rescored {
-                        let form = SwipeLetterForm.form(of: candidate.spelling)
+                        let form = SwipeLetterForm.form(of: candidate.spelling, letters: formLetters)
                         if forms.contains(form) == false { forms.append(form) }
                         if form == target { return forms.count - 1 }
                     }
