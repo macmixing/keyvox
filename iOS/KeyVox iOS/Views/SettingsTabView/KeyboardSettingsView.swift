@@ -2,12 +2,12 @@ import KeyVoxKeyboardThemes
 import SwiftUI
 
 /// The KeyVox keyboard's settings, opened from the Keyboard row in Settings: the typing
-/// toggles as single-line rows, then the typing languages and their letter layouts, then the layout
-/// options with their descriptions, then resetting what the keyboard learned from the user's typing.
+/// toggles as single-line rows, then the Languages row that opens `KeyboardLanguagesSettingsView`,
+/// then the layout options with their descriptions, then resetting what the keyboard learned from
+/// the user's typing.
 struct KeyboardSettingsView: View {
     @EnvironmentObject private var settingsStore: AppSettingsStore
     @Binding var pendingDeletionConfirmation: SettingsPendingDeletionConfirmation?
-    @State private var isLanguageListPresented = false
 
     var body: some View {
         AppScrollScreen(additionalTopContentInset: AppScreenContentInset.tabPageTop) {
@@ -24,26 +24,29 @@ struct KeyboardSettingsView: View {
         }
         .navigationTitle(KeyboardSettingsCopy.screenTitle)
         .navigationBarTitleDisplayMode(.inline)
-        .fullScreenCover(isPresented: $isLanguageListPresented) {
-            KeyboardLanguagesScreen(selection: typingLanguageSelection) {
-                isLanguageListPresented = false
-            }
-        }
-    }
-
-    private var typingLanguageSelection: KeyboardTypingLanguageSelection {
-        KeyboardTypingLanguageSelection(
-            savedLanguages: settingsStore.keyboardTypingLanguages,
-            savedLetterLayouts: settingsStore.keyboardLetterLayouts,
-            catalog: KeyboardBundledTypingLanguages.catalog,
-            fallbackLanguage: Bundle.main.developmentLocalization
-        )
     }
 
     private var languagesSection: some View {
-        KeyboardLanguagesCard(selection: typingLanguageSelection) {
-            isLanguageListPresented = true
+        NavigationLink(value: SettingsDestination.keyboardLanguages) {
+            AppCard {
+                HStack(alignment: .center, spacing: 12) {
+                    SettingsRow(
+                        icon: "globe",
+                        title: KeyboardLanguagesSettingsCopy.screenTitle,
+                        description: KeyboardLanguagesSettingsCopy.screenDescription
+                    ) {
+                        EmptyView()
+                    }
+
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 28, weight: .heavy))
+                        .foregroundStyle(.yellow)
+                        .frame(width: 56)
+                }
+            }
+            .contentShape(Rectangle())
         }
+        .buttonStyle(.plain)
     }
 
     private var typingSection: some View {
@@ -161,7 +164,7 @@ struct KeyboardSettingsView: View {
     /// the languages and all of them, and the choice is what the confirmation resets.
     private var resetLearnedWordsSection: some View {
         VStack(spacing: 8) {
-            let languages = typingLanguageSelection.languages
+            let languages = settingsStore.keyboardTypingLanguageSelection.languages
             if languages.count > 1 {
                 Menu {
                     ForEach(languages, id: \.identifier) { language in
