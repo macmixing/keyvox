@@ -121,6 +121,14 @@ class Language:
             return ()
         return tuple(json.loads(path.read_text(encoding="utf-8"))["alwaysCapitalizedWords"])
 
+    def sentence_opening_marks(self) -> str:
+        """The marks that open a sentence before its first word, from the language's
+        language.json in the package, or none before the language ships there or names them."""
+        path = PREDICTIVE_DATA / self.identifier / "language.json"
+        if not path.exists():
+            return ""
+        return json.loads(path.read_text(encoding="utf-8")).get("sentenceOpeningMarks", "")
+
     def letter_keys(self) -> str:
         """The letters of the keyboard's letter keys, row by row, from the default letter layout
         the language's language.json in the package names (letter_layouts/<layout>.json); the

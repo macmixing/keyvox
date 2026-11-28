@@ -378,6 +378,14 @@ Ten of the 53 sentences end in a line break with no mark, after which Apple's ba
 lowercase continuations rather than openers in every measured language; no weighting matches
 those.
 
+A sentence opened with one of the language's sentence opening marks (`sentenceOpeningMarks` in its
+`language.json`, Spanish's "¿" and "¡") also counts its first word after that mark
+(`count_sentence_openers.py`), and `sentence_openers.txt` gives every opener's log likelihood after
+each such mark (`opening <mark>` lines), which the keyboard offers right after the mark where a
+sentence starts: after "¿", Spanish's are "qué", "por", and "cómo", the three words Apple's Spanish
+keyboard offers there (`apple-languages/runs/behavior-es_ES`); after "¡", "no", "qué", and "me",
+where Apple offers "No", "Y", and "Si", its openers at the start of the text.
+
 ## Words spelled with capitals
 
 `capitalized_spellings_<language>.txt` holds the words the keyboard and dictation write with their
