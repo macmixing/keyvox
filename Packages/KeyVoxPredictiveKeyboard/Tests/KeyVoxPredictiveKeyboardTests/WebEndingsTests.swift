@@ -46,6 +46,22 @@ final class WebEndingsTests: XCTestCase {
         XCTAssertEqual(offer.held.characters, [".us", ".edu", ".com", ".net", ".org"])
     }
 
+    func testLatinAmericanSpanishFollowsTheRegionAsApplesLatinAmericanKeyboardDid() throws {
+        // Apple's Spanish (Latin America) keyboard alone, device language English (US)
+        // (`~/KeyVoxLanguageData/apple-languages/runs/sim419-url-es_419-<region>`).
+        let latinAmerican = try TypingLanguage.bundled(identifier: "es-419")
+        let measured: [(String, [String])] = [
+            ("US", [".gob", ".us", ".edu", ".com", ".net", ".org"]),
+            ("MX", [".net", ".gob", ".org", ".com", ".mx", ".edu"]),
+            ("AR", [".gob", ".net", ".org", ".com", ".ar", ".edu"]),
+        ]
+        for (region, popup) in measured {
+            let offer = try XCTUnwrap(endings.offer(region: region, preferredLanguages: ["en-US"], languages: [latinAmerican]))
+            XCTAssertEqual(offer.ending, ".com", region)
+            XCTAssertEqual(offer.held.characters, popup, region)
+        }
+    }
+
     func testWithoutARegionTheKeyboardsLanguageGivesTheEndings() throws {
         let offer = try XCTUnwrap(endings.offer(region: nil, preferredLanguages: [], languages: [.german]))
         XCTAssertEqual(offer.ending, ".de")

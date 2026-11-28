@@ -54,8 +54,9 @@ final class FrenchCanadaTypingLanguageTests: XCTestCase {
     }
 
     func testTheWebEndingKeyOffersApplesFrenchCanadaEndingsInAUSRegion() throws {
-        let offer = try XCTUnwrap(try HeldKeyCharacters.bundled(for: language).offer(forKey: ".com"))
-        XCTAssertEqual(offer.characters, [".ca", ".us", ".edu", ".com", ".net", ".org"])
+        let offer = try XCTUnwrap(try WebEndings.bundled().offer(region: "US", preferredLanguages: ["en-US"], languages: [language]))
+        XCTAssertEqual(offer.ending, ".com")
+        XCTAssertEqual(offer.held.characters, [".ca", ".us", ".edu", ".com", ".net", ".org"])
     }
 
     /// How many characters the separator's edit deletes after `Bonj` and the bar's `Bonjour`.
