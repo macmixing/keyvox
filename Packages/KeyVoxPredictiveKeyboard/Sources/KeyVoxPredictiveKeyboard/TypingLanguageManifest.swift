@@ -41,6 +41,9 @@ struct TypingLanguageManifest: Decodable {
     let quotationMarks: QuotationMarks
     /// The language's accent key, when its letter layouts have one it drives.
     let accentKey: AccentKey?
+    /// The folder in `PredictiveData` whose dictionary, models, and swipe files a regional variant
+    /// uses where its own folder has none; nil for a language that has all its own.
+    let sharedDataFolder: String?
     /// Whether a period right after a digit writes an ordinal number rather than ending the
     /// sentence (`TypingTextRules.ordinalPeriods`); false when left out.
     let ordinalPeriods: Bool?

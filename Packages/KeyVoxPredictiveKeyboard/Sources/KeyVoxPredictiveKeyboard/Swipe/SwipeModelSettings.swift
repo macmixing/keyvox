@@ -63,7 +63,7 @@ public struct SwipeModelSettings: Decodable, Sendable, Equatable {
 
     /// The settings of `language`'s bundled swipe model.
     public static func bundled(for language: TypingLanguage) throws -> SwipeModelSettings {
-        try SwipeModelSettings(contentsOf: language.resources.url(fileName))
+        try SwipeModelSettings(contentsOf: language.resources.dataURL(fileName))
     }
 
     public init(contentsOf url: URL) throws {

@@ -765,6 +765,7 @@ Packages/
 │   │   │   │   ├── en/
 │   │   │   │   ├── es/
 │   │   │   │   ├── fr/
+│   │   │   │   ├── fr-CA/
 │   │   │   │   ├── letter_layouts/
 │   │   │   │   └── web_endings.json
 │   │   │   ├── PredictiveEngine.swift
@@ -1983,7 +1984,7 @@ Packages/
 - `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/PredictionComputer.swift`
   - Computes the suggestion bar and space-bar autocorrection for a `PredictionRequest`, with sentence openers after the previous sentence or, right after a sentence opening mark (`sentenceOpeningMark`), after that mark, revisions for a `RevisionRequest`, and the intended letter for a contested tap, the accent key's among them; takes the keyboard geometry, personal vocabulary, and learned vocabulary from the host.
 - `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/TypingLanguage.swift`, `TypingLanguageManifest.swift`, and `TypingLanguageResources.swift`
-  - One bundled typing language read from its `PredictiveData/<language>` folder: its files, and from its `language.json` its default letter layout and the alternatives Apple's keyboard offers in Apple's order, edit letters, vowels, always-capitalized words (`WordCasing`), and quotation marks (`SmartQuotes`) with the space the quote key types inside double marks, such as French's no-break space, and text rules (`TypingTextRules`: the apostrophe it types inside words, whether a period after a digit ends a sentence, and the marks that open a sentence before its first word, which `startsSentence(after:)` reads); `offersSwipeTyping` tells whether it bundles a swipe model. The bundled languages are English (`en`), German (`de`), Spanish (`es`), and French (`fr`).
+  - One bundled typing language read from its `PredictiveData/<language>` folder: its files (a regional variant's data files from the folder its `language.json` names in `sharedDataFolder` where it has none of its own), and from its `language.json` its default letter layout and the alternatives Apple's keyboard offers in Apple's order, edit letters, vowels, always-capitalized words (`WordCasing`), and quotation marks (`SmartQuotes`) with the space the quote key types inside double marks, such as French's no-break space, and text rules (`TypingTextRules`: the apostrophe it types inside words, whether a period after a digit ends a sentence, and the marks that open a sentence before its first word, which `startsSentence(after:)` reads); `offersSwipeTyping` tells whether it bundles a swipe model. The bundled languages are English (`en`), German (`de`), Spanish (`es`), French (`fr`), and French (Canada) (`fr-CA`).
 - `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxTypingLanguageCatalog/`
   - The `KeyVoxTypingLanguageCatalog` product: `TypingLanguageCatalog` lists every folder in a copy of `PredictiveData` that has a `language.json`, reading only that file, and finds the copy inside another bundle by the typing package's resource bundle name; `TypingLanguageLetterLayouts` decodes a language's identifier, default layout, and alternatives from it, the single reader of those fields, which `TypingLanguage` uses too. `TypingLanguageCatalog+Bundled.swift` in the main target reads the package's own copy.
 - `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/LetterKeyLayout.swift` and `LetterKeyRow.swift`
