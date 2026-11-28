@@ -10,5 +10,6 @@
     "closingSingle": "’",
     "openingDouble": "“",
     "closingDouble": "”"
-  }
+  },
+  "webEndingsLocale": "en_US"
 }

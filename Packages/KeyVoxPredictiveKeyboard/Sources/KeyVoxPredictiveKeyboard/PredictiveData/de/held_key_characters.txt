@@ -27,4 +27,3 @@ $	right	$ ¢ € £ ¥ ₩ ₽
 !	right	! ¡
 ’	right	' ’ ‚ ‹ › ‘ `
 %	right	% ‰
-.com	centered	.eu .de .us .edu .com .net .org

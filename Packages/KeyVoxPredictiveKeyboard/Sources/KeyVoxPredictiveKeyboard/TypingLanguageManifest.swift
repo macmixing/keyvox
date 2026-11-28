@@ -20,4 +20,7 @@ struct TypingLanguageManifest: Decodable {
     /// Whether a period right after a digit writes an ordinal number rather than ending the
     /// sentence (`TypingTextRules.ordinalPeriods`); false when left out.
     let ordinalPeriods: Bool?
+    /// The locale of Apple's keyboard for the language, whose web endings its keyboard adds to the
+    /// region's (`WebEndings`).
+    let webEndingsLocale: String
 }

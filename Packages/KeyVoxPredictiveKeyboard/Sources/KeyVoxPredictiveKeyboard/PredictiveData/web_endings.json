@@ -1,0 +1,1405 @@
+{
+ "endingsRightOfKey": 2,
+ "locales": {
+  "af": [
+   ".com",
+   ".za",
+   ".org",
+   ".net"
+  ],
+  "ain": [
+   ".jp",
+   ".co.jp",
+   ".com",
+   ".net"
+  ],
+  "am": [
+   ".com",
+   ".et",
+   ".org",
+   ".net"
+  ],
+  "apw": [
+   ".com",
+   ".org",
+   ".net"
+  ],
+  "ar_AE": [
+   ".com",
+   ".امارات",
+   ".ae",
+   ".org",
+   ".edu"
+  ],
+  "ar_DZ": [
+   ".com",
+   ".الجزائر",
+   ".dz",
+   ".org",
+   ".edu"
+  ],
+  "ar_EG": [
+   ".com",
+   ".مصر",
+   ".eg",
+   ".org",
+   ".edu"
+  ],
+  "ar_IQ": [
+   ".com",
+   ".عراق",
+   ".iq",
+   ".org",
+   ".edu"
+  ],
+  "ar_JO": [
+   ".com",
+   ".الاردن",
+   ".jo",
+   ".org",
+   ".edu"
+  ],
+  "ar_MA": [
+   ".com",
+   ".المغرب",
+   ".ma",
+   ".org",
+   ".edu"
+  ],
+  "ar_MR": [
+   ".com",
+   ".موريتانيا",
+   ".mr",
+   ".org",
+   ".edu"
+  ],
+  "ar_OM": [
+   ".com",
+   ".عمان",
+   ".om",
+   ".org",
+   ".edu"
+  ],
+  "ar_PS": [
+   ".com",
+   ".فلسطين",
+   ".ps",
+   ".org",
+   ".edu"
+  ],
+  "ar_QA": [
+   ".com",
+   ".قطر",
+   ".qa",
+   ".org",
+   ".edu"
+  ],
+  "ar_SA": [
+   ".com",
+   ".السعودية",
+   ".sa",
+   ".org",
+   ".edu"
+  ],
+  "ar_SD": [
+   ".com",
+   ".سودان",
+   ".sd",
+   ".org",
+   ".edu"
+  ],
+  "ar_TN": [
+   ".com",
+   ".تونس",
+   ".tn",
+   ".org",
+   ".edu"
+  ],
+  "ar_YE": [
+   ".com",
+   ".اليمن",
+   ".ye",
+   ".org",
+   ".edu"
+  ],
+  "ars": [
+   ".com",
+   ".org",
+   ".edu",
+   ".net",
+   ".sa"
+  ],
+  "as": [
+   ".com",
+   ".ভাৰত",
+   ".in",
+   ".org",
+   ".net"
+  ],
+  "az_Latn": [
+   ".az",
+   ".com",
+   ".org",
+   ".net"
+  ],
+  "be": [
+   ".by",
+   ".бел",
+   ".com",
+   ".org",
+   ".net"
+  ],
+  "bg": [
+   ".com",
+   ".бг",
+   ".bg",
+   ".ею",
+   ".net",
+   ".org"
+  ],
+  "bn_BD": [
+   ".com",
+   ".বাংলা",
+   ".bd",
+   ".org",
+   ".net"
+  ],
+  "bn_IN": [
+   ".com",
+   ".ভারত",
+   ".in",
+   ".org",
+   ".net"
+  ],
+  "bn_Latn": [
+   ".com",
+   ".in",
+   ".org",
+   ".net"
+  ],
+  "bo": [
+   ".net",
+   ".com",
+   ".org",
+   ".edu"
+  ],
+  "brx": [
+   ".com",
+   ".भारत",
+   ".in",
+   ".org",
+   ".net"
+  ],
+  "ca": [
+   ".com",
+   ".org",
+   ".edu",
+   ".eu",
+   ".cat"
+  ],
+  "chr": [
+   ".com",
+   ".net",
+   ".edu",
+   ".org",
+   ".us"
+  ],
+  "cic": [
+   ".com",
+   ".org",
+   ".net"
+  ],
+  "cs": [
+   ".cz",
+   ".com",
+   ".org",
+   ".edu",
+   ".net"
+  ],
+  "cy": [
+   ".com",
+   ".co.uk",
+   ".ie",
+   ".org",
+   ".edu",
+   ".eu"
+  ],
+  "da": [
+   ".dk",
+   ".com",
+   ".nu",
+   ".org",
+   ".eu"
+  ],
+  "de": [
+   ".de",
+   ".com",
+   ".org",
+   ".edu",
+   ".eu"
+  ],
+  "de_AT": [
+   ".de",
+   ".at",
+   ".com",
+   ".org",
+   ".edu",
+   ".eu"
+  ],
+  "de_CH": [
+   ".com",
+   ".ch",
+   ".org",
+   ".edu",
+   ".eu"
+  ],
+  "de_DE": [
+   ".de",
+   ".com",
+   ".org",
+   ".edu",
+   ".eu"
+  ],
+  "doi_Deva": [
+   ".com",
+   ".भारत",
+   ".in",
+   ".org",
+   ".net"
+  ],
+  "dv": [
+   ".mv",
+   ".com",
+   ".org",
+   ".net"
+  ],
+  "dz": [
+   ".bt",
+   ".net",
+   ".com",
+   ".org"
+  ],
+  "el": [
+   ".com",
+   ".ελ",
+   ".gr",
+   ".org",
+   ".ευ",
+   ".eu"
+  ],
+  "en_AU": [
+   ".com",
+   ".au",
+   ".org",
+   ".edu"
+  ],
+  "en_BD": [
+   ".com",
+   ".bd",
+   ".org",
+   ".net"
+  ],
+  "en_CA": [
+   ".com",
+   ".ca",
+   ".org",
+   ".edu"
+  ],
+  "en_GB": [
+   ".co.uk",
+   ".com",
+   ".ie",
+   ".org",
+   ".edu",
+   ".eu",
+   ".uk"
+  ],
+  "en_HK": [
+   ".com",
+   ".tw",
+   ".hk",
+   ".net",
+   ".中國",
+   ".台灣",
+   ".香港"
+  ],
+  "en_IE": [
+   ".com",
+   ".ie",
+   ".org",
+   ".edu"
+  ],
+  "en_IN": [
+   ".com",
+   ".in",
+   ".org",
+   ".net"
+  ],
+  "en_JP": [
+   ".jp",
+   ".co.jp",
+   ".com",
+   ".net"
+  ],
+  "en_NZ": [
+   ".com",
+   ".co.nz",
+   ".nz",
+   ".org",
+   ".ac"
+  ],
+  "en_PH": [
+   ".com",
+   ".net",
+   ".ph"
+  ],
+  "en_RW": [
+   ".com",
+   ".rw",
+   ".org",
+   ".net"
+  ],
+  "en_SA": [
+   ".com",
+   ".sa",
+   ".org",
+   ".edu"
+  ],
+  "en_SG": [
+   ".com",
+   ".sg",
+   ".org",
+   ".net"
+  ],
+  "en_US": [
+   ".com",
+   ".net",
+   ".edu",
+   ".org",
+   ".us"
+  ],
+  "en_ZA": [
+   ".com",
+   ".za",
+   ".org",
+   ".net"
+  ],
+  "es_419": [
+   ".com",
+   ".org",
+   ".edu",
+   ".gob"
+  ],
+  "es_AR": [
+   ".com",
+   ".ar",
+   ".org",
+   ".edu"
+  ],
+  "es_BO": [
+   ".com",
+   ".bo",
+   ".org",
+   ".edu"
+  ],
+  "es_BR": [
+   ".com",
+   ".br",
+   ".org",
+   ".edu"
+  ],
+  "es_BZ": [
+   ".com",
+   ".bz",
+   ".org",
+   ".edu"
+  ],
+  "es_CL": [
+   ".com",
+   ".cl",
+   ".org",
+   ".edu"
+  ],
+  "es_CO": [
+   ".com",
+   ".co",
+   ".org",
+   ".edu"
+  ],
+  "es_CR": [
+   ".com",
+   ".cr",
+   ".org",
+   ".edu"
+  ],
+  "es_CU": [
+   ".com",
+   ".cu",
+   ".org",
+   ".edu"
+  ],
+  "es_DO": [
+   ".com",
+   ".do",
+   ".org",
+   ".edu"
+  ],
+  "es_EC": [
+   ".com",
+   ".ec",
+   ".org",
+   ".edu"
+  ],
+  "es_ES": [
+   ".com",
+   ".es",
+   ".org",
+   ".edu",
+   ".eu"
+  ],
+  "es_GT": [
+   ".com",
+   ".gt",
+   ".org",
+   ".edu"
+  ],
+  "es_HN": [
+   ".com",
+   ".hn",
+   ".org",
+   ".edu"
+  ],
+  "es_MX": [
+   ".com",
+   ".mx",
+   ".org",
+   ".edu",
+   ".gob"
+  ],
+  "es_NI": [
+   ".com",
+   ".ni",
+   ".org",
+   ".edu"
+  ],
+  "es_PA": [
+   ".com",
+   ".pa",
+   ".org",
+   ".edu"
+  ],
+  "es_PE": [
+   ".com",
+   ".pe",
+   ".org",
+   ".edu"
+  ],
+  "es_PR": [
+   ".com",
+   ".pr",
+   ".org",
+   ".edu"
+  ],
+  "es_PY": [
+   ".com",
+   ".py",
+   ".org",
+   ".edu"
+  ],
+  "es_SV": [
+   ".com",
+   ".sv",
+   ".org",
+   ".edu"
+  ],
+  "es_US": [
+   ".com",
+   ".us",
+   ".org",
+   ".edu",
+   ".gob"
+  ],
+  "es_UY": [
+   ".com",
+   ".uy",
+   ".org",
+   ".edu"
+  ],
+  "es_VE": [
+   ".com",
+   ".ve",
+   ".org",
+   ".edu"
+  ],
+  "et": [
+   ".ee",
+   ".com",
+   ".org",
+   ".edu",
+   ".net"
+  ],
+  "eu_ES": [
+   ".com",
+   ".es",
+   ".org",
+   ".edu",
+   ".eu"
+  ],
+  "eu_FR": [
+   ".fr",
+   ".com",
+   ".org",
+   ".edu",
+   ".eu"
+  ],
+  "fa_AF": [
+   ".com",
+   ".افغانستان",
+   ".af",
+   ".org",
+   ".edu",
+   ".net"
+  ],
+  "fa_IR": [
+   ".com",
+   ".ایران",
+   ".ir",
+   ".org",
+   ".edu",
+   ".net"
+  ],
+  "ff_Adlm": [
+   ".com",
+   ".org",
+   ".net"
+  ],
+  "fi": [
+   ".fi",
+   ".com",
+   ".net",
+   ".org",
+   ".info",
+   ".mobi",
+   ".eu"
+  ],
+  "fo": [
+   ".fo",
+   ".com",
+   ".dk",
+   ".org",
+   ".net"
+  ],
+  "fr_BE": [
+   ".fr",
+   ".be",
+   ".com",
+   ".org",
+   ".edu",
+   ".eu"
+  ],
+  "fr_CA": [
+   ".com",
+   ".ca",
+   ".org",
+   ".edu"
+  ],
+  "fr_CH": [
+   ".com",
+   ".ch",
+   ".org",
+   ".edu"
+  ],
+  "fr_FR": [
+   ".fr",
+   ".com",
+   ".org",
+   ".edu",
+   ".eu"
+  ],
+  "ga_IE": [
+   ".ie",
+   ".com",
+   ".org",
+   ".co.uk",
+   ".edu"
+  ],
+  "gl": [
+   ".com",
+   ".es",
+   ".org",
+   ".edu",
+   ".eu"
+  ],
+  "gn": [
+   ".com",
+   ".py",
+   ".org",
+   ".net"
+  ],
+  "gu": [
+   ".com",
+   ".ભારત",
+   ".in",
+   ".org",
+   ".net"
+  ],
+  "gu_Latn": [
+   ".com",
+   ".in",
+   ".org",
+   ".net"
+  ],
+  "haw": [
+   ".com",
+   ".net",
+   ".edu",
+   ".org",
+   ".us"
+  ],
+  "he": [
+   ".com",
+   ".co.il",
+   ".il",
+   ".org",
+   ".edu"
+  ],
+  "hi": [
+   ".com",
+   ".भारत",
+   ".in",
+   ".org",
+   ".net"
+  ],
+  "hi_Latn": [
+   ".com",
+   ".in",
+   ".org",
+   ".net"
+  ],
+  "hr": [
+   ".com",
+   ".hr",
+   ".org",
+   ".edu",
+   ".net"
+  ],
+  "hu": [
+   ".com",
+   ".hu",
+   ".org",
+   ".edu",
+   ".net",
+   ".eu"
+  ],
+  "hy": [
+   ".com",
+   ".հայ",
+   ".am"
+  ],
+  "id": [
+   ".com",
+   ".id",
+   ".org",
+   ".edu",
+   ".net"
+  ],
+  "ig": [
+   ".com",
+   ".org",
+   ".net"
+  ],
+  "inh": [
+   ".com",
+   ".org",
+   ".net"
+  ],
+  "is": [
+   ".com",
+   ".is",
+   ".org",
+   ".edu",
+   ".net"
+  ],
+  "it": [
+   ".it",
+   ".com",
+   ".org",
+   ".edu",
+   ".eu"
+  ],
+  "ja": [
+   ".jp",
+   ".co.jp",
+   ".com",
+   ".net"
+  ],
+  "ka": [
+   ".com",
+   ".გე",
+   ".ge"
+  ],
+  "kgp": [
+   ".com",
+   ".br",
+   ".org",
+   ".edu"
+  ],
+  "kk_Cyrl": [
+   ".com",
+   ".қаз",
+   ".kz",
+   ".org",
+   ".net"
+  ],
+  "kk_Latn": [
+   ".com",
+   ".kz",
+   ".org",
+   ".net"
+  ],
+  "kl": [
+   ".dk",
+   ".gl",
+   ".com",
+   ".org",
+   ".eu"
+  ],
+  "km": [
+   ".com",
+   ".kh",
+   ".org",
+   ".co.kh",
+   ".net"
+  ],
+  "kn": [
+   ".com",
+   ".ಭಾರತ",
+   ".in",
+   ".org",
+   ".net"
+  ],
+  "ko": [
+   ".com",
+   ".net",
+   ".kr",
+   ".co.kr",
+   ".ac.kr",
+   ".한국"
+  ],
+  "kok_Deva": [
+   ".com",
+   ".भारत",
+   ".in",
+   ".org",
+   ".net"
+  ],
+  "ks_Arab_IN": [
+   ".com",
+   ".بارت",
+   ".in",
+   ".org",
+   ".net"
+  ],
+  "ks_Arab_PK": [
+   ".com",
+   ".پاکستان",
+   ".pk",
+   ".org",
+   ".net"
+  ],
+  "ks_Deva": [
+   ".com",
+   ".भारत",
+   ".in",
+   ".org",
+   ".net"
+  ],
+  "ku_Latn": [
+   ".com",
+   ".org",
+   ".net"
+  ],
+  "ky_Cyrl": [
+   ".kg",
+   ".com",
+   ".org",
+   ".net"
+  ],
+  "lb": [
+   ".com",
+   ".lu",
+   ".org",
+   ".edu",
+   ".eu"
+  ],
+  "lo": [
+   ".com",
+   ".la",
+   ".org",
+   ".edu",
+   ".co",
+   ".co.la"
+  ],
+  "lt": [
+   ".lt",
+   ".com",
+   ".org",
+   ".edu",
+   ".net",
+   ".eu"
+  ],
+  "lut": [
+   ".com",
+   ".org",
+   ".net"
+  ],
+  "lv": [
+   ".lv",
+   ".com",
+   ".org",
+   ".edu",
+   ".net",
+   ".eu"
+  ],
+  "mai": [
+   ".com",
+   ".भारत",
+   ".in",
+   ".org",
+   ".net"
+  ],
+  "mg": [
+   ".com",
+   ".mg",
+   ".org",
+   ".net"
+  ],
+  "mi": [
+   ".co.nz",
+   ".com",
+   ".net",
+   ".edu",
+   ".org"
+  ],
+  "mk": [
+   ".com",
+   ".мкд",
+   ".mk",
+   ".org",
+   ".edu",
+   ".net"
+  ],
+  "ml": [
+   ".com",
+   ".ഭാരതം",
+   ".in",
+   ".org",
+   ".net"
+  ],
+  "mn": [
+   ".com",
+   ".мон",
+   ".mn",
+   ".org",
+   ".net"
+  ],
+  "mni_Beng": [
+   ".com",
+   ".in",
+   ".org",
+   ".net"
+  ],
+  "mni_Mtei": [
+   ".com",
+   ".in",
+   ".org",
+   ".net"
+  ],
+  "mr": [
+   ".com",
+   ".भारत",
+   ".in",
+   ".org",
+   ".net"
+  ],
+  "mr_Latn": [
+   ".com",
+   ".in",
+   ".org",
+   ".net"
+  ],
+  "ms": [
+   ".com",
+   ".my",
+   ".org",
+   ".edu",
+   ".net"
+  ],
+  "ms_Arab": [
+   ".com",
+   ".مليسيا",
+   ".my",
+   ".org",
+   ".net"
+  ],
+  "mt": [
+   ".mt",
+   ".com",
+   ".org",
+   ".net"
+  ],
+  "mus": [
+   ".com",
+   ".org",
+   ".net"
+  ],
+  "my": [
+   ".com",
+   ".mm",
+   ".org",
+   ".net"
+  ],
+  "nb": [
+   ".no",
+   ".com",
+   ".org",
+   ".edu"
+  ],
+  "ne_IN": [
+   ".com",
+   ".भारत",
+   ".in",
+   ".org",
+   ".net"
+  ],
+  "ne_NP": [
+   ".com",
+   ".नेपाल",
+   ".np",
+   ".org",
+   ".net"
+  ],
+  "nl": [
+   ".com",
+   ".nl",
+   ".be",
+   ".org",
+   ".edu"
+  ],
+  "nl_BE": [
+   ".com",
+   ".be",
+   ".nl",
+   ".org",
+   ".edu",
+   ".eu"
+  ],
+  "nn": [
+   ".no",
+   ".com",
+   ".org",
+   ".edu"
+  ],
+  "nv": [
+   ".com",
+   ".org",
+   ".net"
+  ],
+  "or": [
+   ".com",
+   ".ଭାରତ",
+   ".in",
+   ".org",
+   ".net"
+  ],
+  "pa": [
+   ".com",
+   ".ਭਾਰਤ",
+   ".in",
+   ".org",
+   ".net"
+  ],
+  "pa_Latn": [
+   ".com",
+   ".in",
+   ".org",
+   ".net"
+  ],
+  "pl": [
+   ".com",
+   ".pl",
+   ".org",
+   ".edu",
+   ".eu"
+  ],
+  "pt_BR": [
+   ".com",
+   ".br",
+   ".org",
+   ".edu"
+  ],
+  "pt_PT": [
+   ".com",
+   ".pt",
+   ".org",
+   ".edu",
+   ".eu"
+  ],
+  "rhg": [
+   ".com",
+   ".org",
+   ".net"
+  ],
+  "rm": [
+   ".com",
+   ".ch",
+   ".org",
+   ".edu"
+  ],
+  "rn": [
+   ".com",
+   ".bi",
+   ".org",
+   ".net"
+  ],
+  "ro": [
+   ".com",
+   ".ro",
+   ".org",
+   ".edu",
+   ".net",
+   ".eu"
+  ],
+  "ru": [
+   ".com",
+   ".рф",
+   ".ru",
+   ".org",
+   ".edu"
+  ],
+  "rw": [
+   ".com",
+   ".rw",
+   ".org",
+   ".net"
+  ],
+  "sa": [
+   ".com",
+   ".भारतम्",
+   ".in",
+   ".org",
+   ".net"
+  ],
+  "sah": [
+   ".com",
+   ".рф",
+   ".ru",
+   ".org",
+   ".edu"
+  ],
+  "sat_Deva": [
+   ".com",
+   ".भारत",
+   ".in",
+   ".org",
+   ".net"
+  ],
+  "sat_Olck": [
+   ".com",
+   ".in",
+   ".org",
+   ".net"
+  ],
+  "sd_Deva": [
+   ".com",
+   ".भारोत",
+   ".in",
+   ".org",
+   ".net"
+  ],
+  "sd_IN": [
+   ".com",
+   ".ڀارت",
+   ".in",
+   ".org",
+   ".net"
+  ],
+  "sd_PK": [
+   ".com",
+   ".پاکستان",
+   ".pk",
+   ".org",
+   ".net"
+  ],
+  "si": [
+   ".com",
+   ".ලංකා",
+   ".lk",
+   ".org",
+   ".net"
+  ],
+  "sjw": [
+   ".com",
+   ".org",
+   ".net"
+  ],
+  "sk": [
+   ".com",
+   ".sk",
+   ".org",
+   ".edu",
+   ".net",
+   ".eu"
+  ],
+  "sl": [
+   ".com",
+   ".si",
+   ".org",
+   ".edu",
+   ".net"
+  ],
+  "sm": [
+   ".com",
+   ".org",
+   ".net",
+   ".sm"
+  ],
+  "sq": [
+   ".al",
+   ".com",
+   ".org",
+   ".net"
+  ],
+  "sr_Cyrl": [
+   ".com",
+   ".срб",
+   ".rs",
+   ".net",
+   ".edu",
+   ".org"
+  ],
+  "sr_Latn": [
+   ".com",
+   ".rs",
+   ".срб",
+   ".net",
+   ".edu",
+   ".org"
+  ],
+  "sv": [
+   ".se",
+   ".com",
+   ".nu",
+   ".org"
+  ],
+  "sv_FI": [
+   ".com",
+   ".fi",
+   ".net",
+   ".org",
+   ".info",
+   ".mobi",
+   ".eu"
+  ],
+  "sw": [
+   ".com",
+   ".net",
+   ".org",
+   ".edu"
+  ],
+  "syr": [
+   ".com",
+   ".org",
+   ".net"
+  ],
+  "ta_IN": [
+   ".com",
+   ".இந்தியா",
+   ".in",
+   ".org",
+   ".net"
+  ],
+  "ta_LK": [
+   ".com",
+   ".இலங்கை",
+   ".lk",
+   ".org",
+   ".net"
+  ],
+  "ta_Latn": [
+   ".com",
+   ".in",
+   ".org",
+   ".net"
+  ],
+  "ta_SG": [
+   ".com",
+   ".சிங்கப்பூர்",
+   ".sg",
+   ".org",
+   ".net"
+  ],
+  "te": [
+   ".com",
+   ".భారత్",
+   ".in",
+   ".org",
+   ".net"
+  ],
+  "te_Latn": [
+   ".com",
+   ".in",
+   ".org",
+   ".net"
+  ],
+  "tg_Cyrl": [
+   ".tj",
+   ".com",
+   ".org",
+   ".net"
+  ],
+  "tg_Latn": [
+   ".tj",
+   ".com",
+   ".org",
+   ".net"
+  ],
+  "th": [
+   ".com",
+   ".ไทย",
+   ".th",
+   ".org",
+   ".edu"
+  ],
+  "ti": [
+   ".com",
+   ".er",
+   ".org",
+   ".net"
+  ],
+  "tl": [
+   ".com",
+   ".ph",
+   ".org",
+   ".edu"
+  ],
+  "tl_Tglg": [
+   ".com",
+   ".net",
+   ".ph"
+  ],
+  "to": [
+   ".com",
+   ".org",
+   ".net",
+   ".to"
+  ],
+  "tr": [
+   ".com",
+   ".tr",
+   ".org",
+   ".edu",
+   ".net"
+  ],
+  "tyv": [
+   ".com",
+   ".рф",
+   ".ru",
+   ".org",
+   ".edu"
+  ],
+  "uk": [
+   ".com",
+   ".укр",
+   ".ua",
+   ".org",
+   ".edu"
+  ],
+  "ur_IN": [
+   ".com",
+   "بھارت",
+   ".in",
+   ".org"
+  ],
+  "ur_PK": [
+   ".com",
+   ".پاکستان",
+   ".pk",
+   ".org",
+   ".net"
+  ],
+  "uz_Arab": [
+   ".af",
+   ".com",
+   ".org",
+   ".net"
+  ],
+  "uz_Cyrl": [
+   ".uz",
+   ".com",
+   ".org",
+   ".net"
+  ],
+  "uz_Latn": [
+   ".uz",
+   ".com",
+   ".org",
+   ".net"
+  ],
+  "vi": [
+   ".com",
+   ".vn",
+   ".org",
+   ".edu",
+   ".net"
+  ],
+  "xh": [
+   ".com",
+   ".za",
+   ".org",
+   ".net"
+  ],
+  "yue_Hant": [
+   ".com",
+   ".hk",
+   ".net",
+   ".香港"
+  ],
+  "zh_HK": [
+   ".com",
+   ".hk",
+   ".net",
+   ".中國",
+   ".香港"
+  ],
+  "zh_Hans": [
+   ".com",
+   ".cn",
+   ".sg",
+   ".中国",
+   ".台湾",
+   ".香港",
+   ".澳门",
+   ".新加坡",
+   ".org"
+  ],
+  "zh_Hant": [
+   ".com",
+   ".cn",
+   ".tw",
+   ".hk",
+   ".mo",
+   ".中國",
+   ".台灣",
+   ".香港",
+   ".澳門",
+   ".net"
+  ],
+  "zu": [
+   ".com",
+   ".za",
+   ".org",
+   ".net"
+  ]
+ }
+}

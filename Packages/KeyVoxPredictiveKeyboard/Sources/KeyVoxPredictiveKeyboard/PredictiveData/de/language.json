@@ -11,5 +11,6 @@
     "openingDouble": "„",
     "closingDouble": "“"
   },
-  "ordinalPeriods": true
+  "ordinalPeriods": true,
+  "webEndingsLocale": "de_DE"
 }

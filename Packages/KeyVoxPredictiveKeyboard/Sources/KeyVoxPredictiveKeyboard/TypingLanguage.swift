@@ -20,6 +20,9 @@ public struct TypingLanguage: Sendable {
     /// How the language's text is read: the apostrophe it types inside words, and whether a
     /// period after a digit ends a sentence.
     public let textRules: TypingTextRules
+    /// The locale of Apple's keyboard for the language in `web_endings.json`, whose web endings
+    /// the language's keyboard offers beside the device region's (`WebEndings`).
+    public let webEndingsLocale: String
     /// The letters single-letter edits of a typed word try, in the order they are tried.
     let editLetters: String
     /// The letters a short typed word needs one of to be taken as an attempt at a word.
@@ -76,6 +79,7 @@ public struct TypingLanguage: Sendable {
         quotes = SmartQuotes(marks: manifest.quotationMarks)
         editLetters = manifest.editLetters
         vowels = manifest.vowels
+        webEndingsLocale = manifest.webEndingsLocale
         textRules = TypingTextRules(
             apostrophe: Character(manifest.quotationMarks.closingSingle),
             ordinalPeriods: manifest.ordinalPeriods ?? false
