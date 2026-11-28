@@ -434,10 +434,13 @@ is the language's own is measured:
   typed with a long press on its plain spelling's first key, so the simulator taps that key: a tap
   landing on it types the letter, or its plain spelling at the measured rate, and a tap on another
   key types that key's letter. A letter Unicode gives no other spelling, such as French "œ" and
-  "æ", is typed as spelled. The rate is measured in the language build's WildChat turns, the one
-  source of text people typed in every language, over the dictionary words with one such letter
-  whose plain spelling is no dictionary word: how often WildChat writes each spelling. A letter
-  seen fewer than 200 times takes the rate of every such letter together.
+  "æ", is typed as spelled. The rule is one, `letter_keys.py`, so the suggestion reader taps such a
+  letter on the same key (`--key-for`), and a letter it gives no key at the origin, as the
+  keyboard's engine taps a letter its keys lack when it is given no touches. The rate is measured
+  in the language build's WildChat turns, the one source of text people typed in every language,
+  over the dictionary words with one such letter whose plain spelling is no dictionary word: how
+  often WildChat writes each spelling. A letter seen fewer than 200 times takes the rate of every
+  such letter together.
 
 Letters with a key of their own, German "ü", "ö", and "ä" and Spanish "ñ", are tapped as any other
 key: WildChat leaves them plain in 0.8% to 2.7% of their words, while it leaves out a missing key's
@@ -522,12 +525,12 @@ Ranking is of the intended word among LatinIME's 8 candidates:
 | Measure | de | es | fr | en (ITE) |
 | --- | --- | --- | --- | --- |
 | Correction: intended word among the 8 candidates | 91.7% | 95.2% | 96.2% | 97.9% |
-| Correction: first, LatinIME's order / reranked | 76.6% / 82.5% | 89.5% / 91.3% | 86.6% / 91.1% | 85.3% / 90.1% |
+| Correction: first, LatinIME's order / reranked | 76.6% / 82.5% | 89.5% / 91.3% | 86.6% / 91.0% | 85.3% / 90.1% |
 | Correction: in the top 3, reranked | 91.0% | 94.9% | 95.9% | 96.9% |
-| Completion: intended word among the 8 candidates | 61.7% | 48.6% | 52.5% | 83.4% |
-| Completion: first, LatinIME's order / reranked | 23.1% / 43.7% | 16.5% / 35.6% | 19.4% / 40.3% | 38.6% / 55.4% |
+| Completion: intended word among the 8 candidates | 61.7% | 48.6% | 52.6% | 83.4% |
+| Completion: first, LatinIME's order / reranked | 23.1% / 43.7% | 16.5% / 35.6% | 19.4% / 40.2% | 38.6% / 55.4% |
 | Completion: in the top 3, reranked | 57.9% | 45.5% | 50.2% | 76.5% |
-| Plausible typos fixed by the action model at 0.9 | 36.6% | 50.4% | 60.4% | 45.2% |
+| Plausible typos fixed by the action model at 0.9 | 36.9% | 50.4% | 59.9% | 45.2% |
 
 Every word of the held-out sentences, acting at each threshold (`held_out_words`): the words typed,
 1,011,150 German, 997,230 Spanish, and 968,274 French, of which 3.7%, 8.0%, and 6.4% were mistyped,
@@ -536,14 +539,14 @@ such as Spanish "esta" for "está":
 
 | Threshold | Measure | de | es | fr |
 | --- | --- | --- | --- | --- |
-| 0.9 | Final words correct | 97.54% | 95.78% | 97.08% |
-| 0.9 | Mistyped words fixed (of those not typed as a word) | 34.1% (39.6%) | 48.4% (64.4%) | 55.2% (68.1%) |
-| 0.9 | Mistyped words changed to another word | 0.38% | 0.28% | 0.39% |
-| 0.9 | Correctly typed words wrongly changed | 0.034% | 0.121% | 0.044% |
-| 0.95 | Final words correct | 97.18% | 94.76% | 96.70% |
-| 0.95 | Mistyped words fixed (of those not typed as a word) | 23.7% (27.6%) | 35.0% (46.5%) | 49.1% (60.6%) |
-| 0.95 | Mistyped words changed to another word | 0.13% | 0.09% | 0.19% |
-| 0.95 | Correctly typed words wrongly changed | 0.017% | 0.064% | 0.027% |
+| 0.9 | Final words correct | 97.55% | 95.78% | 97.05% |
+| 0.9 | Mistyped words fixed (of those not typed as a word) | 34.3% (39.9%) | 48.4% (64.4%) | 54.8% (67.6%) |
+| 0.9 | Mistyped words changed to another word | 0.40% | 0.28% | 0.39% |
+| 0.9 | Correctly typed words wrongly changed | 0.034% | 0.121% | 0.042% |
+| 0.95 | Final words correct | 97.17% | 94.76% | 96.70% |
+| 0.95 | Mistyped words fixed (of those not typed as a word) | 23.6% (27.4%) | 35.0% (46.5%) | 49.1% (60.5%) |
+| 0.95 | Mistyped words changed to another word | 0.13% | 0.09% | 0.17% |
+| 0.95 | Correctly typed words wrongly changed | 0.017% | 0.064% | 0.026% |
 | none | Final words correct, as typed | 96.32% | 92.03% | 93.56% |
 
 These are the trainers' measures: the keyboard corrects with `NoisyChannelCorrector`, which reads
