@@ -538,6 +538,7 @@ iOS/
 │   │   ├── KeyboardDisplayZoom.swift
 │   │   ├── KeyboardFieldBottomRowKeys.swift
 │   │   ├── KeyboardFieldKeys.swift
+│   │   ├── KeyboardWebEndings.swift
 │   │   ├── KeyboardFoldableDisplay.swift
 │   │   ├── KeyboardScreenShape.swift
 │   │   ├── KeyboardDictationModelStatus.swift
@@ -755,7 +756,8 @@ Packages/
 │   │   │   ├── PredictiveData/
 │   │   │   │   ├── de/
 │   │   │   │   ├── en/
-│   │   │   │   └── letter_layouts/
+│   │   │   │   ├── letter_layouts/
+│   │   │   │   └── web_endings.json
 │   │   │   ├── PredictiveEngine.swift
 │   │   │   ├── PredictiveTypingSession.swift
 │   │   │   ├── RepeatedPicks.swift
@@ -781,6 +783,7 @@ Packages/
 │   │   │   ├── TypingTextContext.swift
 │   │   │   ├── TypingTextRules.swift
 │   │   │   ├── UnknownWordFollowers.swift
+│   │   │   ├── WebEndings.swift
 │   │   │   ├── WordCasing.swift
 │   │   │   └── WordFollowers.swift
 │   │   ├── KeyVoxTypingLanguageCatalog/
@@ -1746,7 +1749,9 @@ Packages/
 - `KeyVox Keyboard/Core/KeyboardOpeningLayout.swift`
   - Resolves the page and keys mode a field opens on: the full-size number pad in a numbers-only field on a display that shows it (`KeyboardDisplay.showsNumberPad`), otherwise full letter keys, or the number page in the user's Compact Keys mode when the field or Open on 123 prefers numbers.
 - `KeyVox Keyboard/Core/KeyboardFieldKeys.swift`
-  - Maps the focused field's keyboard type and return key type to its bottom row (standard, web address, web search, email, or post), its `KeyboardReturnKeyStyle`, and its number pad, and decides which pages show the field's bottom row; owns the common web ending's text.
+  - Maps the focused field's keyboard type and return key type to its bottom row (standard, web address, web search, email, or post), its `KeyboardReturnKeyStyle`, and its number pad, and decides which pages show the field's bottom row; the web ending key's text comes from `KeyboardWebEndings`.
+- `KeyVox Keyboard/Core/KeyboardWebEndings.swift`
+  - The web endings the web ending key types and offers for the device's region and languages and the keyboard's typing languages, from the package's `WebEndings`, worked out again when any of them changes.
 - `KeyVox Keyboard/Core/KeyboardFieldBottomRowKeys.swift`
   - The keys each field bottom row shows in place of the standard row's space bar and return key.
 - `KeyVox Keyboard/Core/KeyboardNumberPadGeometry.swift`
@@ -1979,6 +1984,8 @@ Packages/
   - Bundled held-key characters per key with the side each popup opens toward, and the popup cell layout that reaches the keyboard's edge and spills to the other side, or takes a second row, when an offer does not fit; a centered offer, such as the web endings, keeps its listed order and slides along to stay on the keyboard.
 - `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/SmartQuotes.swift`, `CharacterList.swift`, `TypingTextContext.swift`, and `TypingTextRules.swift`
   - The typing language's opening and closing quote marks, its bundled character lists that end words, shape picked-word spacing, or suppress next-word suggestions, and the word and sentence context read around the cursor by the language's text rules (German's apostrophe "‘" inside words, its ordinal numbers' periods, which end no sentence).
+- `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/WebEndings.swift`
+  - The web endings a web address field's key types and offers, chosen as Apple's keyboard chooses them from the device's region and languages and the keyboard's languages, from the lists of Apple's keyboard files (`PredictiveData/web_endings.json`, written by `Tools/AppleKeyboardBaseline/write_web_endings.py`).
 - `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/Swipe/`
   - Swipe typing, one job per file: `SwipeGate` (tap versus swipe), `SwipeTouchSample`, `SwipeKeyboardFrame` (live key geometry into the model's frame), `SwipePathResampler`, `SwipeMotionFeatures`, `SwipeTensorFile` (memory-mapped fp16 weights), `SwipeMath` (Accelerate kernels with plain-Swift fallbacks), `SwipeEncoderNetwork`, `SwipeDecoderNetwork`, `SwipeLexiconFormat`, `SwipeLexiconBuilder`, and `SwipeLexicon` (the memory-mapped key-path trie), `SwipeVocabulary` (the words the trie holds beside the dictionary's), `SwipeLetterForm`, `SwipeBeamSearch`, `SwipeKeyVisits` (a swipe lined up with a key path), `SwipeKeyLoop` (loops around keys, which double their letters), `SwipeKeySquiggle` (squiggles over keys, which double them as loops do), `SwipeTwinFacts` (what the language's data says about a doubled-letter twin), `SwipeLandingKey` (where a swipe lands, between words that differ only in their first key), `SwipeCandidateScoring`, `SwipeModelSettings` (`swipe.json`), `SwipeWordDecoder`, `SwipeDecoding` (the computer's loaded decoder and the user's-words lexicon), `SwipeCandidate`, `SwipeWordCase`, and `PredictionComputer+Swipe` (`swipeWords(for:previousWords:wordCase:limit:)`, written as typing writes words).
 - `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/TypedWordTouches.swift`
