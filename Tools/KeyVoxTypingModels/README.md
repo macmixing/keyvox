@@ -610,6 +610,32 @@ plans and the 80-sentence plan, 0.9% have their first letter tapped onto the spa
 English's do, which a space before a word keeps as a space in every language, and 1.9% a later
 letter, 1.3% of English's.
 
+French's bundled dictionary was built again on November 28, 2026 with these tools and French's
+`language.json` in the package, so it leaves out the Multilingual HateCheck slurs (see "Words left
+out"): 163,620 words, 10 fewer, and 3 fewer word pairs. French's bundled rankers, autocorrect
+decision model, and accent overlay are the ones built before, whose rankers were trained on typing
+the simulator drew before it drew each word's randomness from a stream of its own (see "The
+simulator"). The harness typed the bundled files with the new dictionary and with the earlier one on
+plans of the same kind, from a corpus of the 41,179 Tatoeba texts that are each one French
+simulation sentence of buckets 8-9: 400 sentences at noise 0.25 and 80 at noise 0.3, seed 1, and 400
+at noise 0.3, seed 2, each with `--language fr` and with `--language fr-CA`. Every measure was the
+same with either dictionary.
+
+Rankers trained again with these tools, which draw each word's randomness from its own stream, moved
+a few measures down on the same plans, so the bundled rankers were kept:
+
+| Measure | Plan | Bundled rankers | Trained again |
+| --- | --- | --- | --- |
+| Final words correct | `fr`, 400 sentences, noise 0.3, seed 2 (`compare`) | 94.1% (2,685/2,854) | 94.0% (2,682) |
+| Completion offered within 2 letters | `fr`, 400 sentences, noise 0.25 (`evaluate`) | 60.8% | 60.7% |
+| Top-3 completions show the word before space | `fr`, 400 | 91.2% | 91.1% |
+| Completion offered within 2 / 3 letters | `fr-CA`, 400 sentences, noise 0.25 (`evaluate`) | 60.5% / 76.9% | 60.2% / 76.6% |
+| Top-3 completions show the word before space | `fr-CA`, 400 | 91.1% | 91.0% |
+| Suggestion bar shows the word within 2 letters | `fr-CA`, 400 | 62.5% | 62.4% |
+
+On the other plans they typed one word more correctly or the same, and on `fr-CA`'s 400-sentence
+`evaluate` fixed one more mistyped word and changed one fewer to another word.
+
 ### French (Canada) through the keyboard
 
 French (Canada) (`PredictiveData/fr-CA`) types with France's dictionary, rankers, autocorrect
