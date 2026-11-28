@@ -6,17 +6,24 @@ extension PredictionComputer {
     private static let accentKeyWordsChecked = 32
 
     /// What the typing language's accent key shows and types after `textBeforeCursor`
-    /// (`AccentKey.mark(after:dictionary:)`), choosing by the words the dictionary knows; nil in a
-    /// language without one.
+    /// (`AccentKey.mark(after:dictionary:)`), choosing by the words the dictionary knows, asked with
+    /// their apostrophes as the dictionary writes them; nil in a language without one.
     public func accentKeyMark(after textBeforeCursor: String?) -> String? {
         guard let accentKey = engine.language.accentKey else { return nil }
+        let rules = engine.language.textRules
         let dictionary = AccentKey.Dictionary(
             wordProbability: { [engine] word in
-                guard let analysis = try? engine.analyze(word: word), analysis.wordIsValid else { return nil }
+                guard let analysis = try? engine.analyze(word: rules.straightApostrophes(in: word)),
+                      analysis.wordIsValid else {
+                    return nil
+                }
                 return analysis.unigramLogProbability
             },
             beginsWords: { [engine] prefix in
-                let words = (try? engine.likeliestWords(startingWith: prefix, limit: Self.accentKeyWordsChecked)) ?? []
+                let words = (try? engine.likeliestWords(
+                    startingWith: rules.straightApostrophes(in: prefix),
+                    limit: Self.accentKeyWordsChecked
+                )) ?? []
                 return words.contains { engine.capitalizedSpellings.spelling(of: $0) == nil }
             }
         )

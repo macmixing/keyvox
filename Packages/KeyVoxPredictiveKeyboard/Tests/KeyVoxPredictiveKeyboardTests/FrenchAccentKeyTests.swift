@@ -61,6 +61,17 @@ final class FrenchAccentKeyTests: XCTestCase {
         }
     }
 
+    func testAWordAfterTheKeyboardsApostropheIsLookedUpAsTheDictionaryWritesIt() throws {
+        // The keyboard types the curly apostrophe inside words; the dictionary writes the straight one.
+        let computer = PredictionComputer(engine: try PredictiveEngine(language: .french))
+        for elided in ["d'ou", "jusqu'ou"] {
+            let typed = elided.replacingOccurrences(of: "'", with: SmartQuotes.apostrophe)
+            let mark = try XCTUnwrap(computer.accentKeyMark(after: elided), elided)
+            XCTAssertNotEqual(accentKey.edit(placing: mark, after: elided), accentKey.edit(placing: accentKey.mark(after: elided), after: elided), elided)
+            XCTAssertEqual(computer.accentKeyMark(after: typed), mark, typed)
+        }
+    }
+
     func testALanguageWithoutAnAccentKeyHasNone() throws {
         XCTAssertNil(TypingLanguage.english.accentKey)
         XCTAssertNil(PredictionComputer(engine: try PredictiveEngine(language: .english)).accentKeyMark(after: "ou"))
