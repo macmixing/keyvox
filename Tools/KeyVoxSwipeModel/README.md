@@ -10,7 +10,8 @@ The bundled English model (`Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPred
 and `swipe.json`, no decoder) is run `r3-ft2`: the width-144 encoder `r3-w144-aug50-extra`
 after two ranking fine-tunes. Its `swipe_encoder.kvsw` is byte for byte the file
 `export_weights.py` writes for `r3-ft2` (SHA-256 `6aea857c…cdc6`). On swipe.futo.org's
-English test split it decodes 92.56% of swipes to the swiped word first (see "Results").
+English test split it decodes 92.56% of swipes to the swiped word first, and 94.13% under the
+FUTO paper's rules (see "Results").
 German, French, and Spanish bundle one encoder of their own, `r3-ft2` fine-tuned once more on
 swipes moved onto the keyboard's other letter layouts (see "Other typing languages").
 
@@ -436,6 +437,37 @@ The setups differ, so these numbers are not a ranking:
   to its bundled lexicon, which lacks the words of 3.06% of test swipes, so those count as
   misses. KeyVox's lexicon includes words of the training split's sentences, which are
   Wikipedia sentences like the test split's.
+
+### Measured under the paper's rules
+
+The paper decodes to its deployment lexicon (162,185 English entries) "extended with the
+evaluation target vocabulary", and does not evaluate a context model. To compare with its
+Table 3 on those terms, the bundled model was measured with `KeyVoxTypingHarness
+swipe-accuracy` on all 49,970 English test swipes, with the bundled lexicon and with the
+lexicon extended the same way:
+
+| Lexicon | Words before | Top-1 | Top-3 | Top-10 |
+| --- | --- | --- | --- | --- |
+| bundled, 133,226 words | included | 92.56% | 95.84% | 96.59% |
+| bundled | `--no-context` | 91.48% | 95.53% | 96.52% |
+| extended, 134,719 words | `--no-context` (the paper's rules) | **94.13%** | **98.44%** | **99.54%** |
+| extended | included | 95.19% | 98.76% | 99.62% |
+| FUTO Swipe, encoder only (paper's Table 3) | none | 92.54% | 97.33% | 98.54% |
+| FUTO Swipe, encoder plus decoder (paper's Table 3) | none | 93.30% | 97.97% | 99.16% |
+
+- The extension adds the 1,493 test words whose letters the bundled lexicon lacks (the words of
+  1,529 test swipes, 3.06%) to a copy of the English swipe vocabulary at probability 41, the
+  value the vocabulary gives the words it adds from the dataset, and builds the lexicon with
+  `KeyVoxTypingHarness swipe-lexicon`, which rebuilds the bundled lexicon byte for byte from the
+  unchanged vocabulary. 4 test swipes have no letters and still count as misses.
+- The first row reproduces the bundled result above with the same input.
+- Not matched: the base lexicon (the paper's 162,185 entries against KeyVox's 133,226); the
+  weight the paper gives the added words, which it does not state; and its 48,538-swipe test
+  set (its Table 7), whose filter it describes only as dropping swipes that "do not visibly
+  follow the target word's keys". Dropping single-letter words, a rule it states for Russian,
+  leaves 48,706, and no cutoff on the dataset's distance score gives 48,538, so every row counts
+  all 49,970 swipes.
+- These numbers are for comparison only; the keyboard decodes with the bundled lexicon.
 
 ## Other typing languages
 
