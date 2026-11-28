@@ -1,0 +1,43 @@
+{
+  "letters": "abcdefghijklmnopqrstuvwxyzäöü",
+  "keepsDoubleLetters": false,
+  "pruning": {
+    "beam": 200,
+    "gamma": 0.186,
+    "beta": 1.139
+  },
+  "scoring": {
+    "gamma": 0.20500000000000002,
+    "frequencyWeight": 0.045,
+    "lengthBonus": 1.8692499999999999,
+    "contextWeight": 0.7,
+    "samePathContextWeight": 0.8,
+    "firstKeyContextWeight": 3,
+    "misspellingRatio": 50,
+    "contextCandidates": 20,
+    "personalWordFrequency": 143
+  },
+  "landing": {
+    "spread": 0.228,
+    "strayRate": 0.0056
+  },
+  "loops": {
+    "sampleRate": 60,
+    "nearRadius": 1.2,
+    "movingStep": 0.02,
+    "loopTurns": 0.75,
+    "smallestLoopRadius": 0.15,
+    "loopRadius": 0.8,
+    "loopCenterDistance": 0.8
+  },
+  "squiggles": {
+    "nearRadius": 1.2,
+    "step": 0.1,
+    "sharpTurn": 135,
+    "turns": 3,
+    "shortestNearTime": 0.41,
+    "longestNearTime": 0.69,
+    "shortestNearLength": 3.51,
+    "longestNearLength": 5.22
+  }
+}
