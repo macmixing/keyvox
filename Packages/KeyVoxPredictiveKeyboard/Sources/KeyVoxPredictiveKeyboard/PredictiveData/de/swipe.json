@@ -8,8 +8,8 @@
   },
   "scoring": {
     "gamma": 0.20500000000000002,
-    "frequencyWeight": 0.045,
-    "lengthBonus": 1.8692499999999999,
+    "frequencyWeight": 0.055,
+    "lengthBonus": 2.8,
     "contextWeight": 0.7,
     "samePathContextWeight": 0.8,
     "firstKeyContextWeight": 3,
