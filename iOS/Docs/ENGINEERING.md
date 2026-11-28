@@ -2434,6 +2434,31 @@ Views may surface manager state, but runtime ownership stays in the managers and
 - the short code shown for a typing language and stepping through the selected languages
 - transcription manager lifecycle, typed shortcut command outcomes, immediate microphone-release retry and timeout fallback, and interruption handling
 
+### Typing Regression Check
+
+A change to typing prediction, correction, completion, or the typing session is verified by the typing regression check in `KeyVoxPredictiveKeyboard`'s package tests, not by `Tools/KeyVoxTypingHarness` plans. The harness's large plans (`compare`, `evaluate`) measure accuracy when a model or ranker is trained or retuned; they are not how a change is shown to leave typing as it was.
+
+- every bundled typing language keeps a small fixed set of typing cases in `Packages/KeyVoxPredictiveKeyboard/Tests/KeyVoxPredictiveKeyboardTests/Fixtures/typing_regression/<language>/`: `cases.jsonl`, one sentence a line with the letters a finger taps for each word, where each tap lands (an offset from its key's center in key pitches, drawn with seeded noise so typos get corrected, pinned to three decimals), and the moments its suggestion bar is recorded; and `expected.jsonl`, line for line, the text typing each case left and those bars' items
+- `TypingRegressionTests` types every case through `PredictiveTypingSession` with `KeyVoxTypingSimulation`'s `SessionTyper`, as the harness's `compare` types a plan: on the KeyVox letter page in the language's default layout (`KeyboardLayoutModel`), with the shipping parameters, contested-tap policy, and no words of the user's, suggestions asked after every key and space tapped after every word; the text and every recorded bar must match exactly, and a failure names the language, the case and its sentence, and the word or bar that changed
+- the languages come from `TypingLanguageCatalog.bundled()`, never from a list: a bundled language without cases fails the check, and so do cases for a language the package does not bundle
+- the cases are built by `KeyVoxTypingHarness regression-cases` from the language's Tatoeba sentences, which its typing data is already built from and `THIRD_PARTY_NOTICES.md` credits: 30 sentences of 3 to 8 words, every word one the language's dictionary offers or, for a word holding a letter no key types, one the sentence writes in lowercase; a quarter with such a letter, typed as its plain letter for autocorrection to restore, and a quarter with an apostrophe, where the sentences have enough; finger noise 0.3 key pitches; and the bar recorded after the space before one word and partway through two others. The cases are read before they are kept, and the seed is changed until every sentence is fit to keep; English's are seed 2
+- a change meant to change typing records new outcomes with `KEYVOX_RECORD_TYPING_REGRESSION=1`, and the diff of `expected.jsonl`, one line per case, is the review of what the change did; the cases stay as they are
+
+```bash
+cd Packages/KeyVoxPredictiveKeyboard
+swift test --scratch-path /tmp/keyvox-predictive-keyboard-test-clean --filter TypingRegressionTests
+KEYVOX_RECORD_TYPING_REGRESSION=1 swift test --scratch-path /tmp/keyvox-predictive-keyboard-test-clean --filter TypingRegressionTests
+```
+
+Building a language's cases, from its sentence text one sentence a line (for English, the third column of the Tatoeba sentences at the cutoff `Tools/KeyVoxTypingModels/sources.py` pins, `<data-dir>/sources/tatoeba/eng_sentences_at_cutoff.tsv.bz2`), then recording their outcomes:
+
+```bash
+cd Tools/KeyVoxTypingHarness
+swift run -c release --scratch-path /tmp/keyvox-typing-harness KeyVoxTypingHarness regression-cases \
+  --language <id> --corpus <sentences.txt> --seed <value> \
+  --fixtures ../../Packages/KeyVoxPredictiveKeyboard/Tests/KeyVoxPredictiveKeyboardTests/Fixtures/typing_regression
+```
+
 ### Integration-Only Exclusions
 
 - actual microphone hardware routing and Bluetooth behavior
