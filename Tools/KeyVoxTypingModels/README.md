@@ -527,13 +527,13 @@ sentences differ, so the columns compare the languages, not like with like.
 
 | Measure | Plan | fr | en |
 | --- | --- | --- | --- |
-| Final words correct | 80 sentences, noise 0.3 (`compare`) | 91.5% (452/494) | 96.1% (909/946) |
-| Final words correct | 400 sentences, noise 0.25 (`compare`) | 96.7% (2,723/2,817) | |
-| Final words correct | 400 (`evaluate`) | 97.6% | 98.7% |
-| Mistyped words fixed | 400 | 93.0% (612/658) | 94.7% (1,165/1,230) |
-| Mistyped words changed to a different word | 400 | 3.3% (22) | 1.3% (16) |
-| Correctly typed words wrongly changed | 400 | 0.5% (10/2,004) | 0.0% (0/3,760) |
-| Contractions typed without the apostrophe, restored | 400 | 92.3% (143/155) | |
+| Final words correct | 80 sentences, noise 0.3 (`compare`) | 92.7% (458/494) | 96.1% (909/946) |
+| Final words correct | 400 sentences, noise 0.25 (`compare`) | 97.0% (2,732/2,817) | |
+| Final words correct | 400 (`evaluate`) | 97.7% | 98.7% |
+| Mistyped words fixed | 400 | 93.2% (613/658) | 94.7% (1,165/1,230) |
+| Mistyped words changed to a different word | 400 | 3.2% (21) | 1.3% (16) |
+| Correctly typed words wrongly changed | 400 | 0.4% (9/2,004) | 0.0% (0/3,760) |
+| Contractions typed without the apostrophe, restored | 400 | 92.9% (144/155) | |
 | Completion offered within 2 letters | 400 | 60.5% | 50.5% |
 | Completion keystroke savings | 400 | 41.3% | 39.9% |
 | Suggestion bar shows the word within 3 letters | 400 | 80.0% | 85.3% |
@@ -541,9 +541,16 @@ sentences differ, so the columns compare the languages, not like with like.
 | Final words correct, Apple / KeyVox | Apple's 45 French Tatoeba sentences, no noise (`compare --apple`) | 93.6% / 94.6% (277 / 280 of 296) | |
 
 The plan's taps near the AZERTY-French accent key, beside "n", type what the keyboard's accent key
-would. A letter picked from a popup is tapped on its base key, so "cœur" typed with the popup's "œ"
-becomes "cour" in the 400-sentence plan, the dictionary holding both spellings ("cœur" and "coeur")
-at about the same probability.
+would, or the letter beside it when the contested-tap rule gives the tap to the letter; a letter
+picked from a popup is tapped on the key held to pick it, as the keyboard records it.
+
+The weights of the contested-tap rule and of the corrector were also searched on French plans of
+300 sentences at noise 0.3 from the corpus less the measured plans' sentences: no value of the
+contested-tap weights moved 4,282 words by more than 10, and the corrector's tuned weights gained one
+word of 2,153 on the plan held out, so French keeps the shared weights. Of the French words of those
+plans and the 80-sentence plan, 0.9% have their first letter tapped onto the space bar, as 0.85% of
+English's do, which a space before a word keeps as a space in every language, and 1.9% a later
+letter, 1.3% of English's.
 
 The German vocabulary lacks most words that begin with "ä", "ö", or "ü", as the AOSP German word
 list it is built from does: "überhaupt" (52,006 times in the German build's counts), "ändern",
