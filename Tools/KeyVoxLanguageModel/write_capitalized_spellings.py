@@ -35,11 +35,20 @@ from readers import read_source
 WRITTEN_SOURCES = ("oasst2", "tatoeba")
 
 
-def letter_form(word: str) -> str:
+def letter_form(word: str, keys: str = "", spellings: dict[str, str] | None = None) -> str:
     """The word's letters only, with case and accents folded, as `Tools/KeyVoxTypingModels`
-    matches its left-out words."""
-    decomposed = unicodedata.normalize("NFD", word.casefold())
-    return "".join(character for character in decomposed if unicodedata.category(character)[0] == "L")
+    matches its left-out words; but for a letter of `keys`, which keeps its accents, and a letter
+    of `spellings`, written as the letters it gives, as a swipe model reads its words."""
+    form = []
+    for character in unicodedata.normalize("NFC", word.casefold()):
+        if character in keys:
+            form.append(character)
+        elif spellings and character in spellings:
+            form.append(spellings[character])
+        else:
+            form.extend(letter for letter in unicodedata.normalize("NFD", character)
+                        if unicodedata.category(letter)[0] == "L")
+    return "".join(form)
 
 
 def leave_out_matcher(path: Path | None) -> Callable[[str], bool]:

@@ -28,5 +28,4 @@ enum KeyboardSettingsCopy {
     static let languagesScreenTitle = String(localized: "Keyboard Languages", comment: "Title of the screen that chooses the languages the KeyVox keyboard types in.")
     static let languagesScreenAdvice = String(localized: "Slide across the space bar to switch languages. Drag a selected language to change the order.", comment: "Advice on the keyboard languages screen: sliding a finger sideways on the space bar switches to the next language, and the handle on a selected language reorders it.")
     static let languagesDoneTitle = String(localized: "Done", comment: "Button on the keyboard languages screen that saves the chosen languages.")
-    static let englishOnlyNote = String(localized: "Swipe Typing currently supports English only.", comment: "Note in keyboard settings explaining that swipe typing is limited to English.")
 }

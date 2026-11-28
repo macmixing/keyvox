@@ -240,9 +240,4 @@ final class GermanTypingLanguageTests: XCTestCase {
         // Words are looked up with their apostrophes straight.
         XCTAssertNotNil(memory.learnedVocabulary.word(TypingLanguage.german.textRules.straightApostrophes(in: typed)))
     }
-
-    func testGermanBundlesNoSwipeModelSoSwipingIsNotOffered() {
-        XCTAssertFalse(TypingLanguage.german.offersSwipeTyping)
-        XCTAssertTrue(TypingLanguage.english.offersSwipeTyping)
-    }
 }

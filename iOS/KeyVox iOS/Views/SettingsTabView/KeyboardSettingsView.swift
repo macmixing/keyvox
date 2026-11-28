@@ -19,7 +19,6 @@ struct KeyboardSettingsView: View {
                 openOnNumberPageSection
                 leftHandedLayoutSection
                 resetLearnedWordsSection
-                englishOnlyNote
             }
         }
         .navigationTitle(KeyboardSettingsCopy.screenTitle)
@@ -202,14 +201,6 @@ struct KeyboardSettingsView: View {
             fontSize: 16,
             action: action
         )
-    }
-
-    private var englishOnlyNote: some View {
-        Text(KeyboardSettingsCopy.englishOnlyNote)
-            .font(.appFont(15, variant: .light))
-            .foregroundStyle(.yellow.opacity(0.7))
-            .multilineTextAlignment(.center)
-            .frame(maxWidth: .infinity, alignment: .center)
     }
 
     private var divider: some View {

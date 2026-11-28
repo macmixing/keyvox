@@ -3,11 +3,10 @@
 Builds the language data of each typing language: the files the predictive keyboard bundles
 for English in `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/PredictiveData/en`,
 the capitalized spellings shared with dictation in `Packages/KeyVoxLinguistics/Sources/KeyVoxLinguistics/Resources`,
-and the same files for German, bundled in `PredictiveData/de` (all but the swipe vocabulary, which
-needs German swipe typing); for Spanish, bundled in `PredictiveData/es` (all but the swipe
-vocabulary), which Latin American Spanish (`PredictiveData/es-419`) uses too ("Latin American
-Spanish"); and for French, bundled in `PredictiveData/fr` (all but the swipe vocabulary), which French
-(Canada) (`PredictiveData/fr-CA`) uses too:
+and the same files for German, bundled in `PredictiveData/de`; for Spanish, bundled in
+`PredictiveData/es`, which Latin American Spanish (`PredictiveData/es-419`) uses too ("Latin
+American Spanish"); and for French, bundled in `PredictiveData/fr`, which French (Canada)
+(`PredictiveData/fr-CA`) uses too:
 
 | File | Built by | Reads |
 | --- | --- | --- |
@@ -17,10 +16,10 @@ Spanish"); and for French, bundled in `PredictiveData/fr` (all but the swipe voc
 | `unknown_word_followers.txt` | `write_vocabulary.py`, `write_unknown_word_followers.py` | The vocabulary, `count_ngrams.py`'s counts, and OASST2 and Tatoeba's sentences |
 | `word_followers.txt` | `write_vocabulary.py`, `write_word_followers.py` | The vocabulary, `count_ngrams.py`'s counts, and OASST2 and Tatoeba's sentences |
 | `grammar_words.txt` | `write_word_kinds.py`, `write_grammar_words.py` | `count_ngrams.py`'s vocabulary and the word kinds |
-| `swipe_vocabulary.txt` | `count_swipe_words.py`, `count_swiped_words.py`, `write_swipe_vocabulary.py` | Every source, through `source_texts.py`, the words swipe.futo.org's training split had people swipe, the dictionary's words and probabilities, and SCOWL's size 80 in every spelling |
+| `swipe_vocabulary.txt` | `count_swipe_words.py`, `count_swiped_words.py`, `write_spelling_list.py`, `write_swipe_vocabulary.py` | Every source, through `source_texts.py`, the words swipe.futo.org's training split had people swipe (English's), the dictionary's words and probabilities, and the words the language spells right (English: SCOWL's size 80 in every spelling) |
 
-The swipe vocabulary is built only for a language whose dictionary and letter layout the package
-has, and is bundled with a swipe model, so for English alone today (see "Swipe vocabulary").
+The swipe vocabulary is built for a language whose dictionary and letter layout the package has,
+and is bundled with its swipe model (see "Swipe vocabulary").
 
 English's dictionary, rankers, and accent overlay, bundled beside these files, are built by
 `Tools/KeyVoxTypingModels`, which builds German's, Spanish's, and French's from these builds'
@@ -110,7 +109,7 @@ probability a line), it then builds the swipe vocabulary:
 ```bash
 .venv/bin/python count_swipe_words.py --language <language> <data-dir>
 .venv/bin/python count_swiped_words.py --language <language> <data-dir>
-./scowl_words.sh 80 <output-dir>/spelling_list.txt A,B,Z,C,D
+.venv/bin/python write_spelling_list.py --language <language> <data-dir> <output-dir>/spelling_list.txt
 .venv/bin/python write_swipe_vocabulary.py --language <language> <data-dir> <dictionary-words> <output-dir>/spelling_list.txt <output-dir>/swipe_vocabulary.txt --leave-out <left-out-words>
 ```
 
@@ -547,7 +546,9 @@ after decoding HTML character references and skipping Markdown code (`normalize.
 also counts how often each word is joined to other letters or digits in one run without spaces
 (`normalize.joined_words`), and, in OASST2 and Tatoeba, how often it is written with capitals in
 the middle of a sentence. `write_swipe_vocabulary.py` reads the counts by swipe form (letters
-only, case and accents folded, as a swipe draws them). Each form no dictionary word spells is a
+only, case and accents folded, as a swipe draws them, but for the letters the keyboard has keys of
+their own for, which keep their accents, and the letters the language's `swipe.json` spells with
+others, `spelledLetters`, written so). Each form no dictionary word spells is a
 candidate, and these rules, in order, leave one out. The counts are from the build of November
 27, 2026:
 
@@ -686,3 +687,33 @@ bundled rankers:
 Typing gets worse on some measures of every plan but the 80-sentence one, and a correction takes
 up to twice as long, so the words stay out of the typing dictionary, and the swipe lexicon adds
 them to the dictionary's words.
+
+### German, French, and Spanish
+
+Their swipe vocabularies are built by the same rules from their own language builds, the builds
+their bundled files come from, their dictionaries' words (`Tools/KeyVoxTypingModels`'
+`work/dictionary_unigrams.tsv`), and the words their dictionaries leave out
+(`work/offensive_words.txt` there: German's and French's Multilingual HateCheck slurs, Spanish
+none; `Tools/KeyVoxTypingModels/README.md`, "Words left out"). Their forms keep German "ä", "ö",
+and "ü" and Spanish "ñ", which have keys of their own, and write French "œ" as "oe". Their spelling lists, the
+forms the misspelling rule never leaves out, are their keyboard word lists' words with every form
+of their lexicons (`write_spelling_list.py`: German 887,784, French 581,344, Spanish 658,738). They have no swipe
+dataset's words: swipe.futo.org's German, French, and Spanish swipes measure their swipe models
+and are never read here. The counts, from the builds of November 27, 2026, with the left-out
+words of November 28:
+
+| Rule | German | French | Spanish |
+| --- | --- | --- | --- |
+| Offensive | 2 | 6 | 0 |
+| Letters | 11,756 | 26,648 | 9,759 |
+| One source | 743,883 | 941,004 | 479,903 |
+| Joined | 223 | 350 | 188 |
+| Misspelling | 11,817 | 25,160 | 22,811 |
+| Kept | 102,126 of 869,807 | 59,962 of 1,053,130 | 74,670 of 587,331 |
+
+The written sources of all three hold English, so English words that the language's word list
+lacks are kept by the same rules, the commonest being "the", "of", and "to" in German. With the
+German swipe vocabulary less the words English's swipe lexicon has and German's spelling list
+lacks, swipe.futo.org's German test swipes decoded 89.24% first, against 89.52% with all of it and
+88.92% without it (`Tools/KeyVoxSwipeModel/README.md`, "Other typing languages"), so the list keeps
+English's rules.

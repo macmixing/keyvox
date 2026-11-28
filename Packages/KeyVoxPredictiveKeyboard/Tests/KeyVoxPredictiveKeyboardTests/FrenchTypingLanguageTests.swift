@@ -81,14 +81,6 @@ final class FrenchTypingLanguageTests: XCTestCase {
         }
     }
 
-    func testFrenchHasNoSwipeModelSoItIsTypedByTappingAlone() throws {
-        XCTAssertFalse(TypingLanguage.french.offersSwipeTyping)
-        XCTAssertTrue(TypingLanguage.english.offersSwipeTyping)
-        let computer = PredictionComputer(engine: try PredictiveEngine(language: .french))
-        let path = SwipePath.through("bonjour", on: TypingLanguage.french.letterLayout)
-        XCTAssertEqual(try computer.swipeWords(for: path, previousWords: [], wordCase: .asSpelled, limit: 4), [])
-    }
-
     func testTheWebEndingKeyOffersApplesFrenchEndingsInAUSRegion() throws {
         // Apple's French (France) keyboard in a web address field, device region US, device
         // language English (US), iOS 27.2 simulator: the key typed ".com" and held offered these.

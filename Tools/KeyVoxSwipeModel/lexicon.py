@@ -26,14 +26,15 @@ class Lexicon:
     frequency: np.ndarray  # [F] float32
 
 
-def load_lexicon(path: Path) -> Lexicon:
+def load_lexicon(path: Path, keys: str = "", spellings: dict[str, str] | None = None) -> Lexicon:
+    """The lexicon's forms as `words.letter_form` reads them with `keys` and `spellings`."""
     best: dict[str, tuple[int, str]] = {}
     with open(path, encoding="utf-8") as file:
         for line in file:
             spelling, probability, flags, _ = line.rstrip("\n").split("\t")
             if flags[_NOT_A_WORD_FLAG] == "1" or flags[_BLACKLISTED_FLAG] == "1":
                 continue
-            form = letter_form(spelling)
+            form = letter_form(spelling, keys, spellings)
             if not form:
                 continue
             value = int(probability)
