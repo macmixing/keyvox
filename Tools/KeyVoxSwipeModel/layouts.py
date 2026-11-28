@@ -10,6 +10,8 @@ from pathlib import Path
 
 import numpy as np
 
+from words import PREDICTIVE_DATA
+
 LAYOUT_DIRECTORY = Path("sources/futo-swipe/swipe-5/layouts")
 
 
@@ -25,8 +27,7 @@ class Layout:
         return {letter: index for index, letter in enumerate(self.letters)}
 
 
-LETTER_LAYOUTS = Path(__file__).resolve().parents[2] / (
-    "Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/PredictiveData/letter_layouts")
+LETTER_LAYOUTS = PREDICTIVE_DATA / "letter_layouts"
 
 
 def load_letter_layout(name: str, directory: Path = LETTER_LAYOUTS) -> Layout:

@@ -3,8 +3,11 @@ keyboard layouts, each decoded and scored on its own layout's keys, and writes a
 `models/<run>/`: `finetune_encoder.py`'s fine-tune, layout by layout.
 
 The swipes are prepared arrays with a `layout` per swipe (`layout_swipes.py`), such as English
-swipes moved onto the keyboard's letter layouts (`warp_layout_swipes.py`); their words are looked up
-in `lexicon`, a unigram list as `evaluate.py` reads it. The base run needs a tuned `scoring.json`.
+swipes moved onto the keyboard's letter layouts (`warp_layout_swipes.py`) or made into a language's
+words (`retarget_swipes.py`); their words are looked up in `lexicon`, a unigram list as
+`evaluate.py` reads it. With `--language`, each layout reads it as the language's swipe model reads
+words there: the model's letters the layout has keys for keep their accents, and its spelled
+letters are written out (`words.swipe_letters`). The base run needs a tuned `scoring.json`.
 Each swipe's hard negatives are mined once with the base encoder on its own layout's key-path trie
 of the lexicon; every batch holds swipes of one layout and is scored with that layout's key paths.
 The validation swipes are decoded before training and after every epoch, layout by layout; each
@@ -33,6 +36,7 @@ from prepare_swipes import POINTS
 from ranking import NEGATIVES, lexicon_paths, ranking_loss, ranking_options
 from scoring import Scoring, candidate_scores, top_k_accuracy
 from train import GRADIENT_CLIP, WARMUP_FRACTION, WEIGHT_DECAY, output_frames
+from words import swipe_letters
 
 
 def main() -> None:
@@ -47,6 +51,7 @@ def main() -> None:
     parser.add_argument("--batch", type=int, default=1024)
     parser.add_argument("--learning-rate", type=float, default=5e-5)
     parser.add_argument("--negatives", type=int, default=NEGATIVES)
+    parser.add_argument("--language", help="read the lexicon as this bundled typing language's swipe model does")
     parser.add_argument("--augment-probability", type=float, default=0.5)
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--device", default="mps" if torch.backends.mps.is_available() else "cpu")
@@ -60,8 +65,6 @@ def main() -> None:
     base_settings = json.loads((base_dir / "settings.json").read_text())
     scoring = Scoring.load(base_dir / "scoring.json")
     pruning = Pruning()
-    lexicon = load_lexicon(arguments.lexicon)
-    frequency = torch.from_numpy(lexicon.frequency).to(device)
 
     layouts = {name: resolve_layout(arguments.data_dir, name)
                for name in sorted(layout_names(arguments.data_dir, arguments.swipes + arguments.validation))}
@@ -69,10 +72,19 @@ def main() -> None:
     train = LayoutSwipes(arguments.data_dir, arguments.swipes, layouts, numbers, device)
     val = LayoutSwipes(arguments.data_dir, arguments.validation, layouts, numbers, device)
     by_number = {number: layouts[name] for name, number in numbers.items()}
-    tries = {number: build_trie(lexicon, layout) for number, layout in by_number.items()}
+    letters, spellings = swipe_letters(arguments.language) if arguments.language else ("", {})
+    loaded = {}
+    lexicons = {}
+    for number, layout in by_number.items():
+        keys = "".join(letter for letter in letters if letter in layout.key_index)
+        if keys not in loaded:
+            loaded[keys] = load_lexicon(arguments.lexicon, keys, spellings)
+        lexicons[number] = loaded[keys]
+    frequency = {number: torch.from_numpy(lexicon.frequency).to(device) for number, lexicon in lexicons.items()}
+    tries = {number: build_trie(lexicons[number], layout) for number, layout in by_number.items()}
     paths, path_lengths = {}, {}
     for number, layout in by_number.items():
-        found, lengths = lexicon_paths(lexicon, layout.key_index, output_frames(POINTS))
+        found, lengths = lexicon_paths(lexicons[number], layout.key_index, output_frames(POINTS))
         paths[number], path_lengths[number] = torch.from_numpy(found), lengths
     centers = {number: torch.from_numpy(layout.centers).to(device) for number, layout in by_number.items()}
     print(f"train {len(train.lengths)} swipes, validation {len(val.lengths)}, layouts {sorted(numbers)}", flush=True)
@@ -80,37 +92,37 @@ def main() -> None:
     model = load_encoder(base_dir / "best.pt", device)
     model.eval()
     train_layouts = train.layouts.cpu().numpy()
-    train_targets = target_forms(train.forms, lexicon.forms)
-    options = np.full((len(train_targets), 1 + arguments.negatives), -1, dtype=np.int64)
-    keep = np.zeros(len(train_targets), dtype=bool)
+    options = np.full((len(train.forms), 1 + arguments.negatives), -1, dtype=np.int64)
+    keep = np.zeros(len(train.forms), dtype=bool)
     for number, layout in by_number.items():
         rows = np.flatnonzero(train_layouts == number)
         if len(rows) == 0:
             continue
+        lexicon = lexicons[number]
+        targets = target_forms(train.forms[rows], lexicon.forms)
         emissions = compute_frames(model, train.xy[torch.from_numpy(rows).to(device)].cpu().numpy(), layout,
                                    device)[..., :len(layout.letters) + 1]
         candidates = beam_search(arguments.data_dir, emissions, tries[number], pruning)
         scores = candidate_scores(candidates, lexicon.frequency, tries[number].form_path_length, scoring)
-        options[rows], keep[rows] = ranking_options(candidates, scores, train_targets[rows], path_lengths[number],
+        options[rows], keep[rows] = ranking_options(candidates, scores, targets, path_lengths[number],
                                                     arguments.negatives)
         print(f"mined {layout.name}: {keep[rows].sum()} of {len(rows)} swipes", flush=True)
     trainable = torch.from_numpy(np.flatnonzero(keep))
     train_options = torch.from_numpy(options).to(device)
 
     val_layouts = val.layouts.cpu().numpy()
-    val_targets = target_forms(val.forms, lexicon.forms)
 
     def validation_top1() -> dict:
         model.eval()
-        ranks = np.full(len(val_targets), np.inf)
+        ranks = np.full(len(val.forms), np.inf)
         for number, layout in by_number.items():
             rows = np.flatnonzero(val_layouts == number)
             if len(rows) == 0:
                 continue
             emissions = compute_frames(model, val.xy[torch.from_numpy(rows).to(device)].cpu().numpy(), layout,
                                        device)[..., :len(layout.letters) + 1]
-            _, ranks[rows], _ = decode_accuracy(arguments.data_dir, emissions, tries[number], lexicon, scoring,
-                                                val_targets[rows], pruning)
+            _, ranks[rows], _ = decode_accuracy(arguments.data_dir, emissions, tries[number], lexicons[number],
+                                                scoring, target_forms(val.forms[rows], lexicons[number].forms), pruning)
         return top_k_accuracy(ranks)
 
     augment_config = AugmentConfig(probability=arguments.augment_probability, reverse_probability=0.0)
@@ -149,7 +161,7 @@ def main() -> None:
             coefficients, gate = model(swipes)
             emissions = log_emissions(coefficients, gate, key_basis(keys, model.config.basis), key_mask)
             loss = ranking_loss(emissions, train_options[index], paths[number], torch.from_numpy(path_lengths[number]),
-                                frequency, scoring)
+                                frequency[number], scoring)
             optimizer.zero_grad(set_to_none=True)
             loss.backward()
             norm = torch.nn.utils.clip_grad_norm_(model.parameters(), GRADIENT_CLIP)
