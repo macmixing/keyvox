@@ -2044,7 +2044,7 @@ Packages/
 - `Packages/KeyVoxEmoji/Sources/KeyVoxEmoji/EmojiTwoPersonTones.swift`
   - Maps two-person emoji versions to and from each person's tone.
 - `KeyVox Keyboard/Core/Emoji/KeyboardEmojiSections.swift`, `KeyboardEmojiSearchIndex.swift`, and `KeyboardEmojiPredictionsIndex.swift`
-  - Shared indexes that read the bundled catalog once, and the search and suggestion-bar emoji of the language the keyboard types in, off the main thread, keeping one language's at a time: the bar's reads the new language's after a switch, and the search's when it next opens, finding nothing until then.
+  - Shared indexes that read the bundled catalog once, and the search and suggestion-bar emoji of the language the keyboard types in, off the main thread, keeping one language's at a time: the bar's reads the new language's after a switch where the field offers suggestions, otherwise when the search next opens, and the search's when it next opens, finding nothing until then and ignoring requests a later one replaced.
 - `KeyVox Keyboard/Core/Emoji/KeyboardEmojiSupport.swift`
   - Asks the system emoji font whether it draws an emoji as one picture so the keyboard offers only emoji this phone shows.
 - `KeyVox Keyboard/Core/Emoji/KeyboardEmojiFrequentlyUsedStore.swift` and `KeyboardEmojiSkinToneStore.swift`
