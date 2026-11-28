@@ -43,6 +43,426 @@
       "comment" : "Approximate voice download size shown right after the install status sentence on the KeyVox Speak setup card; keep the leading space.",
       "shouldTranslate" : false
     },
+    "AZERTY" : {
+      "comment" : "Name of a keyboard letter layout, as the system's Keyboard settings show it.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "AZERTY"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "AZERTY"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "AZERTY"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "AZERTY"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "AZERTY"
+          }
+        }
+      }
+    },
+    "AZERTY – French" : {
+      "comment" : "Name of the French AZERTY keyboard letter layout, as the system's Keyboard settings show it.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "AZERTY – Französisch"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "AZERTY – Francés"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "AZERTY – francés"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "AZERTY – Français"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "AZERTY – français"
+          }
+        }
+      }
+    },
+    "Dvorak" : {
+      "comment" : "Name of a keyboard letter layout, as the system's Keyboard settings show it.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dvorak"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dvorak"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dvorak"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dvorak"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dvorak"
+          }
+        }
+      }
+    },
+    "QWERTY" : {
+      "comment" : "Name of a keyboard letter layout, as the system's Keyboard settings show it.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "QWERTY"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "QWERTY"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "QWERTY"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "QWERTY"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "QWERTY"
+          }
+        }
+      }
+    },
+    "QWERTY – French" : {
+      "comment" : "Name of the French QWERTY keyboard letter layout, as the system's Keyboard settings show it.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "QWERTY – Französisch"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "QWERTY – Francés"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "QWERTY – francés"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "QWERTY – Français"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "QWERTY – français"
+          }
+        }
+      }
+    },
+    "QWERTY – Spanish" : {
+      "comment" : "Name of the Spanish QWERTY keyboard letter layout, as the system's Keyboard settings show it.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "QWERTY – Spanisch"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "QWERTY – Español"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "QWERTY – español"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "QWERTY – Espagnol"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "QWERTY – espagnol"
+          }
+        }
+      }
+    },
+    "QWERTZ" : {
+      "comment" : "Name of a keyboard letter layout, as the system's Keyboard settings show it.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "QWERTZ"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "QWERTZ"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "QWERTZ"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "QWERTZ"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "QWERTZ"
+          }
+        }
+      }
+    },
+    "QWERTZ – French" : {
+      "comment" : "Name of the French QWERTZ keyboard letter layout, as the system's Keyboard settings show it.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "QWERTZ – Französisch"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "QWERTZ – Francés"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "QWERTZ – francés"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "QWERTZ – Français"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "QWERTZ – français"
+          }
+        }
+      }
+    },
+    "QWERTZ – German" : {
+      "comment" : "Name of the German QWERTZ keyboard letter layout, as the system's Keyboard settings show it.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "QWERTZ – Deutsch"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "QWERTZ – Alemán"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "QWERTZ – alemán"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "QWERTZ – Allemand"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "QWERTZ – allemand"
+          }
+        }
+      }
+    },
+    "Reset Learned Words in %@?" : {
+      "comment" : "Title of the confirmation shown before clearing the words the KeyVox keyboard has learned in one language. The placeholder is the language's name, such as English.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Gelernte Wörter zurücksetzen (%@)?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "¿Restablecer palabras aprendidas (%@)?"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "¿Restablecer palabras aprendidas (%@)?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Réinitialiser les mots appris (%@) ?"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Réinitialiser les mots appris (%@)?"
+          }
+        }
+      }
+    },
+    "Reset Learned Words in All Languages?" : {
+      "comment" : "Title of the confirmation shown before clearing the words the KeyVox keyboard has learned in every language it types in.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Gelernte Wörter in allen Sprachen zurücksetzen?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "¿Restablecer palabras aprendidas en todos los idiomas?"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "¿Restablecer palabras aprendidas en todos los idiomas?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Réinitialiser les mots appris dans toutes les langues ?"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Réinitialiser les mots appris dans toutes les langues?"
+          }
+        }
+      }
+    },
+    "Selected" : {
+      "comment" : "Heading over the checked languages at the top of the keyboard language list, in the order the keyboard switches through them.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ausgewählt"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Seleccionados"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Seleccionados"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sélectionnées"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sélectionnées"
+          }
+        }
+      }
+    },
     "Swipe Typing" : {
       "comment" : "Keyboard settings toggle that lets the user type a word by sliding a finger across its letters.",
       "localizations" : {
@@ -136,6 +556,41 @@
         }
       },
       "shouldTranslate" : false
+    },
+    "%@ Layout" : {
+      "comment" : "Title of the keyboard settings row showing one language's letter layout, such as QWERTY, when the keyboard has several languages. The placeholder is the language's name, such as English.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Layout (%@)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Distribución (%@)"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Distribución (%@)"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Disposition (%@)"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Disposition (%@)"
+          }
+        }
+      }
     },
     "%@ is installed, selected, and ready for KeyVox Speak." : {
       "comment" : "Install status on the KeyVox Speak setup card when the voice is ready. KeyVox Speak is a brand name and stays in English. The placeholder is the voice name, which stays in English.",
@@ -1274,6 +1729,41 @@
         }
       }
     },
+    "All Languages" : {
+      "comment" : "Choice in the Reset Learned Words menu of keyboard settings that clears what the keyboard learned in every language.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Alle Sprachen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Todos los idiomas"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Todos los idiomas"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Toutes les langues"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Toutes les langues"
+          }
+        }
+      }
+    },
     "All of this. No daily cap." : {
       "comment" : "Subtitle on the KeyVox Speak unlock page: unlocking removes the daily limit.",
       "localizations" : {
@@ -1841,7 +2331,7 @@
       }
     },
     "Change" : {
-      "comment" : "Button on the dictation Language setting that opens the language list.\nMenu button on the Dictation Model card that opens the list of installed models.\nMenu button on the KeyVox Speak card that opens the list of installed voices.\nMenu button on the KeyVox Vibes card that opens the list of vibes.\nMenu button that opens the choices for the Speak timeout.\nMenu button that opens the choices for the dictation timeout.",
+      "comment" : "Button on the dictation Language setting that opens the language list.\nButton on the keyboard Languages setting that opens the list of keyboard languages.\nMenu button on a keyboard Layout setting that opens the letter layouts the language offers.\nMenu button on the Dictation Model card that opens the list of installed models.\nMenu button on the KeyVox Speak card that opens the list of installed voices.\nMenu button on the KeyVox Vibes card that opens the list of vibes.\nMenu button that opens the choices for the Speak timeout.\nMenu button that opens the choices for the dictation timeout.",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3451,7 +3941,7 @@
       }
     },
     "Done" : {
-      "comment" : "Button on the dictation language picker screen opened from Settings that confirms the choice.",
+      "comment" : "Button on the dictation language picker screen opened from Settings that confirms the choice.\nButton on the keyboard languages screen that saves the chosen languages.",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6764,6 +7254,41 @@
         }
       }
     },
+    "Keyboard Languages" : {
+      "comment" : "Title of the screen that chooses the languages the KeyVox keyboard types in.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Tastatursprachen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Idiomas del teclado"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Idiomas del teclado"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Langues du clavier"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Langues du clavier"
+          }
+        }
+      }
+    },
     "Keyboard Shortcut" : {
       "comment" : "Row title on the KeyVox Speak page listing the ways to start Speak: a button on the KeyVox keyboard.",
       "localizations" : {
@@ -7362,6 +7887,76 @@
         }
       }
     },
+    "KeyVox will forget the words it learned from your typing in %@ and the corrections you undid. Your other languages and your KeyVox Dictionary aren't affected." : {
+      "comment" : "Message in the confirmation shown before resetting the keyboard's learned words in one language. The placeholder is the language's name, such as English. KeyVox is a brand name and stays in English; Dictionary refers to the app's Dictionary tab.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox vergisst die Wörter, die es aus deinen Eingaben (%@) gelernt hat, und die Korrekturen, die du widerrufen hast. Deine anderen Sprachen und dein KeyVox-Wörterbuch sind davon nicht betroffen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox olvidará las palabras que ha aprendido de lo que escribes (%@) y las correcciones que has deshecho. Tus otros idiomas y tu Diccionario de KeyVox no se verán afectados."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox olvidará las palabras que ha aprendido de lo que escribes (%@) y las correcciones que has deshecho. Tus otros idiomas y tu Diccionario de KeyVox no se verán afectados."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox oubliera les mots appris à partir de votre saisie (%@) et les corrections que vous avez annulées. Vos autres langues et votre dictionnaire KeyVox ne sont pas affectés."
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox oubliera les mots appris à partir de votre saisie (%@) et les corrections que vous avez annulées. Vos autres langues et votre dictionnaire KeyVox ne sont pas affectés."
+          }
+        }
+      }
+    },
+    "KeyVox will forget the words it learned from your typing in every language and the corrections you undid. Your KeyVox Dictionary isn't affected." : {
+      "comment" : "Message in the confirmation shown before resetting the keyboard's learned words in every language it types in. KeyVox is a brand name and stays in English; Dictionary refers to the app's Dictionary tab.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox vergisst die Wörter, die es aus deinen Eingaben in allen Sprachen gelernt hat, und die Korrekturen, die du widerrufen hast. Dein KeyVox-Wörterbuch ist davon nicht betroffen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox olvidará las palabras que ha aprendido de lo que escribes en todos los idiomas y las correcciones que has deshecho. Tu Diccionario de KeyVox no se verá afectado."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox olvidará las palabras que ha aprendido de lo que escribes en todos los idiomas y las correcciones que has deshecho. Tu Diccionario de KeyVox no se verá afectado."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox oubliera les mots appris à partir de votre saisie dans toutes les langues et les corrections que vous avez annulées. Votre dictionnaire KeyVox n’est pas affecté."
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "KeyVox oubliera les mots appris à partir de votre saisie dans toutes les langues et les corrections que vous avez annulées. Votre dictionnaire KeyVox n’est pas affecté."
+          }
+        }
+      }
+    },
     "KeyVox will prefer the built-in microphone whenever one is available." : {
       "comment" : "Description under the Prefer Built-In Microphone toggle when it is on. KeyVox is a brand name and stays in English.",
       "localizations" : {
@@ -7467,6 +8062,41 @@
         }
       }
     },
+    "Languages" : {
+      "comment" : "Title of the keyboard settings row showing the languages the keyboard types in.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sprachen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Idiomas"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Idiomas"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Langues"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Langues"
+          }
+        }
+      }
+    },
     "Later" : {
       "comment" : "Button in the app update prompt that postpones the update.\nButton in the model update prompt that postpones the download.",
       "localizations" : {
@@ -7533,6 +8163,41 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Dernière transcription"
+          }
+        }
+      }
+    },
+    "Layout" : {
+      "comment" : "Title of the keyboard settings row showing the letter layout, such as QWERTY, of the keyboard's only language.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Layout"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Distribución"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Distribución"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Disposition"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Disposition"
           }
         }
       }
@@ -8657,6 +9322,76 @@
         }
       }
     },
+    "Move Down" : {
+      "comment" : "VoiceOver action on a selected keyboard language that moves it one place later in the switching order.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nach unten bewegen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mover hacia abajo"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mover hacia abajo"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Déplacer vers le bas"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Déplacer vers le bas"
+          }
+        }
+      }
+    },
+    "Move Up" : {
+      "comment" : "VoiceOver action on a selected keyboard language that moves it one place earlier in the switching order.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nach oben bewegen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mover hacia arriba"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mover hacia arriba"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Déplacer vers le haut"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Déplacer vers le haut"
+          }
+        }
+      }
+    },
     "Moving downloaded files" : {
       "comment" : "Dictation model install progress step.",
       "localizations" : {
@@ -8868,7 +9603,7 @@
       }
     },
     "No languages found" : {
-      "comment" : "Empty state on the dictation language picker screen when the search matches nothing.",
+      "comment" : "Empty state on a language list screen when the search matches nothing.",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10769,7 +11504,7 @@
       }
     },
     "Search languages" : {
-      "comment" : "Placeholder for the search field on the dictation language picker screen.",
+      "comment" : "Placeholder for the search field on a language list screen.",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -11359,6 +12094,41 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Ignorer"
+          }
+        }
+      }
+    },
+    "Slide across the space bar to switch languages. Drag a selected language to change the order." : {
+      "comment" : "Advice on the keyboard languages screen: sliding a finger sideways on the space bar switches to the next language, and the handle on a selected language reorders it.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wische über die Leertaste, um die Sprache zu wechseln. Ziehe eine ausgewählte Sprache, um die Reihenfolge zu ändern."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Desliza el dedo por la barra espaciadora para cambiar de idioma. Arrastra un idioma seleccionado para cambiar el orden."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Desliza el dedo por la barra espaciadora para cambiar de idioma. Arrastra un idioma seleccionado para cambiar el orden."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Faites glisser votre doigt sur la barre d’espace pour changer de langue. Faites glisser une langue sélectionnée pour modifier l’ordre."
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Faites glisser votre doigt sur la barre d’espace pour changer de langue. Faites glisser une langue sélectionnée pour modifier l’ordre."
           }
         }
       }

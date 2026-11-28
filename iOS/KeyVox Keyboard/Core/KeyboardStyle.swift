@@ -95,6 +95,8 @@ enum KeyboardStyle {
     static let cancelButtonIconColor = UIColor.systemRed
     /// The circle behind the microphone in the dictation button.
     static let microphoneBackgroundColor = UIColor.keyboardTheme(\.microphoneBackground)
+    /// The microphone in the dictation button.
+    static let microphoneForegroundColor = UIColor.keyboardTheme(\.microphoneForeground)
     static let cancelButtonBorderWidth: CGFloat = 0.5
     static let keyBorderWidth: CGFloat = 0.5
 
@@ -123,6 +125,9 @@ enum KeyboardStyle {
             : UIColor.white.withAlphaComponent(0.08)
     }
     static let keyLabelColor = UIColor.label
+    /// How far the code of the language the space bar switched to sits from the key's bottom and
+    /// right edges.
+    static let languageCodeInset: CGFloat = 5
     static let keyDisabledLabelColor = UIColor.secondaryLabel.withAlphaComponent(0.7)
 
     /// What stands in for the keyboard backdrop when a key's visible color is worked out: the

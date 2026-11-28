@@ -2,16 +2,18 @@ import KeyVoxKeyboardThemes
 import SwiftUI
 
 /// The KeyVox keyboard's settings, opened from the Keyboard row in Settings: the typing
-/// toggles as single-line rows, then the layout options with their descriptions, then resetting
-/// what the keyboard learned from the user's typing.
+/// toggles as single-line rows, then the typing languages and their letter layouts, then the layout
+/// options with their descriptions, then resetting what the keyboard learned from the user's typing.
 struct KeyboardSettingsView: View {
     @EnvironmentObject private var settingsStore: AppSettingsStore
     @Binding var pendingDeletionConfirmation: SettingsPendingDeletionConfirmation?
+    @State private var isLanguageListPresented = false
 
     var body: some View {
         AppScrollScreen(additionalTopContentInset: AppScreenContentInset.tabPageTop) {
             VStack(alignment: .leading, spacing: AppTheme.sectionSpacing) {
                 typingSection
+                languagesSection
                 classicThemeSection
                 compactKeysSection
                 openOnNumberPageSection
@@ -22,6 +24,26 @@ struct KeyboardSettingsView: View {
         }
         .navigationTitle(KeyboardSettingsCopy.screenTitle)
         .navigationBarTitleDisplayMode(.inline)
+        .fullScreenCover(isPresented: $isLanguageListPresented) {
+            KeyboardLanguagesScreen(selection: typingLanguageSelection) {
+                isLanguageListPresented = false
+            }
+        }
+    }
+
+    private var typingLanguageSelection: KeyboardTypingLanguageSelection {
+        KeyboardTypingLanguageSelection(
+            savedLanguages: settingsStore.keyboardTypingLanguages,
+            savedLetterLayouts: settingsStore.keyboardLetterLayouts,
+            catalog: KeyboardBundledTypingLanguages.catalog,
+            fallbackLanguage: Bundle.main.developmentLocalization
+        )
+    }
+
+    private var languagesSection: some View {
+        KeyboardLanguagesCard(selection: typingLanguageSelection) {
+            isLanguageListPresented = true
+        }
     }
 
     private var typingSection: some View {
@@ -135,16 +157,30 @@ struct KeyboardSettingsView: View {
         }
     }
 
+    /// With one typing language the button asks to reset at once; with several it opens a menu of
+    /// the languages and all of them, and the choice is what the confirmation resets.
     private var resetLearnedWordsSection: some View {
         VStack(spacing: 8) {
-            AppActionButton(
-                title: KeyboardSettingsCopy.resetLearnedWordsTitle,
-                style: .secondary,
-                fillsWidth: true,
-                size: .regular,
-                fontSize: 16,
-                action: { pendingDeletionConfirmation = .learnedWords }
-            )
+            let languages = typingLanguageSelection.languages
+            if languages.count > 1 {
+                Menu {
+                    ForEach(languages, id: \.identifier) { language in
+                        Button(KeyboardTypingLanguageName.displayName(for: language.identifier)) {
+                            pendingDeletionConfirmation = .learnedWords(.language(language.identifier))
+                        }
+                    }
+                    Button(KeyboardSettingsCopy.resetLearnedWordsAllLanguagesTitle) {
+                        pendingDeletionConfirmation = .learnedWords(.allLanguages)
+                    }
+                } label: {
+                    resetLearnedWordsButton {}
+                        .allowsHitTesting(false)
+                }
+                .menuStyle(.button)
+                .buttonStyle(.plain)
+            } else {
+                resetLearnedWordsButton { pendingDeletionConfirmation = .learnedWords(.keyboard) }
+            }
 
             Text(KeyboardSettingsCopy.resetLearnedWordsHint)
                 .font(.appFont(15, variant: .light))
@@ -152,6 +188,17 @@ struct KeyboardSettingsView: View {
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: .infinity, alignment: .center)
         }
+    }
+
+    private func resetLearnedWordsButton(action: @escaping () -> Void) -> some View {
+        AppActionButton(
+            title: KeyboardSettingsCopy.resetLearnedWordsTitle,
+            style: .secondary,
+            fillsWidth: true,
+            size: .regular,
+            fontSize: 16,
+            action: action
+        )
     }
 
     private var englishOnlyNote: some View {

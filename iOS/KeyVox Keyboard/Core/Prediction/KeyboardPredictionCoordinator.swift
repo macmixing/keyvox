@@ -26,12 +26,10 @@ final class KeyboardPredictionCoordinator {
     /// The emoji the suggestion bar shows for a word, in the order to show them.
     var emojiForWord: (String) -> [String] = { _ in [] }
 
-    private let session: PredictiveTypingSession
-    private let engine = KeyboardPredictionEngine(label: "org.keyvox.keyboard.prediction", qos: .userInitiated)
-    private let tapCheckEngine = KeyboardPredictionEngine(
-        label: "org.keyvox.keyboard.prediction.tap-check",
-        qos: .userInteractive
-    )
+    private var session: PredictiveTypingSession
+    private var memory: TypingMemory
+    private let engine: KeyboardPredictionEngine
+    private let tapCheckEngine: KeyboardPredictionEngine
     private let textBeforeCursor: () -> String?
     private let selectedText: () -> String?
     private let textAfterCursor: () -> String?
@@ -88,11 +86,45 @@ final class KeyboardPredictionCoordinator {
         textAfterCursor: @escaping () -> String?,
         documentIdentifier: @escaping () -> UUID?
     ) {
-        session = PredictiveTypingSession(language: KeyboardTypingLanguage.current, memory: memory)
+        let language = KeyboardTypingLanguage.current
+        session = PredictiveTypingSession(language: language, memory: memory)
+        self.memory = memory
+        engine = KeyboardPredictionEngine(language: language, label: "org.keyvox.keyboard.prediction", qos: .userInitiated)
+        tapCheckEngine = KeyboardPredictionEngine(
+            language: language,
+            label: "org.keyvox.keyboard.prediction.tap-check",
+            qos: .userInteractive
+        )
         self.textBeforeCursor = textBeforeCursor
         self.selectedText = selectedText
         self.textAfterCursor = textAfterCursor
         self.documentIdentifier = documentIdentifier
+    }
+
+    /// Types in `language` from now on, learning into `memory`, its own memory, without reading the
+    /// field: the swipe being decoded is dropped, the typing session starts over in the new
+    /// language, the bar empties, and both engines let go of the previous language's files, loading
+    /// the new one's when next needed. The user's vocabulary carries over; the new language's
+    /// learned words come through `updateLearnedWords(_:)`.
+    func setLanguage(_ language: TypingLanguage, memory: TypingMemory) {
+        dropPendingSwipe()
+        self.memory = memory
+        session = PredictiveTypingSession(language: language, memory: memory)
+        placeAfterSwipedWord = nil
+        letterKeys = nil
+        latestResult = nil
+        clearBar()
+        engine.queue.async { [weak self] in
+            guard let self else { return }
+            self.latestRevision = nil
+            self.decodedSwipes.removeAll()
+            self.engine.setLanguage(language)
+        }
+        tapCheckEngine.queue.async { [weak self] in
+            guard let self else { return }
+            self.latestIntendedLetter = nil
+            self.tapCheckEngine.setLanguage(language)
+        }
     }
 
     /// Starts loading the engines so the first word does not wait for them.

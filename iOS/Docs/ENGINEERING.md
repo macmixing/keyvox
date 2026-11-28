@@ -664,7 +664,15 @@ Keyboard onboarding detection is deliberately split across three signals:
 - `KeyVox.EmojiKeyboardEnabled`
 - `KeyVox.PeriodShortcutEnabled`
 - `KeyVox.OpensOnNumberPage`
+- `KeyVox.KeyboardTypingLanguages`
+  - the keyboard's typing languages by identifier, in the order its space bar switches through them, written by the containing app; missing until the user saves a choice
+- `KeyVox.KeyboardLetterLayouts`
+  - the letter layout the user chose for each typing language, by language identifier, written by the containing app
+- `KeyVox.KeyboardActiveTypingLanguage`
+  - the typing language the keyboard last typed in, written by the keyboard
 - `KeyVox.KeyboardTypingMemoryResetGeneration`
+- `KeyVox.KeyboardTypingMemoryLanguageResetGenerations`
+  - counts the user's resets of what the keyboard learned in one language, by language identifier; written by the containing app and read by the keyboard
   - counts the user's resets of what the keyboard learned from typing; written by the containing app and read by the keyboard
 - `KeyVox.EmojiFrequentlyUsed`
   - the keyboard's Frequently Used emoji ranking, written by the keyboard
@@ -730,8 +738,10 @@ Keyboard onboarding detection is deliberately split across three signals:
 - `TTS/last-replay.pcm`
   - durable replay audio payload for the last replayable copied-text playback
 - `Keyboard/typing-memory.json`
-  - durable keyboard typing memory, written by the keyboard extension under the current reset generation
-  - removed by the containing app's learned-words reset after it increments `KeyVox.KeyboardTypingMemoryResetGeneration`
+  - durable keyboard typing memory of English, the only language the keyboard typed in before it had languages (`KeyboardTypingMemoryLocation.originalFileLanguage`), in the same file and format as before, written by the keyboard extension under the current reset generation
+- `Keyboard/typing-memory-<language>.json`
+  - durable keyboard typing memory of every other typing language, beside the original file, in the same format
+- removed by the containing app's learned-words reset: every language's after it increments `KeyVox.KeyboardTypingMemoryResetGeneration`, or one language's after it increments that language's count in `KeyVox.KeyboardTypingMemoryLanguageResetGenerations`
 
 ### Transcription AU Message Contract
 
@@ -835,7 +845,7 @@ The App Group container is the stable cross-process boundary:
 - `TTS/request.json`
 - `TTS/last-replay.json`
 - `TTS/last-replay.pcm`
-- `Keyboard/typing-memory.json` for the keyboard's typing memory
+- `Keyboard/typing-memory.json` and `Keyboard/typing-memory-<language>.json` for the keyboard's typing memory, one file per typing language
 - `live-meter-state.bin` for transient keyboard indicator transport
 
 If the App Group container is unavailable:
@@ -1678,12 +1688,19 @@ The restore card remains visible until both unlocks are owned.
 - reads Compact Keys availability from `KeyVox.CompactKeysEnabled`, defaulting to enabled
 - reads and writes the separate `KeyVox.CompactKeysActive` presentation preference, defaulting to the full keyboard
 - reads, but never writes, the shared keyboard typing settings and `KeyVox.LeftHandedKeyboardLayoutEnabled`, using the same defaults as `AppSettingsStore`: Open on 123 and Left-Handed Layout default off, and every other typing setting defaults on
+- reads, but never writes, the typing languages and layouts the containing app saved (`typingLanguageSelection(catalog:)`), and reads and writes the language the keyboard last typed in (`lastTypingLanguage`)
 - reads, but never writes, `KeyVox.KeyboardTheme` through `KeyboardThemeID.resolved(rawValue:)`, so a missing or unknown value resolves to the KeyVox theme
 - reads the containing app's `KeyVox.App.HasCompletedOnboarding` flag from App Group defaults
 
 `AppSettingsStore` owns the containing-app Compact Keys availability toggle. Turning availability off must also clear `KeyVox.CompactKeysActive`, so enabling the feature again never revives a stale compact presentation.
 
 `AppSettingsStore` also owns the keyboard typing settings shown on the Keyboard settings screen: Auto-Capitalization, Auto-Correction, Enable Caps Lock, Predictive Text, Swipe Typing, Emoji Keyboard, the period shortcut, and Open on 123. Like the other typing toggles, Swipe Typing is on unless the user turns it off. They are device-local App Group values that the keyboard reads directly through `KeyboardAppSettingsStore`, including each time it resolves a field's typing traits.
+
+`AppSettingsStore` owns the keyboard's typing languages (`keyboardTypingLanguages`, in space-bar order) and the layout chosen for each (`keyboardLetterLayouts`), saved as the user chose them. `KeyboardTypingLanguageSelection` resolves what the keyboard types in from them and the languages the keyboard bundles: languages it does not bundle are dropped, a layout the language does not offer gives its default, and nothing saved that is bundled gives the bundled language the app was written in (`Bundle.main.developmentLocalization`), else the first bundled language. The containing app does not bundle the typing data, which is about 29 MB per language, so it reads the list of bundled languages and their layouts from the keyboard extension's copy through the typing package's `KeyVoxTypingLanguageCatalog` product (`KeyboardBundledTypingLanguages`), which reads each language's `language.json` and nothing else.
+
+The Keyboard settings screen's Languages card, between the typing toggles and Classic Theme, shows the typing languages with a Change button that opens the shared language list full screen with multiple selection (`KeyboardLanguagesScreen`), then a Layout row per language whose Change menu lists the layouts the language offers in Apple's order, default first; a language with one layout shows it without the menu. Language names come from `Locale` in the language the app shows (`KeyboardTypingLanguageName`), with the region in parentheses for a regional variant. Each layout shows by the name the system's own Keyboard settings show for it (`KeyboardLetterLayoutName`), not by its file's name: the names are the iOS 27.2 Settings app's `KeyboardLayouts` strings (`KeyboardSettings.bundle`), `QWERTY`, `AZERTY`, `QWERTZ`, and `Dvorak` unchanged and the language-specific layouts as the layout and its language joined by an en dash, such as `QWERTZ – German` for `QWERTZ-German` and `QWERTY – French` for `QWERTY-Accents`, translated in the app's string catalog with the system's own wording for each of the app's languages. No two bundled layouts share a name, so the name alone tells them apart, as in the system's settings; a layout no name is written for shows its identifier.
+
+The shared language list (`LanguageListScreen`) is the dictation language picker and the keyboard languages screen. With single selection, as dictation uses it, one language is checked at a time. With multiple selection the checked languages show first under "Selected", in their order, each with a handle that drags it to another place without unchecking anything; checking a language adds it at the end there, unchecking returns it to the alphabetical list below, which search filters, and Done stays disabled while nothing is checked.
 
 `AppSettingsStore.keyboardTheme` owns the keyboard theme choice, resolved through the same `KeyboardThemeID` fallback and written to `KeyVox.KeyboardTheme`. The Keyboard settings screen's Classic Theme toggle switches it between Classic and KeyVox.
 
@@ -1974,7 +1991,7 @@ That separation exists because putting the warning UI into the main root layout 
 Keyboard-specific row geometry must stay separated by responsibility:
 
 - `KeyboardRootView` owns the stable keyboard shell, toolbar stacking, the top-row accessory button containers, the suggestion bar's placement, and the emoji page, search field, and results placement
-- `KeyboardKeyGridView` owns page display and key interaction wiring; `KeyboardKeyGridPage` builds each page's rows once and keeps them, `KeyboardKeyGridView+Touches.swift` owns multi-finger touch handling, and `KeyboardKeyGridView+Swipe.swift` owns following a finger through the swipe gate and handing on its path, with `KeyboardSwipeTrailView` drawing its trail
+- `KeyboardKeyGridView` owns page display and key interaction wiring; `KeyboardKeyGridPage` builds each page's rows once and keeps them, `KeyboardKeyFlipTransition` turns one page's keys over into another's when the typing language changes, on the timing `KeyboardKeyFlipWave` gives each key, `KeyboardKeyGridView+Touches.swift` owns multi-finger touch handling, and `KeyboardKeyGridView+Swipe.swift` owns following a finger through the swipe gate and handing on its path, with `KeyboardSwipeTrailView` drawing its trail
 - `KeyboardSymbolLayout` owns which keys each letter, number, and symbol page (the letter rows from `KeyboardLetterRows`), Compact Keys, the emoji search row, and the globe row contain, taking a field's bottom row from `KeyboardFieldBottomRowKeys` and the number pad's rows from `KeyboardNumberPadLayout`
 - `KeyboardLayoutGeometry` owns live measurement-based row sizing, while `KeyboardTopRowAccessoryLayout` owns accessory alignment rules
 
@@ -2084,9 +2101,15 @@ Typing languages:
 
 - each typing language is one folder in the package's `PredictiveData`, named by its identifier (`en`), holding its dictionary, context model, rankers, accent overlay, word lists, held-key characters, spacing character lists, and swipe vocabulary (words people write that the dictionary lacks, and words of swipe.futo.org's training sentences it lacks, which the swipe lexicon is built from beside the dictionary), plus a `language.json` with the rules that differ between languages: the letter layout the keyboard shows and the alternatives Apple's keyboard offers for the language in Apple's order (English: QWERTY, then AZERTY, QWERTZ, and Dvorak), the letters single-letter edits try, the vowels a short typed word needs, the words always written with capitals, and the quotation marks
 - each of Apple's letter layouts is one file in `PredictiveData/letter_layouts`, named by Apple's layout name, holding the letter rows of Apple's iOS 27.2 iPhone keyboard (the `Dynamic-<layout>-Small` rows the phone draws scaled to the keyboard's width, as captured on an iPhone 18 Pro Max): each row's character keys, shift and delete keys, and padding, with their widths in letter keys, every row equally wide, and whether a keyboard draws shift and delete across the padding beside them (`shiftAndDeleteFillPadding`, only QWERTY, which keeps English's keyboard as it was) or at Apple's widths beside Apple's gap; `LetterKeyLayout.bundled(identifier:)` reads one, and the engine aims touches at its letters before the keyboard reports its key frames while the keyboard draws its rows from the same layout
+- `TypingLanguageCatalog` (the package's `KeyVoxTypingLanguageCatalog` product) lists the folders that have a `language.json` and the layouts each offers, reading only that file, so no language list is written anywhere else; `TypingLanguageCatalog.bundled()` reads the package's own copy
 - `TypingLanguage.bundled(identifier:)` reads one folder; `PredictiveEngine`, `PredictiveTypingSession`, `HeldKeyCharacters`, and `CharacterList` all take the language, so the rules that differ between languages come from it, while rules the bundled languages share, such as which marks end a sentence, stay in the shared code
 - the words a language spells only with capitals come from `KeyVoxLinguistics`, which bundles one list per language (`capitalized_spellings_<language>.txt`) shared with dictation
-- the keyboard types in `KeyboardTypingLanguage.current`, whose files are compiled into the package
+- the keyboard types in `KeyboardTypingLanguage.current`, whose files are compiled into the package: one of the languages the user selected in the KeyVox app (`KeyboardTypingLanguageSelection`), loaded in the layout chosen for it (`TypingLanguage.bundled(identifier:letterLayout:)`, which refuses a layout the language does not offer); the keyboard opens in the language it last typed in (`KeyVox.KeyboardActiveTypingLanguage`), or in the first selected one when that one is no longer selected, and rereads the user's languages each time it appears and its host becomes active
+- a change of language or layout goes through `KeyboardViewController.applyTypingLanguage()`, the one place it reaches the keyboard: the swipe being decoded is dropped, the letter page shows in the new layout (the letter page is kept per layout, so a layout shown before is not rebuilt, and the other pages are the same in every layout), the keys on screen turning over into it (the key flip, below), its key frames are reported again, the typing session starts over in the new language, learning into that language's memory, whose learned words replace the previous language's in suggestions and swipes, both prediction engines let go of the previous language's files, loading the new one's when next needed, with the user's vocabulary carried over, and held-key characters, word-ending characters, and quotation marks follow the new language; only the active language's dictionary, models, and swipe model are ever loaded
+- with more than one language selected, a swipe across the space bar, from one end toward the other, switches to the next selected language (right) or the previous one (left), wrapping around at either end, in place of typing a space (`KeyboardSpaceLanguageSlide`): the finger must go sideways at least half the space bar's own width (`minimumTravelShare`), more sideways than up or down (half of any space bar wider than 16 points is past the 8 points that keep the cursor trackpad's hold from starting); a shorter slide, or a hold followed by a small move, types a space as a tap does, however long the finger stayed down; a finger held still until the trackpad starts moves the cursor and never switches, and with one language, or in the emoji search, the space bar works as before
+- a switch saves the new language as the last used, plays a light haptic, goes through `applyTypingLanguage()` with the key flip's wave going the way the finger swiped, and shows the language's short code faintly at the space bar's bottom right, fading out about two seconds later (`KeyboardLanguageCodeLabel`): the language code in capitals, such as `EN`, with the region added, such as `FR CA`, only when two selected languages share a code (`KeyboardTypingLanguageName.shortCode`); VoiceOver reads the language's full name
+- the key flip: a change of language or layout while the keys are on screen turns every key of the key grid over, the letter keys and shift, delete, the page key, emoji, globe, space, and return alike, on whichever page is showing, while the toolbar's keys stay still (`KeyboardKeyFlipTransition`). A wave crosses the keys in about a third of a second (`KeyboardKeyFlipWave`: 0.12 seconds to reach the last key, 0.1 for a key to turn edge-on, 0.12 for the new key to turn in), left to right, or right to left after a swipe to the left, lower rows a little after the rows above; each key turns away about its middle until it is edge-on, and the key of the new layout turns in from edge-on where the wave has passed, so rows of different key counts and widths rearrange while their keys are edge-on. The new page is the one showing from the start and only the keys' layers are animated on top of where the keys lie, so a tap during the flip lands on the new layout; the leaving page stays visible only until the flip ends, and any other page change ends the flip at once. Nothing is drawn off screen or kept, so the flip adds no lasting memory, and it turns the keys as each theme draws them. With Reduce Motion the keys of the two pages crossfade in 0.2 seconds instead, and a change that keeps the same page shows no animation. A keyboard that is not on screen changes without any animation
+- the system's globe key is never repurposed and the keyboard adds no globe key of its own for languages
 - the folders are found through `KeyVoxPredictiveKeyboardResources`, which a host outside an app bundle, such as the Android engine, configures with the package's unchanged resource bundle, as it does for Core and `KeyVoxLinguistics`
 
 `KeyVoxPredictiveKeyboard.PredictiveTypingSession` is the typing source of truth for the letter page. The keyboard reports taps, and text changes with the text on both sides of the cursor, asks the session what space, return, a word-ending character, a character after a suggestion tap, or a suggestion tap should change, and applies the returned `TextEdit` through `KeyboardTextInputController`. The keyboard must not re-implement correction, completion, next-word, sentence-opener, personal-word casing, or undo rules locally.
@@ -2179,9 +2202,9 @@ Word around the cursor:
 Vocabulary:
 
 - personal vocabulary combines KeyVox Dictionary phrases with the system supplementary lexicon's known names and text replacements; the dictionary is applied at once and the lexicon again on the main thread whenever the system answers
-- learned vocabulary from typing memory is handed to suggestions whenever it changes
+- learned vocabulary from the active language's typing memory is handed to suggestions whenever it changes and when the language changes
 - pressing and holding a suggestion forgets a learned word or learned capitals; the user's own vocabulary is never forgotten this way
-- corrections and predictions come from the typing language the keyboard types in, `KeyboardTypingLanguage.current`; English is the only bundled language
+- corrections, predictions, and swipes come from the typing language the keyboard types in, `KeyboardTypingLanguage.current`, aimed at the keys of its layout; English is the only bundled language
 
 Shift and letter case:
 
@@ -2201,11 +2224,13 @@ Keys and characters:
 
 ### Keyboard Typing Memory Rules
 
-- `KeyboardTypingMemory.shared` is one `TypingMemory` for every keyboard view while the extension runs
-- it saves the memory to `Keyboard/typing-memory.json` in the App Group a moment after each change, off the main thread, under the reset generation it was loaded with
-- `KeyboardTypingMemoryReset` in the containing app increments `KeyVox.KeyboardTypingMemoryResetGeneration` before removing the file, so a keyboard still holding the old memory never saves over the reset
-- the keyboard adopts a newer reset generation, clearing its memory, when it appears and when the extension host becomes active
-- the Keyboard settings screen's Reset Learned Words action routes through the shared Settings deletion confirmation; the KeyVox Dictionary is not affected
+- what the keyboard learns from typing (turned-down corrections, learned words, and learned capitals) is kept per typing language: `KeyboardTypingMemory.current` is the `TypingMemory` of the language the keyboard types in, for every keyboard view while the extension runs, and only that language's memory is loaded; a change of language loads the new language's memory, and the one let go still saves its last change; switching back to a language before that save is made and written takes its memory back instead of loading the file, which doesn't hold that change yet
+- the typing session learns into the active language's memory, and suggestions, autocorrection, and swipes use only its learned words; the user's own words (KeyVox Dictionary entries, contact names, and text replacement shortcuts) are shared by every language
+- English's memory is the original `Keyboard/typing-memory.json`, read and saved where and as it always was, so what the keyboard learned before it had languages stays English's untouched; every other language's memory is `Keyboard/typing-memory-<language>.json` beside it (`KeyboardTypingMemoryLocation`)
+- each memory saves a moment after each change, off the main thread, under the reset generations it was loaded with: every language's (`KeyVox.KeyboardTypingMemoryResetGeneration`, stored in the file as before) and its own language's (`KeyVox.KeyboardTypingMemoryLanguageResetGenerations`)
+- `KeyboardTypingMemoryReset` in the containing app increments the generation before removing a file, so a keyboard still holding the old memory never saves over the reset: resetting every language increments the shared generation and removes every language's file, and resetting one language increments that language's count and removes only its file
+- the keyboard adopts a newer reset generation, clearing its memory, when it appears, when the extension host becomes active, and when it switches to a language
+- the Keyboard settings screen's Reset Learned Words action routes through the shared Settings deletion confirmation; the KeyVox Dictionary is not affected. With one typing language it resets every language's memory with the confirmation's original wording, as the button always did; with several, it opens a menu of the selected languages and All Languages, and the confirmation names the choice and resets only it (`KeyboardTypingMemoryResetScope`)
 
 ### Emoji Keyboard Rules
 
@@ -2233,10 +2258,11 @@ Keys and characters:
 - the available themes are KeyVox, the default, and Classic, whose neutral keys follow the system keyboard in light and dark
 - a missing or unknown saved theme resolves to KeyVox in both the containing app and the keyboard
 - the controller applies the saved theme as a `KeyboardThemeTrait` trait override; themed `UIColor`s resolve from that trait together with the light or dark appearance, and themed views re-render on changes to either trait
-- the palette colors letter, special, and toolbar keys with their pressed and disabled fills, key fill opacity, and outline, a toolbar key that is on and its foreground, key popups with their outline, characters, and held-key highlight, the cancel key's border, and the microphone button's background, and styles the swipe trail (`KeyboardThemeSwipeTrail`): its stroke, head-dot, and glow colors and its width in light and dark, its nested glow layers' widths and opacities, how long its tail lasts behind the finger, how far it tapers, how its opacity falls off down the tail, how far its bands overlap, the head dot's size, how long the tail takes to retract once the finger lifts and on what timing curve, and how far the head dot grows, how fast, and how fast it then fades
+- the palette colors letter, special, and toolbar keys with their pressed and disabled fills, key fill opacity, and outline, a toolbar key that is on and its foreground, key popups with their outline, characters, and held-key highlight, the cancel key's border, and the microphone button's background and microphone, and styles the swipe trail (`KeyboardThemeSwipeTrail`): its stroke, head-dot, and glow colors and its width in light and dark, its nested glow layers' widths and opacities, how long its tail lasts behind the finger, how far it tapers, how its opacity falls off down the tail, how far its bands overlap, the head dot's size, how long the tail takes to retract once the finger lifts and on what timing curve, and how far the head dot grows, how fast, and how fast it then fades
 - `KeyboardSwipeTrailView` reads the trail style from the active theme's palette when each swipe starts and draws nothing styled of its own: the stroke and each glow layer are ribbons through a centripetal Catmull-Rom curve of the finger's samples drawn within the tail's time, their width and opacity following the distance back along the path from the finger, cut by distance into reused shape layers that each run the theme's overlap under the next; each screen refresh only replaces their paths and the head dot's position, and once the finger lifts the tail retracts into the head, keeping its taper, on the theme's timing curve while the head dot grows at full opacity and then fades
 - the trail shows from where the finger landed once the swipe gate counts it as traveling (half a key pitch from where it landed), and from then its key shows no popup; a finger that turns out to be a tap, or that another finger's landing keeps from swiping, loses its trail at once
-- the trademark-protected logo bar reads its microphone background and light-appearance inner outline from the themed `KeyboardStyle` colors while its drawing stays in `KeyboardLogoBarView.swift`
+- the Classic theme's light swipe trail draws its stroke, head dot, and glow in the same shared color as the microphone, so the two always match
+- the trademark-protected logo bar reads its microphone, microphone background, and light-appearance inner outline from the themed `KeyboardStyle` colors while its drawing stays in `KeyboardLogoBarView.swift`
 
 ### Text Insertion Rules
 
@@ -2344,7 +2370,7 @@ Current app-owned surfaces:
 - `SettingsTabView+General`: the Dictation, Keyboard, and KeyVox Speak rows that open their settings screens
 - `SettingsDestination`: the Dictation, Keyboard, and KeyVox Speak screens the Settings tab pushes onto its navigation stack
 - `DictationSettingsView`: the Dictation settings screen with the Dictation Timeout, Live Activities, and Dictation Shortcut setup-guide card, the dictation model card, and the built-in microphone preference; it owns the full-screen Dictation Shortcut reference-guide and language-picker presentations, and its copy lives in `DictationSettingsCopy`
-- `KeyboardSettingsView`: the Keyboard settings screen, with keyboard haptics (hidden on iPad) and the keyboard typing toggles, Classic Theme, Compact Keys, Open on 123, Left-Handed Layout, and Reset Learned Words; its copy lives in `KeyboardSettingsCopy`
+- `KeyboardSettingsView`: the Keyboard settings screen, with keyboard haptics (hidden on iPad) and the keyboard typing toggles, Classic Theme, Compact Keys, Open on 123, Left-Handed Layout, and Reset Learned Words, which with several typing languages opens a menu of them and All Languages; its copy lives in `KeyboardSettingsCopy`
 - `DictationSettingsView+Model`: release-facing `Dictation Model` section for provider selection, per-model install actions, uninstalled model size display, and the attached language section driven by the shared Whisper catalog or Parakeet Auto Detect guidance
 - `KeyVoxSpeakSettingsView`: the KeyVox Speak settings screen with the Speak Timeout card and the engine and voices card; its copy lives in `KeyVoxSpeakSettingsCopy`
 - `KeyVoxSpeakSettingsView+Voices`: release-facing `KeyVox Speak` section for PocketTTS runtime install state, per-voice install actions, previews, voice selection, and the `KeyVox Speak Unlimited` unlock row placed beneath the model section
@@ -2378,6 +2404,7 @@ Views may surface manager state, but runtime ownership stays in the managers and
 - app haptics decision rules
 - shared path construction
 - settings persistence
+- keyboard typing-language selection: saved order, languages not bundled, saved layouts, the fallback language, and the language the keyboard opens in when the last one used was removed
 - Compact Keys availability, active-mode resolution, row selection, hold cancellation, and explicit mode heights
 - iCloud sync coordination
 - weekly stats storage and merge behavior
@@ -2396,9 +2423,13 @@ Views may surface manager state, but runtime ownership stays in the managers and
 - keyboard text input helpers
 - keyboard letter-case shift and caps-lock state
 - keyboard held-delete word deletion
-- keyboard typing-memory reset
+- keyboard typing-memory reset, per typing language and for every language, and an existing English memory file loading unchanged
 - keyboard emoji category memory and styles, grid, search, and picker geometry, search keys, and drawability
 - keyboard cursor-trackpad support
+- the space-bar swipe that switches typing languages: the travel it needs from the space bar's width, a hold followed by a small move, and when the trackpad takes the finger instead
+- the key flip's wave: the order it reaches keys in either direction, the lag of lower rows, and every key lying flat by its end
+- keyboard letter layout names: a name for every bundled layout, no name shared, and the identifier for a layout without one
+- the short code shown for a typing language and stepping through the selected languages
 - transcription manager lifecycle, typed shortcut command outcomes, immediate microphone-release retry and timeout fallback, and interruption handling
 
 ### Integration-Only Exclusions

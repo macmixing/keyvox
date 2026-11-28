@@ -6,6 +6,22 @@ import Testing
 
 @MainActor
 struct AppSettingsStoreTests {
+    @Test func keyboardTypingLanguagesAndLayoutsPersistInOrder() {
+        let defaults = UserDefaults(suiteName: #function)!
+        defaults.removePersistentDomain(forName: #function)
+        let store = AppSettingsStore(defaults: defaults)
+        #expect(store.keyboardTypingLanguages.isEmpty)
+        #expect(store.keyboardLetterLayouts.isEmpty)
+
+        store.keyboardTypingLanguages = ["fr", "en", "de"]
+        store.keyboardLetterLayouts["en"] = "AZERTY"
+        store.keyboardTypingLanguages = ["en", "fr", "de"]
+
+        let restored = AppSettingsStore(defaults: defaults)
+        #expect(restored.keyboardTypingLanguages == ["en", "fr", "de"])
+        #expect(restored.keyboardLetterLayouts == ["en": "AZERTY"])
+    }
+
     @Test func activeDictationProviderDefaultsToWhisper() {
         let defaults = UserDefaults(suiteName: #function)!
         defaults.removePersistentDomain(forName: #function)

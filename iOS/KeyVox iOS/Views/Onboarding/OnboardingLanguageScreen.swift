@@ -2,6 +2,8 @@ import Foundation
 import KeyVoxCore
 import SwiftUI
 
+/// The dictation language picker, in onboarding and opened from Dictation settings: the shared
+/// language list with one language checked at a time, Auto Detect first and the rest alphabetical.
 struct OnboardingLanguageScreen: View {
     enum PresentationContext {
         case onboarding
@@ -13,7 +15,6 @@ struct OnboardingLanguageScreen: View {
     @EnvironmentObject private var settingsStore: AppSettingsStore
     @FocusState private var isSearchFocused: Bool
     @State private var selection: DictationLanguage?
-    @State private var searchText = ""
     @State private var isAdvancing = false
     @State private var advanceTask: Task<Void, Never>?
     private let presentationContext: PresentationContext
@@ -23,82 +24,32 @@ struct OnboardingLanguageScreen: View {
     }
 
     var body: some View {
-        AppScrollScreen {
-            VStack(alignment: .leading, spacing: 20) {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Choose your language", comment: "Title of the dictation language picker screen.")
-                        .font(.appFont(30))
-                        .foregroundStyle(.white)
+        LanguageListScreen(
+            options: whisperLanguages.map {
+                LanguageListOption(id: $0.rawValue, name: DictationLanguageDisplayNameFormatter.displayName(for: $0))
+            },
+            selection: .single(Binding(
+                get: { selection?.rawValue },
+                set: { selection = $0.map(DictationLanguage.init(rawValue:)) }
+            )),
+            actionTitle: actionTitle,
+            isSearchFocused: $isSearchFocused,
+            ignoresLanguageTaps: isAdvancing,
+            onAction: completeSelection
+        ) {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Choose your language", comment: "Title of the dictation language picker screen.")
+                    .font(.appFont(30))
+                    .foregroundStyle(.white)
 
-                    Text("We recommend choosing the language you use most for more reliable dictation.", comment: "Advice on the dictation language picker screen.")
-                        .font(.appFont(17, variant: .light))
-                        .foregroundStyle(.yellow.opacity(0.78))
+                Text("We recommend choosing the language you use most for more reliable dictation.", comment: "Advice on the dictation language picker screen.")
+                    .font(.appFont(17, variant: .light))
+                    .foregroundStyle(.yellow.opacity(0.78))
 
-                    Text("Choose Auto Detect for multilingual conversations. You can change this anytime in Settings.", comment: "Advice on the dictation language picker screen. Auto Detect is the name of the language option that detects the spoken language; Settings is the KeyVox app's Settings tab.")
-                        .font(.appFont(15, variant: .light))
-                        .foregroundStyle(.white.opacity(0.6))
-                }
-
-                HStack(spacing: 10) {
-                    Image(systemName: "magnifyingglass")
-                        .foregroundStyle(.white.opacity(0.5))
-
-                    TextField(String(localized: "Search languages", comment: "Placeholder for the search field on the dictation language picker screen."), text: $searchText)
-                        .font(.appFont(17, variant: .light))
-                        .foregroundStyle(.white)
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled()
-                        .focused($isSearchFocused)
-                }
-                .padding(.horizontal, 16)
-                .frame(minHeight: 50)
-                .background(AppTheme.cardFill)
-                .clipShape(RoundedRectangle(cornerRadius: AppTheme.cardCornerRadius))
-
-                AppCard(
-                    contentInsets: EdgeInsets(
-                        top: 0,
-                        leading: AppTheme.cardPadding,
-                        bottom: 4,
-                        trailing: AppTheme.cardPadding
-                    )
-                ) {
-                    LazyVStack(spacing: 0) {
-                        ForEach(Array(filteredLanguages.enumerated()), id: \.element.id) { index, language in
-                            languageButton(language)
-
-                            if index < filteredLanguages.count - 1 {
-                                Divider()
-                                    .overlay(.white.opacity(0.14))
-                            }
-                        }
-
-                        if filteredLanguages.isEmpty {
-                            Text("No languages found", comment: "Empty state on the dictation language picker screen when the search matches nothing.")
-                                .font(.appFont(16, variant: .light))
-                                .foregroundStyle(.white.opacity(0.6))
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 18)
-                        }
-                    }
-                }
+                Text("Choose Auto Detect for multilingual conversations. You can change this anytime in Settings.", comment: "Advice on the dictation language picker screen. Auto Detect is the name of the language option that detects the spoken language; Settings is the KeyVox app's Settings tab.")
+                    .font(.appFont(15, variant: .light))
+                    .foregroundStyle(.white.opacity(0.6))
             }
-            .padding(.bottom, 92)
-        }
-        .safeAreaInset(edge: .bottom) {
-            AppActionButton(
-                title: actionTitle,
-                style: .primary,
-                fillsWidth: true,
-                fontSize: 20,
-                isEnabled: selection != nil,
-                action: completeSelection
-            )
-            .padding(.horizontal, AppTheme.screenPadding)
-            .appReadableWidth(horizontalPadding: AppTheme.screenPadding)
-            .padding(.top, 8)
-            .padding(.bottom, 12)
-            .background(AppTheme.screenBackground.opacity(0.98))
         }
         .onAppear {
             selection = initialSelection
@@ -133,17 +84,6 @@ struct OnboardingLanguageScreen: View {
         }
     }
 
-    private var filteredLanguages: [DictationLanguage] {
-        guard !searchText.isEmpty else {
-            return whisperLanguages
-        }
-
-        return whisperLanguages.filter {
-            DictationLanguageDisplayNameFormatter.displayName(for: $0)
-                .localizedCaseInsensitiveContains(searchText)
-        }
-    }
-
     private var whisperLanguages: [DictationLanguage] {
         let specificLanguages = WhisperBaseLanguageCatalog.supportedLanguages
             .filter { !$0.isAutomatic }
@@ -155,28 +95,6 @@ struct OnboardingLanguageScreen: View {
             }
 
         return [.automatic] + specificLanguages
-    }
-
-    private func languageButton(_ language: DictationLanguage) -> some View {
-        Button {
-            guard isAdvancing == false else { return }
-            appHaptics.light()
-            selection = language
-        } label: {
-            HStack(spacing: 12) {
-                Text(DictationLanguageDisplayNameFormatter.displayName(for: language))
-                    .font(.appFont(17))
-                    .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-
-                Image(systemName: selection == language ? "checkmark.circle.fill" : "circle")
-                    .font(.system(size: 21, weight: .medium))
-                    .foregroundStyle(selection == language ? .yellow : .white.opacity(0.3))
-            }
-            .contentShape(Rectangle())
-            .padding(.vertical, 13)
-        }
-        .buttonStyle(.plain)
     }
 
     private func completeSelection() {
