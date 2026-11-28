@@ -640,6 +640,30 @@ a few measures down on the same plans, so the bundled rankers were kept:
 On the other plans they typed one word more correctly or the same, and on `fr-CA`'s 400-sentence
 `evaluate` fixed one more mistyped word and changed one fewer to another word.
 
+On November 28, 2026 the harness was corrected to type the accent key as the keyboard does (above),
+which changes what `evaluate` types, so its measures since are a new baseline. With the corrected
+harness, the keyboard and package from before the accent key's fixes, an apostrophe it typed
+recording no tap as that keyboard did, and from after them typed the same plans: every `evaluate`
+measure was the same, and every `compare` plan the same but `fr`'s 400 sentences at noise 0.3, seed 2,
+where the fixed keyboard typed one word more correctly (2,685 of 2,854 against 2,684). The baseline,
+with the bundled files above:
+
+| Measure | Plan | `fr` | `fr-CA` |
+| --- | --- | --- | --- |
+| Final words correct | 400 sentences, noise 0.25 (`compare`) | 97.0% (2,883/2,971) | 97.0% (2,882/2,971) |
+| Final words correct | 80 sentences, noise 0.3 (`compare`) | 92.6% (560/605) | 91.4% (553/605) |
+| Final words correct | 400 sentences, noise 0.3, seed 2 (`compare`) | 94.1% (2,685/2,854) | 93.9% (2,681/2,854) |
+| Final words correct | 400, noise 0.25 (`evaluate`) | 97.8% | 97.7% |
+| Mistyped words fixed | 400 | 93.3% (643/689) | 92.8% (646/696) |
+| Mistyped words changed to a different word | 400 | 3.5% (24) | 3.9% (27) |
+| Correctly typed words wrongly changed | 400 | 0.5% (10/2,133) | 0.5% (10/2,126) |
+| Contractions typed without the apostrophe, restored | 400 | 94.0% (140/149) | 94.6% (141/149) |
+| Completion offered within 2 letters | 400 | 60.8% | 60.5% |
+| Completion keystroke savings | 400 | 41.3% | 41.3% |
+| Top-3 completions show the word before space | 400 | 91.2% | 91.0% |
+| Suggestion bar shows the word within 3 letters | 400 | 79.7% | 79.5% |
+| Next word first / in top 3 | 400 | 12.7% / 22.8% | 12.7% / 22.8% |
+
 ### French (Canada) through the keyboard
 
 French (Canada) (`PredictiveData/fr-CA`) types with France's dictionary, rankers, autocorrect
