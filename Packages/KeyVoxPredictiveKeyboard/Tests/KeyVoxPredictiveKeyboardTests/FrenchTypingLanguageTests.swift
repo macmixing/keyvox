@@ -61,6 +61,27 @@ final class FrenchTypingLanguageTests: XCTestCase {
         }
     }
 
+    func testALetterPickedFromAPopupKeepsItsWord() throws {
+        // Apple keeps `pas trop à cœur`, `cœur`, `c’est mon cœur`, and `dans l’œil` with `œ` picked
+        // from the `o` key's popup.
+        let computer = PredictionComputer(engine: try PredictiveEngine(language: .french))
+        let keys = KeyCenterMap(geometry: TypingLanguage.french.letterLayout.defaultGeometry)
+        let offering = try HeldKeyCharacters.bundled(for: .french).letterKeysOfOfferedLetters
+        for (before, word) in [("pas trop à ", "cœur"), ("", "cœur"), ("c’est mon ", "cœur"), ("dans l’", "œil")] {
+            let session = PredictiveTypingSession(language: .french)
+            var text = before
+            for letter in word {
+                text.append(letter)
+                // A popup's letter counts as a tap on the key held to pick it.
+                let center = try XCTUnwrap(keys.center(of: offering[letter] ?? letter))
+                session.recordTap(at: center, textBeforeCursor: text)
+            }
+            let result = try computer.compute(session.request(textBeforeCursor: text))
+            let edit = session.wordBoundaryEdit(separator: " ", textBeforeCursor: text, result: result)
+            XCTAssertEqual(String(text.dropLast(edit.deleteCount)) + edit.insertText, text + " ", word)
+        }
+    }
+
     func testFrenchHasNoSwipeModelSoItIsTypedByTappingAlone() throws {
         XCTAssertFalse(TypingLanguage.french.offersSwipeTyping)
         XCTAssertTrue(TypingLanguage.english.offersSwipeTyping)
