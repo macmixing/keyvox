@@ -7,6 +7,8 @@ each key's center to its point the least. At each matched point the swipe moves 
 key's letter moves between the layouts; between two matched points the move is blended linearly
 over the points between them, and before the first and after the last it is the first and the
 last key's. The person's own path around and between the keys is kept: only where it goes moves.
+Given another word's key path as long, the swipe moves from each of its keys to that word's key
+in the same place, so a swipe of one word becomes a swipe of another.
 """
 
 import numpy as np
@@ -35,11 +37,13 @@ def matched_points(path: np.ndarray, centers: np.ndarray) -> np.ndarray:
     return matched
 
 
-def warp(path: np.ndarray, letters: str, source: Layout, target: Layout) -> np.ndarray:
-    """`path` [T, 2], a swipe of the key path `letters` on `source`, moved onto `target`; every
-    letter must have a key on both."""
+def warp(path: np.ndarray, letters: str, source: Layout, target: Layout, target_letters: str | None = None
+         ) -> np.ndarray:
+    """`path` [T, 2], a swipe of the key path `letters` on `source`, moved onto `target`'s keys of
+    the same letters or, given, of `target_letters`, a key path as long; every letter must have a
+    key on its layout."""
     source_centers = source.centers[[source.key_index[letter] for letter in letters]]
-    target_centers = target.centers[[target.key_index[letter] for letter in letters]]
+    target_centers = target.centers[[target.key_index[letter] for letter in (target_letters or letters)]]
     matched = matched_points(path, source_centers)
     moves = target_centers - source_centers
     times = np.arange(len(path))
