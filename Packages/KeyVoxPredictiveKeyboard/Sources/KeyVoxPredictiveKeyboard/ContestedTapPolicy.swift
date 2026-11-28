@@ -3,10 +3,12 @@
 /// Each nearby letter that leads to a real word scores its language-weighted
 /// log-likelihood minus a touch penalty that grows with its distance from the touch. Before
 /// a word starts, every key is a plausible intent, so only touches in the gap beside the
-/// other key go to the best letter, and the same holds for delete everywhere. Inside a word,
+/// other key go to the best letter, and the same holds for delete everywhere; the accent key,
+/// which begins no word there, is weighed like space everywhere. Inside a word,
 /// the best letter beats shift, 123, the globe, and a touch in the gap beside delete
 /// outright; against space or return it must also beat the word ending here by the boundary
-/// threshold.
+/// threshold, and against the accent key the word that key would leave, when that is a real
+/// word or begins one.
 public struct ContestedTapPolicy: Sendable, Equatable {
     public struct Parameters: Sendable, Equatable {
         /// Letters farther than this from a touch on space or return, in key pitches, are
@@ -57,13 +59,20 @@ public struct ContestedTapPolicy: Sendable, Equatable {
     /// Whether a tap keeps the other key whatever letters are near it: before a word starts,
     /// a touch on the other key itself is that key, and a touch on delete itself always is.
     /// Nothing about the letters need be worked out for such a tap.
+    /// The accent key is always weighed: what it types begins no word before a word starts.
     public func keepsOtherKey(_ otherKey: ContestedTap.OtherKey, startsWord: Bool, landedOnOtherKey: Bool) -> Bool {
-        landedOnOtherKey && (startsWord || otherKey == .delete)
+        otherKey != .accentKey && landedOnOtherKey && (startsWord || otherKey == .delete)
     }
 
     /// Letters farther than this from a touch on `otherKey`, in key pitches, are not considered.
     public func maximumDistance(for otherKey: ContestedTap.OtherKey) -> Double {
-        otherKey == .wordBoundary ? parameters.boundaryMaximumDistance : parameters.controlMaximumDistance
+        weighsLanguage(otherKey) ? parameters.boundaryMaximumDistance : parameters.controlMaximumDistance
+    }
+
+    /// Whether what `otherKey` would leave is weighed against the letter: for space, return, and
+    /// the accent key, which type text of their own.
+    private func weighsLanguage(_ otherKey: ContestedTap.OtherKey) -> Bool {
+        otherKey == .wordBoundary || otherKey == .accentKey
     }
 
     /// The letter the tap was meant for, or nil to keep the other key.
@@ -81,8 +90,8 @@ public struct ContestedTapPolicy: Sendable, Equatable {
                 )
             }
         guard let best = scored.max(by: { $0.score < $1.score }) else { return nil }
-        guard tap.otherKey == .wordBoundary,
-              tap.startsWord == false,
+        guard weighsLanguage(tap.otherKey),
+              tap.startsWord == false || tap.otherKey == .accentKey,
               let ending = tap.endingLogProbability else {
             return best.letter
         }

@@ -1,7 +1,7 @@
 import XCTest
 @testable import KeyVoxPredictiveKeyboard
 
-/// Which taps on delete inside a word may be meant for the letter key beside it.
+/// Which taps on delete or the accent key may be meant for the letter key beside them.
 final class ContestedTapPolicyTests: XCTestCase {
     private let policy = ContestedTapPolicy()
 
@@ -12,6 +12,27 @@ final class ContestedTapPolicyTests: XCTestCase {
     func testTouchInGapBesideDeleteInsideWordGoesToNearbyLetter() {
         let tap = deleteTap(landedOnDelete: false)
         XCTAssertEqual(policy.intendedLetter(for: tap), tap.letters.first?.letter)
+    }
+
+    func testTouchOnTheAccentKeyGoesToTheLetterWhenWhatTheKeyLeavesBeginsNoWord() {
+        XCTAssertNotNil(policy.intendedLetter(for: accentKeyTap(startsWord: false, ending: nil)))
+        XCTAssertNotNil(policy.intendedLetter(for: accentKeyTap(startsWord: true, ending: nil)))
+    }
+
+    func testTouchOnTheAccentKeyKeepsItWhenTheWordItLeavesIsLikelier() {
+        XCTAssertNil(policy.intendedLetter(for: accentKeyTap(startsWord: false, ending: 10)))
+    }
+
+    /// A tap on the accent key with one nearby letter that leads to a real word.
+    private func accentKeyTap(startsWord: Bool, ending: Double?) -> ContestedTap {
+        let letter = TypingLanguage.french.letterLayout.defaultGeometry[0].character
+        return ContestedTap(
+            otherKey: .accentKey,
+            landedOnOtherKey: true,
+            startsWord: startsWord,
+            letters: [ContestedTap.Letter(letter: letter, distance: policy.maximumDistance(for: .accentKey) / 2, continuationLogProbability: 0)],
+            endingLogProbability: ending
+        )
     }
 
     /// A tap inside a word with one nearby letter that leads to a real word, close enough for
