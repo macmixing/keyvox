@@ -48,7 +48,6 @@ public struct SuggestionBar: Sendable, Equatable {
         [leading, primary, trailing].compactMap { $0 } + emoji
     }
 
-    /// This bar with `emoji` in place of its trailing item, or as it is when there are none.
     /// The bar with its words' apostrophes written as `language` writes them
     /// (`TypingLanguage.writingApostrophes`); emoji stay as they are.
     func writingApostrophes(of language: TypingLanguage) -> SuggestionBar {
@@ -56,6 +55,7 @@ public struct SuggestionBar: Sendable, Equatable {
         return SuggestionBar(primary: written(primary), leading: written(leading), trailing: written(trailing), emoji: emoji)
     }
 
+    /// This bar with `emoji` in place of its trailing item, or as it is when there are none.
     public func showing(emoji: [String]) -> SuggestionBar {
         guard emoji.isEmpty == false else { return self }
         return SuggestionBar(
