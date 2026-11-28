@@ -21,11 +21,11 @@ final class SwipeWordDecoder: @unchecked Sendable {
 
     init(language: TypingLanguage) throws {
         let resources = language.resources
-        settings = try SwipeModelSettings(contentsOf: resources.url(SwipeModelSettings.fileName))
+        settings = try SwipeModelSettings(contentsOf: resources.dataURL(SwipeModelSettings.fileName))
         layout = language.letterLayout
-        encoder = try SwipeEncoderNetwork(contentsOf: resources.url(SwipeEncoderNetwork.fileName))
-        decoder = try resources.optionalURL(SwipeDecoderNetwork.fileName).map(SwipeDecoderNetwork.init(contentsOf:))
-        lexicon = try SwipeLexicon(contentsOf: resources.url(SwipeLexiconFormat.fileName))
+        encoder = try SwipeEncoderNetwork(contentsOf: resources.dataURL(SwipeEncoderNetwork.fileName))
+        decoder = try resources.optionalDataURL(SwipeDecoderNetwork.fileName).map(SwipeDecoderNetwork.init(contentsOf:))
+        lexicon = try SwipeLexicon(contentsOf: resources.dataURL(SwipeLexiconFormat.fileName))
         let symbols = settings.letters.unicodeScalars.count + 1
         let frameWidth = symbols + encoder.coefficientCount + 1
         guard lexicon.letters == settings.letters,
