@@ -460,8 +460,8 @@ with `KeyVoxTypingHarness swipe-lexicon --language <id>`:
 | Language | Swipe vocabulary | Lexicon words | Trie nodes | `swipe_lexicon.kvsl` |
 | --- | --- | --- | --- | --- |
 | en | 26,319 | 133,226 | 270,724 | 6,306,824 bytes |
-| de | 102,127 | 320,472 | 1,059,147 | 22,075,953 bytes |
-| fr | 59,966 | 223,596 | 470,326 | 11,035,060 bytes |
+| de | 102,127 | 320,468 | 1,059,139 | 22,075,763 bytes |
+| fr | 59,966 | 223,586 | 470,311 | 11,034,666 bytes |
 | es | 74,670 | 310,858 | 579,330 | 14,390,581 bytes |
 
 ### Measuring
