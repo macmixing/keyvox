@@ -7,8 +7,9 @@ import Foundation
 /// Where each letter of the word being typed was tapped, kept in step with the text.
 ///
 /// Touches are only trusted while they line up one-to-one with the letters before the
-/// cursor; any edit that breaks that (pasting, moving the cursor, a long-press accent)
-/// drops them and the word is scored from key centers instead.
+/// cursor; any edit that breaks that (pasting, moving the cursor, an accent put on a letter
+/// already typed) drops them and the word is scored from key centers instead. A letter picked
+/// from a held key's popup is recorded as a tap on the key held to pick it.
 public struct TypedWordTouches: Sendable, Equatable {
     public private(set) var word = ""
     public private(set) var touches: [CGPoint] = []

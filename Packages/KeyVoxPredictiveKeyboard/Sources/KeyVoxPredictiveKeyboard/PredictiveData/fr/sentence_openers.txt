@@ -1,0 +1,2158 @@
+ending *	je:-1.923 il:-2.215 elle:-3.086 le:-3.239 tu:-3.252 nous:-3.332 j'ai:-3.333 la:-3.417 c'est:-3.470 vous:-3.508 les:-3.539 ils:-3.633 ce:-4.060 on:-4.251 elles:-4.353 ne:-4.357 pourquoi:-4.508 est:-4.516 comment:-4.795 ça:-4.826 si:-4.837 mon:-4.856 cette:-4.950 un:-4.991 à:-5.003 que:-5.054 où:-5.097 tout:-5.165 qui:-5.197 quand:-5.211 ma:-5.329 en:-5.376 une:-5.439 as:-5.445 qu'est:-5.450 quel:-5.474 cela:-5.477 avez:-5.528 j'aime:-5.596 combien:-5.602 son:-5.659 personne:-5.686 quelle:-5.706 de:-5.734 c'était:-5.739 j'aimerais:-5.757 dans:-5.846 j'étais:-5.896 pour:-5.900 et:-5.934 sa:-5.941 ces:-6.027 êtes:-6.028 j'espère:-6.175 notre:-6.183 merci:-6.197 es:-6.224 s'il:-6.225 mais:-6.242 mes:-6.246 puis:-6.257 peux:-6.271 au:-6.284 cet:-6.292 non:-6.321 tous:-6.346 y:-6.346 comme:-6.347 votre:-6.379 pouvez:-6.410 ton:-6.425 oui:-6.441 veuillez:-6.441 des:-6.444 j'en:-6.457 ses:-6.467 fais:-6.513 peut:-6.533 aujourd'hui:-6.541 laisse:-6.606 rien:-6.624 dis:-6.625 arrête:-6.630 après:-6.654 donne:-6.680 veux:-6.687 quelqu'un:-6.725 alors:-6.746 voulez:-6.755 celui:-6.774 avec:-6.780 chaque:-6.781 bien:-6.804 ta:-6.811 beaucoup:-6.825 maintenant:-6.827 j'avais:-6.833 allez:-6.861 jean:-6.863 voici:-6.889 j'adore:-6.891 prends:-6.896 l'homme:-6.903 faites:-6.907 même:-6.913 laissez:-6.916 regarde:-6.941 depuis:-6.949 plus:-6.994 va:-7.000 j'aurais:-7.014 a:-7.020 pas:-7.024 pourriez:-7.053 soyez:-7.079 lorsque:-7.082 sais:-7.082 prenez:-7.083 hier:-7.086 ceci:-7.086 moi:-7.098 sois:-7.133 viens:-7.145 toutes:-7.155 pourrais:-7.166 t'es:-7.171 dites:-7.195 voilà:-7.204 tes:-7.204 donnez:-7.221 j'ignore:-7.237 savez:-7.239 ah:-7.241 certains:-7.244 oh:-7.249 l'amour:-7.251 par:-7.281 sur:-7.283 allons:-7.310 demain:-7.335 arrêtez:-7.351 dieu:-7.356 quels:-7.362 nos:-7.365 l'eau:-7.383 sans:-7.389 aucun:-7.410 chacun:-7.433 avant:-7.461 leur:-7.465 peu:-7.476 vos:-7.480 t'as:-7.498 quoi:-7.507 j'y:-7.508 parfois:-7.523 pensez:-7.527 vas:-7.527 désolé:-7.528 mets:-7.532 eh:-7.548 parlez:-7.549 user:-7.562 penses:-7.574 l'algérie:-7.595 me:-7.596 bonjour:-7.598 quelles:-7.600 toute:-7.638 d'où:-7.648 n'oublie:-7.659 te:-7.663 certaines:-7.674 reste:-7.676 lui:-7.680 deux:-7.697 aimez:-7.714 regardez:-7.714 venez:-7.725 restez:-7.730 pendant:-7.735 suis:-7.750 toi:-7.751 quelque:-7.751 bon:-7.760 l'enfant:-7.764 ceux:-7.778 excusez:-7.803 maman:-7.807 qu'as:-7.811 attention:-7.816 malheureusement:-7.826 mettez:-7.827 dès:-7.829 attends:-7.832 essaie:-7.855 là:-7.865 ici:-7.867 j'apprécie:-7.868 assistant:-7.878 sont:-7.878 aimes:-7.882 du:-7.899 aucune:-7.938 jamais:-7.939 tiens:-7.952 dois:-7.955 montre:-7.955 selon:-7.960 j'apprends:-7.978 bonne:-7.983 se:-7.986 j'attends:-7.989 passe:-7.989 n'oubliez:-8.008 ai:-8.018 heureusement:-8.021 connaissez:-8.061 attendez:-8.062 qu'avez:-8.062 connais:-8.067 parle:-8.073 garde:-8.081 mieux:-8.082 j'essaie:-8.082 kaci:-8.085 quiconque:-8.097 ont:-8.099 appelle:-8.101 faisons:-8.115 essayez:-8.135 l'argent:-8.139 jusqu'à:-8.142 n'est:-8.147 lequel:-8.181 papa:-8.185 voudriez:-8.200 juba:-8.205 malgré:-8.211 salut:-8.213 mange:-8.215 j'irai:-8.242 l'avion:-8.246 crois:-8.246 qu'y:-8.281 l'avez:-8.288 écoute:-8.292 quelques:-8.294 tant:-8.299 pouvons:-8.300 l'un:-8.300 encore:-8.306 parles:-8.307 faire:-8.314 leurs:-8.315 parce:-8.316 celle:-8.325 ferme:-8.339 écris:-8.354 l'as:-8.371 montrez:-8.377 trois:-8.381 j'habite:-8.384 entre:-8.386 finalement:-8.393 voudrais:-8.410 qu'il:-8.422 j'étudie:-8.428 mangez:-8.436 hé:-8.445 voyez:-8.453 j'ignorais:-8.453 l'histoire:-8.455 ainsi:-8.457 gardez:-8.459 j'entends:-8.461 cependant:-8.464 enfin:-8.470 lis:-8.470 l'entreprise:-8.476 tenez:-8.477 d'accord:-8.478 appelez:-8.487 vois:-8.490 demande:-8.497 être:-8.502 croyez:-8.506 juste:-8.519 n'y:-8.526 sors:-8.540 ouvre:-8.541 cesse:-8.543 l'analyse:-8.548 nul:-8.553 apporte:-8.568 faut:-8.569 donc:-8.570 plusieurs:-8.575 n'importe:-8.577 sortez:-8.579
+ending exclamation	je:-2.289 il:-3.130 elle:-4.629 le:-4.088 tu:-2.969 nous:-4.114 j'ai:-3.955 la:-4.417 c'est:-3.048 vous:-3.697 les:-4.874 ils:-4.682 ce:-4.414 on:-4.137 elles:-6.426 ne:-4.285 pourquoi:-5.319 est:-5.110 comment:-4.483 ça:-4.220 si:-4.637 mon:-4.921 cette:-5.971 un:-5.029 à:-4.718 que:-4.192 où:-5.387 tout:-4.677 qui:-5.585 quand:-5.895 ma:-5.866 en:-5.540 une:-5.009 as:-6.918 qu'est:-5.121 quel:-5.507 cela:-6.117 avez:-7.985 j'aime:-6.832 combien:-7.987 son:-7.339 personne:-6.977 quelle:-5.359 de:-5.116 c'était:-6.378 j'aimerais:-5.760 dans:-6.818 j'étais:-8.911 pour:-5.681 et:-3.772 sa:-7.111 ces:-7.344 êtes:-8.083 j'espère:-5.899 notre:-6.700 merci:-5.328 es:-7.346 s'il:-6.297 mais:-4.312 mes:-6.837 puis:-6.489 peux:-6.780 au:-5.906 cet:-7.390 non:-4.902 tous:-6.459 y:-6.986 comme:-5.530 votre:-6.973 pouvez:-7.391 ton:-6.838 oui:-5.205 veuillez:-12.245 des:-6.512 j'en:-5.926 ses:-11.196 fais:-6.247 peut:-6.259 aujourd'hui:-6.974 laisse:-6.011 rien:-6.946 dis:-6.237 arrête:-6.018 après:-6.540 donne:-6.659 veux:-11.266 quelqu'un:-7.393 alors:-5.328 voulez:-8.066 celui:-7.378 avec:-6.648 chaque:-8.095 bien:-5.532 ta:-6.462 beaucoup:-10.754 maintenant:-6.625 j'avais:-7.159 allez:-6.218 jean:-10.759 voici:-6.522 j'adore:-9.379 prends:-7.351 l'homme:-10.147 faites:-6.975 même:-6.632 laissez:-6.710 regarde:-6.113 depuis:-6.667 plus:-7.195 va:-6.077 j'aurais:-7.244 a:-5.564 pas:-5.228 pourriez:-8.098 soyez:-7.380 lorsque:-6.718 sais:-10.425 prenez:-6.986 hier:-8.887 ceci:-9.950 moi:-5.411 sois:-7.338 viens:-6.270 toutes:-8.070 pourrais:-6.938 t'es:-6.852 dites:-8.014 voilà:-5.850 tes:-7.297 donnez:-7.395 j'ignore:-13.041 savez:-7.006 ah:-6.075 certains:-13.048 oh:-5.927 l'amour:-8.070 par:-7.212 sur:-9.391 allons:-8.100 demain:-6.844 arrêtez:-6.996 dieu:-6.711 quels:-7.988 nos:-10.447 l'eau:-8.101 sans:-6.911 aucun:-9.509 chacun:-7.396 avant:-7.988 leur:-8.101 peu:-11.440 vos:-8.072 t'as:-6.577 quoi:-5.589 j'y:-6.394 parfois:-8.043 pensez:-8.101 vas:-6.668 désolé:-7.731 mets:-8.101 eh:-7.208 parlez:-8.101 user:-8.275 penses:-8.044 l'algérie:-13.399 me:-9.200 bonjour:-7.396 quelles:-7.989 toute:-9.295 d'où:-6.997 n'oublie:-8.044 te:-7.615 certaines:-13.478 reste:-8.044 lui:-6.467 deux:-6.977 aimez:-6.719 regardez:-13.518 venez:-6.987 restez:-13.534 pendant:-10.850 suis:-9.037 toi:-5.826 quelque:-10.851 bon:-5.461 l'enfant:-13.568 ceux:-8.073 excusez:-13.607 maman:-7.353 qu'as:-7.412 attention:-7.963 malheureusement:-10.856 mettez:-7.412 dès:-10.856 attends:-6.654 essaie:-11.492 là:-6.523 ici:-7.285 j'apprécie:-13.672 assistant:-8.026 sont:-8.103 aimes:-13.686 du:-6.091 aucune:-8.045 jamais:-6.705 tiens:-6.903 dois:-13.759 montre:-7.412 selon:-10.198 j'apprends:-13.783 bonne:-6.150 se:-7.938 j'attends:-9.981 passe:-7.138 n'oubliez:-11.508 ai:-7.382 heureusement:-7.197 connaissez:-11.513 attendez:-7.007 qu'avez:-8.104 connais:-11.514 parle:-6.997 garde:-7.991 mieux:-11.515 j'essaie:-10.870 kaci:-13.890 quiconque:-13.902 ont:-11.517 appelle:-7.991 faisons:-13.919 essayez:-10.483 l'argent:-13.943 jusqu'à:-10.483 n'est:-6.712 lequel:-8.104 papa:-10.484 voudriez:-14.004 juba:-14.009 malgré:-10.485 salut:-6.683 mange:-8.046 j'irai:-9.523 l'avion:-8.104 crois:-14.050 qu'y:-14.085 l'avez:-14.092 écoute:-11.533 quelques:-14.098 tant:-7.654 pouvons:-14.104 l'un:-14.104 encore:-8.391 parles:-14.111 faire:-14.118 leurs:-14.119 parce:-7.512 celle:-10.207 ferme:-8.018 écris:-11.538 l'as:-8.104 montrez:-7.007 trois:-7.412 j'habite:-11.540 entre:-8.018 finalement:-10.883 voudrais:-11.542 qu'il:-6.997 j'étudie:-14.232 mangez:-14.240 hé:-6.949 voyez:-14.257 j'ignorais:-14.257 l'histoire:-14.259 ainsi:-8.105 gardez:-14.263 j'entends:-8.105 cependant:-7.383 enfin:-6.413 lis:-11.546 l'entreprise:-14.280 tenez:-8.075 d'accord:-6.261 appelez:-14.292 vois:-10.210 demande:-9.990 être:-11.548 croyez:-8.105 juste:-6.943 n'y:-8.075 sors:-8.105 ouvre:-8.075 cesse:-8.105 l'analyse:-14.352 nul:-10.493 apporte:-14.373 faut:-7.408 donc:-6.975 plusieurs:-11.552 n'importe:-8.105 sortez:-8.105
+ending period	je:-2.223 il:-2.700 elle:-3.748 le:-3.661 tu:-3.569 nous:-3.987 j'ai:-4.182 la:-3.872 c'est:-3.115 vous:-4.198 les:-4.044 ils:-4.156 ce:-4.180 on:-4.131 elles:-5.452 ne:-4.576 pourquoi:-5.155 est:-4.915 comment:-5.401 ça:-4.451 si:-4.415 mon:-5.480 cette:-5.680 un:-5.112 à:-5.082 que:-5.098 où:-5.246 tout:-4.888 qui:-5.768 quand:-5.445 ma:-5.679 en:-4.481 une:-5.394 as:-6.458 qu'est:-5.774 quel:-6.221 cela:-5.317 avez:-6.811 j'aime:-6.825 combien:-6.522 son:-6.075 personne:-6.247 quelle:-6.312 de:-5.154 c'était:-5.531 j'aimerais:-6.517 dans:-5.439 j'étais:-6.694 pour:-5.150 et:-3.731 sa:-6.818 ces:-6.017 êtes:-7.276 j'espère:-6.483 notre:-6.858 merci:-5.409 es:-7.523 s'il:-6.512 mais:-3.760 mes:-6.497 puis:-5.776 peux:-6.324 au:-5.483 cet:-7.316 non:-5.532 tous:-6.498 y:-6.901 comme:-5.954 votre:-7.219 pouvez:-6.458 ton:-6.582 oui:-5.648 veuillez:-6.572 des:-6.500 j'en:-6.181 ses:-6.703 fais:-6.507 peut:-5.908 aujourd'hui:-6.196 laisse:-6.939 rien:-6.085 dis:-7.042 arrête:-7.414 après:-6.291 donne:-5.517 veux:-6.785 quelqu'un:-7.049 alors:-5.510 voulez:-7.524 celui:-6.939 avec:-5.521 chaque:-6.892 bien:-6.013 ta:-7.602 beaucoup:-7.385 maintenant:-5.697 j'avais:-7.302 allez:-7.199 jean:-8.414 voici:-6.915 j'adore:-9.214 prends:-6.558 l'homme:-7.739 faites:-6.882 même:-6.618 laissez:-7.511 regarde:-7.710 depuis:-7.309 plus:-6.105 va:-6.811 j'aurais:-6.751 a:-5.815 pas:-5.803 pourriez:-6.559 soyez:-7.306 lorsque:-7.182 sais:-7.937 prenez:-7.722 hier:-8.925 ceci:-7.704 moi:-5.232 sois:-7.357 viens:-6.563 toutes:-6.891 pourrais:-6.865 t'es:-7.034 dites:-7.386 voilà:-6.564 tes:-8.166 donnez:-7.321 j'ignore:-7.751 savez:-7.564 ah:-5.807 certains:-6.660 oh:-6.434 l'amour:-6.723 par:-6.018 sur:-7.004 allons:-6.797 demain:-6.822 arrêtez:-8.622 dieu:-7.256 quels:-8.160 nos:-7.937 l'eau:-8.636 sans:-6.905 aucun:-7.144 chacun:-7.021 avant:-7.710 leur:-6.916 peu:-7.545 vos:-8.622 t'as:-7.290 quoi:-6.319 j'y:-6.756 parfois:-7.525 pensez:-11.047 vas:-8.476 désolé:-6.800 mets:-8.223 eh:-7.203 parlez:-8.223 user:-8.788 penses:-9.244 l'algérie:-14.655 me:-8.382 bonjour:-8.947 quelles:-7.754 toute:-7.526 d'où:-7.399 n'oublie:-9.029 te:-10.292 certaines:-7.639 reste:-7.535 lui:-7.748 deux:-7.507 aimez:-9.328 regardez:-8.252 venez:-8.652 restez:-8.609 pendant:-7.909 suis:-8.349 toi:-7.327 quelque:-7.535 bon:-6.572 l'enfant:-9.358 ceux:-6.708 excusez:-9.329 maman:-9.074 qu'as:-9.358 attention:-9.052 malheureusement:-6.699 mettez:-9.168 dès:-7.053 attends:-8.527 essaie:-9.219 là:-6.866 ici:-8.158 j'apprécie:-8.652 assistant:-6.566 sont:-8.581 aimes:-14.942 du:-6.994 aucune:-7.106 jamais:-7.033 tiens:-8.236 dois:-7.711 montre:-9.273 selon:-7.542 j'apprends:-8.638 bonne:-6.496 se:-7.357 j'attends:-8.515 passe:-7.785 n'oubliez:-10.029 ai:-9.144 heureusement:-8.853 connaissez:-15.120 attendez:-7.279 qu'avez:-9.359 connais:-12.125 parle:-7.518 garde:-9.169 mieux:-8.653 j'essaie:-8.214 kaci:-15.145 quiconque:-7.570 ont:-11.457 appelle:-8.167 faisons:-7.752 essayez:-9.729 l'argent:-8.668 jusqu'à:-8.214 n'est:-7.253 lequel:-8.167 papa:-8.624 voudriez:-9.169 juba:-15.264 malgré:-8.465 salut:-8.502 mange:-9.246 j'irai:-8.624 l'avion:-8.263 crois:-9.194 qu'y:-9.360 l'avez:-7.416 écoute:-8.624 quelques:-7.723 tant:-6.745 pouvons:-9.330 l'un:-6.580 encore:-7.448 parles:-12.790 faire:-8.767 leurs:-7.734 parce:-7.335 celle:-7.931 ferme:-8.263 écris:-7.744 l'as:-7.282 montrez:-7.407 trois:-7.540 j'habite:-11.464 entre:-7.875 finalement:-10.091 voudrais:-9.360 qu'il:-10.780 j'étudie:-8.668 mangez:-12.799 hé:-9.360 voyez:-7.975 j'ignorais:-15.513 l'histoire:-9.302 ainsi:-6.094 gardez:-9.145 j'entends:-8.638 cependant:-5.525 enfin:-6.861 lis:-8.263 l'entreprise:-11.245 tenez:-8.205 d'accord:-6.352 appelez:-8.668 vois:-9.221 demande:-8.177 être:-8.610 croyez:-8.253 juste:-7.557 n'y:-7.975 sors:-8.243 ouvre:-8.653 cesse:-9.360 l'analyse:-15.608 nul:-8.253 apporte:-12.144 faut:-9.017 donc:-6.343 plusieurs:-9.122 n'importe:-9.331 sortez:-7.541
+ending question	je:-1.898 il:-3.108 elle:-4.064 le:-4.726 tu:-4.065 nous:-4.367 j'ai:-3.753 la:-4.569 c'est:-3.010 vous:-4.951 les:-4.874 ils:-4.774 ce:-4.293 on:-4.622 elles:-5.440 ne:-6.467 pourquoi:-9.510 est:-7.701 comment:-8.546 ça:-4.073 si:-4.964 mon:-5.694 cette:-7.871 un:-4.249 à:-4.560 que:-6.810 où:-7.973 tout:-5.375 qui:-9.491 quand:-6.020 ma:-6.028 en:-4.720 une:-5.292 as:-10.436 qu'est:-8.094 quel:-7.964 cela:-5.503 avez:-11.390 j'aime:-6.200 combien:-11.463 son:-7.970 personne:-5.676 quelle:-6.180 de:-4.916 c'était:-6.513 j'aimerais:-5.931 dans:-5.169 j'étais:-5.947 pour:-5.226 et:-5.461 sa:-7.775 ces:-8.030 êtes:-11.889 j'espère:-6.278 notre:-7.446 merci:-5.971 es:-12.086 s'il:-7.982 mais:-4.781 mes:-6.533 puis:-9.306 peux:-9.943 au:-5.082 cet:-8.117 non:-2.603 tous:-6.539 y:-7.683 comme:-6.584 votre:-7.031 pouvez:-10.404 ton:-9.793 oui:-2.588 veuillez:-10.409 des:-6.001 j'en:-5.584 ses:-11.253 fais:-7.868 peut:-6.993 aujourd'hui:-6.534 laisse:-6.760 rien:-4.664 dis:-6.077 arrête:-7.464 après:-6.689 donne:-6.638 veux:-12.548 quelqu'un:-8.152 alors:-5.799 voulez:-12.616 celui:-7.032 avec:-6.049 chaque:-6.775 bien:-4.063 ta:-7.340 beaucoup:-6.212 maintenant:-6.760 j'avais:-8.015 allez:-6.746 jean:-12.724 voici:-7.422 j'adore:-7.062 prends:-7.451 l'homme:-12.765 faites:-7.437 même:-9.997 laissez:-7.062 regarde:-8.125 depuis:-6.529 plus:-6.746 va:-6.171 j'aurais:-7.991 a:-6.547 pas:-4.276 pourriez:-8.126 soyez:-10.846 lorsque:-11.424 sais:-12.943 prenez:-12.945 hier:-11.425 ceci:-10.847 moi:-5.258 sois:-10.853 viens:-6.754 toutes:-7.024 pourrais:-13.027 t'es:-6.445 dites:-7.438 voilà:-7.381 tes:-7.438 donnez:-9.344 j'ignore:-13.098 savez:-13.100 ah:-5.279 certains:-13.105 oh:-5.497 l'amour:-13.113 par:-5.800 sur:-5.583 allons:-7.468 demain:-6.512 arrêtez:-13.213 dieu:-13.218 quels:-10.877 nos:-11.479 l'eau:-13.245 sans:-9.696 aucun:-8.158 chacun:-13.294 avant:-8.019 leur:-7.424 peu:-7.453 vos:-8.159 t'as:-6.933 quoi:-10.513 j'y:-7.424 parfois:-7.468 pensez:-11.506 vas:-8.073 désolé:-5.497 mets:-8.159 eh:-5.111 parlez:-13.411 user:-5.850 penses:-8.159 l'algérie:-13.457 me:-6.942 bonjour:-7.369 quelles:-10.244 toute:-10.900 d'où:-13.509 n'oublie:-10.902 te:-9.572 certaines:-13.535 reste:-8.160 lui:-6.554 deux:-6.084 aimez:-13.576 regardez:-8.160 venez:-8.102 restez:-13.592 pendant:-11.535 suis:-10.033 toi:-10.033 quelque:-7.425 bon:-7.258 l'enfant:-8.160 ceux:-8.074 excusez:-13.664 maman:-8.131 qu'as:-13.673 attention:-10.251 malheureusement:-7.469 mettez:-8.160 dès:-13.691 attends:-7.454 essaie:-11.549 là:-6.309 ici:-7.369 j'apprécie:-11.551 assistant:-5.970 sont:-13.740 aimes:-13.744 du:-6.519 aucune:-8.161 jamais:-6.367 tiens:-7.016 dois:-13.817 montre:-13.817 selon:-10.534 j'apprends:-11.563 bonne:-8.057 se:-7.440 j'attends:-8.021 passe:-9.176 n'oubliez:-13.869 ai:-7.469 heureusement:-7.454 connaissez:-13.922 attendez:-7.455 qu'avez:-13.924 connais:-8.161 parle:-11.572 garde:-11.573 mieux:-10.927 j'essaie:-13.944 kaci:-13.947 quiconque:-13.959 ont:-11.574 appelle:-8.103 faisons:-13.977 essayez:-8.132 l'argent:-8.161 jusqu'à:-11.578 n'est:-14.008 lequel:-11.582 papa:-14.046 voudriez:-14.062 juba:-14.066 malgré:-11.584 salut:-7.455 mange:-11.584 j'irai:-6.762 l'avion:-14.107 crois:-14.108 qu'y:-14.142 l'avez:-14.150 écoute:-10.937 quelques:-7.470 tant:-8.049 pouvons:-14.162 l'un:-14.162 encore:-8.104 parles:-14.169 faire:-14.176 leurs:-10.938 parce:-4.218 celle:-7.065 ferme:-14.201 écris:-8.162 l'as:-14.233 montrez:-14.239 trois:-8.132 j'habite:-7.470 entre:-10.046 finalement:-8.076 voudrais:-10.941 qu'il:-10.942 j'étudie:-7.470 mangez:-14.298 hé:-8.104 voyez:-8.162 j'ignorais:-14.315 l'histoire:-14.316 ainsi:-7.440 gardez:-14.321 j'entends:-14.322 cependant:-11.603 enfin:-8.671 lis:-14.331 l'entreprise:-14.337 tenez:-8.133 d'accord:-6.077 appelez:-8.133 vois:-8.133 demande:-8.104 être:-14.363 croyez:-14.367 juste:-5.924 n'y:-8.162 sors:-10.946 ouvre:-14.403 cesse:-14.404 l'analyse:-14.410 nul:-11.608 apporte:-14.430 faut:-7.656 donc:-9.868 plusieurs:-11.610 n'importe:-7.065 sortez:-14.440
+first exclamation a	me:1.481 hier:1.330 entre:0.926 par:0.875 bonne:0.811 parce:0.704 j'avais:0.559 passe:0.551
+first exclamation ah	êtes:1.659 entre:1.627 te:1.441 celui:1.308 j'essaie:1.301 ces:1.291 j'avais:1.242 y:1.142
+first exclamation aide	et:0.706
+first exclamation aidez	ma:1.705
+first exclamation aie	tu:0.438
+first exclamation allez	dites:2.191 malheureusement:1.860 parle:1.685 donne:1.518 va:1.247 un:1.059 toutes:0.513
+first exclamation allons	cela:1.624 qu'est:1.144 nous:0.688 il:0.301
+first exclamation allume	j'ai:0.823
+first exclamation allô	qui:2.135 avec:1.975
+first exclamation alors	parce:2.240 personne:1.975 hier:1.194 de:1.068 par:0.739 nous:0.627 sois:0.495 des:0.441
+first exclamation amour	ton:2.167
+first exclamation anchise	vous:0.717
+first exclamation apportez	c'est:0.735
+first exclamation après	ne:0.951
+first exclamation arrête	va:1.228 tu:1.173 ce:0.442 ça:0.357 nous:0.311
+first exclamation arrêtez	vous:1.453 j'ai:0.417
+first exclamation asseyez	mettez:2.466
+first exclamation assez	la:0.983
+first exclamation assieds	mets:2.810 ne:0.965
+first exclamation assistant	comment:1.504 user:0.920 quels:0.789 passe:0.428
+first exclamation attendez	peut:1.694 pourquoi:1.238 oui:1.184 que:0.721 je:0.394
+first exclamation attends	laisse:1.981 fais:1.412 pourquoi:0.963 qu'est:0.869 les:0.753 à:0.681 je:0.577
+first exclamation attention	quelqu'un:1.581 vas:1.222 voici:1.150 les:1.021 ne:0.932 voilà:0.821
+first exclamation au	prends:1.943 j'étais:0.989 est:0.849 comment:0.560 mais:0.484
+first exclamation aux	et:0.669
+first exclamation aïe	l'eau:2.368 une:1.632 cela:1.386 arrête:1.337 ma:1.263 bon:1.068 les:0.790 j'ai:0.381
+first exclamation bah	jamais:1.881 a:1.352 ça:1.029 encore:1.002 ferme:0.831 donc:0.676 t'es:0.623 faut:0.565
+first exclamation ben	trois:2.209 fais:1.632 faut:0.845 se:0.771 tant:0.646 il:0.516 t'as:0.486 par:0.462
+first exclamation bien	vos:2.444 tes:2.059 après:1.684 aucun:1.420 voilà:1.346 voici:1.316 qui:1.218 alors:1.109
+first exclamation bienvenue	hé:2.090 je:0.561
+first exclamation bon	appelle:2.348 combien:2.331 vois:1.694 ceci:1.565 au:1.331 encore:0.815 j'ai:0.706 mais:0.629
+first exclamation bonjour	écoute:2.082 dès:1.745 venez:1.565 puis:1.319 ceci:1.297 bon:1.155 où:1.118 quelles:0.876
+first exclamation bonne	j'espère:2.042 cette:1.405 faut:0.435 fais:0.409 sois:0.406 ici:0.385
+first exclamation bonsoir	notre:1.852 comment:1.309 que:1.165 est:1.093
+first exclamation bravo	c'était:1.800 tu:0.724 c'est:0.331
+first exclamation c'est	sortez:1.894 ouvre:1.879 être:1.862 cependant:1.549 celle:1.540 j'aurais:1.466 eh:1.463 ta:1.436
+first exclamation c'était	mais:1.238 à:1.098 j'aurais:0.672 a:0.451
+first exclamation ca	faut:0.994 penses:0.968 des:0.609 heureusement:0.605 deux:0.519 donc:0.518 juste:0.506 merci:0.423
+first exclamation calme	pourquoi:1.440 ne:0.963 t'es:0.580
+first exclamation ce	arrêtez:1.730 as:1.692 arrête:1.249 pourquoi:0.911 oui:0.857 un:0.774 ils:0.613 la:0.506
+first exclamation cela	enfin:1.823 j'en:1.585 tout:0.992 vous:0.568 tu:0.301
+first exclamation cet	c'est:0.475
+first exclamation cher	soyez:2.451 si:1.122
+first exclamation chut	elles:1.698 elle:1.162 ils:0.862 nous:0.610 il:0.487 vous:0.436
+first exclamation cinq	a:1.518
+first exclamation comme	sa:2.034 lui:1.716 arrête:1.496 au:1.441 sur:1.430 j'étais:1.199 ils:0.860 parfois:0.794
+first exclamation comment	suis:1.479 j'aurais:0.669 il:0.440 tu:0.405 des:0.398 c'était:0.354
+first exclamation continue	il:0.504 tu:0.449
+first exclamation coucou	hier:1.734 suis:1.130 alors:0.933 juste:0.900 dis:0.790 par:0.787 oui:0.688 demain:0.619
+first exclamation d'accord	vois:2.060 te:0.832 a:0.457 tu:0.413
+first exclamation de	se:0.907 donnez:0.672 et:0.624 donc:0.504 peux:0.432 tu:0.364 t'as:0.360
+first exclamation demain	pour:1.609 se:1.343 votre:0.621 après:0.465 fais:0.371 dis:0.368 bonne:0.342 alors:0.306
+first exclamation des	le:0.849 et:0.717 par:0.690
+first exclamation dieu	celui:2.306 quel:1.387 quelle:1.316 la:0.879 nous:0.746 tu:0.305
+first exclamation dieux	qu'il:2.221
+first exclamation dis	n'y:2.576 qui:1.348 comment:0.832 que:0.703 tu:0.488
+first exclamation disparais	tu:0.449
+first exclamation dit	lui:1.914 ils:1.058 pourrais:0.529 j'aime:0.489
+first exclamation dites	d'où:2.220 vous:0.677 c'est:0.436
+first exclamation donne	hé:2.192 non:1.200
+first exclamation donnez	non:1.244
+first exclamation dors	la:0.936 j'aime:0.487
+first exclamation douce	tout:1.141 le:0.879
+first exclamation décide	il:0.504
+first exclamation dégage	pourquoi:1.401
+first exclamation dépêche	le:1.169 ils:1.121 tout:1.119 nous:1.044
+first exclamation dépêchez	il:0.737 nous:0.688 le:0.677
+first exclamation dépêchons	nous:1.451
+first exclamation désolé	tout:0.986 n'y:0.936 mais:0.822 c'est:0.580 peux:0.400 il:0.349
+first exclamation eh	qu'avez:2.102 n'oublie:2.073 es:1.725 parle:1.552 t'as:1.345 ce:1.076 j'en:1.025 ma:0.996
+first exclamation elle	ai:2.098 jusqu'à:1.897 j'adore:1.354 pas:1.044 qu'est:0.994 te:0.844 à:0.806 comment:0.738
+first exclamation en	allons:2.508 sans:1.917 notre:1.813 non:1.280 de:1.044 à:0.858 tant:0.604 et:0.514
+first exclamation enfin	j'ai:0.771 ces:0.698 faites:0.552 du:0.481 c'est:0.410 c'était:0.342
+first exclamation entendu	à:1.118
+first exclamation espèce	tu:0.706
+first exclamation et	voudrais:2.145 jean:1.755 ceci:1.355 suis:1.247 j'irai:1.146 sur:1.081 une:1.000 me:0.989
+first exclamation excellent	allez:1.873 par:0.716 vous:0.713
+first exclamation excusez	pourriez:2.633 puis:1.835 que:0.749 je:0.422 il:0.329
+first exclamation fais	cet:2.285 les:1.061 nous:0.720 le:0.709 il:0.598 demain:0.408
+first exclamation faites	le:0.879
+first exclamation fiche	je:0.454
+first exclamation formidable	pas:1.397 et:0.747
+first exclamation fous	tu:0.449
+first exclamation félicitations	voulez:2.702 garde:0.963 vous:0.921 maintenant:0.410 des:0.372
+first exclamation garde	tu:0.407
+first exclamation gardez	mais:1.293
+first exclamation garçon	de:1.305 ça:0.896
+first exclamation gloire	ils:1.143
+first exclamation grand	prenez:2.143 de:1.233 est:1.230
+first exclamation grâce	que:0.884
+first exclamation génial	alors:1.929 demain:0.528
+first exclamation ha	quoi:1.131 pas:0.957 un:0.864 vous:0.571 ça:0.496 tant:0.465
+first exclamation haha	j'étais:1.472 la:1.013 sois:0.762 t'as:0.474 bien:0.361
+first exclamation halte	mettez:2.322 qui:1.425 vous:1.185
+first exclamation he	allez:1.871 il:0.509
+first exclamation hello	quelles:1.020 demain:0.823 ici:0.718 par:0.688 sa:0.648 dis:0.579 peux:0.523 alors:0.500
+first exclamation heureusement	nous:0.873 ah:0.309
+first exclamation hey	encore:1.448 hier:1.353 désolé:0.821 juste:0.780 demain:0.737 t'as:0.627 des:0.600 sa:0.563
+first exclamation hm	peut:1.895 tu:0.448
+first exclamation hmm	oui:1.384 et:0.745
+first exclamation holà	viens:1.902
+first exclamation hop	elle:1.038
+first exclamation hou	votre:2.209 quelle:1.755
+first exclamation hum	hier:1.379 ça:0.845 le:0.788 tu:0.358
+first exclamation hé	attention:2.012 attendez:1.881 pouvez:1.727 attends:1.706 quoi:1.521 peux:1.424 vas:1.369 donne:1.365
+first exclamation hélas	ces:2.086 même:1.733 j'y:1.616 peut:1.550 en:1.537 cela:1.480 de:0.998 et:0.698
+first exclamation il	lequel:1.991 son:1.955 quelqu'un:1.637 cependant:1.632 quelque:1.613 essayez:1.430 t'es:1.369 depuis:1.278
+first exclamation ils	tous:1.953 faites:1.865 allez:1.492 moi:1.100 alors:1.061 pourquoi:1.056 désolé:0.554 ça:0.552
+first exclamation impossible	ça:0.890 vous:0.671 donc:0.582 c'est:0.430
+first exclamation incroyable	il:0.503
+first exclamation j'adore	heureusement:2.352 moi:1.477 faut:0.793 passe:0.683
+first exclamation j'ai	se:2.128 finalement:1.848 viens:1.301 j'adore:1.107 me:1.020 merci:0.899 où:0.873 donc:0.726
+first exclamation j'en	a:1.491 j'ai:0.768 rien:0.549 tu:0.392
+first exclamation j'espère	ferme:1.037 avez:1.022 ne:0.936 ici:0.721 bonne:0.706 bon:0.449 après:0.442 ta:0.416
+first exclamation jamais	j'adore:1.661 bien:1.496 un:1.257 si:1.075 heureusement:0.667 t'es:0.534
+first exclamation je	j'habite:1.493 donnez:1.176 j'essaie:1.160 malheureusement:1.153 pendant:1.150
+first exclamation joyeux	j'espère:1.596 j'aurais:0.608 passe:0.566 sa:0.555 tu:0.324 ta:0.320
+first exclamation l'homme	de:1.342 si:1.120
+first exclamation la	sois:1.832 rien:1.637 elle:1.049 les:0.976 bon:0.925 j'étais:0.884 quelle:0.862
+first exclamation laisse	d'accord:1.842 une:1.238
+first exclamation laissez	d'accord:1.858 c'est:0.436
+first exclamation le	malgré:1.654 enfin:1.374 allez:1.279 toi:1.087 quel:0.933 la:0.751 qu'est:0.749
+first exclamation les	heureusement:1.958 attendez:1.864 lorsque:1.721 j'espère:1.333 sur:1.312 pas:0.996 la:0.621 il:0.551
+first exclamation lol	toute:1.879 j'étais:1.355 encore:1.110 ouvre:0.965 désolé:0.812 tant:0.778 moi:0.652 ces:0.647
+first exclamation lorsque	le:0.802
+first exclamation là	oh:1.638 quoi:1.475 alors:1.349 que:0.828 après:0.375
+first exclamation lève	ma:1.665 il:0.464 c'est:0.436
+first exclamation ma	moi:1.423 elle:1.070 son:0.710
+first exclamation maintenant	voilà:1.650 tu:0.656 j'avais:0.652
+first exclamation mais	sors:2.052 juste:1.819 pendant:1.673 faites:1.491 pourrais:1.472 sans:1.459 t'es:1.444 j'aime:1.420
+first exclamation malheur	qu'as:2.290 si:1.270 mon:1.077 c'est:0.310
+first exclamation maman	arrête:2.060 arrêtez:2.000 peux:1.893 cette:1.496 tout:0.881 j'ai:0.563
+first exclamation mangez	elles:1.979
+first exclamation maudits	soyez:2.451
+first exclamation mdr	j'étais:1.590 encore:1.338 t'es:0.808 heureusement:0.781 sa:0.743 demain:0.627 parce:0.617 ah:0.595
+first exclamation mdrrr	j'adore:1.676 des:0.854 peux:0.523 ah:0.519 avec:0.476 après:0.439 mais:0.429 moi:0.429
+first exclamation merci	mieux:1.984 connais:1.983 dis:1.448 avec:1.308 j'y:1.183 j'espère:0.969 sur:0.934 toi:0.920
+first exclamation merde	j'ai:1.350 y:0.526
+first exclamation mes	faut:0.787 tu:0.445 bonne:0.334
+first exclamation mince	c'était:1.716 j'ai:1.212 mon:1.014 les:0.992
+first exclamation moi	demande:1.761 j'adore:1.461 toi:1.439 suis:1.296 quels:0.805 y:0.669 le:0.646 faut:0.554
+first exclamation mon	pouvez:1.935 vois:1.594 ah:1.285 quelle:1.274 cette:1.234 quand:1.197 qui:1.047 que:0.715
+first exclamation monsieur	donnez:2.457 est:1.340
+first exclamation mère	c'est:0.476
+first exclamation n'aie	ici:2.327 si:1.045 ce:0.945
+first exclamation n'entre	je:0.454
+first exclamation n'entrez	je:0.454
+first exclamation n'y	faites:2.250 fais:1.890
+first exclamation nan	par:1.013 puis:0.707 donc:0.626 fais:0.612 en:0.371 moi:0.333
+first exclamation ne	laissez:1.477 tenez:1.466 reste:1.451 ferme:1.438 même:1.295 d'accord:1.110 quelque:1.103
+first exclamation non	eh:1.680 aucun:1.086 me:0.936 suis:0.857 j'étais:0.796 pas:0.753 est:0.684 ce:0.662
+first exclamation nous	montre:2.145 maintenant:1.755 cette:1.435 ce:1.212 ils:0.822 si:0.801 la:0.715 le:0.558
+first exclamation o	toi:1.551 de:1.211 non:1.110 cette:0.645 sa:0.546 après:0.337
+first exclamation oh	montrez:1.673 l'amour:1.655 quelles:1.614 quels:1.614 qu'il:1.466 d'où:1.465 montre:1.327 ai:1.312
+first exclamation ok	papa:1.973 demande:1.729 merci:1.259 a:0.961 passe:0.887 demain:0.884 donc:0.813 la:0.771
+first exclamation on	n'oubliez:2.322 par:1.929 nos:1.795 demande:1.569 alors:1.357 toute:1.229 bon:1.126 faut:0.852
+first exclamation ou	quoi:1.551 à:1.140 t'as:0.464 j'y:0.403 va:0.307
+first exclamation ouah	quelle:1.706 quel:1.441 t'es:0.768 c'est:0.386
+first exclamation ouais	j'étais:1.276 non:1.066 plus:0.986 reste:0.872 j'ai:0.709 faut:0.595 t'as:0.539 eh:0.514
+first exclamation ouf	aucun:1.617 j'en:1.579 quel:1.377 quelle:1.306 tout:0.986 ça:0.782 il:0.350
+first exclamation oui	suis:1.629 j'attends:1.411 j'irai:1.186 j'adore:1.116 qui:0.991 bien:0.980 alors:0.895 faut:0.698
+first exclamation oups	j'ai:0.771 faut:0.749 il:0.452 c'était:0.366 en:0.321
+first exclamation ouvre	ça:0.859
+first exclamation où	nous:0.889 et:0.746
+first exclamation papa	maman:2.290 peux:2.006 qu'est:1.200 faut:0.653 c'est:0.338 tu:0.302
+first exclamation par	j'aimerais:1.583 en:1.476 enfin:0.358
+first exclamation pardon	sais:2.042 qui:1.403 est:1.162 j'ai:0.643
+first exclamation pardonne	désolé:2.625 c'est:0.476
+first exclamation pardonnez	y:2.255
+first exclamation parle	dis:1.737 ne:0.816 je:0.452
+first exclamation parlez	je:0.414
+first exclamation partez	personne:2.174 je:0.520
+first exclamation pas	plusieurs:2.396 j'aime:1.793 attends:1.705 bonne:1.486 tout:0.755 tant:0.519 j'ai:0.461
+first exclamation passons	c'est:0.476
+first exclamation pauvre	il:0.724
+first exclamation personne	on:0.909 vous:0.713
+first exclamation peut	à:1.071 ils:1.054 des:0.373
+first exclamation plus	je:0.399 tu:0.394
+first exclamation police	pourrais:2.464 à:1.048
+first exclamation pour	alors:1.349 encore:1.140 mais:0.893 hé:0.521 après:0.374 des:0.365
+first exclamation prends	après:1.890 voilà:1.552 ça:0.791 on:0.755 c'est:0.331
+first exclamation prenez	leur:2.770 voilà:1.657 vous:0.677
+first exclamation prépare	demain:2.180 nous:0.885 par:0.715
+first exclamation putain	j'étais:1.273 on:0.691 j'ai:0.662 tu:0.523 j'avais:0.490 mes:0.367
+first exclamation qu'il	bien:1.466 et:0.670
+first exclamation quand	parfois:2.585 la:1.146
+first exclamation que	tes:1.879 rien:1.705 notre:1.584 ta:1.466 cela:1.297 pour:1.085 en:1.016 est:0.811
+first exclamation quel	tiens:1.801 puis:1.597 lui:1.585 comment:0.639 le:0.466 j'ai:0.409 et:0.358 il:0.355
+first exclamation quelle	croyez:2.135 des:1.345 bien:1.204 cela:1.151 pourquoi:1.099 mon:0.906 oui:0.710 la:0.665
+first exclamation quels	on:0.900
+first exclamation quoi	pour:1.403 est:1.130 ne:0.753 tu:0.658 vous:0.505
+first exclamation regarde	l'avion:2.066 deux:1.849 là:1.624 as:1.476 mes:1.436 n'est:1.374 une:1.328 un:1.086
+first exclamation regardez	avez:2.385 n'est:2.298 aujourd'hui:1.882 ma:1.338 un:1.268 ne:0.598 il:0.573
+first exclamation reine	peut:1.897 de:1.345
+first exclamation rendez	la:1.022 vous:0.716
+first exclamation reste	ce:1.229 j'ai:0.711
+first exclamation restez	pas:1.397 le:0.879
+first exclamation reviens	on:0.900
+first exclamation rien	cet:2.398 la:0.979
+first exclamation ris	quoi:1.531 en:1.507 de:1.305
+first exclamation réponds	voilà:1.697 il:0.504
+first exclamation réveille	ça:0.936
+first exclamation réveillez	je:0.454
+first exclamation s'il	puis:1.603 bien:1.136 mais:0.569 ne:0.558 que:0.517 je:0.394
+first exclamation salut	bonjour:2.174 as:1.592 comment:1.363 quoi:0.955 où:0.843 est:0.753 qu'est:0.717
+first exclamation sans	dans:2.124 regarde:1.777 encore:1.188 tu:0.401
+first exclamation sapristi	où:1.473 il:0.504
+first exclamation saute	il:0.504
+first exclamation savais	elle:1.442
+first exclamation sens	penses:2.741 voici:1.986 c'est:0.436
+first exclamation sentez	pensez:2.810 c'est:0.476
+first exclamation si	dieu:1.779 j'attends:1.663 j'y:1.623 comme:1.202 user:0.842 parce:0.810 mais:0.687 désolé:0.598
+first exclamation silence	vous:0.717
+first exclamation sois	chaque:2.764 la:0.981
+first exclamation son	toi:1.684 il:0.503
+first exclamation sors	quel:1.452 ne:0.885 je:0.374
+first exclamation sortez	tous:1.883 quel:1.419 tout:1.029 ne:0.853
+first exclamation souris	la:1.023 le:0.879
+first exclamation soyez	ils:1.143 le:0.879
+first exclamation stop	regarde:1.746 dieu:0.451
+first exclamation suis	essayez:2.192 nous:0.832 ton:0.518
+first exclamation super	mon:1.175 tenez:1.013 peux:0.749 merci:0.605 as:0.527 j'aime:0.495 a:0.434
+first exclamation sur	hier:1.418 un:1.251
+first exclamation t'es	regarde:1.745 une:1.214 te:0.808 prends:0.697 tu:0.389
+first exclamation ta	depuis:2.036 sa:0.909 y:0.570 demain:0.517 c'est:0.414 tu:0.398
+first exclamation tais	pas:1.285 les:1.119 on:0.788 tu:0.337
+first exclamation taisez	vous:0.717
+first exclamation tant	du:1.709 ici:0.645 j'en:0.393 c'est:0.381 bon:0.372
+first exclamation tenez	à:1.158 nous:0.889
+first exclamation tiens	toi:1.419 merci:1.179 une:1.042 à:0.893 la:0.756 mais:0.710 nous:0.624
+first exclamation tire	comment:1.012
+first exclamation toi	parle:2.068 en:1.354 non:1.052 la:0.831 ici:0.557 il:0.312
+first exclamation ton	où:1.420 j'ai:0.769
+first exclamation tous	du:1.730 et:0.663 donc:0.543
+first exclamation tout	aucune:2.552 avant:2.524 et:0.841 mais:0.785 deux:0.399
+first exclamation trois	sont:2.811
+first exclamation trop	aucun:1.737 hier:1.436 combien:1.017 sa:0.646 donc:0.593 juste:0.581 t'es:0.547 demain:0.544
+first exclamation très	pour:1.524 encore:1.145 si:1.031 et:0.668
+first exclamation tu	toutes:1.822 qu'as:1.495 es:1.462 beaucoup:1.413 j'aurais:1.411 votre:1.277 j'aimerais:1.220 vas:1.126
+first exclamation un	cette:1.386 mon:0.883 ce:0.652 vous:0.648 mais:0.633 ne:0.595
+first exclamation une	pour:1.720 va:1.574 elle:0.885 reste:0.844 ne:0.731 faut:0.567 sa:0.447 faites:0.394
+first exclamation va	depuis:1.908 pas:1.209 qu'est:1.158 elle:0.930 par:0.531 vous:0.528 y:0.443
+first exclamation vas	tu:0.401
+first exclamation venez	ici:2.325 une:1.216 donc:0.549 il:0.426
+first exclamation veuillez	savez:2.153 nous:0.779 c'est:0.364 je:0.342
+first exclamation victoire	à:1.158 allez:0.367
+first exclamation viens	mange:2.286 ton:2.029 dans:1.675 oui:0.890 il:0.829 non:0.748 le:0.692
+first exclamation vite	j'entends:2.767 nous:0.846
+first exclamation vive	savez:2.257
+first exclamation voilà	des:1.890 quand:1.573 qu'est:1.202 nous:0.745 le:0.734 donc:0.482 a:0.367 maintenant:0.354
+first exclamation votre	merci:1.367 ne:0.887
+first exclamation vous	parlez:2.212 j'aimerais:1.736 jamais:1.518 allez:1.278 non:0.975 si:0.848 et:0.767
+first exclamation voyager	quand:2.058
+first exclamation vraiment	mon:1.244
+first exclamation waou	c'est:0.735
+first exclamation waouh	bon:1.306 qu'est:1.144 est:1.139 vous:0.514
+first exclamation wow	votre:2.160 quelle:1.371 sans:0.514 t'as:0.395 tu:0.360
+first exclamation zut	c'était:1.721 mon:1.349 j'ai:1.325
+first exclamation à	tant:2.072 salut:1.590 que:0.721 mais:0.461
+first exclamation ça	garde:2.104 passe:1.680 du:1.163 arrête:1.128 j'en:1.083 toi:1.034 qu'est:1.029 est:0.691
+first exclamation écoute	ne:1.198 ils:1.061 elle:1.036
+first exclamation écoutez	vous:0.717 il:0.504
+first exclamation éteins	fais:1.813 il:0.427
+first exclamation ô	l'as:2.425 au:1.338 pourquoi:1.054 que:0.537 nous:0.504
+first period a	essaie:1.002 j'adore:0.999 faut:0.904 du:0.707
+first period adieu	ton:2.014 la:0.747
+first period afin	faire:1.328 et:0.947 mais:0.656 le:0.651
+first period ah	j'avais:1.829 j'étais:1.499 bonne:1.470 aujourd'hui:1.254 j'ai:1.060 non:1.023 j'adore:1.016 oui:0.987
+first period ainsi	leurs:2.407 n'oubliez:1.806 on:0.703 ce:0.699 encore:0.597 la:0.580 d'où:0.576 le:0.494
+first period alexandre	ses:2.115 il:0.364
+first period allez	ne:0.719 ça:0.662 j'ai:0.544 ce:0.543 on:0.521 nous:0.460 je:0.401 et:0.367
+first period allons	quelle:1.719 j'ai:1.219 ne:0.891 le:0.499
+first period alors	jamais:1.765 pour:0.848 la:0.577 si:0.548 elle:0.527
+first period amour	bon:0.455 voilà:0.452 donc:0.380
+first period apparemment	même:2.062 tant:0.531 des:0.446 donc:0.395
+first period appelle	dis:2.235 tu:0.618 c'est:0.451
+first period apprendre	du:2.259
+first period après	aucune:1.855 cette:1.155 à:0.883 t'es:0.658 en:0.605 et:0.599 si:0.588
+first period argumenter	peu:2.533 en:1.052
+first period arrête	reste:2.160 tout:1.199 ça:1.183 avec:1.170 on:0.840 tu:0.768 ne:0.727
+first period arrêtez	ça:0.925 nous:0.723 je:0.459
+first period article	elle:0.737 le:0.702
+first period as	ton:2.048
+first period asseyez	il:0.363
+first period attendez	je:0.673 le:0.527
+first period attends	mes:1.896 j'y:1.681 hier:1.028 j'ai:0.772 je:0.694 ne:0.635 on:0.437
+first period au	qu'avez:2.600 montrez:1.626 dis:1.460 après:1.416 là:1.373 demain:1.336 certains:1.256 à:1.025
+first period aucun	ceux:1.833 s'il:1.737 tous:1.730 la:0.992 c'est:0.649 ce:0.635 toi:0.483
+first period aucune	avec:1.886 ainsi:1.485 cela:1.109 à:0.998 ce:0.588 nous:0.506 la:0.458 mais:0.424
+first period aujourd'hui	l'enfant:2.779 heureusement:2.527 quelque:2.223 se:2.127 demain:1.867 beaucoup:1.795 j'en:1.201 comme:1.104
+first period aussi	quand:1.412 et:0.653 voilà:0.389
+first period aussitôt	ils:0.830 les:0.782 des:0.379
+first period autrefois	aujourd'hui:1.722 ainsi:1.672 à:1.517 mais:0.598
+first period aux	dieu:2.209 quelle:1.742 en:0.885 les:0.705 le:0.522
+first period avant	là:1.957 qui:1.419 penses:1.404 maintenant:1.384 mon:1.279 à:1.090 en:0.813 et:0.788
+first period avec	sans:2.460 maintenant:1.316 jean:0.940 juste:0.556 donnez:0.458 comme:0.351
+first period ayant	ainsi:2.157
+first period b	ont:2.520 faire:1.533 du:1.121 des:0.892 quelles:0.733 une:0.709 se:0.565 a:0.502
+first period bah	jean:1.421 faut:1.378 t'as:1.321 parce:1.236 salut:1.133 toi:0.911 enfin:0.884 dis:0.785
+first period baissez	le:0.702
+first period beaucoup	oh:1.674 par:1.470 ces:1.470 ne:1.303 cependant:1.231 elles:1.196 tu:0.369
+first period belle	ton:2.014 bon:2.009 c'est:0.458
+first period ben	faut:1.623 hier:1.242 une:1.231 papa:1.099 attends:1.054 ta:0.946 dis:0.694 sur:0.677
+first period bien	vas:2.149 ah:1.368 désolé:1.315 pas:1.165 bonne:1.165 donc:1.090 avec:1.027 faut:1.022
+first period bientôt	ils:0.907
+first period bienvenue	merci:1.698 vous:0.805 dans:0.669 la:0.667 tu:0.545 bonne:0.334
+first period bois	ça:0.998 il:0.324
+first period bon	excusez:2.954 salut:2.542 peu:2.064 bonne:1.758 j'en:1.390 faut:1.064 ta:1.051 bonjour:1.031
+first period bonjour	avez:1.906 entre:1.884 es:1.709 encore:1.671 combien:1.556 dès:1.475 voici:1.436 comment:1.376
+first period bonne	soyez:2.484 fais:1.786 à:1.068 a:0.610 ta:0.608 j'espère:0.431 il:0.330
+first period buvez	vous:0.925
+first period c	plusieurs:1.310 faire:1.140 jean:0.974 du:0.959 des:0.834 prenez:0.661 se:0.507 j'avais:0.484
+first period c'en	mon:1.441 en:0.975
+first period c'est	garde:1.677 plusieurs:1.653 ouvre:1.419 papa:1.404
+first period c'était	j'avais:1.660 sans:1.464 elles:1.089 son:1.055 non:0.791
+first period ca	hier:1.718 me:1.126 toutes:0.769 enfin:0.756 peux:0.700 quoi:0.699 allez:0.609 bonne:0.605
+first period calme	ce:0.805 on:0.784 tu:0.553 t'es:0.537 je:0.318
+first period calmez	votre:2.331 nous:0.796
+first period car	croyez:2.685 lorsque:2.496 quand:1.301 vous:0.738 votre:0.522
+first period carlsen	aucune:2.238 demain:2.097 quand:1.424
+first period carrément	ah:2.014
+first period ce	montre:1.910 lis:1.406 demande:1.363
+first period ceci	toute:2.375 chacun:2.124 oh:1.834 donc:1.804 peut:1.576 en:0.903
+first period cela	faites:1.622 ceux:1.536 bon:1.469 n'oubliez:1.445 est:0.998 user:0.842 de:0.835 faire:0.832
+first period celle	combien:2.021 que:1.331
+first period celui	j'ignore:2.227 combien:1.617 et:0.937 vous:0.518 selon:0.448 depuis:0.351
+first period cependant	des:1.579 cela:1.331 alors:1.081 elles:1.053 pour:0.910 par:0.875 les:0.850 voici:0.847
+first period certainement	aucun:2.294 la:0.748 le:0.662
+first period certaines	toutes:2.044 elles:1.684 moi:1.236 ils:0.757 ce:0.755
+first period certains	entre:2.376 peut:1.404 à:1.008 malgré:0.950 ils:0.587 les:0.576 selon:0.535 et:0.409
+first period certes	selon:2.381 jamais:2.128 mais:0.604 le:0.552
+first period ces	nos:1.968 notre:1.432 j'aurais:1.379 elles:1.280 n'oubliez:1.266 tous:1.255 ainsi:1.070 c'était:0.783
+first period cesse	cela:1.363 les:0.783 tu:0.589
+first period cet	encore:2.088 ses:1.719 veuillez:1.654 tous:1.618 merci:1.088 pourquoi:0.967 ne:0.698 en:0.669
+first period cette	attention:2.236 montrez:1.761 voyez:1.699 eh:1.315 dès:1.241 toutes:1.160 puis:1.157 faites:1.156
+first period ceux	bien:1.627 mais:0.593
+first period chacun	ma:1.460 dans:1.345 pour:1.235 lequel:0.980 en:0.912 ce:0.765 le:0.573
+first period chaque	certaines:2.217 deux:2.166 parce:2.066 t'es:1.917 a:1.318 où:1.044 la:0.728 écris:0.582
+first period chers	le:0.702
+first period chéri	notre:2.080 combien:1.914 tu:0.843
+first period chérie	veux:2.113 je:0.390
+first period cliquez	malgré:1.269 la:0.787
+first period comme	regarde:2.154 ta:2.100 bien:1.648 s'il:1.545 oui:1.123 quand:1.026 à:0.853 elle:0.578
+first period commence	que:1.335 mais:0.741
+first period comment	avec:1.187 donnez:0.706 notre:0.525 tant:0.484 pourriez:0.419 quelle:0.338
+first period commençons	on:0.896
+first period contexte	avec:1.531 lui:0.944 j'aimerais:0.718 voici:0.603 y:0.598
+first period continue	tu:0.659
+first period contrairement	chaque:2.206 elles:1.502
+first period corrige	et:0.696 notre:0.549 bon:0.447 des:0.423 j'espère:0.417 peux:0.366
+first period coucou	mangez:3.176 te:1.928 maman:1.669 ai:1.366 heureusement:1.226 juste:1.132 écoute:1.117 pendant:1.107
+first period couvre	il:0.364
+first period crambambouli	tu:0.666
+first period crois	ce:1.117 ça:0.925
+first period d	toutes:2.208 aucune:1.620 jean:1.056 du:0.908 se:0.889 deux:0.651 des:0.522 désolé:0.371
+first period d'abord	puis:1.884 et:0.911 lui:0.830
+first period d'accord	j'y:1.642 comme:1.589 bon:1.580 combien:1.527 avec:1.039 tiens:0.991 attends:0.801
+first period d'après	être:3.012 selon:2.480 ça:0.987 faites:0.541 demain:0.519 donc:0.355
+first period d'autres	son:1.752 une:1.422 et:0.676 certains:0.457
+first period d'une	leur:2.218 par:0.308
+first period danger	ne:1.417
+first period dans	encore:1.520 dieu:1.425 aucun:1.369 y:1.263 quel:0.928
+first period dansons	enfin:2.193
+first period de	toute:1.728 enfin:1.492 aujourd'hui:1.412 j'espère:1.226 donc:1.157 j'en:1.063 mon:1.059 plus:1.026
+first period demain	vois:3.029 tant:1.797 qui:1.318 les:0.829 nous:0.810 la:0.449 sois:0.440 t'as:0.412
+first period demande	c'est:0.458 peux:0.349 il:0.313
+first period depuis	salut:2.712 parce:2.131 c'était:1.245 ne:0.797 la:0.503 et:0.445 le:0.405
+first period des	leurs:2.169 cependant:1.081 alors:1.074 une:1.047 malgré:0.812 ils:0.769 on:0.750 mais:0.594
+first period deux	tous:1.748 quand:1.235 ils:0.656 j'ai:0.654 mais:0.476 voici:0.339 il:0.333
+first period devant	ce:0.912 donc:0.400 il:0.358
+first period dieu	donne:1.463 tout:0.828 et:0.801 l'homme:0.532 vous:0.517 il:0.468 les:0.450 nous:0.426
+first period dire	en:1.052 mais:0.742
+first period dis	dès:1.969 c'est:0.448 et:0.446 j'avais:0.437 je:0.383
+first period dit	dans:1.392 pour:1.240 dis:0.533 c'est:0.378
+first period dites	est:0.967 ne:0.811 vous:0.643 je:0.399
+first period dix	dans:1.794 ce:0.879
+first period docteur	nous:0.836
+first period donc	ma:1.485 tenez:1.022 voilà:1.008 encore:0.689 toi:0.639 t'as:0.623 demain:0.442 par:0.402
+first period donne	écris:2.538 notre:1.705
+first period donnez	d'accord:1.632 quoi:1.616 non:1.233 ce:0.921
+first period du	dans:1.615 que:1.452 merci:1.401 faut:1.114 une:1.059 de:0.958 j'irai:0.927 tout:0.820
+first period durant	certains:2.052 un:1.301 le:0.660
+first period dès	aujourd'hui:1.733 son:1.659 cette:1.467 quand:1.354 la:0.640
+first period déjà	bonne:0.440 après:0.374 il:0.348 j'en:0.341
+first period dépêchez	le:0.702 il:0.364
+first period désolé	appelez:2.409 quelque:1.845 j'avais:1.743 pourrais:1.512 j'aurais:1.456 malheureusement:1.430 d'accord:1.259 peux:1.245
+first period désolée	quelque:2.254 j'avais:2.137 faut:1.258 ça:1.091 vas:1.002 entre:0.727 je:0.510 t'as:0.477
+first period désormais	ils:1.220
+first period détends	tout:1.237
+first period e	quels:1.094 selon:0.820
+first period eh	non:1.226 ça:1.048 tu:0.644 nous:0.519 c'est:0.463 toi:0.450 t'es:0.333
+first period elle	attendez:1.426 j'habite:1.419 nos:1.409 pendant:1.395 parle:1.200 quelle:1.147
+first period elles	nul:2.546 plus:1.482 au:1.180 ne:1.078 certaines:0.559 les:0.558
+first period en	quelques:1.494 enfin:1.440 parle:1.392 encore:1.372 depuis:1.318 n'oubliez:1.242 du:1.132
+first period enchanté	votre:0.714 je:0.438
+first period enfin	j'attends:2.841 mes:1.838 malgré:1.096 toute:0.675 mais:0.602 a:0.541 bonne:0.536 par:0.507
+first period entre	plus:1.612 comme:1.538 nous:0.627 la:0.579 sois:0.570 le:0.505 il:0.389
+first period entrez	non:1.399 la:0.946
+first period espérer	a:1.680
+first period essaie	tu:0.874
+first period est	tout:1.135 dis:0.550 sur:0.536 va:0.463 désolé:0.459 a:0.357 bonne:0.353 donc:0.304
+first period et	quiconque:1.571 sortez:1.557 lorsque:1.379 voici:1.246 des:1.041 au:0.889
+first period euh	bon:1.955 maman:1.465 jean:1.152 t'as:1.140 me:1.137 bonne:1.010 parce:0.675 toi:0.671
+first period excuse	pourrais:1.958 pas:1.437 cela:1.203 est:1.013 j'ai:0.683 tu:0.429
+first period excusez	pourriez:1.602 comment:1.373 puis:1.218 vous:1.125 où:0.964 est:0.808 je:0.473
+first period exige	ainsi:2.157
+first period face	par:1.779 maintenant:1.623
+first period faire	quel:1.855 en:1.029 soyez:0.735
+first period fais	attention:1.111 ça:0.927 j'attends:0.856 le:0.758 quels:0.692 ne:0.656 tu:0.523 c'est:0.508
+first period faisons	comme:1.636 j'ai:0.808 et:0.619
+first period fait	arrête:2.463 toi:0.762 ces:0.306
+first period faites	essayez:1.535 cela:1.097 ne:1.074 le:0.835 ce:0.575
+first period ferme	le:0.625
+first period fiche	je:0.431
+first period finis	on:0.897 il:0.364
+first period fumer	et:0.731 il:0.364
+first period félicitations	ton:2.050 c'est:0.504
+first period garde	ici:3.068 j'en:1.743 tu:0.551
+first period gardez	restez:1.332 elle:0.731 enfin:0.578
+first period habille	c'est:0.498
+first period haha	sois:0.725 c'est:0.714 toi:0.712 bon:0.687 eh:0.662 y:0.545
+first period henriette	je:0.605
+first period heureuse	moi:1.732
+first period heureusement	qu'est:1.642 elle:0.731 voici:0.586 personne:0.358
+first period heureux	moi:1.733
+first period hier	pendant:2.334 aujourd'hui:2.033 demain:1.793 malheureusement:1.733 puis:1.280 tout:0.857
+first period hum	après:1.900 j'ai:0.907 dis:0.641 d'accord:0.397
+first period hé	allez:2.556 j'espère:1.857 oh:1.833 comment:1.330 parce:0.621
+first period ici	cet:2.233 ah:1.490 vous:0.741 ce:0.733
+first period ils	parce:1.494 là:1.262 finalement:1.123 l'un:1.120 s'il:1.087 malgré:1.004 quelle:0.988 ainsi:0.881
+first period imagine	que:1.277 quels:1.071 ce:0.859 on:0.838 lorsque:0.649
+first period imaginons	mais:0.733 quelle:0.630 combien:0.456 quel:0.360 son:0.318
+first period interact	a:2.584
+first period inutile	elle:0.735 il:0.362
+first period j	heureusement:1.333 suis:1.096 parle:0.725 bon:0.620 aucun:0.572 du:0.514 y:0.478 là:0.465
+first period j'abandonne	quoi:1.926
+first period j'adore	parce:2.189 ses:1.876 bien:1.537 non:1.304 moi:1.160 de:1.123 j'ai:0.681 on:0.658
+first period j'ai	voudrais:1.687 ai:1.594
+first period j'aime	j'apprécie:2.382 passe:1.950 ses:1.413 puis:1.305 moi:1.230 quel:1.176 son:1.104 ma:0.912
+first period j'aimerais	avez:1.662 malheureusement:1.607 pourriez:1.553 as:1.488 pouvez:1.488 quel:1.372 rien:1.305 peut:1.219
+first period j'apprends	pour:1.248 j'ai:0.807 la:0.675 le:0.590
+first period j'apprécie	tu:0.665 il:0.363
+first period j'arrive	cela:1.344 j'ai:0.824 depuis:0.664 dis:0.557 là:0.490 enfin:0.489 donc:0.310
+first period j'attrape	il:0.364
+first period j'aurais	mais:0.695 et:0.683 celui:0.554 enfin:0.525 bonne:0.397 peux:0.341
+first period j'avais	j'étais:1.853 c'était:1.285 dans:1.241 donnez:0.507 et:0.497 tu:0.409 du:0.377 personne:0.357
+first period j'en	tes:2.580 j'y:1.879 pas:1.412 tout:0.976 me:0.970 sur:0.377 y:0.338
+first period j'entends	ouvre:3.042 quelqu'un:2.243 voici:2.176 pourrais:0.543
+first period j'espere	voici:1.257 avez:1.209 pouvez:0.947 juste:0.822 parce:0.729 bonne:0.670 dis:0.612 j'ai:0.502
+first period j'espère	mon:1.317 bonne:1.227 tiens:0.964 lequel:0.932 appelle:0.932 ici:0.928 parce:0.869 en:0.864
+first period j'ignore	nos:2.651 comment:1.738 ce:0.842
+first period j'imagine	pas:1.659 j'espère:0.437
+first period j'ouvris	elle:1.034
+first period j'suis	avec:1.533 j'entends:1.348 cet:0.758 t'as:0.747 dis:0.649 y:0.595 après:0.386 bien:0.304
+first period j'y	des:1.765 tout:0.988 me:0.982 mais:0.979 toute:0.600 je:0.337
+first period j'étais	j'avais:1.996 mes:1.597 mais:1.139 avec:1.122 vous:0.510 elle:0.333
+first period jacob	ils:0.831 il:0.522
+first period jamais	mon:1.644 par:1.569 que:1.126 salut:1.078 t'as:0.541 le:0.492 sans:0.391
+first period jusqu'à	rien:1.805 a:0.454
+first period juste	laissez:2.365 laisse:2.082 tiens:1.015 enfin:0.712 sois:0.629 je:0.440 là:0.436
+first period l	de:1.348 y:0.585 donc:0.392 quelle:0.382
+first period l'algérie	bien:1.736 mais:0.702 elle:0.697
+first period l'amour	l'argent:2.963 toutes:1.733 quelle:1.447 mon:1.042 et:0.551 c'est:0.458 vous:0.451
+first period l'amérique	chaque:2.209 nous:0.836
+first period l'apprentissage	l'un:0.441 je:0.388
+first period l'arbre	celle:3.233
+first period l'argent	encore:2.406 plus:1.743 on:0.819 elle:0.659
+first period l'armée	si:1.022 c'est:0.499
+first period l'art	et:0.691 il:0.324
+first period l'autre	elle:0.694 et:0.687 désolé:0.519 il:0.321
+first period l'avenir	ça:0.998 c'est:0.722
+first period l'eau	chacun:2.159 en:1.259
+first period l'escalier	à:1.329 ce:0.919
+first period l'espagne	les:1.168
+first period l'espéranto	malheureusement:2.345 toutes:2.096 est:1.139
+first period l'histoire	pour:1.310 ils:0.858 avec:0.448
+first period l'hiver	a:1.640 le:0.955
+first period l'homme	chaque:1.645 sa:1.608 son:1.243 par:1.215 peut:1.161 alors:0.969 il:0.813 les:0.604
+first period l'horloge	il:0.599
+first period l'important	il:0.364
+first period l'intelligence	de:1.216 mais:0.595 il:0.452 c'est:0.352 des:0.311
+first period l'oiseau	il:0.555
+first period l'ordinateur	que:1.336 et:0.731
+first period l'ordre	si:1.022 il:0.364
+first period l'univers	alors:1.455 vous:0.849 et:0.654
+first period l'écriture	en:1.011 il:0.323
+first period l'éducation	est:1.249 mais:0.753
+first period l'être	si:1.021 la:0.787
+first period l'œillet	la:1.050
+first period l'œuvre	dans:1.498 elle:0.737
+first period laban	il:0.324
+first period laisse	après:1.649 avec:1.274 ça:1.094 la:0.524 je:0.421
+first period laissez	vos:2.758 votre:2.059 oui:1.288 non:1.232 avec:1.227 à:1.018 vous:0.628 bon:0.430
+first period le	connais:1.279
+first period les	l'histoire:1.702 l'entreprise:1.599 arrêtez:1.348 sont:1.327
+first period leur	il:0.437
+first period lev	il:0.324
+first period lol	crois:1.435 faut:1.349 bon:1.112 suis:1.033 ta:1.009 enfin:0.856 entre:0.818 dis:0.757
+first period lorsqu'on	voilà:1.903 les:0.716 mais:0.598
+first period lorsqu'un	à:1.327
+first period lorsqu'une	elle:0.734 le:0.699
+first period lorsque	prends:1.698 aujourd'hui:1.521 maintenant:1.277 de:1.017 ils:0.563 les:0.528 la:0.467
+first period lui	bien:1.617 où:1.248 elle:0.591 tu:0.508 il:0.440 j'aimerais:0.304
+first period là	cesse:3.011 ton:1.628 combien:1.599 faut:1.106 quand:1.074 ça:0.637 on:0.496
+first period lève	il:0.522 c'est:0.422
+first period m	jean:1.928 de:0.643
+first period ma	maman:2.309 dois:1.644 tant:1.494 l'avez:1.483 sois:1.453 mes:1.370 quoi:1.282 demain:1.188
+first period madame	elle:0.736
+first period maintenant	trois:2.127 y:1.809 n'oublie:1.135 mon:1.114 quand:1.098 pourquoi:0.960 le:0.598 nous:0.433
+first period mais	gardez:2.327 connais:2.064 aucun:2.020 ont:1.731 reste:1.524 dites:1.450 qu'il:1.394 aucune:1.311
+first period malgré	sa:2.111 as:0.383 il:0.322
+first period malheureusement	elles:1.406 on:0.812 quoi:0.301
+first period maman	s'il:2.071 eh:2.070 laisse:1.939 d'accord:1.650 peux:1.636 les:0.568 et:0.450
+first period marina	elle:0.737 le:0.702
+first period mdr	faut:1.344 t'as:1.181 vas:1.087 non:1.087 y:1.000 bon:0.951 appelle:0.944 depuis:0.870
+first period merci	arrêtez:2.028 toi:1.728 ceci:1.571 pensez:1.489 voudriez:1.356 pas:1.315 désolé:1.136 bonne:1.123
+first period mes	peu:1.948 j'aime:1.591 certains:1.509 ah:1.091 que:1.091 qu'est:1.075 ils:0.831 moi:0.815
+first period messieurs	maintenant:1.623 la:0.788
+first period mets	t'es:2.100 j'en:1.680 nous:0.658 elle:0.559 il:0.420
+first period mince	j'aurais:2.125 on:0.884 enfin:0.571 prends:0.463 j'espère:0.438
+first period mme	maintenant:1.578 comment:1.435
+first period moi	ont:2.129 allons:1.556 s'il:1.416 d'accord:1.365 personne:1.300 aujourd'hui:1.261 pas:1.124 qui:1.052
+first period mon	venez:1.895 jusqu'à:1.676 l'as:1.557 voyez:1.557 pendant:1.525 dois:1.426 l'avez:1.279 cet:1.229
+first period monsieur	chaque:2.128 pouvez:1.914 est:1.170 quels:1.050 mais:0.662 peux:0.320
+first period monte	on:1.034 nous:0.662 le:0.528
+first period mourir	moi:1.360 mais:0.702
+first period même	personne:1.966 pas:1.408 au:1.253 ils:0.642 il:0.338
+first period n'aie	crois:3.181 elle:0.563 je:0.508 c'est:0.325
+first period n'ayez	cette:1.470 mon:1.374 ce:0.775
+first period n'y	reste:2.484 laisse:2.188 c'est:0.455
+first period nan	c'était:1.415 pendant:0.889 passe:0.834 j'ai:0.792 sois:0.651 t'as:0.624 dis:0.525 y:0.472
+first period naturellement	qui:1.657
+first period ne	mange:1.716 essaie:1.703 donne:1.576 dites:1.479 sois:1.465
+first period non	j'essaie:1.657 alors:1.284 toi:1.216 pas:1.038
+first period normalement	garde:1.587 mais:1.027 voilà:0.461 j'espère:0.433 donc:0.388
+first period nos	maintenant:1.388 de:1.128 un:1.108 les:0.934 ils:0.674 elle:0.503
+first period notre	j'étais:1.812 chacun:1.630 j'aime:1.534 donne:1.231 comme:1.106 que:1.026 un:0.701 à:0.687
+first period nous	êtes:1.744 vos:1.522 es:1.522 veux:1.499
+first period nul	toute:2.407 de:1.247 entre:1.204 se:0.664 et:0.615
+first period oh	t'es:2.098 se:1.899 oui:1.073 vous:1.028 alors:0.992 merci:0.944 ça:0.832 sont:0.785
+first period ok	te:1.776 finalement:1.677 faut:1.490 bon:1.341 maman:1.181 bonjour:1.119 tiens:1.111 hier:1.109
+first period on	qu'y:2.048 j'entends:1.688 jusqu'à:1.476
+first period ou	se:2.319 depuis:2.295 sans:2.095 parce:0.650 chaque:0.476 enfin:0.465 demain:0.450 bon:0.361
+first period ouais	j'y:1.819 faut:1.210 heureusement:1.132 enfin:0.951 juste:0.848 ici:0.806 du:0.777 parce:0.747
+first period oublie	ton:0.593 et:0.578 le:0.550 tu:0.526 il:0.447 fais:0.307
+first period oui	regardez:1.797 quels:1.751 t'as:1.333 êtes:1.311 du:1.228 où:1.193 merci:1.098
+first period ouvre	à:1.182 j'ai:0.786 les:0.714 je:0.429
+first period ouvrez	dans:1.420 je:0.354
+first period où	qui:1.575 faut:1.450 je:0.490
+first period papa	pourrais:2.078 cela:1.322 je:0.314
+first period par	s'il:1.684 excusez:1.346 c'était:1.220 un:1.006 en:0.766 les:0.637 quelles:0.611 la:0.499
+first period parce	donc:1.811 en:0.937 ta:0.741 et:0.688 eh:0.575 quoi:0.500 du:0.493 alors:0.456
+first period pardon	quel:1.697 ça:1.177 que:1.155 j'ai:0.739 elle:0.556 allez:0.534 veuillez:0.301
+first period pardonne	ne:1.015 et:0.651
+first period parfois	peut:1.570 ça:0.883 on:0.742 bon:0.327
+first period parle	à:1.245
+first period parmi	plus:1.704 ce:0.801 notre:0.466 c'est:0.381
+first period partout	là:2.195 tout:1.237
+first period pas	j'irai:2.425 allez:1.715 faites:1.559 ai:0.949 vous:0.790 vas:0.631
+first period passe	désolé:2.055 fais:1.001 j'ai:0.824 tu:0.570 a:0.352 bonne:0.348
+first period passez	tenez:2.857 c'est:0.495
+first period patientez	il:0.364
+first period pendant	cela:1.540 quand:1.260 de:1.121 ce:0.677 et:0.489 il:0.357
+first period permettez	ça:0.961 nous:0.759
+first period personne	tous:1.928 chacun:1.857 tout:0.808 en:0.622 vous:0.497 ce:0.489 on:0.481
+first period petit	si:0.974
+first period peu	quiconque:2.239 un:1.037 tout:0.932 en:0.746 vous:0.621 juste:0.557 le:0.397
+first period peut	d'où:2.365 d'accord:1.502 ça:1.254 faut:1.093 de:0.923 un:0.903 que:0.896 vous:0.799
+first period peux	parle:2.510 salut:1.200 me:1.144 j'avais:0.967 n'est:0.945 selon:0.769 sur:0.551 j'aimerais:0.375
+first period pierre	quel:1.834 en:1.022 il:0.321
+first period plus	voilà:1.604 donc:1.494 ma:1.171 pour:0.918 les:0.914 en:0.660 la:0.653
+first period pour	celui:1.673 d'où:1.557 y:1.310 là:1.293 notre:1.289 d'accord:1.039 par:1.027
+first period pourriez	eh:2.360
+first period pourvu	où:1.406
+first period pousse	elle:0.737 tu:0.666
+first period poésie	viens:2.046 elles:1.505
+first period premièrement	la:0.787
+first period prends	ça:0.927 tout:0.807 tu:0.530 il:0.327 t'as:0.320 elle:0.306
+first period prenez	mettez:3.083 votre:2.111 essayez:1.619 vous:0.980 nous:0.883 ça:0.779 si:0.763
+first period prépare	demain:2.174
+first period puis	après:1.611 par:1.477 et:0.776 j'ai:0.644 ils:0.607 parce:0.469
+first period puisque	comme:1.700 que:1.288
+first period qu'ils	cependant:1.537
+first period quand	ceci:1.724 maintenant:1.419 notre:1.304 plus:1.274 rien:1.264 certains:1.206 mon:1.166 voilà:1.159
+first period quant	lui:2.629 les:0.855 bien:0.304
+first period quatrième	des:2.015
+first period que	parfois:2.109 qu'il:1.984 donne:1.459 cela:1.026 pour:0.947 on:0.795
+first period quel	regarde:2.476 malheureusement:1.975 qui:1.518 ceci:0.788 selon:0.718 avec:0.622 sur:0.500 c'est:0.360
+first period quelle	quelles:1.609 vas:1.185 quels:1.039 avec:0.970 lui:0.855 on:0.820 ils:0.818 selon:0.766
+first period quelqu'un	va:1.860 pas:1.366 ce:0.610 je:0.541 c'est:0.454 t'as:0.443
+first period quelque	est:1.498 le:0.914 peux:0.319
+first period quelques	sa:2.131 et:0.689 il:0.323
+first period question	a:1.557 avec:1.274
+first period quiconque	puis:1.549 et:0.619 c'est:0.387
+first period quoi	les:0.849
+first period rares	cependant:1.539
+first period ravi	comment:1.738
+first period reecris	plusieurs:1.562 a:0.439 as:0.422 pouvez:0.422
+first period regarde	n'est:2.523 quels:2.428 qu'est:1.248 cette:1.203 où:0.995 est:0.839 ce:0.507
+first period regardez	ma:1.721 qu'est:1.429 il:0.527 elle:0.507 le:0.472
+first period respirer	la:0.788
+first period reste	regarde:2.532 non:1.460 j'apprends:1.269
+first period restez	essayez:1.798 ne:1.014 ça:0.958
+first period rien	qu'il:1.810 ceux:1.530 tout:1.316 ces:1.190 peut:1.137 quand:0.914
+first period récemment	ce:0.919
+first period réfléchis	un:1.303 tu:0.626
+first period réfléchissez	n'est:2.387 et:0.731
+first period répondit	qu'est:1.660
+first period s'il	aimez:2.942 juste:2.058 ces:1.298 qu'est:1.180 cette:1.134 au:1.039 cela:0.959 pour:0.880
+first period sa	jamais:1.950 comme:1.419 nous:1.139 tout:0.910 les:0.840 on:0.569 toi:0.438
+first period salut	finalement:1.694 quoi:1.564 comment:1.495 j'espère:0.736 t'as:0.687 dis:0.577 juste:0.500 désolé:0.473
+first period sans	dites:2.234 bon:1.831 pouvez:1.774 mais:0.819 ils:0.689 juste:0.643 sois:0.559 elle:0.517
+first period savoir	c'est:0.498 il:0.363
+first period selon	attention:1.438 dans:1.387 pour:1.290 ça:0.927 voici:0.493 cependant:0.492 par:0.419
+first period ses	toute:2.371 on:1.056 mes:0.304
+first period seuls	une:1.435 mais:0.700 et:0.688
+first period si	ceci:1.390 dieu:1.182 n'oubliez:1.147
+first period sinon	attends:1.287 ta:0.870 sa:0.831 dis:0.641 donc:0.638 t'es:0.637 sans:0.588 demain:0.557
+first period sir	sa:2.172
+first period skylab	elle:1.034
+first period sois	oui:1.545 au:1.464 ces:1.386 ce:1.030 tu:0.749 si:0.630 ils:0.517 les:0.469
+first period soit	désolé:0.829 leur:0.598 a:0.453 quelle:0.390
+first period son	nul:2.372 ainsi:1.303 maintenant:1.110 tout:1.054 nous:0.818 elle:0.710 en:0.552 on:0.397
+first period soudain	alors:1.490 quand:1.459 on:0.855
+first period sous	alors:1.521 enfin:0.574 il:0.353
+first period soyez	essayez:2.260 oui:1.437 si:1.180 vous:0.778 les:0.699 dites:0.630 voici:0.443
+first period soyons	on:0.896 il:0.363
+first period suis	si:1.744 toi:0.562 veux:0.352
+first period suivez	si:1.021 après:0.389
+first period suppose	qu'est:1.660 que:1.336
+first period sur	cet:2.028 ses:1.724 une:1.086 quels:1.063 jean:0.856 en:0.661 si:0.631 écris:0.553
+first period sérieusement	nous:1.140
+first period t'as	qu'est:1.900 t'es:0.838 parce:0.671 j'avais:0.658 aucune:0.579 y:0.501 sa:0.470 bonne:0.357
+first period t'es	mange:1.563 tu:0.881 ta:0.802 t'as:0.672 c'est:0.429 bon:0.402 a:0.380 bonne:0.376
+first period t'inquiète	tout:1.190 ça:0.990 j'aurais:0.496
+first period ta	regarde:2.392 t'as:2.183 laisse:2.009 tiens:0.942 depuis:0.537 elle:0.515 tu:0.444
+first period tandis	un:1.352 si:1.017
+first period tant	quand:1.370 de:1.231 t'es:0.805 voulez:0.718 c'est:0.368 fais:0.328
+first period telle	quelques:2.925 celui:2.191
+first period tenez	allez:2.318 c'est:0.457
+first period tes	eh:2.212 tant:1.986 ton:1.934 faut:1.382 nous:0.686 c'est:0.348
+first period tiens	va:1.867 ton:1.754 voilà:1.745 pas:1.373 j'ai:0.618 ce:0.617 j'avais:0.455
+first period tire	elle:0.737
+first period toi	tu:0.656 tous:0.435
+first period toki	chaque:2.169
+first period ton	ah:1.886 même:1.601 aujourd'hui:1.393 ma:1.141 oui:1.141 tes:0.985 où:0.934 est:0.778
+first period tous	ceux:1.830 d'où:1.829 certains:1.463 quel:1.247 par:1.163 puis:1.030 cette:0.984 ils:0.780
+first period tout	faire:2.165 certaines:1.617 arrête:1.491 rien:1.377 sur:1.288 personne:1.256 toutes:1.231 l'amour:1.148
+first period toute	fais:1.731 ces:1.491 tout:1.280 en:0.765 si:0.735 ils:0.634 la:0.501 elle:0.450
+first period toutes	aucun:2.027 chaque:1.902 veuillez:1.744 cette:1.307 un:1.036 en:0.745 j'ai:0.613 selon:0.549
+first period traduire	faire:1.389 arrêtez:1.320 ceci:0.902 cet:0.738 bonne:0.432 il:0.340
+first period traduis	ne:2.106 sont:0.675
+first period trois	pour:1.156 et:0.526 le:0.498
+first period très	j'en:1.560 à:1.560 plus:1.523 merci:1.200 il:0.460 et:0.444 voici:0.306
+first period tu	qu'as:1.834 sors:1.825 l'avion:1.633 apporte:1.474
+first period un	restez:1.858 tiens:1.672 ici:1.633 pendant:1.509 celui:1.371 deux:1.323 parfois:1.318 d'où:1.255
+first period une	penses:2.406 avant:1.641 certaines:1.605 deux:1.539 j'y:1.167 des:1.070 pouvez:1.020
+first period user	assistant:2.989 peux:1.568
+first period utilisez	essayez:1.875 vous:0.923 des:0.454 par:0.307
+first period va	lis:2.701 ne:0.906 j'ai:0.731 elle:0.560 mais:0.553 c'est:0.320
+first period vas	ne:1.296 t'as:0.630 y:0.478 là:0.465 c'est:0.377 je:0.320
+first period venez	où:1.230 ça:0.862 nous:0.660 c'est:0.586
+first period vers	et:1.330
+first period veuillez	pourriez:1.580 pouvez:1.545 peut:1.261 puis:1.196 oui:1.134 gardez:1.130 merci:1.087 comment:1.016
+first period vieillir	plus:2.122 mais:0.702
+first period viens	écoute:2.561 j'habite:2.229 d'accord:1.977 où:1.231 ça:0.529 je:0.407 nous:0.327
+first period viswanathan	il:0.599
+first period voici	suis:2.342 regardez:2.294 lequel:2.251 prenez:2.029 prends:1.452 merci:1.442 maintenant:1.031 n'oublie:0.947
+first period voilou	bonne:1.467 a:1.350 bon:0.735 du:0.628
+first period voilà	passe:2.281 va:1.797 prends:1.672 comment:1.444 oui:1.227 un:0.972 bonne:0.733 beaucoup:0.419
+first period vois	j'irai:3.065 nous:0.831
+first period volontiers	combien:2.026 ça:1.038
+first period vos	eh:2.531 bon:1.888 où:1.230 vous:0.750 c'est:0.322
+first period votre	laissez:2.130 dès:1.903 veuillez:1.665 cette:1.229 oui:1.213 mon:1.133 suis:0.831 vous:0.554
+first period voulez	ce:0.917
+first period vous	voudriez:2.002 sortez:1.881 appelez:1.751 j'apprécie:1.743 j'apprends:1.736 regardez:1.559 l'avion:1.549 n'oubliez:1.229
+first period voyez	venez:3.084 il:0.364
+first period y	j'y:2.027 pour:1.247 attends:1.186 toi:0.653 t'as:0.638 bon:0.628 du:0.521 toutes:0.482
+first period you	pensez:2.034 quels:1.402 écris:1.287 montre:1.159 quel:1.054 faut:1.036 donne:0.988 lequel:0.961
+first period zelda	non:1.543 merci:1.484
+first period zezo	ce:0.879 c'est:0.722
+first period à	pensez:1.970 sois:1.878 trois:1.624 dieu:1.483 pouvez:1.431 aucune:1.409 chacun:1.366 sa:1.266
+first period ça	hé:2.447 pouvons:2.432 j'adore:2.374 arrête:1.476 t'as:1.414 personne:1.241 te:1.164 j'étais:1.119
+first period écoutez	essayez:1.867 soyez:1.046 elle:0.726
+first period écris	lui:1.256 celle:0.832 juste:0.668 j'aimerais:0.524 sur:0.444 leur:0.410
+first period étant	beaucoup:2.406 alors:1.485 lorsque:0.661 il:0.318
+first period éteignez	vous:0.886 il:0.324
+first period éteins	lis:2.688 la:0.585 je:0.479 tu:0.463
+first period évidemment	voilà:2.000 et:0.696 mais:0.695 bon:0.435
+first period être	on:1.093 le:0.588
+first question a	sa:2.314 bonne:0.750 où:0.712 quel:0.708 oui:0.501
+first question ah	nul:2.360 merci:1.305 alors:1.222 désolé:1.076 tu:0.949 enfin:0.917 eh:0.892 ce:0.833
+first question aime	oui:0.558
+first question aimerais	bien:0.868 oui:0.332
+first question aimeriez	j'aimerais:1.696
+first question aimes	j'adore:2.119 bien:1.003 elle:0.695 oui:0.383
+first question aimez	j'adore:2.118 quelle:1.683 alors:1.497 bien:0.693 oui:0.538
+first question aller	c'est:0.459 oui:0.328
+first question allez	non:0.336 oui:0.332
+first question allô	bonjour:2.368
+first question alors	essaie:2.343 sors:2.043 comme:1.969 toi:1.591 te:1.364 mais:0.751 ils:0.747 tenez:0.680
+first question arrives	elle:0.869 il:0.496
+first question as	quelqu'un:1.948 tiens:1.383 mes:1.144 au:1.116 jamais:1.062 te:0.915
+first question attendez	j'ai:0.740 oui:0.332
+first question aujourd'hui	des:0.301
+first question autre	non:0.336 oui:0.332
+first question avec	prends:2.297 laisse:1.954 qui:1.573 une:1.239 nous:1.129
+first question avez	parfois:1.738 bonjour:1.688 jamais:1.535 me:1.476 c'était:1.264 mon:0.864 vous:0.840 j'en:0.811
+first question avons	est:2.570 non:0.523
+first question bois	bien:0.828
+first question bon	hé:2.697 les:1.117 faut:1.103 bonne:0.969 dis:0.437 donne:0.390
+first question bonjour	salut:2.369 passe:1.490 essayez:0.998 bonne:0.964 y:0.798 bien:0.749 quelque:0.688 leur:0.688
+first question c'est	l'argent:2.016 qu'est:1.982 comme:1.247 a:1.243 lui:1.218 toi:1.204 alors:1.187
+first question c'était	pas:0.943 a:0.456
+first question ca	ton:2.211 passe:1.568 demande:1.063 bonne:1.042 c'était:0.677 moi:0.615 que:0.525 a:0.432
+first question ce	n'oublie:2.180 quelle:1.580 mon:1.343 une:1.150 c'est:0.739 bien:0.590 bonjour:0.506
+first question cela	demain:1.910 pas:1.164
+first question celui	tu:0.868 non:0.335
+first question ces	en:0.955 à:0.882 c'est:0.514 oui:0.352
+first question cet	non:0.561
+first question cette	et:1.421 j'attends:0.979 toutes:0.558 il:0.409 c'est:0.375
+first question ceux	ce:0.968 tu:0.869
+first question combien	ces:1.883 nos:1.854 fais:1.802 arrête:1.601 ainsi:1.589 faites:1.587 leur:1.581 beaucoup:0.982
+first question comme	là:1.907 eh:1.329 bon:0.725 celui:0.636 d'accord:0.313
+first question comment	ai:1.478 par:1.273
+first question comprends	non:0.336
+first question connais	j'aurais:2.632 chaque:2.028 dans:1.247 c'est:0.340
+first question connaissez	son:2.631 chaque:2.038 dans:1.257 oui:0.445
+first question contre	mon:1.621 nous:1.001
+first question coucou	écoute:2.403 passe:2.218 quoi:2.193 peux:1.911 avant:0.994 sa:0.885 alors:0.872 bon:0.666
+first question crois	pas:0.914 bonjour:0.737
+first question croyez	n'y:2.762 si:1.195 parce:0.857 attendez:0.742
+first question d'où	du:1.846 de:1.597 oh:1.005 vous:0.746 on:0.595 nous:0.480
+first question dans	n'importe:2.022 sans:1.590 donnez:1.419 en:1.214 ces:0.798 j'ai:0.467
+first question de	quoi:1.694 avec:1.222 ils:0.940 ce:0.904 la:0.842
+first question depuis	deux:1.605 moi:1.206 la:0.885 bonne:0.877
+first question des	sans:1.728 à:0.953 cette:0.866 non:0.434
+first question deux	une:1.387
+first question devine	aucune:2.692 j'ai:1.208
+first question dieu	nous:1.001
+first question dimanche	on:1.437
+first question dis	si:1.396 pour:1.189 parce:0.753 est:0.717 tu:0.674 comme:0.539 c'est:0.524 merci:0.306
+first question dois	tu:0.755 oui:0.598 ne:0.332
+first question du	t'as:0.594 c'est:0.455 là:0.379
+first question désires	oui:0.558
+first question désirez	ça:0.729 oui:0.569
+first question eh	sois:2.229 la:1.209
+first question elle	sa:1.153 son:0.924 fais:0.879 t'as:0.492
+first question en	même:1.812 pourquoi:1.573 donnez:1.492 puis:1.473 j'en:1.369 j'aurais:0.854 fais:0.799 ta:0.573
+first question encore	mais:1.182 ils:1.179
+first question entendez	ils:1.512
+first question es	ne:1.712 lui:1.412 pas:0.838 non:0.661 un:0.633 tu:0.548
+first question est	demande:1.501 malheureusement:1.185
+first question et	cet:1.871 encore:1.864 jusqu'à:1.848 peu:1.540 après:1.505 voilà:1.505 laissez:1.346 j'aime:1.262
+first question excusez	parce:0.894
+first question faites	j'en:1.567 avec:0.318
+first question franchement	j'adore:2.292
+first question hein	ne:1.875 ah:1.298 j'ai:0.640 il:0.373
+first question how	user:2.289
+first question hé	viens:1.908 à:0.855
+first question il	qu'il:1.900 t'as:1.651 quelle:1.280 deux:1.233 cela:0.951 enfin:0.790 comment:0.731 si:0.723
+first question ils	de:1.189 bon:1.159 tiens:0.581 il:0.435
+first question j'ai	t'as:2.170 mes:1.972 encore:1.045 bonne:1.024 ces:1.012 faut:0.847 viens:0.486 merci:0.455
+first question jansen	oui:0.558
+first question je	vas:2.076 pensez:2.039 pouvez:1.836 parfois:1.775 allez:1.416 tous:1.314 mes:1.311 toi:1.308
+first question l'amour	au:1.329
+first question l'as	non:0.336 oui:0.332
+first question la	connais:2.343 celle:2.142 les:1.260 cela:1.047 comment:0.812 où:0.549 a:0.531
+first question laquelle	celle:2.237 à:1.030 comme:0.429 a:0.416 là:0.339
+first question le	après:1.602 merci:1.249 les:1.068 et:1.057 enfin:0.861 vous:0.761 de:0.744 en:0.693
+first question lequel	celui:2.224 veuillez:2.160 le:1.123 a:0.419
+first question les	tous:1.472 et:0.975 ils:0.623 ça:0.620 à:0.525 nous:0.439
+first question lit	oui:0.673
+first question ma	qui:1.750 elle:0.857
+first question maintenant	vous:1.227 tu:0.829 il:0.456
+first question mais	garde:2.166 j'espère:1.279 sans:1.236 te:1.175 on:1.151 enfin:1.074 sur:0.941 tu:0.881
+first question maman	j'aimerais:1.656 non:0.483
+first question me	tout:1.545 mais:1.258 oui:0.573
+first question moi	avant:2.677 puis:1.580 passe:1.518 donne:0.412
+first question mon	dis:1.669 il:0.606 me:0.462
+first question n'est	ah:1.376 ce:0.935 me:0.569
+first question ne	regarde:2.587 j'attends:2.535 ah:1.187 bien:0.942 il:0.525
+first question non	bonne:0.904 j'avais:0.885 ce:0.789 bon:0.560 et:0.485
+first question nous	demain:2.017 il:0.503
+first question oh	faut:2.393 là:1.726 ce:0.773 ça:0.691 tu:0.674
+first question on	aujourd'hui:1.578 désolé:1.409 te:1.348 oh:1.072 où:0.911 fais:0.862 est:0.784 avant:0.612
+first question ou	enfin:1.684 t'es:0.423 dis:0.310
+first question oui	voyez:2.656 puis:1.489 enfin:1.184 mais:1.018 en:0.976 cet:0.926 faut:0.722 et:0.480
+first question où	vos:1.461 venez:1.433 sur:1.416 s'il:1.373 j'étais:1.329
+first question papa	pour:1.318 parce:0.857 bien:0.790 c'est:0.385
+first question par	suis:2.001 il:0.744 merci:0.487 a:0.446
+first question parles	juste:1.793 pas:1.188 un:0.669 oui:0.433
+first question parlez	juste:1.793 un:0.669 oui:0.646
+first question parmi	les:0.472 le:0.467
+first question pas	te:1.613 puis:1.484 passe:1.421 oh:1.338 tant:0.891 non:0.744 est:0.736 voici:0.618
+first question peu	tout:1.466 il:0.495
+first question peut	lequel:2.701 désolé:1.430 on:1.020 ainsi:0.718 c'est:0.623
+first question peux	j'y:1.913 ceci:1.872 demain:1.462 désolé:0.967 est:0.678 en:0.628 bien:0.624 le:0.617
+first question pour	ici:2.217 vous:1.039 le:0.935 est:0.697 tu:0.654
+first question pourquoi	pourriez:1.378 j'apprécie:1.337
+first question pourrais	tiens:1.916 peut:1.905 sans:1.509 j'en:1.214 désolé:1.172 bien:1.149 nous:0.964 ceux:0.737
+first question pourriez	tenez:2.638 nous:1.131 le:0.989 ce:0.781 j'ai:0.552 merci:0.326
+first question pourrions	je:0.333
+first question pouvez	leurs:2.002 peux:1.852 j'aimerais:1.262 on:1.160 bien:0.774 rien:0.661 bonne:0.609 ces:0.597
+first question prenez	je:0.333
+first question professeure	en:1.160 oui:0.332
+first question puis	faites:1.689 allez:1.346 quand:1.330 cela:1.076 si:1.011 j'aimerais:0.946 mais:0.922
+first question qu'as	des:1.467 ça:0.879 ce:0.665 elle:0.566 j'ai:0.436
+first question qu'avez	pas:0.849 ça:0.761
+first question qu'en	d'accord:1.662 eh:1.529 ce:1.138 avant:0.920 comme:0.340
+first question qu'es	de:1.251 rien:1.134
+first question qu'est	écris:1.580 tant:1.524 se:1.221 quelque:1.213 soyez:1.171
+first question qu'y	rien:1.382 on:1.038 un:0.872
+first question quand	demain:1.462 chaque:1.248 tout:0.901 le:0.782 comment:0.737 j'ai:0.721
+first question que	mets:1.560 trois:1.547 finalement:1.519 parle:1.514 attendez:1.210 attends:1.209
+first question quel	mettez:1.908 aucun:1.907 cependant:1.876 ses:1.702 j'aime:1.622 j'étudie:1.564 soyez:1.499 celui:1.347
+first question quelle	se:1.640 a:1.267 c'était:1.181 une:1.126 j'aime:1.027 la:0.936 donnez:0.850
+first question quelles	prends:2.299 leurs:2.289 donnez:1.843 donne:1.504 tout:1.280 avec:0.982 est:0.738 a:0.544
+first question quels	quelles:2.290 attention:1.951 donnez:1.505 donne:0.984 rien:0.949 ta:0.587 il:0.574 a:0.546
+first question qui	quelques:1.747 regardez:1.746 aujourd'hui:1.626 personne:1.544 y:1.523 arrête:1.399 heureusement:1.394 ainsi:1.387
+first question quoi	ton:1.417 rien:1.411 pourquoi:1.279 qui:1.270 le:0.671 c'est:0.624
+first question s'il	il:0.758
+first question sa	maman:2.789 puis:1.637 y:1.194 elle:0.834 voilà:0.754 bon:0.704 a:0.438 demain:0.426
+first question sais	donne:1.826 rien:1.202 ce:1.027 bien:0.612
+first question sait	j'irai:2.066 eh:1.264 ça:0.795
+first question salut	hier:2.670 mieux:2.422 nous:0.952 ça:0.824 ta:0.723 bon:0.690 moi:0.362
+first question sans	la:1.408 donne:0.498
+first question savez	on:0.768 la:0.744 à:0.739 bien:0.521 c'est:0.371 non:0.371
+first question se	non:0.343
+first question si	plusieurs:2.547 toute:2.539 même:1.746 te:1.538 oh:1.262 parce:0.985 mais:0.925 bonne:0.819
+first question son	sa:0.956 j'ai:0.738 c'est:0.462
+first question sont	pas:1.198 les:1.153
+first question sérieusement	oui:0.331
+first question sérieux	j'avais:2.745 moi:1.404 t'as:0.589
+first question t'ai	oui:0.556
+first question t'as	quelle:1.433 alors:1.247 enfin:0.943 un:0.838 mais:0.790 on:0.704 bonne:0.658 y:0.492
+first question t'es	bon:2.043 donc:1.600 appelle:0.756 à:0.740 où:0.698 tu:0.547 non:0.490
+first question ta	ont:2.724 cette:0.931 fais:0.929 sa:0.888 faut:0.837 et:0.511 que:0.497 moi:0.438
+first question te	oui:0.553
+first question ton	passe:1.446 non:0.400
+first question tout	au:1.141 pas:0.773 j'ai:0.551
+first question travailler	merci:1.756
+first question tu	l'enfant:1.286 appelle:1.257
+first question un	va:1.456 sans:1.450 désolé:1.114 ça:0.770 appelez:0.705 bon:0.624 tu:0.457
+first question une	t'es:1.672 tout:1.152 tu:0.869 ce:0.652 pas:0.645 ça:0.557
+first question user	assistant:2.524
+first question va	j'espère:1.861 j'ai:0.695
+first question vas	comme:1.941 va:1.738 bonne:0.967 c'est:0.347
+first question veux	reste:2.236 j'aimerais:1.133 j'en:0.965 ah:0.819 moi:0.809 de:0.648 les:0.629 non:0.594
+first question viendra	ce:0.967 a:0.472
+first question viens	il:0.495 comme:0.484 oui:0.331
+first question vis	j'habite:2.495 non:0.336
+first question vois	là:1.875 bonjour:0.738 c'est:0.673
+first question votre	au:1.152 elle:0.692 non:0.386
+first question voudrais	avec:1.754
+first question voudriez	avec:1.794 c'est:0.463
+first question voulez	avec:1.244 merci:1.206 j'aimerais:1.186 juste:1.183 j'en:1.018 désolé:0.977 oh:0.976 elles:0.949
+first question vous	penses:1.670 appelez:1.657 essayez:1.657 allons:1.326 notre:1.315 votre:1.109
+first question voyez	c'est:0.848
+first question vraiment	mon:1.315 vous:1.291 ça:0.580
+first question y	ceux:2.392 allons:2.090 voici:2.067 non:0.611 oui:0.320
+first question à	toutes:1.688 elles:1.589 attendez:1.557 ils:1.460 lui:1.111 eh:1.083 au:0.730 j'en:0.638
+first question ça	écoute:1.756 t'es:1.612 laisse:1.424 suis:1.309 c'était:1.302 beaucoup:1.154 oh:1.144 d'accord:1.088
+first question était	au:1.288
+first question êtes	lorsque:2.128 heureusement:1.898 ne:1.752 plus:1.547 et:0.919 pas:0.878 nous:0.729 non:0.607
+word exclamation aide	je:0.536 tu:-0.337
+word exclamation amis	c'est:1.204 tu:-0.460 je:-0.459
+word exclamation amour	tu:-0.408 c'est:-0.402
+word exclamation an	t'es:1.464
+word exclamation anniversaire	j'espère:0.964 j'ai:-0.312
+word exclamation année	je:-0.303
+word exclamation ans	je:-0.447
+word exclamation appétit	vous:1.805
+word exclamation attention	je:-1.038 il:0.876 ce:0.667 tu:-0.573
+word exclamation aucun	j'espère:0.624
+word exclamation bière	c'est:1.204
+word exclamation bonheur	je:-0.330
+word exclamation bonjour	où:1.910 tu:-1.536 c'est:-1.526 quelles:1.429 j'ai:-1.349 ça:-1.270 j'espère:-0.659 je:0.563
+word exclamation c'est	celle:2.620 vous:-2.343 ce:-2.204 qui:-1.848 cela:1.625 j'irai:1.531 elle:-1.499 j'adore:1.415
+word exclamation c'était	je:-0.541 tu:-0.461 j'ai:-0.313
+word exclamation ca	t'as:1.111 ce:-0.813 c'est:-0.674 il:-0.640 t'es:0.560 je:-0.458 moi:0.408
+word exclamation cadre	quel:3.502
+word exclamation cas	moi:0.500
+word exclamation ce	elle:-2.132 ça:-2.034 où:1.439 j'ai:-1.437 moi:-1.393 on:-1.115 j'espère:-1.035 je:-0.726
+word exclamation cela	il:-0.706
+word exclamation ces	on:1.211 je:-1.136 c'est:-1.087
+word exclamation cet	tu:-0.610 on:-0.329
+word exclamation cette	tu:-0.935 il:-0.896 c'est:0.879 ce:-0.848 elle:-0.626 on:-0.541 t'es:0.525 moi:-0.456
+word exclamation chance	moi:0.859 tu:0.781 c'est:-0.598 je:-0.582 ça:-0.413
+word exclamation chat	il:1.169 je:-0.322
+word exclamation chemin	nous:2.106
+word exclamation chose	c'est:-0.616 je:-0.579 tu:-0.541 elle:-0.310
+word exclamation choses	je:-0.317
+word exclamation classe	moi:0.536
+word exclamation coeur	me:3.617 t'es:1.436 moi:0.685
+word exclamation confiance	tu:1.146
+word exclamation coucou	vous:-0.848 il:-0.826 nous:-0.767 ce:-0.692 t'es:0.681 c'est:-0.651 j'espère:0.474 t'as:0.462
+word exclamation coup	te:2.040 on:0.388
+word exclamation courage	t'as:0.951 moi:0.899 je:-0.423
+word exclamation cours	c'est:-0.493 je:-0.460 ça:-0.352 tu:-0.318
+word exclamation d'accord	c'est:-0.342 il:-0.334
+word exclamation d'un	je:-0.519 j'ai:-0.365
+word exclamation demi	j'étais:3.451
+word exclamation dieu	j'ai:0.956 vous:0.359
+word exclamation dommage	je:0.722
+word exclamation dépêche	ils:1.987 nous:1.832
+word exclamation elle	elle:3.279 il:-1.315 c'est:-1.060 tu:-0.967 te:0.900 on:-0.828 ça:-0.788 j'aurais:0.571 moi:-0.513
+word exclamation enfants	vous:1.198 il:1.063
+word exclamation espèce	tu:1.068
+word exclamation exemple	c'est:0.921
+word exclamation famille	j'espère:0.688
+word exclamation fille	elle:2.319 je:-0.514
+word exclamation fils	on:-0.545
+word exclamation fois	cela:0.858 c'est:-0.493 je:-0.478 moi:0.365 tu:-0.344
+word exclamation félicitations	vous:1.628
+word exclamation genre	qui:0.584 moi:0.488
+word exclamation gens	tu:-0.386
+word exclamation geste	tu:1.226
+word exclamation gueule	je:-0.391
+word exclamation guitariste	j'aimerais:4.648
+word exclamation gâteau	je:0.751
+word exclamation h	il:-0.622 vous:-0.550 elle:-0.325
+word exclamation heures	tu:-0.340
+word exclamation histoire	c'est:1.217
+word exclamation homme	c'est:0.921 je:-0.502
+word exclamation idée	je:0.975
+word exclamation il	il:0.573 lui:2.270 vous:-2.039 ils:-1.789 ça:-1.685 elle:-1.560 j'ai:-1.450 on:-1.286 je:-0.880
+word exclamation ils	ils:2.542 je:-1.085 on:-0.868 elle:-0.837
+word exclamation j	toi:0.628
+word exclamation j'ai	j'ai:-0.995 me:1.938 vous:-1.773 j'étais:1.702 ils:-1.374 il:-1.349 ce:-1.263 tu:-1.058 j'en:-0.926
+word exclamation j'aime	moi:0.347
+word exclamation j'en	t'es:1.069 c'est:-0.540 il:-0.483 tu:-0.427 j'ai:-0.413 je:-0.387 j'espère:0.371
+word exclamation j'espère	tu:-0.339 c'est:-0.332 il:-0.323
+word exclamation j'y	c'est:-0.423
+word exclamation je	nous:-2.798 qui:-2.527 quoi:-2.527 ce:-2.401 donnez:2.212 s'il:-2.070 j'avais:2.021 c'était:-2.009
+word exclamation jeux	vous:2.189 tu:1.084
+word exclamation joie	je:0.792
+word exclamation jour	je:-0.721 il:-0.663
+word exclamation journée	tu:-0.439 je:-0.437 il:-0.411
+word exclamation l'ai	c'est:1.037 je:0.529
+word exclamation l'aide	je:0.778
+word exclamation l'heure	j'espère:0.598 je:0.579 tu:-0.320
+word exclamation l'hôtel	c'est:1.200
+word exclamation l'influence	c'est:1.207
+word exclamation la	toi:-1.949 lui:-1.777 cela:-1.731 j'aime:-1.140 elle:1.088 y:-1.009 j'en:0.967 j'espère:-0.907
+word exclamation langue	je:-0.375
+word exclamation le	toi:-2.099 j'en:-2.035 ils:-1.937 elle:-1.889 c'était:-1.720 j'espère:-1.232 t'es:-1.011 vous:-0.969
+word exclamation les	j'ai:-1.781 elle:-1.625 ça:-1.571 j'espère:-1.527 on:-1.314 quoi:1.237 cela:-1.087 t'as:-1.048
+word exclamation leur	je:-0.540
+word exclamation livre	quel:2.900 où:2.784 il:0.744
+word exclamation lui	c'est:1.486 tu:-1.236 je:-1.176 on:-0.620 il:0.535 elle:-0.403
+word exclamation m'a	moi:0.531 elle:0.361
+word exclamation m'as	je:-0.570 tu:-0.508
+word exclamation m'en	je:-0.398
+word exclamation ma	c'est:-1.392 ça:-1.333 j'ai:-0.920 toi:-0.769 elle:-0.639 on:-0.466 je:-0.396 j'aurais:0.309
+word exclamation maison	c'est:0.706 il:-0.693 j'ai:-0.479 on:-0.329
+word exclamation maman	tu:-0.947 il:-0.932
+word exclamation manière	c'est:1.691
+word exclamation me	c'est:-1.634 elle:-1.583 j'étais:1.514 on:-1.224 ça:-1.114 j'en:-1.113 j'espère:-0.854 ils:0.796
+word exclamation mecs	ce:2.049 je:-0.553
+word exclamation meme	moi:0.739 vous:-0.382
+word exclamation merci	elle:-1.621 on:-1.307 j'ai:-1.270 ça:-1.191 j'aimerais:-1.101 toi:-1.062 moi:-0.725 c'était:-0.683
+word exclamation merde	j'ai:2.261 y:1.197 t'as:0.863 je:-0.490 tu:-0.452 c'est:-0.398
+word exclamation mes	tu:-0.985 c'est:0.885 j'ai:-0.837 ce:-0.823 on:-0.785 ça:-0.759 je:0.357
+word exclamation mince	j'ai:2.136 tu:-0.563
+word exclamation minute	je:0.526
+word exclamation mohammed	j'ai:2.338
+word exclamation moi	moi:-2.331 celle:2.377 vous:-2.254 nous:-2.251 ce:-2.175 elle:-2.106 il:-2.071 ça:-1.750 j'irai:1.692
+word exclamation moment	où:3.074 tu:-0.372 je:-0.310
+word exclamation mon	me:2.029 c'est:-1.850 quel:1.833 ce:-1.792 elle:-1.348 j'espère:-1.249 ça:-1.177 moi:-1.116
+word exclamation monde	c'est:-0.652 il:-0.644 tu:-0.618 je:-0.616
+word exclamation mort	je:-0.337
+word exclamation mère	je:-0.553 tu:-0.510
+word exclamation notre	quoi:2.969 elle:-0.400
+word exclamation nous	nous:3.173 vous:-1.800 je:-1.784 tu:-1.768 on:-1.508 ils:-1.402 ce:1.054 moi:-0.836 il:0.355
+word exclamation nuit	j'espère:3.931 il:-0.726 je:-0.563 ça:-0.549 tu:-0.549 on:-0.460
+word exclamation on	on:0.573 vous:-1.517 nous:-1.514 il:-1.266 ils:-1.196 ce:-1.085 c'est:-1.076 tu:-1.001 je:-0.900
+word exclamation où	je:-0.665 tu:-0.622
+word exclamation paix	je:0.598
+word exclamation papa	je:-0.644 on:-0.473
+word exclamation pardon	j'avais:1.248
+word exclamation parents	je:-0.341 tu:-0.320
+word exclamation peur	tu:-0.840 c'est:0.540 je:0.315
+word exclamation place	tu:-0.310
+word exclamation père	il:-0.525
+word exclamation quel	lui:3.444 il:0.346
+word exclamation quelle	ça:-1.433 on:0.679 c'est:0.326
+word exclamation querelle	je:0.761
+word exclamation question	je:-0.404
+word exclamation qui	je:-1.471 tu:-1.442 j'ai:-1.386 ça:-1.198 ils:1.113 elle:-0.883 on:-0.765 cela:-0.638
+word exclamation quoi	tu:1.141 c'est:-1.041 je:-0.975 il:-0.899 ils:-0.807 elle:-0.670 on:-0.667
+word exclamation raison	moi:0.396
+word exclamation remède	je:0.761
+word exclamation retard	je:-0.343
+word exclamation s'est	je:-0.347 il:-0.311
+word exclamation s'il	s'il:5.464 il:-1.409 nous:0.862 je:0.579
+word exclamation sa	il:-0.867 je:-0.778 c'est:-0.707 j'ai:-0.653 tu:-0.590 elle:-0.416
+word exclamation samedi	elle:0.358
+word exclamation sang	moi:0.448
+word exclamation se	vous:-1.211 j'ai:-1.069 c'est:-1.049 ça:-0.991 je:-0.954 tu:-0.944 elle:-0.833 on:-0.601
+word exclamation semaine	j'espère:0.702 moi:0.419 on:0.334
+word exclamation sens	c'est:1.079 je:-0.345
+word exclamation ses	je:-0.712 c'est:-0.576
+word exclamation soir	vous:-0.554 c'est:-0.547 on:0.445 je:-0.344 elle:-0.328 tu:-0.318
+word exclamation soirée	moi:0.678
+word exclamation son	tu:-0.901 il:-0.838 c'est:-0.807 elle:-0.436
+word exclamation sort	il:-0.331
+word exclamation souci	je:0.646 c'est:-0.634
+word exclamation t	c'est:-0.519 je:-0.300
+word exclamation t'ai	où:3.219
+word exclamation t'as	t'as:1.728 moi:0.807
+word exclamation t'attends	où:3.384
+word exclamation t'en	nous:1.627 tu:-0.660
+word exclamation t'es	t'es:1.577 moi:0.899 t'as:0.832 je:-0.462 j'ai:-0.431 ça:-0.373
+word exclamation ta	j'ai:-0.996 ce:-0.886 je:-0.882 elle:-0.817 tu:0.605 t'as:0.594 on:-0.579
+word exclamation tarte	qui:3.583
+word exclamation te	j'ai:-1.656 elle:-1.506 on:-1.034 j'espère:-0.562 il:-0.444 ça:0.407 moi:-0.401 c'est:-0.374
+word exclamation temps	il:-0.893 je:-0.844 ça:-0.716 j'ai:-0.679 tu:-0.616 on:-0.440
+word exclamation toi	vous:-2.191 elle:-1.966 j'ai:-1.740 quoi:-1.547 ça:-1.404 t'as:-0.882 nous:0.867 tu:0.825
+word exclamation ton	c'est:-1.241 on:-1.163 j'ai:-1.019 tu:-0.924 je:-0.320
+word exclamation tour	je:-0.326
+word exclamation travail	je:-0.330
+word exclamation truc	tu:-0.305
+word exclamation trésor	je:0.603
+word exclamation tu	tu:0.385 vous:-2.590 nous:-2.587 ils:-2.427 ce:-2.379 qui:-2.023 j'aimerais:1.495 j'ai:-1.491 c'était:-1.191
+word exclamation tête	c'est:0.874
+word exclamation un	nous:-2.445 qui:-1.634 j'ai:-1.564 où:1.554 elle:-1.532 j'en:-1.183 t'as:-0.889 moi:-0.777
+word exclamation une	j'aimerais:1.762 ils:-1.761 vous:-1.722 ça:-1.679 tu:-1.408 elle:-1.175 on:-1.050 j'espère:-0.895
+word exclamation verre	je:-0.316
+word exclamation vidéos	vous:2.245 tu:1.139
+word exclamation vie	on:-0.929 ça:-0.909 je:0.592 moi:-0.465
+word exclamation voisin	elle:2.677
+word exclamation voiture	tu:0.892 je:-0.449
+word exclamation vos	nous:1.412
+word exclamation vous	vous:1.601 elle:-2.283 s'il:2.033 j'en:-1.814 j'aimerais:1.786 cela:1.457 moi:0.788 c'est:-0.746 j'ai:-0.580
+word exclamation y	y:0.340 il:-1.440 ils:1.312 ça:-1.312 c'est:-1.186 je:-1.145 ce:-1.128 j'ai:-0.965 elle:-0.789
+word exclamation y'a	t'as:1.518
+word exclamation ça	ça:0.868 vous:-2.153 ils:-1.989 elle:-1.498 j'ai:-1.352 ce:1.116 c'était:-1.067 j'espère:-0.908 on:0.903
+word exclamation çà	te:2.252 t'as:0.996 moi:0.651 il:-0.337 vous:-0.313
+word period actions	je:-0.484
+word period adultes	je:-0.320
+word period affaire	je:-0.380
+word period affaires	je:-0.347
+word period agent	quoi:4.202
+word period aide	je:0.783
+word period air	moi:0.436
+word period ami	qui:2.162 vous:-1.236 nous:0.839 il:0.663 j'aimerais:-0.359 c'est:0.306
+word period amie	ils:1.395 nous:1.241 elle:1.028 tu:-0.907 j'ai:-0.786 vous:-0.782 je:0.371
+word period amis	nous:1.405 je:-1.192 ils:-1.001
+word period amour	c'est:-1.308 on:-1.126 j'ai:-1.109 ce:0.975 tu:-0.972 ça:-0.888 moi:-0.847 nous:0.801
+word period an	on:-0.514
+word period ananas	ils:2.506
+word period anand	il:1.074
+word period anglais	tu:-1.879 nous:-1.803 elle:-1.765 on:-1.657 je:-1.599 vous:-1.529 ce:-1.441 ça:-1.419
+word period animaux	ils:1.601 vous:-0.575 il:0.422
+word period année	je:-0.561 nous:-0.471 on:-0.439
+word period années	je:-0.984 il:-0.922 c'est:0.475
+word period ans	c'est:-1.974 ils:-1.801 elle:-1.521 je:-0.584 j'ai:0.437 il:0.381
+word period appel	je:-0.526
+word period application	je:-0.537 il:-0.532
+word period approche	nous:1.786 je:0.412
+word period araignée	c'est:0.654
+word period araignées	tu:1.252 c'est:1.211
+word period arbre	il:0.700
+word period arbres	il:-0.606
+word period argent	j'ai:1.985 je:-0.439 c'est:-0.399
+word period arrière	je:-0.405
+word period artiste	il:-0.479 je:0.389
+word period aspect	il:-0.407
+word period attention	ça:1.330 elle:0.692 tu:0.586 c'est:0.512 je:-0.442
+word period aucun	ce:1.236 cela:-0.920 c'est:0.745 je:-0.671 toi:0.534 elle:0.471
+word period aucune	je:-1.558 vous:-1.336 il:-1.306 elle:0.475
+word period auteurs	ce:2.250
+word period aventure	je:0.666
+word period aveu	je:0.604
+word period avis	c'est:-0.681 j'ai:-0.502
+word period avril	je:-0.322
+word period b	je:-1.148 il:-1.121 c'est:-1.035 nous:-0.952 on:-0.704
+word period banque	je:-0.470
+word period bar	tu:1.588
+word period barbe	j'espère:1.106 cela:0.354 je:-0.310
+word period base	je:-0.588 il:-0.570 vous:-0.387
+word period bataille	il:-0.322
+word period bateau	il:0.810
+word period besoin	c'est:-2.245 elle:-2.208 quoi:2.148 ils:-2.122 quels:0.528 je:0.496 j'ai:0.494 tu:0.397
+word period besoins	il:-0.329
+word period best	quels:3.063 quel:2.312 quelles:1.798 y:1.046 qui:1.017 tu:-0.587
+word period bibliothèque	il:0.755
+word period billet	je:-0.329
+word period bisous	moi:0.346
+word period bois	c'est:-1.124 ils:-0.952
+word period bonheur	il:-1.170 je:-1.159 tu:-1.071 ce:-1.024
+word period bonjour	quel:2.591 elle:-1.713 nous:-1.666 on:-1.634 j'ai:-1.303 moi:-1.241 qui:-0.674 j'espère:-0.446
+word period bord	il:0.389
+word period bouche	il:0.364
+word period bout	tu:1.078 il:0.389
+word period bouteille	je:-0.401
+word period boutons	je:0.666
+word period bras	nous:1.442 je:-0.805 il:0.384
+word period bulletin	ça:2.557
+word period bureau	c'est:0.779
+word period bus	je:-0.472 tu:-0.458
+word period but	il:0.991 je:-0.734
+word period bâtiment	nous:1.897
+word period bébé	tu:-0.359
+word period c'est	c'était:-3.287 celui:-2.282 j'aurais:-2.096 t'as:1.630 j'avais:-1.604 j'aime:-1.570 lui:-1.566 j'espère:-1.344
+word period c'était	c'était:-1.816 c'est:-1.876 elle:-1.840 tu:-1.796 ça:-1.674 elles:1.666 ce:-1.631 j'espère:-0.573 on:0.488
+word period ca	t'as:1.980 t'es:1.418 toi:1.215 ce:-0.806 vous:-0.703 c'est:-0.666 il:-0.651 elle:-0.638
+word period cadeau	je:-0.485 elle:-0.358
+word period cadre	je:-0.332 il:-0.305
+word period café	c'est:-1.033 tu:-0.975 il:0.438
+word period caisse	elle:1.987
+word period calme	tu:0.880
+word period camp	je:0.601
+word period cancer	quels:2.511 donnez:1.739 il:0.837
+word period capacité	je:-0.578 il:-0.483 ils:-0.343
+word period capitalisme	cela:0.648
+word period caractère	je:-0.538 on:-0.310
+word period carottes	moi:3.141
+word period carte	je:-0.559 il:-0.498
+word period cartes	moi:3.892 je:-0.444 il:-0.317
+word period cas	on:1.233 il:-1.038 elle:-1.016 c'est:-1.005 tu:-0.972 nous:-0.969 j'ai:-0.923 t'as:0.920
+word period cause	je:-0.929 tu:-0.832 c'est:0.573
+word period ce	j'y:-2.706 y:-2.586 chacun:-2.486 toi:-2.220 se:-2.193 quelles:-1.834 j'espère:-1.726 j'aimerais:-1.584
+word period ceci	ça:1.782
+word period cela	cela:-1.896 elle:-2.005 nous:-1.958 j'ai:-1.690 il:-1.681 on:-1.534 ce:0.975 j'aimerais:-0.711 ils:0.645
+word period celle	je:-1.383 tu:-1.286 vous:-0.935 cela:-0.742
+word period celui	celui:6.157 j'ai:-1.687 elles:-1.193 quel:-0.707 il:0.545 vous:0.531 elle:0.490
+word period centre	cela:2.882 il:0.604 je:-0.595
+word period certaines	elles:2.494 ce:1.659 ils:1.261 c'est:-1.098 nous:-0.965 il:-0.887
+word period certains	ce:-1.172 vous:-1.168 ils:1.009 cela:-0.749 c'est:0.445
+word period certitudes	nous:2.132
+word period ces	elles:2.289 cela:-2.070 j'aimerais:-0.964 ils:0.887 où:0.720 elle:-0.653 vous:0.604 il:-0.445
+word period cet	ce:-1.786 cela:-1.363 je:-0.805 on:0.412
+word period cette	j'ai:-2.715 cela:-2.610 qui:-2.355 quel:-2.052 elle:1.407 tu:-1.300 j'avais:-1.177 j'en:1.096
+word period ceux	ceux:5.651 tu:-1.407 il:-1.399 ce:0.916 c'est:0.781 je:-0.614
+word period chacun	ils:1.226 cela:-0.306
+word period chaise	elle:2.190
+word period chaleur	il:-0.476
+word period chambre	elle:1.099 il:0.779 tu:0.605 je:-0.390
+word period champs	il:0.709
+word period chance	j'avais:1.067 je:-0.985 tu:-0.836
+word period changement	j'aimerais:0.917 je:-0.526 il:-0.431
+word period chanson	j'aimerais:3.795 elle:1.118 je:-0.915 c'est:-0.874 nous:-0.639
+word period chapitre	quels:2.611
+word period chaque	celui:3.280 tu:-1.721 je:-1.621 on:-1.221 cela:-0.767 il:-0.548
+word period charge	c'est:1.222
+word period chasse	il:0.843
+word period chat	nous:1.222 je:-0.940
+word period chatgpt	je:-1.135 il:-1.108
+word period chats	ils:1.613 il:0.960
+word period chef	je:-0.443
+word period chemin	nous:1.174 je:-0.572
+word period chemise	il:0.907
+word period chemises	elles:3.508
+word period cheval	c'est:0.877 il:0.538
+word period cheveux	ils:1.537 c'est:-0.822
+word period chien	où:2.331 je:-0.623 il:0.422
+word period chiens	l'un:4.714 il:-0.934
+word period chinois	ils:1.914
+word period choix	je:-0.740 il:-0.735 c'est:-0.699 tu:-0.642 ce:-0.521
+word period chose	c'était:1.841 tu:-1.691 moi:-1.666 quel:-1.065 j'aimerais:-0.844 on:0.788 il:-0.746 c'est:-0.693
+word period choses	elles:2.082 je:-1.806 tu:-1.777 on:-1.742 moi:-1.349 ils:0.451 il:-0.438
+word period chute	cela:0.466
+word period chèvre	c'est:1.155
+word period chéri	tu:1.377 j'espère:0.893 je:-0.523
+word period chérie	je:0.697
+word period ciel	cela:-0.691 je:-0.460
+word period cinéma	il:0.915
+word period classe	il:0.594
+word period clés	je:0.507
+word period coco	je:0.795
+word period code	je:-0.544 c'est:-0.503 il:-0.471 elle:-0.416 j'ai:-0.324
+word period coeur	j'espère:1.103
+word period coin	il:0.509
+word period collègue	je:-0.342
+word period colocataire	il:0.994
+word period colère	c'est:0.759 il:-0.739
+word period commentaire	je:-0.316
+word period communication	cela:2.910 quel:0.918 il:-0.584
+word period compagnon	il:0.914
+word period compréhension	il:-0.493 je:-0.469
+word period compte	c'est:-0.981 tu:-0.831 il:-0.766 je:-0.723 moi:-0.472 j'aimerais:0.350
+word period compétence	ils:2.110
+word period concept	il:-0.432 cela:0.431
+word period conception	donnez:2.233
+word period concert	je:-0.726 j'ai:-0.484
+word period concierge	vous:2.323
+word period conduite	il:-0.401
+word period confiance	elle:1.283 il:0.979 je:-0.686 c'est:-0.612
+word period congé	il:1.062
+word period connaissance	moi:2.535 il:-0.877 j'aimerais:0.539
+word period connaissances	c'est:1.122
+word period connexion	nous:1.866
+word period cons	c'est:1.227
+word period constructions	il:0.987
+word period contexte	j'aimerais:1.046 je:-0.311 il:-0.302
+word period contraire	il:-0.673
+word period contrôle	c'est:-0.441 il:-0.376
+word period conversation	je:-0.311
+word period cookie	je:0.939
+word period corbeau	c'est:1.683
+word period corneille	c'est:1.639
+word period corps	j'aimerais:3.511 je:-1.127 il:0.789 cela:-0.528 c'est:0.379
+word period correcteur	quoi:4.364
+word period coucou	j'espère:1.577 il:-0.544 c'est:-0.446 j'ai:0.328
+word period couleur	on:1.659 toi:1.379 vous:-0.494 il:-0.411
+word period couleurs	il:-0.816 c'est:-0.731
+word period coup	il:-1.277 je:-1.095 ça:-1.039 on:-0.959 tu:0.503 moi:-0.477
+word period couple	il:-0.536 je:-0.519
+word period coups	j'espère:0.700
+word period courage	je:-0.627 j'ai:-0.451
+word period courant	je:-0.574 c'est:-0.556 tu:-0.498 il:-0.491
+word period cours	te:3.652 elle:-1.178 c'est:-1.122 il:-1.053 ce:-0.970 tu:-0.885 je:-0.855 ça:-0.638
+word period course	il:-0.435 tu:-0.377
+word period cousin	il:0.903
+word period covid	il:1.052
+word period cravate	elle:1.721
+word period crayon	je:0.402
+word period cris	ils:2.097
+word period créateur	je:-0.304
+word period création	cela:0.420
+word period cuisine	il:0.787
+word period culture	je:-0.496 il:-0.469
+word period côté	vous:1.236
+word period cœur	ce:0.749
+word period cœurs	il:0.907
+word period d	elle:-1.313 nous:-1.266 il:-1.244 ils:-1.227 ce:-1.222 j'ai:-1.221 je:-0.847 on:-0.842
+word period d'abord	on:1.234 je:-1.163 il:0.369
+word period d'accord	il:-1.391 c'est:-1.087 on:-1.076 ce:-1.060 j'ai:-1.059 ça:-0.962 tu:-0.775
+word period d'ailleurs	je:-0.349 tu:-0.315
+word period d'air	il:0.958 cela:0.410
+word period d'amis	il:0.981
+word period d'amour	je:-0.339
+word period d'araignées	c'est:1.308
+word period d'avis	c'est:1.147
+word period d'eau	on:1.466 ce:-0.691
+word period d'eux	c'est:0.971 nous:-0.358
+word period d'inquiétude	vous:2.169 tu:1.609
+word period d'occupation	c'est:1.234
+word period d'origine	il:-0.314
+word period d'un	ils:-2.416 tu:-2.208 ça:-2.195 vous:-1.773 quel:-1.429 j'espère:-1.234 cela:-1.168 quels:0.901
+word period d'une	tu:-2.343 nous:-2.267 vous:-2.218 j'aimerais:-1.020 c'est:-0.881 on:0.797 cela:-0.778 quel:-0.700
+word period d'y	c'est:0.891 je:-0.633
+word period d'échecs	il:0.566
+word period d'éléphants	on:2.261
+word period dames	je:0.768
+word period degré	quel:0.904
+word period degrés	ça:2.640
+word period demi	je:-0.724
+word period dessert	il:0.965
+word period dieu	vous:0.876 il:0.504 c'est:-0.437 on:0.436 je:-0.418 nous:0.307
+word period différence	elles:2.823 quels:2.054
+word period dima	je:0.470
+word period dimanche	il:-0.541 tu:-0.483 je:0.336
+word period direction	il:-0.402
+word period disque	il:0.934
+word period docteur	je:0.667 elle:-0.571 il:0.491
+word period doigts	je:-0.466 il:-0.440
+word period dollars	ça:2.386
+word period don	c'est:1.296
+word period donnez	donnez:6.746 ce:1.439
+word period données	elles:2.901 il:-0.627 elle:-0.520
+word period dont	c'est:-1.637 ce:-1.459 j'ai:-1.340 on:-1.256 ils:0.789 elle:0.720
+word period dos	je:0.371
+word period douche	tu:1.455 je:-0.470
+word period douleur	je:-0.394
+word period doute	je:-0.827 tu:-0.793 c'est:0.612
+word period droit	je:-1.275 on:-1.112 il:0.411
+word period droite	c'est:-0.777
+word period début	y:1.451 je:-0.822 tu:-0.788 il:0.325
+word period défense	il:-0.304
+word period démocratie	il:0.495
+word period départ	je:-0.648
+word period développement	quels:2.805 donnez:1.646 cela:0.606 il:-0.406 tu:-0.348
+word period e	il:-1.008 on:-0.968 ce:-0.956 j'ai:-0.955 vous:-0.951 tu:-0.935 je:-0.924 nous:-0.898
+word period eau	il:-0.430
+word period effet	je:-0.852 il:-0.801
+word period effort	c'est:1.124 il:-0.374 je:-0.357
+word period efforts	je:-0.317
+word period elle	elle:2.654 vous:-3.209 j'en:-2.262 j'espère:-2.038 y:-1.702 tu:-1.434 t'as:-1.369 lui:-0.955 je:-0.809
+word period elles	elles:3.660 je:-1.576
+word period emojis	quels:3.077 quel:2.326 quelles:1.812 y:1.060 qui:1.031 tu:-0.573
+word period emploi	je:-0.465
+word period endroit	il:0.576
+word period endroits	c'est:1.267
+word period enfant	ça:1.399 elle:1.391
+word period enfants	ils:1.551 je:-0.999 vous:0.549 ce:0.531
+word period entreprise	il:-0.424 je:-0.305
+word period envie	moi:3.013 tu:0.858 je:-0.831 ça:-0.648 on:-0.568 c'est:0.421 j'ai:-0.304
+word period environnement	cela:0.471
+word period esclave	il:0.916
+word period euros	c'est:1.336 je:-0.771 tu:-0.652 il:-0.613
+word period eux	ils:1.545 il:-1.196 cela:-0.401 je:-0.378
+word period excuses	je:1.060
+word period exemple	c'est:-0.698
+word period expert	tu:0.360
+word period explication	je:-0.539
+word period expressions	je:0.578
+word period f	ça:-0.364 vous:-0.316
+word period face	on:1.420 je:-0.991 c'est:-0.944
+word period faim	moi:2.164 j'ai:1.171 je:0.545
+word period faits	je:-0.409 il:-0.382
+word period famille	ils:1.644 ce:-0.914 ça:-0.840 il:0.786 cela:-0.491 j'aurais:0.474 c'est:0.370
+word period faute	c'est:0.836
+word period faveur	quels:2.576
+word period façon	il:-0.750 vous:-0.694 c'est:0.586
+word period façons	il:0.833
+word period femme	c'était:1.485 elle:1.420 je:-0.847 on:0.801 quels:0.640 il:-0.464
+word period femmes	elles:2.479 ils:0.849 on:0.825 je:-0.678 donnez:0.541
+word period fenêtre	il:0.654 cela:0.312
+word period fenêtres	cela:0.384
+word period feu	cela:2.567 nous:1.315 il:0.563
+word period feuilles	ce:1.868 il:-0.548
+word period fichiers	cela:0.523
+word period fil	elle:1.652
+word period fille	c'était:1.930 elle:1.865 il:-1.773 on:-1.571 j'ai:-1.558 vous:0.660 je:-0.598 c'est:0.518
+word period filles	je:-0.825 il:0.342
+word period film	l'as:4.574 c'est:-0.825 je:-0.823 vous:-0.643 ça:-0.573 on:-0.546 il:0.323
+word period fils	l'un:3.168 il:0.503 elle:0.459
+word period fin	je:-1.218 tu:-1.170 nous:-1.167 elle:0.692 c'est:0.512
+word period fleur	il:0.707 c'est:-0.442
+word period fleurs	j'aimerais:3.640 elle:0.993
+word period fois	l'un:2.465 c'était:2.114 vous:-1.934 ce:-1.654 tu:-1.612 cela:-0.934 je:-0.815 ça:0.450
+word period fonction	j'espère:0.708 je:-0.708 elle:-0.559 il:-0.355 vous:-0.344
+word period fond	je:-0.956 il:-0.951
+word period force	cela:2.474 tu:-0.897 elle:-0.856 ce:-0.849 il:0.427
+word period forces	il:-0.410
+word period formation	quel:1.269
+word period forme	je:-0.767 elle:-0.704 vous:-0.608 il:0.441
+word period fossé	je:0.678
+word period fourmis	il:1.300
+word period fous	je:-0.445
+word period fraises	c'est:1.388
+word period france	j'aimerais:1.117 vous:0.328
+word period franchise	je:1.069
+word period français	ce:-1.503 ils:0.678 j'aimerais:-0.301
+word period fromage	il:0.540
+word period fruit	c'est:1.157
+word period frère	nous:1.539 je:-1.102 on:-0.873 j'ai:-0.860 il:0.649
+word period frêle	elle:1.919
+word period fête	j'aimerais:3.733 ce:-0.612
+word period gardes	je:0.750
+word period gare	il:-0.493 je:-0.490
+word period gars	il:-0.499 tu:-0.407
+word period garçon	il:1.236
+word period gauche	il:-0.775
+word period gaz	cela:0.656
+word period genoux	elle:1.568
+word period genre	y:0.899 il:-0.826 c'est:0.729 je:-0.670 j'ai:-0.612 tu:-0.592 elle:-0.541 ça:-0.397
+word period gens	tu:-2.213 j'ai:-2.116 moi:1.641 je:-1.260 ils:1.137 ce:0.833 c'est:0.663 on:0.592
+word period gentil	il:0.623 c'est:-0.567 je:-0.524 tu:-0.510
+word period gestion	quels:2.260 donnez:1.488 je:-0.626
+word period glace	il:1.054 j'espère:0.953
+word period gouvernement	il:-0.900
+word period grosses	vous:2.227
+word period groupe	il:-1.041 tu:-0.983 je:-0.976 ce:-0.862 on:-0.761 ils:-0.649 c'est:0.422
+word period guerre	nous:1.284 elle:-1.208 il:0.614 je:-0.462
+word period génie	c'est:1.257
+word period général	il:-0.399
+word period h	c'est:-1.284 il:-1.255 vous:-1.199 elle:-1.132 ce:-0.981 j'ai:-0.644 t'as:0.641 ça:-0.482
+word period hache	celle:6.029
+word period hasard	il:0.404
+word period heure	j'avais:4.534 il:-0.921 tu:-0.829 on:-0.720 ils:-0.714 j'ai:-0.707 je:0.361
+word period heures	cela:1.676 on:-1.616 c'est:-0.320
+word period histoire	il:-0.930 tu:-0.837 je:0.596 vous:-0.487
+word period homme	l'un:2.545 je:-1.037 on:0.828 il:0.665 c'est:-0.360
+word period hommes	ceux:2.840 ils:1.411 il:0.306
+word period humains	il:-0.909 vous:-0.725 ils:-0.423
+word period humeur	je:-0.318
+word period humour	c'est:1.285
+word period héros	il:0.895
+word period hésiter	il:1.069
+word period idiot	je:0.401
+word period idéaliste	j'ignore:6.198 je:0.470
+word period idée	tu:-1.032 on:-0.924 je:0.415
+word period idées	elles:2.727 quelles:1.577 je:-0.863 tu:-0.808
+word period il	il:1.053 quoi:-3.324 t'es:-2.398 j'y:-2.389 t'as:-2.166 lui:-2.117 j'espère:-2.005 elles:-0.962 j'ai:-0.895
+word period ils	ils:3.394 tu:-2.477 je:-1.372 j'espère:-1.253 il:-1.084 y:-0.569
+word period images	elles:3.201 j'aimerais:0.990 je:-0.453 il:-0.358
+word period indonésie	j'aime:4.873
+word period inflammation	je:0.755
+word period informations	il:-0.391 je:-0.346
+word period insectes	c'est:1.229
+word period instant	je:0.634
+word period internet	nous:1.579 je:-0.603 vous:-0.444
+word period j	il:-0.770 c'est:-0.769 ce:-0.591 ça:-0.516 tu:-0.505 elle:-0.446
+word period j'ai	j'ai:0.777 quel:-2.421 j'y:-2.317 j'étais:-2.029 quelles:2.027 l'as:1.917 j'avais:-1.853 y:-1.848 l'avez:1.646
+word period j'aime	j'aime:5.612 moi:2.161 ils:1.126 j'ai:-1.113 il:-0.461 t'as:0.413
+word period j'aimerais	j'aimerais:5.070 il:-1.381 c'est:-1.248 j'ai:-0.849 donnez:0.706 tu:0.492 qui:-0.489
+word period j'arrive	je:-0.414 c'est:-0.351
+word period j'aurais	je:-0.496 il:-0.469 tu:-0.376
+word period j'avais	il:-1.265 j'ai:1.212 on:-1.098 tu:-0.940
+word period j'en	me:1.880 t'as:0.868 on:-0.774 j'ai:-0.658 je:0.422
+word period j'espere	j'ai:0.879
+word period j'espère	t'as:1.429 moi:0.513 nous:-0.460 tu:-0.395
+word period j'eus	je:0.678
+word period j'irai	je:0.568
+word period j'ouvris	elle:1.919
+word period j'suis	y:1.724 il:-0.350
+word period j'y	tu:-0.805 on:-0.697
+word period j'étais	c'est:-1.751 tu:-1.620 on:-1.472 j'ai:-1.349 c'était:-1.035 j'espère:-0.397
+word period jacob	il:0.975
+word period jambe	ils:2.048
+word period jansen	il:1.074
+word period janvier	il:-0.391
+word period jardin	je:-0.810
+word period java	j'aime:4.713
+word period je	je:0.741 celle:-2.637 lequel:-2.415 j'attends:-2.082 j'irai:-1.977 quelles:-1.933 me:-1.818 j'ignore:1.316 lui:-1.262
+word period jeu	tu:-1.201 je:-1.157 il:-1.020 vous:-0.957 cela:-0.658 c'est:0.554
+word period jeudi	j'espère:1.123 quel:0.929 moi:0.328
+word period jeunesse	quels:2.228
+word period jeux	j'aimerais:0.862 il:-0.554 je:-0.537 j'ai:-0.339
+word period joie	je:-0.811
+word period joueur	il:-0.480
+word period joueurs	il:0.593
+word period jour	tu:-2.036 ce:-1.989 j'ai:-1.988 je:-0.772 c'est:-0.681 elle:0.666 vous:0.608 on:0.544
+word period journée	c'est:-1.234 je:-0.991 j'ai:-0.938 tu:0.653
+word period jours	cela:1.794 tu:-1.608 j'ai:-1.263 moi:-1.106 je:-0.762
+word period juifs	c'est:0.967 il:0.960
+word period jupe	elle:2.043
+word period l	y:1.471 c'est:-0.826 il:-0.670 ils:-0.653 ce:-0.648 elle:-0.576 tu:-0.502 on:-0.445
+word period l'a	j'ai:-0.946 il:0.753
+word period l'ai	j'espère:3.186 elles:1.770 on:-1.656 vous:1.227 tu:1.013 j'ai:0.588 ce:0.558 c'est:0.423
+word period l'aider	c'est:1.289
+word period l'aile	quel:1.075 je:0.748
+word period l'aime	elle:1.752 c'est:1.208
+word period l'air	se:3.835 j'aimerais:3.000 tu:0.816 je:-0.754 quel:-0.480
+word period l'ait	je:1.079
+word period l'allemand	il:0.783
+word period l'amour	je:-1.667 on:0.687 c'est:0.597
+word period l'amérique	nous:2.212
+word period l'anglais	c'est:-0.745
+word period l'animal	il:0.981
+word period l'application	c'est:1.204
+word period l'apprentissage	je:0.644
+word period l'approche	je:0.707
+word period l'arbre	celle:6.067
+word period l'argent	je:-1.209 on:1.166 elle:0.824
+word period l'armée	c'est:0.974
+word period l'avenir	c'est:1.182 il:-0.649
+word period l'eau	cela:2.213 c'est:-1.224
+word period l'enfant	il:-0.381
+word period l'espace	il:0.669
+word period l'esprit	nous:-0.676 il:0.566
+word period l'habitude	il:0.777
+word period l'heure	tu:-0.939 j'ai:-0.818
+word period l'histoire	je:-1.024 il:-1.007 j'ai:-0.827
+word period l'homme	il:1.076 elle:0.818 j'espère:-0.451
+word period l'horloge	il:0.990
+word period l'humanité	ils:-0.581
+word period l'ia	cela:0.519 je:-0.306
+word period l'idée	ils:1.829 il:-0.434
+word period l'impression	c'est:0.918 il:-0.580 je:-0.563 ce:-0.366 j'ai:-0.365
+word period l'installer	c'est:1.385
+word period l'instant	c'est:-0.741 tu:-0.684
+word period l'intelligence	c'est:0.920
+word period l'objet	cela:0.483
+word period l'oiseau	il:0.779
+word period l'on	celui:3.735 il:-1.259 on:-1.158 c'est:0.472
+word period l'opinion	quel:1.078
+word period l'un	je:-0.969 c'est:0.533
+word period l'une	on:-0.411 vous:-0.394
+word period l'univers	il:0.731
+word period l'âge	il:0.792
+word period l'âme	ce:1.610 il:0.379
+word period l'énergie	il:-0.304
+word period l'épaule	il:0.918
+word period l'état	j'ai:-0.385
+word period l'étude	il:-0.355
+word period l'île	j'aime:4.777
+word period la	j'étais:-3.699 quoi:-3.437 t'es:-3.418 j'y:-3.309 j'en:-3.205 ceci:-2.822 toi:-2.319 j'avais:-2.169
+word period lait	vous:-0.714 c'est:0.589
+word period lampe	je:0.463
+word period langage	c'est:0.841 je:-0.684 elle:-0.535 il:-0.526
+word period langue	celui:2.791 tu:-2.137 on:-2.101 ce:0.978 je:-0.758 ils:0.487
+word period langues	elles:2.474 c'est:0.730 il:-0.345
+word period laquelle	il:0.855
+word period larmes	je:-0.381
+word period latte	ils:2.285
+word period le	celui:-3.371 j'y:-3.182 j'avais:-3.058 se:-2.374 lequel:-2.264 t'es:-2.150 j'aimerais:-2.129 ceci:-2.044
+word period lequel	je:-0.646 il:-0.573 ce:-0.427
+word period les	l'un:-3.391 j'en:-3.385 j'y:-3.250 j'aime:-3.191 quoi:-3.037 chacun:-2.675 j'avais:-2.420 t'es:-2.195
+word period lettre	tu:-0.885 nous:-0.808
+word period lettres	c'est:-0.750 on:-0.584 je:0.362
+word period leur	on:-2.354 j'ai:-2.341 cela:-1.693 ils:1.210 quel:-1.054 je:-1.006 il:-0.742 elle:-0.528
+word period leurs	vous:-1.762 ils:1.750 ce:-1.649 il:-0.429 on:0.417
+word period lieu	c'est:-1.090 je:-1.047 tu:-1.033 vous:-0.683
+word period lieux	quelles:2.102
+word period ligne	lui:2.119 il:-0.632 c'est:-0.599 je:-0.540 j'ai:-0.518
+word period lignes	j'aimerais:1.029 je:-0.414
+word period limite	tu:-0.314
+word period limites	je:0.632
+word period linge	cela:0.497
+word period link	ça:2.269
+word period liste	je:-0.569 tu:-0.449 ils:-0.334
+word period lit	elle:0.836 tu:0.680
+word period livre	où:2.549 tu:-1.463 vous:-1.219 je:-0.688
+word period livres	ce:1.293 il:-1.123
+word period logiciel	quelles:2.102
+word period loi	il:-0.812
+word period lois	il:0.534
+word period longueur	elles:0.543
+word period lorsqu'on	c'est:-0.499 on:-0.334
+word period lui	lui:1.361 vous:-2.563 cela:-2.370 j'ai:-2.164 quoi:-1.741 il:1.115 je:-0.969 t'as:-0.948 y:-0.932
+word period lumière	on:-0.964 c'est:-0.901 il:0.386 cela:-0.302
+word period lundi	j'aimerais:4.226 je:-0.390 tu:-0.356
+word period lune	il:0.698
+word period lycée	je:-0.349
+word period lèvres	c'est:1.040
+word period m	il:-2.973 c'est:-2.895 ce:-2.860 elle:-2.788 ça:-2.785 tu:-2.658 j'ai:-2.541 moi:-2.479
+word period m'a	ils:-1.671 vous:-1.661 elle:-1.594 on:-1.371 j'ai:1.033 ça:0.842 nous:0.362 il:0.350
+word period m'aimait	il:0.985
+word period m'appelle	je:-0.621
+word period m'as	je:-0.792 tu:-0.599
+word period m'asseoir	il:1.072
+word period m'assoie	je:0.758
+word period m'avaient	je:0.939
+word period m'avez	je:0.517
+word period m'en	il:-1.101 tu:-0.935 je:0.838 c'est:0.396
+word period m'envoyer	je:0.653
+word period m'est	je:1.326 nous:-0.590
+word period m'excuser	je:-0.562
+word period m'intéresse	je:0.529
+word period m'ont	j'espère:1.010 je:-0.363
+word period m'y	je:0.389
+word period m'était	je:0.535
+word period ma	ce:-2.717 cela:-2.516 on:-2.279 ça:-2.142 moi:-1.879 j'aurais:1.755 j'aimerais:-1.409 elle:1.380
+word period machine	je:-0.449 elle:-0.322
+word period magasin	on:1.818
+word period mail	c'est:-0.410 il:-0.395 tu:-0.329
+word period main	il:-1.192 tu:-1.134 c'est:-1.094
+word period mains	j'ai:1.687 elle:0.918
+word period maison	l'avez:3.641 tu:-1.628 ça:0.768 elle:0.731 je:-0.719 vous:0.560 on:0.471 ils:0.468
+word period maladie	il:-0.430 je:-0.414
+word period maman	s'il:3.468 on:-1.001 tu:-0.968 elle:-0.845
+word period manière	je:-1.275 ils:-1.063 vous:-1.052
+word period manteau	il:1.014 je:0.392
+word period marché	il:-0.579 on:-0.412 vous:-0.395
+word period mardi	je:-0.330
+word period mari	vous:1.574 c'est:0.972
+word period mariage	c'est:-0.896
+word period match	je:-0.925
+word period mathématiques	il:-0.375
+word period matin	c'est:-1.863 j'ai:-1.366 on:-1.155 il:-0.714 tu:0.417
+word period matière	je:-0.506
+word period maux	je:0.578
+word period maxime	il:1.072
+word period maître	quels:2.089 il:0.721
+word period me	celle:2.896 j'en:-2.425 quoi:-2.325 j'aurais:-1.990 moi:-1.916 donnez:1.883 y:-1.866 j'y:1.753
+word period mec	quoi:3.905 il:-0.505 je:-0.454 j'ai:-0.359
+word period melon	c'est:1.388
+word period membres	je:-0.599
+word period meme	y:1.092 j'aurais:0.968 elle:-0.511 vous:-0.415 il:-0.414 c'est:-0.330
+word period mer	il:-1.000
+word period merci	toi:2.951 ils:-2.321 on:-1.718 moi:-1.717 elles:1.099 y:-0.803 j'ai:0.604 ça:0.569
+word period merde	j'ai:2.252 c'est:-0.478 je:-0.407 tu:-0.397
+word period mes	ça:-2.315 on:-2.095 quel:-1.101 c'est:-1.082 elle:-0.549 j'ai:0.522 ils:0.441 je:0.376
+word period message	lui:1.942 j'aimerais:1.168 c'est:-1.050 ce:-0.970 t'as:0.875 il:-0.832 ça:-0.754 tu:-0.663
+word period midi	tu:0.855 ce:-0.829 je:-0.815 ça:-0.614 on:-0.534 moi:-0.449 j'espère:0.347
+word period min	moi:0.322
+word period mince	moi:0.314
+word period minces	on:2.174
+word period minute	je:0.562
+word period minutes	je:-0.863 tu:-0.787 vous:-0.341
+word period miracle	il:1.067
+word period miroir	c'est:-0.442
+word period mme	je:-0.347
+word period mode	il:-0.524 je:-0.507 c'est:-0.488 ils:-0.316
+word period modèle	quels:2.578
+word period moi	moi:-2.979 d'où:1.890 j'aimerais:-1.672 t'es:-1.469 il:-1.233 j'espère:-1.200 j'étais:1.190 y:-1.124 elle:-1.109
+word period mois	ils:1.391 c'est:-1.345 elle:-1.258 il:-1.190 tu:-1.146 on:-1.066 je:-0.460
+word period moitié	il:-0.767
+word period moment	c'est:-1.806 j'ai:0.520 ce:0.477 tu:0.326
+word period moments	il:0.663 je:-0.526
+word period mon	cela:-2.782 l'as:2.481 quoi:-2.379 l'avez:2.327 y:-1.920 j'aime:1.742 quel:-1.719 toi:-1.554
+word period monde	ce:-2.462 ça:-2.388 je:-2.349 vous:-2.339 j'aime:2.307 tu:-2.260 j'ai:-1.977 qui:-1.784
+word period monsieur	ça:1.724 il:-0.909 je:-0.864
+word period monstre	toi:1.964
+word period montagne	je:0.337
+word period montre	elle:1.946 il:-0.888
+word period morceau	j'ai:2.061 il:0.826
+word period mord	on:2.181
+word period mort	c'est:-1.892 on:-1.613 je:-1.016 elle:0.730 il:0.419
+word period morts	il:0.876
+word period mot	quel:2.609 cela:1.721 tu:-1.681 ce:-1.560 j'ai:-1.442 je:-0.626 c'est:0.320
+word period mots	il:-1.646 ce:-1.432 tu:-1.347 c'est:0.801 ils:0.749 je:-0.691 nous:0.596
+word period moustiques	vous:2.413 tu:1.475
+word period mouvement	on:1.716 il:0.530
+word period moyen	je:-0.761 il:0.450
+word period moyenne	il:0.755 je:-0.487
+word period moyens	je:-0.475
+word period murs	il:0.646
+word period musique	je:-0.932 nous:-0.842 ce:-0.798 vous:-0.793 j'aimerais:0.732 ça:-0.723
+word period musulmans	c'est:1.232
+word period muḥend	j'en:4.233
+word period mâle	vous:2.241
+word period mère	nous:1.680 il:-1.673 ils:-1.533 tu:-1.506 elle:1.473 on:-1.426 vous:-1.404 ça:-1.312
+word period méchanceté	nous:2.127
+word period médecin	j'ai:-0.627
+word period mémoire	je:-0.654 il:-0.571
+word period n	j'en:3.768 il:-0.574 tu:-0.408 je:-0.363
+word period nature	ce:1.124 elle:1.100 il:0.450
+word period navire	il:0.839
+word period neige	c'est:0.911
+word period niveau	je:-0.892 il:-0.810 j'ai:-0.757
+word period noix	je:0.504
+word period nom	tu:-1.498 elle:-1.468 nous:-1.422 ils:-1.383 ce:-1.377 on:-1.276 je:-0.430
+word period nombre	je:-0.725 cela:0.639 vous:-0.480 il:-0.398
+word period nord	je:-0.393
+word period nos	je:-1.929 nous:-1.777 on:1.622 ils:0.826 c'est:0.345
+word period notes	je:0.766
+word period notre	j'étais:2.363 tu:-2.322 ce:-2.274 nous:1.210 je:-1.068 cela:1.006 c'est:-0.631 on:0.305
+word period nourriture	il:-0.868
+word period nous	nous:2.299 j'ai:-3.279 moi:-3.086 ça:-1.177 y:1.159 je:-1.029 l'un:0.838 vous:-0.779 j'espère:0.772
+word period noël	c'est:0.796
+word period nuages	il:0.567
+word period nuit	on:-1.785 je:-0.634 j'ai:0.486 il:-0.481 ce:0.429 elle:0.405
+word period o	je:-0.519
+word period objectifs	cela:0.325 il:-0.311
+word period offre	quels:2.614
+word period oiseaux	il:-0.837
+word period on	on:2.237 j'ai:-2.095 j'en:-2.017 j'y:-1.882 moi:-1.659 t'es:-1.650 celui:1.607 j'aimerais:-1.498 te:1.465
+word period oncle	ils:1.973
+word period opinion	c'est:1.020 il:0.373
+word period organisateurs	cela:3.304
+word period os	ils:2.167
+word period ouvrages	tu:1.649
+word period où	j'ai:-2.154 vous:-2.151 ça:-2.081 cela:1.154 c'est:-0.836 je:-0.547 tu:-0.434 ce:0.424
+word period p	je:-0.504 on:-0.341 ils:-0.334
+word period page	je:-0.524 tu:-0.469
+word period pages	je:0.365
+word period pain	il:0.316
+word period pantalon	il:0.914
+word period papa	on:-0.468 je:0.350
+word period papier	je:-0.439
+word period parapluie	il:1.153
+word period pardon	ce:1.922 ça:1.796 j'ai:1.548
+word period parents	ils:2.609 on:1.284 c'est:-1.078 je:-1.035 tu:0.797 t'es:0.723
+word period paris	toi:1.885 vous:0.501
+word period parole	je:-0.371
+word period part	lui:1.199 c'est:-1.188 tu:-1.181 je:-1.063 elle:-0.988 nous:0.968 on:-0.603 j'ai:-0.500
+word period partie	je:-1.503 c'est:-1.391 on:-1.275 j'ai:-1.262 nous:0.765
+word period parties	c'est:1.078 il:-0.384
+word period passage	je:-0.483 il:-0.456
+word period passagers	il:1.064
+word period passeport	je:0.533
+word period passion	il:0.601
+word period patients	donnez:1.797
+word period patron	il:0.830
+word period pauvres	il:0.559
+word period pays	c'est:-1.677 on:-1.561 elle:-1.274 ce:1.030
+word period peau	c'est:0.853
+word period peine	elle:1.143 c'est:-0.875 il:0.346
+word period pensée	c'est:0.935 je:-0.589 elle:-0.440
+word period pensées	se:4.811
+word period personnes	elles:2.161 cela:2.056 je:-1.472 ils:1.305 j'ai:-1.252 nous:1.147
+word period perspective	elle:1.816
+word period peuple	on:1.049 ils:-0.998
+word period peur	tu:-1.233 ils:1.179 je:0.700 il:-0.366
+word period photo	je:0.715
+word period photos	on:1.933 j'aimerais:0.979
+word period phrase	nous:-1.419 on:-1.387 ce:-1.375 tu:-1.354 vous:0.872 j'avais:0.481 elle:0.440
+word period phrases	elles:2.438 ce:0.828
+word period pie	c'est:1.308
+word period pied	tu:1.043 je:-0.857 c'est:0.668
+word period pierres	ce:1.954
+word period pinçait	quoi:4.369
+word period pion	c'est:0.977
+word period pitié	il:0.716
+word period pièce	il:-0.817
+word period pièces	on:-0.704 ils:-0.582
+word period place	tu:-1.095 j'ai:-1.046 je:-0.375
+word period plage	tu:1.227
+word period plan	quels:2.066 on:1.578 je:-0.798 il:-0.725 tu:-0.700
+word period plantes	il:0.912
+word period planète	je:-0.760 il:-0.665
+word period pluie	nous:2.359 il:-0.737 j'ai:-0.523
+word period plupart	ce:1.563 c'est:-0.817
+word period plusieurs	je:-1.416 tu:-1.296 j'ai:-1.175 vous:-1.171 ce:-1.059
+word period point	tu:-1.630 ce:-1.509 cela:-1.086 nous:0.891 je:-0.784 vous:0.738 il:-0.517 c'est:0.372
+word period points	je:-0.386 il:-0.359
+word period poisson	il:-0.617
+word period poitrine	je:-0.308
+word period politiciens	ils:2.129 on:2.105
+word period politique	elle:1.279 il:-0.681
+word period pommes	il:0.377
+word period pont	ils:2.466
+word period porcelaine	on:2.261
+word period port	il:-0.482
+word period porte	tu:-1.646 elle:1.620 je:-0.926
+word period portugais	nous:1.765 c'est:0.983
+word period position	elle:-0.431
+word period pote	y:1.537
+word period poulet	je:0.574
+word period poète	il:-0.629
+word period pratique	il:-0.446
+word period preuve	il:-0.452
+word period principe	il:-0.436
+word period principes	il:-0.368
+word period prison	il:0.520
+word period prix	il:-0.875 tu:-0.850 je:-0.824
+word period problème	j'ai:-1.260 vous:0.959 il:0.743 c'est:0.607
+word period problèmes	nous:1.792 il:-0.574 ils:-0.499
+word period processus	je:-0.459 il:-0.450
+word period production	il:-0.362
+word period produits	il:-0.545 on:-0.344 ils:-0.337
+word period professeur	il:1.214 tu:1.015
+word period programme	quel:1.102 je:-0.405 il:-0.400
+word period projet	quelles:1.464 donnez:1.073 tu:-0.921 c'est:0.818 vous:-0.795 nous:-0.742 on:-0.699 il:0.492
+word period propos	quel:0.447
+word period proposition	je:0.501
+word period propriété	c'est:1.039
+word period protection	j'espère:1.278
+word period président	nous:2.016 il:-0.597
+word period public	il:-0.466
+word period publicité	il:1.062
+word period pute	tu:1.756
+word period père	je:-2.031 on:-1.847 ce:-1.835 nous:1.373 moi:1.363 tu:0.457 vous:0.385
+word period période	je:-0.669 c'est:-0.650 elle:-0.563 il:-0.524
+word period qu	moi:0.466
+word period qualité	elle:1.584 j'aimerais:0.972 je:-0.449
+word period quantité	j'espère:1.251
+word period quart	je:0.648
+word period quel	je:-0.872 c'est:0.676
+word period quelle	quelles:2.441 je:-0.888 c'est:-0.869 tu:-0.812 il:0.585 j'ai:-0.573
+word period quelqu'un	tu:-1.632 ce:0.691 c'est:0.357
+word period quelque	tu:-1.858 c'était:1.679 je:-0.466 vous:0.408 j'ai:0.395 ce:0.391
+word period quelques	c'est:-1.480 tu:-1.423 ce:-1.302 vous:-1.073 ils:0.879 je:-0.569
+word period question	quelles:1.806 elle:-1.417 on:-1.338 j'ai:-1.325 tu:-1.305 ça:-1.252 cela:-0.903 je:0.406
+word period questions	qui:3.262 je:-0.616 c'est:-0.589 tu:-0.508 vous:-0.338
+word period qui	quoi:-2.751 y:-2.291 chacun:-2.191 t'es:-2.179 celui:2.172 quel:-2.090 t'as:-1.958 donnez:-1.930
+word period quoi	t'as:1.457 ce:-1.230 c'est:-1.221 j'ai:-1.111 on:-1.027 tu:-0.923 ça:-0.891 cela:-0.807
+word period racines	cela:3.151
+word period radio	je:0.320
+word period raison	c'est:-1.537 ce:-1.359 cela:-0.710 je:0.561
+word period rapport	quel:0.744 je:-0.392 il:-0.351
+word period ravitaillement	il:1.072
+word period recherche	je:-0.744 elle:-0.701 il:-0.662
+word period relation	il:0.828 je:-0.404 c'est:-0.342
+word period relations	il:-0.504
+word period religion	il:-0.576
+word period remarque	je:0.910
+word period repas	nous:1.770 je:-0.476
+word period repos	je:-0.435
+word period représentation	tu:1.662
+word period ressources	quels:2.711
+word period retard	nous:1.110 c'est:-1.096 on:-0.817
+word period retour	tu:-0.761 nous:-0.685 je:-0.661 on:-0.653 ce:-0.641 j'ai:-0.417 il:0.362
+word period retraite	il:0.705
+word period rideaux	il:0.841
+word period risque	je:-0.505
+word period rivière	c'est:1.171 il:-0.660 elle:-0.453
+word period robe	je:-0.933
+word period roi	c'est:0.755
+word period romains	vous:2.092
+word period rondeurs	vous:2.243
+word period rose	elle:1.490
+word period route	je:-0.790 on:-0.584
+word period rue	il:1.149 je:-0.537
+word period rues	c'est:1.082 il:-0.416
+word period russe	il:-0.660 je:-0.643 c'est:-0.625
+word period russes	ils:1.819
+word period règles	cela:0.373
+word period réalité	il:-0.717
+word period réchauffement	quelles:2.329
+word period réponse	c'est:-1.145 elle:-1.058 nous:-1.011 ce:-0.967 on:-0.866 vous:-0.843
+word period réponses	c'est:1.224
+word period réseau	cela:0.640
+word period réseaux	quels:2.501 je:-0.385 il:-0.358
+word period résultat	il:0.771
+word period réunion	je:-0.507 il:-0.480
+word period rêve	il:-0.905 c'est:0.525
+word period rôle	il:0.609
+word period s'agit	il:-0.683 vous:-0.465
+word period s'appelle	il:0.782
+word period s'arrêter	nous:1.907 je:0.799
+word period s'assit	je:0.604
+word period s'embrassent	c'est:1.388
+word period s'en	ils:1.563 je:-0.886 on:-0.544
+word period s'envoler	c'est:1.388
+word period s'est	j'ai:-1.852 tu:-1.832 ça:-1.778 on:-1.650 moi:-1.254 elle:0.371 ils:0.329 il:-0.312
+word period s'il	j'essaie:4.189 c'est:-0.655 j'ai:0.621
+word period s'ils	c'est:1.304
+word period s'y	c'est:0.859
+word period sa	j'ai:-2.610 ça:-2.513 vous:-2.499 ils:-2.421 tu:-2.327 je:-1.854 moi:-1.668 t'es:-1.105
+word period sac	il:-0.493 je:0.358
+word period sage	il:0.770
+word period salle	il:-0.313 je:-0.309
+word period samedi	il:-0.412 c'est:-0.411 je:-0.309
+word period sang	c'est:0.711
+word period santé	tu:1.088 je:-0.768 il:-0.685 nous:-0.514
+word period science	je:-0.589 il:-0.562 j'ai:-0.348
+word period se	j'ai:-3.043 vous:-2.949 moi:-2.764 quel:-2.380 quoi:-2.310 celui:1.922 j'espère:-1.861 t'es:-1.739
+word period secret	il:0.334
+word period seigneur	je:0.601
+word period sein	quels:2.253 donnez:1.481 je:-0.632 il:-0.571
+word period semaine	il:-1.254 elle:-1.047 vous:-1.035 j'ai:-0.922 on:-0.745 t'es:0.583
+word period semaines	je:-0.429
+word period sens	tu:-1.522 elle:-1.492 ce:-1.401 ça:-1.326 j'ai:0.884 j'avais:0.455 il:-0.388
+word period sentiment	il:0.591
+word period sentiments	toi:1.909
+word period septembre	je:-0.479
+word period service	donnez:1.368 il:-0.651 on:-0.517
+word period ses	tu:-2.369 vous:-1.752 cela:-1.556 je:-1.396 c'était:1.100 y:-0.878 ça:0.738 elle:0.467
+word period signification	cela:3.010 il:-0.484
+word period singes	nous:1.844
+word period site	c'est:-0.465 je:-0.463
+word period situation	je:-0.609 il:-0.482
+word period situations	ils:2.067 il:-0.328
+word period siècle	il:-0.561 ils:-0.353
+word period siècles	ce:2.061
+word period société	je:-1.170 nous:0.993
+word period soi	ils:1.516
+word period soir	c'est:-1.550 il:-1.424 moi:-0.774 ça:-0.734 tu:-0.662 elle:0.468 j'ai:-0.456 j'y:0.360
+word period soirée	il:-0.541 je:-0.458 ils:-0.368 ce:-0.363
+word period sol	il:0.662
+word period soleil	vous:-0.880 cela:-0.354 c'est:0.316
+word period solution	il:-0.690
+word period sommeil	je:-0.895 il:-0.868
+word period sommet	il:-0.586
+word period son	tu:-2.747 ça:-2.553 moi:-2.511 vous:-2.479 j'aimerais:-1.690 j'aurais:-1.504 je:-1.480 elle:0.918
+word period sort	il:0.761 je:-0.712
+word period sorte	on:-0.649
+word period sortie	j'étais:4.405 je:-0.451 il:-0.378
+word period souci	je:0.545
+word period soucis	je:0.564
+word period souhaits	il:1.064
+word period soupe	il:1.006
+word period sourire	on:1.629 tu:1.131 c'est:-0.706 il:0.443
+word period souris	il:-0.382
+word period spectacle	il:0.814 je:-0.719 tu:-0.599 on:-0.490
+word period sport	je:-0.381
+word period starbucks	ils:2.280
+word period station	elle:1.683
+word period stylo	j'en:3.824
+word period sueur	j'aimerais:4.339
+word period suite	il:-1.098 je:-0.999 vous:-0.880
+word period sujet	donnez:1.214 il:-0.773 nous:-0.704 je:0.361
+word period supermarché	j'ai:2.225
+word period surface	cela:0.484
+word period système	je:-1.036 tu:-0.819 il:-0.779 ce:-0.618
+word period séant	il:0.992
+word period sécurité	il:0.501 cela:0.301
+word period séjour	il:0.835
+word period série	il:-0.567
+word period sœur	quoi:3.183 nous:1.977 elle:1.363 je:-0.428
+word period sœurs	je:0.595
+word period t	il:-1.192 on:-0.912 elle:0.840 j'ai:-0.790 y:0.499 tu:-0.484 ça:-0.465 c'est:0.351
+word period t'a	tu:1.552
+word period t'ai	on:-0.953 tu:0.769
+word period t'aime	tu:1.017 je:0.623
+word period t'appeler	j'avais:5.249
+word period t'approche	tu:1.760
+word period t'as	t'as:3.781 j'avais:1.367 tu:1.303 t'es:1.135 il:-0.702 j'espère:0.687 je:-0.527
+word period t'en	tu:-1.266 ce:-1.146 j'ai:-1.145 ils:1.036 je:0.656
+word period t'es	t'as:1.274 tu:1.221 il:-0.784 je:-0.591 c'est:-0.562 elle:-0.499 ça:-0.496 on:-0.470
+word period t'excuser	c'est:1.380
+word period t'inquiète	nous:1.292 ce:1.202 tu:1.119 ça:1.075 c'est:0.869 je:0.814
+word period ta	ça:-1.729 on:-1.600 j'ai:-1.398 j'espère:-0.627 moi:-0.627 j'aimerais:-0.601 il:-0.527 elle:0.411
+word period table	je:-1.209
+word period tableau	je:-0.337
+word period tact	il:1.074
+word period taille	je:-1.072 cela:-0.409
+word period talent	il:0.662
+word period te	j'aimerais:-1.270 t'es:-1.176 moi:1.140 tu:1.124 j'espère:-0.857 il:-0.759 on:-0.434 t'as:0.338
+word period technique	cela:0.921 c'est:-0.381
+word period temps	ça:-2.437 s'il:1.946 cela:-1.387 j'espère:-0.569 tu:0.460 vous:0.381 elle:-0.314
+word period tempête	il:0.669
+word period tendance	je:0.422 il:-0.410
+word period tennis	on:-0.327
+word period tente	il:0.895 je:-0.622 vous:-0.377
+word period terme	il:-1.357 cela:-0.852
+word period termes	il:-0.399
+word period terre	on:-1.625 cela:-1.190 ils:0.568 je:-0.483 il:0.395
+word period texte	quelles:1.830 j'aimerais:0.768 c'est:-0.613 je:-0.569 il:-0.457 vous:-0.430 ce:-0.317
+word period texto	je:0.756 moi:0.362
+word period théorie	il:0.798
+word period théâtre	il:0.974
+word period tiers	quelles:2.310
+word period titre	je:-0.714
+word period toi	ils:-2.579 vous:-2.450 j'ai:-2.168 quoi:1.692 qui:1.578 j'en:1.556 tu:1.152 moi:-0.959
+word period toiles	c'est:1.388
+word period toilettes	moi:3.007
+word period ton	nous:-2.534 elle:-2.496 ce:-2.489 vous:-2.485 on:-2.287 ça:-2.150 moi:-1.712 où:1.119
+word period tour	je:-1.105
+word period traditions	elle:0.432
+word period traduction	il:-1.719 je:-1.640 tu:-1.626 j'ai:-1.282 elle:0.309
+word period train	j'aurais:3.267 j'en:2.702 tu:-1.405 j'ai:-1.308 on:-0.897 je:-0.620
+word period travail	on:-1.541 vous:-1.524 cela:-0.879 ce:0.714 nous:0.499 il:0.378
+word period travaux	cela:0.310
+word period travers	il:-0.811 c'est:0.699
+word period troupeau	on:2.231
+word period truc	c'est:0.832 elle:-0.590 j'ai:-0.498 je:-0.385
+word period trucs	t'as:1.752
+word period tu	tu:1.973 vous:-3.396 elles:-3.075 quoi:-2.758 c'était:-2.661 j'en:-2.553 celle:2.464 j'aurais:-2.081 j'avais:-1.954
+word period turc	nous:0.978 je:0.529
+word period type	il:0.890 je:-0.830 elle:-0.766 vous:-0.670
+word period types	je:-0.367
+word period tâche	cela:0.326
+word period tâches	cela:0.496
+word period téléphone	je:0.605
+word period tête	c'est:0.710
+word period un	ceux:-3.236 j'y:-3.197 j'en:-2.911 moi:-2.525 donnez:-2.349 toi:-2.344 t'as:-1.901 j'espère:-1.759
+word period une	elles:-3.743 chacun:-2.626 t'es:-2.615 y:-2.378 donnez:-2.365 quel:-1.814 t'as:-1.761 toi:-1.515
+word period univers	on:2.239
+word period v	je:-0.646 il:-0.628 tu:-0.570 vous:-0.326
+word period vacances	je:-0.640 on:-0.412 elle:-0.406
+word period vaisselle	il:1.081
+word period valeur	il:-0.469
+word period valeurs	il:-0.502
+word period variété	cela:0.478
+word period ventre	je:-0.434
+word period verbe	c'est:1.074
+word period verre	il:0.641 je:-0.622 c'est:-0.560
+word period vertiges	c'est:1.385
+word period vertu	c'est:1.257
+word period veste	je:-0.385
+word period viande	elle:1.263 je:0.368
+word period vidéos	je:0.637
+word period vie	vous:-2.489 tu:-2.473 celui:2.386 ils:-2.384 ce:-2.377 cela:-2.071 je:-1.257 elles:0.920
+word period vieil	il:0.515
+word period ville	cela:2.148 ils:1.426 je:-1.267 elle:-1.224 j'ai:-1.132 ça:-1.058 tu:-1.047 vous:-0.719
+word period villes	vous:0.309
+word period vin	j'ai:1.465 je:-0.981 il:-0.823 c'est:0.543
+word period vis	j'aimerais:1.120 je:0.838
+word period visage	elle:1.605 j'espère:0.602
+word period vishy	il:1.074
+word period vision	il:-0.304
+word period vitesse	il:-0.327 cela:0.309
+word period vocation	je:0.750
+word period voisin	je:0.457
+word period voiture	c'est:-1.480 elle:1.353 on:-1.201 tu:-1.156 ça:-1.086 j'ai:-1.078 ils:0.880
+word period voitures	c'est:1.067 il:-0.363
+word period volonté	c'est:0.764
+word period vos	où:1.668 nous:1.126 vous:1.089 ce:0.684 ils:0.636 je:-0.590 il:-0.482 cela:-0.421
+word period votre	ce:-2.166 vous:1.565 quel:-0.995 c'est:-0.898 cela:-0.839 nous:0.408
+word period vous	vous:2.366 moi:-3.268 ceux:-2.514 tu:-2.133 ils:-1.308 quels:-1.221 on:-1.019 quelles:-0.949 elle:-0.870
+word period voyage	on:1.569 je:0.553 il:0.383
+word period vue	je:-1.140 vous:-0.895 j'aurais:0.488
+word period vélo	il:0.643
+word period vérité	on:0.865 elle:0.523 c'est:0.326
+word period vêtements	il:0.569
+word period y	j'ai:-2.611 toi:2.366 j'y:2.192 j'aimerais:-1.727 l'un:1.594 t'es:-1.306 tu:-0.787 elle:-0.697
+word period yahya	j'en:4.233
+word period yeux	c'était:2.056 j'ai:-1.315 ils:0.748 nous:0.594 je:-0.459
+word period âge	il:-0.480
+word period ça	ça:1.148 t'as:2.345 elle:-2.282 quel:-2.016 quoi:-1.631 j'aimerais:-1.467 c'était:1.419 t'es:-1.374 j'aime:-1.202
+word period école	je:0.945 c'est:-0.363
+word period écrémés	ils:2.285
+word period élèves	il:-0.442
+word period éléments	quels:2.605
+word period épouse	elle:1.936
+word period équipe	je:-0.521
+word period état	ils:1.614
+word period étranger	il:0.783
+word period étude	donnez:1.951 cela:0.500
+word period études	je:-0.343
+word period êtres	c'est:-0.703
+word question albert	je:0.584
+word question ami	il:1.317
+word question anglais	je:-0.425 c'est:-0.313
+word question anniversaire	je:0.515
+word question besoin	je:-0.538
+word question bois	je:0.301
+word question bonjour	je:-0.352 j'ai:-0.312
+word question c'est	c'est:1.381 elle:-2.020 ça:-1.909 nous:-1.805 tu:-1.491 j'ai:-1.440 on:-1.239 t'es:-0.837 il:-0.642
+word question c'était	moi:0.511
+word question ca	moi:1.198 c'était:1.092 il:-0.532 c'est:-0.508 ce:-0.420 tu:0.346 je:-0.312 on:0.305
+word question campagnes	ils:2.888
+word question ce	nous:-3.223 cela:-3.108 j'aimerais:-2.847 moi:-2.548 ils:-0.858 t'es:0.768 j'espère:0.662 vous:-0.657
+word question cela	j'ai:0.766 c'est:0.446
+word question ces	elles:3.050 ils:2.944 ce:0.962 on:0.891 je:-0.826 c'est:0.410
+word question cet	il:-1.000 je:-0.305
+word question cette	qui:2.409 elle:1.881 nous:-1.717 j'ai:-1.551 vous:1.182 c'est:1.106 moi:-0.967 ce:0.552
+word question chambre	je:-0.501
+word question chapeau	on:2.659
+word question chat	il:1.045
+word question chats	il:1.179
+word question chien	il:0.959
+word question chopes	c'est:1.742
+word question chose	ce:0.940
+word question cigarettes	je:0.584
+word question clés	il:1.311
+word question collègue	je:0.576
+word question colère	je:0.612
+word question coucou	moi:0.914 j'ai:0.357
+word question coup	ça:-0.425
+word question cours	moi:0.504
+word question cousine	elle:2.214
+word question côté	je:0.495
+word question d'amour	je:0.576
+word question d'enfants	je:0.499
+word question d'un	quels:4.815 ce:1.714
+word question d'une	c'est:1.444
+word question dicaprio	je:0.584
+word question dieu	je:0.357
+word question dimanche	on:2.531 je:-0.340
+word question elle	elle:2.606 j'ai:-1.803 tu:-1.629 moi:-1.314 c'est:-0.500 il:-0.361
+word question enfant	je:-0.617
+word question entretien	vous:0.326
+word question facture	c'est:1.493
+word question faim	j'ai:1.334
+word question femme	elle:2.264 je:0.552
+word question fenêtre	il:0.796
+word question fille	elle:1.970 je:-0.761 c'est:0.692 tu:-0.547
+word question filles	je:0.404
+word question fois	c'est:-0.870
+word question frère	il:1.100
+word question frères	ils:2.427
+word question garçons	je:0.504
+word question genre	j'aime:3.959 c'est:-0.800 j'ai:-0.613
+word question gestion	donnez:4.615
+word question grotte	je:0.584
+word question hasard	je:-0.399
+word question heure	tu:-1.378 nous:-1.299 il:1.161 on:-1.060 moi:-0.953 j'ai:0.534
+word question heures	je:-0.391
+word question hommes	cela:3.124
+word question il	il:1.337 ils:-2.601 moi:-1.757 j'espère:1.277 tu:-0.810 on:0.567 c'est:-0.542 cela:0.514 elle:-0.474
+word question ils	ils:2.194 je:-1.524 c'est:0.680 il:0.562
+word question instant	nous:2.423
+word question j'ai	j'ai:-0.829 il:-0.678 tu:-0.366
+word question j'étais	je:0.582
+word question je	elles:-2.514 on:-2.461 j'étais:-2.209 j'espère:-1.977 moi:-1.921 j'aimerais:1.588 t'es:-1.530 cela:0.885
+word question jeu	je:-0.324
+word question joconde	je:0.584
+word question jour	nous:1.767 ça:1.491 c'est:0.913 je:-0.851
+word question journal	il:1.177
+word question l'avez	c'est:0.808
+word question l'échéance	je:0.584
+word question la	ils:-2.809 celle:1.847 j'adore:1.847 t'as:-1.623 me:-1.616 quelles:1.561 ça:-1.028 on:0.949
+word question lac	il:1.402
+word question lait	c'est:1.238
+word question langue	elle:1.567 c'est:0.664
+word question langues	il:1.179
+word question le	cela:-2.632 tu:-2.138 j'espère:-2.128 t'es:-2.004 j'aimerais:-1.682 moi:-1.667 donnez:1.572 celui:-1.525
+word question leonardo	je:0.584
+word question les	quelles:2.592 elle:-2.572 vous:-2.091 j'ai:-1.992 j'aimerais:-1.754 donnez:1.682 elles:1.274 j'en:1.011
+word question livre	c'est:-1.083 il:0.402
+word question livres	ils:2.532
+word question loup	je:0.581
+word question lui	ce:1.667 il:0.974 je:-0.831 elle:-0.681 c'est:0.592
+word question lumière	on:2.902
+word question lunettes	elles:3.635
+word question m'accuser	je:0.741
+word question m'entendez	je:0.504
+word question ma	c'est:-1.382 elle:1.300 ça:-1.216 j'ai:-1.195 tu:-1.107 moi:-0.792 je:-0.631
+word question maison	on:2.059 tu:1.531 c'est:1.026 j'ai:0.875 je:-0.452
+word question maladie	elle:2.212
+word question mamie	elle:2.001
+word question marc	il:1.657
+word question match	ce:2.403
+word question me	on:-1.739 tu:-1.666 j'aimerais:-1.377 il:-0.839 vous:0.784 t'es:-0.443
+word question mes	je:-0.810 j'ai:-0.740 il:0.645
+word question midi	je:-0.305
+word question minutes	moi:0.391
+word question moi	c'est:-1.577 j'ai:-1.523 on:-1.307 tu:1.198 je:-0.332
+word question mon	j'ai:-1.551 c'est:-1.518 il:1.438 ça:-1.375 vous:-1.198 moi:-0.839 tu:0.695
+word question monde	on:1.902 ce:1.593
+word question mort	il:1.679
+word question mot	qui:4.151
+word question nationalité	ils:2.237
+word question nos	ils:2.469
+word question notre	on:1.969 elle:1.829
+word question nourriture	j'adore:5.046
+word question nous	nous:3.454 j'ai:-1.926 on:1.221 vous:1.116 je:-0.771 où:0.693 ça:0.658 ce:0.486 il:-0.484
+word question noël	je:0.496
+word question nuit	je:-0.382
+word question o	moi:0.442
+word question on	on:3.083 c'est:-1.753 tu:-1.423 moi:-1.074 où:0.834 y:0.526 ça:0.450
+word question ours	c'est:1.569
+word question où	j'étais:2.480 moi:-2.189 j'aimerais:-2.019 t'as:-1.260 elle:1.239 il:1.045 tu:-0.695 nous:0.637
+word question papa	je:-0.389
+word question part	c'est:0.874
+word question perroquet	je:0.584
+word question peur	je:-0.326
+word question photo	je:1.011
+word question phrase	je:-0.466
+word question phrases	c'est:0.853 je:-0.599
+word question pingouins	c'est:1.318
+word question plantes	j'aime:4.265
+word question point	c'est:1.200 je:-0.598
+word question porte	elle:1.752
+word question princesse	je:0.739
+word question pull	on:2.732
+word question père	il:1.060
+word question quel	j'aime:3.204 donnez:2.459 tu:-2.080 ce:-2.023 moi:-1.655 nous:1.000 j'ai:0.797 je:-0.383
+word question quelle	tu:-2.206 nous:-2.127 elle:-2.096 moi:-1.781 on:-1.630 ils:0.600 il:0.475 c'est:-0.392
+word question quelles	donnez:3.360
+word question quelque	je:-0.733
+word question quels	quelles:4.359 il:0.919
+word question question	nous:1.673 je:-0.930 il:-0.903
+word question qui	cela:-2.121 elles:2.010 ils:1.634 toi:1.615 t'es:1.508 moi:1.429 ça:-0.779 c'est:0.699
+word question quoi	celle:2.870 il:-2.280 elle:-2.066 on:-1.306 t'es:-0.992 nous:0.939 j'espère:-0.803 c'est:0.752
+word question raison	je:-0.371
+word question relation	je:0.725
+word question retard	je:0.411
+word question roi	je:0.594
+word question s'appelle	je:0.697
+word question s'en	je:-0.336
+word question s'est	on:2.096 il:0.372
+word question s'il	nous:1.556 je:-1.031 j'ai:0.996 il:0.790
+word question sa	y:1.678 elle:1.573 moi:0.865 il:0.751 je:-0.704 c'est:-0.688 j'ai:-0.634 tu:-0.460
+word question samedi	je:-0.503
+word question score	nous:2.503
+word question se	vous:-1.456 on:-1.168 y:0.881 c'est:-0.449 moi:-0.405 elle:0.398
+word question secret	il:1.508
+word question semaine	je:0.750 j'ai:-0.473
+word question ses	il:1.009
+word question soir	c'est:-0.912 j'ai:-0.772 tu:-0.413 on:0.368
+word question soirée	je:-0.454 c'est:-0.388
+word question soldats	ils:2.808
+word question son	c'est:-1.183 il:1.087
+word question soupe	je:0.504
+word question sourire	il:1.313
+word question séries	je:0.584
+word question sœur	elle:1.997
+word question t	tu:-1.792 on:-1.566 moi:-0.729 c'est:-0.666 nous:0.554 elle:0.539
+word question t'a	j'ai:-0.461
+word question t'arrive	t'es:4.048 tu:2.132
+word question t'as	il:-1.221 j'ai:-1.131 ça:-1.066 c'est:-1.058 on:-0.908 moi:0.859
+word question t'avons	je:0.584
+word question t'es	c'est:-1.193 y:1.128 j'ai:-1.097 tu:1.075 ça:-1.008 nous:-0.905 je:-0.548
+word question ta	elle:1.715 il:-1.409 j'ai:-1.370 on:-1.146 tu:-0.590
+word question tasse	c'est:1.566
+word question te	lui:2.588 j'aimerais:1.974 elle:-1.951 c'est:-1.903 moi:1.397 on:-1.267 tu:0.646 il:-0.631
+word question temps	moi:-0.700 il:0.307
+word question tennis	je:0.499
+word question thé	c'est:1.446 il:0.589
+word question toi	j'aime:2.740 il:-1.508 c'est:-1.484 ce:-1.396 tu:0.768 t'as:0.734 j'ai:0.544 j'espère:-0.393
+word question toilettes	je:0.430
+word question ton	j'aime:2.297 ce:-1.839 j'ai:-1.720 on:-1.440 moi:-0.913 c'est:-0.568 il:0.390
+word question traduction	c'est:1.068
+word question travail	tu:-0.377
+word question tu	tu:0.381 cela:-3.582 j'aimerais:-3.281 me:-2.800 celui:-2.722 t'as:-2.197 t'es:-2.131 ils:-1.550 s'il:-1.191
+word question type	je:0.398
+word question téléphone	il:0.925
+word question un	ils:-2.579 vous:-2.153 moi:-1.561 te:1.278 j'en:1.186 t'es:-1.043 cela:0.739 il:-0.663
+word question une	elle:-2.423 j'ai:-1.997 on:-1.553 moi:-1.440 c'est:-0.775 ça:0.582 il:-0.479
+word question vacances	j'ai:-0.367
+word question verre	j'en:3.248 il:0.985
+word question vertige	j'ai:1.943
+word question veste	elle:2.142
+word question ville	j'aimerais:3.622 je:-0.533 tu:-0.303
+word question voiture	on:-0.951 c'est:0.457
+word question vos	ils:1.911
+word question votre	vous:-1.529 elle:0.972
+word question vous	vous:1.381 moi:-2.699 tu:-1.897 ils:-1.204 j'adore:1.008 j'aimerais:0.976 me:0.887 il:-0.825 elle:-0.710
+word question vêtements	je:0.430
+word question y	ça:-1.457 j'ai:-1.356 tu:-1.348 moi:-0.475 je:-0.457
+word question yens	c'est:1.321
+word question âge	j'ai:2.367
+word question ça	ça:1.613 il:-2.466 elle:-2.411 t'es:2.020 moi:1.630 j'espère:-1.351 ce:0.825 me:-0.476 j'ai:-0.381
+word question épinards	je:0.584

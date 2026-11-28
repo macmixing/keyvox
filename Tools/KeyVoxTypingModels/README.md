@@ -2,9 +2,9 @@
 
 Builds the typing models the predictive keyboard bundles for a typing language: those of its
 English typing language in
-`Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/PredictiveData/en`, German's
-in `PredictiveData/de`, and the same files for Spanish and French, which are built but not bundled
-yet (see "Other typing languages"). English's:
+`Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/PredictiveData/en`, and the
+same files for German, Spanish, and French, each bundled in its own `PredictiveData/<language>` once
+the language ships there (German's and French's are; see "Other typing languages"). English's:
 
 | Bundled file | What it is | Built by |
 | --- | --- | --- |
@@ -464,7 +464,9 @@ language's `vowels`.
 Built on November 27, 2026 from the language builds of November 24, with `language.json` files
 kept outside the package (German on `QWERTZ-German`, Spanish on `QWERTY-Spanish`, French on
 `AZERTY-French`, with their accented vowels as vowels); each build took about 13 minutes. German's
-bundled files are a later build (see "German").
+bundled files are a later build (see "German"). French's
+are bundled: built again with French's `language.json` in the package, from the same language
+build and the English calibration, they give the French measures below.
 
 | | de | es | fr |
 | --- | --- | --- | --- |
@@ -511,10 +513,45 @@ such as Spanish "esta" for "está":
 
 These are the trainers' measures: the keyboard corrects with `NoisyChannelCorrector`, which reads
 the rankers' choice of candidates but not the action model's probability (see "What the harness can
-tell apart"), and `Tools/KeyVoxTypingHarness` scored English only at the time (see "German" for
-the keyboard's own scores). They show the rankers learn the
-language, ranking the intended word first more often than LatinIME alone does, and give a baseline
-to hold later builds to.
+tell apart"). They show the rankers learn the language, ranking the intended word first more often
+than LatinIME alone does, and give a baseline to hold later builds to.
+
+### French through the keyboard
+
+`Tools/KeyVoxTypingHarness` typed French through the bundled French files and the typing session,
+with `--language fr`, on November 27, 2026. Its corpus is the Tatoeba texts of the French simulation
+sentences in held-out buckets 8-9, which the dictionary's counts and the rankers leave out, as Tatoeba
+writes them (41,622 sentences); its plans are 400 sentences at noise 0.25 and 80 at noise 0.3, seed 1,
+and a zero-noise plan of the 45 Tatoeba sentences Apple's French keyboard was measured typing, with
+Apple's results beside them. English's bundled measures from "Results" are beside French's; their
+sentences differ, so the columns compare the languages, not like with like.
+
+| Measure | Plan | fr | en |
+| --- | --- | --- | --- |
+| Final words correct | 80 sentences, noise 0.3 (`compare`) | 92.7% (458/494) | 96.1% (909/946) |
+| Final words correct | 400 sentences, noise 0.25 (`compare`) | 97.0% (2,732/2,817) | |
+| Final words correct | 400 (`evaluate`) | 97.7% | 98.7% |
+| Mistyped words fixed | 400 | 93.2% (613/658) | 94.7% (1,165/1,230) |
+| Mistyped words changed to a different word | 400 | 3.2% (21) | 1.3% (16) |
+| Correctly typed words wrongly changed | 400 | 0.4% (9/2,004) | 0.0% (0/3,760) |
+| Contractions typed without the apostrophe, restored | 400 | 92.9% (144/155) | |
+| Completion offered within 2 letters | 400 | 60.5% | 50.5% |
+| Completion keystroke savings | 400 | 41.3% | 39.9% |
+| Suggestion bar shows the word within 3 letters | 400 | 80.0% | 85.3% |
+| Next word first / in top 3 | 400 | 12.4% / 23.7% | 9.0% / 21.3% |
+| Final words correct, Apple / KeyVox | Apple's 45 French Tatoeba sentences, no noise (`compare --apple`) | 93.6% / 94.6% (277 / 280 of 296) | |
+
+The plan's taps near the AZERTY-French accent key, beside "n", type what the keyboard's accent key
+would, or the letter beside it when the contested-tap rule gives the tap to the letter; a letter
+picked from a popup is tapped on the key held to pick it, as the keyboard records it.
+
+The weights of the contested-tap rule and of the corrector were also searched on French plans of
+300 sentences at noise 0.3 from the corpus less the measured plans' sentences: no value of the
+contested-tap weights moved 4,282 words by more than 10, and the corrector's tuned weights gained one
+word of 2,153 on the plan held out, so French keeps the shared weights. Of the French words of those
+plans and the 80-sentence plan, 0.9% have their first letter tapped onto the space bar, as 0.85% of
+English's do, which a space before a word keeps as a space in every language, and 1.9% a later
+letter, 1.3% of English's.
 
 The German vocabulary of that build lacks most words that begin with "ä", "ö", or "ü", as the AOSP
 German word list it is built from does: "überhaupt" (52,006 times in the German build's counts),

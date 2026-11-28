@@ -95,6 +95,7 @@ final class KeyboardKeyGridView: UIView {
     /// more than one; never in the emoji search, whose space bar types into the search.
     var allowsSpaceLanguageSlide = false
     private(set) var letterCase: KeyboardLetterCase = .lowercase
+    private(set) var accentKeyLabel: KeyboardAccentKeyLabel?
     private(set) var isKeyboardEnabled = true
     weak var popupContainerView: UIView?
     weak var popupOwnerKeyView: KeyboardKeyView?
@@ -140,10 +141,14 @@ final class KeyboardKeyGridView: UIView {
         showPage()
     }
 
-    /// Shows the short code of the language the keyboard switched to on the space bar of the page
-    /// showing, read as `name`.
-    func showLanguageCode(_ code: String, name: String) {
-        keyViews.first { $0.model.kind == .space }?.showLanguageCode(code, name: name)
+    /// The short code of the language the keyboard types in and its full name, shown on the space
+    /// bar of every page that shows, or nil to show none.
+    var languageCode: (code: String, name: String)? {
+        didSet { showLanguageCode() }
+    }
+
+    private func showLanguageCode() {
+        keyViews.first { $0.model.kind == .space }?.showLanguageCode(languageCode?.code, name: languageCode?.name)
     }
 
     /// Shows the letter keys in the layout the keyboard types in now, building its page the first
@@ -175,6 +180,13 @@ final class KeyboardKeyGridView: UIView {
         guard letterCase != self.letterCase else { return }
         self.letterCase = letterCase
         currentPage?.apply(letterCase: letterCase, isTrackpadModeActive: spaceTrackpadController.isActive)
+    }
+
+    /// Shows the accent key as `label` says, or as the letter layout draws it when nil.
+    func setAccentKeyLabel(_ label: KeyboardAccentKeyLabel?) {
+        guard label != accentKeyLabel else { return }
+        accentKeyLabel = label
+        currentPage?.apply(accentKeyLabel: label, isTrackpadModeActive: spaceTrackpadController.isActive)
     }
 
     /// Whether the keys are hidden while another page shows in the grid's place; the grid keeps
@@ -434,6 +446,8 @@ final class KeyboardKeyGridView: UIView {
         page.view.spacing = rowSpacing
         page.keyViews.forEach { $0.displayZoomScale = displayZoomScale }
         page.apply(letterCase: letterCase, isTrackpadModeActive: spaceTrackpadController.isActive)
+        page.apply(accentKeyLabel: accentKeyLabel, isTrackpadModeActive: spaceTrackpadController.isActive)
+        showLanguageCode()
         updateAllKeyStates()
         setNeedsLayout()
     }
