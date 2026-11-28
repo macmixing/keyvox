@@ -73,6 +73,7 @@ struct SessionTyper {
     ) throws -> KeyboardLayoutModel.Key {
         let otherKey: ContestedTap.OtherKey
         switch key {
+        case .letter(let letter) where typingLanguage.accentKey?.character == String(letter): otherKey = .accentKey
         case .letter: return key
         case .space, .returnKey: otherKey = .wordBoundary
         case .shift, .delete, .numbers: otherKey = .control
