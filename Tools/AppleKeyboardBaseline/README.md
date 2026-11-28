@@ -131,8 +131,8 @@ PNG.
 `write_web_endings.py` writes the web endings Apple's keyboard lists for each locale, read from an
 iOS simulator runtime's own keyboard files (`System/Library/TextInput/TextInput_*.bundle/Keyboard-*.plist`,
 `UI-TopLevelDomain`), into the predictive keyboard's `PredictiveData/web_endings.json`, with how
-many of the region's endings Apple's keyboard places right of the key's own, as measured on the
-iOS 27.2 simulator (`~/KeyVoxLanguageData/apple-languages/runs/sim-weburl-summary.md`):
+many of the region's endings Apple's keyboard places right of the key's own, two, as measured with
+Apple's keyboard in a web address field on the iOS 27.2 simulator in several device regions:
 
 ```sh
 python3 write_web_endings.py "<runtime>/Contents/Resources/RuntimeRoot/System/Library/TextInput" \
