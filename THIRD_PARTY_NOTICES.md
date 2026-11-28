@@ -261,6 +261,7 @@ Copyright (c) 2008, The Android Open Source Project
 - License: CC0 1.0
 - License URL: <https://creativecommons.org/publicdomain/zero/1.0/>
 - Note: German, Spanish, and French word forms and their lexical categories settle the capitals in the vocabularies and tell German nouns from names; German forms its sentences write often fill in the words the German word list lacks.
+- Note: `Tools/KeyVoxEmojiData` reads the German, Spanish, and French nouns' forms from the dump of November 18, 2026, so `KeyVoxEmoji`'s search data for those languages finds a noun's emoji by its other forms, such as its plural.
 
 Attribution: Based on Wikidata Lexemes.
 
@@ -313,9 +314,17 @@ Copyright (c) 2025 FUTO
 - Source: <https://github.com/dsojevic/profanity-list> (revision `c27924319aa9bd6f917e3782b4f4b6604a50b652`)
 - License: MIT
 - License URL: <https://github.com/dsojevic/profanity-list/blob/c27924319aa9bd6f917e3782b4f4b6604a50b652/LICENSE>
-- Note: The predictive keyboard's English dictionary and swipe vocabulary leave out the words that the list's English terms tagged racial or anti-LGBTQ, or religious at strong severity or above, match (`Tools/KeyVoxTypingModels/offensive_words.py`); none of its files are copied into them. The list has no German, Spanish, or French terms, and is not used for those languages.
+- Note: The predictive keyboard's English dictionary, swipe vocabulary, and capitalized-spelling list leave out the words that the list's English terms tagged racial or anti-LGBTQ, or religious at strong severity or above, match (`Tools/KeyVoxTypingModels/offensive_words.py`); none of its files are copied into them. The list has no German, Spanish, or French terms, and is not used for those languages (German and French use Multilingual HateCheck, below).
 
 Copyright (c) 2021 David Sojevic
+
+### Multilingual HateCheck (build-time word filter)
+- Source: <https://huggingface.co/datasets/Paul/hatecheck-german> (revision `5229a5cc475f36c08d03ca52f0ccb005705e60d2`) and <https://huggingface.co/datasets/Paul/hatecheck-french> (revision `5d3085f2129139abc10d2b58becd4d4f2978e5d5`)
+- License: CC BY 4.0
+- License URL: <https://creativecommons.org/licenses/by/4.0/>
+- Note: The German and French typing dictionaries `Tools/KeyVoxTypingModels` builds leave out the slurs of the datasets' slur test cases that target Black, immigrant, Indigenous, gay, trans, Jewish, or Muslim people, in the forms the test cases write them (`Tools/KeyVoxTypingModels/hatecheck_slurs.py`, `offensive_words.py`), and the German capitalized-spelling list `Tools/KeyVoxLanguageModel` builds leaves out the same words; none of its files are copied into them. German's dictionary is bundled with `Packages/KeyVoxPredictiveKeyboard` and its capitalized-spelling list with `Packages/KeyVoxLinguistics`; French's dictionary is not bundled yet.
+
+Attribution: Based on Multilingual HateCheck by Röttger, Seelawi, Nozza, Talat, and Vidgen, *Multilingual HateCheck: Functional Tests for Multilingual Hate Speech Detection Models* (2022).
 
 ### MIT License (applies to `whisper.cpp`, OpenAI Whisper, `llama.cpp`, Hex, swipe.futo.org, and the Profanity List above)
 
@@ -496,9 +505,9 @@ END OF TERMS AND CONDITIONS
 
 ### Unicode emoji data and CLDR annotations
 
-- Upstream: Unicode's `emoji-test.txt`, Emoji 18.0 (<https://unicode.org/Public/emoji/latest/emoji-test.txt>); CLDR's English annotations and derived annotations from <https://github.com/unicode-org/cldr-json> (`cldr-annotations-full` and `cldr-annotations-derived-full`, version 48.2.3); and Unicode's emoji frequency ranking (<https://www.unicode.org/emoji/frequency.html>).
+- Upstream: Unicode's `emoji-test.txt`, Emoji 18.0 (<https://unicode.org/Public/emoji/latest/emoji-test.txt>); CLDR's English, German, Spanish, Spanish (Latin America), and French annotations and derived annotations, and its parent locales, from <https://github.com/unicode-org/cldr-json> (`cldr-annotations-full`, `cldr-annotations-derived-full`, and `cldr-core`, version 48.2.3); and Unicode's emoji frequency ranking (<https://www.unicode.org/emoji/frequency.html>).
 - License: Unicode License v3 (Unicode-3.0), copyright © 1991–2026 Unicode, Inc. Full text: <https://www.unicode.org/license.txt>.
-- Use: `KeyVoxEmoji` bundles data written from these sources by `Tools/KeyVoxEmojiData`: each emoji's name and skin-tone versions (`emoji_catalog.txt`), the words that find it in search (`emoji_search.txt`), and the emoji the suggestion bar offers for a word (`emoji_predictions.txt`). The frequency ranking only orders them.
+- Use: `KeyVoxEmoji` bundles data written from these sources by `Tools/KeyVoxEmojiData`: each emoji's name and skin-tone versions (`emoji_catalog.txt`), and, for each typing language, the words that find it in search (`<language>/emoji_search.txt`) and the emoji the suggestion bar offers for a word (`<language>/emoji_predictions.txt`). The frequency ranking only orders them.
 
 ### Wiktionary (derived dictation phrase lists)
 

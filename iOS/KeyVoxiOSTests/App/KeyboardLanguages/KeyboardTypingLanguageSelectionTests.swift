@@ -96,6 +96,11 @@ struct KeyboardTypingLanguageSelectionTests {
         #expect(KeyboardTypingLanguageName.shortCode(for: "fr", among: ["fr", "fr-CA"]) == "FR")
     }
 
+    @Test func shortCodeLeavesOutARegionOfSeveralCountries() {
+        #expect(KeyboardTypingLanguageName.shortCode(for: "es-419", among: ["es", "es-419"]) == "ES")
+        #expect(KeyboardTypingLanguageName.shortCode(for: "es", among: ["es", "es-419"]) == "ES")
+    }
+
     @Test func selectsNothingWhenNothingIsBundled() {
         let selection = KeyboardTypingLanguageSelection(
             savedLanguages: ["en"],

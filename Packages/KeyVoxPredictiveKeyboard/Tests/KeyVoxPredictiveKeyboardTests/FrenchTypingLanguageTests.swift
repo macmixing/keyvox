@@ -1,8 +1,7 @@
 import XCTest
 @testable import KeyVoxPredictiveKeyboard
 
-/// French's rules, as Apple's French (France) keyboard was measured typing them on iOS 27.2
-/// (`~/KeyVoxLanguageData/apple-languages`).
+/// French's rules, as Apple's French (France) keyboard was measured typing them on iOS 27.2.
 final class FrenchTypingLanguageTests: XCTestCase {
     private let quotes = TypingLanguage.french.quotes
     private let quoteKey = SmartQuotes.doubleQuote
@@ -80,5 +79,13 @@ final class FrenchTypingLanguageTests: XCTestCase {
             let edit = session.wordBoundaryEdit(separator: " ", textBeforeCursor: text, result: result)
             XCTAssertEqual(String(text.dropLast(edit.deleteCount)) + edit.insertText, text + " ", word)
         }
+    }
+
+    func testTheWebEndingKeyOffersApplesFrenchEndingsInAUSRegion() throws {
+        // Apple's French (France) keyboard in a web address field, device region US, device
+        // language English (US), iOS 27.2 simulator: the key typed ".com" and held offered these.
+        let offer = try XCTUnwrap(try WebEndings.bundled().offer(region: "US", preferredLanguages: ["en-US"], languages: [.french]))
+        XCTAssertEqual(offer.ending, ".com")
+        XCTAssertEqual(offer.held.characters, [".eu", ".fr", ".us", ".edu", ".com", ".net", ".org"])
     }
 }

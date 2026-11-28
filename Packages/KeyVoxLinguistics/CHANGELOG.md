@@ -13,10 +13,10 @@ The words spelled only with capitals are bundled per language, so the keyboard r
 ### Includes
 
 - Added `CapitalizedSpellings(languageCode:)`, which loads the bundled `capitalized_spellings_<language>.txt`.
-- The English list is now `capitalized_spellings_en.txt`; `CapitalizedSpellings()` still loads it, for dictation's continuation casing.
-- Bundled German's list, `capitalized_spellings_de.txt` (152,972 words), built by `Tools/KeyVoxLanguageModel` from AOSP LatinIME's German word list and Wikidata Lexemes: German nouns and names, which the keyboard writes with their capitals ("haus" gives "Haus", as Apple's German keyboard corrects it at space); words also written in lowercase, such as "leben", are left out.
-- Added the French list, `capitalized_spellings_fr.txt` (19,021 spellings, such as Paris, Écosse, and iPhone), built by `Tools/KeyVoxLanguageModel`; French writes days, months, and language names in lowercase, so they are not in it.
+- The English list is now `capitalized_spellings_en.txt`; `CapitalizedSpellings()` still loads it, for dictation's continuation casing. It leaves out the 6 words English's predictive dictionary leaves out (18,138 words).
 - Adds Spanish's list, `capitalized_spellings_es.txt`: the 2,955 names and other words the Spanish vocabulary spells only with capitals, such as "España", "México", and "José", built by `Tools/KeyVoxLanguageModel`.
+- Bundled German's list, `capitalized_spellings_de.txt`, built by `Tools/KeyVoxLanguageModel` from AOSP LatinIME's German word list and Wikidata Lexemes: German nouns and names, which the keyboard writes with their capitals ("haus" gives "Haus", as Apple's German keyboard corrects it at space); words also written in lowercase, such as "leben", are left out, and so are the 4 words Multilingual HateCheck's German slurs match, as German's dictionary leaves them out (152,968 words).
+- Added the French list, `capitalized_spellings_fr.txt` (19,021 spellings, such as Paris, Écosse, and iPhone), built by `Tools/KeyVoxLanguageModel`; French writes days, months, and language names in lowercase, so they are not in it.
 
 ### Notes
 

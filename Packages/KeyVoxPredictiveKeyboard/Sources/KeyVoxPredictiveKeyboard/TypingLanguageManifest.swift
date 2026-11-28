@@ -41,15 +41,15 @@ struct TypingLanguageManifest: Decodable {
     let quotationMarks: QuotationMarks
     /// The language's accent key, when its letter layouts have one it drives.
     let accentKey: AccentKey?
+    /// The marks that open a sentence before its first word: typed where a sentence starts, the
+    /// sentence still starts after them (`TypingTextRules.sentenceOpeningMarks`). None when absent.
+    let sentenceOpeningMarks: String?
     /// The folder in `PredictiveData` whose dictionary, models, and swipe files a regional variant
     /// uses where its own folder has none; nil for a language that has all its own.
     let sharedDataFolder: String?
     /// Whether a period right after a digit writes an ordinal number rather than ending the
     /// sentence (`TypingTextRules.ordinalPeriods`); false when left out.
     let ordinalPeriods: Bool?
-    /// The marks that open a sentence before its first word: typed where a sentence starts, the
-    /// sentence still starts after them. None when absent.
-    let sentenceOpeningMarks: String?
     /// The locale of Apple's keyboard for the language, whose web endings its keyboard adds to the
     /// region's (`WebEndings`).
     let webEndingsLocale: String

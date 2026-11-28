@@ -1,8 +1,8 @@
 import KeyVoxTypingLanguageCatalog
 import SwiftUI
 
-/// The keyboard's typing languages, opened full screen from the Languages row of Keyboard
-/// settings: the shared language list with any number of languages checked, the checked ones in
+/// The keyboard's typing languages, opened full screen from the Languages card of the keyboard's
+/// Languages settings: the shared language list with any number of languages checked, the checked ones in
 /// the order the space bar switches through them. Done saves the choice.
 struct KeyboardLanguagesScreen: View {
     @EnvironmentObject private var settingsStore: AppSettingsStore

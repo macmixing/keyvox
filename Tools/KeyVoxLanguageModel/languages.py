@@ -253,10 +253,9 @@ LANGUAGES = {
         # CLDR's Spanish quotation marks.
         text_rules=_text_rules("«»“”"),
         deduplicate=True,
-        # Tuned against Apple's Spanish (Spain) suggestion bars after 53 sentences
-        # (apple-languages/sentence-openers/es_ES.json): speech at 0.1 rather than 0 shares more
-        # words with Apple's bars and finds more held-out next sentences' first words in every
-        # source (README, "Sentence openers").
+        # Tuned against Apple's Spanish (Spain) suggestion bars after 53 sentences on an iOS 27.2
+        # simulator: speech at 0.1 rather than 0 shares more words with Apple's bars and finds more
+        # held-out next sentences' first words in every source (README, "Sentence openers").
         opener_weights={**_OPENER_WEIGHTS, "youtube-commons": 0.1, "yodas2": 0.1},
         # Text people wrote counts 20 times and speech once, and the context model keeps about as
         # many words as the dictionary has and more pairs and sequences, as Spanish writes a word

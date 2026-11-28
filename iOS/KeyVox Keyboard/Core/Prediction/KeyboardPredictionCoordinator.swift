@@ -257,15 +257,13 @@ final class KeyboardPredictionCoordinator {
         }
     }
 
-    /// Works out on the engine's queue what the typing language's accent key shows after the text
-    /// as it is now, choosing by the dictionary's words, and hands it to `deliver` on the main
-    /// thread while the text is still that.
-    func accentKeyMark(deliver: @escaping (String) -> Void) {
-        let text = textBeforeCursor()
+    /// Works out on the engine's queue what the typing language's accent key shows after `text`,
+    /// choosing by the dictionary's words, and hands it to `deliver` on the main thread; the caller
+    /// checks that its text is still that.
+    func accentKeyMark(after text: String?, deliver: @escaping (String) -> Void) {
         engine.queue.async { [weak self] in
             guard let self, let mark = self.engine.resolvedComputer()?.accentKeyMark(after: text) else { return }
-            DispatchQueue.main.async { [weak self] in
-                guard let self, self.textBeforeCursor() == text else { return }
+            DispatchQueue.main.async {
                 deliver(mark)
             }
         }

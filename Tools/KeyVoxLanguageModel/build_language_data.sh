@@ -5,8 +5,10 @@
 # lists were built from, and, given the language's dictionary words and probabilities (a word, a
 # tab, and a probability a line; Tools/KeyVoxTypingModels writes English's as
 # work/dictionary_unigrams.tsv), the swipe vocabulary of the words that dictionary lacks, with
-# the words of the language's swipe dataset, leaving out the words of [left-out-words], a pattern a
-# line (Tools/KeyVoxTypingModels writes English's as work/offensive_words.txt).
+# the words of the language's swipe dataset. The words spelled with capitals and the swipe
+# vocabulary leave out the words of [left-out-words], a pattern a line (Tools/KeyVoxTypingModels
+# writes a language's as work/offensive_words.txt); give "" as [dictionary-words] to leave them
+# out without building a swipe vocabulary.
 # <language> names a build in languages.py (en, de, de-bundestag, es, fr).
 # The builders share the source readers and the normalizing code, so a change made for one can
 # change another's output; rebuild every language after changing any tool here.
@@ -22,7 +24,7 @@ DATA_DIR="$(cd "$2" && pwd)"
 mkdir -p "$3"
 OUTPUT_DIR="$(cd "$3" && pwd)"
 DICTIONARY_WORDS=""
-[[ $# -ge 4 ]] && DICTIONARY_WORDS="$(cd "$(dirname "$4")" && pwd)/$(basename "$4")"
+[[ $# -ge 4 && -n "$4" ]] && DICTIONARY_WORDS="$(cd "$(dirname "$4")" && pwd)/$(basename "$4")"
 LEAVE_OUT=()
 [[ $# -eq 5 ]] && LEAVE_OUT=(--leave-out "$(cd "$(dirname "$5")" && pwd)/$(basename "$5")")
 PYTHON="${PYTHON:-python3}"
@@ -41,7 +43,8 @@ sentence_openers() {
 capitalized_spellings() {
   "$PYTHON" write_vocabulary.py --language "$LANGUAGE" "$DATA_DIR" "$OUTPUT_DIR/vocabulary.txt" "$OUTPUT_DIR/common_vocabulary.txt"
   "$PYTHON" write_capitalized_spellings.py --language "$LANGUAGE" "$DATA_DIR" \
-    "$OUTPUT_DIR/vocabulary.txt" "$OUTPUT_DIR/common_vocabulary.txt" "$OUTPUT_DIR/capitalized_spellings_$IDENTIFIER.txt"
+    "$OUTPUT_DIR/vocabulary.txt" "$OUTPUT_DIR/common_vocabulary.txt" "$OUTPUT_DIR/capitalized_spellings_$IDENTIFIER.txt" \
+    ${LEAVE_OUT[@]+"${LEAVE_OUT[@]}"}
 }
 swipe_counts() {
   "$PYTHON" count_swipe_words.py --language "$LANGUAGE" "$DATA_DIR"

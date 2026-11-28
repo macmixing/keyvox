@@ -5,6 +5,7 @@
   "editLetters": "abcdefghijklmnopqrstuvwxyzàâæçèéêëîïôùûüÿœ",
   "vowels": "aeiouyàâæèéêëîïôùûüÿœ",
   "alwaysCapitalizedWords": [],
+  "webEndingsLocale": "fr_FR",
   "quotationMarks": {
     "openingSingle": "‘",
     "closingSingle": "’",
@@ -17,6 +18,5 @@
     "combiningMarks": {"´": "\u0301", "ˋ": "\u0300", "ˆ": "\u0302", "¨": "\u0308"},
     "keyMarks": ["´", "ˋ", "ˆ"],
     "usualMarks": {"a": "ˋ", "e": "´", "i": "ˆ", "o": "ˆ", "u": "ˆ"}
-  },
-  "webEndingsLocale": "fr_FR"
+  }
 }

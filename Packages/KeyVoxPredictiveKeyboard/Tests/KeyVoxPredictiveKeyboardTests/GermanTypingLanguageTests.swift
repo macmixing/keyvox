@@ -14,7 +14,7 @@ extension TypingLanguage {
 }
 
 /// German as Apple's iOS 27.2 German (Germany) keyboard types it, measured key by key on an
-/// iPhone and a simulator (`~/KeyVoxLanguageData/apple-languages`).
+/// iPhone and a simulator.
 final class GermanTypingLanguageTests: XCTestCase {
     func testGermanShowsQWERTZGermanAndOffersApplesOtherLayoutsInOrder() {
         let german = TypingLanguage.german
@@ -170,6 +170,37 @@ final class GermanTypingLanguageTests: XCTestCase {
         XCTAssertEqual(englishScorer.cost(of: plainTouches, typing: "café"), 0, accuracy: 1e-9)
     }
 
+    func testALetterOnlyAPopupOffersIsAimedAtTheKeyHeldToPickIt() throws {
+        // "ß" has no key of its own; holding "s" offers it.
+        let offering = try HeldKeyCharacters.bundled(for: .german).letterKeysOfOfferedLetters
+        let keys = KeyCenterMap(geometry: TypingLanguage.german.letterLayout.defaultGeometry, offeringKeys: offering)
+        let scorer = TouchAlignmentScorer(keys: keys, parameters: NoisyChannelCorrector.standardParameters.touch)
+        let word = "straße"
+        let touches = scorer.centerTouches(for: word)
+        XCTAssertEqual(touches.count, word.count)
+        XCTAssertEqual(scorer.cost(of: touches, typing: word), 0, accuracy: 1e-9)
+    }
+
+    func testALetterPickedFromAPopupKeepsItsWord() throws {
+        let computer = PredictionComputer(engine: try PredictiveEngine(language: .german))
+        let keys = KeyCenterMap(geometry: TypingLanguage.german.letterLayout.defaultGeometry)
+        let offering = try HeldKeyCharacters.bundled(for: .german).letterKeysOfOfferedLetters
+        for (before, word) in [("die ", "straße"), ("ich ", "weiß"), ("er ", "heißt")] {
+            let session = PredictiveTypingSession(language: .german)
+            var text = before
+            for letter in word {
+                text.append(letter)
+                // A popup's letter counts as a tap on the key held to pick it.
+                let center = try XCTUnwrap(keys.center(of: offering[letter] ?? letter))
+                session.recordTap(at: center, textBeforeCursor: text)
+            }
+            let result = try computer.compute(session.request(textBeforeCursor: text))
+            let edit = session.wordBoundaryEdit(separator: " ", textBeforeCursor: text, result: result)
+            // The word keeps its letters; a noun takes its capital.
+            XCTAssertEqual((String(text.dropLast(edit.deleteCount)) + edit.insertText).lowercased(), text + " ", word)
+        }
+    }
+
     func testGermanLoadsItsDictionaryModelsAndWordLists() throws {
         XCTAssertNoThrow(try PredictiveEngine(language: .german))
     }
@@ -182,5 +213,31 @@ final class GermanTypingLanguageTests: XCTestCase {
         XCTAssertEqual(try computer.compute(session.request(textBeforeCursor: "wie gehts")).autocorrection, "geht’s")
         XCTAssertNil(try computer.compute(session.request(textBeforeCursor: "Wie geht‘s")).autocorrection)
         XCTAssertEqual(TypingLanguage.english.writingApostrophes("don't"), "don't")
+    }
+
+    func testAWordBeforeTheCursorIsReadWhicheverApostropheItIsWrittenWith() throws {
+        // The data writes "geht's"; the keyboard writes "geht’s", and the apostrophe key "geht‘s".
+        let computer = PredictionComputer(engine: try PredictiveEngine(language: .german))
+        let bar = { (text: String) in
+            try computer.compute(PredictiveTypingSession(language: .german).request(textBeforeCursor: text)).bar.items.map(\.text)
+        }
+        let straight = try bar("Na, geht's ")
+        XCTAssertEqual(try bar("Na, geht’s "), straight)
+        XCTAssertEqual(try bar("Na, geht‘s "), straight)
+    }
+
+    func testAWordTypedWithTheApostropheKeyIsLearned() throws {
+        let computer = PredictionComputer(engine: try PredictiveEngine(language: .german))
+        let memory = TypingMemory()
+        let typed = "Quaxel‘s"
+        for day in 0..<LearnedWords.usesToLearn {
+            let session = PredictiveTypingSession(language: .german, memory: memory, now: { Date(timeIntervalSince1970: Double(day) * 86_400) })
+            let text = "Das ist " + typed
+            let result = try computer.compute(session.request(textBeforeCursor: text))
+            XCTAssertNil(result.autocorrection, typed)
+            _ = session.wordBoundaryEdit(separator: " ", textBeforeCursor: text, result: result)
+        }
+        // Words are looked up with their apostrophes straight.
+        XCTAssertNotNil(memory.learnedVocabulary.word(TypingLanguage.german.textRules.straightApostrophes(in: typed)))
     }
 }

@@ -73,8 +73,8 @@ struct SessionTyper {
     ) throws -> KeyboardLayoutModel.Key {
         let otherKey: ContestedTap.OtherKey
         switch key {
-        case .letter(let letter) where typingLanguage.accentKey?.character == String(letter): otherKey = .accentKey
         case .letter: return key
+        case .accentKey: otherKey = .accentKey
         case .space, .returnKey: otherKey = .wordBoundary
         case .shift, .delete, .numbers: otherKey = .control
         }
@@ -98,7 +98,7 @@ struct SessionTyper {
         text: inout String
     ) throws {
         switch key {
-        case .letter(let letter) where typingLanguage.accentKey?.character == String(letter):
+        case .accentKey:
             try pressAccentKey(at: touch, session: session, text: &text)
         case .letter(let letter):
             text.append(letter)
@@ -129,16 +129,24 @@ struct SessionTyper {
     }
 
     /// Types what the language's accent key shows after `text`, as the keyboard does: its mark
-    /// put on the letter before the cursor, or the apostrophe or the mark itself after it.
+    /// put on the letter before the cursor, or the apostrophe or the mark itself after it. As on
+    /// the keyboard, a character that belongs inside a word (`TypingTextRules.isWordCharacter`),
+    /// the apostrophe, records its tap, so the word's taps keep lining up with its characters;
+    /// the mark put on a letter or typed on its own changes the text without one.
     private func pressAccentKey(at touch: CGPoint, session: PredictiveTypingSession, text: inout String) throws {
         guard let accentKey = typingLanguage.accentKey else { return }
         let mark = computer.accentKeyMark(after: text) ?? accentKey.character
         if let edit = accentKey.edit(placing: mark, after: text) {
             Self.apply(edit, to: &text)
             session.textDidChange(textBeforeCursor: text)
-        } else {
-            text.append(typingLanguage.quotes.text(for: mark, after: text))
+            return
+        }
+        let typed = typingLanguage.quotes.text(for: mark, after: text)
+        text.append(typed)
+        if typed.count == 1, let character = typed.first, typingLanguage.textRules.isWordCharacter(character) {
             session.recordTap(at: touch, textBeforeCursor: text)
+        } else {
+            session.textDidChange(textBeforeCursor: text)
         }
     }
 

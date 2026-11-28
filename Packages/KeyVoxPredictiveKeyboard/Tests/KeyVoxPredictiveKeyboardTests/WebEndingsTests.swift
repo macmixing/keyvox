@@ -2,9 +2,8 @@ import XCTest
 @testable import KeyVoxPredictiveKeyboard
 
 /// The web endings Apple's iOS 27.2 keyboard showed in a web address field on the simulator, by
-/// device region, with the device's languages English (US) then German (US)
-/// (`~/KeyVoxLanguageData/apple-languages/runs/sim-weburl-summary.md`): the key's ending, and the
-/// popup left to right.
+/// device region, with the device's languages English (US) then German (US): the key's ending, and
+/// the popup left to right.
 final class WebEndingsTests: XCTestCase {
     private let endings: WebEndings = {
         do { return try WebEndings.bundled() } catch { fatalError("the bundled web endings did not load: \(error)") }

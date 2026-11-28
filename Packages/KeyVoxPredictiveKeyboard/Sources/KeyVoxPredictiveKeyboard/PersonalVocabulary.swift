@@ -183,7 +183,7 @@ public struct PersonalVocabulary: Sendable, Equatable {
 
     /// The form personal words are compared in: lowercase, with a straight apostrophe.
     static func key(_ word: String) -> String {
-        word.lowercased().replacingOccurrences(of: "’", with: "'")
+        TypingTextRules.standard.straightApostrophes(in: word.lowercased())
     }
 
     private static func words(in phrase: String) -> [String] {

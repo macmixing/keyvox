@@ -35,7 +35,14 @@ final class FrenchAccentKeyTests: XCTestCase {
     }
 
     func testTheKeyTypesWhatAppleTypedAfterEachText() throws {
-        let computer = PredictionComputer(engine: try PredictiveEngine(language: .french))
+        try Self.assertAccentKeyTypesWhatAppleTyped(in: .french)
+    }
+
+    /// What Apple's French (France) keyboard on AZERTY-French, and its French (Canada) keyboard on
+    /// QWERTY-Accents, typed with the accent key after each text, measured the same on both.
+    static func assertAccentKeyTypesWhatAppleTyped(in language: TypingLanguage) throws {
+        let accentKey = try XCTUnwrap(language.accentKey)
+        let computer = PredictionComputer(engine: try PredictiveEngine(language: language))
         let apostrophe = SmartQuotes.apostrophe
         let measured: [(text: String, typed: String)] = [
             ("", "´"), ("e", "é"), ("a", "à"), ("i", "î"), ("o", "ô"), ("u", "û"), ("y", "y’"), ("c", "c’"),
@@ -51,6 +58,17 @@ final class FrenchAccentKeyTests: XCTestCase {
                 : accentKey.edit(placing: mark, after: text).map { String(text.dropLast($0.deleteCount)) + $0.insertText }
                     ?? text + mark
             XCTAssertEqual(result, typed, text)
+        }
+    }
+
+    func testAWordAfterTheKeyboardsApostropheIsLookedUpAsTheDictionaryWritesIt() throws {
+        // The keyboard types the curly apostrophe inside words; the dictionary writes the straight one.
+        let computer = PredictionComputer(engine: try PredictiveEngine(language: .french))
+        for elided in ["d'ou", "jusqu'ou"] {
+            let typed = elided.replacingOccurrences(of: "'", with: SmartQuotes.apostrophe)
+            let mark = try XCTUnwrap(computer.accentKeyMark(after: elided), elided)
+            XCTAssertNotEqual(accentKey.edit(placing: mark, after: elided), accentKey.edit(placing: accentKey.mark(after: elided), after: elided), elided)
+            XCTAssertEqual(computer.accentKeyMark(after: typed), mark, typed)
         }
     }
 

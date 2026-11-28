@@ -3,9 +3,8 @@
 every `TextInput_<language>.bundle/Keyboard-<locale>.plist` in an iOS simulator runtime's
 `System/Library/TextInput` that has a `UI-TopLevelDomain` entry, its `Strings` in their stored
 order, by locale identifier, and how many of the region's endings Apple's keyboard places to the
-right of the key's own (`ENDINGS_RIGHT_OF_KEY`), measured on the iOS 27.2 simulator in
-`~/KeyVoxLanguageData/apple-languages/runs/sim-weburl-*` (summary: `sim-weburl-summary.md`). The
-predictive keyboard reads the file as `PredictiveData/web_endings.json` (`WebEndings`).
+right of the key's own (`ENDINGS_RIGHT_OF_KEY`), measured with Apple's keyboard in a web address
+field on the iOS 27.2 simulator in several device regions. The predictive keyboard reads the file as `PredictiveData/web_endings.json` (`WebEndings`).
 
     python3 write_web_endings.py "<runtime>/System/Library/TextInput" \
         ../../Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/PredictiveData/web_endings.json

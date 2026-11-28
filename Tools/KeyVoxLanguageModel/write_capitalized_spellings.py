@@ -11,12 +11,17 @@ size 60) spells it only one way, with capitals. Left out, so they stay as typed:
   (for English, `measured_spellings.txt`) list it because the system keyboard was measured
   writing it that way ("iOS");
 - a word the written sources show in lowercase more often than as spelled, away from where
-  a sentence or quotation begins ("grey", or "th" after a number).
+  a sentence or quotation begins ("grey", or "th" after a number);
+- a word a pattern of `--leave-out` matches whole, a word the language's dictionary leaves out
+  too (`Tools/KeyVoxTypingModels` writes a language's patterns as `work/offensive_words.txt`).
 Abbreviations ending in a period are skipped, since a typed word never does.
 """
 
 import argparse
+import re
+import unicodedata
 from collections import Counter, defaultdict
+from collections.abc import Callable
 from pathlib import Path
 
 from languages import LANGUAGES, language_argument
@@ -28,6 +33,32 @@ from readers import read_source
 # characters only so the characters stop opening sentences, and those sentences still show
 # how words are written.
 WRITTEN_SOURCES = ("oasst2", "tatoeba")
+
+
+def letter_form(word: str, keys: str = "", spellings: dict[str, str] | None = None) -> str:
+    """The word's letters only, with case and accents folded, as `Tools/KeyVoxTypingModels`
+    matches its left-out words; but for a letter of `keys`, which keeps its accents, and a letter
+    of `spellings`, written as the letters it gives, as a swipe model reads its words."""
+    form = []
+    for character in unicodedata.normalize("NFC", word.casefold()):
+        if character in keys:
+            form.append(character)
+        elif spellings and character in spellings:
+            form.append(spellings[character])
+        else:
+            form.extend(letter for letter in unicodedata.normalize("NFD", character)
+                        if unicodedata.category(letter)[0] == "L")
+    return "".join(form)
+
+
+def leave_out_matcher(path: Path | None) -> Callable[[str], bool]:
+    """Whether a pattern of `path`, a regular expression a line, matches a word's letter form whole;
+    never, with no file or no pattern."""
+    lines = [line for line in path.read_text(encoding="utf-8").splitlines() if line] if path else []
+    if not lines:
+        return lambda word: False
+    expression = re.compile("|".join(f"(?:{line})" for line in lines))
+    return lambda word: expression.fullmatch(letter_form(word)) is not None
 
 
 def has_capitals_in_a_row(spelling: str) -> bool:
@@ -78,8 +109,12 @@ def main() -> None:
     parser.add_argument("scowl_words", type=Path, help="The vocabulary (for English, SCOWL's size 60).")
     parser.add_argument("common_words", type=Path, help="Its common part (for English, SCOWL's size 50).")
     parser.add_argument("output", type=Path)
+    parser.add_argument("--leave-out", type=Path,
+                        help="the words to leave out, a regular expression a word's letter form must match whole a line "
+                             "(Tools/KeyVoxTypingModels writes a language's as work/offensive_words.txt)")
     arguments = parser.parse_args()
     language = LANGUAGES[arguments.language]
+    is_left_out = leave_out_matcher(arguments.leave_out)
 
     spellings = capitals_only_spellings(
         arguments.scowl_words,
@@ -103,7 +138,7 @@ def main() -> None:
     rows = sorted(
         (word, spelling)
         for word, spelling in spellings.items()
-        if in_lowercase[word] <= as_spelled[word]
+        if in_lowercase[word] <= as_spelled[word] and not is_left_out(word)
     )
     with open(arguments.output, "w", encoding="utf-8") as listing:
         listing.writelines(f"{word}\t{spelling}\n" for word, spelling in rows)

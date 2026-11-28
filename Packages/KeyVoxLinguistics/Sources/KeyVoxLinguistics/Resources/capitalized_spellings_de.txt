@@ -63047,7 +63047,6 @@ judenrats	Judenrats
 judenreferat	Judenreferat
 judenreferent	Judenreferent
 judenregal	Judenregal
-judensau	Judensau
 judenschaft	Judenschaft
 judenschule	Judenschule
 judenstaat	Judenstaat
@@ -90194,7 +90193,6 @@ negativserie	Negativserie
 negativsymptome	Negativsymptome
 negativtrend	Negativtrend
 negativzinsen	Negativzinsen
-neger	Neger
 negerlein	Negerlein
 negern	Negern
 negers	Negers
@@ -114684,8 +114682,6 @@ schwingungsmoden	Schwingungsmoden
 schwingungsverhalten	Schwingungsverhalten
 schwitters	Schwitters
 schwitzbad	Schwitzbad
-schwuchtel	Schwuchtel
-schwuchteln	Schwuchteln
 schwule	Schwule
 schwulenbewegung	Schwulenbewegung
 schwulst	Schwulst

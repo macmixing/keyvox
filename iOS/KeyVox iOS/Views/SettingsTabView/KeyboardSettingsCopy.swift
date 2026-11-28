@@ -25,15 +25,8 @@ enum KeyboardSettingsCopy {
     static let resetLearnedWordsTitle = String(localized: "Reset Learned Words", comment: "Keyboard settings button that clears words the keyboard has learned.")
     static let resetLearnedWordsAllLanguagesTitle = String(localized: "All Languages", comment: "Choice in the Reset Learned Words menu of keyboard settings that clears what the keyboard learned in every language.")
     static let resetLearnedWordsHint = String(localized: "To forget a single word, press and hold it in the suggestion bar.", comment: "Hint under the Reset Learned Words button.")
-    static let languagesTitle = String(localized: "Languages", comment: "Title of the keyboard settings row showing the languages the keyboard types in.")
-    static let changeLanguagesTitle = String(localized: "Change", comment: "Button on the keyboard Languages setting that opens the list of keyboard languages.")
-    static let layoutTitle = String(localized: "Layout", comment: "Title of the keyboard settings row showing the letter layout, such as QWERTY, of the keyboard's only language.")
-    static func layoutTitle(languageName: String) -> String {
-        String(localized: "\(languageName) Layout", comment: "Title of the keyboard settings row showing one language's letter layout, such as QWERTY, when the keyboard has several languages. The placeholder is the language's name, such as English.")
-    }
-    static let changeLayoutTitle = String(localized: "Change", comment: "Menu button on a keyboard Layout setting that opens the letter layouts the language offers.")
     static let languagesScreenTitle = String(localized: "Keyboard Languages", comment: "Title of the screen that chooses the languages the KeyVox keyboard types in.")
     static let languagesScreenAdvice = String(localized: "Slide across the space bar to switch languages. Drag a selected language to change the order.", comment: "Advice on the keyboard languages screen: sliding a finger sideways on the space bar switches to the next language, and the handle on a selected language reorders it.")
     static let languagesDoneTitle = String(localized: "Done", comment: "Button on the keyboard languages screen that saves the chosen languages.")
-    static let englishOnlyNote = String(localized: "Auto-Correction, Predictive Text, and Swipe Typing currently support English only.", comment: "Note in keyboard settings explaining which typing features are limited to English.")
+    static let englishOnlyNote = String(localized: "Swipe Typing currently supports English only.", comment: "Note in keyboard settings explaining that swipe typing is limited to English.")
 }

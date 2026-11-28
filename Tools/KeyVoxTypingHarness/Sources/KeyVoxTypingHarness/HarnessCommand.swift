@@ -416,6 +416,7 @@ enum HarnessError: Error, CustomStringConvertible {
     case invalidValue(String)
     case unreadableCorpus(String)
     case planMismatch(String)
+    case mixedLanguages([String])
 
     var description: String {
         switch self {
@@ -429,6 +430,8 @@ enum HarnessError: Error, CustomStringConvertible {
             return "could not read corpus at \(path)"
         case .planMismatch(let detail):
             return "results do not match the plan: \(detail)"
+        case .mixedLanguages(let languages):
+            return "the plans must name one typing language; they name \(languages.joined(separator: ", "))"
         }
     }
 }

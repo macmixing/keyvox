@@ -1,4 +1,5 @@
 import KeyVoxEmoji
+import KeyVoxPredictiveKeyboard
 import UIKit
 
 /// The emoji search, as on the system emoji keyboard, recorded by watching it
@@ -50,6 +51,7 @@ extension KeyboardViewController {
         setEmojiSearchText("")
         symbolPage = .letters
         emojiPanel = .closed
+        updateAccentKey()
     }
 
     /// Takes a key while searching: characters and space go into the search, delete takes from
@@ -59,6 +61,9 @@ extension KeyboardViewController {
         switch activation.kind {
         case let .character(value):
             updateSymbolPage(for: activation.kind)
+            if KeyboardTypingLanguage.current.accentKey?.isMark(value) == true, applyAccentMark(value) == true {
+                return true
+            }
             setEmojiSearchText(emojiSearchText + value)
             if value.first?.isLetter == true {
                 letterCaseController.consumeTypedLetter()
@@ -118,7 +123,8 @@ extension KeyboardViewController {
         emojiPanel = .searching
         applyLetterCase()
         showEmojiSearchResults()
-        KeyboardEmojiSearchIndex.shared.load { [weak self] in
+        updateAccentKey()
+        KeyboardEmojiSearchIndex.shared.load(language: KeyboardTypingLanguage.current.identifier) { [weak self] in
             self?.showEmojiSearchResults()
         }
     }
@@ -128,10 +134,12 @@ extension KeyboardViewController {
         handleTypingContextChange()
     }
 
-    private func setEmojiSearchText(_ text: String) {
+    /// Shows `text` as the search, its results, and what the accent key types after it.
+    func setEmojiSearchText(_ text: String) {
         emojiSearchText = text
         rootContainerView?.emojiSearchFieldView.text = text
         showEmojiSearchResults()
+        updateAccentKey()
     }
 
     /// Shows the emoji the search finds that the phone draws, or before a word is typed the

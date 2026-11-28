@@ -32,7 +32,6 @@ public struct TypingLanguage: Sendable {
     let editLetters: String
     /// The letters a short typed word needs one of to be taken as an attempt at a word.
     let vowels: String
-
     /// Whether a word typed right after `text` starts a sentence (`TypingTextContext.startsSentence`),
     /// read by the language's text rules.
     public func startsSentence(after text: String) -> Bool {
@@ -100,8 +99,8 @@ public struct TypingLanguage: Sendable {
         textRules = TypingTextRules(
             apostrophe: Character(manifest.quotationMarks.closingSingle),
             ordinalPeriods: manifest.ordinalPeriods ?? false,
-            spacedOpeningMark: manifest.quotationMarks.spacedOpeningMark,
-            sentenceOpeningMarks: Set(manifest.sentenceOpeningMarks ?? "")
+            sentenceOpeningMarks: Set(manifest.sentenceOpeningMarks ?? ""),
+            spacedOpeningMark: manifest.quotationMarks.spacedOpeningMark
         )
     }
 }
