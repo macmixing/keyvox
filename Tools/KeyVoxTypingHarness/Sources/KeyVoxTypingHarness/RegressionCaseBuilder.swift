@@ -12,7 +12,8 @@ import KeyVoxTypingSimulation
 /// of its own and a quarter open with a sentence opening mark of the language, shared evenly
 /// between its marks. Every
 /// tapped letter gets a Gaussian finger offset, and each case records the suggestion bar after
-/// the space before one word and partway through two others.
+/// the space before one word other than the first, and partway through up to two words of three
+/// letters or more, either of which may be that word.
 enum RegressionCaseBuilder {
     private static let wordCounts = 3...8
     /// Offsets are rounded to this many steps per key pitch, so the cases read plainly.
