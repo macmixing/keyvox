@@ -1,8 +1,7 @@
 import UIKit
 
 /// The language the keyboard types in, written faintly by its short code at the bottom right of the
-/// space bar for as long as the keyboard has more than one language, as Apple's keyboard writes it;
-/// VoiceOver reads its full name.
+/// space bar for as long as the keyboard has more than one language, as Apple's keyboard writes it.
 final class KeyboardLanguageCodeLabel: UILabel {
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -12,7 +11,6 @@ final class KeyboardLanguageCodeLabel: UILabel {
             width: .compressed
         )
         isUserInteractionEnabled = false
-        isAccessibilityElement = false
     }
 
     @available(*, unavailable)
@@ -32,11 +30,9 @@ final class KeyboardLanguageCodeLabel: UILabel {
         }
     }
 
-    /// Shows `code`, read as `name`, or nothing when `code` is nil.
-    func show(code: String?, name: String?) {
+    /// Shows `code`, or nothing when `code` is nil.
+    func show(code: String?) {
         text = code
-        accessibilityLabel = name
         isHidden = code == nil
-        isAccessibilityElement = code != nil
     }
 }

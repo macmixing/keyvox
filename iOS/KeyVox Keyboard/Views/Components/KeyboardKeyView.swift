@@ -245,12 +245,14 @@ final class KeyboardKeyView: UIView {
         })
     }
 
-    /// Shows the short code of the language the keyboard types in at the key's bottom right, read
-    /// as the language's full name, or nothing when `code` is nil.
+    /// Shows the short code of the language the keyboard types in at the key's bottom right, or
+    /// nothing when `code` is nil; VoiceOver, which reads the key as one item, reads the language's
+    /// full name as the key's value while the code shows.
     func showLanguageCode(_ code: String?, name: String?) {
+        accessibilityValue = code == nil ? nil : name
         guard code != nil || languageCodeLabel != nil else { return }
         let label = languageCodeLabel ?? makeLanguageCodeLabel()
-        label.show(code: code, name: name)
+        label.show(code: code)
     }
 
     private func makeLanguageCodeLabel() -> KeyboardLanguageCodeLabel {
