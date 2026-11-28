@@ -9,23 +9,32 @@ extension KeyboardViewController {
     func adoptTypingLanguageSettings() {
         let changed = KeyboardTypingLanguage.adoptSettings(appSettingsStore)
         rootContainerView?.keyGridView.allowsSpaceLanguageSlide = KeyboardTypingLanguage.selection.languages.count > 1
+        showLanguageCode()
         guard changed else { return }
         applyTypingLanguage()
     }
 
     /// Switches to the selected language `offset` places from the current one, as a slide across
     /// the space bar asks: a light haptic, the keyboard in the new language, its keys turning over
-    /// in a wave that goes the way the finger slid, and its short code on the space bar for a moment.
+    /// in a wave that goes the way the finger slid, and its short code on the space bar.
     func switchTypingLanguage(by offset: Int) {
         guard KeyboardTypingLanguage.switchLanguage(by: offset, settings: appSettingsStore) else { return }
         interactionHaptics.emitLightIfEnabled()
         applyTypingLanguage(keyFlipDirection: offset < 0 ? .rightToLeft : .leftToRight)
+        showLanguageCode()
+    }
+
+    /// Writes the short code of the language the keyboard types in on the space bar while the
+    /// keyboard has more than one language, as Apple's keyboard does, and none with one.
+    private func showLanguageCode() {
+        let selection = KeyboardTypingLanguage.selection
+        guard selection.languages.count > 1 else {
+            rootContainerView?.keyGridView.languageCode = nil
+            return
+        }
         let identifier = KeyboardTypingLanguage.current.identifier
-        rootContainerView?.keyGridView.showLanguageCode(
-            KeyboardTypingLanguageName.shortCode(
-                for: identifier,
-                among: KeyboardTypingLanguage.selection.identifiers
-            ),
+        rootContainerView?.keyGridView.languageCode = (
+            code: KeyboardTypingLanguageName.shortCode(for: identifier, among: selection.identifiers),
             name: KeyboardTypingLanguageName.displayName(for: identifier)
         )
     }

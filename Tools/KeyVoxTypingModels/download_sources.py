@@ -4,7 +4,8 @@ already present, and records each file's SHA-256 in `<data_dir>/sources/checksum
 Tatoeba's export and contribution log are only needed to rewind to the cutoff, so they are
 skipped while the sentences as of the cutoff are there and match their recorded SHA-256.
 
-Another language downloads nothing: its inputs are its language build, linked in as
+Another language downloads only its Multilingual HateCheck dataset, when it has one
+(`typing_languages.py`): its other inputs are its language build, linked in as
 `sources/language-build` (`language_build.py`), whose files are checked to be there and recorded."""
 
 import argparse
@@ -17,7 +18,7 @@ import language_build
 import remote_zip
 import tatoeba_snapshot
 from paths import DataPaths
-from sources import SOURCES, TATOEBA, tatoeba_path
+from sources import SOURCES, TATOEBA, hatecheck_file, tatoeba_path
 from typing_languages import add_language_arguments, language_from
 
 
@@ -63,6 +64,13 @@ def main() -> None:
     written = []
     if not language.uses_english_text:
         written = language_build_files(data_dir)
+        if language.hatecheck_dataset is not None:
+            file = hatecheck_file(language.hatecheck_dataset)
+            destination = data_dir / file.path
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            if not destination.exists():
+                download(file.url, destination)
+            written.append(destination)
     for source in SOURCES if language.uses_english_text else ():
         if source is TATOEBA and tatoeba_snapshot.is_verified(data_dir):
             print(f"using the verified {tatoeba_path(data_dir).name}; Tatoeba is not downloaded")

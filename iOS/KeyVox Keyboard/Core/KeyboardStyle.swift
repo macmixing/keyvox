@@ -125,9 +125,17 @@ enum KeyboardStyle {
             : UIColor.white.withAlphaComponent(0.08)
     }
     static let keyLabelColor = UIColor.label
-    /// How far the code of the language the space bar switched to sits from the key's bottom and
-    /// right edges.
-    static let languageCodeInset: CGFloat = 5
+    /// How far the code of the language the keyboard types in sits from the space bar's right edge,
+    /// and its baseline from the bar's bottom edge, putting its letters 6 points in from both edges
+    /// as on Apple's keyboard.
+    static let languageCodeTrailingInset: CGFloat = 6
+    static let languageCodeBaselineInset: CGFloat = 7
+    /// The size of that code's compressed system font, as on Apple's keyboard.
+    static let languageCodeFontSize: CGFloat = 13.5
+    /// How strongly that code is drawn in the key's label color in light and dark appearance, as on
+    /// Apple's keyboard.
+    static let languageCodeLightOpacity: CGFloat = 0.2
+    static let languageCodeDarkOpacity: CGFloat = 0.3
     static let keyDisabledLabelColor = UIColor.secondaryLabel.withAlphaComponent(0.7)
 
     /// What stands in for the keyboard backdrop when a key's visible color is worked out: the

@@ -33,9 +33,11 @@ def main():
     simulator = TypoSimulator(layout, measurements, calibration, SEED)
 
     counts = TypoCounts()
+    index = 0
     for _, intended, _ in copied_sentences(data_dir):
         for word in intended:
-            counts.add(word, simulator.type_word(word), layout)
+            counts.add(word, simulator.type_word(word, index), layout)
+            index += 1
     simulated = counts.summary()
     autocorrected = measurements["autocorrected_typos"]
     ite_by_length, _ = mistyped_shares(measurements["typos"])

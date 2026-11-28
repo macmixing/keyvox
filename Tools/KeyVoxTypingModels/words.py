@@ -1,7 +1,7 @@
 """How the typing-model builders read words: English's as plain ASCII letter words with at most
 one inner apostrophe, casefolded as ITE's text is read, any language's typed and suggested words
-lowercased without folding (`normalized`, which keeps German "ß"), and the edit distances they
-compare words with."""
+lowercased without folding (`normalized`, which keeps every letter as spelled), and the edit
+distances they compare words with."""
 
 import re
 

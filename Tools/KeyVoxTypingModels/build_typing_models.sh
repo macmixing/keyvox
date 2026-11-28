@@ -73,13 +73,13 @@ rm -rf "$DATA_DIR/built/dictionary" "$DATA_DIR/work/counted_dictionary"
 "$DATA_DIR/bin/write_latinime_dictionary" "${DICTIONARY_OPTIONS[@]}" \
   "$DATA_DIR/work/dictionary_kept_unigrams.tsv" "$DATA_DIR/work/dictionary_kept_ngrams.tsv" \
   "$DATA_DIR/built/dictionary" 2>/dev/null
+# The dictionary as counted, which the caches ask as the bundled rankers learned from it, and for
+# every other language, so the words left out leave its rankers as they would be without them.
+"$DATA_DIR/bin/write_latinime_dictionary" "${DICTIONARY_OPTIONS[@]}" \
+  "$DATA_DIR/work/dictionary_unigrams.tsv" "$DATA_DIR/work/dictionary_ngrams.tsv" \
+  "$DATA_DIR/work/counted_dictionary" 2>/dev/null
 
 if [[ "$TEXT" == english ]]; then
-  # The dictionary as counted, which the caches ask as the bundled rankers learned from it.
-  "$DATA_DIR/bin/write_latinime_dictionary" "${DICTIONARY_OPTIONS[@]}" \
-    "$DATA_DIR/work/dictionary_unigrams.tsv" "$DATA_DIR/work/dictionary_ngrams.tsv" \
-    "$DATA_DIR/work/counted_dictionary" 2>/dev/null
-
   # Rankers and the action model.
   "$PYTHON" split_ite_events.py "$DATA_DIR"
   "$PYTHON" write_feature_context_model.py "$DATA_DIR"
