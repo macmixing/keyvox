@@ -3,8 +3,8 @@
 Builds the typing models the predictive keyboard bundles for a typing language: those of its
 English typing language in
 `Packages/KeyVoxPredictiveKeyboard/Sources/KeyVoxPredictiveKeyboard/PredictiveData/en`, and the
-same files for German, Spanish, and French, which are built but not bundled yet (see "Other typing
-languages"). English's:
+same files for German, Spanish, and French (see "Other typing languages"). Spanish's are bundled in
+`PredictiveData/es`; German's and French's are built but not bundled yet. English's:
 
 | Bundled file | What it is | Built by |
 | --- | --- | --- |
@@ -76,7 +76,8 @@ The LatinIME tools are compiled with the Xcode command line tools.
 `latinime_suggestions.cpp` orders candidates of equal score with `std::sort`, which leaves
 the order of ties to the C++ standard library. The rankers are trained on the order that Apple
 clang 21.0.0 (clang-2100.3.34.1) with libc++ 220106 (macOS 27.2 SDK) gives, and Apple clang
-21.0.0 (clang-2100.3.33.1) with the same libc++ rebuilds every bundled file the same;
+21.0.0 (clang-2100.3.33.1) and Apple clang 21.0.0 (clang-2100.4.1.1) with the same libc++ rebuild
+every bundled file the same;
 `build_native_tools.sh` checks for one of those compilers and that libc++ version and stops with
 a message naming them on any other toolchain. Apple clang 15.0.0 with libc++ 160006 (macOS 13),
 for one, orders 8,485 of the July build's 84,720 correction queries' ties differently, and the
@@ -568,9 +569,8 @@ such as Spanish "esta" for "está":
 
 These are the trainers' measures: the keyboard corrects with `NoisyChannelCorrector`, which reads
 the rankers' choice of candidates but not the action model's probability (see "What the harness can
-tell apart"), and `Tools/KeyVoxTypingHarness` scores English only. They show the rankers learn the
-language, ranking the intended word first more often than LatinIME alone does, and give a baseline
-to hold later builds to.
+tell apart"). They show the rankers learn the language, ranking the intended word first more often
+than LatinIME alone does, and give a baseline to hold later builds to.
 
 The German vocabulary lacks most words that begin with "ä", "ö", or "ü", as the AOSP German word
 list it is built from does: "überhaupt" (52,006 times in the German build's counts), "ändern",
