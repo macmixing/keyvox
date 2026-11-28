@@ -143,6 +143,7 @@ public final class PredictiveTypingSession {
     private let pickedWordSpaceCharacters: CharacterList?
     private let spacedFromPickedWordCharacters: CharacterList?
     private let noNextWordCharacters: CharacterList?
+    private let sentenceOpeningMarks: Set<Character>
 
     public init(
         language: TypingLanguage,
@@ -157,6 +158,7 @@ public final class PredictiveTypingSession {
         pickedWordSpaceCharacters = try? CharacterList.takingPickedWordSpace(for: language)
         spacedFromPickedWordCharacters = try? CharacterList.spacedFromPickedWord(for: language)
         noNextWordCharacters = try? CharacterList.withoutNextWords(for: language)
+        sentenceOpeningMarks = language.textRules.sentenceOpeningMarks
     }
 
     /// Call after a tapped character has been inserted.
@@ -319,7 +321,10 @@ public final class PredictiveTypingSession {
             pickRun: pickRun,
             offersNextWords: word.text.isEmpty == false
                 || textBeforeCursor?.last.map { noNextWordCharacters?.contains(String($0)) != true } ?? true,
-            revertibleText: word.endsAtCursor ? revertibleAutocorrection(endingAt: textBeforeCursor)?.original : nil
+            revertibleText: word.endsAtCursor ? revertibleAutocorrection(endingAt: textBeforeCursor)?.original : nil,
+            sentenceOpeningMark: context.isAtSentenceStart && word.text.isEmpty
+                ? textBeforeCursor?.last.flatMap { sentenceOpeningMarks.contains($0) ? String($0) : nil }
+                : nil
         )
     }
 

@@ -11,6 +11,6 @@ final class SwipeLexiconTests: XCTestCase {
             words: try SwipeVocabulary.lexiconWords(of: PredictiveEngine(language: language)),
             settings: try SwipeModelSettings.bundled(for: language)
         )
-        XCTAssertEqual(try Data(contentsOf: language.resources.url(SwipeLexiconFormat.fileName)), built)
+        XCTAssertEqual(try Data(contentsOf: language.resources.dataURL(SwipeLexiconFormat.fileName)), built)
     }
 }

@@ -110,6 +110,13 @@ class Language:
     measured_spellings: Path | None = None
     # A swipe dataset whose swiped words the swipe vocabulary adds (count_swiped_words.py).
     swiped_words: Source | None = None
+    # How many times count_ngrams.py counts each source's sentences; unlisted sources count once.
+    count_weights: dict[str, int] = field(default_factory=dict)
+    # The words, word pairs, and three-word sequences the context model keeps at most
+    # (write_context_model.py).
+    context_words: int = 107_000
+    context_pairs: int = 800_000
+    context_sequences: int = 600_000
 
     def __post_init__(self) -> None:
         # The keyboard's own reading of the language's text, from its language.json in the package:
@@ -136,6 +143,14 @@ class Language:
         if not path.exists():
             return ()
         return tuple(json.loads(path.read_text(encoding="utf-8"))["alwaysCapitalizedWords"])
+
+    def sentence_opening_marks(self) -> str:
+        """The marks that open a sentence before its first word, from the language's
+        language.json in the package, or none before the language ships there or names them."""
+        path = PREDICTIVE_DATA / self.identifier / "language.json"
+        if not path.exists():
+            return ""
+        return json.loads(path.read_text(encoding="utf-8")).get("sentenceOpeningMarks", "")
 
     def letter_keys(self) -> str:
         """The letters of the keyboard's letter keys, row by row, from the default letter layout
@@ -230,7 +245,19 @@ LANGUAGES = {
         # CLDR's Spanish quotation marks.
         text_rules=_text_rules("«»“”"),
         deduplicate=True,
-        opener_weights=_OPENER_WEIGHTS,
+        # Tuned against Apple's Spanish (Spain) suggestion bars after 53 sentences on an iOS 27.2
+        # simulator: speech at 0.1 rather than 0 shares more words with Apple's bars and finds more
+        # held-out next sentences' first words in every source (README, "Sentence openers").
+        opener_weights={**_OPENER_WEIGHTS, "youtube-commons": 0.1, "yodas2": 0.1},
+        # Text people wrote counts 20 times and speech once, and the context model keeps about as
+        # many words as the dictionary has and more pairs and sequences, as Spanish writes a word
+        # in many forms: measured on held-out Spanish sentences the counts never saw, this fixes
+        # more mistyped words, changes fewer typed right, and shows more words in the suggestion
+        # bar than counting every source once at English's sizes (README, "Context model").
+        count_weights={"tatoeba": 20, "oasst2": 20, "wildchat": 20},
+        context_words=240_000,
+        context_pairs=2_000_000,
+        context_sequences=2_000_000,
     ),
     "fr": Language(
         identifier="fr",

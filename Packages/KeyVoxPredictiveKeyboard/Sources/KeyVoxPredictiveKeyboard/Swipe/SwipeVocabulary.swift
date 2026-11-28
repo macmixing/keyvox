@@ -18,7 +18,7 @@ public enum SwipeVocabulary {
 
     /// `language`'s swipe vocabulary, or none when it has no file.
     static func words(for language: TypingLanguage) throws -> [SwipeLexiconBuilder.Word] {
-        guard let url = language.resources.optionalURL(fileName) else { return [] }
+        guard let url = language.resources.optionalDataURL(fileName) else { return [] }
         let text = try String(contentsOf: url, encoding: .utf8)
         return try text.split(separator: "\n").map { line in
             let fields = line.split(separator: "\t")

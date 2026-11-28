@@ -2223,7 +2223,7 @@
       }
     },
     "Swipe Typing currently supports English only." : {
-      "comment" : "Note in keyboard settings explaining which typing features are limited to English.",
+      "comment" : "Note in keyboard settings explaining that swipe typing is limited to English.",
       "localizations" : {
         "de" : {
           "stringUnit" : {

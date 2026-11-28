@@ -6,12 +6,15 @@ import KeyVoxPredictiveKeyboard
 /// Sizes follow the KeyVox keyboard grid: 6 pt between keys, 8 pt between rows, 48 pt key
 /// height, the language's letter rows (`TypingLanguage.letterLayout`) filling the grid width
 /// with every item at its width in letter keys, shift and delete at theirs (across the padding
-/// beside them where the layout draws them so), and 123, space, and return below. For QWERTY
-/// these are ten top-row keys, the second row half a key in, and the third a key and a half in,
-/// between keys one and a half wide.
+/// beside them where the layout draws them so), and 123, space, and return below. Only the rows'
+/// letters are letter keys, as on the keyboard; the language's accent key, drawn in a row where
+/// its layout has one, is a key of its own. For QWERTY these are ten top-row keys, the second row
+/// half a key in, and the third a key and a half in, between keys one and a half wide.
 public struct KeyboardLayoutModel {
     public enum Key: Equatable {
         case letter(Character)
+        /// The language's accent key (`TypingLanguage.accentKey`).
+        case accentKey
         case shift
         case delete
         case numbers
@@ -25,6 +28,7 @@ public struct KeyboardLayoutModel {
     /// How far outside a key a touch still lands on it, as the keyboard resolves touches.
     private static let touchMargin = 14.0
 
+    /// The letter keys' frames: the rows' letters alone, as the keyboard hands the engine.
     public let keyFrames: [Character: CGRect]
     /// Letters no key types, each with the key whose held popup offers it.
     public let popupLetters: [Character: Character]
@@ -55,8 +59,15 @@ public struct KeyboardLayoutModel {
                 }
                 switch item {
                 case let .character(text):
-                    for letter in text {
-                        frames[letter] = CGRect(x: x * keyPitch, y: y, width: keyWidth, height: Self.keyHeight)
+                    let frame = CGRect(x: x * keyPitch, y: y, width: keyWidth, height: Self.keyHeight)
+                    for character in text {
+                        if character.isLetter {
+                            frames[character] = frame
+                        } else if language.accentKey?.character == String(character) {
+                            controls.append((.accentKey, frame))
+                        } else {
+                            preconditionFailure("\(layout.identifier) draws \(character), no letter and no accent key of \(language.identifier)")
+                        }
                     }
                 case let .shift(width):
                     let units = width + padding(index + 1)

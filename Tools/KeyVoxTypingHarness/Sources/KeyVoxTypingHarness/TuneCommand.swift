@@ -2,15 +2,22 @@ import Foundation
 import KeyVoxPredictiveKeyboard
 
 /// `tune`: freezes every planned word's engine candidates once, then searches the
-/// noisy-channel parameters on the tuning plans and reports the result on held-out plans.
+/// noisy-channel parameters on the tuning plans and reports the result on held-out plans, all in
+/// the typing language the plans name.
 enum TuneCommand {
     static func run(_ options: HarnessCommand.TuneOptions) throws {
-        let setup = try EngineSetup()
+        let tuningPlans = try options.tuningPlanPaths.map(TypingPlan.load(from:))
+        let holdoutPlans = try options.holdoutPlanPaths.map(TypingPlan.load(from:))
+        let languages = Set((tuningPlans + holdoutPlans).map(\.languageIdentifier))
+        guard languages.count == 1, let languageIdentifier = languages.first else {
+            throw HarnessError.mixedLanguages(languages.sorted())
+        }
+        let setup = try EngineSetup(languageIdentifier: languageIdentifier)
         let cache = CachedLanguageAnalysis(engine: setup.engine)
         let language = ContextLanguageScorer(analyze: { try cache.analyze($0, $1) })
-        let tuning = try samples(planPaths: options.tuningPlanPaths, setup: setup)
-        let holdouts = try options.holdoutPlanPaths.map { path in
-            (name: URL(fileURLWithPath: path).lastPathComponent, samples: try samples(planPaths: [path], setup: setup))
+        let tuning = try samples(plans: tuningPlans, setup: setup)
+        let holdouts = try zip(options.holdoutPlanPaths, holdoutPlans).map { path, plan in
+            (name: URL(fileURLWithPath: path).lastPathComponent, samples: try samples(plans: [plan], setup: setup))
         }
         print("Tuning on \(tuning.count) words, holding out \(holdouts.reduce(0) { $0 + $1.samples.count }) words")
 
@@ -36,10 +43,9 @@ enum TuneCommand {
         print("Tuned parameters: \(best)")
     }
 
-    private static func samples(planPaths: [String], setup: EngineSetup) throws -> [TuningSample] {
+    private static func samples(plans: [TypingPlan], setup: EngineSetup) throws -> [TuningSample] {
         var samples: [TuningSample] = []
-        for path in planPaths {
-            let plan = try TypingPlan.load(from: path)
+        for plan in plans {
             for sentence in plan.sentences {
                 for (index, (word, offsets)) in zip(sentence.words, sentence.taps).enumerated() {
                     let typing = SimulatedTyping(

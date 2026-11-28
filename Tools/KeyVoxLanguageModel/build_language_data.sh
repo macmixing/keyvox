@@ -120,9 +120,9 @@ fi
 start "$PYTHON" extract_sentences.py --language "$LANGUAGE" "$DATA_DIR"
 finish "$STEP"
 start sentence_openers; OPENERS=$STEP
-start "$PYTHON" count_ngrams.py "$DATA_DIR"
+start "$PYTHON" count_ngrams.py --language "$LANGUAGE" "$DATA_DIR"
 finish "$STEP"
-start "$PYTHON" write_context_model.py "$DATA_DIR" "$OUTPUT_DIR/context_model.bin"; CONTEXT=$STEP
+start "$PYTHON" write_context_model.py --language "$LANGUAGE" "$DATA_DIR" "$OUTPUT_DIR/context_model.bin"; CONTEXT=$STEP
 start capitalized_spellings; CAPITALIZED=$STEP
 finish "$CONTEXT" "$OPENERS" "$CAPITALIZED"
 

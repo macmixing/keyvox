@@ -21,20 +21,23 @@ public final class PredictiveEngine: @unchecked Sendable {
     public init(language: TypingLanguage) throws {
         self.language = language
         let resources = language.resources
-        let dictionaryURL = try resources.directory("dictionary")
-        let contextURL = try resources.url("context_model.bin")
-        let correctionURL = try resources.url("correction_ranker.kvtr")
-        let completionURL = try resources.url("completion_ranker.kvtr")
-        let actionURL = try resources.url("autocorrect_decision.kvtr")
-        let accentURL = try resources.url("accent_overlay.bin")
+        let dictionaryURL = try resources.dataDirectory("dictionary")
+        let contextURL = try resources.dataURL("context_model.bin")
+        let correctionURL = try resources.dataURL("correction_ranker.kvtr")
+        let completionURL = try resources.dataURL("completion_ranker.kvtr")
+        let actionURL = try resources.dataURL("autocorrect_decision.kvtr")
+        let accentURL = try resources.dataURL("accent_overlay.bin")
         accentOverlay = try AccentSuggestionOverlay(data: Data(contentsOf: accentURL))
-        capitalizedSpellings = try CapitalizedSpellings(languageCode: language.identifier)
-        sentenceOpeners = try SentenceOpeners(contentsOf: resources.url("sentence_openers.txt"))
-        unknownWordFollowers = try UnknownWordFollowers(
-            contentsOf: resources.url("unknown_word_followers.txt")
+        // The capitalized spellings are built from the same word list as the dictionary.
+        capitalizedSpellings = try CapitalizedSpellings(
+            languageCode: resources.dataIdentifier(ofDirectory: "dictionary")
         )
-        grammarWords = try GrammarWords(contentsOf: resources.url("grammar_words.txt"))
-        wordFollowers = try WordFollowers(contentsOf: resources.url("word_followers.txt"))
+        sentenceOpeners = try SentenceOpeners(contentsOf: resources.dataURL("sentence_openers.txt"))
+        unknownWordFollowers = try UnknownWordFollowers(
+            contentsOf: resources.dataURL("unknown_word_followers.txt")
+        )
+        grammarWords = try GrammarWords(contentsOf: resources.dataURL("grammar_words.txt"))
+        wordFollowers = try WordFollowers(contentsOf: resources.dataURL("word_followers.txt"))
 
         let defaultGeometry = language.letterLayout.defaultGeometry
         let nativeGeometry = defaultGeometry.compactMap(Self.nativeGeometry)

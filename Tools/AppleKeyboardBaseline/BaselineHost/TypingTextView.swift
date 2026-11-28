@@ -20,6 +20,10 @@ struct TypingTextView: UIViewRepresentable {
         view.spellCheckingType = isAutocorrectionDisabled ? .no : .yes
         view.autocapitalizationType = ProcessInfo.processInfo.environment["AUTOCAPITALIZE"] == "1" ? .sentences : .none
         view.smartQuotesType = ProcessInfo.processInfo.environment["SMART_QUOTES"] == "1" ? .yes : .no
+        // With KEYBOARD_TYPE=url, a web address field's keyboard, with its web ending key.
+        if ProcessInfo.processInfo.environment["KEYBOARD_TYPE"] == "url" {
+            view.keyboardType = .URL
+        }
         view.smartDashesType = .no
         view.smartInsertDeleteType = .no
         view.inlinePredictionType = .no

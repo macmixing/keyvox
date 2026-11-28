@@ -360,19 +360,7 @@ public final class PredictionComputer: @unchecked Sendable {
 
         var letters: [ContestedTap.Letter] = []
         for (letter, distance) in nearby {
-            let prefix = typed + String(letter)
-            // The likeliest words under the exact letters, not a typo-tolerant prediction: the
-            // tap is waiting on this, and only words that start with the letters count.
-            let completions = try engine.likeliestWords(startingWith: prefix, limit: 8)
-                + engine.personalSuggestions(typedWord: prefix, touches: [])
-                + [prefix]
-            var continuation: Double?
-            for word in completions where word.lowercased().hasPrefix(prefix) {
-                let score = try language.score(of: word, previousWords: request.previousWords)
-                guard score.isDictionaryWord else { continue }
-                continuation = max(continuation ?? -.infinity, score.logProbability)
-            }
-            if let continuation {
+            if let continuation = try continuation(of: typed + String(letter), language: language, request: request) {
                 letters.append(ContestedTap.Letter(
                     letter: letter,
                     distance: distance,
@@ -382,7 +370,12 @@ public final class PredictionComputer: @unchecked Sendable {
         }
 
         var ending: Double?
-        if typed.isEmpty == false {
+        if otherKey == .accentKey, typed.isEmpty == false, let accentKey = engine.language.accentKey,
+           let mark = accentKeyMark(after: typed) {
+            let left = accentKey.edit(placing: mark, after: typed).map { String(typed.dropLast($0.deleteCount)) + $0.insertText }
+                ?? typed + engine.language.textRules.straightApostrophes(in: mark)
+            ending = try continuation(of: left.lowercased(), language: language, request: request)
+        } else if typed.isEmpty == false {
             let score = try language.score(of: typed, previousWords: request.previousWords)
             ending = score.isDictionaryWord ? score.logProbability : nil
         }
@@ -393,6 +386,26 @@ public final class PredictionComputer: @unchecked Sendable {
             letters: letters,
             endingLogProbability: ending
         ))
+    }
+
+    /// The likeliest real word beginning with `prefix`, scored in context, or nil when none does.
+    /// It reads the likeliest words under the exact letters, not a typo-tolerant prediction: a
+    /// tap is waiting on this, and only words that start with the letters count.
+    private func continuation(
+        of prefix: String,
+        language: ContextLanguageScorer,
+        request: PredictionRequest
+    ) throws -> Double? {
+        let completions = try engine.likeliestWords(startingWith: prefix, limit: 8)
+            + engine.personalSuggestions(typedWord: prefix, touches: [])
+            + [prefix]
+        var continuation: Double?
+        for word in completions where word.lowercased().hasPrefix(prefix) {
+            let score = try language.score(of: word, previousWords: request.previousWords)
+            guard score.isDictionaryWord else { continue }
+            continuation = max(continuation ?? -.infinity, score.logProbability)
+        }
+        return continuation
     }
 
     /// Text replacements always expand; words the cursor is in and known names are never
@@ -474,7 +487,10 @@ public final class PredictionComputer: @unchecked Sendable {
         ranker: SuggestionCandidateRanker
     ) throws -> SuggestionBar {
         guard let previousWord = request.previousWords.first else {
-            let openers = engine.sentenceOpeners.words(after: request.previousSentence).map { word in
+            let openers = engine.sentenceOpeners.words(
+                after: request.previousSentence,
+                openingMark: request.sentenceOpeningMark
+            ).map { word in
                 let written = engine.capitalizedSpellings.written(word)
                 return written == word ? WordCasing.startingSentence(word) : written
             }

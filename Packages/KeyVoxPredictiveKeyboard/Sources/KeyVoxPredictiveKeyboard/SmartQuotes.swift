@@ -3,7 +3,8 @@
 /// of the text, or after a space, a line break, an opening bracket, a dash, or another opening
 /// quote mark), and a closing mark everywhere else, such as inside or after a word, a number,
 /// or closing punctuation, and right after its own opening mark, which it closes. Which marks
-/// those are is the typing language's.
+/// those are is the typing language's, and so is the space, if any, the quote key types inside
+/// its marks.
 public struct SmartQuotes: Sendable {
     /// What the apostrophe key shows and types as its key value.
     public static let apostrophe = "’"
@@ -14,25 +15,34 @@ public struct SmartQuotes: Sendable {
     let single: (opening: String, closing: String)
     /// The marks the quote key types.
     let double: (opening: String, closing: String)
+    /// The space the quote key types after its opening mark and before its closing one, or empty.
+    let spaceInsideDouble: String
 
     init(marks: TypingLanguageManifest.QuotationMarks) {
         single = (marks.openingSingle, marks.closingSingle)
         double = (marks.openingDouble, marks.closingDouble)
+        spaceInsideDouble = marks.spaceInsideDouble ?? ""
     }
 
     /// The text a key typing `value` inserts after `textBeforeCursor`.
     public func text(for value: String, after textBeforeCursor: String?) -> String {
         let marks: (opening: String, closing: String)
+        let space: String
         switch value {
         case Self.apostrophe:
             marks = single
+            space = ""
         case Self.doubleQuote:
             marks = double
+            space = spaceInsideDouble
         default:
             return value
         }
-        guard let previous = textBeforeCursor?.last else { return marks.opening }
-        return Self.opensQuotation(after: previous, opening: marks.opening) ? marks.opening : marks.closing
+        guard let previous = textBeforeCursor?.last,
+              Self.opensQuotation(after: previous, opening: marks.opening) == false else {
+            return marks.opening + space
+        }
+        return space + marks.closing
     }
 
     private static func opensQuotation(after character: Character, opening: String) -> Bool {

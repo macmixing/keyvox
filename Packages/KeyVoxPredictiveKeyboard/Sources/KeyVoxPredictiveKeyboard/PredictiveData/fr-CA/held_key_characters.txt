@@ -1,0 +1,31 @@
+a	right	a à â æ á ä ã å ā ª
+c	right	c ç ć č
+e	right	e é è ê ë ę ė ē
+i	left	i î ï ì í į ī
+n	left	n ñ ń
+o	left	o ô œ ö ò ó õ ø ō º
+u	left	u û ù ü ú ū
+y	left	y ÿ
+A	right	A À Â Æ Á Ä Ã Å Ā ª
+C	right	C Ç Ć Č
+E	right	E É È Ê Ë Ę Ė Ē
+I	left	I Î Ï Ì Í Į Ī
+N	left	N Ñ Ń
+O	left	O Ô Œ Ö Ò Ó Õ Ø Ō º
+U	left	U Û Ù Ü Ú Ū
+Y	left	Y Ÿ
+´	left	´ ˋ ˆ ¨
+ˋ	left	´ ˋ ˆ ¨
+ˆ	left	´ ˆ ˋ ¨
+0	left	0 °
+-	right	- – — •
+/	right	/ \
+$	right	$ ¢ € £ ¥ ₩ ₽
+&	right	& §
+"	strictly-left	" » « ” “ „
+.	left	. … ·
+?	right	? ¿
+!	right	! ¡
+’	left	' ’ ‘ `
+%	right	% ‰
+=	left	= ≠ ≈
