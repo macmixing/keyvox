@@ -162,6 +162,14 @@ class Language:
         return "".join(character for items in rows for item in items
                        for character in item.get("characters", "") if character.isalpha())
 
+    def swipe_spellings(self) -> dict[str, str]:
+        """The letters the language's swipe model spells with other letters (`spelledLetters` in its
+        swipe.json in the package), each with those letters; none before it bundles one."""
+        path = PREDICTIVE_DATA / self.identifier / "swipe.json"
+        if not path.exists():
+            return {}
+        return json.loads(path.read_text(encoding="utf-8")).get("spelledLetters", {})
+
 
 # Speech has no typed sentence openers, and the written sources outweigh the chat ones the
 # way the bundled English openers were tuned.
