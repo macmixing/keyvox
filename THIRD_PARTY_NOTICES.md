@@ -211,7 +211,7 @@ Attribution: Based on YouTube-Commons by PleIAs: transcripts of videos their cre
 - Source: <https://tatoeba.org/en/downloads>
 - License: CC BY 2.0 FR
 - License URL: <https://creativecommons.org/licenses/by/2.0/fr/deed.en>
-- Note: German, Spanish, and French sentences were normalized, aggregated, and transformed into the non-reversible artifacts and lists described above.
+- Note: German, Spanish, and French sentences were normalized, aggregated, and transformed into the non-reversible artifacts and lists described above. The predictive keyboard package's typing regression check holds 30 German sentences, lowercased and without punctuation, as test cases (`Tests/KeyVoxPredictiveKeyboardTests/Fixtures/typing_regression/de/cases.jsonl`).
 
 Attribution: Based on sentence data contributed by the Tatoeba community.
 
