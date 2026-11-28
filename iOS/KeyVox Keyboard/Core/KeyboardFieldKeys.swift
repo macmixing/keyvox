@@ -1,3 +1,4 @@
+import KeyVoxPredictiveKeyboard
 import UIKit
 
 /// The keys the focused field asks for through its keyboard and return key types, as the system
@@ -36,8 +37,9 @@ struct KeyboardFieldKeys: Hashable {
     static let standard = KeyboardFieldKeys(keyboardType: .default, returnKeyType: .default)
 
     /// The text the web ending key types, and which its held popup and the dot's offer: the
-    /// common web ending, the others around it.
-    static let commonWebEnding = ".com"
+    /// ending Apple's keyboard types for the device's region (`KeyboardWebEndings`), the others
+    /// around it.
+    static var commonWebEnding: String { KeyboardWebEndings.current.ending }
 
     init(keyboardType: UIKeyboardType, returnKeyType: UIReturnKeyType) {
         switch keyboardType {

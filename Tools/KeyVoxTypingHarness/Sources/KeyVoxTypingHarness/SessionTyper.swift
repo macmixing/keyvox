@@ -49,6 +49,11 @@ struct SessionTyper {
     ) throws {
         for (letter, offset) in zip(word.filter { $0 != "'" }, offsets) {
             guard let center = layout.center(of: letter) else { continue }
+            // A letter only a held popup offers is picked from it, exactly.
+            if layout.popupLetters[letter] != nil {
+                try press(.letter(letter), at: center, session: session, text: &text)
+                continue
+            }
             let touch = CGPoint(
                 x: center.x + offset[0] * layout.keyPitch.width,
                 y: center.y + offset[1] * layout.keyPitch.height

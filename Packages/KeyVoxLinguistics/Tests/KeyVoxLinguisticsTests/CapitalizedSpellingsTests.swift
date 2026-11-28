@@ -19,4 +19,16 @@ final class CapitalizedSpellingsTests: XCTestCase {
         XCTAssertEqual(spellings.written("MONDAY"), "MONDAY")
         XCTAssertEqual(spellings.written("how"), "how")
     }
+
+    func testGermanListWritesNounsWithTheirCapitals() throws {
+        let spellings = try CapitalizedSpellings(languageCode: "de")
+
+        XCTAssertEqual(spellings.written("haus"), "Haus")
+        XCTAssertEqual(spellings.written("mädchen"), "Mädchen")
+        XCTAssertEqual(spellings.written("straße"), "Straße")
+        XCTAssertEqual(spellings.written("berlin"), "Berlin")
+        // Written in lowercase too, as a verb or another word, so left as typed.
+        XCTAssertNil(spellings.spelling(of: "leben"))
+        XCTAssertNil(spellings.spelling(of: "und"))
+    }
 }

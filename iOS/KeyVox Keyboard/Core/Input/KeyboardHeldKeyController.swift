@@ -57,7 +57,9 @@ final class KeyboardHeldKeyController {
 
     /// What holding the key that types `key` offers, or nil for a key holding does nothing on.
     func offer(forKey key: String) -> HeldKeyCharacters.Offer? {
-        Self.bundledCharacters?.offer(forKey: key)
+        let webEndings = KeyboardWebEndings.current
+        if key == webEndings.ending { return webEndings.held }
+        return Self.bundledCharacters?.offer(forKey: key)
     }
 
     /// Starts timing a finger on a key; `open` shows the popup when the finger has stayed long

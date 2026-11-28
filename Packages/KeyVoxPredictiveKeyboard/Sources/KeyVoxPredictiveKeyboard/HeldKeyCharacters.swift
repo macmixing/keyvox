@@ -66,6 +66,21 @@ public struct HeldKeyCharacters: Sendable {
         try HeldKeyCharacters(contentsOf: language.resources.url("held_key_characters.txt"))
     }
 
+    /// The letter key whose popup offers each letter, lowercase, as a finger picking that letter
+    /// holds that key; a letter several keys offer takes the first in key order.
+    public var letterKeysOfOfferedLetters: [Character: Character] {
+        var keys: [Character: Character] = [:]
+        for key in offers.keys.sorted() {
+            guard key.count == 1, let base = key.lowercased().first, base.isLetter, let offer = offers[key] else { continue }
+            for character in offer.characters {
+                guard character.count == 1, let letter = character.lowercased().first,
+                      letter.isLetter, letter != base, keys[letter] == nil else { continue }
+                keys[letter] = base
+            }
+        }
+        return keys
+    }
+
     /// What holding the key that types `key` offers, or nil for a key holding does nothing on.
     public func offer(forKey key: String) -> Offer? {
         offers[key]

@@ -59,12 +59,14 @@ final class KeyboardLetterCaseController {
     /// in the field rather than typed text, so their placeholders are skipped.
     func synchronize(
         textBeforeCursor: String?,
-        autocapitalization: UITextAutocapitalizationType
+        autocapitalization: UITextAutocapitalizationType,
+        language: TypingLanguage
     ) {
         guard letterCase != .capsLocked else { return }
         letterCase = Self.shouldAutoCapitalize(
             textBeforeCursor: (textBeforeCursor ?? "").filter { $0 != Self.attachmentCharacter },
-            autocapitalization: autocapitalization
+            autocapitalization: autocapitalization,
+            language: language
         ) ? .shifted : .lowercase
         lastShiftTapTimestamp = nil
     }
@@ -74,9 +76,12 @@ final class KeyboardLetterCaseController {
         lastShiftTapTimestamp = nil
     }
 
+    /// - Parameter language: The typing language, whose sentence opening marks keep a sentence
+    ///   start shifted after them.
     static func shouldAutoCapitalize(
         textBeforeCursor: String,
-        autocapitalization: UITextAutocapitalizationType
+        autocapitalization: UITextAutocapitalizationType,
+        language: TypingLanguage
     ) -> Bool {
         switch autocapitalization {
         case .none:
@@ -86,7 +91,7 @@ final class KeyboardLetterCaseController {
         // A field asking for every letter capitalized still shifts only at sentence starts,
         // as other keyboards do; caps lock stays the user's to turn on.
         case .sentences, .allCharacters:
-            return TypingTextContext.startsSentence(after: textBeforeCursor)
+            return language.startsSentence(after: textBeforeCursor)
         @unknown default:
             return false
         }

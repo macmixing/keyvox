@@ -8244,8 +8244,6 @@ january	January
 january's	January's
 janus	Janus
 janus's	Janus's
-jap	Jap
-jap's	Jap's
 japan's	Japan's
 japanese	Japanese
 japanese's	Japanese's
@@ -12068,12 +12066,8 @@ negress	Negress
 negresses	Negresses
 negritude	Negritude
 negritude's	Negritude's
-negro	Negro
-negro's	Negro's
-negroes	Negroes
 negroid	Negroid
 negroid's	Negroid's
-negros	Negros
 negros's	Negros's
 nehemiah	Nehemiah
 nehemiah's	Nehemiah's

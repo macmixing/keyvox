@@ -190,7 +190,7 @@ The KeyVox keyboard includes full letter keys, so you can type and dictate from 
 
 The Keyboard settings screen lets you turn Predictive Text and the Emoji Keyboard on or off, open the keyboard on the number page with Open on 123, and Reset Learned Words.
 
-> **Note:** Predictive text, emoji search, and emoji suggestions are currently available in English only.
+> **Note:** Predictive text is currently available in English and German, and swipe typing in English only. Emoji search and emoji suggestions follow the language the keyboard types in.
 
 ### Rescued Dictation
 

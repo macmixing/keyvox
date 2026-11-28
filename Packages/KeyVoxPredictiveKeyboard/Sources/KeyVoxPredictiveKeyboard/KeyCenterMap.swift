@@ -10,8 +10,14 @@ public struct KeyCenterMap: Sendable {
     private let frames: [Character: CGRect]
     /// Typical distance between neighboring key centers across a row and between rows.
     public let pitch: CGSize
+    /// For letters only a held key's popup offers, the key held to pick them
+    /// (`HeldKeyCharacters.letterKeysOfOfferedLetters`).
+    private let offeringKeys: [Character: Character]
 
-    public init(geometry: [PredictionKeyGeometry]) {
+    /// - Parameter offeringKeys: For letters only a held key's popup offers, the key held to
+    ///   pick them.
+    public init(geometry: [PredictionKeyGeometry], offeringKeys: [Character: Character] = [:]) {
+        self.offeringKeys = offeringKeys
         var centers: [Character: CGPoint] = [:]
         var frames: [Character: CGRect] = [:]
         for key in geometry {
@@ -31,6 +37,11 @@ public struct KeyCenterMap: Sendable {
 
     public func center(of letter: Character) -> CGPoint? {
         centers[Character(letter.lowercased())]
+    }
+
+    /// The key held to pick `letter` from its popup, for a letter only a popup offers.
+    public func offeringKey(of letter: Character) -> Character? {
+        offeringKeys[Character(letter.lowercased())]
     }
 
     /// The letter keys within `maximumDistance` key pitches of a touch, with how far outside

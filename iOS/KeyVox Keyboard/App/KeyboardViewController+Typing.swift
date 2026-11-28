@@ -171,16 +171,19 @@ extension KeyboardViewController {
     }
 
     /// Records a typed letter's touch for prediction and ends a one-letter shift. A letter picked
-    /// from a held key's popup was not tapped where it sits, so the word's touches stop lining up
-    /// and it is scored from key centers.
+    /// from a held key's popup counts as a tap at the center of the key held to pick it, so the
+    /// word's touches keep lining up with its letters.
     func recordTypedCharacter(_ activation: KeyboardKeyActivation) {
         guard case let .character(value) = activation.kind,
               value.count == 1,
               value.first?.isLetter == true else {
             return
         }
-        if symbolPage == .letters, activation.isHeldKeyChoice == false {
-            predictionCoordinator.recordTap(at: activation.location)
+        if symbolPage == .letters {
+            let location = activation.isHeldKeyChoice && activation.keyFrame.isNull == false
+                ? CGPoint(x: activation.keyFrame.midX, y: activation.keyFrame.midY)
+                : activation.location
+            predictionCoordinator.recordTap(at: location)
         }
         letterCaseController.consumeTypedLetter()
     }
@@ -301,7 +304,8 @@ extension KeyboardViewController {
         guard emojiPanel != .searching else { return }
         letterCaseController.synchronize(
             textBeforeCursor: textDocumentProxy.documentContextBeforeInput,
-            autocapitalization: typingTraits.autocapitalization
+            autocapitalization: typingTraits.autocapitalization,
+            language: KeyboardTypingLanguage.current
         )
         applyLetterCase()
     }
@@ -309,6 +313,11 @@ extension KeyboardViewController {
     /// Starts typing in the focused field over in the language the keyboard types in now, keeping
     /// the page showing; call only while the field's document state may be read.
     func restartTypingInCurrentLanguage() {
+        // Whether the keys may swipe is the language's too, so the field's traits are read again
+        // in it; left as the last language's, the next text change would take them for another
+        // field's.
+        typingTraits = KeyboardTypingTraits(proxy: textDocumentProxy, settings: appSettingsStore)
+        updateSwipeTyping()
         predictionCoordinator.reset()
         if typingTraits.allowsPredictions {
             predictionCoordinator.prepare()
