@@ -10,7 +10,9 @@ import KeyVoxPredictiveKeyboard
 ///
 /// Apostrophes are not tapped, matching how people type contractions on a letter page and
 /// rely on autocorrect to restore them. A letter only a held popup offers is picked from it,
-/// exactly, at its key's center.
+/// exactly, at its key's center. The character the language's accent key shows is tapped on the
+/// accent key, and a character that is no letter and that no key of the letter page types is
+/// typed exactly, as from a symbol page.
 public struct SessionTyper {
     /// A moment while typing a sentence: after `letters` taps of the word at index `word`, or,
     /// with no letters, after the space before it (before the first key, for the first word).
@@ -118,7 +120,9 @@ public struct SessionTyper {
         session: PredictiveTypingSession,
         text: inout String
     ) throws -> SuggestionBar? {
-        guard let center = layout.center(of: letter) else { return nil }
+        guard let center = layout.center(of: letter) else {
+            return letter.isLetter ? nil : try typeFromSymbolPage(letter, session: session, text: &text)
+        }
         if layout.popupLetters[letter] != nil {
             return try press(.letter(letter), at: center, session: session, text: &text)
         }
@@ -217,6 +221,18 @@ public struct SessionTyper {
         } else {
             session.textDidChange(textBeforeCursor: text)
         }
+    }
+
+    /// Types `character` as the keyboard types one picked on a symbol page, with no tap
+    /// recorded, returning the suggestion bar the letter page shows after it.
+    private func typeFromSymbolPage(
+        _ character: Character,
+        session: PredictiveTypingSession,
+        text: inout String
+    ) throws -> SuggestionBar {
+        text.append(character)
+        session.textDidChange(textBeforeCursor: text)
+        return try computer.compute(session.request(textBeforeCursor: text)).bar
     }
 
     static func apply(_ edit: TextEdit, to text: inout String) {

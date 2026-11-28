@@ -32,6 +32,8 @@ public struct KeyboardLayoutModel {
     public let keyFrames: [Character: CGRect]
     /// Letters no key types, each with the key whose held popup offers it.
     public let popupLetters: [Character: Character]
+    /// The character the language's accent key shows, when it has one.
+    private let accentKeyCharacter: Character?
     /// Every key on the page, letters first in letter order, so a touch as near one key as
     /// another always lands on the same one.
     public let allKeys: [(key: Key, frame: CGRect)]
@@ -98,6 +100,7 @@ public struct KeyboardLayoutModel {
             }
         }
         self.popupLetters = popupLetters
+        accentKeyCharacter = language.accentKey?.character.first
 
         let bottomRowY = Double(layout.rows.count) * rowPitch
         let sideWidth = keyWidth * 2.5 + Self.keySpacing * 1.5
@@ -126,9 +129,13 @@ public struct KeyboardLayoutModel {
             .map { PredictionKeyGeometry(character: $0.key, frame: $0.value) }
     }
 
-    /// The center of the key that types `letter`, or of the key whose popup offers it.
+    /// The center of the key that types `letter`, of the key whose popup offers it, or, for the
+    /// character the language's accent key shows, of the accent key.
     public func center(of letter: Character) -> CGPoint? {
-        guard let frame = keyFrames[letter] ?? popupLetters[letter].flatMap({ keyFrames[$0] }) else { return nil }
+        let accentKeyFrame = letter == accentKeyCharacter ? allKeys.first { $0.key == .accentKey }?.frame : nil
+        guard let frame = keyFrames[letter] ?? popupLetters[letter].flatMap({ keyFrames[$0] }) ?? accentKeyFrame else {
+            return nil
+        }
         return CGPoint(x: frame.midX, y: frame.midY)
     }
 
