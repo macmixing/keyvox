@@ -3,8 +3,7 @@ import XCTest
 @testable import KeyVoxPredictiveKeyboard
 
 /// French's held-key popups as Apple's French (France) keyboard drew them on a 440-point-wide
-/// iPhone on iOS 27.2, left to right, laid out over the keys where that phone drew them
-/// (`apple-languages/popups-observed.json`, `key-frames/fr_FR-portrait-*.frames.json`).
+/// iPhone on iOS 27.2, left to right, laid out over the keys where that phone drew them.
 final class FrenchHeldKeyCharactersTests: XCTestCase {
     private let bounds = CGRect(x: 0, y: 0, width: 440, height: 245)
     /// A popup cell is the key's width less the gap between keys, plus the keyboard's cell
