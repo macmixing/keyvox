@@ -6,7 +6,8 @@ the capitalized spellings shared with dictation in `Packages/KeyVoxLinguistics/S
 and the same files for German, bundled in `PredictiveData/de` (all but the swipe vocabulary, which
 needs German swipe typing); for Spanish, bundled in `PredictiveData/es` (all but the swipe
 vocabulary), which Latin American Spanish (`PredictiveData/es-419`) uses too ("Latin American
-Spanish"); and for French, which is built but not bundled yet:
+Spanish"); and for French, bundled in `PredictiveData/fr` (all but the swipe vocabulary), which French
+(Canada) (`PredictiveData/fr-CA`) uses too:
 
 | File | Built by | Reads |
 | --- | --- | --- |
@@ -19,7 +20,7 @@ Spanish"); and for French, which is built but not bundled yet:
 | `swipe_vocabulary.txt` | `count_swipe_words.py`, `count_swiped_words.py`, `write_swipe_vocabulary.py` | Every source, through `source_texts.py`, the words swipe.futo.org's training split had people swipe, the dictionary's words and probabilities, and SCOWL's size 80 in every spelling |
 
 The swipe vocabulary is built only for a language whose dictionary and letter layout the package
-has, so for English alone today (see "Swipe vocabulary").
+has, and is bundled with a swipe model, so for English alone today (see "Swipe vocabulary").
 
 English's dictionary, rankers, and accent overlay, bundled beside these files, are built by
 `Tools/KeyVoxTypingModels`, which builds German's, Spanish's, and French's from these builds'
@@ -141,7 +142,9 @@ The builds of November 24, 2026, and German's of November 27, rebuilt with its `
 whose apostrophe and ordinal periods (see "Text in each language") leave 65,402 fewer sentences
 than November 24's and 198 fewer words, with the written lexicon words its vocabulary adds (see
 "Vocabulary") and contractions, and with the words its dictionary leaves out given as
-`[left-out-words]`; German's bundled files are this build's. Spanish's of November 27 was built with
+`[left-out-words]`; German's bundled files are this build's. French's, rebuilt on November 27
+from the same sources with French's `language.json` in the package, gave the same bytes in every
+file; those are the bundled French files. Spanish's of November 27 was built with
 its `language.json`, its tuned opener weights, its count weights, and its context model sizes (see
 "Context model"); its words of text below are as counted once each. Every other context model fills
 the default limits (107,000 words, 800,000 pairs, 600,000 sequences), so each is 14,963,028 bytes, as
@@ -455,6 +458,13 @@ few that share more, with Tatoeba at 1, show far fewer different bars than Apple
 | 10, 0.3, 0.3, 0.1 | 1.21 of 3 | 13 | 28.5% | 8.8% | 5.9% | 20.5% | 18.4% |
 | 1, 0.3, 0.3, 0.1 | 1.30 of 3 | 8 | 27.8% | 8.9% | 6.4% | 21.5% | 20.2% |
 | 30, 0.3, 0.3, 0 | 1.23 of 3 | 22 | 29.3% | 8.0% | 4.8% | 17.2% | 15.7% |
+
+Apple's French (France) bars were captured after 52 sentences and in an empty field, on the iOS 27.2
+simulator.
+With `--apple`, the bundled French openers share 1.15 of Apple's 3 words a bar and show 17
+different bars to Apple's 37. Other weights move this little: Tatoeba 3 shares 1.23, Tatoeba 1
+1.17, 88milSMS 3 1.15, 88milSMS 10 1.11, and Tatoeba 30 1.15, a few words over 53 bars, so
+French keeps the weights the languages share.
 
 Spanish's were tuned against the bars Apple's Spanish (Spain) keyboard showed after 53 sentences
 on an iOS 27.2 simulator, read with `--apple`: the same weights but speech at 0.1, which share more

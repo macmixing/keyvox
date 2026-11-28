@@ -11,6 +11,9 @@ public struct ContestedTap: Sendable, Equatable {
         case delete
         /// Shift, 123, or the globe: rarely meant in the middle of a word.
         case control
+        /// The typing language's accent key (`AccentKey`): competes with the letter on how likely
+        /// the word it would make is, as space competes on how complete the word already is.
+        case accentKey
     }
 
     /// A letter key near the touch and the likeliest real word it would lead to.
@@ -34,7 +37,8 @@ public struct ContestedTap: Sendable, Equatable {
     public let startsWord: Bool
     /// Nearby letters that lead to a real word.
     public let letters: [Letter]
-    /// The word typed so far, if it is a real word.
+    /// What the other key would leave, when that is a real word or begins one: for space or
+    /// return the word typed so far, for the accent key the word with what it types.
     public let endingLogProbability: Double?
 
     public init(

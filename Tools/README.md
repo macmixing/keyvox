@@ -123,7 +123,8 @@ its taps aim at that language's letter layout, its sentences are those its keys 
 only a held popup offers, such as German "ß", is picked from it exactly), `evaluate`, `compare`, and
 `tune` type it in that language (`tune` refuses plans that name different languages), and `compare`
 also says how many words come out with the capitals the corpus writes them with, such as German
-nouns.
+nouns. In `compare`, a tap on a language's accent key types what the keyboard's accent key would
+(`AccentKey`).
 Without `--language`, plans and scores are English's as before.
 
 ```bash

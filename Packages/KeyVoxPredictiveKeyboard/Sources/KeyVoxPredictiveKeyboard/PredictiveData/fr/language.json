@@ -1,0 +1,22 @@
+{
+  "identifier": "fr",
+  "defaultLetterLayout": "AZERTY-French",
+  "alternativeLetterLayouts": ["AZERTY", "QWERTY-Accents", "QWERTY", "QWERTZ"],
+  "editLetters": "abcdefghijklmnopqrstuvwxyzàâæçèéêëîïôùûüÿœ",
+  "vowels": "aeiouyàâæèéêëîïôùûüÿœ",
+  "alwaysCapitalizedWords": [],
+  "webEndingsLocale": "fr_FR",
+  "quotationMarks": {
+    "openingSingle": "‘",
+    "closingSingle": "’",
+    "openingDouble": "«",
+    "closingDouble": "»",
+    "spaceInsideDouble": "\u00a0"
+  },
+  "accentKey": {
+    "character": "´",
+    "combiningMarks": {"´": "\u0301", "ˋ": "\u0300", "ˆ": "\u0302", "¨": "\u0308"},
+    "keyMarks": ["´", "ˋ", "ˆ"],
+    "usualMarks": {"a": "ˋ", "e": "´", "i": "ˆ", "o": "ˆ", "u": "ˆ"}
+  }
+}
