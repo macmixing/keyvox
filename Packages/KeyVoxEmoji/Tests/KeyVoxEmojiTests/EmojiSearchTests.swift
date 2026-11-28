@@ -5,8 +5,8 @@ import XCTest
 /// Search finds emoji as the system keyboard's search was seen finding them: by every searched
 /// word starting one of the emoji's words, whole words first, then in the data's order.
 final class EmojiSearchTests: XCTestCase {
-    func testEveryCatalogEmojiIsFoundByItsName() throws {
-        let search = try EmojiSearch.bundled()
+    func testEveryCatalogEmojiIsFoundByItsEnglishName() throws {
+        let search = try EmojiSearch.bundled(language: "en")
         for emoji in try EmojiCatalog.bundled().sections.flatMap(\.emoji) {
             XCTAssertTrue(search.results(for: emoji.name).contains(emoji.text), emoji.name)
         }
@@ -44,6 +44,11 @@ final class EmojiSearchTests: XCTestCase {
     func testCaseAndAccentsDoNotMatter() throws {
         let search = try Self.search([("found", "cafe")])
         XCTAssertEqual(search.results(for: "CAFÉ"), ["found"])
+    }
+
+    func testLettersAreComparedCaseFolded() throws {
+        let search = try Self.search([("found", "strasse")])
+        XCTAssertEqual(search.results(for: "Straße"), ["found"])
     }
 
     func testASearchWithoutWordsFindsNothing() throws {

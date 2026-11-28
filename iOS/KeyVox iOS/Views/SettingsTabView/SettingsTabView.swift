@@ -57,6 +57,8 @@ struct SettingsTabView: View {
             )
         case .keyboard:
             KeyboardSettingsView(pendingDeletionConfirmation: $pendingDeletionConfirmation)
+        case .keyboardLanguages:
+            KeyboardLanguagesSettingsView()
         case .keyVoxSpeak:
             KeyVoxSpeakSettingsView(
                 pendingDeletionConfirmation: $pendingDeletionConfirmation,

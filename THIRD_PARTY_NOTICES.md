@@ -261,6 +261,7 @@ Copyright (c) 2008, The Android Open Source Project
 - License: CC0 1.0
 - License URL: <https://creativecommons.org/publicdomain/zero/1.0/>
 - Note: German, Spanish, and French word forms and their lexical categories settle the capitals in the vocabularies and tell German nouns from names; German forms its sentences write often fill in the words the German word list lacks.
+- Note: `Tools/KeyVoxEmojiData` reads the German, Spanish, and French nouns' forms from the dump of November 18, 2026, so `KeyVoxEmoji`'s search data for those languages finds a noun's emoji by its other forms, such as its plural.
 
 Attribution: Based on Wikidata Lexemes.
 
@@ -504,9 +505,9 @@ END OF TERMS AND CONDITIONS
 
 ### Unicode emoji data and CLDR annotations
 
-- Upstream: Unicode's `emoji-test.txt`, Emoji 18.0 (<https://unicode.org/Public/emoji/latest/emoji-test.txt>); CLDR's English annotations and derived annotations from <https://github.com/unicode-org/cldr-json> (`cldr-annotations-full` and `cldr-annotations-derived-full`, version 48.2.3); and Unicode's emoji frequency ranking (<https://www.unicode.org/emoji/frequency.html>).
+- Upstream: Unicode's `emoji-test.txt`, Emoji 18.0 (<https://unicode.org/Public/emoji/latest/emoji-test.txt>); CLDR's English, German, Spanish, Spanish (Latin America), and French annotations and derived annotations, and its parent locales, from <https://github.com/unicode-org/cldr-json> (`cldr-annotations-full`, `cldr-annotations-derived-full`, and `cldr-core`, version 48.2.3); and Unicode's emoji frequency ranking (<https://www.unicode.org/emoji/frequency.html>).
 - License: Unicode License v3 (Unicode-3.0), copyright © 1991–2026 Unicode, Inc. Full text: <https://www.unicode.org/license.txt>.
-- Use: `KeyVoxEmoji` bundles data written from these sources by `Tools/KeyVoxEmojiData`: each emoji's name and skin-tone versions (`emoji_catalog.txt`), the words that find it in search (`emoji_search.txt`), and the emoji the suggestion bar offers for a word (`emoji_predictions.txt`). The frequency ranking only orders them.
+- Use: `KeyVoxEmoji` bundles data written from these sources by `Tools/KeyVoxEmojiData`: each emoji's name and skin-tone versions (`emoji_catalog.txt`), and, for each typing language, the words that find it in search (`<language>/emoji_search.txt`) and the emoji the suggestion bar offers for a word (`<language>/emoji_predictions.txt`). The frequency ranking only orders them.
 
 ### Wiktionary (derived dictation phrase lists)
 
