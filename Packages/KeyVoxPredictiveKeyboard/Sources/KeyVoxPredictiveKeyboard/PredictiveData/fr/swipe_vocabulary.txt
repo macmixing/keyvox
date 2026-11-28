@@ -2714,7 +2714,6 @@ haka	78
 hc	78
 hospital	78
 mbia	78
-negro	78
 ouakam	78
 pda	78
 servat	78
@@ -13533,7 +13532,6 @@ parable	57
 paration	57
 pasar	57
 passard	57
-pédé	57
 pepita	57
 péritel	57
 pluripotentes	57
@@ -29768,7 +29766,6 @@ pasqui	42
 patrimonialiser	42
 patzebike	42
 payments	42
-pédés	42
 peinees	42
 peller	42
 penone	42
@@ -32837,7 +32834,6 @@ tannen	40
 t'apercevras	40
 t'apprécions	40
 tarki	40
-tarlouze	40
 tarpéienne	40
 tasa	40
 tassart	40
