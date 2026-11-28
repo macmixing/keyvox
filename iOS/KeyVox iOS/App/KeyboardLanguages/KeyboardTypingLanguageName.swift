@@ -15,15 +15,16 @@ nonisolated enum KeyboardTypingLanguageName {
 
     /// The short code the space bar shows for `identifier`: its language code in capitals, such as
     /// `EN`, followed by its region, such as `FR CA`, only when another of `identifiers` has the same
-    /// language code.
+    /// language code and the region is a single country. A region made of several countries, such
+    /// as Latin America's `419`, adds nothing, as Apple's keyboard for it shows only its language.
     static func shortCode(for identifier: String, among identifiers: [String]) -> String {
         let language = Locale.Language(identifier: identifier)
         let code = (language.languageCode?.identifier ?? identifier).uppercased()
         let sharesCode = identifiers.contains { other in
             other != identifier && Locale.Language(identifier: other).languageCode == language.languageCode
         }
-        guard sharesCode, let region = language.region?.identifier else { return code }
-        return code + " " + region.uppercased()
+        guard sharesCode, let region = language.region, region.subRegions.isEmpty else { return code }
+        return code + " " + region.identifier.uppercased()
     }
 
     /// The language the running app or extension shows its text in.
