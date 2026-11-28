@@ -1953,9 +1953,9 @@ Packages/
 - `KeyVox Keyboard/Views/Components/KeyboardKeyTouchSession.swift`
   - One finger's key, typed location, current location, timestamp, rollover state, and, while it may become or is a swipe, its path, its trail, and, once it lifts undecided, where its word would have gone.
 - `KeyVox Keyboard/Views/Components/KeyboardKeyView.swift`
-  - Renders one key with two alternating labels so case switches only show and hide labels, the space bar's code of the language it just switched to (`KeyboardLanguageCodeLabel`) at its bottom right in the key's label color, a number pad digit's letters under it on keys tall enough as shown on screen, judging a key under Display Zoom by its size before the zoom shrinks it, and the blue action look; draws no per-key blur and gives its shadow an explicit rounded path.
+  - Renders one key with two alternating labels so case switches only show and hide labels, the space bar's code of the language the keyboard types in (`KeyboardLanguageCodeLabel`) at its bottom right in the key's label color while the keyboard has more than one language, a number pad digit's letters under it on keys tall enough as shown on screen, judging a key under Display Zoom by its size before the zoom shrinks it, and the blue action look; draws no per-key blur and gives its shadow an explicit rounded path.
 - `KeyVox Keyboard/Views/Components/KeyboardLanguageCodeLabel.swift`
-  - The short code of the language the keyboard switched to, shown faintly and fading out about two seconds later, read by VoiceOver as the language's full name.
+  - The short code of the language the keyboard types in, shown faintly in a compressed font for as long as the keyboard has more than one language, as on Apple's keyboard, read by VoiceOver as the language's full name.
 - `KeyVox Keyboard/Views/Components/KeyboardHeldKeyPopupView.swift`
   - Renders a held key's popup cells from the package's `HeldKeyPopupLayout`, highlighting the cell under the finger.
 - `KeyVox Keyboard/Views/Components/KeyboardSuggestionBarView.swift`
