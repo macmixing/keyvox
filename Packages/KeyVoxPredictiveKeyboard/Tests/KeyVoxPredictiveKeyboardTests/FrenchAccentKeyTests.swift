@@ -35,7 +35,14 @@ final class FrenchAccentKeyTests: XCTestCase {
     }
 
     func testTheKeyTypesWhatAppleTypedAfterEachText() throws {
-        let computer = PredictionComputer(engine: try PredictiveEngine(language: .french))
+        try Self.assertAccentKeyTypesWhatAppleTyped(in: .french)
+    }
+
+    /// What Apple's French (France) keyboard on AZERTY-French, and its French (Canada) keyboard on
+    /// QWERTY-Accents, typed with the accent key after each text, measured the same on both.
+    static func assertAccentKeyTypesWhatAppleTyped(in language: TypingLanguage) throws {
+        let accentKey = try XCTUnwrap(language.accentKey)
+        let computer = PredictionComputer(engine: try PredictiveEngine(language: language))
         let apostrophe = SmartQuotes.apostrophe
         let measured: [(text: String, typed: String)] = [
             ("", "´"), ("e", "é"), ("a", "à"), ("i", "î"), ("o", "ô"), ("u", "û"), ("y", "y’"), ("c", "c’"),
